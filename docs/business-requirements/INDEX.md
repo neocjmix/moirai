@@ -2,6 +2,8 @@
 
 비즈니스 요구사항은 Moirai가 사용자와 독자에게 무엇을 제공하고 무엇을 보장해야 하는지를 규정한다. 구체적인 구현 방법은 다루지 않는다.
 
+## 요구사항
+
 | ID | 문서 | 주 책임 | 상태 |
 |---|---|---|---|
 | BR-001 | [LLM 기반 세계 작성](BR-001-clotho-authoring.md) | Clotho | draft |
@@ -11,6 +13,18 @@
 | BR-005 | [인간의 검토와 운영 권한](BR-005-human-governance.md) | Cross-system | draft |
 | BR-006 | [데이터 이동성과 장기 보존](BR-006-data-portability.md) | Lachesis | draft |
 | BR-007 | [콘텐츠 출판 생명주기](BR-007-publication-lifecycle.md) | Lachesis / Atropos | draft |
+
+## 하위 문서
+
+- [개념 엔티티 후보](entities/INDEX.md)
+- 사용자 여정: 개념 엔티티 1차 목록 이후 작성 예정
+
+## 작업 순서
+
+1. 엔티티 후보를 루즈하게 등록한다.
+2. 엔티티 ID를 사용해 핵심 사용자 여정을 작성한다.
+3. 여정에서 실제로 드러난 정체성, 생명주기와 관계를 근거로 엔티티를 재검토한다.
+4. 확정된 비즈니스 모델을 바탕으로 기술 명세를 시작한다.
 
 ## 범위 밖
 

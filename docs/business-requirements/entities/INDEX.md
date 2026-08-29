@@ -25,7 +25,7 @@
 |---|---|---|---|
 | ENT-004 | Event | 특정 Canon 안에서 발생하거나 성립하는 사건 | 사실 |
 | ENT-005 | Relation | 특정 Canon 안에서 사건과 사건 사이에 성립하는 의미 있는 관계 | 사실 |
-| ENT-006 | Narrative | 사건이나 세계를 사람이 읽을 수 있게 설명하는 서술 | 내용 |
+| ENT-006 | Narrative | 특정 Canon 안의 단일 Event 또는 여러 Event로 이루어진 범위를 사람이 읽을 수 있게 설명하는 서술 | 내용 |
 | ENT-007 | Source | 사건·관계·서술을 작성하거나 판단할 때 사용한 자료 | 근거 |
 
 ## 작성과 관리
@@ -71,9 +71,16 @@
 
 `ENT-007` Source는 Event·Relation·Narrative를 작성할 때 사용한 자료다. Source는 작성의 유래를 남기지만 Canon 안에서 성립한 사실의 지위를 대신하지 않으며, 그 사이에 별도의 일반화된 주장 엔티티를 두지 않는다.
 
-### Narrative의 독립성
+### Narrative의 범위
 
-`ENT-006` Narrative가 Event에 딸린 서술인지, 여러 사건을 엮는 독립 저작물인지 시나리오에서 검증한다.
+`ENT-006` Narrative는 단일 Event의 서술이면서 여러 Event를 관통하는 서술일 수도 있다. 하나의 Narrative 개념이 다음 범위를 가질 수 있다.
+
+- Canon
+- Process
+- Composite Event
+- 단일 Event
+
+범위가 다르다는 이유로 서로 다른 종류의 Narrative를 전제하지 않는다. Process에 Narrative가 존재해도 Process가 정본 엔티티로 바뀌는 것은 아니며, Composite Event는 Event의 구성 형태로 본다. 상위 범위의 Narrative는 하위 Event의 Narrative나 구조를 대체하지 않는다.
 
 ### Publication과 Edition
 
@@ -98,6 +105,7 @@
 | ENT-003 | Time System | 세계와 canon에 따라 서로 다른 시간 해석 체계를 선택하고 구분해야 한다. |
 | ENT-004 | Event | 작성·정정·탐색·공유의 핵심 내용 단위다. |
 | ENT-005 | Relation | 사건의 맥락과 인과·순서·포함을 작성하고 탐색하는 핵심 내용이다. |
+| ENT-006 | Narrative | Canon, Process, Composite Event와 단일 Event의 범위에서 사람이 읽을 수 있는 서술이 필요하다. |
 | ENT-007 | Source | 작성 근거로 사용되고 독자가 확인하며 반출 시에도 보존되어야 한다. |
 | ENT-009 | Change | 작성·확장·정정을 하나의 의미 있는 작업으로 추적해야 한다. |
 | ENT-010 | Revision | 내부 변경 전후와 공개본의 기반 상태를 구분하고 복구해야 한다. |
@@ -109,7 +117,6 @@
 
 | ID | 후보 | 남은 질문 |
 |---|---|---|
-| ENT-006 | Narrative | Event의 서술인지, 여러 사건과 관점을 엮는 독립 저작물인지 아직 드러나지 않았다. |
 | ENT-011 | Contributor | 독립 엔티티인지, 인간·LLM·외부 기관이 수행하는 역할인지 협업 요구가 정해지지 않았다. |
 
 ### 엔티티보다 다른 성격이 강한 후보
@@ -129,6 +136,20 @@
 - 철회 기록: Change, Review와 Edition의 상태로 충분한지 검토한다.
 - 독자 관점: Public Reference와 Timeline 같은 파생 관점으로 충분한지 검토한다.
 - 자료 묶음: 여러 Source를 하나의 작성 입력으로 관리할 독립 개념이 필요한지 검토한다.
+
+## Narrative 범위 결정
+
+ENT-006 Narrative의 의미는 다음과 같이 확정한다.
+
+- Narrative는 Event 구조를 사람이 읽을 수 있게 서술하는 세계 내용이다.
+- 단일 Event, Composite Event, Process와 Canon 단위에 각각 Narrative가 존재할 수 있다.
+- 여러 Event를 관통하는 Narrative도 동일한 Narrative 개념이다.
+- Narrative의 범위가 Process라고 해서 ENT-017 Process가 정본 엔티티로 승격되지는 않는다.
+- Narrative의 범위가 Composite Event라고 해서 별도의 엔티티 종류가 생기지 않는다.
+- Canon 단위 Narrative도 해당 Canon의 Event와 Relation을 서술하며 다른 Canon의 사실을 병합하지 않는다.
+- 범위가 큰 Narrative는 더 작은 범위의 Narrative와 Event·Relation 구조를 대체하지 않는다.
+
+이 결정은 Narrative의 기술적 저장 방식, 식별 방식 또는 한 범위에 허용되는 Narrative 수를 정하지 않는다.
 
 ## JRN-007 검토 결과: Canon 내부 정체성과 Canon 간 대응
 
@@ -172,5 +193,4 @@ URDR의 `figureHandle`은 이 문제를 해결했던 증거이지 Moirai가 그�
 ### 다음 검증 과제
 
 - Canon 간 대응이 독립 엔티티인지, 관계인지, 운영상 연결인지 관계 책임을 정하며 검증한다.
-- 하나의 서술이 여러 Event를 엮는 출판 여정으로 ENT-006 Narrative를 검증한다.
 - 여러 인간과 LLM이 공동 작성·검토하는 요구가 실제 범위인지 결정한 뒤 ENT-011 Contributor를 검증한다.

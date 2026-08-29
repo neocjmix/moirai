@@ -46,6 +46,15 @@ owner: Cross-system
 
 서로 다른 Canon이 같은 대상에 관해 모순되는 사건·관계·시간과 정체성을 각각 사실로 가질 수 있어야 한다. 이 차이를 하나의 사실로 병합하거나 진위 경쟁으로 바꾸어서는 안 된다.
 
-## BR-004.10 서술
+## BR-004.10 범위별 서술
 
-구조화된 사건과 관계뿐 아니라 독자가 읽을 수 있는 서술을 함께 보존하고 표현할 수 있어야 한다.
+구조화된 Event와 Relation뿐 아니라 독자가 읽을 수 있는 Narrative를 함께 보존하고 표현할 수 있어야 한다.
+
+Narrative는 다음 범위에 존재할 수 있어야 한다.
+
+- Canon
+- Process
+- Composite Event
+- 단일 Event
+
+여러 Event를 관통하는 Narrative와 단일 Event를 설명하는 Narrative는 같은 개념이다. Narrative의 범위가 달라져도 Event·Relation 구조나 파생 개념의 성격을 바꾸지 않으며, 상위 범위의 Narrative가 하위 범위의 서술을 대체하지 않는다.

@@ -20,7 +20,7 @@ owner: Atropos
 
 ## BR-003.3 복수 관점
 
-독자는 사건 관계, chronology, 정체성, 과정과 상세 서술 등 여러 관점으로 같은 세계를 이해할 수 있어야 한다.
+독자는 Canon 전체의 Narrative에서 Process, Composite Event와 단일 Event의 Narrative까지 범위를 오가며 사건 관계, chronology와 정체성 등 여러 관점으로 같은 세계를 이해할 수 있어야 한다.
 
 ## BR-003.4 관계 탐색
 
@@ -30,9 +30,9 @@ owner: Atropos
 
 독자는 현재 보고 있는 Canon을 분명히 알 수 있어야 하며, 서로 다른 Canon을 구분하고 필요한 경우 비교할 수 있어야 한다. 비교는 어느 Canon을 정본·기본·우위로 판정하지 않는다.
 
-## BR-003.6 서술과 근거
+## BR-003.6 범위별 서술과 근거
 
-독자는 현재 Canon에 속한 사건의 상세 서술, Source와 관련 링크를 확인할 수 있어야 한다.
+독자는 현재 Canon에 속한 Canon·Process·Composite Event·단일 Event 단위의 Narrative를 읽고, 각 범위와 관련된 Source 및 링크를 확인할 수 있어야 한다.
 
 ## BR-003.7 공유와 인용
 

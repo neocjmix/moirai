@@ -10,16 +10,15 @@
 | JRN-004 | [대체 canon 추가와 비교](JRN-004-add-alternate-canon.md) | 작성자, 출판자, 독자 | draft |
 | JRN-005 | [독자의 세계 탐색과 공유](JRN-005-explore-and-share.md) | 독자 | draft |
 | JRN-006 | [세계 데이터 반출과 복구](JRN-006-export-and-restore.md) | 소유자 | draft |
-| JRN-007 | [상충하는 자료의 모델링과 서술](JRN-007-model-conflicting-sources.md) | 작성자, 출판자, 독자 | draft |
 
 ## 요구사항 커버리지
 
 | 요구사항 | 관련 여정 |
 |---|---|
-| BR-001 LLM 기반 작성 | JRN-001, JRN-002, JRN-003, JRN-004, JRN-007 |
-| BR-002 저장과 관리 | JRN-001, JRN-002, JRN-003, JRN-004, JRN-006, JRN-007 |
-| BR-003 공개 출판과 독자 경험 | JRN-001, JRN-002, JRN-003, JRN-004, JRN-005, JRN-007 |
-| BR-004 표현 범위 | JRN-001, JRN-002, JRN-004, JRN-005, JRN-007 |
-| BR-005 인간의 운영 권한 | JRN-001, JRN-002, JRN-003, JRN-004, JRN-007 |
+| BR-001 LLM 기반 작성 | JRN-001, JRN-002, JRN-003, JRN-004 |
+| BR-002 저장과 관리 | JRN-001, JRN-002, JRN-003, JRN-004, JRN-006 |
+| BR-003 공개 출판과 독자 경험 | JRN-001, JRN-002, JRN-003, JRN-004, JRN-005 |
+| BR-004 표현 범위 | JRN-001, JRN-002, JRN-004, JRN-005 |
+| BR-005 인간의 운영 권한 | JRN-001, JRN-002, JRN-003, JRN-004 |
 | BR-006 이동성과 장기 보존 | JRN-006 |
 | BR-007 출판 생명주기 | JRN-001, JRN-002, JRN-003, JRN-004 |

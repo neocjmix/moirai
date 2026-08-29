@@ -1,7 +1,7 @@
 ---
 id: JRN-007
 title: Canon을 가로지르는 동일 대상의 연결과 비교
-status: draft
+status: accepted
 layer: business-requirements
 ---
 

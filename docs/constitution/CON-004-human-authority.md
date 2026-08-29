@@ -1,7 +1,7 @@
 ---
 id: CON-004
 title: 인간의 최종 권위
-status: draft
+status: accepted
 layer: constitution
 ---
 

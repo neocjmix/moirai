@@ -1,7 +1,7 @@
 ---
 id: BR-003
 title: 공개 출판과 독자 경험
-status: draft
+status: accepted
 layer: business-requirements
 owner: Atropos
 ---
@@ -32,7 +32,7 @@ owner: Atropos
 
 ## BR-003.6 범위별 서술과 근거
 
-독자는 현재 Canon에 속한 Canon·Process·Composite Event·단일 Event 단위의 Narrative를 읽을 수 있어야 한다. 원자료나 작성 유래가 출판 범위에 포함된 경우에는 관련 링크도 확인할 수 있어야 한다.
+독자는 현재 Canon에 속한 Canon·Process·Composite Event·단일 Event 단위의 Narrative를 읽을 수 있어야 한다. 독자에게 제공할 인용이나 출처 설명이 세계 내용으로 명시적으로 작성된 경우에는 관련 링크도 확인할 수 있어야 한다. 운영용 원자료와 작성 유래 자체는 공개 대상이 아니다.
 
 ## BR-003.7 공유와 인용
 

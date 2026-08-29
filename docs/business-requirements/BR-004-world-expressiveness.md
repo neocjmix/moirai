@@ -1,7 +1,7 @@
 ---
 id: BR-004
 title: 세계 모델의 표현 범위
-status: draft
+status: accepted
 layer: business-requirements
 owner: Cross-system
 ---

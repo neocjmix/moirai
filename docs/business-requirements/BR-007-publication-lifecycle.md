@@ -1,7 +1,7 @@
 ---
 id: BR-007
 title: 콘텐츠 출판 생명주기
-status: draft
+status: accepted
 layer: business-requirements
 owner: Lachesis / Atropos
 ---

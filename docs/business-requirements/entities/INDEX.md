@@ -8,6 +8,7 @@
 
 - `core`: 사용자가 직접 작성·관리·출판하거나 세계의 의미를 구성하는 핵심 개념
 - `derived`: 핵심 개념으로부터 읽거나 계산되는 개념
+- `operational`: 필요한 운영 책임이지만 세계의 의미를 구성하는 독립 개념은 아님
 - `deferred`: 관련 요구는 있으나 독립 비즈니스 개념인지는 이후 판단
 - `rejected`: 현재 모델에서 독립 비즈니스 개념으로 사용하지 않음
 
@@ -30,22 +31,22 @@
 | ID | 개념 | 상태 | 분류 | 정의 |
 |---|---|---|---|---|
 | ENT-016 | Subject | accepted | derived | Canon의 여러 Event와 Relation에서 동일한 인물·조직·장소·사물로 읽히는 대상 |
-| ENT-017 | Process | accepted | derived | 여러 Event 또는 Composite Event를 하나의 진행 과정으로 읽은 결과 |
+| ENT-017 | Process | accepted | derived | 과정으로 읽히는 Composite Event의 역할. 모든 Process는 Composite Event로 표현되지만 그 역은 필수가 아님 |
 | ENT-018 | State | accepted | derived | 특정 시점 또는 범위에서 성립한다고 읽히는 상태 |
 | ENT-019 | Duration | accepted | derived | Event 경계와 시간 정보에서 읽히는 지속 기간 |
 | ENT-020 | Timeline | accepted | derived | 선택한 Canon, 범위와 Time System에 따라 Event를 배열한 관점 |
 
-Process를 Composite Event로 표현하는 구체적인 방식은 이후 기술 명세에서 검증한다.
+Process는 Composite Event로 표현하며 별도 핵심 엔티티로 저장하지 않는다. 구체적인 스키마와 판별 방식은 기술 명세에서 정한다.
 
-## 보류된 엔티티 후보
+## 운영 개념과 보류된 후보
 
-다음 항목과 관련된 비즈니스 요구는 존재하지만 독립 엔티티로 만들 근거는 아직 충분하지 않다.
+다음 운영 책임은 반드시 구현해야 하지만 세계의 의미를 구성하는 독립 엔티티로 채택하지 않는다. 구체적인 기록 구조와 식별 방식은 기술 명세에서 정한다.
 
 | ID | 후보 | 상태 | 현재 판단 | 다시 검토할 조건 |
 |---|---|---|---|---|
-| ENT-007 | Source | deferred | 원자료와 작성 유래로 보존하며 독립 엔티티를 전제하지 않는다. | 자료 재사용, 참고문헌 관리, 라이선스 또는 출처별 탐색이 필요할 때 |
-| ENT-009 | Change | deferred | 의미 있는 작성 작업과 변경 이력은 필요하지만 독립 엔티티 여부는 운영 설계에 가깝다. | 사용자가 변경 자체를 선택·관리해야 할 때 |
-| ENT-010 | Revision | deferred | 복구와 이전 상태 보존은 필요하지만 Revision의 식별 방식은 이후 결정한다. | 특정 내부 상태를 사용자가 직접 참조·비교해야 할 때 |
+| ENT-007 | Source | operational | 원자료와 작성 유래를 비공개 운영 정보로 보존한다. 공개 인용은 명시적으로 작성된 세계 내용이다. | 자료 재사용, 참고문헌 관리, 라이선스 또는 출처별 탐색이 독립 사용자 목적이 될 때 |
+| ENT-009 | Change | operational | 의미 있는 작성 작업과 변경 이력을 일관성·감사 단위로 관리한다. | 사용자가 변경 자체를 선택·관리해야 할 때 |
+| ENT-010 | Revision | operational | 이전의 유효한 상태를 식별하고 복구할 수 있도록 이력을 보존한다. | 특정 내부 상태를 사용자가 직접 참조·비교해야 할 때 |
 | ENT-014 | Edition | deferred | 1차 구현은 현재 공개본만 제공하며 독립 Edition 개념을 전제하지 않는다. | 과거 공개본을 독자가 계속 열고 인용하거나 복원해야 할 때 |
 
 ## 독립 개념에서 제외

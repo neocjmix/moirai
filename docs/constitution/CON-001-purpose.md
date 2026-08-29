@@ -1,7 +1,7 @@
 ---
 id: CON-001
 title: 목적
-status: draft
+status: accepted
 layer: constitution
 ---
 

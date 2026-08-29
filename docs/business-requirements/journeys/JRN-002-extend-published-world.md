@@ -1,7 +1,7 @@
 ---
 id: JRN-002
 title: 기존 세계 확장과 공개본 갱신
-status: draft
+status: accepted
 layer: business-requirements
 ---
 

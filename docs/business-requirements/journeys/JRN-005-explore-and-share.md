@@ -1,7 +1,7 @@
 ---
 id: JRN-005
 title: 독자의 세계 탐색과 공유
-status: draft
+status: accepted
 layer: business-requirements
 ---
 

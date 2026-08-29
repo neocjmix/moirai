@@ -1,7 +1,7 @@
 ---
 id: CON-006
 title: URDR 요구사항 소싱 원칙
-status: draft
+status: accepted
 layer: constitution
 ---
 

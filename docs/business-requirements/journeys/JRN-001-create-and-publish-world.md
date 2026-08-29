@@ -1,7 +1,7 @@
 ---
 id: JRN-001
 title: 새 세계 작성과 최초 출판
-status: draft
+status: accepted
 layer: business-requirements
 ---
 

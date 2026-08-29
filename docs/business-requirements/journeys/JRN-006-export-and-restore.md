@@ -1,7 +1,7 @@
 ---
 id: JRN-006
 title: 세계 데이터 반출과 복구
-status: draft
+status: accepted
 layer: business-requirements
 ---
 

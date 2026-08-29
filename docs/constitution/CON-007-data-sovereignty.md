@@ -1,7 +1,7 @@
 ---
 id: CON-007
 title: 데이터 주권과 지속성
-status: draft
+status: accepted
 layer: constitution
 ---
 

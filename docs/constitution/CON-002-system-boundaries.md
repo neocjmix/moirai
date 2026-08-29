@@ -1,7 +1,7 @@
 ---
 id: CON-002
 title: 세 시스템과 책임 경계
-status: draft
+status: accepted
 layer: constitution
 ---
 

@@ -4,13 +4,13 @@
 
 | ID | 여정 | 핵심 행위자 | 상태 |
 |---|---|---|---|
-| JRN-001 | [새 세계 작성과 최초 출판](JRN-001-create-and-publish-world.md) | 작성자, 독자 | draft |
-| JRN-002 | [기존 세계 확장과 공개본 갱신](JRN-002-extend-published-world.md) | 작성자 | draft |
-| JRN-003 | [공개된 내용의 정정과 철회](JRN-003-correct-or-withdraw-content.md) | 작성자, 독자 | draft |
-| JRN-004 | [복수 Canon 추가와 비교](JRN-004-add-and-compare-canons.md) | 작성자, 독자 | draft |
-| JRN-005 | [독자의 세계 탐색과 공유](JRN-005-explore-and-share.md) | 독자 | draft |
-| JRN-006 | [세계 데이터 반출과 복구](JRN-006-export-and-restore.md) | 소유자 | draft |
-| JRN-007 | [Canon을 가로지르는 동일 대상의 연결과 비교](JRN-007-connect-and-compare-across-canons.md) | 작성자, 독자 | draft |
+| JRN-001 | [새 세계 작성과 최초 출판](JRN-001-create-and-publish-world.md) | 작성자, 독자 | accepted |
+| JRN-002 | [기존 세계 확장과 공개본 갱신](JRN-002-extend-published-world.md) | 작성자 | accepted |
+| JRN-003 | [공개된 내용의 정정과 철회](JRN-003-correct-or-withdraw-content.md) | 작성자, 독자 | accepted |
+| JRN-004 | [복수 Canon 추가와 비교](JRN-004-add-and-compare-canons.md) | 작성자, 독자 | accepted |
+| JRN-005 | [독자의 세계 탐색과 공유](JRN-005-explore-and-share.md) | 독자 | accepted |
+| JRN-006 | [세계 데이터 반출과 복구](JRN-006-export-and-restore.md) | 소유자 | accepted |
+| JRN-007 | [Canon을 가로지르는 동일 대상의 연결과 비교](JRN-007-connect-and-compare-across-canons.md) | 작성자, 독자 | accepted |
 
 ## 요구사항 커버리지
 

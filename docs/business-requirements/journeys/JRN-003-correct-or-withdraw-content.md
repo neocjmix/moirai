@@ -1,7 +1,7 @@
 ---
 id: JRN-003
 title: 공개된 내용의 정정과 철회
-status: draft
+status: accepted
 layer: business-requirements
 ---
 

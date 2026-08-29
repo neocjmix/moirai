@@ -1,7 +1,7 @@
 ---
 id: BR-005
 title: 인간의 검토와 운영 권한
-status: draft
+status: accepted
 layer: business-requirements
 owner: Cross-system
 ---
@@ -37,3 +37,7 @@ owner: Cross-system
 ## BR-005.7 자동 출판 인지
 
 인간은 Clotho에 성공적으로 반영된 세계 내용이 별도 승인 없이 현재 공개 상태에 자동 반영된다는 것을 알 수 있어야 한다.
+
+## BR-005.8 1차 운영 권한 범위
+
+1차 구현은 하나의 운영 권한이 작성·정정·철회를 수행하는 사용 방식을 충족하면 된다. 다중 작성자 협업, 역할별 권한과 승인 워크플로는 1차 구현의 비즈니스 요구사항이 아니며 후속 확장으로 추가할 수 있다.

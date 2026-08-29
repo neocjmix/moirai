@@ -1,7 +1,7 @@
 ---
 id: BR-006
 title: 데이터 이동성과 장기 보존
-status: draft
+status: accepted
 layer: business-requirements
 owner: Lachesis
 ---

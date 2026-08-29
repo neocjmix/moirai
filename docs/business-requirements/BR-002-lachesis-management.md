@@ -1,7 +1,7 @@
 ---
 id: BR-002
 title: 세계의 저장과 관리
-status: draft
+status: accepted
 layer: business-requirements
 owner: Lachesis
 ---

@@ -1,7 +1,7 @@
 ---
 id: CON-003
 title: Canon과 진실
-status: draft
+status: accepted
 layer: constitution
 ---
 

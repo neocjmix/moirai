@@ -1,7 +1,7 @@
 ---
 id: CON-005
 title: 운영 경계와 자동 출판
-status: draft
+status: accepted
 layer: constitution
 ---
 

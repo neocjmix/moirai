@@ -29,13 +29,13 @@ ENT-004 Event와 ENT-005 Relation은 특정 ENT-002 Canon 안에서 사실로 �
 
 ENT-002 Canon은 ENT-003 Time System을 통해 Event의 시간을 읽을 수 있다. Time System은 Event의 의미를 시간축에 표현하기 위한 규칙이며 Canon의 우열을 만들지 않는다.
 
-Time System의 공유 가능성과 한 Canon에서 사용할 수 있는 수는 이후 명세에서 결정한다.
+하나의 Canon은 하나 이상의 Time System을 사용할 수 있고, 같은 Time System을 여러 Canon이 공유할 수 있다. 어느 Time System도 본질적으로 정본이나 기본 시간축이 아니며 사용 맥락에 따라 선택된다.
 
 ## BCR-004 Event의 구성
 
 ENT-004 Event는 단일 사건일 수도 있고 다른 Event를 포함하는 Composite Event일 수도 있다. Composite Event를 별도의 핵심 개념으로 만들지 않는다.
 
-ENT-017 Process는 여러 Event 또는 Composite Event를 과정으로 읽은 파생 결과다. Process를 Composite Event로 표현하는 구현 가설은 이후 기술 명세에서 검증한다.
+ENT-017 Process는 과정으로 읽히는 Composite Event의 역할이다. 모든 Process는 하나의 Composite Event로 표현하지만 모든 Composite Event가 Process인 것은 아니다. Process를 위한 별도의 핵심 개념이나 사실 저장소를 만들지 않는다.
 
 ## BCR-005 Canon 내부 Relation
 

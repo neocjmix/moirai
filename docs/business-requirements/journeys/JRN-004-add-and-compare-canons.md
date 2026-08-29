@@ -1,7 +1,7 @@
 ---
 id: JRN-004
 title: 복수 Canon 추가와 비교
-status: draft
+status: accepted
 layer: business-requirements
 ---
 

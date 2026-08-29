@@ -18,8 +18,8 @@ layer: business-requirements
 
 ## JRN-006.3 시작 조건
 
-- 하나 이상의 World와 관련 Canon, Event, Relation, Narrative, Source 및 운영 이력이 존재한다.
-- 공개 Publication과 Edition이 존재할 수도 있다.
+- 하나 이상의 World와 관련 Canon, Event, Relation, Narrative, 작성 유래 및 운영 이력이 존재한다.
+- 공개 Publication과 공개본이 존재할 수도 있다.
 
 ## JRN-006.4 기본 흐름
 

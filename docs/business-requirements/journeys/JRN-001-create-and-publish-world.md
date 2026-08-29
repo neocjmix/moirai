@@ -31,21 +31,21 @@ layer: business-requirements
 1. 작성자는 만들고 싶은 세계와 원자료를 LLM에 설명한다.
 2. LLM은 자료의 범위와 작성자가 구성하려는 World 및 Canon의 경계를 확인한다.
 3. LLM은 하나 이상의 [ENT-002](../entities/INDEX.md) Canon과 필요한 [ENT-003](../entities/INDEX.md) Time System을 포함해 세계의 기본 범위를 구성한다.
-4. LLM은 [ENT-004](../entities/INDEX.md) Event, [ENT-005](../entities/INDEX.md) Relation, [ENT-006](../entities/INDEX.md) Narrative와 [ENT-007](../entities/INDEX.md) Source의 연결을 작성한다.
-5. 작성자는 전체 구조, Canon의 경계, 서술과 Source를 검토하고 필요한 정정을 요청한다.
+4. LLM은 [ENT-004](../entities/INDEX.md) Event, [ENT-005](../entities/INDEX.md) Relation과 [ENT-006](../entities/INDEX.md) Narrative를 작성하고 사용한 원자료와 작성 유래를 남긴다.
+5. 작성자는 전체 구조, Canon의 경계, 서술과 작성 유래를 검토하고 필요한 정정을 요청한다.
 6. 검토가 끝난 내용은 비공개 세계로 보존된다.
 7. 출판자는 공개할 범위와 독자에게 제공할 내용을 선택한다.
 8. 출판자는 최초 Publication을 승인한다.
-9. Atropos는 식별 가능한 최초 [ENT-014](../entities/INDEX.md) Edition을 독자에게 제공한다.
+9. Atropos는 식별 가능한 최초 공개본을 독자에게 제공한다.
 10. 독자는 공개 주소에서 세계의 개요를 보고 특정 Canon의 사건과 관계를 탐색한다.
 
 ## JRN-001.5 성공 결과
 
 - 작성자는 원자료가 구조화된 세계로 보존되었음을 확인한다.
 - 비공개 작성 내용과 공개 내용이 구분된다.
-- 독자는 최초 Edition의 일관된 내용을 탐색할 수 있다.
+- 독자는 최초 공개본의 일관된 내용을 탐색할 수 있다.
 - 사건, 관계, 서술과 출처의 연결을 확인할 수 있다.
-- 공개된 대상은 공유·인용 가능한 [ENT-015](../entities/INDEX.md) Public Reference를 가진다.
+- 공개된 대상은 공유·인용 가능한 안정적인 공개 링크를 가진다.
 
 ## JRN-001.6 비즈니스 규칙
 
@@ -61,7 +61,7 @@ layer: business-requirements
 ## JRN-001.7 실패와 사용자 통지
 
 - 기존 World와 중복 가능성이 있으면 LLM은 새 World를 만들기 전에 작성자에게 알려야 한다.
-- 자료가 부족하면 LLM은 Source에서 얻은 부분과 추론하여 작성한 부분을 구분해야 한다.
+- 자료가 부족하면 LLM은 원자료에서 얻은 부분과 추론하여 작성한 부분을 구분해야 한다.
 - 세계가 일관되게 보존될 수 없으면 출판 단계로 진행해서는 안 된다.
 - 출판할 수 없는 경우 출판자는 무엇을 검토하거나 수정해야 하는지 알 수 있어야 한다.
 

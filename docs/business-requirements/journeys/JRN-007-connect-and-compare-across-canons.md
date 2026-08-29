@@ -30,7 +30,7 @@ layer: business-requirements
 ## JRN-007.4 기본 흐름
 
 1. 작성자는 서로 다른 Canon의 대상들을 연결해 비교하고 싶다고 LLM에 요청한다.
-2. LLM은 각 Canon의 관련 Event, Relation, Narrative와 Source를 탐색한다.
+2. LLM은 각 Canon의 관련 Event, Relation, Narrative와 작성 유래를 탐색한다.
 3. LLM은 이름의 일치만이 아니라 역할, 관계와 맥락을 근거로 대응 후보와 차이를 작성자에게 제시한다.
 4. 작성자는 대응이 의도에 맞는지 검토하고 승인·거부하거나 다른 대상을 지정한다.
 5. 승인된 대응은 각 Canon의 Event, Relation과 파생 정체성을 병합하지 않은 채 관리된다.

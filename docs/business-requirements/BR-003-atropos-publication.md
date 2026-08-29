@@ -32,7 +32,7 @@ owner: Atropos
 
 ## BR-003.6 범위별 서술과 근거
 
-독자는 현재 Canon에 속한 Canon·Process·Composite Event·단일 Event 단위의 Narrative를 읽고, 각 범위와 관련된 Source 및 링크를 확인할 수 있어야 한다.
+독자는 현재 Canon에 속한 Canon·Process·Composite Event·단일 Event 단위의 Narrative를 읽을 수 있어야 한다. 원자료나 작성 유래가 출판 범위에 포함된 경우에는 관련 링크도 확인할 수 있어야 한다.
 
 ## BR-003.7 공유와 인용
 

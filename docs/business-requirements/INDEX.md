@@ -16,7 +16,8 @@
 
 ## 하위 문서
 
-- [개념 엔티티 후보](entities/INDEX.md)
+- [비즈니스 개념 인덱스](entities/INDEX.md)
+- [핵심 비즈니스 개념 관계와 책임](entities/CORE-MODEL.md)
 - [사용자 여정](journeys/INDEX.md)
 
 ## 작업 순서

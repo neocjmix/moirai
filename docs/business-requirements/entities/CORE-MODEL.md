@@ -74,18 +74,20 @@ Canon 간 대응은 다음 성격을 가진다.
 
 ## BCR-009 Publication
 
-ENT-013 Publication은 한 World에서 어떤 Canon과 내용을 독자에게 공개할지 정한다. 하나의 Publication은 공개 목적에 따라 여러 Canon을 포함하고 비교 경험을 제공할 수 있다.
+ENT-013 Publication은 Atropos가 독자에게 제공하는 한 World의 현재 공개 표현이다.
 
-저장, 작성 승인과 출판은 서로 다른 행위다. 출판되었다는 사실은 Canon의 진실 지위를 바꾸지 않는다.
+1차 구현에서는 Clotho를 통해 성공적으로 반영된 World, Canon, Event, Relation, Narrative와 Canon 간 대응에 별도로 관리되는 비공개 중간 상태가 없으며 현재 Publication의 내용이 된다. 이는 공개 제공 시간에 관한 SLA가 아니라 논리적 상태 모델이다. Publication에 포함되었다는 사실은 Canon의 진실 지위를 바꾸지 않는다.
+
+인간은 공개된 내용을 정정하거나 철회할 수 있다. draft, 선택적 출판과 과거 공개본의 독립적인 열람은 후속 확장으로 남긴다.
 
 ## BCR-010 시스템 책임
 
 | 시스템 | 비즈니스 책임 |
 |---|---|
-| Clotho | LLM이 World와 Canon의 기존 맥락을 읽고 Event, Relation과 Narrative를 작성·수정할 수 있게 한다. 출판 권한과 공개 독자 서비스를 소유하지 않는다. |
-| Lachesis | World, Canon, Time System, Event, Relation, Narrative, 작성 유래와 운영 이력을 비공개로 보존·검증·관리한다. |
-| Atropos | 인간이 결정한 Publication을 공개하고 독자가 Narrative와 세계 구조를 탐색·비교할 수 있게 한다. 유일한 공개 사용자 서비스다. |
+| Clotho | LLM이 World와 Canon의 기존 맥락을 읽고 Event, Relation과 Narrative를 작성·수정할 수 있게 한다. 성공적으로 반영된 세계 내용은 1차 구현에서 자동 출판 대상이 된다. |
+| Lachesis | World, Canon, Time System, Event, Relation, Narrative, 작성 유래와 운영 이력을 보존·검증·관리한다. 운영 인터페이스와 내부 정보는 비공개다. |
+| Atropos | Lachesis에 성공적으로 반영된 세계 내용의 현재 Publication을 자동으로 공개하고 독자가 Narrative와 세계 구조를 탐색·비교할 수 있게 한다. 유일한 공개 사용자 서비스다. |
 
 ## BCR-011 인간의 권한
 
-인간은 LLM이 제안한 세계 내용과 Canon 간 대응을 승인·거부·정정한다. 무엇을 출판·갱신·철회할지도 인간이 결정한다.
+인간은 LLM에 세계 내용을 지시하고 결과를 확인하며 정정하거나 철회할 수 있다. 1차 구현의 자동 출판은 인간에게 명확히 알려져야 하며 숨은 출판 규칙으로 동작해서는 안 된다.

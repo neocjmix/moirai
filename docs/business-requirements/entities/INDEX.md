@@ -21,7 +21,7 @@
 | ENT-004 | Event | accepted | core | 특정 Canon 안에서 발생하거나 성립하는 사실의 핵심 단위 |
 | ENT-005 | Relation | accepted | core | 특정 Canon 안에서 Event 사이에 성립하는 의미 있는 사실 관계 |
 | ENT-006 | Narrative | accepted | core | 단일 Event부터 Composite Event, Process와 Canon까지 선택된 범위를 사람이 읽을 수 있게 서술한 내용 |
-| ENT-013 | Publication | accepted | core | World의 어떤 내용을 어떤 독자 경험으로 공개할지 정한 출판 대상 |
+| ENT-013 | Publication | accepted | core | Atropos가 독자에게 제공하는 World의 현재 공개 표현 |
 
 ## 파생 개념
 
@@ -46,7 +46,7 @@ Process를 Composite Event로 표현하는 구체적인 방식은 이후 기술 
 | ENT-007 | Source | deferred | 원자료와 작성 유래로 보존하며 독립 엔티티를 전제하지 않는다. | 자료 재사용, 참고문헌 관리, 라이선스 또는 출처별 탐색이 필요할 때 |
 | ENT-009 | Change | deferred | 의미 있는 작성 작업과 변경 이력은 필요하지만 독립 엔티티 여부는 운영 설계에 가깝다. | 사용자가 변경 자체를 선택·관리해야 할 때 |
 | ENT-010 | Revision | deferred | 복구와 이전 상태 보존은 필요하지만 Revision의 식별 방식은 이후 결정한다. | 특정 내부 상태를 사용자가 직접 참조·비교해야 할 때 |
-| ENT-014 | Edition | deferred | 일관된 공개본은 필요하지만 독립 Edition 개념을 전제하지 않는다. | 과거 공개본을 독자가 계속 열고 인용하거나 복원해야 할 때 |
+| ENT-014 | Edition | deferred | 1차 구현은 현재 공개본만 제공하며 독립 Edition 개념을 전제하지 않는다. | 과거 공개본을 독자가 계속 열고 인용하거나 복원해야 할 때 |
 
 ## 독립 개념에서 제외
 

@@ -41,7 +41,7 @@ layer: business-requirements
 
 ## JRN-005.6 비즈니스 규칙
 
-- Atropos는 비공개 작성·검토 정보를 노출하지 않는다.
+- Atropos는 LLM 작업 과정, 내부 검증 결과와 운영 정보를 노출하지 않는다.
 - 하나의 시각적 표현이나 한 범위의 Narrative를 세계의 유일한 의미로 제시하지 않는다.
 - 상위 범위의 Narrative는 하위 Event와 Narrative를 숨기거나 대체하지 않는다.
 - Atropos는 특정 Canon을 정본·기본·우위로 표시하지 않는다.

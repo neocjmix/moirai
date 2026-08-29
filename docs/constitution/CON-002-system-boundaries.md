@@ -13,7 +13,7 @@ Clotho는 LLM이 스킬을 통해 기존 세계를 이해하고 새로운 내용
 
 ## CON-002.2 Lachesis
 
-Lachesis는 세계의 정본과 운영 정보를 비공개로 보존·검증·관리하고 Clotho와 Atropos에 신뢰할 수 있는 기능을 제공하는 관리 시스템이다.
+Lachesis는 각 Canon 안에서 성립하는 세계의 사실과 운영 정보를 비공개로 보존·검증·관리하고 Clotho와 Atropos에 신뢰할 수 있는 기능을 제공하는 관리 시스템이다.
 
 ## CON-002.3 Atropos
 

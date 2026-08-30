@@ -9,7 +9,7 @@
 | role | Railway 이름 | resource ID | 연결·노출 |
 |---|---|---|---|
 | project | `Moirai` | `67754889-5b80-4503-b368-95e7d0768d84` | production environment `990773c0-31d9-435c-8d36-21c15352fe51` |
-| `atropos-web` | `moirai` | `dafb90ad-69bc-420f-b0d2-65a5f6bbc2cf` | public domain `moirai-production-8ed1.up.railway.app`; `/health` readiness |
+| `atropos-web` | `moirai` | `dafb90ad-69bc-420f-b0d2-65a5f6bbc2cf` | public domain `moirai-production-8ed1.up.railway.app`; CDN caching; `/health` readiness |
 | `lachesis-api` | `desirable-vitality` | `fe402236-354f-4088-8182-aaf5f7b34a99` | private; PostgreSQL reference; `/health/ready` readiness |
 | `lachesis-worker` | `easygoing-recreation` | `ed61330b-87b2-40f2-a692-3453739f09a5` | domain 없음; PostgreSQL reference; `/health/ready` readiness |
 | PostgreSQL | `Postgres` | `7c4e107f-e65d-4413-8994-db5763c8ee44` | API·worker·migration만 private reference로 연결 |
@@ -24,14 +24,14 @@
 |---|---|---|---|
 | `lachesis-api` | contracts, persistence, API production build | migration runner 후 API start | private network, `/health/ready` |
 | `lachesis-worker` | persistence와 worker production build | worker start | domain 없음, `/health/ready` |
-| `atropos-web` | contracts와 Next.js production build | web start | public domain, `/health` |
+| `atropos-web` | contracts와 Next.js production build | web start | public domain, Railway CDN, `/health` |
 | PostgreSQL | managed Railway PostgreSQL | API pre-deploy에서 versioned migration 실행 | API·worker·migration에만 private reference |
 
 세 application service는 `neocjmix/moirai`의 `main`을 source로 사용하며 독립 deployment history를 가진다. Atropos에는 PostgreSQL 접속 정보가 없고 Publication Bucket credential은 Railway가 생성한 reference relation으로만 주입했다.
 
 ## Publication Store spike 결과
 
-고정 synthetic World `world_m0_synthetic`로 실제 Railway Bucket에 다음 경로를 생성하고 공개 proxy를 post-deploy smoke로 검증했다.
+고정 synthetic World `world_m0_synthetic`로 실제 Railway Bucket에 다음 경로를 생성하고 공개 CDN proxy를 post-deploy smoke로 검증했다.
 
 - revision-pinned snapshot: `worlds/world_m0_synthetic/revisions/0/snapshot.json`
 - revision-pinned manifest: `worlds/world_m0_synthetic/revisions/0/manifest.json`
@@ -40,13 +40,15 @@
 - `current.json`은 단일 object PUT으로 교체한다.
 - revision 응답은 `Cache-Control: public, max-age=31536000, immutable`과 `ETag`를 제공한다.
 - pointer 응답은 짧은 cache와 revalidation, `ETag`를 제공한다.
+- Railway CDN 반복 요청에서 `x-cache: HIT|STALE`와 `age`를 확인한다.
 - artifact 전체는 저장소의 synthetic 정본 fixture에서 다시 생성할 수 있다.
 
-CI run `33317961185`와 post-deploy smoke run `33318010529`가 이 구현을 검증했다. Railway Bucket은 private origin이고 현재 공개 경로는 Atropos proxy이므로 실제 CDN cache hit, stale과 invalidation 동작은 증명하지 못했다. TS-006의 CDN 보장을 완료하려면 Railway가 cache 상태를 관측 가능하게 제공하거나 별도 CDN/provider를 연결해 반복 요청의 edge hit와 pointer revalidation을 검증해야 한다. 이 보장은 약화하지 않는다.
+구현 commit `d76932bcbe09c9c04af8cc3c2591f180e4426057`의 CI run `33331725089`와 post-deploy smoke run `33331786122`가 build, synthetic Publication, revision-pinned URL, ETag와 실제 edge cache hit를 검증했다.
 
 ## Rollback
 
 - application: Railway의 service별 deployment history에서 직전 healthcheck 성공 deployment를 redeploy한다. application rollback은 World Revision을 변경하지 않는다.
 - migration: Milestone 0 migration은 운영 metadata table 하나를 추가하며 기존 table을 변경하지 않는다. 제품 데이터가 생기기 전 격리 환경에서만 `down`을 사용할 수 있고 이후에는 forward fix를 우선한다.
 - Publication: 새 pointer 검증이 실패하면 이전 `current.json` body를 다시 PUT한다. immutable revision artifact는 보존한다.
+- CDN: 문제 시 Atropos service의 CDN caching을 끄거나 cache를 purge한 뒤 origin proxy로 복귀한다.
 - infrastructure: project의 resource ID와 reference relation을 위 표로 확인한 뒤 service 단위로 변경한다. project 또는 workspace 전체를 포괄 삭제하지 않는다.

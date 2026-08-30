@@ -1,0 +1,26 @@
+{
+  "name": "@moirai/persistence",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "migrate": "tsx src/migrate.ts",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "kysely": "^0.28.0",
+    "pg": "^8.16.0"
+  },
+  "devDependencies": {
+    "@types/pg": "^8.15.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0"
+  }
+}

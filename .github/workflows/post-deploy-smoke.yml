@@ -1,0 +1,43 @@
+name: Post-deploy smoke
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      expected_commit_sha:
+        description: Full commit SHA expected from /health and /__status
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: post-deploy-smoke
+  cancel-in-progress: true
+
+jobs:
+  smoke:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    env:
+      PUBLIC_INTEGRATION_URL: ${{ vars.PUBLIC_INTEGRATION_URL }}
+      EXPECTED_COMMIT_SHA: ${{ inputs.expected_commit_sha || github.event.workflow_run.head_sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ env.EXPECTED_COMMIT_SHA }}
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify public deployment and synthetic fixture
+        run: pnpm smoke

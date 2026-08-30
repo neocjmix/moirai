@@ -1,0 +1,35 @@
+{
+  "name": "moirai",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=22 <25"
+  },
+  "scripts": {
+    "build": "pnpm -r --if-present build",
+    "dev:web": "pnpm --filter @moirai/atropos-web dev",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "lint": "eslint .",
+    "typecheck": "tsc -p tsconfig.json --noEmit && pnpm -r --if-present typecheck",
+    "test": "vitest run",
+    "test:integration": "vitest run --config vitest.integration.config.ts",
+    "test:e2e": "playwright test",
+    "migrate": "pnpm --filter @moirai/persistence migrate",
+    "smoke": "tsx scripts/post-deploy-smoke.ts"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.0.0",
+    "eslint": "^10.9.1",
+    "globals": "^17.11.0",
+    "prettier": "^3.6.0",
+    "tsx": "^4.20.0",
+    "typescript": "^5.9.0",
+    "typescript-eslint": "^8.68.0",
+    "vitest": "^3.2.0"
+  }
+}

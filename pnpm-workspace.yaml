@@ -1,0 +1,8 @@
+packages:
+  - apps/*
+  - packages/*
+  - skills/*
+
+onlyBuiltDependencies:
+  - esbuild
+  - sharp

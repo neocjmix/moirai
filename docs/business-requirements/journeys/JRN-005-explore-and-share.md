@@ -26,7 +26,7 @@ layer: business-requirements
 1. 독자는 자신이 어느 World, Canon과 공개본을 보고 있는지 이해한다.
 2. 독자는 Canon 단위 Narrative와 세계의 주요 사건·과정을 훑어본다.
 3. 독자는 Process 또는 Composite Event의 Narrative를 읽으며 여러 Event를 관통하는 맥락을 이해한다.
-4. 독자는 단일 Event로 들어가 해당 Narrative, 출판된 작성 유래와 관련 Relation을 읽고 인과·시간·Subject 관점으로 주변 맥락을 확장한다.
+4. 독자는 단일 Event로 들어가 해당 Narrative, 명시적으로 작성된 공개 인용·출처 설명과 관련 Relation을 읽고 인과·시간·Subject 관점으로 주변 맥락을 확장한다.
 5. 같은 대상에 대해 공개된 다른 Canon이 있으면 각각의 사실과 차이를 비교한다.
 6. 독자는 현재 사건이나 탐색 관점을 안정적인 공개 링크로 공유한다.
 7. 다른 독자는 공유된 참조를 열어 의도된 사건과 충분한 주변 맥락을 확인한다.

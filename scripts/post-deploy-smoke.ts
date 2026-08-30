@@ -82,6 +82,22 @@ async function verify(): Promise<void> {
     throw new Error("revision-pinned snapshot is invalid");
   }
 
+  const cachedRevision = await fetch(
+    new URL("/worlds/world_m0_synthetic/revisions/0/snapshot.json", baseUrl),
+    { signal: AbortSignal.timeout(10_000) }
+  );
+  if (!cachedRevision.ok) {
+    throw new Error(`cached revision returned ${cachedRevision.status}`);
+  }
+  const cacheState = cachedRevision.headers.get("x-cache");
+  if (cacheState !== "HIT" && cacheState !== "STALE") {
+    throw new Error(`revision CDN cache did not hit (x-cache=${cacheState})`);
+  }
+  if (!cachedRevision.headers.has("age")) {
+    throw new Error("revision CDN cache age is missing");
+  }
+  await cachedRevision.body?.cancel();
+
   const currentResponse = await fetch(
     new URL("/worlds/world_m0_synthetic/current.json", baseUrl),
     { signal: AbortSignal.timeout(10_000) }

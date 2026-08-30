@@ -15,6 +15,12 @@ interface StatusPayload {
   };
 }
 
+interface PublicationPointer {
+  readonly world_id: string;
+  readonly served_revision: number;
+  readonly manifest_key: string;
+}
+
 const baseUrl = process.env.PUBLIC_INTEGRATION_URL;
 const expectedSha = process.env.EXPECTED_COMMIT_SHA;
 
@@ -57,6 +63,43 @@ async function verify(): Promise<void> {
     status.synthetic_world.projection_status !== "ready"
   ) {
     throw new Error("synthetic World status is invalid");
+  }
+
+  const revision = await fetch(
+    new URL("/worlds/world_m0_synthetic/revisions/0/snapshot.json", baseUrl),
+    { signal: AbortSignal.timeout(10_000) }
+  );
+  if (!revision.ok) throw new Error(`revision returned ${revision.status}`);
+  if (!revision.headers.get("etag"))
+    throw new Error("revision ETag is missing");
+  if (!revision.headers.get("cache-control")?.includes("immutable")) {
+    throw new Error("revision cache policy is not immutable");
+  }
+  const snapshot = (await revision.json()) as {
+    readonly world?: { readonly world_id?: string };
+  };
+  if (snapshot.world?.world_id !== "world_m0_synthetic") {
+    throw new Error("revision-pinned snapshot is invalid");
+  }
+
+  const currentResponse = await fetch(
+    new URL("/worlds/world_m0_synthetic/current.json", baseUrl),
+    { signal: AbortSignal.timeout(10_000) }
+  );
+  if (!currentResponse.ok) {
+    throw new Error(`current pointer returned ${currentResponse.status}`);
+  }
+  if (!currentResponse.headers.get("etag")) {
+    throw new Error("current pointer ETag is missing");
+  }
+  const current = (await currentResponse.json()) as PublicationPointer;
+  if (
+    current.world_id !== "world_m0_synthetic" ||
+    current.served_revision !== 0 ||
+    current.manifest_key !==
+      "worlds/world_m0_synthetic/revisions/0/manifest.json"
+  ) {
+    throw new Error("served pointer is invalid");
   }
 }
 

@@ -16,7 +16,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: "pnpm --filter @moirai/atropos-web dev --hostname 127.0.0.1",
+    command:
+      "pnpm --filter @moirai/contracts build && pnpm --filter @moirai/atropos-web dev --hostname 127.0.0.1",
     url: "http://127.0.0.1:3000/health",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

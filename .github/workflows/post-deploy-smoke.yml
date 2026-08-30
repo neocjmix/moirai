@@ -25,7 +25,8 @@ jobs:
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     env:
-      PUBLIC_INTEGRATION_URL: ${{ vars.PUBLIC_INTEGRATION_URL }}
+      PUBLIC_INTEGRATION_URL: >-
+        ${{ vars.PUBLIC_INTEGRATION_URL || 'https://moirai-production-8ed1.up.railway.app' }}
       EXPECTED_COMMIT_SHA: ${{ inputs.expected_commit_sha || github.event.workflow_run.head_sha }}
     steps:
       - uses: actions/checkout@v4

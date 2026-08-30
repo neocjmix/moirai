@@ -187,10 +187,10 @@ Event의 시간은 `event_temporal_placements`로 표현한다. 시간 배치는
 - 구조적 순서: `precedes`
 - 인과: `causes`, `enables`, `prevents`, `influences`
 - 경계: `starts`, `ends`
-- 정체성 연속: `identity_continues`, `identity_splits`, `identity_merges`
+- 정체성: `identity_continues`, `identity_instance_of`, `identity_splits`, `identity_merges`
 - 유래와 전달: `derives_from`, `transfers`
 
-관계 type은 문자열만 추가해 의미를 바꾸지 않는다. 새 type은 방향성, 허용 endpoint, 역관계, cycle 허용 여부와 파생 영향 규칙을 registry에 정의해야 한다.
+관계 type은 문자열만 추가해 의미를 바꾸지 않는다. 새 type은 방향성, 허용 endpoint, 역관계, cycle 허용 여부와 파생 영향 규칙을 registry에 정의해야 한다. identity type은 추가로 Subject component를 합치는 `equivalent`인지 서로 다른 Subject 사이의 계보만 잇는 `lineage`인지 선언한다.
 
 ### 무결성
 

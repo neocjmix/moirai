@@ -4,8 +4,10 @@ title: 시스템 아키텍처와 책임 경계
 status: draft
 layer: technical-specifications
 traces:
+  - CON-001
   - CON-002
   - CON-005
+  - CON-006
   - CON-007
   - BR-002
   - BR-003
@@ -22,6 +24,21 @@ traces:
 ## TS-001.2 기준 아키텍처
 
 1차 구현은 하나의 코드베이스 안에서 책임을 분리한 modular monolith를 기본으로 한다. 공개 읽기 표면과 비공개 작성·관리 표면은 런타임 및 권한 경계에서 분리한다.
+
+### 기술 stack
+
+| 영역 | 기준 기술 |
+|---|---|
+| runtime | Node.js active LTS, TypeScript strict mode |
+| workspace | pnpm workspace monorepo |
+| Lachesis HTTP | Fastify와 versioned JSON Schema |
+| persistence | PostgreSQL, Kysely 기반 typed SQL과 명시적 migration |
+| background work | PostgreSQL outbox·job table과 같은 domain/projector module |
+| Atropos | Next.js App Router, React, JointJS |
+| Publication·attachment | S3-compatible object storage, public artifact는 CDN 사용 |
+| test | Vitest, Playwright, database integration test |
+
+특정 hosting 사업자의 독점 기능을 정본 형식이나 domain contract에 포함하지 않는다.
 
 ```mermaid
 flowchart LR
@@ -55,6 +72,27 @@ flowchart LR
 ## TS-001.4 의존 방향
 
 도메인 규칙과 계약은 프레임워크, 데이터베이스 드라이버와 UI보다 안쪽에 둔다.
+
+### 기준 module layout
+
+```text
+apps/lachesis-api
+apps/lachesis-worker
+apps/atropos-web
+packages/contracts
+packages/domain
+packages/persistence
+packages/projections
+packages/publication
+skills/clotho
+```
+
+- `contracts`: 외부 JSON schema와 공유 식별자·오류 형식
+- `domain`: framework-independent 불변식과 Change Set 검증
+- `persistence`: Kysely repository, transaction과 migration
+- `projections`: Subject·Timeline·graph 등 결정적 projector
+- `publication`: 공개 allowlist, Snapshot builder와 artifact contract
+- `skills/clotho`: instruction과 Lachesis client wrapper
 
 1. 공유 계약은 식별자, 명령, 결과와 오류 형식을 정의한다.
 2. 도메인 모듈은 정본 불변식과 Change Set 검증을 정의한다.
@@ -101,7 +139,7 @@ Projection Worker는 허용 목록 방식으로 공개 Snapshot을 만든다. �
 - PostgreSQL database
 - Publication Snapshot을 위한 읽기 전용 저장 표면
 
-API와 worker는 같은 애플리케이션 artifact를 다른 process role로 실행할 수 있다. Publication Store는 초기에는 PostgreSQL의 분리된 schema 또는 불변 object artifact로 구현할 수 있으며 최종 선택은 [TS-006](INDEX.md#후속-명세)에서 정한다. 어느 방식을 택해도 Atropos에 정본 DB 자격 정보를 제공해서는 안 된다.
+API와 worker는 같은 애플리케이션 artifact를 다른 process role로 실행할 수 있다. Publication Store는 [TS-006](TS-006-atropos-publication.md)에 따라 S3-compatible object storage의 불변 artifact와 CDN으로 구현한다. Atropos에 정본 DB 자격 정보를 제공해서는 안 된다.
 
 ## TS-001.8 계약과 버전
 
@@ -119,14 +157,12 @@ API와 worker는 같은 애플리케이션 artifact를 다른 process role로 �
 - private API 응답도 호출 목적에 필요한 최소 데이터만 반환한다.
 - 로그에 원자료, Narrative 본문, 프롬프트와 자격 정보가 기본적으로 기록되지 않게 한다.
 
-## TS-001.10 후속 결정
+## TS-001.10 구현별 선택 가능 범위
 
 다음 사항은 이 문서에서 고정하지 않는다.
 
-- HTTP framework와 web framework
-- Publication Store의 물리적 제품과 CDN 구성
-- 그래프 렌더러와 자동 배치 방식
-- queue 구현과 worker 수평 확장 방식
+- object storage, CDN, OIDC와 hosting의 구체적인 사업자
+- worker 수평 확장의 instance 수와 autoscaling 방식
 - 검색 엔진과 전문 인덱스
 
 이 선택들은 본 문서의 소유권, 원자성, 공개 격리와 재생성 가능성을 보존해야 한다.

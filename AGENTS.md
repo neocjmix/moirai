@@ -4,8 +4,9 @@
 
 1. Start from `docs/INDEX.md`.
 2. Read only the constitution, business requirements and accepted technical specifications relevant to the task.
-3. Before implementation work, read `docs/implementation/IS-001-agent-mobile-strategy.md` and the active implementation plan.
+3. Before implementation work, read `docs/implementation/IS-001-agent-mobile-strategy.md`, `docs/implementation/IP-001-first-product-plan.md` and `docs/implementation/CURRENT.md`.
 4. `docs/roadmap/` is future guidance, not current implementation scope. Do not implement roadmap features without approved requirements and a plan.
+5. A plan describes sequence and exit conditions; it does not activate a milestone by itself. Work only on the milestone named active in `CURRENT.md` or explicitly requested by the user.
 
 ## Source of truth
 
@@ -22,6 +23,7 @@
 - Keep unrelated refactors, dependency upgrades and feature changes in separate commits.
 - Do not stop at code generation: self-review the full diff, test, commit, push, deploy and verify when these actions are within the approved task and available authority.
 - Do not claim success from a build alone. Verify the deployed commit through the public surface and synthetic smoke test.
+- Keep `docs/implementation/CURRENT.md` short and current when implementation status, deployed URLs or the active milestone changes. Do not turn it into an execution log.
 
 ## Mobile-first evidence
 

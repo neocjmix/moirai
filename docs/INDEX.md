@@ -17,6 +17,8 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 ## 구현 운영 원칙
 
 - [IS-001 — 에이전트·모바일 중심 구현 전략](implementation/IS-001-agent-mobile-strategy.md)
+- [IP-001 — 첫 제품 구현 계획](implementation/IP-001-first-product-plan.md)
+- [현재 구현 상태](implementation/CURRENT.md)
 
 구현 운영 원칙은 제품 의미를 정의하지 않지만 에이전트가 코드를 작성·검증·배포하고 사용자에게 결과를 전달하는 방식을 구속한다.
 
@@ -30,6 +32,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - 기술 명세: `TS-NNN`
 - 로드맵: `RM-NNN`
 - 구현 전략: `IS-NNN`
+- 구현 계획: `IP-NNN`
 - 문서 내부의 세부 조항: `CON-NNN.M`, `BR-NNN.M`, `JRN-NNN.M`
 - ID는 한 번 발급하면 의미를 바꾸거나 재사용하지 않는다.
 - 폐기된 항목도 삭제하지 않고 상태와 대체 항목을 기록한다.

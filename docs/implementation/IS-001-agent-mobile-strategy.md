@@ -216,9 +216,32 @@ Test를 통과시키기 위해 요구사항을 약화하거나 assertion을 삭�
 
 공개 `/health`와 `/__status`는 secret이 없다는 사실을 검증하는 allowlist serializer를 사용한다. 범용 environment dump, error object serialization과 debug console을 연결하지 않는다.
 
-## IS-001.9 URDR 인프라 재사용
+## IS-001.9 URDR UI·인프라 재사용
 
 URDR repository는 역사적 참고 자료로 보존한다. URDR의 기존 runtime, deployment와 database 내용은 Moirai를 위해 보존할 필요가 없다. 다만 삭제·재사용 전에 대상 resource가 URDR 전용이며 다른 프로젝트가 의존하지 않는지 확인한다.
+
+### Atropos UI 계승 원칙
+
+Atropos의 시각적 표현과 interaction은 URDR UI를 기본 reference implementation으로 삼는다. 새로 재해석하거나 비슷하게 다시 만드는 대신, 작업 시작 시 URDR의 대응 화면과 동작을 확인하고 관련 component, style, asset과 interaction 구현을 Moirai로 복사한 뒤 필요한 차이만 명시적으로 변경한다.
+
+기본적으로 계승하는 범위는 다음과 같다.
+
+- 전체 visual identity, 색·타이포그래피·간격·표면과 정보 밀도
+- 화면 구조, navigation과 responsive/mobile 배치
+- graph의 시각 문법, selection, pan·zoom, touch와 세부 feedback
+- panel, sheet, tooltip, transition과 상태 변화의 interaction 감각
+- 의미가 같은 icon, asset과 microcopy의 표현 방식
+
+변경은 다음 근거 중 하나가 있을 때 수행한다.
+
+- Moirai의 accepted 헌법, 요구사항 또는 기술 명세와 의미가 달라진 경우
+- 사용자가 해당 시각·interaction 변경을 명시적으로 지시한 경우
+- accessibility, mobile usability, 성능 또는 명백한 기존 결함을 개선하는 경우
+- Next.js, JointJS와 Moirai의 현재 runtime 경계에 맞게 기술적으로 이식해야 하는 경우
+
+명시적 근거 없이 URDR UI를 전면 재설계하거나 일반적인 placeholder UI로 대체하지 않는다. 반대로 URDR의 NestJS, Drizzle, Vite application architecture, data model, service contract와 runtime dependency는 복사하지 않는다. UI 코드를 크게 복사하는 slice는 self-review가 가능한 수준으로 URDR source path와 기준 commit을 구현 기록에 남기되, URDR를 제품 의미의 source of truth나 Moirai의 runtime dependency로 만들지 않는다.
+
+### 인프라 재사용
 
 역사 문서에서 확인된 재사용 후보는 다음과 같다.
 

@@ -4,55 +4,49 @@
 
 ## 2026-08-30 inventory
 
-Railway의 인증된 workspace에서 확인한 현재 연결 관계는 다음과 같다.
+초기 inventory에서 인증된 Railway workspace는 `0 Projects`였고 URDR project, service, database, domain, bucket, volume 또는 variable relation이 없었다. 따라서 삭제·rename·credential 재사용 대상은 없었고 URDR GitHub repository는 수정하지 않았다. 사용자가 유료 plan과 새 project 생성을 승인한 뒤 아래 전용 자원을 만들었다.
 
-| resource kind | 확인된 이름·관계 |
-|---|---|
-| project | 없음 — dashboard가 `0 Projects`를 표시함 |
-| service | 없음 |
-| PostgreSQL | 없음 |
-| public/private domain | 없음 |
-| bucket | 없음 |
-| volume | 없음 |
-| service variable relation | 없음 |
-
-현재 workspace는 trial 종료 상태다. URDR project와 그 resource가 삭제된 것인지, 다른 Railway account 또는 workspace에 존재하는지는 이 inventory만으로 판정할 수 없다. 따라서 URDR 전용성이나 공유 여부도 확인할 수 없으며 live resource의 rename, delete, credential rotation과 Moirai deploy를 실행하지 않았다.
-
-새 project 또는 유료 plan을 만들면 비용과 새로운 resource identity가 생기므로 사용자 결정 전에는 생성하지 않는다.
-
-## 배포 목표 구성
-
-URDR 전용 project가 확인되거나 새 project 사용이 승인되면 다음 구성을 적용한다.
-
-| unit | source/build | start 또는 pre-deploy | exposure / readiness |
+| role | Railway 이름 | resource ID | 연결·노출 |
 |---|---|---|---|
-| `lachesis-api` | repo root, `pnpm --filter @moirai/lachesis-api... build` | `pnpm --filter @moirai/lachesis-api start` | private network, `/health/ready` |
-| `lachesis-worker` | repo root, `pnpm --filter @moirai/lachesis-worker... build` | `pnpm --filter @moirai/lachesis-worker start` | domain 없음, `/health/ready` |
-| `atropos-web` | repo root, `pnpm --filter @moirai/atropos-web... build` | `pnpm --filter @moirai/atropos-web start` | public domain, `/health` |
-| PostgreSQL | managed Railway PostgreSQL | `pnpm --filter @moirai/persistence migrate`를 명시적 pre-deploy 단계에서 1회 실행 | API·worker·migration에만 private `DATABASE_URL` reference |
+| project | `Moirai` | `67754889-5b80-4503-b368-95e7d0768d84` | production environment `990773c0-31d9-435c-8d36-21c15352fe51` |
+| `atropos-web` | `moirai` | `dafb90ad-69bc-420f-b0d2-65a5f6bbc2cf` | public domain `moirai-production-8ed1.up.railway.app`; `/health` readiness |
+| `lachesis-api` | `desirable-vitality` | `fe402236-354f-4088-8182-aaf5f7b34a99` | private; PostgreSQL reference; `/health/ready` readiness |
+| `lachesis-worker` | `easygoing-recreation` | `ed61330b-87b2-40f2-a692-3453739f09a5` | domain 없음; PostgreSQL reference; `/health/ready` readiness |
+| PostgreSQL | `Postgres` | `7c4e107f-e65d-4413-8994-db5763c8ee44` | API·worker·migration만 private reference로 연결 |
+| PostgreSQL volume | `postgres-volume` | `4b4fd2ff-54e2-4353-850e-287d0ae4bde5` | PostgreSQL 전용 |
+| Publication Bucket | `balanced-pouch` | `ce4878f1-85b5-4cf5-ad3d-23e74e12831b` | private S3-compatible origin; Atropos에 Railway reference variable로만 연결 |
 
-세 GitHub source는 `neocjmix/moirai`의 `main`을 사용하고 Wait for CI를 활성화한다. Atropos에는 PostgreSQL 또는 private service credential을 주입하지 않는다. API와 worker는 같은 저장소에서 build하지만 service별 deployment history를 유지해 독립 rollback한다.
+임의 생성된 API, worker와 bucket의 Railway 표시 이름은 resource ID와 역할 매핑으로 고정했다. 다른 repository 또는 service와 공유하는 자원은 없으며 secret 값은 저장소, 문서, 로그와 공개 status에 기록하지 않았다.
 
-Railway의 legacy Config as Code는 2026-12-01 폐기 예정이므로 `railway.toml`이나 `railway.json`을 추가하지 않는다. 실제 project가 확인된 뒤 현재 Infrastructure as Code를 pull해 resource ID를 보존하고 plan을 검토한 다음 적용한다.
+## 배포 구성
 
-## Publication Store spike 상태
+| unit | build | start 또는 pre-deploy | exposure / readiness |
+|---|---|---|---|
+| `lachesis-api` | contracts, persistence, API production build | migration runner 후 API start | private network, `/health/ready` |
+| `lachesis-worker` | persistence와 worker production build | worker start | domain 없음, `/health/ready` |
+| `atropos-web` | contracts와 Next.js production build | web start | public domain, `/health` |
+| PostgreSQL | managed Railway PostgreSQL | API pre-deploy에서 versioned migration 실행 | API·worker·migration에만 private reference |
 
-Railway Bucket은 private S3-compatible origin이며 public bucket을 지원하지 않는다. TS-006을 만족하려면 worker-only write credential, immutable revision key, 원자적 `current.json` 교체, Atropos 또는 별도 artifact service의 공개 proxy/CDN 경로가 필요하다.
+세 application service는 `neocjmix/moirai`의 `main`을 source로 사용하며 독립 deployment history를 가진다. Atropos에는 PostgreSQL 접속 정보가 없고 Publication Bucket credential은 Railway가 생성한 reference relation으로만 주입했다.
 
-실제 bucket이 inventory되지 않아 다음 항목은 아직 live spike하지 못했다.
+## Publication Store spike 결과
 
-- 단일 object overwrite의 read-after-write와 원자성
-- conditional write 또는 비교·교체로 오래된 pointer 역행 방지
-- revision URL의 `Cache-Control: public, max-age=31536000, immutable`
-- `current.json`의 짧은 cache와 revalidation
-- JSON `ETag`, CDN hit·stale 동작과 revision-pinned URL
-- 정본에서 전체 rebuild한 뒤 동일 digest 확인
+고정 synthetic World `world_m0_synthetic`로 실제 Railway Bucket에 다음 경로를 생성하고 공개 proxy를 post-deploy smoke로 검증했다.
 
-명세를 약화하지 않는다. Railway resource 접근이 복구된 뒤 위 항목을 실제 요청과 응답 header로 검증하고, 하나라도 보장할 수 없을 때만 별도 S3-compatible provider의 필요성과 비용을 제시한다.
+- revision-pinned snapshot: `worlds/world_m0_synthetic/revisions/0/snapshot.json`
+- revision-pinned manifest: `worlds/world_m0_synthetic/revisions/0/manifest.json`
+- served pointer: `worlds/world_m0_synthetic/current.json`
+- immutable revision은 조건부 write 후 pointer보다 먼저 생성한다.
+- `current.json`은 단일 object PUT으로 교체한다.
+- revision 응답은 `Cache-Control: public, max-age=31536000, immutable`과 `ETag`를 제공한다.
+- pointer 응답은 짧은 cache와 revalidation, `ETag`를 제공한다.
+- artifact 전체는 저장소의 synthetic 정본 fixture에서 다시 생성할 수 있다.
+
+CI run `33317961185`와 post-deploy smoke run `33318010529`가 이 구현을 검증했다. Railway Bucket은 private origin이고 현재 공개 경로는 Atropos proxy이므로 실제 CDN cache hit, stale과 invalidation 동작은 증명하지 못했다. TS-006의 CDN 보장을 완료하려면 Railway가 cache 상태를 관측 가능하게 제공하거나 별도 CDN/provider를 연결해 반복 요청의 edge hit와 pointer revalidation을 검증해야 한다. 이 보장은 약화하지 않는다.
 
 ## Rollback
 
-- application: 각 service에서 직전 healthcheck 성공 deployment를 redeploy한다. application rollback은 World Revision을 변경하지 않는다.
-- migration: Milestone 0 migration은 운영 metadata table 하나를 추가하며 기존 table을 변경하지 않는다. 제품 데이터가 생기기 전 격리 환경에서만 `down`을 사용할 수 있다. 이후에는 forward fix를 우선한다.
-- Publication: 새 pointer가 검증에 실패하면 이전 `current.json` 값을 복원하고 immutable revision artifact는 유지한다.
-- 현재 live resource 변경은 없으므로 이번 inventory 자체에 필요한 infrastructure rollback은 없다.
+- application: Railway의 service별 deployment history에서 직전 healthcheck 성공 deployment를 redeploy한다. application rollback은 World Revision을 변경하지 않는다.
+- migration: Milestone 0 migration은 운영 metadata table 하나를 추가하며 기존 table을 변경하지 않는다. 제품 데이터가 생기기 전 격리 환경에서만 `down`을 사용할 수 있고 이후에는 forward fix를 우선한다.
+- Publication: 새 pointer 검증이 실패하면 이전 `current.json` body를 다시 PUT한다. immutable revision artifact는 보존한다.
+- infrastructure: project의 resource ID와 reference relation을 위 표로 확인한 뒤 service 단위로 변경한다. project 또는 workspace 전체를 포괄 삭제하지 않는다.

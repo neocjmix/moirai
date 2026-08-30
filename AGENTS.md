@@ -76,6 +76,8 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 - Deploy small meaningful checkpoints frequently, with CI gating and a readiness healthcheck.
 - Keep Atropos public. Expose Lachesis only as required for authenticated clients. Do not give the worker or PostgreSQL a public application route.
 - Reuse the dedicated URDR Railway resources where safe, but do not copy URDR's application architecture or data model.
+- For Atropos visual and interaction work, inspect and copy the corresponding URDR UI implementation by default. Preserve its visual identity and behavior unless accepted Moirai documents, an explicit user direction or a documented defect requires a change.
+- Record the URDR source path and commit for non-trivial UI copies, but do not make URDR a runtime dependency or the source of product meaning.
 - The URDR repository must remain. Its deployed services, database contents and artifacts do not require preservation.
 - Before repurposing or deleting infrastructure, inventory exact targets and confirm they are not shared. Do not delete adjacent workspace resources.
 - Rotate URDR-era credentials instead of reusing them.

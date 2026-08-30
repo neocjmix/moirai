@@ -1,7 +1,7 @@
 ---
 id: TS-002
 title: 정본 데이터 모델
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-003

@@ -1,7 +1,7 @@
 ---
 id: TS-008
 title: 보안·운영·성능과 배포 품질
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-002

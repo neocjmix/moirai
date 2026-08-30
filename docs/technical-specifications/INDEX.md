@@ -14,14 +14,14 @@
 
 | ID | 문서 | 주요 책임 | 상태 |
 |---|---|---|---|
-| TS-001 | [시스템 아키텍처와 책임 경계](TS-001-system-architecture.md) | 런타임 경계, 정본 소유권, 의존 방향 | draft |
-| TS-002 | [정본 데이터 모델](TS-002-canonical-data-model.md) | 식별자, 저장 모델, 파생·운영 데이터 경계 | draft |
-| TS-003 | [변경·Revision·Publication 모델](TS-003-change-revision-publication.md) | 변경 원자성, 충돌, 이력, 복구, 공개 전파 | draft |
-| TS-004 | [Clotho 탐색·작성 계약](TS-004-clotho-contract.md) | LLM 탐색, Change Plan, 오류 회복 | draft |
-| TS-005 | [파생 모델과 Canon 간 비교](TS-005-derived-models.md) | Subject·Process·State·Duration·Timeline | draft |
-| TS-006 | [Atropos 공개 읽기와 그래프 탐색](TS-006-atropos-publication.md) | Snapshot, URL, 검색, JointJS graph | draft |
-| TS-007 | [반출·복구와 스키마 진화](TS-007-portability.md) | package, import, migration, 의미 보존 | draft |
-| TS-008 | [보안·운영·성능과 배포 품질](TS-008-operations-quality.md) | 인증, backup, SLO, 관측성, 배포 | draft |
+| TS-001 | [시스템 아키텍처와 책임 경계](TS-001-system-architecture.md) | 런타임 경계, 정본 소유권, 의존 방향 | accepted |
+| TS-002 | [정본 데이터 모델](TS-002-canonical-data-model.md) | 식별자, 저장 모델, 파생·운영 데이터 경계 | accepted |
+| TS-003 | [변경·Revision·Publication 모델](TS-003-change-revision-publication.md) | 변경 원자성, 충돌, 이력, 복구, 공개 전파 | accepted |
+| TS-004 | [Clotho 탐색·작성 계약](TS-004-clotho-contract.md) | LLM 탐색, Change Plan, 오류 회복 | accepted |
+| TS-005 | [파생 모델과 Canon 간 비교](TS-005-derived-models.md) | Subject·Process·State·Duration·Timeline | accepted |
+| TS-006 | [Atropos 공개 읽기와 그래프 탐색](TS-006-atropos-publication.md) | Snapshot, URL, 검색, JointJS graph | accepted |
+| TS-007 | [반출·복구와 스키마 진화](TS-007-portability.md) | package, import, migration, 의미 보존 | accepted |
+| TS-008 | [보안·운영·성능과 배포 품질](TS-008-operations-quality.md) | 인증, backup, SLO, 관측성, 배포 | accepted |
 
 ## 1차 기술 기준선
 

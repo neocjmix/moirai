@@ -1,7 +1,7 @@
 ---
 id: TS-007
 title: 반출·복구와 스키마 진화
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-007

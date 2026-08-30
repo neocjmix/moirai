@@ -1,7 +1,7 @@
 ---
 id: TS-005
 title: 파생 모델과 Canon 간 비교
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-003

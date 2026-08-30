@@ -1,7 +1,7 @@
 ---
 id: TS-004
 title: Clotho 탐색·작성 계약
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-002

@@ -1,7 +1,7 @@
 ---
 id: TS-006
 title: Atropos 공개 읽기와 그래프 탐색
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-002

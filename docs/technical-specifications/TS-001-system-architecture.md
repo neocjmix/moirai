@@ -1,7 +1,7 @@
 ---
 id: TS-001
 title: 시스템 아키텍처와 책임 경계
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-001

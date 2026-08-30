@@ -1,7 +1,7 @@
 ---
 id: TS-003
 title: 변경·Revision·Publication 모델
-status: draft
+status: accepted
 layer: technical-specifications
 traces:
   - CON-004

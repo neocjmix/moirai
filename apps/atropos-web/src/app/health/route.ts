@@ -1,16 +1,7 @@
-import { getPublicRuntimeMetadata } from "../../lib/runtime";
+import { GET as ready } from "./ready/route";
 
 export const dynamic = "force-dynamic";
 
-export function GET(): Response {
-  const runtime = getPublicRuntimeMetadata();
-  return Response.json(
-    {
-      status: "ok",
-      service: "atropos-web",
-      version: runtime.version,
-      commit_sha: runtime.commitSha
-    },
-    { headers: { "cache-control": "no-store" } }
-  );
+export function GET(): Promise<Response> {
+  return ready();
 }

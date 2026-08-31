@@ -1,18 +1,38 @@
 import { describe, expect, it } from "vitest";
 
-import { HEALTH_RESPONSE_SCHEMA, MILESTONE_ZERO_WORLD } from "./index.js";
+import {
+  CONTRACT_VERSION,
+  HEALTH_RESPONSE_SCHEMA,
+  SYNTHETIC_FIXTURE,
+  type CreateChangeSet
+} from "./index.js";
 
-describe("Milestone 0 synthetic World", () => {
-  it("has a stable, non-product revision fixture", () => {
-    expect(MILESTONE_ZERO_WORLD).toEqual({
-      world_id: "world_m0_synthetic",
-      label: "Milestone 0 synthetic World",
-      current_revision: 0,
-      publication_target_revision: 0,
-      served_revision: 0,
-      projection_status: "ready"
-    });
-    expect(Object.isFrozen(MILESTONE_ZERO_WORLD)).toBe(true);
+describe("Milestone 1 contracts", () => {
+  it("uses stable opaque UUIDv7 fixture identifiers", () => {
+    for (const id of [
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId,
+      SYNTHETIC_FIXTURE.eventId,
+      SYNTHETIC_FIXTURE.changeSetId
+    ]) {
+      expect(id).toMatch(
+        /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
+      );
+    }
+  });
+
+  it("types one World-scoped ordered create Change Set", () => {
+    const changeSet: CreateChangeSet = {
+      contract_version: CONTRACT_VERSION,
+      change_set_id: SYNTHETIC_FIXTURE.changeSetId,
+      world_id: SYNTHETIC_FIXTURE.worldId,
+      expected_revision: 0,
+      actor: "synthetic-bootstrap",
+      intent: "Create the Milestone 1 synthetic fixture",
+      operations: [],
+      origins: []
+    };
+    expect(changeSet.expected_revision).toBe(0);
   });
 });
 

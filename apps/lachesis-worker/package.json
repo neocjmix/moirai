@@ -9,7 +9,9 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@moirai/persistence": "workspace:*"
+    "@moirai/contracts": "workspace:*",
+    "@moirai/persistence": "workspace:*",
+    "@moirai/publication": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.0"

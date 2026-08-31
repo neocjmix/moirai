@@ -1,24 +1,20 @@
 import {
   CONTRACT_VERSION,
-  MILESTONE_ZERO_WORLD,
   PUBLICATION_FORMAT_VERSION,
   SCHEMA_VERSION,
+  SYNTHETIC_FIXTURE,
   type PublicStatusResponse,
   type SmokeResult
 } from "@moirai/contracts";
 
 import { getPublicRuntimeMetadata } from "./runtime";
+import { selectPublication } from "./publication";
 
 interface WorkflowRun {
   readonly conclusion: string | null;
-  readonly created_at: string;
   readonly html_url: string;
   readonly status: string;
   readonly updated_at: string;
-}
-
-interface WorkflowRunsResponse {
-  readonly workflow_runs?: readonly WorkflowRun[];
 }
 
 function toSmokeResult(run: WorkflowRun): SmokeResult {
@@ -36,11 +32,11 @@ export async function getLatestSmoke(): Promise<PublicStatusResponse["smoke"]> {
       }
     );
     if (!response.ok) throw new Error("smoke status unavailable");
-
-    const payload = (await response.json()) as WorkflowRunsResponse;
+    const payload = (await response.json()) as {
+      workflow_runs?: readonly WorkflowRun[];
+    };
     const run = payload.workflow_runs?.[0];
     if (!run) throw new Error("no smoke run");
-
     return {
       result: toSmokeResult(run),
       checked_at: run.updated_at,
@@ -53,8 +49,11 @@ export async function getLatestSmoke(): Promise<PublicStatusResponse["smoke"]> {
 
 export async function getPublicStatus(): Promise<PublicStatusResponse> {
   const runtime = getPublicRuntimeMetadata();
-  const smoke = await getLatestSmoke();
-
+  const [smoke, publication] = await Promise.all([
+    getLatestSmoke(),
+    selectPublication(SYNTHETIC_FIXTURE.worldId)
+  ]);
+  const pointer = publication.pointer;
   return {
     application: {
       service: "atropos-web",
@@ -67,12 +66,17 @@ export async function getPublicStatus(): Promise<PublicStatusResponse> {
       schema: SCHEMA_VERSION,
       publication_format: PUBLICATION_FORMAT_VERSION
     },
-    synthetic_world: MILESTONE_ZERO_WORLD,
+    synthetic_world: {
+      world_id: SYNTHETIC_FIXTURE.worldId,
+      canon_id: SYNTHETIC_FIXTURE.canonId,
+      event_id: SYNTHETIC_FIXTURE.eventId,
+      label: SYNTHETIC_FIXTURE.worldTitle,
+      current_revision: pointer.current_revision,
+      publication_target_revision: pointer.publication_target_revision,
+      served_revision: pointer.served_revision,
+      projection_status: pointer.projection_status
+    },
     smoke,
-    surfaces: {
-      atropos: "ok",
-      health: "ok",
-      status: "ok"
-    }
+    surfaces: { atropos: "ok", health: "ok", status: "ok" }
   };
 }

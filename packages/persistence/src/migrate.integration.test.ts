@@ -18,7 +18,7 @@ describeWithDatabase("versioned migrations", () => {
     await db.destroy();
   });
 
-  it("creates the Milestone 0 operational metadata table", async () => {
+  it("creates the versioned operational and canonical tables", async () => {
     const result = await sql<{ table_name: string }>`
       select table_name
       from information_schema.tables
@@ -27,6 +27,18 @@ describeWithDatabase("versioned migrations", () => {
     `.execute(db);
 
     expect(result.rows).toEqual([{ table_name: "moirai_system_metadata" }]);
+    const canonical = await sql<{ table_name: string }>`
+      select table_name
+      from information_schema.tables
+      where table_schema = 'public'
+        and table_name in ('worlds', 'change_sets', 'publication_outbox')
+      order by table_name
+    `.execute(db);
+    expect(canonical.rows).toEqual([
+      { table_name: "change_sets" },
+      { table_name: "publication_outbox" },
+      { table_name: "worlds" }
+    ]);
   });
 
   it("is idempotent", async () => {

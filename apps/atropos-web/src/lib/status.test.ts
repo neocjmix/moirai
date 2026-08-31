@@ -1,11 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 
 import { getPublicStatus } from "./status";
 
 describe("public status allowlist", () => {
-  afterEach(() => vi.unstubAllGlobals());
-
-  it("maps the public smoke workflow without forwarding raw API fields", async () => {
+  it("exposes current, target and served without forwarding workflow internals", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
@@ -14,7 +12,6 @@ describe("public status allowlist", () => {
             workflow_runs: [
               {
                 conclusion: "success",
-                created_at: "2026-08-30T01:00:00.000Z",
                 html_url: "https://github.com/neocjmix/moirai/actions/runs/1",
                 status: "completed",
                 updated_at: "2026-08-30T01:01:00.000Z",
@@ -26,15 +23,16 @@ describe("public status allowlist", () => {
         )
       )
     );
-
     const status = await getPublicStatus();
-    expect(status.smoke).toEqual({
-      result: "passed",
-      checked_at: "2026-08-30T01:01:00.000Z",
-      run_url: "https://github.com/neocjmix/moirai/actions/runs/1"
+    expect(status.synthetic_world).toMatchObject({
+      current_revision: 1,
+      publication_target_revision: 1,
+      served_revision: 1,
+      projection_status: "ready"
     });
     expect(JSON.stringify(status)).not.toContain(
       "private-shape-must-not-forward"
     );
+    vi.unstubAllGlobals();
   });
 });

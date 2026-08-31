@@ -6,6 +6,15 @@ export default defineConfig({
     alias: {
       "@moirai/contracts": fileURLToPath(
         new URL("./packages/contracts/src/index.ts", import.meta.url)
+      ),
+      "@moirai/domain": fileURLToPath(
+        new URL("./packages/domain/src/index.ts", import.meta.url)
+      ),
+      "@moirai/projections": fileURLToPath(
+        new URL("./packages/projections/src/index.ts", import.meta.url)
+      ),
+      "@moirai/publication": fileURLToPath(
+        new URL("./packages/publication/src/index.ts", import.meta.url)
       )
     }
   },

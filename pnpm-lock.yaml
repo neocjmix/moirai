@@ -44,6 +44,12 @@ importers:
       '@moirai/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
+      '@moirai/projections':
+        specifier: workspace:*
+        version: link:../../packages/projections
+      '@moirai/publication':
+        specifier: workspace:*
+        version: link:../../packages/publication
       next:
         specifier: ^16.3.3
         version: 16.3.3(@playwright/test@1.62.1)(@types/node@22.20.1)(react-dom@19.2.8(react@19.2.8))(react@19.2.8)
@@ -85,9 +91,15 @@ importers:
 
   apps/lachesis-worker:
     dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../../packages/contracts
       '@moirai/persistence':
         specifier: workspace:*
         version: link:../../packages/persistence
+      '@moirai/publication':
+        specifier: workspace:*
+        version: link:../../packages/publication
     devDependencies:
       typescript:
         specifier: ^5.9.0
@@ -100,6 +112,10 @@ importers:
         version: 5.9.3
 
   packages/domain:
+    dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       typescript:
         specifier: ^5.9.0
@@ -107,6 +123,12 @@ importers:
 
   packages/persistence:
     dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@moirai/domain':
+        specifier: workspace:*
+        version: link:../domain
       kysely:
         specifier: ^0.28.0
         version: 0.28.17
@@ -125,6 +147,10 @@ importers:
         version: 5.9.3
 
   packages/projections:
+    dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
     devDependencies:
       typescript:
         specifier: ^5.9.0
@@ -135,6 +161,9 @@ importers:
       '@moirai/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@moirai/projections':
+        specifier: workspace:*
+        version: link:../projections
     devDependencies:
       typescript:
         specifier: ^5.9.0

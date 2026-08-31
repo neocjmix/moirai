@@ -17,7 +17,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "pnpm --filter @moirai/contracts build && pnpm --filter @moirai/atropos-web dev --hostname 127.0.0.1",
+      "./node_modules/.bin/tsc -p packages/contracts/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/projections/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/publication/tsconfig.build.json && cd apps/atropos-web && ./node_modules/.bin/next build && ALLOW_SYNTHETIC_PUBLICATION_FIXTURE=true ./node_modules/.bin/next start --hostname 127.0.0.1",
     url: "http://127.0.0.1:3000/health",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

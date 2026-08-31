@@ -1,32 +1,30 @@
-import { MILESTONE_ZERO_WORLD } from "@moirai/contracts";
-
+import { CURRENT_CACHE_CONTROL, currentKey } from "@moirai/publication";
 import {
-  CURRENT_CACHE_CONTROL,
-  readSyntheticPointer
-} from "../../../../lib/publication-store";
+  assertPublicId,
+  readPublicationObject
+} from "../../../../lib/publication";
 
-interface RouteContext {
-  readonly params: Promise<{ readonly worldId: string }>;
-}
+export const dynamic = "force-dynamic";
 
 export async function GET(
   _request: Request,
-  context: RouteContext
+  { params }: { readonly params: Promise<{ worldId: string }> }
 ): Promise<Response> {
-  const { worldId } = await context.params;
-  if (worldId !== MILESTONE_ZERO_WORLD.world_id) {
-    return Response.json({ error: "not_found" }, { status: 404 });
-  }
-
-  const object = await readSyntheticPointer();
-  if (!object.ok)
-    return Response.json({ error: "unavailable" }, { status: 503 });
-
-  return new Response(await object.arrayBuffer(), {
-    headers: {
-      "cache-control": CURRENT_CACHE_CONTROL,
-      "content-type": "application/json; charset=utf-8",
-      etag: object.headers.get("etag") ?? '"m0-current"'
+  try {
+    const { worldId } = await params;
+    assertPublicId(worldId);
+    const object = await readPublicationObject(currentKey(worldId));
+    if (object.status !== 200 || object.body === null) {
+      return new Response(null, { status: object.status });
     }
-  });
+    return new Response(object.body, {
+      headers: {
+        "cache-control": CURRENT_CACHE_CONTROL,
+        "content-type": "application/json; charset=utf-8",
+        ...(object.etag ? { etag: object.etag } : {})
+      }
+    });
+  } catch {
+    return new Response(null, { status: 404 });
+  }
 }

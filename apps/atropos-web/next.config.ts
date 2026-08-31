@@ -1,7 +1,12 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  transpilePackages: ["@moirai/contracts"],
+  agentRules: false,
+  transpilePackages: [
+    "@moirai/contracts",
+    "@moirai/projections",
+    "@moirai/publication"
+  ],
   async rewrites() {
     return [{ source: "/__status", destination: "/status-public" }];
   }

@@ -1,29 +1,28 @@
+import {
+  SYNTHETIC_FIXTURE,
+  type PublicationPointer
+} from "../packages/contracts/src/index.js";
+
 interface HealthPayload {
   readonly status: string;
   readonly commit_sha: string;
 }
 
-export {};
-
 interface StatusPayload {
   readonly application: { readonly commit_sha: string };
   readonly synthetic_world: {
     readonly world_id: string;
+    readonly canon_id: string;
+    readonly event_id: string;
     readonly current_revision: number;
+    readonly publication_target_revision: number;
     readonly served_revision: number;
     readonly projection_status: string;
   };
 }
 
-interface PublicationPointer {
-  readonly world_id: string;
-  readonly served_revision: number;
-  readonly manifest_key: string;
-}
-
 const baseUrl = process.env.PUBLIC_INTEGRATION_URL;
 const expectedSha = process.env.EXPECTED_COMMIT_SHA;
-
 if (!baseUrl || !expectedSha) {
   throw new Error(
     "PUBLIC_INTEGRATION_URL and EXPECTED_COMMIT_SHA are required"
@@ -40,13 +39,6 @@ async function fetchJson<T>(path: string): Promise<T> {
 }
 
 async function verify(): Promise<void> {
-  const page = await fetch(new URL("/", baseUrl), {
-    signal: AbortSignal.timeout(10_000)
-  });
-  if (!page.ok || !(await page.text()).includes("Atropos")) {
-    throw new Error("Atropos placeholder is unavailable");
-  }
-
   const health = await fetchJson<HealthPayload>("/health");
   const status = await fetchJson<StatusPayload>("/__status");
   if (health.status !== "ok") throw new Error("health is not ok");
@@ -56,64 +48,80 @@ async function verify(): Promise<void> {
   ) {
     throw new Error("deployed commit does not match the expected commit");
   }
+  const fixture = status.synthetic_world;
   if (
-    status.synthetic_world.world_id !== "world_m0_synthetic" ||
-    status.synthetic_world.current_revision !== 0 ||
-    status.synthetic_world.served_revision !== 0 ||
-    status.synthetic_world.projection_status !== "ready"
+    fixture.world_id !== SYNTHETIC_FIXTURE.worldId ||
+    fixture.canon_id !== SYNTHETIC_FIXTURE.canonId ||
+    fixture.event_id !== SYNTHETIC_FIXTURE.eventId ||
+    fixture.current_revision !== 1 ||
+    fixture.publication_target_revision !== 1 ||
+    fixture.served_revision !== 1 ||
+    fixture.projection_status !== "ready"
   ) {
-    throw new Error("synthetic World status is invalid");
+    throw new Error("synthetic Change Set has not reached the served Revision");
   }
 
-  const revision = await fetch(
-    new URL("/worlds/world_m0_synthetic/revisions/0/snapshot.json", baseUrl),
-    { signal: AbortSignal.timeout(10_000) }
-  );
-  if (!revision.ok) throw new Error(`revision returned ${revision.status}`);
-  if (!revision.headers.get("etag"))
-    throw new Error("revision ETag is missing");
+  const eventPath = `/worlds/${fixture.world_id}/canons/${fixture.canon_id}/events/${fixture.event_id}`;
+  const eventPage = await fetch(new URL(eventPath, baseUrl), {
+    signal: AbortSignal.timeout(10_000)
+  });
+  const eventHtml = await eventPage.text();
+  if (
+    !eventPage.ok ||
+    !eventHtml.includes(SYNTHETIC_FIXTURE.eventTitle) ||
+    !eventHtml.includes("Revision 1")
+  ) {
+    throw new Error("public Event route is unavailable or mixed");
+  }
+
+  const revisionPath = `/worlds/${fixture.world_id}/revisions/1/events/${fixture.event_id}.json`;
+  const revision = await fetch(new URL(revisionPath, baseUrl), {
+    signal: AbortSignal.timeout(10_000)
+  });
+  if (!revision.ok || !revision.headers.get("etag"))
+    throw new Error("immutable Event document is unavailable");
   if (!revision.headers.get("cache-control")?.includes("immutable")) {
     throw new Error("revision cache policy is not immutable");
   }
-  const snapshot = (await revision.json()) as {
-    readonly world?: { readonly world_id?: string };
+  const eventDocument = (await revision.json()) as {
+    readonly served_revision: number;
+    readonly event?: { readonly id?: string };
   };
-  if (snapshot.world?.world_id !== "world_m0_synthetic") {
-    throw new Error("revision-pinned snapshot is invalid");
+  if (
+    eventDocument.served_revision !== 1 ||
+    eventDocument.event?.id !== fixture.event_id
+  ) {
+    throw new Error("revision-pinned Event document is invalid");
   }
 
-  const cachedRevision = await fetch(
-    new URL("/worlds/world_m0_synthetic/revisions/0/snapshot.json", baseUrl),
-    { signal: AbortSignal.timeout(10_000) }
-  );
-  if (!cachedRevision.ok) {
-    throw new Error(`cached revision returned ${cachedRevision.status}`);
-  }
-  const cacheState = cachedRevision.headers.get("x-cache");
-  if (cacheState !== "HIT" && cacheState !== "STALE") {
+  const cached = await fetch(new URL(revisionPath, baseUrl), {
+    signal: AbortSignal.timeout(10_000)
+  });
+  const cacheState = cached.headers.get("x-cache");
+  if (
+    !cached.ok ||
+    (cacheState !== "HIT" && cacheState !== "STALE") ||
+    !cached.headers.has("age")
+  ) {
     throw new Error(`revision CDN cache did not hit (x-cache=${cacheState})`);
   }
-  if (!cachedRevision.headers.has("age")) {
-    throw new Error("revision CDN cache age is missing");
-  }
-  await cachedRevision.body?.cancel();
+  await cached.body?.cancel();
 
-  const currentResponse = await fetch(
-    new URL("/worlds/world_m0_synthetic/current.json", baseUrl),
+  const pointerResponse = await fetch(
+    new URL(`/worlds/${fixture.world_id}/current.json`, baseUrl),
     { signal: AbortSignal.timeout(10_000) }
   );
-  if (!currentResponse.ok) {
-    throw new Error(`current pointer returned ${currentResponse.status}`);
+  if (!pointerResponse.ok || !pointerResponse.headers.get("etag")) {
+    throw new Error("served pointer is unavailable");
   }
-  if (!currentResponse.headers.get("etag")) {
-    throw new Error("current pointer ETag is missing");
-  }
-  const current = (await currentResponse.json()) as PublicationPointer;
+  const pointer = (await pointerResponse.json()) as PublicationPointer;
   if (
-    current.world_id !== "world_m0_synthetic" ||
-    current.served_revision !== 0 ||
-    current.manifest_key !==
-      "worlds/world_m0_synthetic/revisions/0/manifest.json"
+    pointer.world_id !== fixture.world_id ||
+    pointer.current_revision !== 1 ||
+    pointer.publication_target_revision !== 1 ||
+    pointer.served_revision !== 1 ||
+    pointer.manifest_key !==
+      `worlds/${fixture.world_id}/revisions/1/manifest.json`
   ) {
     throw new Error("served pointer is invalid");
   }
@@ -124,14 +132,13 @@ let lastError: unknown;
 while (Date.now() < deadline) {
   try {
     await verify();
-    process.stdout.write("post-deploy synthetic smoke passed\n");
+    process.stdout.write("post-deploy synthetic Change Set smoke passed\n");
     process.exit(0);
   } catch (error) {
     lastError = error;
     await new Promise((resolve) => setTimeout(resolve, 10_000));
   }
 }
-
 throw lastError instanceof Error
   ? lastError
   : new Error("post-deploy smoke timed out");

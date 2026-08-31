@@ -1,27 +1,138 @@
-export const CONTRACT_VERSION = "0.1.0";
-export const SCHEMA_VERSION = "0.0.1";
-export const PUBLICATION_FORMAT_VERSION = "0.1.0";
+export const CONTRACT_VERSION = "0.2.0";
+export const SCHEMA_VERSION = "0.1.0";
+export const PUBLICATION_FORMAT_VERSION = "0.2.0";
 
+export const SYNTHETIC_FIXTURE = Object.freeze({
+  changeSetId: "01995c2a-7b00-7000-8000-000000000004",
+  worldId: "01995c2a-7b00-7000-8000-000000000001",
+  canonId: "01995c2a-7b00-7000-8000-000000000002",
+  eventId: "01995c2a-7b00-7000-8000-000000000003",
+  worldTitle: "The Lantern Archive",
+  canonTitle: "Ember Canon",
+  eventTitle: "The first lantern is lit"
+});
+
+export type EntityType = "world" | "canon" | "event";
 export type ProjectionStatus = "ready" | "building" | "failed";
 export type SmokeResult = "passed" | "failed" | "running" | "unknown";
 
-export interface SyntheticWorldFixture {
+interface CreateOperationBase {
+  readonly kind: "create";
+  readonly entity_id: string;
+}
+
+export interface CreateWorldOperation extends CreateOperationBase {
+  readonly entity_type: "world";
+  readonly value: {
+    readonly slug: string;
+    readonly title: string;
+    readonly description?: string | null;
+  };
+}
+
+export interface CreateCanonOperation extends CreateOperationBase {
+  readonly entity_type: "canon";
+  readonly value: {
+    readonly world_id: string;
+    readonly slug: string;
+    readonly title: string;
+    readonly description?: string | null;
+  };
+}
+
+export interface CreateEventOperation extends CreateOperationBase {
+  readonly entity_type: "event";
+  readonly value: {
+    readonly canon_id: string;
+    readonly slug?: string | null;
+    readonly kind: "atomic" | "composite";
+    readonly title: string;
+    readonly summary?: string | null;
+    readonly roles: readonly string[];
+    readonly attributes: Readonly<Record<string, unknown>>;
+  };
+}
+
+export type CreateOperation =
+  CreateWorldOperation | CreateCanonOperation | CreateEventOperation;
+
+export interface CreateChangeSet {
+  readonly contract_version: typeof CONTRACT_VERSION;
+  readonly change_set_id: string;
   readonly world_id: string;
-  readonly label: string;
+  readonly expected_revision: number;
+  readonly actor: string;
+  readonly intent: string;
+  readonly operations: readonly CreateOperation[];
+  readonly origins: readonly {
+    readonly kind:
+      | "source_explicit"
+      | "human_instruction"
+      | "llm_inference"
+      | "system_derived";
+    readonly summary: string;
+  }[];
+}
+
+export interface CommitResult {
+  readonly change_set_id: string;
+  readonly world_id: string;
   readonly current_revision: number;
   readonly publication_target_revision: number;
   readonly served_revision: number;
-  readonly projection_status: ProjectionStatus;
+  readonly idempotent_replay: boolean;
 }
 
-export const MILESTONE_ZERO_WORLD: SyntheticWorldFixture = Object.freeze({
-  world_id: "world_m0_synthetic",
-  label: "Milestone 0 synthetic World",
-  current_revision: 0,
-  publication_target_revision: 0,
-  served_revision: 0,
-  projection_status: "ready"
-});
+export interface PublicWorld {
+  readonly id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly description: string | null;
+}
+
+export interface PublicCanon {
+  readonly id: string;
+  readonly world_id: string;
+  readonly slug: string;
+  readonly title: string;
+  readonly description: string | null;
+}
+
+export interface PublicEvent {
+  readonly id: string;
+  readonly canon_id: string;
+  readonly slug: string | null;
+  readonly kind: "atomic" | "composite";
+  readonly title: string;
+  readonly summary: string | null;
+  readonly roles: readonly string[];
+  readonly attributes: Readonly<Record<string, unknown>>;
+}
+
+export interface PublicationPointer {
+  readonly world_id: string;
+  readonly served_revision: number;
+  readonly current_revision: number;
+  readonly publication_target_revision: number;
+  readonly projection_status: "ready";
+  readonly manifest_key: string;
+  readonly format_version: string;
+  readonly generated_at: string;
+}
+
+export interface PublicationManifest {
+  readonly world_id: string;
+  readonly served_revision: number;
+  readonly format_version: string;
+  readonly generated_at: string;
+  readonly algorithms: { readonly canonical: string };
+  readonly documents: readonly {
+    readonly key: string;
+    readonly media_type: "application/json";
+    readonly sha256: string;
+  }[];
+  readonly completeness: "complete";
+}
 
 export interface HealthResponse {
   readonly status: "ok" | "not_ready";
@@ -37,13 +148,22 @@ export const HEALTH_RESPONSE_SCHEMA = {
   required: ["status", "service", "version", "commit_sha"],
   properties: {
     status: { enum: ["ok", "not_ready"] },
-    service: {
-      enum: ["atropos-web", "lachesis-api", "lachesis-worker"]
-    },
+    service: { enum: ["atropos-web", "lachesis-api", "lachesis-worker"] },
     version: { type: "string", minLength: 1 },
     commit_sha: { type: "string", minLength: 1 }
   }
 } as const;
+
+export interface SyntheticWorldStatus {
+  readonly world_id: string;
+  readonly canon_id: string;
+  readonly event_id: string;
+  readonly label: string;
+  readonly current_revision: number;
+  readonly publication_target_revision: number;
+  readonly served_revision: number;
+  readonly projection_status: ProjectionStatus;
+}
 
 export interface PublicStatusResponse {
   readonly application: {
@@ -57,7 +177,7 @@ export interface PublicStatusResponse {
     readonly schema: string;
     readonly publication_format: string;
   };
-  readonly synthetic_world: SyntheticWorldFixture;
+  readonly synthetic_world: SyntheticWorldStatus;
   readonly smoke: {
     readonly result: SmokeResult;
     readonly checked_at: string | null;

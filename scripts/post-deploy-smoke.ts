@@ -66,10 +66,11 @@ async function verify(): Promise<void> {
     signal: AbortSignal.timeout(10_000)
   });
   const eventHtml = await eventPage.text();
+  const readableEventHtml = eventHtml.replace(/<!--.*?-->/g, "");
   if (
     !eventPage.ok ||
-    !eventHtml.includes(SYNTHETIC_FIXTURE.eventTitle) ||
-    !eventHtml.includes("Revision 1")
+    !readableEventHtml.includes(SYNTHETIC_FIXTURE.eventTitle) ||
+    !readableEventHtml.includes("Revision 1")
   ) {
     throw new Error("public Event route is unavailable or mixed");
   }

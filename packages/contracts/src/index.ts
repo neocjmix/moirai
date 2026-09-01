@@ -1,6 +1,6 @@
-export const CONTRACT_VERSION = "0.3.0";
-export const SCHEMA_VERSION = "0.2.0";
-export const PUBLICATION_FORMAT_VERSION = "0.3.0";
+import type { CONTRACT_VERSION } from "./versions.js";
+export * from "./versions.js";
+export * from "./clotho.js";
 
 export const SYNTHETIC_FIXTURE = Object.freeze({
   changeSetId: "01995c2a-7b00-7000-8000-000000000004",
@@ -43,6 +43,10 @@ interface CreateOperationBase {
   readonly kind: "create";
   readonly entity_id?: string;
   readonly client_ref?: string;
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
 }
 
 export interface CreateWorldOperation extends CreateOperationBase {

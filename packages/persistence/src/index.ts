@@ -30,6 +30,7 @@ import {
 } from "kysely";
 import { createHash, randomBytes } from "node:crypto";
 import pg from "pg";
+export { queryClotho } from "./clotho-query.js";
 
 interface RevisionFields {
   created_revision: number;
@@ -148,6 +149,9 @@ interface ChangeOperationTable {
   operation_kind: string;
   before: JSONColumnType<Record<string, unknown>> | null;
   after: JSONColumnType<Record<string, unknown>> | null;
+  origin_refs: JSONColumnType<
+    NonNullable<ResolvedCreateOperation["origin_refs"]>
+  >;
 }
 
 interface WorldRevisionTable {
@@ -237,7 +241,7 @@ function uuidV7(now = Date.now()): string {
   return `${hex.slice(0, 8)}-${hex.slice(8, 12)}-${hex.slice(12, 16)}-${hex.slice(16, 20)}-${hex.slice(20)}`;
 }
 
-function digest(input: CreateChangeSet): string {
+export function changeSetDigest(input: CreateChangeSet): string {
   return createHash("sha256").update(stableStringify(input)).digest("hex");
 }
 
@@ -556,7 +560,7 @@ export async function commitCreateChangeSet(
   input: CreateChangeSet
 ): Promise<CommitResult> {
   validateCreateChangeSet(input);
-  const requestDigest = digest(input);
+  const requestDigest = changeSetDigest(input);
   return db.transaction().execute(async (transaction) => {
     await sql`select pg_advisory_xact_lock(hashtextextended(${input.world_id}, 0))`.execute(
       transaction
@@ -664,7 +668,8 @@ export async function commitCreateChangeSet(
           entity_id: operation.entity_id,
           operation_kind: operation.kind,
           before: null,
-          after: JSON.stringify(publicRecord(operation))
+          after: JSON.stringify(publicRecord(operation)),
+          origin_refs: JSON.stringify(operation.origin_refs ?? [])
         })
         .execute();
     }
@@ -712,6 +717,49 @@ export async function commitCreateChangeSet(
       .execute();
     return result;
   });
+}
+
+export async function validateChangePlan(
+  db: MoiraiDatabase,
+  input: CreateChangeSet
+) {
+  validateCreateChangeSet(input);
+  return db
+    .transaction()
+    .setIsolationLevel("repeatable read")
+    .execute(async (transaction) => {
+      const row = await transaction
+        .selectFrom("worlds")
+        .selectAll()
+        .where("id", "=", input.world_id)
+        .executeTakeFirst();
+      const revision = row?.current_revision ?? 0;
+      if (revision !== input.expected_revision) {
+        throw new ChangeSetError(
+          "revision_conflict",
+          "expected_revision",
+          "Refresh World context before retrying",
+          [input.world_id],
+          true,
+          { action: "refresh_context", current_revision: revision }
+        );
+      }
+      const existing = await loadCurrentState(transaction, row);
+      const { operations, idMapping } = resolveCreateOperations(input, () =>
+        uuidV7()
+      );
+      const warnings = validateCandidateChangeSet(input, operations, existing);
+      return {
+        valid: true,
+        source_revision: revision,
+        plan_digest: changeSetDigest(input),
+        operations,
+        id_mapping: idMapping,
+        affected_ids: operations.map((op) => op.entity_id),
+        errors: [],
+        warnings
+      };
+    });
 }
 
 export async function readWorldAtRevision(

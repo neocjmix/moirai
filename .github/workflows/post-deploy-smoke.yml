@@ -21,8 +21,13 @@ concurrency:
 jobs:
   smoke:
     if: >-
-      github.event_name == 'workflow_dispatch' ||
-      github.event.workflow_run.conclusion == 'success'
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref == 'refs/heads/main' && inputs.expected_commit_sha == github.sha) ||
+      (github.event_name == 'workflow_run' &&
+       github.event.workflow_run.event == 'push' &&
+       github.event.workflow_run.head_repository.full_name == github.repository &&
+       github.event.workflow_run.head_branch == 'main' &&
+       github.event.workflow_run.conclusion == 'success')
     runs-on: ubuntu-latest
     env:
       PUBLIC_INTEGRATION_URL: >-
@@ -42,3 +47,10 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Verify public deployment and synthetic fixture
         run: pnpm smoke
+      - name: Build Clotho CLI
+        run: pnpm --filter @moirai/clotho... build
+      - name: Verify authenticated authoring to public Atropos
+        env:
+          CLOTHO_API_URL: ${{ vars.CLOTHO_API_URL }}
+          CLOTHO_TOKEN: ${{ secrets.CLOTHO_TOKEN }}
+        run: pnpm exec tsx scripts/clotho-smoke.ts

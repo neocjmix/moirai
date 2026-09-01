@@ -1,3 +1,3 @@
-# Clotho module boundary
+# Clotho
 
-TS-001의 Clotho skill 위치를 예약한다. Milestone 0에서는 skill, command contract 또는 write 기능을 구현하지 않는다.
+실행 및 안전 규칙은 [SKILL.md](SKILL.md)를 따른다. `pnpm --filter @moirai/clotho build` 후 `node skills/clotho/dist/cli.js schema world.list`로 JSON 계약을 조회할 수 있다.

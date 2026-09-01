@@ -1,4 +1,7 @@
+import { parseCredentials, type Credential } from "./auth.js";
+
 export interface RuntimeConfig {
+  readonly credentials?: readonly Credential[];
   readonly appVersion: string;
   readonly commitSha: string;
   readonly databaseUrl: string;
@@ -12,6 +15,7 @@ export function loadConfig(environment: NodeJS.ProcessEnv): RuntimeConfig {
   }
 
   return {
+    credentials: parseCredentials(environment.CLOTHO_CREDENTIALS_JSON),
     appVersion: environment.APP_VERSION ?? "0.0.0-dev",
     commitSha:
       environment.DEPLOY_COMMIT_SHA ??

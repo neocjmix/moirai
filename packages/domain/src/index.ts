@@ -131,6 +131,20 @@ export function validateCreateChangeSet(input: CreateChangeSet): void {
   const clientRefs = new Set<string>();
   for (const [index, operation] of input.operations.entries()) {
     const path = `operations.${index}`;
+    for (const ref of operation.origin_refs ?? []) {
+      if (
+        !Number.isInteger(ref.origin_index) ||
+        ref.origin_index < 0 ||
+        !input.origins[ref.origin_index] ||
+        (ref.field !== "*" && !Object.hasOwn(operation.value, ref.field))
+      ) {
+        fail(
+          "invalid_origin_reference",
+          `${path}.origin_refs`,
+          "Origin must reference a supplied origin and changed field"
+        );
+      }
+    }
     if (!operation.entity_id && !operation.client_ref) {
       fail(
         "operation_target_required",

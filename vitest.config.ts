@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@moirai/persistence": fileURLToPath(
+        new URL("./packages/persistence/src/index.ts", import.meta.url)
+      ),
       "@moirai/contracts": fileURLToPath(
         new URL("./packages/contracts/src/index.ts", import.meta.url)
       ),
@@ -19,7 +22,11 @@ export default defineConfig({
     }
   },
   test: {
-    include: ["apps/**/*.test.ts", "packages/**/*.test.ts"],
+    include: [
+      "apps/**/*.test.ts",
+      "packages/**/*.test.ts",
+      "skills/**/*.test.ts"
+    ],
     exclude: ["**/*.integration.test.ts", "**/node_modules/**"],
     coverage: {
       provider: "v8",

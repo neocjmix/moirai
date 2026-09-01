@@ -7,12 +7,28 @@ import {
 import Fastify, { type FastifyInstance } from "fastify";
 
 import type { RuntimeConfig } from "./config.js";
+import { databaseExecutor, registerClotho } from "./clotho.js";
 
 export function buildApp(
   config: RuntimeConfig,
   database: MoiraiDatabase = createDatabase(config.databaseUrl)
 ): FastifyInstance {
-  const app = Fastify({ logger: true });
+  const app = Fastify({
+    logger: true,
+    disableRequestLogging: true,
+    ajv: { customOptions: { removeAdditional: false, coerceTypes: false } }
+  });
+  registerClotho(app, config.credentials ?? [], databaseExecutor(database));
+  app.addHook("onResponse", async (request, reply) => {
+    app.log.info(
+      {
+        route: request.routeOptions.url,
+        status: reply.statusCode,
+        elapsed_ms: reply.elapsedTime
+      },
+      "request completed"
+    );
+  });
 
   app.get(
     "/health/live",

@@ -5,9 +5,9 @@
 | 항목 | 현재 값 |
 |---|---|
 | 기준 계획 | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md) |
-| 실행 상태 | `complete` — Milestone 2 종료조건 충족 |
-| 활성 milestone | 없음 |
-| 활성 slice | 없음 — Milestone 3 미착수 |
+| 실행 상태 | `active` |
+| 활성 milestone | Milestone 3 — Clotho 최소 작성 |
+| 활성 slice | 인증된 query·validate·commit, Clotho CLI와 작성 지침; 합성 Change→Publication 검증 |
 | 완료 milestone | Milestone 0 — 전달·관측·보안 기반; Milestone 1 — 최초 vertical slice; Milestone 2 — 세계 확장 |
 | Milestone 0 구현 commit | `d76932bcbe09c9c04af8cc3c2591f180e4426057` |
 | Milestone 1 구현 commit | `7eb605a0c45f96643a7c5b2fb21b6efa89867570` |
@@ -23,4 +23,4 @@
 
 공개 Atropos에서 Narrative·시간·Relation 이동과 검색을 확인했다. revision-pinned Event/search JSON은 ETag·immutable cache·CDN HIT/Age를 제공하며, projection allowlist와 private synthetic marker 비노출 검증을 통과했다. 모바일 흐름은 CI WebKit으로 검증했으며 실제 iPhone 기기 검증과 이번 배포의 rollback 실연은 수행하지 않았다.
 
-slice 계약과 rollback 단위는 [M2-WORLD-EXPANSION](M2-WORLD-EXPANSION.md)에 둔다. 기존 Moirai Railway 자원만 사용했으며 URDR 저장소와 인프라 구성은 이번 slice에서 수정하지 않았다. 다음 최소 작업은 별도 활성화 후 IP-001 Milestone 3 — Clotho 최소 작성이다. Raw log, command history, secret과 환경 변수는 기록하지 않는다.
+Milestone 3은 아직 완료되지 않았다. [M3-CLOTHO](M3-CLOTHO.md)의 범위로 진행한다. 사용자는 기존 Railway Lachesis의 인증 필수 HTTPS endpoint와 회수 가능한 world:read/world:write credential 발급·비밀 저장소 보관을 승인했다. Credential 값은 기록하지 않는다. Milestone 4 이후는 미착수다.

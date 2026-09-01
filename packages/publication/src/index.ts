@@ -91,7 +91,8 @@ export function buildPublicationArtifacts(
     served_revision: revision,
     format_version: PUBLICATION_FORMAT_VERSION,
     generated_at: generatedAt,
-    algorithms: { canonical: "m1-v1" },
+    algorithms: { canonical: "m2-v1", search: "m2-text-v1" },
+    locales: ["en"],
     documents: documents.map(({ key, body }) => ({
       key,
       media_type: "application/json",

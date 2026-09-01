@@ -22,7 +22,7 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.eventTitle })
   ).toBeVisible();
-  await expect(page.getByText("Revision 1")).toBeVisible();
+  await expect(page.getByText("Revision 2")).toBeVisible();
 
   const detailToggle = page.getByRole("button", {
     name: /사건 상세 전체 화면/
@@ -35,6 +35,24 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   const statusToggle = page.getByRole("button", { name: /Atropos/ });
   await statusToggle.click();
   await expect(page.getByText("Immutable Snapshot")).toBeVisible();
+  await statusToggle.click();
+  await page
+    .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.secondEventTitle) })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: SYNTHETIC_FIXTURE.secondEventTitle })
+  ).toBeVisible();
+  await expect(page.getByText("An answer in the east")).toBeVisible();
+  await expect(page.getByText("Second bell")).toBeVisible();
+
+  await page.goto(
+    `/worlds/${SYNTHETIC_FIXTURE.worldId}/search?q=acknowledgement`
+  );
+  await expect(
+    page.getByRole("link", {
+      name: new RegExp(SYNTHETIC_FIXTURE.secondEventTitle)
+    })
+  ).toBeVisible();
 });
 
 test("health, status and immutable Event document expose allowlisted metadata", async ({
@@ -54,20 +72,22 @@ test("health, status and immutable Event document expose allowlisted metadata", 
   expect(await status.json()).toMatchObject({
     synthetic_world: {
       world_id: SYNTHETIC_FIXTURE.worldId,
-      current_revision: 1,
-      publication_target_revision: 1,
-      served_revision: 1,
+      current_revision: 2,
+      publication_target_revision: 2,
+      served_revision: 2,
       projection_status: "ready"
     }
   });
 
   const document = await request.get(
-    `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/1/events/${SYNTHETIC_FIXTURE.eventId}.json`
+    `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/events/${SYNTHETIC_FIXTURE.eventId}.json`
   );
   expect(document.ok()).toBe(true);
   expect(document.headers()["cache-control"]).toContain("immutable");
-  expect(await document.json()).toMatchObject({
-    served_revision: 1,
+  const payload = await document.json();
+  expect(payload).toMatchObject({
+    served_revision: 2,
     event: { id: SYNTHETIC_FIXTURE.eventId }
   });
+  expect(JSON.stringify(payload)).not.toContain("private-synthetic");
 });

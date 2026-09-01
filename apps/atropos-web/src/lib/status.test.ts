@@ -25,9 +25,9 @@ describe("public status allowlist", () => {
     );
     const status = await getPublicStatus();
     expect(status.synthetic_world).toMatchObject({
-      current_revision: 1,
-      publication_target_revision: 1,
-      served_revision: 1,
+      current_revision: 2,
+      publication_target_revision: 2,
+      served_revision: 2,
       projection_status: "ready"
     });
     expect(JSON.stringify(status)).not.toContain(

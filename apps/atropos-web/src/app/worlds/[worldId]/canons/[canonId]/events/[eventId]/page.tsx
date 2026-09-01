@@ -4,7 +4,8 @@ import { StatusIsland } from "../../../../../../../components/status-island";
 import {
   readCanon,
   readEvent,
-  readWorld
+  readWorld,
+  selectPublication
 } from "../../../../../../../lib/publication";
 
 export const dynamic = "force-dynamic";
@@ -20,10 +21,23 @@ export default async function EventPage({
 }) {
   const { worldId, canonId, eventId } = await params;
   try {
-    const [{ world }, { canon }, { event, pointer }] = await Promise.all([
-      readWorld(worldId),
-      readCanon(worldId, canonId),
-      readEvent(worldId, canonId, eventId)
+    const selected = await selectPublication(worldId);
+    const [
+      { world },
+      { canon },
+      {
+        event,
+        pointer,
+        narratives,
+        temporalPlacements,
+        timeSystems,
+        relations,
+        relatedEvents
+      }
+    ] = await Promise.all([
+      readWorld(worldId, selected),
+      readCanon(worldId, canonId, selected),
+      readEvent(worldId, canonId, eventId, selected)
     ]);
     return (
       <main className="event-canvas">
@@ -47,6 +61,14 @@ export default async function EventPage({
           summary={event.summary}
           kind={event.kind}
           revision={pointer.served_revision}
+          worldId={worldId}
+          canonId={canonId}
+          eventId={eventId}
+          narratives={narratives}
+          temporalPlacements={temporalPlacements}
+          timeSystems={timeSystems}
+          relations={relations}
+          relatedEvents={relatedEvents}
         />
       </main>
     );

@@ -23,6 +23,9 @@ export default async function WorldPage({
           <p className="eyebrow">WORLD · REVISION {pointer.served_revision}</p>
           <h1>{world.title}</h1>
           <p>{world.description}</p>
+          <a className="text-action" href={`/worlds/${world.id}/search`}>
+            공개 문서 검색 →
+          </a>
         </section>
         <section className="card-dock" aria-labelledby="canons-title">
           <p className="eyebrow" id="canons-title">

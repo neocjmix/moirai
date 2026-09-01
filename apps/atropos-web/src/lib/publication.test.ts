@@ -15,10 +15,12 @@ describe("Atropos Revision-pinned reader", () => {
       SYNTHETIC_FIXTURE.canonId,
       SYNTHETIC_FIXTURE.eventId
     );
-    expect(world.pointer.served_revision).toBe(1);
-    expect(canon.pointer.served_revision).toBe(1);
-    expect(event.pointer.served_revision).toBe(1);
+    expect(world.pointer.served_revision).toBe(2);
+    expect(canon.pointer.served_revision).toBe(2);
+    expect(event.pointer.served_revision).toBe(2);
     expect(event.event.title).toBe(SYNTHETIC_FIXTURE.eventTitle);
+    expect(event.relations).toHaveLength(1);
+    expect(event.temporalPlacements).toHaveLength(1);
   });
 
   it("rejects path-like public identifiers", () => {

@@ -7,13 +7,18 @@ import {
   type CreateChangeSet
 } from "./index.js";
 
-describe("Milestone 1 contracts", () => {
+describe("Milestone 2 contracts", () => {
   it("uses stable opaque UUIDv7 fixture identifiers", () => {
     for (const id of [
       SYNTHETIC_FIXTURE.worldId,
       SYNTHETIC_FIXTURE.canonId,
       SYNTHETIC_FIXTURE.eventId,
-      SYNTHETIC_FIXTURE.changeSetId
+      SYNTHETIC_FIXTURE.changeSetId,
+      SYNTHETIC_FIXTURE.expansionChangeSetId,
+      SYNTHETIC_FIXTURE.timeSystemId,
+      SYNTHETIC_FIXTURE.secondEventId,
+      SYNTHETIC_FIXTURE.causalRelationId,
+      SYNTHETIC_FIXTURE.canonNarrativeId
     ]) {
       expect(id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/

@@ -1,6 +1,11 @@
 import { notFound } from "next/navigation";
+import Markdown from "react-markdown";
 import { StatusIsland } from "../../../../../components/status-island";
-import { readCanon, readWorld } from "../../../../../lib/publication";
+import {
+  readCanon,
+  readWorld,
+  selectPublication
+} from "../../../../../lib/publication";
 
 export const dynamic = "force-dynamic";
 
@@ -11,10 +16,12 @@ export default async function CanonPage({
 }) {
   const { worldId, canonId } = await params;
   try {
-    const [{ world }, { canon, events, pointer }] = await Promise.all([
-      readWorld(worldId),
-      readCanon(worldId, canonId)
-    ]);
+    const selected = await selectPublication(worldId);
+    const [{ world }, { canon, events, narratives, pointer }] =
+      await Promise.all([
+        readWorld(worldId, selected),
+        readCanon(worldId, canonId, selected)
+      ]);
     return (
       <main className="world-canvas">
         <StatusIsland
@@ -33,6 +40,26 @@ export default async function CanonPage({
           <p className="eyebrow">CANON · REVISION {pointer.served_revision}</p>
           <h1>{canon.title}</h1>
           <p>{canon.description}</p>
+          {narratives.map((narrative) => (
+            <div className="canon-narrative" key={narrative.id}>
+              {narrative.title ? <h2>{narrative.title}</h2> : null}
+              <Markdown skipHtml>{narrative.body}</Markdown>
+              {narrative.public_references.length > 0 ? (
+                <ul className="public-references">
+                  {narrative.public_references.map((reference) => (
+                    <li key={reference.url}>
+                      <a href={reference.url} rel="noreferrer" target="_blank">
+                        {reference.label}
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
+            </div>
+          ))}
+          <a className="text-action" href={`/worlds/${worldId}/search`}>
+            이 World 검색 →
+          </a>
         </section>
         <section className="card-dock" aria-labelledby="events-title">
           <p className="eyebrow" id="events-title">

@@ -63,7 +63,12 @@ const view = {
       roles: [],
       attributes: {}
     }
-  ]
+  ],
+  timeSystems: [],
+  canonTimeSystems: [],
+  temporalPlacements: [],
+  relations: [],
+  narratives: []
 };
 
 describe("Publication artifact contract", () => {

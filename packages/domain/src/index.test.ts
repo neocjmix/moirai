@@ -7,7 +7,9 @@ import { describe, expect, it } from "vitest";
 
 import {
   ChangeSetError,
+  resolveCreateOperations,
   stableStringify,
+  validateCandidateChangeSet,
   validateCreateChangeSet
 } from "./index.js";
 
@@ -60,13 +62,64 @@ describe("create Change Set validation", () => {
     expect(() => validateCreateChangeSet(fixture())).not.toThrow();
   });
 
-  it("rejects a partial Event reference before persistence", () => {
+  it("rejects a partial Event reference with a stable error", () => {
     const input = fixture();
     const invalid = {
       ...input,
       operations: [input.operations[0]!, input.operations[2]!]
     };
-    expect(() => validateCreateChangeSet(invalid)).toThrowError(ChangeSetError);
+    const resolved = resolveCreateOperations(invalid, () => {
+      throw new Error("unexpected generated ID");
+    });
+    const emptyState = {
+      world: null,
+      canons: [],
+      timeSystems: [],
+      canonTimeSystems: [],
+      events: [],
+      temporalPlacements: [],
+      relations: [],
+      narratives: []
+    };
+    expect(() =>
+      validateCandidateChangeSet(invalid, resolved.operations, emptyState)
+    ).toThrowError(ChangeSetError);
+    try {
+      validateCandidateChangeSet(invalid, resolved.operations, emptyState);
+    } catch (error) {
+      expect(error).toMatchObject({
+        code: "dangling_reference",
+        path: "operations.1.value.canon_id",
+        retryable: false
+      });
+    }
+  });
+
+  it("resolves earlier client references and returns the ID mapping", () => {
+    const input = fixture();
+    const withClientReference: CreateChangeSet = {
+      ...input,
+      operations: input.operations.map((operation, index) =>
+        index === 1
+          ? { ...operation, client_ref: "created-canon" }
+          : index === 2 && operation.entity_type === "event"
+            ? {
+                ...operation,
+                value: {
+                  ...operation.value,
+                  canon_id: { client_ref: "created-canon" }
+                }
+              }
+            : operation
+      )
+    };
+    const resolved = resolveCreateOperations(withClientReference, () => {
+      throw new Error("unexpected generated ID");
+    });
+    expect(resolved.idMapping["created-canon"]).toBe(SYNTHETIC_FIXTURE.canonId);
+    expect(resolved.operations[2]?.value).toMatchObject({
+      canon_id: SYNTHETIC_FIXTURE.canonId
+    });
   });
 
   it("canonicalizes object key order for idempotency digests", () => {

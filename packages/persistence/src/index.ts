@@ -1,15 +1,24 @@
 import type {
   CommitResult,
   CreateChangeSet,
-  CreateOperation,
+  ProjectionStatus,
   PublicCanon,
+  PublicCanonTimeSystem,
   PublicEvent,
+  PublicNarrative,
+  PublicRelation,
+  PublicTemporalPlacement,
+  PublicTimeSystem,
   PublicWorld,
-  ProjectionStatus
+  ValidationIssue
 } from "@moirai/contracts";
 import {
   ChangeSetError,
+  type CanonicalState,
+  type ResolvedCreateOperation,
+  resolveCreateOperations,
   stableStringify,
+  validateCandidateChangeSet,
   validateCreateChangeSet
 } from "@moirai/domain";
 import {
@@ -45,15 +54,75 @@ interface CanonTable extends RevisionFields {
   description: string | null;
 }
 
+interface TimeSystemTable extends RevisionFields {
+  id: string;
+  world_id: string;
+  slug: string;
+  title: string;
+  kind: PublicTimeSystem["kind"];
+  definition_version: string;
+  definition: JSONColumnType<PublicTimeSystem["definition"]>;
+}
+
+interface CanonTimeSystemTable extends RevisionFields {
+  id: string;
+  canon_id: string;
+  time_system_id: string;
+}
+
 interface EventTable extends RevisionFields {
   id: string;
   canon_id: string;
   slug: string | null;
-  kind: "atomic" | "composite";
+  kind: PublicEvent["kind"];
   title: string;
   summary: string | null;
-  roles: JSONColumnType<readonly string[]>;
-  attributes: JSONColumnType<Readonly<Record<string, unknown>>>;
+  roles: JSONColumnType<PublicEvent["roles"]>;
+  attributes: JSONColumnType<PublicEvent["attributes"]>;
+}
+
+interface TemporalPlacementTable extends RevisionFields {
+  id: string;
+  event_id: string;
+  time_system_id: string;
+  kind: PublicTemporalPlacement["kind"];
+  earliest_start: JSONColumnType<PublicTemporalPlacement["earliest_start"]>;
+  latest_start: JSONColumnType<PublicTemporalPlacement["latest_start"]>;
+  earliest_end: JSONColumnType<
+    PublicTemporalPlacement["earliest_end"],
+    string | null,
+    string | null
+  >;
+  latest_end: JSONColumnType<
+    PublicTemporalPlacement["latest_end"],
+    string | null,
+    string | null
+  >;
+  precision: string;
+  certainty: PublicTemporalPlacement["certainty"];
+  display_label: string | null;
+}
+
+interface RelationTable extends RevisionFields {
+  id: string;
+  canon_id: string;
+  type: PublicRelation["type"];
+  source_event_id: string;
+  target_event_id: string;
+  direction: PublicRelation["direction"];
+  attributes: JSONColumnType<PublicRelation["attributes"]>;
+}
+
+interface NarrativeTable extends RevisionFields {
+  id: string;
+  canon_id: string;
+  scope_type: PublicNarrative["scope_type"];
+  scope_id: string;
+  locale: string;
+  kind: PublicNarrative["kind"];
+  title: string | null;
+  body: string;
+  public_references: JSONColumnType<PublicNarrative["public_references"]>;
 }
 
 interface ChangeSetTable {
@@ -64,6 +133,7 @@ interface ChangeSetTable {
   intent: string;
   contract_version: string;
   origins: JSONColumnType<CreateChangeSet["origins"]>;
+  warnings: JSONColumnType<readonly ValidationIssue[]>;
   result: JSONColumnType<CommitResult>;
   committed_at: Generated<Date>;
 }
@@ -77,7 +147,7 @@ interface ChangeOperationTable {
   entity_id: string;
   operation_kind: string;
   before: JSONColumnType<Record<string, unknown>> | null;
-  after: JSONColumnType<PublicWorld | PublicCanon | PublicEvent> | null;
+  after: JSONColumnType<Record<string, unknown>> | null;
 }
 
 interface WorldRevisionTable {
@@ -111,14 +181,15 @@ interface PublicationOutboxTable {
 }
 
 export interface DatabaseSchema {
-  moirai_system_metadata: {
-    key: string;
-    value: string;
-    updated_at: Date;
-  };
+  moirai_system_metadata: { key: string; value: string; updated_at: Date };
   worlds: WorldTable;
   canons: CanonTable;
+  time_systems: TimeSystemTable;
+  canon_time_systems: CanonTimeSystemTable;
   events: EventTable;
+  event_temporal_placements: TemporalPlacementTable;
+  relations: RelationTable;
+  narratives: NarrativeTable;
   change_sets: ChangeSetTable;
   change_operations: ChangeOperationTable;
   world_revisions: WorldRevisionTable;
@@ -128,10 +199,8 @@ export interface DatabaseSchema {
 
 export type MoiraiDatabase = Kysely<DatabaseSchema>;
 
-export interface RevisionView {
+export interface RevisionView extends CanonicalState {
   readonly world: PublicWorld;
-  readonly canons: readonly PublicCanon[];
-  readonly events: readonly PublicEvent[];
   readonly generatedAt: string;
 }
 
@@ -172,79 +241,314 @@ function digest(input: CreateChangeSet): string {
   return createHash("sha256").update(stableStringify(input)).digest("hex");
 }
 
-function publicRecord(
-  operation: CreateOperation
-): PublicWorld | PublicCanon | PublicEvent {
-  if (operation.entity_type === "world") {
-    return {
-      id: operation.entity_id,
-      slug: operation.value.slug,
-      title: operation.value.title,
-      description: operation.value.description ?? null
-    };
-  }
-  if (operation.entity_type === "canon") {
-    return {
-      id: operation.entity_id,
-      world_id: operation.value.world_id,
-      slug: operation.value.slug,
-      title: operation.value.title,
-      description: operation.value.description ?? null
-    };
-  }
+function revisionFields(revision: number): RevisionFields {
   return {
-    id: operation.entity_id,
-    canon_id: operation.value.canon_id,
-    slug: operation.value.slug ?? null,
-    kind: operation.value.kind,
-    title: operation.value.title,
-    summary: operation.value.summary ?? null,
-    roles: operation.value.roles,
-    attributes: operation.value.attributes
+    created_revision: revision,
+    updated_revision: revision,
+    withdrawn_revision: null
   };
+}
+
+function publicRecord(
+  operation: ResolvedCreateOperation
+): Record<string, unknown> {
+  switch (operation.entity_type) {
+    case "world": {
+      const value = operation.value;
+      return {
+        id: operation.entity_id,
+        slug: value.slug,
+        title: value.title,
+        description: value.description ?? null
+      };
+    }
+    case "canon": {
+      const value = operation.value;
+      return {
+        id: operation.entity_id,
+        world_id: value.world_id,
+        slug: value.slug,
+        title: value.title,
+        description: value.description ?? null
+      };
+    }
+    case "time_system": {
+      const value = operation.value;
+      return { id: operation.entity_id, ...value };
+    }
+    case "canon_time_system": {
+      const value = operation.value;
+      return { id: operation.entity_id, ...value };
+    }
+    case "event": {
+      const value = operation.value;
+      return {
+        id: operation.entity_id,
+        canon_id: value.canon_id,
+        slug: value.slug ?? null,
+        kind: value.kind,
+        title: value.title,
+        summary: value.summary ?? null,
+        roles: value.roles,
+        attributes: value.attributes
+      };
+    }
+    case "event_temporal_placement": {
+      const value = operation.value;
+      return {
+        id: operation.entity_id,
+        event_id: value.event_id,
+        time_system_id: value.time_system_id,
+        kind: value.kind,
+        earliest_start: value.earliest_start,
+        latest_start: value.latest_start,
+        earliest_end: value.earliest_end ?? null,
+        latest_end: value.latest_end ?? null,
+        precision: value.precision,
+        certainty: value.certainty,
+        display_label: value.display_label ?? null
+      };
+    }
+    case "relation": {
+      const value = operation.value;
+      return { id: operation.entity_id, ...value };
+    }
+    case "narrative": {
+      const value = operation.value;
+      return {
+        id: operation.entity_id,
+        canon_id: value.canon_id,
+        scope_type: value.scope_type,
+        scope_id: value.scope_id,
+        locale: value.locale,
+        kind: value.kind,
+        title: value.title ?? null,
+        body: value.body,
+        public_references: value.public_references
+      };
+    }
+  }
 }
 
 async function applyCreate(
   transaction: MoiraiDatabase,
-  operation: CreateOperation,
+  operation: ResolvedCreateOperation,
   revision: number
 ): Promise<void> {
   const record = publicRecord(operation);
-  if (operation.entity_type === "world") {
-    await transaction
-      .insertInto("worlds")
-      .values({
-        ...(record as PublicWorld),
-        current_revision: revision,
-        publication_target_revision: revision,
-        created_revision: revision,
-        updated_revision: revision,
-        withdrawn_revision: null
-      })
-      .execute();
-  } else if (operation.entity_type === "canon") {
-    await transaction
-      .insertInto("canons")
-      .values({
-        ...(record as PublicCanon),
-        created_revision: revision,
-        updated_revision: revision,
-        withdrawn_revision: null
-      })
-      .execute();
-  } else {
-    await transaction
-      .insertInto("events")
-      .values({
-        ...(record as PublicEvent),
-        roles: JSON.stringify((record as PublicEvent).roles),
-        attributes: JSON.stringify((record as PublicEvent).attributes),
-        created_revision: revision,
-        updated_revision: revision,
-        withdrawn_revision: null
-      })
-      .execute();
+  const revisionData = revisionFields(revision);
+  switch (operation.entity_type) {
+    case "world":
+      await transaction
+        .insertInto("worlds")
+        .values({
+          ...(record as unknown as PublicWorld),
+          current_revision: revision,
+          publication_target_revision: revision,
+          ...revisionData
+        })
+        .execute();
+      break;
+    case "canon":
+      await transaction
+        .insertInto("canons")
+        .values({ ...(record as unknown as PublicCanon), ...revisionData })
+        .execute();
+      break;
+    case "time_system": {
+      const item = record as unknown as PublicTimeSystem;
+      await transaction
+        .insertInto("time_systems")
+        .values({
+          ...item,
+          definition: JSON.stringify(item.definition),
+          ...revisionData
+        })
+        .execute();
+      break;
+    }
+    case "canon_time_system":
+      await transaction
+        .insertInto("canon_time_systems")
+        .values({
+          ...(record as unknown as PublicCanonTimeSystem),
+          ...revisionData
+        })
+        .execute();
+      break;
+    case "event": {
+      const item = record as unknown as PublicEvent;
+      await transaction
+        .insertInto("events")
+        .values({
+          ...item,
+          roles: JSON.stringify(item.roles),
+          attributes: JSON.stringify(item.attributes),
+          ...revisionData
+        })
+        .execute();
+      break;
+    }
+    case "event_temporal_placement": {
+      const item = record as unknown as PublicTemporalPlacement;
+      await transaction
+        .insertInto("event_temporal_placements")
+        .values({
+          ...item,
+          earliest_start: JSON.stringify(item.earliest_start),
+          latest_start: JSON.stringify(item.latest_start),
+          earliest_end: item.earliest_end
+            ? JSON.stringify(item.earliest_end)
+            : null,
+          latest_end: item.latest_end ? JSON.stringify(item.latest_end) : null,
+          ...revisionData
+        })
+        .execute();
+      break;
+    }
+    case "relation": {
+      const item = record as unknown as PublicRelation;
+      await transaction
+        .insertInto("relations")
+        .values({
+          ...item,
+          attributes: JSON.stringify(item.attributes),
+          ...revisionData
+        })
+        .execute();
+      break;
+    }
+    case "narrative": {
+      const item = record as unknown as PublicNarrative;
+      await transaction
+        .insertInto("narratives")
+        .values({
+          ...item,
+          public_references: JSON.stringify(item.public_references),
+          ...revisionData
+        })
+        .execute();
+      break;
+    }
   }
+}
+
+function toPublicWorld(row: WorldTable): PublicWorld {
+  return {
+    id: row.id,
+    slug: row.slug,
+    title: row.title,
+    description: row.description
+  };
+}
+
+function withoutRevision<T extends RevisionFields>(
+  row: T
+): Omit<T, keyof RevisionFields> {
+  const {
+    created_revision: _created,
+    updated_revision: _updated,
+    withdrawn_revision: _withdrawn,
+    ...record
+  } = row;
+  void _created;
+  void _updated;
+  void _withdrawn;
+  return record;
+}
+
+async function loadCurrentState(
+  db: MoiraiDatabase,
+  worldRow: WorldTable | undefined
+): Promise<CanonicalState> {
+  if (!worldRow) {
+    return {
+      world: null,
+      canons: [],
+      timeSystems: [],
+      canonTimeSystems: [],
+      events: [],
+      temporalPlacements: [],
+      relations: [],
+      narratives: []
+    };
+  }
+  const canons = await db
+    .selectFrom("canons")
+    .selectAll()
+    .where("world_id", "=", worldRow.id)
+    .where("withdrawn_revision", "is", null)
+    .execute();
+  const canonIds = canons.map((item) => item.id);
+  const timeSystems = await db
+    .selectFrom("time_systems")
+    .selectAll()
+    .where("world_id", "=", worldRow.id)
+    .where("withdrawn_revision", "is", null)
+    .execute();
+  const events =
+    canonIds.length > 0
+      ? await db
+          .selectFrom("events")
+          .selectAll()
+          .where("canon_id", "in", canonIds)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : [];
+  const eventIds = events.map((item) => item.id);
+  const [canonTimeSystems, placements, relations, narratives] =
+    await Promise.all([
+      canonIds.length > 0
+        ? db
+            .selectFrom("canon_time_systems")
+            .selectAll()
+            .where("canon_id", "in", canonIds)
+            .where("withdrawn_revision", "is", null)
+            .execute()
+        : [],
+      eventIds.length > 0
+        ? db
+            .selectFrom("event_temporal_placements")
+            .selectAll()
+            .where("event_id", "in", eventIds)
+            .where("withdrawn_revision", "is", null)
+            .execute()
+        : [],
+      canonIds.length > 0
+        ? db
+            .selectFrom("relations")
+            .selectAll()
+            .where("canon_id", "in", canonIds)
+            .where("withdrawn_revision", "is", null)
+            .execute()
+        : [],
+      canonIds.length > 0
+        ? db
+            .selectFrom("narratives")
+            .selectAll()
+            .where("canon_id", "in", canonIds)
+            .where("withdrawn_revision", "is", null)
+            .execute()
+        : []
+    ]);
+  return {
+    world: toPublicWorld(worldRow),
+    canons: canons.map((item) => withoutRevision(item) as PublicCanon),
+    timeSystems: timeSystems.map(
+      (item) => withoutRevision(item) as PublicTimeSystem
+    ),
+    canonTimeSystems: canonTimeSystems.map(
+      (item) => withoutRevision(item) as PublicCanonTimeSystem
+    ),
+    events: events.map((item) => withoutRevision(item) as PublicEvent),
+    temporalPlacements: placements.map(
+      (item) => withoutRevision(item) as PublicTemporalPlacement
+    ),
+    relations: relations.map((item) => withoutRevision(item) as PublicRelation),
+    narratives: narratives.map(
+      (item) => withoutRevision(item) as PublicNarrative
+    )
+  };
 }
 
 export async function commitCreateChangeSet(
@@ -253,12 +557,10 @@ export async function commitCreateChangeSet(
 ): Promise<CommitResult> {
   validateCreateChangeSet(input);
   const requestDigest = digest(input);
-
   return db.transaction().execute(async (transaction) => {
     await sql`select pg_advisory_xact_lock(hashtextextended(${input.world_id}, 0))`.execute(
       transaction
     );
-
     const replay = await transaction
       .selectFrom("change_sets")
       .select(["request_digest", "result"])
@@ -268,15 +570,16 @@ export async function commitCreateChangeSet(
       if (replay.request_digest !== requestDigest) {
         throw new ChangeSetError(
           "idempotency_key_reused",
-          "Change Set ID has a different request digest"
+          "change_set_id",
+          "Change Set ID has a different request digest",
+          [input.change_set_id]
         );
       }
       return { ...replay.result, idempotent_replay: true };
     }
-
     const currentWorld = await transaction
       .selectFrom("worlds")
-      .select(["current_revision"])
+      .selectAll()
       .where("id", "=", input.world_id)
       .forUpdate()
       .executeTakeFirst();
@@ -284,32 +587,56 @@ export async function commitCreateChangeSet(
     if (currentRevision !== input.expected_revision) {
       throw new ChangeSetError(
         "revision_conflict",
-        `expected revision ${input.expected_revision}, current revision ${currentRevision}`
+        "expected_revision",
+        "World Revision changed; refresh the World context before retrying",
+        [input.world_id],
+        true,
+        { action: "refresh_context", current_revision: currentRevision }
       );
     }
+    const existing = await loadCurrentState(
+      transaction as unknown as MoiraiDatabase,
+      currentWorld
+    );
+    const { operations, idMapping } = resolveCreateOperations(input, () =>
+      uuidV7()
+    );
+    const warnings = validateCandidateChangeSet(input, operations, existing);
     const revision = currentRevision + 1;
-    if (currentWorld) {
-      throw new ChangeSetError(
-        "invalid_change_set",
-        "Milestone 1 supports initial create only"
-      );
-    }
-
-    for (const operation of input.operations) {
+    for (const operation of operations) {
       await applyCreate(
         transaction as unknown as MoiraiDatabase,
         operation,
         revision
       );
     }
-
+    if (currentWorld) {
+      await transaction
+        .updateTable("worlds")
+        .set({
+          current_revision: revision,
+          publication_target_revision: revision,
+          updated_revision: revision
+        })
+        .where("id", "=", input.world_id)
+        .execute();
+    }
+    const servedState = currentWorld
+      ? await transaction
+          .selectFrom("world_publication_state")
+          .select("served_revision")
+          .where("world_id", "=", input.world_id)
+          .executeTakeFirst()
+      : undefined;
     const result: CommitResult = {
       change_set_id: input.change_set_id,
       world_id: input.world_id,
       current_revision: revision,
       publication_target_revision: revision,
-      served_revision: 0,
-      idempotent_replay: false
+      served_revision: servedState?.served_revision ?? 0,
+      idempotent_replay: false,
+      id_mapping: idMapping,
+      warnings
     };
     await transaction
       .insertInto("change_sets")
@@ -321,11 +648,11 @@ export async function commitCreateChangeSet(
         intent: input.intent,
         contract_version: input.contract_version,
         origins: JSON.stringify(input.origins),
+        warnings: JSON.stringify(warnings),
         result: JSON.stringify(result)
       })
       .execute();
-
-    for (const [operationIndex, operation] of input.operations.entries()) {
+    for (const [operationIndex, operation] of operations.entries()) {
       await transaction
         .insertInto("change_operations")
         .values({
@@ -341,7 +668,6 @@ export async function commitCreateChangeSet(
         })
         .execute();
     }
-
     await transaction
       .insertInto("world_revisions")
       .values({
@@ -351,15 +677,27 @@ export async function commitCreateChangeSet(
         change_set_id: input.change_set_id
       })
       .execute();
-    await transaction
-      .insertInto("world_publication_state")
-      .values({
-        world_id: input.world_id,
-        served_revision: 0,
-        projection_status: "building",
-        last_error_code: null
-      })
-      .execute();
+    if (currentWorld) {
+      await transaction
+        .updateTable("world_publication_state")
+        .set({
+          projection_status: "building",
+          last_error_code: null,
+          updated_at: new Date()
+        })
+        .where("world_id", "=", input.world_id)
+        .execute();
+    } else {
+      await transaction
+        .insertInto("world_publication_state")
+        .values({
+          world_id: input.world_id,
+          served_revision: 0,
+          projection_status: "building",
+          last_error_code: null
+        })
+        .execute();
+    }
     await transaction
       .insertInto("publication_outbox")
       .values({
@@ -408,17 +746,25 @@ export async function readWorldAtRevision(
   const records = [...latest.values()].filter(
     (operation) => operation.after !== null
   );
-  const world = records.find((record) => record.entity_type === "world")
-    ?.after as PublicWorld | undefined;
+  const byType = (type: string): Record<string, unknown>[] =>
+    records
+      .filter((item) => item.entity_type === type)
+      .map((item) => item.after!);
+  const world = byType("world")[0] as unknown as PublicWorld | undefined;
   if (!world) throw new Error("revision view has no World");
   return {
     world,
-    canons: records
-      .filter((record) => record.entity_type === "canon")
-      .map((record) => record.after as PublicCanon),
-    events: records
-      .filter((record) => record.entity_type === "event")
-      .map((record) => record.after as PublicEvent),
+    canons: byType("canon") as unknown as PublicCanon[],
+    timeSystems: byType("time_system") as unknown as PublicTimeSystem[],
+    canonTimeSystems: byType(
+      "canon_time_system"
+    ) as unknown as PublicCanonTimeSystem[],
+    events: byType("event") as unknown as PublicEvent[],
+    temporalPlacements: byType(
+      "event_temporal_placement"
+    ) as unknown as PublicTemporalPlacement[],
+    relations: byType("relation") as unknown as PublicRelation[],
+    narratives: byType("narrative") as unknown as PublicNarrative[],
     generatedAt: revisionRecord.committed_at.toISOString()
   };
 }
@@ -435,20 +781,15 @@ export async function claimPublicationJob(
     attempt_count: number;
   }>`
     with candidate as (
-      select id
-      from publication_outbox
+      select id from publication_outbox
       where available_at <= now()
         and (status = 'pending' or (status = 'processing' and lease_expires_at < now()))
-      order by id
-      for update skip locked
-      limit 1
+      order by id for update skip locked limit 1
     )
     update publication_outbox as job
-      set status = 'processing',
-          attempt_count = attempt_count + 1,
+      set status = 'processing', attempt_count = attempt_count + 1,
           lease_expires_at = now() + (${leaseSeconds} * interval '1 second')
-    from candidate
-    where job.id = candidate.id
+    from candidate where job.id = candidate.id
     returning job.id::text, job.world_id::text, job.target_revision,
       job.change_set_id::text, job.attempt_count
   `.execute(db);

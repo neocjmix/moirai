@@ -53,9 +53,9 @@ async function verify(): Promise<void> {
     fixture.world_id !== SYNTHETIC_FIXTURE.worldId ||
     fixture.canon_id !== SYNTHETIC_FIXTURE.canonId ||
     fixture.event_id !== SYNTHETIC_FIXTURE.eventId ||
-    fixture.current_revision !== 1 ||
-    fixture.publication_target_revision !== 1 ||
-    fixture.served_revision !== 1 ||
+    fixture.current_revision !== 2 ||
+    fixture.publication_target_revision !== 2 ||
+    fixture.served_revision !== 2 ||
     fixture.projection_status !== "ready"
   ) {
     throw new Error("synthetic Change Set has not reached the served Revision");
@@ -70,12 +70,13 @@ async function verify(): Promise<void> {
   if (
     !eventPage.ok ||
     !readableEventHtml.includes(SYNTHETIC_FIXTURE.eventTitle) ||
-    !readableEventHtml.includes("Revision 1")
+    !readableEventHtml.includes("Revision 2") ||
+    !readableEventHtml.includes(SYNTHETIC_FIXTURE.secondEventTitle)
   ) {
     throw new Error("public Event route is unavailable or mixed");
   }
 
-  const revisionPath = `/worlds/${fixture.world_id}/revisions/1/events/${fixture.event_id}.json`;
+  const revisionPath = `/worlds/${fixture.world_id}/revisions/2/events/${fixture.event_id}.json`;
   const revision = await fetch(new URL(revisionPath, baseUrl), {
     signal: AbortSignal.timeout(10_000)
   });
@@ -89,10 +90,44 @@ async function verify(): Promise<void> {
     readonly event?: { readonly id?: string };
   };
   if (
-    eventDocument.served_revision !== 1 ||
+    eventDocument.served_revision !== 2 ||
     eventDocument.event?.id !== fixture.event_id
   ) {
     throw new Error("revision-pinned Event document is invalid");
+  }
+  if (JSON.stringify(eventDocument).includes("private-synthetic")) {
+    throw new Error("private fixture metadata leaked into Publication");
+  }
+
+  const relatedPath = `/worlds/${fixture.world_id}/canons/${fixture.canon_id}/events/${SYNTHETIC_FIXTURE.secondEventId}`;
+  const relatedPage = await fetch(new URL(relatedPath, baseUrl), {
+    signal: AbortSignal.timeout(10_000)
+  });
+  const relatedHtml = (await relatedPage.text()).replace(/<!--.*?-->/g, "");
+  if (
+    !relatedPage.ok ||
+    !relatedHtml.includes("An answer in the east") ||
+    !relatedHtml.includes("Second bell") ||
+    !relatedHtml.includes(SYNTHETIC_FIXTURE.thirdEventTitle)
+  ) {
+    throw new Error(
+      "public Narrative, time or Relation context is unavailable"
+    );
+  }
+
+  const searchPath = `/worlds/${fixture.world_id}/revisions/2/search/en.json`;
+  const search = await fetch(new URL(searchPath, baseUrl), {
+    signal: AbortSignal.timeout(10_000)
+  });
+  const searchBody = await search.text();
+  if (
+    !search.ok ||
+    !searchBody.includes(SYNTHETIC_FIXTURE.secondEventTitle) ||
+    searchBody.includes("private-synthetic")
+  ) {
+    throw new Error(
+      "public search document is missing or leaked private metadata"
+    );
   }
 
   const cached = await fetch(new URL(revisionPath, baseUrl), {
@@ -118,11 +153,11 @@ async function verify(): Promise<void> {
   const pointer = (await pointerResponse.json()) as PublicationPointer;
   if (
     pointer.world_id !== fixture.world_id ||
-    pointer.current_revision !== 1 ||
-    pointer.publication_target_revision !== 1 ||
-    pointer.served_revision !== 1 ||
+    pointer.current_revision !== 2 ||
+    pointer.publication_target_revision !== 2 ||
+    pointer.served_revision !== 2 ||
     pointer.manifest_key !==
-      `worlds/${fixture.world_id}/revisions/1/manifest.json`
+      `worlds/${fixture.world_id}/revisions/2/manifest.json`
   ) {
     throw new Error("served pointer is invalid");
   }

@@ -31,3 +31,9 @@ Unit/schema: 잘못된 입력, 인증·권한, 제한·cursor·scope·잘림, to
 - 범위: `world:read`, `world:write`, World `01995c2a-7b00-7000-8000-000000000101` 하나. 기존 Lantern fixture에는 쓰기 권한이 없다. Atropos와 worker에는 이 credential을 전달하지 않는다.
 - post-deploy workflow가 CLI subprocess로 이 World를 재발견하고 build별 Event·Relation·Narrative를 추가한 뒤 공개 페이지와 revision JSON을 검증한다. 기존 M2 smoke는 그대로 유지한다.
 - 일반 대화 세션에는 token을 복사하지 않는다. 별도 실행 환경에서 쓰려면 승인된 secret injection 연결이 필요하다. 저장소 skill·CLI가 있다고 모든 ChatGPT 세션이 자동 인증되는 것은 아니다.
+
+## Verified outcome
+
+`894e9030ebb38e2fed326beea74139bbbf346836`에서 CI `33488232165`와 post-deploy smoke `33488357469`가 성공했다. PostgreSQL 통합 10개와 unit 26개, mobile WebKit을 통과했다. 실제 CLI가 synthetic World 생성과 맥락 조회, validate 무변경, commit 및 idempotent replay를 실행했고, worker가 내보낸 새 Event·Narrative·Relation을 공개 Atropos와 revision JSON에서 확인했다. 기존 Lantern Revision 2도 유지된다.
+
+저장소 전체 이력과 공개 `.next/static` artifact의 gitleaks 검사는 통과했다. Next.js 서버 내부의 생성 키는 비공개 build metadata이며 commit이나 공개 static artifact에 포함하지 않는다. 실제 기기와 production rollback 실연은 미검증이다.

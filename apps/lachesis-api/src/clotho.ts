@@ -15,12 +15,12 @@ import {
   type MoiraiDatabase
 } from "@moirai/persistence";
 import type { FastifyInstance } from "fastify";
-import { authenticate, type Credential } from "./auth.js";
+import { authenticate, type Credential, type Principal } from "./auth.js";
 
 export type ClothoExecutor = (
   method: ClothoMethod,
   input: Record<string, unknown>,
-  credential: Credential
+  credential: Principal
 ) => Promise<unknown>;
 export function databaseExecutor(db: MoiraiDatabase): ClothoExecutor {
   return async (method, input, credential) => {

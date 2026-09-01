@@ -8,6 +8,7 @@ import Fastify, { type FastifyInstance } from "fastify";
 
 import type { RuntimeConfig } from "./config.js";
 import { databaseExecutor, registerClotho } from "./clotho.js";
+import { registerMcp } from "./mcp.js";
 
 export function buildApp(
   config: RuntimeConfig,
@@ -19,6 +20,15 @@ export function buildApp(
     ajv: { customOptions: { removeAdditional: false, coerceTypes: false } }
   });
   registerClotho(app, config.credentials ?? [], databaseExecutor(database));
+  registerMcp(
+    app,
+    {
+      credentials: config.credentials ?? [],
+      oidc: config.oidc,
+      version: config.appVersion
+    },
+    databaseExecutor(database)
+  );
   app.addHook("onResponse", async (request, reply) => {
     app.log.info(
       {

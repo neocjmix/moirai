@@ -35,6 +35,30 @@ function call<T>(method: ClothoMethod, input: unknown): T {
   if (result.status !== 0) throw new Error(`Clotho ${method} failed`);
   return (JSON.parse(result.stdout) as { result: T }).result;
 }
+async function mcp<T>(method: string, params: unknown): Promise<T> {
+  const endpoint = new URL("/mcp", apiUrl);
+  if (endpoint.protocol !== "https:" || endpoint.username || endpoint.password)
+    throw new Error("Invalid MCP smoke endpoint");
+  const response = await fetch(endpoint, {
+    method: "POST",
+    redirect: "error",
+    headers: {
+      "content-type": "application/json",
+      accept: "application/json, text/event-stream",
+      authorization: `Bearer ${process.env.CLOTHO_TOKEN!}`
+    },
+    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
+    signal: AbortSignal.timeout(30_000)
+  });
+  if (!response.ok) throw new Error("MCP smoke request failed");
+  const body = (await response.json()) as {
+    error?: unknown;
+    result: T & { isError?: boolean };
+  };
+  if (body.error || body.result.isError)
+    throw new Error("MCP smoke operation failed");
+  return body.result;
+}
 function id(label: string): string {
   const h = createHash("sha256")
     .update(`${expectedSha}:${label}`)
@@ -74,6 +98,25 @@ async function main(): Promise<void> {
   });
   if (unauthorized.status !== 401)
     throw new Error("Unauthenticated Clotho access was not rejected");
+  const mcpUnauthorized = await fetch(new URL("/mcp", apiUrl), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: "{}",
+    signal: AbortSignal.timeout(10_000)
+  });
+  if (mcpUnauthorized.status !== 401)
+    throw new Error("Unauthenticated MCP access was not rejected");
+  await mcp("initialize", {
+    protocolVersion: "2025-03-26",
+    capabilities: {},
+    clientInfo: { name: "moirai-synthetic-smoke", version: "1" }
+  });
+  const tools = await mcp<{ tools: { name: string }[] }>("tools/list", {});
+  if (
+    tools.tools.length !== 10 ||
+    !tools.tools.some((tool) => tool.name === "change_commit")
+  )
+    throw new Error("MCP tool discovery failed");
   const origin_refs = [{ field: "*", origin_index: 0 }];
   const base: ChangePlan = {
     contract_version: CONTRACT_VERSION,
@@ -132,6 +175,16 @@ async function main(): Promise<void> {
   const world = call<{ source_revision: number }>("world.get", {
     world_id: worldId
   });
+  const mcpWorld = await mcp<{
+    structuredContent: { result: { source_revision: number } };
+  }>("tools/call", {
+    name: "world_get",
+    arguments: { world_id: worldId }
+  });
+  if (
+    mcpWorld.structuredContent.result.source_revision !== world.source_revision
+  )
+    throw new Error("MCP and CLI revision differ");
   call("canon.list", { world_id: worldId, at_revision: world.source_revision });
   call("context.slice", {
     world_id: worldId,
@@ -197,19 +250,34 @@ async function main(): Promise<void> {
       ]
     };
     const preview = call<{ plan_digest: string }>("change.validate", { plan });
+    await mcp("tools/call", { name: "change_validate", arguments: { plan } });
     if (
       call<{ source_revision: number }>("world.get", { world_id: worldId })
         .source_revision !== revision
     )
       throw new Error("Validation changed the revision");
-    const result = call<CommitResult>("change.commit", {
-      plan,
-      plan_digest: preview.plan_digest
+    const committed = await mcp<{
+      structuredContent: { result: CommitResult };
+    }>("tools/call", {
+      name: "change_commit",
+      arguments: { plan, plan_digest: preview.plan_digest }
     });
+    const result = committed.structuredContent.result;
     revision = result.current_revision;
     const replay = call<CommitResult>("change.commit", { plan });
     if (!replay.idempotent_replay || replay.current_revision !== revision)
       throw new Error("Commit replay was not idempotent");
+    const mcpReplay = await mcp<{
+      structuredContent: { result: CommitResult };
+    }>("tools/call", {
+      name: "change_commit",
+      arguments: { plan }
+    });
+    if (
+      !mcpReplay.structuredContent.result.idempotent_replay ||
+      mcpReplay.structuredContent.result.current_revision !== revision
+    )
+      throw new Error("MCP commit replay was not idempotent");
   }
   const path = `/worlds/${worldId}/canons/${canonId}/events/${id("event")}`;
   await waitFor(async () => {
@@ -249,7 +317,7 @@ async function main(): Promise<void> {
     return true;
   });
   process.stdout.write(
-    `Clotho CLI → Lachesis → Publication → Atropos passed; revision=${revision}; path=${path}\n`
+    `Clotho CLI + MCP → Lachesis → Publication → Atropos passed; revision=${revision}; path=${path}\n`
   );
 }
 void main().catch(() => {

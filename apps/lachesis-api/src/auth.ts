@@ -8,6 +8,7 @@ export interface Credential {
   readonly world_ids: readonly string[];
   readonly expires_at: string;
 }
+export type Principal = Omit<Credential, "token_sha256">;
 const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 export function parseCredentials(

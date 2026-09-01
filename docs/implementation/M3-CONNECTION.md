@@ -33,6 +33,19 @@ ChatGPT가 외부 인증 후 MCP로 World 맥락을 읽고 기존 Change Plan �
 
 설계 참고: [OpenAI MCP authentication](https://developers.openai.com/plugins/build/auth), [MCP server](https://developers.openai.com/plugins/build/mcp-server). 공식 계약의 resource discovery, issuer/audience/scope 검증과 도구별 OAuth metadata를 따른다.
 
+## Auth0 설정 체크리스트
+
+- Moirai 전용 tenant와 기본 Auth0 도메인을 사용한다. 관리 계정 가입과 MCP를 호출할 operator의 로그인은 별개의 단계다.
+- API Identifier는 `https://desirable-vitality-production-eb95.up.railway.app/mcp`와 정확히 일치시킨다. RS256 서명, access token 수명 1시간 이하, `world:read`·`world:write` scope를 설정한다.
+- tenant의 Resource Parameter Compatibility Profile을 활성화한다. MCP client의 RFC 8707 `resource`가 Auth0 API audience로 해석되도록 하는 설정이다. 무관한 API를 Default Audience로 지정해 해결하지 않는다.
+- ChatGPT의 실제 client 등록 방식(CIMD, DCR 또는 명시적 등록)을 확인한 뒤 필요한 방식만 설정한다. OAuth authorization-code + PKCE S256과 실제 callback을 검증한다.
+- 연결 지속에 refresh token이 필요하면 provider의 `offline_access`·refresh token 설정을 확인한다. refresh token은 ChatGPT와 provider에서 관리하며 도구 호출의 World·행위 권한을 확대하지 않는다.
+- 실제 operator 로그인 후 issuer/subject를 별도 내부 actor에 매핑한다. subject·client secret·token은 저장소나 채팅에 기록하지 않는다.
+- Clotho에만 `CLOTHO_OIDC_JSON`을 주입하고 배포 후 metadata → 로그인 → tools/list → 읽기 → validate → commit → Publication 및 권한 거부를 확인한다.
+- 실제 OAuth 계정 검증과 기존 CI bearer smoke를 각각 증거로 남긴다. provider 설정 제거 후 재배포가 완료되면 기존에 발급된 token도 거부되는지 확인한다.
+
+확인한 공식 자료: [Auth0 resource parameter](https://auth0.com/docs/api/authentication/authorization-code-flow/authorize-application), [Auth0 MCP audience 오류와 compatibility 설정](https://support.auth0.com/center/s/article/mcp-audience-error-with-auth0), [ChatGPT 개발자 모드와 OAuth](https://help.openai.com/en/articles/12584461-developer-mode-and-full-mcp-connectors-in-chatgpt).
+
 ## Rollback
 
-OIDC 설정 제거로 해당 issuer의 접근을 즉시 차단하고 API를 재배포한다. 기존 CI bearer credential은 독립적으로 유지한다. 필요하면 application을 `d6effa974ceed27ea849abec917836aa32fee04b`로 되돌린다. migration·정본 삭제·Revision 되감기는 없다.
+OIDC 설정을 제거하고 API를 재배포한다. 새 배포 완료 후 해당 issuer의 기존 token까지 거부되는지 확인한다. 기존 CI bearer credential은 독립적으로 유지한다. 필요하면 application을 `d6effa974ceed27ea849abec917836aa32fee04b`로 되돌린다. migration·정본 삭제·Revision 되감기는 없다.

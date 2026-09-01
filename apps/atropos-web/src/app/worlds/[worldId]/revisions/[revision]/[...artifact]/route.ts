@@ -6,7 +6,7 @@ import {
 
 export const dynamic = "force-dynamic";
 
-function artifactPath(parts: readonly string[]): string {
+export function artifactPath(parts: readonly string[]): string {
   if (
     parts.length === 1 &&
     (parts[0] === "manifest.json" || parts[0] === "world.json")
@@ -20,6 +20,9 @@ function artifactPath(parts: readonly string[]): string {
   ) {
     assertPublicId(parts[1].slice(0, -5));
     return `${parts[0]}/${parts[1]}`;
+  }
+  if (parts.length === 2 && parts[0] === "search" && parts[1] === "en.json") {
+    return "search/en.json";
   }
   throw new Error("unsupported artifact");
 }

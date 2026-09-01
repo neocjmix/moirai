@@ -76,8 +76,14 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
-  apps/lachesis-api:
+  apps/clotho-api:
     dependencies:
+      '@moirai/clotho-application':
+        specifier: workspace:*
+        version: link:../../packages/clotho-application
+      '@moirai/lachesis':
+        specifier: workspace:*
+        version: link:../../packages/lachesis
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
         version: 1.30.0(zod@4.5.4)
@@ -104,6 +110,12 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
+  apps/lachesis-api:
+    dependencies:
+      '@moirai/clotho-api':
+        specifier: workspace:*
+        version: link:../clotho-api
+
   apps/lachesis-worker:
     dependencies:
       '@moirai/contracts':
@@ -115,6 +127,41 @@ importers:
       '@moirai/publication':
         specifier: workspace:*
         version: link:../../packages/publication
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
+  packages/clotho-application:
+    dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@moirai/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@moirai/lachesis':
+        specifier: workspace:*
+        version: link:../lachesis
+      ajv:
+        specifier: ^8.20.0
+        version: 8.20.0
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
+  packages/lachesis:
+    dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@moirai/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@moirai/persistence':
+        specifier: workspace:*
+        version: link:../persistence
     devDependencies:
       typescript:
         specifier: ^5.9.0

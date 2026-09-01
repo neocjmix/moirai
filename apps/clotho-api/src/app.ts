@@ -7,7 +7,9 @@ import {
 import Fastify, { type FastifyInstance } from "fastify";
 
 import type { RuntimeConfig } from "./config.js";
-import { databaseExecutor, registerClotho } from "./clotho.js";
+import { registerClotho } from "./clotho.js";
+import { createClotho } from "@moirai/clotho-application";
+import { databaseLachesis } from "@moirai/lachesis/database";
 import { registerMcp } from "./mcp.js";
 
 export function buildApp(
@@ -19,7 +21,8 @@ export function buildApp(
     disableRequestLogging: true,
     ajv: { customOptions: { removeAdditional: false, coerceTypes: false } }
   });
-  registerClotho(app, config.credentials ?? [], databaseExecutor(database));
+  const execute = createClotho(databaseLachesis(database));
+  registerClotho(app, config.credentials ?? [], execute);
   registerMcp(
     app,
     {
@@ -27,7 +30,7 @@ export function buildApp(
       oidc: config.oidc,
       version: config.appVersion
     },
-    databaseExecutor(database)
+    execute
   );
   app.addHook("onResponse", async (request, reply) => {
     app.log.info(
@@ -45,7 +48,7 @@ export function buildApp(
     { schema: { response: { 200: HEALTH_RESPONSE_SCHEMA } } },
     async (): Promise<HealthResponse> => ({
       status: "ok",
-      service: "lachesis-api",
+      service: "clotho-api",
       version: config.appVersion,
       commit_sha: config.commitSha
     })
@@ -63,14 +66,14 @@ export function buildApp(
         await checkDatabaseReady(database);
         return {
           status: "ok" as const,
-          service: "lachesis-api" as const,
+          service: "clotho-api" as const,
           version: config.appVersion,
           commit_sha: config.commitSha
         };
       } catch {
         return reply.code(503).send({
           status: "not_ready",
-          service: "lachesis-api",
+          service: "clotho-api",
           version: config.appVersion,
           commit_sha: config.commitSha
         });

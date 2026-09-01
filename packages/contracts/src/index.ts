@@ -332,7 +332,8 @@ export interface PublicationManifest {
 
 export interface HealthResponse {
   readonly status: "ok" | "not_ready";
-  readonly service: "atropos-web" | "lachesis-api" | "lachesis-worker";
+  readonly service:
+    "atropos-web" | "clotho-api" | "lachesis-api" | "lachesis-worker";
   readonly version: string;
   readonly commit_sha: string;
 }
@@ -344,7 +345,9 @@ export const HEALTH_RESPONSE_SCHEMA = {
   required: ["status", "service", "version", "commit_sha"],
   properties: {
     status: { enum: ["ok", "not_ready"] },
-    service: { enum: ["atropos-web", "lachesis-api", "lachesis-worker"] },
+    service: {
+      enum: ["atropos-web", "clotho-api", "lachesis-api", "lachesis-worker"]
+    },
     version: { type: "string", minLength: 1 },
     commit_sha: { type: "string", minLength: 1 }
   }

@@ -2,22 +2,11 @@
   "name": "@moirai/lachesis-api",
   "version": "0.0.0",
   "private": true,
-  "type": "module",
+  "description": "Temporary deployment launcher; all external routes are owned by Clotho.",
   "scripts": {
-    "build": "tsc -p tsconfig.build.json",
-    "start": "node dist/index.js",
-    "typecheck": "tsc -p tsconfig.json --noEmit"
+    "start": "pnpm --filter @moirai/clotho-api start"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
-    "@moirai/contracts": "workspace:*",
-    "@moirai/domain": "workspace:*",
-    "@moirai/persistence": "workspace:*",
-    "ajv": "^8.20.0",
-    "fastify": "^5.6.0",
-    "jose": "^6.2.10"
-  },
-  "devDependencies": {
-    "typescript": "^5.9.0"
+    "@moirai/clotho-api": "workspace:*"
   }
 }

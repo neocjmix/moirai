@@ -2,43 +2,13 @@ import {
   CLOTHO_METHODS,
   CONTRACT_VERSION,
   clothoInputSchema,
-  type ChangePlan,
-  type ClothoMethod,
-  type CreateChangeSet
+  type ChangePlan
 } from "@moirai/contracts";
 import { ChangeSetError } from "@moirai/domain";
-import {
-  changeSetDigest,
-  commitCreateChangeSet,
-  queryClotho,
-  validateChangePlan,
-  type MoiraiDatabase
-} from "@moirai/persistence";
+import type { ClothoExecutor } from "@moirai/clotho-application";
 import type { FastifyInstance } from "fastify";
-import { authenticate, type Credential, type Principal } from "./auth.js";
+import { authenticate, type Credential } from "./auth.js";
 
-export type ClothoExecutor = (
-  method: ClothoMethod,
-  input: Record<string, unknown>,
-  credential: Principal
-) => Promise<unknown>;
-export function databaseExecutor(db: MoiraiDatabase): ClothoExecutor {
-  return async (method, input, credential) => {
-    if (method !== "change.validate" && method !== "change.commit")
-      return queryClotho(db, method, input, credential.world_ids);
-    const plan = input.plan as ChangePlan;
-    const change: CreateChangeSet = { ...plan, actor: credential.actor_id };
-    if (input.plan_digest && input.plan_digest !== changeSetDigest(change))
-      throw new ChangeSetError(
-        "plan_drift",
-        "plan_digest",
-        "Plan differs from preview"
-      );
-    return method === "change.validate"
-      ? validateChangePlan(db, change)
-      : commitCreateChangeSet(db, change);
-  };
-}
 const problem = (code: string, retryable = false) => ({
   error: { code, message: "Request could not be completed", retryable }
 });

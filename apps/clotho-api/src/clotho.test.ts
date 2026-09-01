@@ -107,7 +107,9 @@ describe("Clotho authenticated boundary", () => {
     const result = await send("change.commit", { plan });
     expect(result.statusCode).toBe(200);
     expect(result.headers["cache-control"]).toBe("no-store");
-    expect(execute).toHaveBeenCalledWith("change.commit", { plan }, credential);
+    const { token_sha256: hash, ...principal } = credential;
+    expect(execute).toHaveBeenCalledWith("change.commit", { plan }, principal);
+    expect(JSON.stringify(execute.mock.calls)).not.toContain(hash);
     expect(result.body).not.toContain(token);
     await app.close();
   });

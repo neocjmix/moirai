@@ -85,9 +85,13 @@ async function main(): Promise<void> {
     const health = (await response.json()) as {
       commit_sha: string;
       status: string;
+      service: string;
     };
     return (
-      response.ok && health.status === "ok" && health.commit_sha === expectedSha
+      response.ok &&
+      health.status === "ok" &&
+      health.service === "clotho-api" &&
+      health.commit_sha === expectedSha
     );
   });
   const unauthorized = await fetch(new URL("/v1/clotho/world.list", apiUrl), {

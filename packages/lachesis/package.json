@@ -1,0 +1,28 @@
+{
+  "name": "@moirai/lachesis",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "import": "./dist/index.js"
+    },
+    "./database": {
+      "types": "./src/database.ts",
+      "import": "./dist/database.js"
+    }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit"
+  },
+  "dependencies": {
+    "@moirai/contracts": "workspace:*",
+    "@moirai/domain": "workspace:*",
+    "@moirai/persistence": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
+}

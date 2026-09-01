@@ -14,7 +14,7 @@ import { ChangeSetError } from "@moirai/domain";
 import { Ajv } from "ajv";
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { authenticate, type Credential, type Principal } from "./auth.js";
-import type { ClothoExecutor } from "./clotho.js";
+import type { ClothoExecutor } from "@moirai/clotho-application";
 import {
   CLOTHO_CONNECTION_WORLD,
   oidcAuthenticator,

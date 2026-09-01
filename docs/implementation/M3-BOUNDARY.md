@@ -31,3 +31,15 @@
 ## 제외
 
 LLM wrapper, 가입 제품·Tenant·ACL, 고정 workflow 엔진, M4, 별도 서버·서비스 인증, 새로운 유료 자원은 포함하지 않는다. 실제 진행과 blocker는 [CURRENT.md](CURRENT.md)에만 기록한다.
+
+## 전환 inventory — 2026-09-02 KST
+
+- Railway source: `neocjmix/moirai`, branch `main`, Wait for CI 활성화.
+- 기존/유지 build: `pnpm build`; pre-deploy: `pnpm migrate && pnpm bootstrap:synthetic`.
+- 기존 start: `pnpm --filter @moirai/lachesis-api start`.
+- 목표 start: `pnpm --filter @moirai/clotho-api start`; readiness `/health/ready`, public URL 유지.
+- 전환 commit에는 기존 package 이름의 launcher를 남겨 이전 start도 새 Clotho 서버를 실행하게 한다. 이 package에는 HTTP·인증·정본 코드가 없다. 새 start 확인 후 launcher를 제거할 수 있다.
+- UI에서 `DATABASE_URL`·`CLOTHO_CREDENTIALS_JSON` 이름 존재와 `CLOTHO_OIDC_JSON` 부재를 확인했다. 값은 열람·복사하지 않았다. API credential과 DB reference는 같은 자원에 유지한다. `CLOTHO_OIDC_JSON`은 M3-C 실제 계정 연결 전까지 설정하지 않는다.
+- 새 health service 이름은 `clotho-api`; health schema는 이전 `lachesis-api` 값도 읽을 수 있어 rollback 관측 호환성을 유지한다.
+
+로컬 검증: 43 tests, typecheck, build, dependency-boundary 검사. PostgreSQL·mobile·배포 smoke는 해당 커밋의 CI와 실제 배포에서 확인한다. 테스트 수와 실행 상태는 후속 작업에서 CURRENT와 CI 증거를 따른다.

@@ -1,14 +1,10 @@
 import { createHash, timingSafeEqual } from "node:crypto";
-import type { ClothoScope } from "@moirai/contracts";
+import type { ActorContext } from "@moirai/lachesis";
 
-export interface Credential {
+export interface Credential extends ActorContext {
   readonly token_sha256: string;
-  readonly actor_id: string;
-  readonly scopes: readonly ClothoScope[];
-  readonly world_ids: readonly string[];
-  readonly expires_at: string;
 }
-export type Principal = Omit<Credential, "token_sha256">;
+export type Principal = ActorContext;
 const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 export function parseCredentials(
@@ -42,13 +38,20 @@ export function parseCredentials(
 export function authenticate(
   header: string | undefined,
   credentials: readonly Credential[]
-): Credential | undefined {
+): Principal | undefined {
   if (!header || !/^Bearer [A-Za-z0-9_-]{32,256}$/.test(header))
     return undefined;
   const digest = createHash("sha256").update(header.slice(7)).digest();
-  return credentials.find(
+  const credential = credentials.find(
     (c) =>
       timingSafeEqual(digest, Buffer.from(c.token_sha256, "hex")) &&
       Date.parse(c.expires_at) > Date.now()
   );
+  if (!credential) return undefined;
+  return {
+    actor_id: credential.actor_id,
+    world_ids: [...credential.world_ids],
+    scopes: [...credential.scopes],
+    expires_at: credential.expires_at
+  };
 }

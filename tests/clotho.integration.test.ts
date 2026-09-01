@@ -1,6 +1,6 @@
 import { createHash, randomBytes, randomUUID } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
-import { buildApp } from "../apps/lachesis-api/src/app.js";
+import { buildApp } from "../apps/clotho-api/src/app.js";
 import {
   CONTRACT_VERSION,
   type ChangePlan,

@@ -49,6 +49,8 @@ jobs:
         run: pnpm format:check
       - name: Lint
         run: pnpm lint
+      - name: Service dependency boundaries
+        run: pnpm check:boundaries
       - name: Strict typecheck
         run: pnpm typecheck
       - name: Unit tests

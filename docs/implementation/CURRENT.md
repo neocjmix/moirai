@@ -5,19 +5,22 @@
 | 항목 | 현재 값 |
 |---|---|
 | 기준 계획 | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md) |
-| 실행 상태 | `active` |
-| 활성 milestone | Milestone 2 — 세계 확장 |
-| 활성 slice | 복수 Event·Relation·Narrative·시간 배치의 원자적 Change Set과 공개 모바일 주변 맥락 |
-| 완료 milestone | Milestone 0 — 전달·관측·보안 기반; Milestone 1 — 최초 vertical slice |
+| 실행 상태 | `complete` — Milestone 2 종료조건 충족 |
+| 활성 milestone | 없음 |
+| 활성 slice | 없음 — Milestone 3 미착수 |
+| 완료 milestone | Milestone 0 — 전달·관측·보안 기반; Milestone 1 — 최초 vertical slice; Milestone 2 — 세계 확장 |
 | Milestone 0 구현 commit | `d76932bcbe09c9c04af8cc3c2591f180e4426057` |
 | Milestone 1 구현 commit | `7eb605a0c45f96643a7c5b2fb21b6efa89867570` |
+| Milestone 2 구현 commit | `33a19cd953a8cda8165f376457c229fb8e914a42`; 검색 artifact route 수정 `37c8d3705a6386bf12711fdc282debb3a3cf3d57` |
 | public integration URL | <https://moirai-production-8ed1.up.railway.app/> |
-| 최근 배포 commit | `9473286d7ffb99097fdd7b3cafd7ae1cad38d188` |
-| 마지막 smoke result | `passed` — GitHub Actions run `33387168018` |
-| 종료조건 증거 | Milestone 1 CI run `33387056809`, mobile Playwright, gitleaks, PostgreSQL integration, Railway readiness, immutable revision ETag·CDN edge hit, 공개 post-deploy synthetic smoke 통과 |
+| 종료조건 검증 배포 commit | `37c8d3705a6386bf12711fdc282debb3a3cf3d57` — 이후 배포 SHA와 smoke 결과는 public `/__status` 참조 |
+| 종료조건 smoke result | `passed` — GitHub Actions run `33457726072` |
+| 종료조건 증거 | CI run `33457645404`: format, lint, strict typecheck, unit tests 17개, PostgreSQL integration, production build, audit, gitleaks, mobile WebKit Playwright; 공개 Revision 2 post-deploy smoke 통과 |
 
 ## 현재 검증 상태
 
-한 synthetic Change Set이 원자적으로 commit되어 World Revision 1과 outbox를 만들고, worker가 정확한 Revision Snapshot과 단조 증가 served pointer를 Railway Bucket에 출판했다. Atropos의 Snapshot 전용 World·Canon·Event route와 public health/status가 같은 배포 SHA를 표시하며 공개 smoke를 통과했다. 세부 slice 계약은 [M1-WALKING-SKELETON](M1-WALKING-SKELETON.md)에 둔다.
+기존 World에 복수 Event·Relation·Canon/Event Narrative·Time System·시간 배치를 한 Change Set으로 추가하여 Revision 2를 출판했다. 고정 fixture는 Event 3개, Relation 2개, Narrative 2개, 시간 배치 3개다. 원자성, 잘못된 Canon/dangling reference 거부, base Revision 충돌과 동일 digest 재시도는 PostgreSQL 통합 테스트로 검증했다.
 
-Milestone 2의 종료조건은 아직 미충족이다. 현재 slice 계약과 rollback 단위는 [M2-WORLD-EXPANSION](M2-WORLD-EXPANSION.md)에 둔다. Raw log, command history, secret, 환경 변수와 장황한 작업 회고는 기록하지 않는다.
+공개 Atropos에서 Narrative·시간·Relation 이동과 검색을 확인했다. revision-pinned Event/search JSON은 ETag·immutable cache·CDN HIT/Age를 제공하며, projection allowlist와 private synthetic marker 비노출 검증을 통과했다. 모바일 흐름은 CI WebKit으로 검증했으며 실제 iPhone 기기 검증과 이번 배포의 rollback 실연은 수행하지 않았다.
+
+slice 계약과 rollback 단위는 [M2-WORLD-EXPANSION](M2-WORLD-EXPANSION.md)에 둔다. 기존 Moirai Railway 자원만 사용했으며 URDR 저장소와 인프라 구성은 이번 slice에서 수정하지 않았다. 다음 최소 작업은 별도 활성화 후 IP-001 Milestone 3 — Clotho 최소 작성이다. Raw log, command history, secret과 환경 변수는 기록하지 않는다.

@@ -29,13 +29,13 @@
 
 - 하나의 Lachesis 서비스가 정본 데이터와 모든 변경을 소유한다.
 - 정본 저장소는 PostgreSQL이다.
-- Clotho와 Atropos는 정본 저장소에 직접 접근하지 않는다.
+- Clotho application과 Atropos는 정본 저장소에 직접 접근하지 않는다. API bootstrap만 내부 Lachesis와 DB를 조립한다.
 - 하나의 의미 있는 작성 작업은 한 World에 대한 원자적 Change Set이다.
 - 현재 상태와 변경 이력을 같은 트랜잭션에서 기록한다.
 - 성공한 Change Set은 별도 승인 없이 Publication의 목표 Revision이 된다.
 - Atropos는 완성된 불변 Publication Snapshot만 읽는다.
 - 파생 모델과 공개 읽기 모델은 정본 데이터로부터 다시 만들 수 있어야 한다.
-- Clotho는 작은 읽기 기능과 원자적 Change Set을 조합하는 얇은 skill이다.
+- Clotho는 skill·CLI·HTTP·MCP·외부 인증과 작업 맥락 구성을 소유하는 운영 인터페이스다. Lachesis는 내부 최종 인가·정본 실행기다.
 - 파생 모델은 근거와 algorithm version을 가지며 Canon의 새 사실을 만들지 않는다.
 - Atropos는 React·Next.js와 JointJS를 사용하고 Revision별 공개 artifact를 읽는다.
 - World export는 화면이나 DB dump가 아닌 versioned portable package다.
@@ -49,7 +49,7 @@
 |---|---|---|
 | 서비스 구조 | TypeScript modular monolith와 PostgreSQL에서 시작하고 API·worker·public web의 배포 경계를 분리한다. | TS-001, TS-008 |
 | 변경 단위 | 한 World의 Change Set을 유일한 쓰기 단위로 삼고 revision, audit, outbox를 같은 트랜잭션에 기록한다. | TS-002, TS-003 |
-| Clotho 책임 | 거대한 고정 workflow나 별도 승인 문서를 두지 않고 작은 읽기와 검증 가능한 Change Plan만 제공한다. | TS-004 |
+| Clotho 책임 | 운영상 접근·외부 인증·도구 계약과 작성 경험을 소유하며 작은 도구를 조합한다. 최종 인가·정본 규칙은 Lachesis에 둔다. | TS-004 |
 | 정체성 의미 | 동일 개체의 연속성은 equivalence로 묶고 분기·병합 계보는 별도 lineage로 보존한다. | TS-002, TS-005 |
 | 공개 경계 | Atropos는 정본 API가 아니라 CDN의 revision별 불변 snapshot만 읽는다. | TS-001, TS-003, TS-006 |
 | 그래프 표현 | JointJS와 semantic zoom을 사용하고 복합 영역은 시간축 sweep envelope로 계산한다. | TS-006 |

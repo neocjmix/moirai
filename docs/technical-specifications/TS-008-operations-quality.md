@@ -27,12 +27,13 @@ traces:
 |---|---|
 | Atropos public web | 익명 읽기 |
 | Publication Store | Atropos의 읽기와 worker의 쓰기 |
-| Lachesis private API | 인증된 operator와 Clotho client |
-| Canonical PostgreSQL | Lachesis API, worker와 제한된 migration job |
+| Clotho HTTP·MCP | 인증된 operator와 agent·CLI client |
+| Lachesis internal application | 신뢰된 서버 Clotho와 제한된 내부 운영 |
+| Canonical PostgreSQL | Lachesis application, worker와 제한된 migration job |
 | private source storage | Lachesis의 origin 기능과 export job |
 
 - Atropos runtime은 Canonical PostgreSQL credential을 갖지 않는다.
-- Clotho는 데이터베이스와 Publication Store에 직접 접근하지 않는다.
+- Clotho application은 데이터베이스와 Publication Store에 직접 접근하지 않는다. 같은 프로세스의 bootstrap만 Lachesis와 DB를 조립한다. 이 배치는 credential 격리를 제공하지 않는다.
 - worker는 정본을 읽고 projection을 쓰지만 정본 세계 내용을 수정하지 않는다.
 - 관리 endpoint를 public route prefix 아래 두지 않는다.
 
@@ -42,7 +43,7 @@ traces:
 
 ### 인간 operator
 
-- 외부 OIDC provider를 사용한다.
+- Clotho 서버가 외부 OIDC provider의 토큰을 검증하고 내부 actor로 매핑한다. issuer·audience·signature·만료·scope를 확인하며 OIDC subject나 email을 정본 actor로 쓰지 않는다.
 - 애플리케이션이 password database를 직접 운영하지 않는다.
 - private 관리 UI가 cookie session을 사용하면 `HttpOnly`, `Secure`, `SameSite`와 CSRF 방어를 적용한다.
 - 중요 export와 credential 변경에는 최근 인증을 요구할 수 있다.
@@ -57,7 +58,8 @@ traces:
 ### 권한 규칙
 
 - 1차 구현에서 한 operator가 모든 World를 관리할 수 있다.
-- API contract에는 actor와 scope를 남겨 이후 다중 사용자 권한을 추가할 수 있게 한다.
+- Lachesis 내부 계약은 인증된 actor, 허용 World, 행위 scope와 만료를 요구한다. 최종 인가는 adapter 밖에서도 실행하며 commit마다 재확인한다. 외부 요청의 actor·scope는 신뢰하지 않는다.
+- 같은 process에서는 신뢰된 bootstrap이 인증 adapter와 내부 application을 연결한다. 별도 process로 분리할 때는 검증된 서비스 간 신뢰 전달 계약을 먼저 정의한다.
 - 다중 역할, 승인 workflow와 공동 편집은 구현하지 않는다.
 - 인증 방식이 Canon의 진실 지위나 Publication 상태를 만들지 않는다.
 
@@ -110,9 +112,14 @@ traces:
 
 ### metrics
 
+#### Clotho
+
+- 외부 request·tool rate, latency와 error rate
+- 인증 실패, scope 거부, 입력·응답 예산과 호출 제한
+
 #### Lachesis
 
-- request rate, latency와 error rate
+- 내부 command·query latency와 최종 인가 거부
 - validation error code 분포
 - commit latency와 transaction rollback
 - Revision conflict와 idempotent replay 수
@@ -240,7 +247,7 @@ budget을 넘기면 cell을 전부 생성한 뒤 숨기지 않고 더 낮은 LOD
 
 논리적 production 단위:
 
-- `lachesis-api`: private network
+- `clotho-api`: 인증된 public TLS endpoint; Lachesis application은 같은 process의 private module
 - `lachesis-worker`: private network
 - `atropos-web`: public edge/web runtime
 - managed PostgreSQL
@@ -264,7 +271,7 @@ budget을 넘기면 cell을 전부 생성한 뒤 숨기지 않고 더 낮은 LOD
 1. contract와 migration compatibility test
 2. artifact build, SBOM과 dependency scan
 3. migration dry-run 또는 shadow database 검증
-4. Lachesis API/worker 순차 배포
+4. Clotho API(내부 Lachesis 포함)/worker 순차 배포
 5. health·error·projection canary 확인
 6. Atropos 배포
 7. synthetic public route와 Change→Publication 검증
@@ -275,7 +282,8 @@ application rollback은 World Revision을 되돌리지 않는다. 잘못된 세�
 
 ### contract test
 
-- Clotho command/query schema
+- Clotho command/query schema와 CLI·MCP 동등성
+- adapter 없는 Lachesis 최종 인가·World 격리·만료·actor 위조 차단
 - Publication Snapshot format
 - export/import package version
 - 구버전 reader와 새 optional field compatibility
@@ -308,6 +316,7 @@ test runner가 종료되지 않거나 background handle을 남기는 것도 실�
 
 ## TS-008.18 정적 분석과 품질 gate
 
+- Clotho application→persistence, Lachesis core→MCP·OIDC·CLI 의존 금지 검사
 - TypeScript strict mode
 - formatter와 lint
 - SQL migration lint와 schema drift 검사

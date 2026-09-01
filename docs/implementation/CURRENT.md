@@ -5,10 +5,10 @@
 | 항목 | 현재 값 |
 |---|---|
 | 기준 계획 | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md) |
-| 실행 상태 | `active` — 사용자 승인된 M3 연결 확장 |
-| 활성 milestone | M3 연결 확장 — 외부 OIDC·Clotho MCP; Milestone 4 이후 미착수 |
-| 현재 slice | 기존 synthetic World 하나로 제한한 MCP·외부 OIDC 인증 연결 |
-| 연결 blocker | 외부 OIDC provider·운영자 subject·ChatGPT OAuth client 설정 미확보; 실제 대화 연결은 미완료 |
+| 실행 상태 | `active` — 사용자 승인된 M3-R 책임 경계 재정렬 |
+| 활성 milestone | M3-R — Clotho/Lachesis 경계 재정렬; 이후 M3-C Auth0 연결; M4 이후 미착수 |
+| 현재 slice | [M3-BOUNDARY](M3-BOUNDARY.md) Slice A 문서 기준선 → B 내부 분리 → C 기존 자원 배포 |
+| 연결 blocker | Auth0 Free 선정 완료; tenant·운영자·ChatGPT OAuth client 미설정. 실제 OAuth 연결 미완료 |
 | 완료 milestone | Milestone 0 전달·관측·보안 기반; 1 최초 vertical slice; 2 세계 확장; 3 Clotho 최소 작성 |
 | Milestone 3 구현·검증 commit | `894e9030ebb38e2fed326beea74139bbbf346836` |
 | public integration URL | <https://moirai-production-8ed1.up.railway.app/> |
@@ -22,6 +22,6 @@
 
 [M3-CLOTHO](M3-CLOTHO.md)의 범위를 구현했다. CI에서 format·lint·strict typecheck·unit 26개·PostgreSQL integration 10개·production build·dependency audit·gitleaks·mobile WebKit을 통과했다. 새 CLI 프로세스가 World를 재발견하고 context를 읽은 뒤 validate·commit·동일 요청 replay를 수행했다. 실제 worker가 공개한 Event의 Narrative와 Relation, revision JSON을 검증했다. 원본 Lantern fixture의 Revision 2는 유지한다.
 
-신규 credential은 read/write scope와 Clotho synthetic World 하나로 제한하고 30일 만료를 적용했다. 원문은 GitHub Actions secret, hash 설정은 Railway API에만 저장했다. 외부 PR에는 이 secret을 주입하지 않는다. Atropos·worker에는 credential이 없다. 일반 ChatGPT 대화가 자동 인증되는 것은 아니며, 다른 agent 실행 환경은 별도의 안전한 secret injection 연결이 필요하다.
+신규 credential은 read/write scope와 Clotho synthetic World 하나로 제한하고 30일 만료를 적용했다. 원문은 GitHub Actions secret, hash 설정은 Railway API에만 저장했다. 외부 PR에는 이 secret을 주입하지 않는다. Atropos·worker에는 credential이 없다. MCP 배포 `4c80ee6`의 CI·[smoke 33512933575](https://github.com/neocjmix/moirai/actions/runs/33512933575) 성공 이력도 유지한다. 일반 ChatGPT 대화가 자동 인증되는 것은 아니며, 다른 agent 실행 환경은 별도의 안전한 secret injection 연결이 필요하다.
 
 실제 iPhone 기기 시험과 production rollback 실연은 수행하지 않았다. rollback은 credential hash 회수 또는 API endpoint 폐쇄 후 이전 정상 application commit으로 되돌리며 additive migration과 정본 Revision은 유지한다. 사용자는 외부 OIDC 로그인과 Clotho MCP 연결 확장을 승인했다. [연결 확장](M3-CONNECTION.md)은 실제 provider·ChatGPT 인증까지 검증하기 전 완료가 아니다. 제품 기능의 다음 milestone은 Milestone 4이며 아직 승인·활성화하지 않았다.

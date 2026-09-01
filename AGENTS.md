@@ -74,7 +74,7 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 
 - Prefer the public cloud integration environment for user verification; local execution remains an agent diagnostic tool.
 - Deploy small meaningful checkpoints frequently, with CI gating and a readiness healthcheck.
-- Keep Atropos public. Expose Lachesis only as required for authenticated clients. Do not give the worker or PostgreSQL a public application route.
+- Keep Atropos public. Expose only Clotho HTTP/MCP for authenticated operational clients; keep Lachesis application internal. Do not give the worker or PostgreSQL a public application route.
 - Reuse the dedicated URDR Railway resources where safe, but do not copy URDR's application architecture or data model.
 - For Atropos visual and interaction work, inspect and copy the corresponding URDR UI implementation by default. Preserve its visual identity and behavior unless accepted Moirai documents, an explicit user direction or a documented defect requires a change.
 - Record the URDR source path and commit for non-trivial UI copies, but do not make URDR a runtime dependency or the source of product meaning.
@@ -83,6 +83,14 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 - Rotate URDR-era credentials instead of reusing them.
 - Do not acquire a new paid provider or materially expand cost without user approval.
 - Do not copy the legacy URDR `railway.toml`; use Railway's current supported infrastructure configuration.
+
+## Service boundary enforcement
+
+- Clotho owns skill, CLI, external HTTP/MCP, authentication and authoring context. Lachesis owns canonical queries, final authorization, invariants and atomic commits.
+- Clotho application must not import persistence. Only `apps/clotho-api/src/app.ts` may wire database, Lachesis and readiness/shutdown.
+- Lachesis core must not import Clotho application, Fastify, MCP, OIDC or CLI. Internal calls require authenticated actor, World grants, action scope and expiry. Never trust actor fields from request bodies.
+- Run architecture checks, transport parity tests and adapter-independent authorization tests for boundary changes. Same-process modules are not OS or credential isolation.
+- Worker, migration, backup and recovery keep restricted internal paths. Do not add a public Lachesis route or a mandatory hidden tool sequence.
 
 ## Data and migrations
 

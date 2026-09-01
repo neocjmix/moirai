@@ -10,6 +10,8 @@ owner: Lachesis
 
 관련 헌법: [CON-002](../constitution/CON-002-system-boundaries.md), [CON-003](../constitution/CON-003-world-truth.md)
 
+Lachesis는 Clotho에서 전달한 작업의 최종 접근 권한과 세계 규칙을 확인하고 정본을 관리한다. 사용자·에이전트의 탐색·작성 경험과 외부 인증은 Clotho가 소유한다.
+
 ## BR-002.1 지속적 보존
 
 작성된 세계는 장기간 안정적으로 보존되어야 한다.

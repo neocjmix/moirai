@@ -31,7 +31,7 @@ traces:
 |---|---|
 | runtime | Node.js active LTS, TypeScript strict mode |
 | workspace | pnpm workspace monorepo |
-| Lachesis HTTP | Fastify와 versioned JSON Schema |
+| Clotho HTTP·MCP | Fastify와 versioned JSON Schema |
 | persistence | PostgreSQL, Kysely 기반 typed SQL과 명시적 migration |
 | background work | PostgreSQL outbox·job table과 같은 domain/projector module |
 | Atropos | Next.js App Router, React, JointJS |
@@ -41,9 +41,10 @@ traces:
 특정 hosting 사업자의 독점 기능을 정본 형식이나 domain contract에 포함하지 않는다.
 
 ```mermaid
-flowchart LR
-    LLM["LLM + Clotho Skill"] -->|private commands| API["Lachesis API"]
-    API --> DB[("Canonical PostgreSQL")]
+flowchart TD
+    LLM["LLM + Skill / CLI"] --> C["Clotho HTTP · MCP · 인증"]
+    C -->|내부 명령·조회| L["Lachesis application"]
+    L --> DB[("Canonical PostgreSQL")]
     DB --> W["Projection Worker"]
     W --> PS[("Publication Store")]
     WEB["Atropos Web"] -->|public reads| PS
@@ -53,8 +54,8 @@ flowchart LR
 
 | 구성 요소 | 책임 | 금지되는 책임 |
 |---|---|---|
-| Clotho Skill | LLM에 탐색·작성 도구를 제공하고 자연어 작업을 Lachesis 계약으로 변환한다. | 정본 검증을 단독으로 결정하거나 저장소에 직접 쓰지 않는다. |
-| Lachesis API | 명령 검증, Change Set 적용, 정본 조회, 이력·복구와 운영 진단을 소유한다. | 공개 독자 UI를 제공하거나 Projection을 정본으로 취급하지 않는다. |
+| Clotho | Skill·CLI·HTTP·MCP, 외부 인증, 도구 계약과 작업 맥락 구성을 소유한다. | 정본 검증을 단독으로 결정하거나 persistence를 직접 호출하지 않는다. |
+| Lachesis application | 최종 World·행위 인가, 명령 검증, Change Set 적용, 일관된 정본 조회와 이력·복구를 소유한다. | 외부 HTTP·MCP·OIDC·CLI에 의존하거나 Projection을 정본으로 취급하지 않는다. |
 | Projection Worker | 정본 Revision으로부터 파생 모델과 Publication Snapshot을 결정적으로 생성한다. | Canon의 사실을 수정하거나 작성 명령을 승인하지 않는다. |
 | Atropos Web | 완성된 공개 Snapshot을 읽어 탐색·비교·공유 화면을 제공한다. | 정본 저장소와 비공개 운영 정보에 접근하거나 세계 내용을 수정하지 않는다. |
 | Canonical PostgreSQL | 현재 정본 상태, Change Set, Revision과 비공개 운영 정보를 보존한다. | UI 전용 배치·좌표·캐시를 정본 사실로 승격하지 않는다. |
@@ -76,10 +77,12 @@ flowchart LR
 ### 기준 module layout
 
 ```text
-apps/lachesis-api
+apps/clotho-api
 apps/lachesis-worker
 apps/atropos-web
 packages/contracts
+packages/clotho-application
+packages/lachesis
 packages/domain
 packages/persistence
 packages/projections
@@ -92,14 +95,19 @@ skills/clotho
 - `persistence`: Kysely repository, transaction과 migration
 - `projections`: Subject·Timeline·graph 등 결정적 projector
 - `publication`: 공개 allowlist, Snapshot builder와 artifact contract
-- `skills/clotho`: instruction과 Lachesis client wrapper
+- `clotho-application`: transport와 무관한 도구 실행·입력 검증·내부 명령 변환
+- `lachesis`: 인증 방식과 무관한 내부 command/query 계약 및 최종 인가
+- `skills/clotho`: instruction과 Clotho HTTP client wrapper
+- `apps/clotho-api`: HTTP·MCP·OIDC adapter와 신뢰된 조립 지점
 
 1. 공유 계약은 식별자, 명령, 결과와 오류 형식을 정의한다.
 2. 도메인 모듈은 정본 불변식과 Change Set 검증을 정의한다.
-3. Lachesis adapter가 계약을 HTTP, CLI 또는 skill transport에 연결한다.
+3. Clotho adapter가 HTTP·MCP·CLI를 동일한 Clotho application 계약에 연결하고, application이 Lachesis 내부 계약을 호출한다.
 4. persistence adapter가 도메인 변경을 PostgreSQL 트랜잭션으로 반영한다.
 5. projection 모듈은 특정 UI 프레임워크 없이 Revision 입력을 공개·파생 출력으로 변환한다.
-6. Clotho와 Atropos는 공유 계약에 의존하지만 persistence adapter에는 의존하지 않는다.
+6. Clotho application과 Atropos는 persistence adapter에 의존하지 않는다. `apps/clotho-api/src/app.ts`의 bootstrap만 DB와 Lachesis를 조립하고 readiness·종료를 연결할 수 있다. HTTP handler와 MCP 도구에서 DB를 직접 사용하지 않는다.
+7. Lachesis core는 MCP·OIDC·CLI·Fastify와 Clotho application을 import하지 않는다. 내부 명령은 검증된 actor·허용 World·행위·만료 정보를 요구하며, 입력 payload의 actor는 신뢰하지 않는다.
+8. 내부 API는 World 단위의 완결된 명령과 조회다. Clotho가 여러 CRUD 호출로 정본 트랜잭션을 조립하지 않는다. Context Slice의 선택 목적·예산은 Clotho, Revision 일관성과 효율적인 조회는 Lachesis가 책임진다.
 
 ## TS-001.5 공개와 비공개 경계
 
@@ -133,13 +141,13 @@ Projection Worker는 허용 목록 방식으로 공개 Snapshot을 만든다. �
 
 1차 구현은 다음의 논리적 단위를 가진다.
 
-- private Lachesis API process
+- 인증된 외부 진입점인 Clotho API process와 그 안의 private Lachesis application
 - private Projection Worker process
 - public Atropos web deployment
 - PostgreSQL database
 - Publication Snapshot을 위한 읽기 전용 저장 표면
 
-API와 worker는 같은 애플리케이션 artifact를 다른 process role로 실행할 수 있다. Publication Store는 [TS-006](TS-006-atropos-publication.md)에 따라 S3-compatible object storage의 불변 artifact와 CDN으로 구현한다. Atropos에 정본 DB 자격 정보를 제공해서는 안 된다.
+Clotho와 Lachesis는 우선 같은 API process에서 실행한다. 이는 코드·책임 경계이며 OS·credential 격리가 아니다. 별도 서비스 인증이나 서버 증설은 이번 전환에 포함하지 않는다. API와 worker는 같은 애플리케이션 artifact를 다른 process role로 실행할 수 있다. Publication Store는 [TS-006](TS-006-atropos-publication.md)에 따라 S3-compatible object storage의 불변 artifact와 CDN으로 구현한다. Atropos에 정본 DB 자격 정보를 제공해서는 안 된다.
 
 ## TS-001.8 계약과 버전
 
@@ -151,7 +159,7 @@ API와 worker는 같은 애플리케이션 artifact를 다른 process role로 �
 
 ## TS-001.9 보안 기준선
 
-- Lachesis와 Clotho는 비공개 인증 경계 안에 둔다.
+- Clotho만 사용자·에이전트의 인증된 외부 운영 endpoint를 제공한다. Lachesis 내부 명령을 별도 public route로 노출하지 않는다.
 - 1차 구현은 하나의 운영 권한으로 충분하지만 익명 쓰기는 허용하지 않는다.
 - Atropos의 실행 자격은 공개 읽기 데이터에만 접근할 수 있다.
 - private API 응답도 호출 목적에 필요한 최소 데이터만 반환한다.

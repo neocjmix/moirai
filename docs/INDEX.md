@@ -19,6 +19,8 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IS-001 — 에이전트·모바일 중심 구현 전략](implementation/IS-001-agent-mobile-strategy.md)
 - [IP-001 — 첫 제품 구현 계획](implementation/IP-001-first-product-plan.md)
 - [현재 구현 상태](implementation/CURRENT.md)
+- [M3-R 책임 경계 재정렬](implementation/M3-BOUNDARY.md)
+- [M3-C Auth0·MCP 연결](implementation/M3-CONNECTION.md)
 - [Milestone 0 infrastructure inventory](implementation/M0-INFRASTRUCTURE.md)
 
 구현 운영 원칙은 제품 의미를 정의하지 않지만 에이전트가 코드를 작성·검증·배포하고 사용자에게 결과를 전달하는 방식을 구속한다.

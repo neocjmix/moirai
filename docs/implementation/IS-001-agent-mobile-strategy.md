@@ -274,7 +274,7 @@ Railway를 우선 후보로 사용하되 책임 경계를 유지한다.
 
 | Service/resource | exposure |
 |---|---|
-| `lachesis-api` | 인증된 Clotho가 접근할 public TLS endpoint, 쓰기 권한 필수 |
+| `clotho-api` | 인증된 사용자·에이전트의 public TLS endpoint; 내부 Lachesis application 포함 |
 | `lachesis-worker` | public domain 없음, private network 사용 |
 | `atropos-web` | 완전 공개 |
 | PostgreSQL | application private network만 사용 |
@@ -330,6 +330,10 @@ Railway는 private S3-compatible [Storage Buckets](https://docs.railway.com/stor
 - 보안 모델이나 공개범위에 관한 선택이 필요한 경우
 
 일시적인 tool 실패, test failure와 배포 오류는 먼저 안전하게 진단하고 고친다. 실패한 상태를 성공으로 보고하지 않는다.
+
+## 책임 경계 유지
+
+[TS-001](../technical-specifications/TS-001-system-architecture.md)·[TS-004](../technical-specifications/TS-004-clotho-contract.md)의 경계를 CI 의존성 검사와 내부 인가 test로 유지한다. Clotho application은 persistence를 직접 호출하지 않으며 Lachesis core는 외부 transport·OIDC·CLI에 의존하지 않는다. DB 조립 예외는 `apps/clotho-api/src/app.ts`만 허용한다. CLI·MCP 동등성과 adapter 없는 Lachesis 권한 검증을 배포 gate에 포함한다.
 
 ## IS-001.13 완료의 정의
 

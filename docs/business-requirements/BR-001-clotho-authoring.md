@@ -10,6 +10,8 @@ owner: Clotho
 
 관련 헌법: [CON-001](../constitution/CON-001-purpose.md), [CON-002](../constitution/CON-002-system-boundaries.md), [CON-004](../constitution/CON-004-human-authority.md)
 
+Clotho는 사용자의 운영상 탐색·작성 진입점과 호출 주체 인증을 소유한다. 작업 맥락과 오류 회복을 제공하며, 최종 접근 통제와 원자적 정본 반영은 Lachesis에 위임한다.
+
 ## BR-001.1 세계 생성
 
 사용자는 자료나 자연어 지시를 통해 LLM으로 새로운 세계를 만들 수 있어야 한다.

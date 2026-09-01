@@ -3,7 +3,6 @@ id: IP-001
 title: 첫 제품 구현 계획
 status: accepted
 layer: implementation-plan
-execution_status: not-started
 ---
 
 # IP-001 — 첫 제품 구현 계획
@@ -229,6 +228,19 @@ Clotho가 synthetic World의 기존 맥락을 읽고 Event와 Narrative를 추�
 3. conflict 후 최신 범위를 다시 읽어 안전하게 재계획할 수 있다.
 4. credential과 숨은 LLM 작업 과정이 log, prompt artifact, Change history와 public Snapshot에 남지 않는다.
 5. Clotho commit부터 모바일 Atropos 확인까지 synthetic E2E가 통과한다.
+
+### M3 후속 — 책임 경계와 실제 연결
+
+2026-09-02 KST 사용자 승인으로 M3 후속 작업의 순서를 **M3-R → M3-C**로 정렬한다. M0~M3 완료 이력과 M4·M5 번호·범위는 유지한다. 실행 상태의 유일한 소유자는 [CURRENT.md](CURRENT.md)다.
+
+| 단계 | 실행·종료조건 |
+|---|---|
+| M3-R Slice A | CON·BR·TS·IS·AGENTS와 계획을 일치시키고 링크·ID·추적을 검증한다. runtime 변경 없음. |
+| M3-R Slice B | Clotho 외부 adapter/application과 Lachesis 내부 실행기를 분리한다. 내부 최종 인가, CLI/MCP 동등성, 원자성·충돌·중복 방지를 검증한다. |
+| M3-R Slice C | 기존 Railway API 자원·URL을 재사용하여 Clotho 진입점을 배포한다. health SHA와 CLI/MCP→worker→Atropos smoke가 통과한다. |
+| M3-C Slice D | Auth0 Free를 Clotho endpoint에 연결한다. 운영자 한 명·synthetic World 하나로 실제 로그인·도구 탐색·읽기·쓰기·권한 거부·긴급 차단을 검증한다. |
+
+구체 전환·rollback 계획은 [M3-BOUNDARY](M3-BOUNDARY.md), OAuth 연결은 [M3-CONNECTION](M3-CONNECTION.md)에 둔다. CI bearer smoke와 실제 OAuth 성공은 별도 증거다. LLM wrapper, Tenant·ACL, workflow 엔진, M4와 별도 서비스 증설은 포함하지 않는다.
 
 ## IP-001.8 Milestone 4 — 파생 모델·비교·그래프
 

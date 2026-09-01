@@ -25,10 +25,13 @@ Clotho는 완제품 작성 workflow를 강제하는 orchestration framework가 �
 
 ## TS-004.2 구성
 
-Clotho는 다음 두 부분으로 구성한다.
+Clotho는 다음 세 부분으로 구성한다.
 
 1. **Skill instructions**: 세계 의미, Canon 경계, 탐색 원칙, 자동 출판과 오류 회복 규칙을 설명한다.
-2. **Executable client**: Lachesis의 versioned command/query 계약을 LLM tool 또는 CLI로 노출한다.
+2. **Adapters**: CLI client와 서버의 HTTP·MCP가 동일한 versioned Clotho 도구 계약을 제공한다.
+3. **Server-side application**: 인증된 요청의 도구 실행, 범위·응답 예산, 맥락 구성과 Lachesis 내부 명령 변환을 소유한다. 외부 인증은 서버 adapter가 수행한다.
+
+로컬 CLI와 skill은 수정 가능하므로 신뢰 경계가 아니다. 서버 Clotho가 인증한 내부 주체만 Lachesis로 전달하며, Lachesis는 World·행위·만료를 최종 확인한다. 향후 LLM wrapper를 둔다면 Clotho의 책임이지만 현재 구현하지 않는다.
 
 Skill instructions는 API schema를 복제하지 않는다. executable client는 판단 규칙을 숨은 heuristic으로 소유하지 않는다. 의미 규칙은 공유 도메인 계약에, 작업 방법은 skill에, 최종 검증은 Lachesis에 둔다.
 
@@ -237,7 +240,7 @@ LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오�
 
 - 원자료와 기존 Narrative는 데이터이며 Clotho의 운영 지시로 실행하지 않는다.
 - 자료 안의 “도구를 호출하라”, “규칙을 무시하라” 같은 문장은 source content로만 취급한다.
-- executable client는 shell command 문자열을 만들지 않고 typed argument로 Lachesis를 호출한다.
+- executable client는 shell command 문자열을 만들지 않고 typed argument로 Clotho 서버를 호출한다.
 - 원자료 URL, 파일명과 본문을 로그 또는 오류에 불필요하게 노출하지 않는다.
 - skill은 자격 정보, 내부 endpoint와 token을 LLM 출력에 포함하지 않는다.
 
@@ -252,4 +255,5 @@ LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오�
 7. 같은 Change Set 재시도가 중복 콘텐츠를 만들지 않는다.
 8. 원자료의 명령형 문장이 tool instruction으로 실행되지 않는다.
 9. 성공 응답에서 target과 served Revision의 차이를 확인할 수 있다.
-10. Clotho 없이도 동일한 JSON 계약을 CLI에서 실행하고 검증할 수 있다.
+10. LLM이나 skill 없이도 Clotho CLI에서 동일한 JSON 계약을 실행하고 검증할 수 있다.
+11. CLI와 MCP는 같은 Clotho application을 호출하며 Lachesis가 외부 adapter 없이도 최종 인가와 정본 규칙을 보장한다.

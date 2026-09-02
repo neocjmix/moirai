@@ -8,7 +8,7 @@
 | 실행 상태 | `active` — M3-R 완료, M3-C OIDC 배포 완료·실제 OAuth 검증 대기 |
 | 활성 milestone | M3-C — Auth0 Free·ChatGPT 연결; M4 이후 미착수 |
 | 현재 slice | M3-R Slice A·B·C 완료; Auth0 운영자 매핑·Clotho OIDC 설정 배포 완료; 실제 ChatGPT OAuth 검증 대기 |
-| 연결 blocker | 운영자 계정 생성과 기존 내부 actor 매핑 완료. 새 작업 브라우저에서 ChatGPT 로그아웃 상태이며 로그인 버튼이 인증창을 열지 않아 사용자 직접 로그인이 필요하다. 실제 connector 생성·OAuth 도구 호출은 미완료다. |
+| 연결 blocker | 실제 ChatGPT 인증 시 Auth0에서 `no connections enabled for the client`가 발생했다. 기존 운영자 DB 연결의 도메인 수준 활성화를 저장하고 새로고침 후 유지됨을 확인했다. ChatGPT에서 새 OAuth 흐름을 시작해 로그인·도구 호출을 검증해야 한다. |
 | 업로드·배포 승인 | 2026-09-02 KST 사용자가 이번 코드를 공개 `neocjmix/moirai` main에 업로드하고 기존 Railway에 배포하는 것을 명시적으로 승인함. |
 | 완료 milestone | Milestone 0 전달·관측·보안 기반; 1 최초 vertical slice; 2 세계 확장; 3 Clotho 최소 작성 |
 | Milestone 3 구현·검증 commit | `894e9030ebb38e2fed326beea74139bbbf346836` |
@@ -35,5 +35,7 @@ Auth0 운영자 계정 생성을 확인하고 기존 내부 actor에 연결했�
 
 최근 재확인: `f9cad5b`의 [CI 33598953723](https://github.com/neocjmix/moirai/actions/runs/33598953723)와 [smoke 33599076512](https://github.com/neocjmix/moirai/actions/runs/33599076512)는 성공했다. 이후 같은 코드에 OIDC 설정을 추가한 Railway 배포가 Active가 되었고 readiness 200·OAuth resource metadata 200을 확인했다. 이 결과는 실제 사용자 OAuth 읽기·쓰기 성공을 의미하지 않는다.
 
-다음 조치: 작업 브라우저의 ChatGPT 로그인을 완료하고 명시적 OAuth client로 MCP connector를 생성한다. 실제 OAuth 읽기·validate·commit·Publication, 권한 거부와 긴급 차단 절차를 별도 검증한다.
+Auth0 연결 오류 수정: 2026-09-02 실패 로그에서 로그인 연결 누락을 확인했다. 기존 운영자 DB 연결의 `Promote Connection to Domain Level`을 활성화하고 `Save` 후 새로고침으로 저장을 검증했다. 체크 표시만으로 저장을 가정하지 않는다. 이 설정은 해당 tenant의 third-party client가 로그인 연결을 사용할 수 있게 하며, Clotho의 단일 운영자·World·scope 제한은 그대로 적용된다.
+
+다음 조치: ChatGPT에서 명시적 OAuth client 연결의 새 인증 흐름을 시작한다. 실제 OAuth 읽기·validate·commit·Publication, 권한 거부와 긴급 차단 절차를 별도 검증한다.
 

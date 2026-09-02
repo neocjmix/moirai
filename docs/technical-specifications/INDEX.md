@@ -22,6 +22,7 @@
 | TS-006 | [Atropos 공개 읽기와 그래프 탐색](TS-006-atropos-publication.md) | Snapshot, URL, 검색, JointJS graph | accepted |
 | TS-007 | [반출·복구와 스키마 진화](TS-007-portability.md) | package, import, migration, 의미 보존 | accepted |
 | TS-008 | [보안·운영·성능과 배포 품질](TS-008-operations-quality.md) | 인증, backup, SLO, 관측성, 배포 | accepted |
+| TS-009 | [잠재 3D 그래프 레이아웃과 2D 투영](TS-009-latent-3d-graph-layout.md) | Y-constrained XZ-free layout, yaw projection, 기존 2D region·routing 재사용 | draft |
 
 ## 1차 기술 기준선
 
@@ -41,6 +42,8 @@
 - World export는 화면이나 DB dump가 아닌 versioned portable package다.
 - 운영 장애와 공개 전파 지연은 콘텐츠의 draft·승인 상태로 표현하지 않는다.
 
+TS-009의 잠재 3D 레이아웃은 현재 `draft`이며 위 기준선의 필수 요소가 아니다. 검증·승인되기 전까지 TS-006의 2D constrained layout이 accepted 기준선이다.
+
 ## 일괄 검토 초점
 
 세부 문구보다 먼저 아래 기준선에 동의하는지 확인한다. 하나가 바뀌면 연결된 여러 명세를 함께 수정해야 한다.
@@ -52,7 +55,7 @@
 | Clotho 책임 | 운영상 접근·외부 인증·도구 계약과 작성 경험을 소유하며 작은 도구를 조합한다. 최종 인가·정본 규칙은 Lachesis에 둔다. | TS-004 |
 | 정체성 의미 | 동일 개체의 연속성은 equivalence로 묶고 분기·병합 계보는 별도 lineage로 보존한다. | TS-002, TS-005 |
 | 공개 경계 | Atropos는 정본 API가 아니라 CDN의 revision별 불변 snapshot만 읽는다. | TS-001, TS-003, TS-006 |
-| 그래프 표현 | JointJS와 semantic zoom을 사용하고 복합 영역은 시간축 sweep envelope로 계산한다. | TS-006 |
+| 그래프 표현 | JointJS와 semantic zoom을 사용하고 복합 영역은 시간축 sweep envelope로 계산한다. 잠재 3D 확장은 TS-009에서 별도 검증한다. | TS-006, TS-009 |
 | 이동 가능성 | `.moirai` versioned package를 표준 반출·복구 형식으로 사용하고 의미 fingerprint로 이관을 검증한다. | TS-007 |
 | 운영 기준 | 공개 전파와 graph rendering을 포함한 SLO·용량 한계·복구 목표를 출시 조건으로 다룬다. | TS-008 |
 
@@ -68,3 +71,4 @@
 | TS-006 | CON-002, CON-003, CON-005, BR-003, BR-004, BR-007, JRN-003, JRN-005 |
 | TS-007 | CON-007, BR-002, BR-006, JRN-006 |
 | TS-008 | CON-002, CON-004, CON-005, CON-007, BR-002, BR-003, BR-005, BR-006, BR-007 |
+| TS-009 | CON-003, BR-003, BR-004, JRN-003, JRN-005 |

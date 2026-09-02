@@ -7,8 +7,8 @@
 | 기준 계획 | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md) |
 | 실행 상태 | `active` — M3-R 구현·배포 검증 완료, M3-C 외부 계정 연결 준비 |
 | 활성 milestone | M3-C — Auth0 Free·ChatGPT 연결; M4 이후 미착수 |
-| 현재 slice | M3-R Slice A·B·C 완료; 다음은 실제 Auth0 계정·tenant 설정 |
-| 연결 blocker | Auth0 Free 선정 완료; tenant·운영자·ChatGPT OAuth client 미설정. 추가 승인 후 GitHub 방식 선택과 이메일 읽기 OAuth 승인을 진행했다. Auth0 첫 설정 화면의 `Error submitting the form` 오류로 중단; 가입 완료·tenant 생성은 미확인. 실제 OAuth 연결 미완료 |
+| 현재 slice | M3-R Slice A·B·C 완료; Auth0 API·ChatGPT client 등록 완료; 실제 사용자 OAuth 연결 대기 |
+| 연결 blocker | Auth0 가입·tenant 생성 완료. MCP operator의 subject 매핑·Railway OIDC 설정·ChatGPT connector 연결은 미완료. 작업 브라우저 초기화 후 ChatGPT 로그아웃 상태이며 로그인 버튼에서 인증 폼이 열리지 않아 수동 제어가 필요함. |
 | 업로드·배포 승인 | 2026-09-02 KST 사용자가 이번 코드를 공개 `neocjmix/moirai` main에 업로드하고 기존 Railway에 배포하는 것을 명시적으로 승인함. |
 | 완료 milestone | Milestone 0 전달·관측·보안 기반; 1 최초 vertical slice; 2 세계 확장; 3 Clotho 최소 작성 |
 | Milestone 3 구현·검증 commit | `894e9030ebb38e2fed326beea74139bbbf346836` |
@@ -31,4 +31,6 @@ M3-R 문서 기준선은 `18638a5`에, 구현은 원격 `edfc16ee74afe06ef2ae615
 
 Railway 기존 API 자원과 URL·DB·credential을 유지한다. 시작 명령 설정을 `pnpm --filter @moirai/clotho-api start`로 변경했다. 호환용 `@moirai/lachesis-api` package는 launcher만 남으며 HTTP·인증·정본 코드가 없다. `CLOTHO_OIDC_JSON`은 아직 없고 실제 OAuth 로그인도 미완료다.
 
-다음 조치: Auth0 첫 설정 오류를 사용자에게 알리고 기존 Cloud Browser의 수동 제어로 이어간다. 브라우저 인증 지침에 따라 일반 가입 오류의 자동 제출은 반복하지 않는다. 가입 완료가 확인되면 Moirai tenant·API·ChatGPT client를 설정한다. 단일 운영자·synthetic World 하나·read/write 제한을 유지한다. 관리 계정 가입과 실제 MCP 사용자 OAuth 시험은 별도 단계다. [M3-CONNECTION](M3-CONNECTION.md)의 설정·회수 체크리스트를 따른다.
+Auth0 가입과 MCP용 API·OAuth client 설정을 진행했다. 실제 사용자 로그인과 Clotho OIDC 연결은 미완료다. provider 식별자·개별 설정값은 공개 문서에 추가하지 않는다.
+
+다음 조치: 현재 작업 브라우저에서 ChatGPT 로그인을 완료하고 MCP 연결을 설정한다. 실제 MCP operator를 확인한 뒤 기존 단일 운영자·synthetic World 하나·read/write 제한으로 OIDC를 연결하고 검증한다. 관리 계정 가입은 MCP operator 가입과 별개다.

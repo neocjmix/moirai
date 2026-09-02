@@ -8,7 +8,7 @@
 | 실행 상태 | `active` — M3-R 구현·배포 검증 완료, M3-C 외부 계정 연결 준비 |
 | 활성 milestone | M3-C — Auth0 Free·ChatGPT 연결; M4 이후 미착수 |
 | 현재 slice | M3-R Slice A·B·C 완료; Auth0 API·ChatGPT client 등록 완료; 실제 사용자 OAuth 연결 대기 |
-| 연결 blocker | Auth0 가입·tenant 생성 완료. MCP operator의 subject 매핑·Railway OIDC 설정·ChatGPT connector 연결은 미완료. 작업 브라우저 초기화 후 ChatGPT 로그아웃 상태이며 로그인 버튼에서 인증 폼이 열리지 않아 수동 제어가 필요함. |
+| 연결 blocker | Auth0 관리 설정 완료. 사용자 목록에서 MCP operator 미생성을 확인했다. 운영자 가입·subject 매핑·Railway OIDC 설정·ChatGPT connector 연결이 남았다. ChatGPT 로그인·개발자 모드 활성화는 앞선 세션에서 확인했으며 새 작업 브라우저의 세션 상태는 별도 재확인한다. |
 | 업로드·배포 승인 | 2026-09-02 KST 사용자가 이번 코드를 공개 `neocjmix/moirai` main에 업로드하고 기존 Railway에 배포하는 것을 명시적으로 승인함. |
 | 완료 milestone | Milestone 0 전달·관측·보안 기반; 1 최초 vertical slice; 2 세계 확장; 3 Clotho 최소 작성 |
 | Milestone 3 구현·검증 commit | `894e9030ebb38e2fed326beea74139bbbf346836` |
@@ -33,4 +33,6 @@ Railway 기존 API 자원과 URL·DB·credential을 유지한다. 시작 명령 
 
 Auth0 가입과 MCP용 API·OAuth client 설정을 진행했다. 실제 사용자 로그인과 Clotho OIDC 연결은 미완료다. provider 식별자·개별 설정값은 공개 문서에 추가하지 않는다.
 
-다음 조치: 현재 작업 브라우저에서 ChatGPT 로그인을 완료하고 MCP 연결을 설정한다. 실제 MCP operator를 확인한 뒤 기존 단일 운영자·synthetic World 하나·read/write 제한으로 OIDC를 연결하고 검증한다. 관리 계정 가입은 MCP operator 가입과 별개다.
+최근 재확인: 원격 `48a45b2`와 API readiness·Atropos status의 SHA가 일치했다. [CI 33594527826](https://github.com/neocjmix/moirai/actions/runs/33594527826)와 [smoke 33594632377](https://github.com/neocjmix/moirai/actions/runs/33594632377)는 성공했다. OAuth metadata는 설정 미완료 상태에서 503을 반환한다.
+
+다음 조치: MCP operator 가입을 완료하고 기존 단일 운영자·synthetic World 하나·read/write 제한으로 OIDC를 연결한다. 이어서 ChatGPT MCP 로그인·읽기·쓰기·권한 거부를 검증한다. 관리 계정 가입은 MCP operator 가입과 별개다.

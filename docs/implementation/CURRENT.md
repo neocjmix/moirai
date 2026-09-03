@@ -2,40 +2,36 @@
 
 세션과 에이전트 사이의 짧은 상태판이다. 다음 milestone은 사용자 지시 없이 활성화하지 않는다.
 
-| 항목 | 현재 값 |
-|---|---|
-| 기준 계획 | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md) |
-| 실행 상태 | `active` — M3-R 완료, M3-C OIDC 배포 완료·실제 OAuth 검증 대기 |
-| 활성 milestone | M3-C — Auth0 Free·ChatGPT 연결; M4 이후 미착수 |
-| 현재 slice | M3-R Slice A·B·C 완료; Auth0 운영자 매핑·Clotho OIDC 설정 배포 완료; 실제 ChatGPT OAuth 검증 대기 |
-| 연결 blocker | 실제 ChatGPT 인증 시 Auth0에서 `no connections enabled for the client`가 발생했다. 기존 운영자 DB 연결의 도메인 수준 활성화를 저장하고 새로고침 후 유지됨을 확인했다. ChatGPT에서 새 OAuth 흐름을 시작해 로그인·도구 호출을 검증해야 한다. |
-| 업로드·배포 승인 | 2026-09-02 KST 사용자가 이번 코드를 공개 `neocjmix/moirai` main에 업로드하고 기존 Railway에 배포하는 것을 명시적으로 승인함. |
-| 완료 milestone | Milestone 0 전달·관측·보안 기반; 1 최초 vertical slice; 2 세계 확장; 3 Clotho 최소 작성 |
-| Milestone 3 구현·검증 commit | `894e9030ebb38e2fed326beea74139bbbf346836` |
-| public integration URL | <https://moirai-production-8ed1.up.railway.app/> |
-| Clotho synthetic World | <https://moirai-production-8ed1.up.railway.app/worlds/01995c2a-7b00-7000-8000-000000000101> |
-| Clotho 인증 API | <https://desirable-vitality-production-eb95.up.railway.app> — health 외 작성·탐색 요청은 bearer 인증 필수 |
-| 종료조건 CI | [33488232165](https://github.com/neocjmix/moirai/actions/runs/33488232165) `success` |
-| 종료조건 smoke | [33488357469](https://github.com/neocjmix/moirai/actions/runs/33488357469) `success` — 기존 M2 및 실제 Clotho 작성 검증 |
-| 현재 배포 SHA·마지막 smoke | 공개 `/__status` 참조 |
+| 항목                       | 현재 값                                                                                                                       |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
+| 실행 상태                  | `active` — M3-C 실제 OAuth 작성 검증 완료; 기발급 토큰의 긴급 차단 live 거부 응답 미확인                                      |
+| 활성 milestone             | M3-C — Auth0·ChatGPT 연결; M4 이후 미착수                                                                                     |
+| 현재 slice                 | 실제 MCP 읽기·validate 무저장·commit·replay·변경된 replay 거절·Atropos revision 16 확인                                       |
+| 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
+| 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포                        |
+| 검증한 application SHA     | `3a95df73b23902160b2892497d2fddb8a9042ffa`                                                                                    |
+| public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
+| Clotho synthetic World     | <https://moirai-production-8ed1.up.railway.app/worlds/01995c2a-7b00-7000-8000-000000000101>                                   |
+| Clotho 인증 API            | <https://desirable-vitality-production-eb95.up.railway.app>                                                                   |
+| 최근 CI                    | [33612931903](https://github.com/neocjmix/moirai/actions/runs/33612931903) `success`                                          |
+| 최근 bearer smoke          | [33613079035](https://github.com/neocjmix/moirai/actions/runs/33613079035) `success`; 실제 OAuth 검증과 별도 근거             |
+| 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
+| 현재 배포 SHA·마지막 smoke | 공개 `/__status` 참조                                                                                                         |
 
-## 검증 및 운영 경계
+## M3-C 검증 상태
 
-[M3-CLOTHO](M3-CLOTHO.md)의 범위를 구현했다. CI에서 format·lint·strict typecheck·unit 26개·PostgreSQL integration 10개·production build·dependency audit·gitleaks·mobile WebKit을 통과했다. 새 CLI 프로세스가 World를 재발견하고 context를 읽은 뒤 validate·commit·동일 요청 replay를 수행했다. 실제 worker가 공개한 Event의 Narrative와 Relation, revision JSON을 검증했다. 원본 Lantern fixture의 Revision 2는 유지한다.
+2026-09-02~03 실제 ChatGPT OAuth로 작업했다. 전달받은 revision 14 대신 작업 전 15를 재조회했다. validate 후 revision 15와 신규 Event 부재를 확인하고, 한 Change Set으로 Event·Relation·Narrative를 commit해 revision 16을 만들었다. 동일 요청은 replay되며, 같은 ID의 다른 내용은 거절됐다. Atropos의 current/target/served 16, manifest와 Event digest, 공개 Narrative·Relation을 확인했다.
 
-신규 credential은 read/write scope와 Clotho synthetic World 하나로 제한하고 30일 만료를 적용했다. 원문은 GitHub Actions secret, hash 설정은 Railway API에만 저장했다. 외부 PR에는 이 secret을 주입하지 않는다. Atropos·worker에는 credential이 없다. MCP 배포 `4c80ee6`의 CI·[smoke 33512933575](https://github.com/neocjmix/moirai/actions/runs/33512933575) 성공 이력도 유지한다. 일반 ChatGPT 대화가 자동 인증되는 것은 아니며, 다른 agent 실행 환경은 별도의 안전한 secret injection 연결이 필요하다.
+허용 World 밖의 검증용 ID 조회는 실제 OAuth 호출에서 `forbidden`으로 차단됐다. scope 축소·권한 미승격·토큰 유효성·최종 인가·OIDC 미설정 거절은 OIDC/MCP/Lachesis 15개 자동 테스트로 확인했다. 별도 Auth0 read-only 토큰을 발급하는 live 검증은 하지 않았다.
 
-실제 iPhone 기기 시험과 production rollback 실연은 수행하지 않았다. rollback은 credential hash 회수 또는 API endpoint 폐쇄 후 이전 정상 application commit으로 되돌리며 additive migration과 정본 Revision은 유지한다. 사용자는 외부 OIDC 로그인과 Clotho MCP 연결 확장을 승인했다. [연결 확장](M3-CONNECTION.md)은 실제 provider·ChatGPT 인증까지 검증하기 전 완료가 아니다. 제품 기능의 다음 milestone은 Milestone 4이며 아직 승인·활성화하지 않았다.
+세션 시작 시 Clotho OIDC 설정이 제거된 상태였다. 기존 설정을 복원한 배포 `a89a8b70-eee9-4aed-94fe-874dfc13aff3` 이후 MCP가 정상화됐다. 긴급 차단 배포 후 metadata 503을 확인했지만 MCP 호출은 인증 처리에서 완료되지 않고 중단됐다. 기발급된 유효 Auth0 토큰의 live 거부는 미완료로 남긴다. 원본 OIDC 설정 복원 배포 `c4eb2a7f-f60b-40e6-80a4-6c9a4e1d4790`의 Active, metadata 200, readiness 200·동일 SHA를 확인했다. 복원 후 MCP 재조회는 25초 내 완료되지 않아 재연결 성공으로 계산하지 않는다.
 
-M3-R 문서 기준선은 `18638a5`에, 구현은 원격 `edfc16ee74afe06ef2ae6152472dcd66b370c3ad`에 반영했다. Clotho API/application과 Lachesis 내부 실행기를 분리했다. [CI 33543491177](https://github.com/neocjmix/moirai/actions/runs/33543491177)에서 43 unit tests·strict typecheck·production build·format·lint·dependency audit·의존성 검사·PostgreSQL 통합·mobile WebKit·gitleaks가 통과했다. [smoke 33543795041](https://github.com/neocjmix/moirai/actions/runs/33543795041)는 실제 CLI/MCP 읽기·validate·commit·replay와 Atropos 반영을 검증했다. 이후 문서 commit `4f33c4e`의 [CI 33544591891](https://github.com/neocjmix/moirai/actions/runs/33544591891)와 [smoke 33544862673](https://github.com/neocjmix/moirai/actions/runs/33544862673)도 성공했다. API readiness와 웹 status에서 해당 SHA 일치를 확인했다.
+## 유지하는 운영 경계
 
-Railway 기존 API 자원과 URL·DB·credential을 유지한다. 시작 명령 설정을 `pnpm --filter @moirai/clotho-api start`로 변경했다. 호환용 `@moirai/lachesis-api` package는 launcher만 남으며 HTTP·인증·정본 코드가 없다. Clotho API에만 OIDC 설정을 적용하고 배포했다. 실제 사용자 OAuth 로그인 검증은 미완료다.
-
-Auth0 운영자 계정 생성을 확인하고 기존 내부 actor에 연결했다. synthetic World 하나와 read/write 교집합 제한을 유지한다. provider 식별자·개별 설정값은 공개 문서에 추가하지 않는다.
-
-최근 재확인: `f9cad5b`의 [CI 33598953723](https://github.com/neocjmix/moirai/actions/runs/33598953723)와 [smoke 33599076512](https://github.com/neocjmix/moirai/actions/runs/33599076512)는 성공했다. 이후 같은 코드에 OIDC 설정을 추가한 Railway 배포가 Active가 되었고 readiness 200·OAuth resource metadata 200을 확인했다. 이 결과는 실제 사용자 OAuth 읽기·쓰기 성공을 의미하지 않는다.
-
-Auth0 연결 오류 수정: 2026-09-02 실패 로그에서 로그인 연결 누락을 확인했다. 기존 운영자 DB 연결의 `Promote Connection to Domain Level`을 활성화하고 `Save` 후 새로고침으로 저장을 검증했다. 체크 표시만으로 저장을 가정하지 않는다. 이 설정은 해당 tenant의 third-party client가 로그인 연결을 사용할 수 있게 하며, Clotho의 단일 운영자·World·scope 제한은 그대로 적용된다.
-
-다음 조치: ChatGPT에서 명시적 OAuth client 연결의 새 인증 흐름을 시작한다. 실제 OAuth 읽기·validate·commit·Publication, 권한 거부와 긴급 차단 절차를 별도 검증한다.
-
+- Auth0 운영자 한 명·synthetic World 하나·read/write 교집합 제한을 유지한다. provider 식별자·subject·token·설정 JSON은 공개 문서에 넣지 않는다.
+- Clotho가 외부 HTTP/MCP·인증·작성 맥락을, Lachesis가 내부 최종 인가·정본 질의·commit을 소유한다. Atropos는 공개, worker·DB·Lachesis application은 내부 경계를 유지한다.
+- 원본 Lantern fixture revision 2를 유지한다. 신규 검증 콘텐츠는 Clotho synthetic World에만 기록한다.
+- M3-R 구현 `edfc16ee74afe06ef2ae6152472dcd66b370c3ad`의 [CI 33543491177](https://github.com/neocjmix/moirai/actions/runs/33543491177)·[smoke 33543795041](https://github.com/neocjmix/moirai/actions/runs/33543795041) 성공 이력을 유지한다. [M3-R 경계](M3-BOUNDARY.md), [연결·복원 절차](M3-CONNECTION.md)를 따른다.
+- 실제 iPhone 기기 시험과 application version rollback 실연은 하지 않았다. OIDC 설정 차단·복원과 application version rollback은 다른 검증이다.
+- M4는 사용자 요청에 따라 시작하지 않는다.

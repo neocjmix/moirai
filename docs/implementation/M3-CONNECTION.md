@@ -49,3 +49,7 @@ ChatGPT가 외부 인증 후 MCP로 World 맥락을 읽고 기존 Change Plan �
 ## Rollback
 
 OIDC 설정을 제거하고 API를 재배포한다. 새 배포 완료 후 해당 issuer의 기존 token까지 거부되는지 확인한다. 기존 CI bearer credential은 독립적으로 유지한다. 필요하면 application을 `d6effa974ceed27ea849abec917836aa32fee04b`로 되돌린다. migration·정본 삭제·Revision 되감기는 없다.
+
+## 실제 검증 결과
+
+2026-09-02~03 [M3-C 실제 OAuth 검증 기록](M3-C-VERIFICATION.md)에 연결 복구, revision 15→16 작성·replay·Publication, 권한 초과 거절과 긴급 차단 검증의 범위·한계를 기록했다. 현재 실행 상태는 [CURRENT](CURRENT.md)를 따른다.

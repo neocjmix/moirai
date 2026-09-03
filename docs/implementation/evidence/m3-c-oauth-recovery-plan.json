@@ -1,0 +1,72 @@
+{
+  "change_set_id": "019ee950-9000-7000-8000-000000000001",
+  "contract_version": "0.3.0",
+  "expected_revision": 15,
+  "intent": "Verify M3-C OAuth connection recovery, atomic commit, replay and public synthetic publication",
+  "operations": [
+    {
+      "entity_id": "019ee950-9000-7000-8000-000000000002",
+      "entity_type": "event",
+      "kind": "create",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "attributes": {},
+        "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+        "kind": "atomic",
+        "roles": [],
+        "title": "ChatGPT OAuth recovery signal — 2026-09-02"
+      }
+    },
+    {
+      "entity_id": "019ee950-9000-7000-8000-000000000003",
+      "entity_type": "relation",
+      "kind": "create",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "attributes": {},
+        "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+        "direction": "directed",
+        "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+        "target_event_id": "019ee950-9000-7000-8000-000000000002",
+        "type": "causes"
+      }
+    },
+    {
+      "entity_id": "019ee950-9000-7000-8000-000000000004",
+      "entity_type": "narrative",
+      "kind": "create",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "body": "A public synthetic signal created through the restored Auth0-authenticated ChatGPT Clotho connection. This fixture exercises validation, atomic commit, duplicate-request replay and Atropos publication.",
+        "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+        "kind": "primary",
+        "locale": "en",
+        "public_references": [],
+        "scope_id": "019ee950-9000-7000-8000-000000000002",
+        "scope_type": "event"
+      }
+    }
+  ],
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "M3-C synthetic World verification authorized by the operator; public fixture only."
+    }
+  ],
+  "world_id": "01995c2a-7b00-7000-8000-000000000101"
+}

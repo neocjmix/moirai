@@ -70,3 +70,11 @@ OIDC·MCP·adapter 없는 Lachesis 인가 테스트 3개 파일, 15개 테스트
 남은 긴급 차단 시험에는 동일한 유효 Auth0 access token을 차단 전·중·복원 후까지 유지하는 별도 요청 클라이언트가 필요하다. 현재 ChatGPT MCP 인터페이스는 인증을 내부 관리하며 token을 지정·내보내는 인터페이스를 제공하지 않는다. 실행 환경에도 시험용 Auth0 token이 주입되어 있지 않다. 기존 CI의 `CLOTHO_TOKEN`은 별도 bearer credential이라 OAuth 차단 증거로 사용할 수 없다.
 
 이 조건에서 OIDC 설정을 다시 제거하지 않았다. 다음 준비 조건은 기존 운영자·같은 resource·World 범위의 authorization-code + PKCE 시험 클라이언트와 안전한 토큰 주입 경로다. 토큰을 채팅에 복사하거나 서버에서 인증 헤더를 수집하지 않는다. 이 준비 없이 긴급 차단 live 검증 완료를 주장하지 않으며 M3-C active·M4 미착수를 유지한다.
+
+### 동일 토큰 시험 준비
+
+별도 Native 앱 `Moirai M3-C Emergency Verification`을 등록했다. Device Code grant만 켜고 Implicit·Authorization Code·Refresh Token·Password·Client Credentials는 사용하지 않는다. 이 시험 앱의 기존 운영자 Database 연결만 유지하고 Google 연결을 껐다. Moirai API의 user-delegated grant는 `world:read` 하나로 제한했다. 기존 ChatGPT 앱과 API의 운영자·World 매핑은 변경하지 않았다.
+
+Device Authorization 요청은 성공해 운영자 로그인 화면까지 진행했다. 그러나 보안 로그인 요청의 완료 결과를 받기 전에 실행 연결이 중단됐고, 이후에도 로그인 화면이 남아 있었다. 토큰 수신·정상 baseline·차단·복원 응답은 확보하지 못했다. 이 준비 과정에서 Clotho의 OIDC 설정을 제거하거나 배포하지 않았다. 시험 앱은 다음 검증을 위해 등록 상태로 남아 있으며 검증 종료 후 해당 앱만 정리한다.
+
+[검증 도구와 재개 절차](M3-C-OIDC-DRILL.md)를 추가했다. 도구는 토큰을 한 번 주입받아 메모리에 유지하고 같은 synthetic World의 `world_get`만 호출한다. 단계별 metadata와 실제 HTTP 응답을 확인하며, 401 없이 metadata만 차단된 상태나 만료 직전 토큰을 성공으로 계산하지 않는다. 5개 테스트·root typecheck·해당 파일 lint가 통과했다. 도구 준비와 실제 환경 검증 완료를 구분하며 M3-C active·M4 미착수를 유지한다.

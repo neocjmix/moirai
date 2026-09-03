@@ -25,7 +25,7 @@
 
 허용 World 밖의 검증용 ID 조회는 실제 OAuth 호출에서 `forbidden`으로 차단됐다. scope 축소·권한 미승격·토큰 유효성·최종 인가·OIDC 미설정 거절은 OIDC/MCP/Lachesis 15개 자동 테스트로 확인했다. 별도 Auth0 read-only 토큰을 발급하는 live 검증은 하지 않았다.
 
-세션 시작 시 Clotho OIDC 설정이 제거된 상태였다. 기존 설정을 복원한 배포 `a89a8b70-eee9-4aed-94fe-874dfc13aff3` 이후 MCP가 정상화됐다. 긴급 차단 배포 후 metadata 503을 확인했지만 MCP 호출은 인증 처리에서 완료되지 않고 중단됐다. 기발급된 유효 Auth0 토큰의 live 거부는 미완료로 남긴다. 원본 OIDC 설정 복원 배포 `c4eb2a7f-f60b-40e6-80a4-6c9a4e1d4790`의 Active, metadata 200, readiness 200·동일 SHA를 확인했다. 첫 복원 후 MCP 재조회는 시간 초과였지만, 후속 실제 OAuth 재조회는 성공했다. CI bearer smoke 이후 current/target/served revision 17·ready를 재확인했다. 현재 연결은 정상이며, 동일 토큰으로 긴급 차단을 시험할 별도 OAuth 클라이언트·보안 주입 경로가 남은 blocker다.
+세션 시작 시 Clotho OIDC 설정이 제거된 상태였다. 기존 설정을 복원한 배포 `a89a8b70-eee9-4aed-94fe-874dfc13aff3` 이후 MCP가 정상화됐다. 긴급 차단 배포 후 metadata 503을 확인했지만 MCP 호출은 인증 처리에서 완료되지 않고 중단됐다. 기발급된 유효 Auth0 토큰의 live 거부는 미완료로 남긴다. 원본 OIDC 설정 복원 배포 `c4eb2a7f-f60b-40e6-80a4-6c9a4e1d4790`의 Active, metadata 200, readiness 200·동일 SHA를 확인했다. 첫 복원 후 MCP 재조회는 시간 초과였지만, 후속 실제 OAuth 재조회는 성공했다. CI bearer smoke 이후 current/target/served revision 17·ready를 재확인했다. 후속 시험 앱과 [동일 토큰 검증 도구](M3-C-OIDC-DRILL.md)를 준비했다. 시험 앱의 운영자 로그인·토큰 수신은 미확인이고 긴급 차단 live 시험은 대기 중이다. 이 준비 과정에서 Clotho OIDC 설정을 다시 변경하지 않았다.
 
 ## 유지하는 운영 경계
 

@@ -34,7 +34,8 @@ export default defineConfig({
     include: [
       "apps/**/*.test.ts",
       "packages/**/*.test.ts",
-      "skills/**/*.test.ts"
+      "skills/**/*.test.ts",
+      "scripts/**/*.test.ts"
     ],
     exclude: ["**/*.integration.test.ts", "**/node_modules/**"],
     coverage: {

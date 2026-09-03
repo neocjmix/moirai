@@ -10,12 +10,12 @@
 | 현재 slice                 | 실제 MCP 읽기·validate 무저장·commit·replay·변경된 replay 거절·Atropos revision 16 확인                                       |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포                        |
-| 검증한 application SHA     | `3a95df73b23902160b2892497d2fddb8a9042ffa`                                                                                    |
+| 검증한 application SHA     | `5db28c89096fb2881e9f155dbb82e3fc52b9940d`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
 | Clotho synthetic World     | <https://moirai-production-8ed1.up.railway.app/worlds/01995c2a-7b00-7000-8000-000000000101>                                   |
 | Clotho 인증 API            | <https://desirable-vitality-production-eb95.up.railway.app>                                                                   |
-| 최근 CI                    | [33612931903](https://github.com/neocjmix/moirai/actions/runs/33612931903) `success`                                          |
-| 최근 bearer smoke          | [33613079035](https://github.com/neocjmix/moirai/actions/runs/33613079035) `success`; 실제 OAuth 검증과 별도 근거             |
+| 최근 CI                    | [33787348576](https://github.com/neocjmix/moirai/actions/runs/33787348576) `success`                                          |
+| 최근 bearer smoke          | [33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972) `success`; 실제 OAuth 검증과 별도 근거             |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
 | 현재 배포 SHA·마지막 smoke | 공개 `/__status` 참조                                                                                                         |
 
@@ -25,7 +25,7 @@
 
 허용 World 밖의 검증용 ID 조회는 실제 OAuth 호출에서 `forbidden`으로 차단됐다. scope 축소·권한 미승격·토큰 유효성·최종 인가·OIDC 미설정 거절은 OIDC/MCP/Lachesis 15개 자동 테스트로 확인했다. 별도 Auth0 read-only 토큰을 발급하는 live 검증은 하지 않았다.
 
-세션 시작 시 Clotho OIDC 설정이 제거된 상태였다. 기존 설정을 복원한 배포 `a89a8b70-eee9-4aed-94fe-874dfc13aff3` 이후 MCP가 정상화됐다. 긴급 차단 배포 후 metadata 503을 확인했지만 MCP 호출은 인증 처리에서 완료되지 않고 중단됐다. 기발급된 유효 Auth0 토큰의 live 거부는 미완료로 남긴다. 원본 OIDC 설정 복원 배포 `c4eb2a7f-f60b-40e6-80a4-6c9a4e1d4790`의 Active, metadata 200, readiness 200·동일 SHA를 확인했다. 복원 후 MCP 재조회는 25초 내 완료되지 않아 재연결 성공으로 계산하지 않는다.
+세션 시작 시 Clotho OIDC 설정이 제거된 상태였다. 기존 설정을 복원한 배포 `a89a8b70-eee9-4aed-94fe-874dfc13aff3` 이후 MCP가 정상화됐다. 긴급 차단 배포 후 metadata 503을 확인했지만 MCP 호출은 인증 처리에서 완료되지 않고 중단됐다. 기발급된 유효 Auth0 토큰의 live 거부는 미완료로 남긴다. 원본 OIDC 설정 복원 배포 `c4eb2a7f-f60b-40e6-80a4-6c9a4e1d4790`의 Active, metadata 200, readiness 200·동일 SHA를 확인했다. 첫 복원 후 MCP 재조회는 시간 초과였지만, 후속 실제 OAuth 재조회는 성공했다. CI bearer smoke 이후 current/target/served revision 17·ready를 재확인했다. 현재 연결은 정상이며, 동일 토큰으로 긴급 차단을 시험할 별도 OAuth 클라이언트·보안 주입 경로가 남은 blocker다.
 
 ## 유지하는 운영 경계
 

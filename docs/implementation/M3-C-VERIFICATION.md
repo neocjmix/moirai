@@ -60,3 +60,13 @@ OIDC·MCP·adapter 없는 Lachesis 인가 테스트 3개 파일, 15개 테스트
 복원 후 실제 MCP `world.get` 재조회는 25초 제한 내 결과를 받지 못했다. 서버 설정 복원은 확인했지만 이 마지막 호출을 OAuth 재연결 성공으로 계산하지 않는다. 앞선 revision 15→16 읽기·쓰기 성공 근거와 구분한다. 다음 최소 단계는 정상 OAuth 재연결 확인과, 안전하게 주입한 동일 유효 토큰을 사용하는 시간 제한 클라이언트로 긴급 차단의 실제 거부 응답을 확보하는 것이다. M3-C는 active로 유지하고 M4는 시작하지 않는다.
 
 문서 변경에는 application 코드·의존성 변경이 없다. 관련 OIDC/MCP/Lachesis 15개 테스트, synthetic plan의 World·revision·operation 검사, 문서 내부 링크 검사, diff 공백 검사 및 공개 문서 secret scan을 통과했다.
+
+### 후속 재연결·CI 확인 — 2026-09-03
+
+실제 ChatGPT OAuth `world.get`이 다시 성공했다. 첫 재조회는 current/target/served 16·ready였고, 자동 bearer smoke 종료 후 재조회는 모두 17·ready였다. 이번 수동 검증에서는 신규 commit을 호출하지 않았다. revision 17은 같은 synthetic World를 대상으로 실행된 배포 smoke 이후 관측한 값이며, 기존 OAuth Change Set의 revision 16 근거를 대체하지 않는다.
+
+문서 commit `5db28c89096fb2881e9f155dbb82e3fc52b9940d`의 [CI 33787348576](https://github.com/neocjmix/moirai/actions/runs/33787348576)와 [배포 smoke 33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972)가 success로 완료됐다. Atropos status와 Clotho readiness에서 해당 SHA를 확인했고, Railway Clotho 배포 `21a3e929-b9cd-4521-bb30-edaff466023a`가 Active였다. Lantern fixture는 revision 2·ready를 유지했다.
+
+남은 긴급 차단 시험에는 동일한 유효 Auth0 access token을 차단 전·중·복원 후까지 유지하는 별도 요청 클라이언트가 필요하다. 현재 ChatGPT MCP 인터페이스는 인증을 내부 관리하며 token을 지정·내보내는 인터페이스를 제공하지 않는다. 실행 환경에도 시험용 Auth0 token이 주입되어 있지 않다. 기존 CI의 `CLOTHO_TOKEN`은 별도 bearer credential이라 OAuth 차단 증거로 사용할 수 없다.
+
+이 조건에서 OIDC 설정을 다시 제거하지 않았다. 다음 준비 조건은 기존 운영자·같은 resource·World 범위의 authorization-code + PKCE 시험 클라이언트와 안전한 토큰 주입 경로다. 토큰을 채팅에 복사하거나 서버에서 인증 헤더를 수집하지 않는다. 이 준비 없이 긴급 차단 live 검증 완료를 주장하지 않으며 M3-C active·M4 미착수를 유지한다.

@@ -21,7 +21,7 @@
 | M4-B 배포 smoke            | [33879771900](https://github.com/neocjmix/moirai/actions/runs/33879771900) `success`; Clotho synthetic revision 23            |
 | 최근 bearer smoke          | [33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972) `success`; 실제 OAuth 검증과 별도 근거             |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 현재 배포 SHA·마지막 smoke | `a396a3a5c4e7dd64374813e56fd9e1d597a292e9`; [33879771900](https://github.com/neocjmix/moirai/actions/runs/33879771900)       |
+| 현재 배포 SHA·마지막 smoke | 공개 `/__status`와 최신 `Post-deploy smoke` workflow 참조                                                                   |
 
 ## M3-C 검증 상태
 

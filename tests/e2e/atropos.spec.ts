@@ -50,7 +50,9 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await expect(page.getByText("Immutable Snapshot")).toBeVisible();
   await statusToggle.click();
   await page
-    .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.secondEventTitle) })
+    .locator("a.relation-row")
+    .filter({ hasText: "causes" })
+    .filter({ hasText: SYNTHETIC_FIXTURE.secondEventTitle })
     .click();
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.secondEventTitle })

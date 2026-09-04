@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `active` — M4-B Subject projection 구현 중                                                                                    |
+| 실행 상태                  | `active` — M4-B 완료; 다음 M4 slice 미착수                                                                                     |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                   |
-| 현재 slice                 | M4-B — identity component, stable Subject handle reconciliation과 공개 Subject route                                           |
+| 현재 slice                 | 없음 — 다음 slice는 사용자 지시 후 선택                                                                                        |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결       |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -16,9 +16,12 @@
 | Clotho 인증 API            | <https://desirable-vitality-production-eb95.up.railway.app>                                                                   |
 | M4-A 구현 CI               | [33861480738](https://github.com/neocjmix/moirai/actions/runs/33861480738) `success`                                          |
 | M4-A 배포 smoke            | [33861786238](https://github.com/neocjmix/moirai/actions/runs/33861786238) `success`; Clotho synthetic revision 21            |
+| M4-B 검증 application SHA  | `a396a3a5c4e7dd64374813e56fd9e1d597a292e9`                                                                                    |
+| M4-B 구현 CI               | [33879616711](https://github.com/neocjmix/moirai/actions/runs/33879616711) `success`                                          |
+| M4-B 배포 smoke            | [33879771900](https://github.com/neocjmix/moirai/actions/runs/33879771900) `success`; Clotho synthetic revision 23            |
 | 최근 bearer smoke          | [33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972) `success`; 실제 OAuth 검증과 별도 근거             |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 현재 배포 SHA·마지막 smoke | 공개 `/__status` 참조                                                                                                         |
+| 현재 배포 SHA·마지막 smoke | `a396a3a5c4e7dd64374813e56fd9e1d597a292e9`; [33879771900](https://github.com/neocjmix/moirai/actions/runs/33879771900)       |
 
 ## M3-C 검증 상태
 
@@ -41,10 +44,12 @@
 
 [M4 파생 모델 구현 기록](M4-DERIVED-MODELS.md)에 따라 기존 Canon·Event·시간 배치·`precedes` 관계만 읽는 결정적 Timeline projection, Revision별 immutable graph artifact와 Atropos의 접근 가능한 텍스트 탐색을 배포했다. `0bbabae947761b0cc380951a56677bd7e443db09`의 CI와 배포 smoke가 성공했다. smoke는 정확한 Clotho 배포 SHA 확인 후 승인된 synthetic World 하나에 원자적 Change Plan을 commit·재실행하고 revision 21의 Timeline artifact와 Canon SSR 공개를 확인했다.
 
-Subject handle reconciliation을 M4-B로 시작했다. Process·State·Duration, JointJS 상호작용, 100k scope·LOD와 Canon 비교는 아직 시작하지 않았다.
+M4-B Subject handle reconciliation과 공개 Subject 경로까지 완료했다. Process·State·Duration, JointJS 상호작용, 100k scope·LOD와 Canon 비교는 아직 시작하지 않았다.
 
-## M4-B 활성 범위
+## M4-B 완료
 
-[M4 파생 모델 구현 기록](M4-DERIVED-MODELS.md)의 Slice B에 따라 Canon별 identity equivalence component와 lineage를 결정적으로 계산한다. `subject_handles` 운영 식별 표면은 분리 시 anchor component에 유지되고 병합 시 오래된 handle을 대표로 두며 나머지는 redirect한다. Revision별 Subject artifact, Canon 진입점, stable Subject URL과 검색을 공개한다.
+[M4 파생 모델 구현 기록](M4-DERIVED-MODELS.md)의 Slice B에 따라 Canon별 identity equivalence component와 lineage를 결정적으로 계산한다. `subject_handles` 운영 식별 표면은 분리 시 anchor component에 유지되고 병합 시 오래된 handle을 대표로 두며 나머지는 redirect한다. Revision별 Subject artifact, Canon 진입점, stable Subject URL과 검색을 공개했다.
+
+`a396a3a5c4e7dd64374813e56fd9e1d597a292e9`의 전체 CI와 Railway 3개 서비스 배포가 성공했다. 배포 smoke는 정확한 배포 SHA를 확인하고 승인된 synthetic World 하나에 identity Relation을 포함한 Change Plan을 commit·재실행한 뒤 revision 23의 Subject artifact·semantic digest·immutable cache header, Canon SSR과 stable Subject page를 검증했다.
 
 Process·State·Duration, JointJS canvas·subject lane 배치, 100k scope·LOD와 Canon 비교는 이번 slice에 포함하지 않는다.

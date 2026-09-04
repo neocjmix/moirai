@@ -73,3 +73,12 @@
 5. manifest가 Subject algorithm version과 artifact digest를 포함한다.
 6. Atropos가 동일 served Revision에서 Subject와 member Event evidence를 server-render한다.
 7. 전체 CI와 Clotho synthetic identity→Subject→Atropos smoke가 통과한다.
+
+### 완료 근거
+
+- 구현·배포 SHA: `a396a3a5c4e7dd64374813e56fd9e1d597a292e9`
+- CI: [33879616711](https://github.com/neocjmix/moirai/actions/runs/33879616711) — 전체 품질·PostgreSQL migration/integration·mobile WebKit·secret scan 성공
+- 배포 smoke: [33879771900](https://github.com/neocjmix/moirai/actions/runs/33879771900) — Railway 3개 서비스 성공 후 정확한 Clotho SHA, HTTP·MCP 동일 결과, validate 무변경, commit replay, revision 23 Subject artifact·digest·immutable header와 Atropos Canon/Subject SSR 성공
+- 검증 World: Clotho Synthetic Observatory `01995c2a-7b00-7000-8000-000000000101` 하나로 제한
+
+첫 구현 CI에서 기존 mobile WebKit 검사가 같은 Event를 가리키는 `causes`와 `identity_continues` 링크를 구별하지 못했다. 관계 종류까지 포함하는 selector로 회귀 검사의 의도를 명시한 뒤 전체 CI와 배포 경로를 다시 통과시켰다.

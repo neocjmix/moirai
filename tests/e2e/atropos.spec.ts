@@ -24,6 +24,7 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await expect(page.getByText("DERIVED PROCESSES")).toBeVisible();
   await expect(page.getByText("겹치는 시간 범위 · 순서 미정")).toBeVisible();
   await page
+    .locator('section[aria-labelledby="processes-title"]')
     .getByRole("link", {
       name: new RegExp(SYNTHETIC_FIXTURE.processEventTitle)
     })

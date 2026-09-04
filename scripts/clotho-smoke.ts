@@ -81,6 +81,7 @@ async function waitFor(check: () => Promise<boolean>): Promise<void> {
   throw new Error("Clotho deployment or publication timed out");
 }
 async function main(): Promise<void> {
+  process.stdout.write("waiting for exact Clotho deployment\n");
   await waitFor(async () => {
     const response = await fetch(new URL("/health/ready", apiUrl), {
       signal: AbortSignal.timeout(10_000)
@@ -97,6 +98,7 @@ async function main(): Promise<void> {
       health.commit_sha === expectedSha
     );
   });
+  process.stdout.write("exact Clotho deployment ready\n");
   const unauthorized = await fetch(new URL("/v1/clotho/world.list", apiUrl), {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -336,7 +338,11 @@ async function main(): Promise<void> {
     )
       throw new Error("MCP commit replay was not idempotent");
   }
+  process.stdout.write(
+    `authenticated write contract passed; revision=${revision}\n`
+  );
   const path = `/worlds/${worldId}/canons/${canonId}/events/${id("event")}`;
+  process.stdout.write("waiting for revision-pinned public projection\n");
   await waitFor(async () => {
     const response = await fetch(new URL(path, publicUrl), {
       signal: AbortSignal.timeout(10_000)

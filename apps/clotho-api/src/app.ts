@@ -46,12 +46,15 @@ export function buildApp(
   app.get(
     "/health/live",
     { schema: { response: { 200: HEALTH_RESPONSE_SCHEMA } } },
-    async (): Promise<HealthResponse> => ({
-      status: "ok",
-      service: "clotho-api",
-      version: config.appVersion,
-      commit_sha: config.commitSha
-    })
+    async (_request, reply): Promise<HealthResponse> => {
+      reply.header("cache-control", "no-store");
+      return {
+        status: "ok",
+        service: "clotho-api",
+        version: config.appVersion,
+        commit_sha: config.commitSha
+      };
+    }
   );
 
   app.get(
@@ -62,6 +65,7 @@ export function buildApp(
       }
     },
     async (_request, reply) => {
+      reply.header("cache-control", "no-store");
       try {
         await checkDatabaseReady(database);
         return {
@@ -81,9 +85,10 @@ export function buildApp(
     }
   );
 
-  app.get("/health", async (_request, reply) =>
-    reply.redirect("/health/ready")
-  );
+  app.get("/health", async (_request, reply) => {
+    reply.header("cache-control", "no-store");
+    return reply.redirect("/health/ready");
+  });
 
   app.addHook("onClose", async () => {
     await database.destroy();

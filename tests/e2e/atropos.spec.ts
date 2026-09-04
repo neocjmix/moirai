@@ -11,13 +11,14 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.worldTitle })
   ).toBeVisible();
-  await page.goBack();
+  const canonPath = `/worlds/${SYNTHETIC_FIXTURE.worldId}/canons/${SYNTHETIC_FIXTURE.canonId}`;
+  await expect(
+    page.getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
+  ).toHaveAttribute("href", canonPath);
+  await page.goto(canonPath);
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
   ).toBeVisible({ timeout: 15_000 });
-  await expect(
-    page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
-  ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: "Ember Count" })
   ).toBeVisible();
@@ -36,11 +37,10 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   ).toBeVisible();
   await expect(page.getByText("DERIVED PROCESS")).toBeVisible();
   await expect(page.getByText("Duration 2–3 bell")).toBeVisible();
-  const canonPath = `/worlds/${SYNTHETIC_FIXTURE.worldId}/canons/${SYNTHETIC_FIXTURE.canonId}`;
+  await page.goBack();
   await expect(
-    page.getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
-  ).toHaveAttribute("href", canonPath);
-  await page.goto(canonPath);
+    page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
+  ).toBeVisible({ timeout: 15_000 });
   await page.locator('a[href*="/subjects/"]').click();
   await expect(page.getByText("DERIVED SUBJECT · REVISION 2")).toBeVisible();
   await expect(page.getByText("stable handle anchor")).toBeVisible();

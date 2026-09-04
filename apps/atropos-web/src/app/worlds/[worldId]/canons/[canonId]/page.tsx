@@ -51,6 +51,7 @@ export default async function CanonPage({
       events,
       narratives,
       pointer,
+      processArtifacts,
       subjectArtifacts,
       timeSystems,
       timelineArtifacts
@@ -157,6 +158,32 @@ export default async function CanonPage({
             </section>
           );
         })}
+        {processArtifacts.length > 0 ? (
+          <section className="card-dock" aria-labelledby="processes-title">
+            <p className="eyebrow" id="processes-title">
+              DERIVED PROCESSES
+            </p>
+            <p className="timeline-note">
+              과정으로 지정된 복합 사건과 그 안에 포함된 사건 범위입니다.
+            </p>
+            <div className="card-list">
+              {processArtifacts.map((process) => (
+                <a
+                  className="canon-card"
+                  href={`/worlds/${worldId}/canons/${canon.id}/events/${process.process_event_id}`}
+                  key={process.process_event_id}
+                >
+                  <span>{process.label}</span>
+                  <small>
+                    {process.direct_child_count} direct ·{" "}
+                    {process.descendant_count} total · {process.completeness}
+                  </small>
+                  <b aria-hidden="true">→</b>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
         {subjectArtifacts.length > 0 ? (
           <section className="card-dock" aria-labelledby="subjects-title">
             <p className="eyebrow" id="subjects-title">

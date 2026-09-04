@@ -3,6 +3,8 @@ import {
   type PublicCanon,
   type PublicEvent,
   type PublicNarrative,
+  type PublicProcessArtifactReference,
+  type PublicProcessProjection,
   type PublicRelation,
   type PublicSearchEntry,
   type PublicSubjectArtifactReference,
@@ -56,6 +58,16 @@ function syntheticObjects(): ReadonlyMap<string, string> {
       title: fixture.thirdEventTitle,
       summary: "The paired lights signal that the archive may open.",
       roles: [],
+      attributes: {}
+    },
+    {
+      id: fixture.processEventId,
+      canon_id: fixture.canonId,
+      slug: "archive-opening",
+      kind: "composite",
+      title: fixture.processEventTitle,
+      summary: "The full process from the first signal to the opened doors.",
+      roles: ["process"],
       attributes: {}
     }
   ];
@@ -133,6 +145,19 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           precision: "bell",
           certainty: "approximate",
           display_label: "Between the third and fourth bell"
+        },
+        {
+          id: fixture.processPlacementId,
+          event_id: fixture.processEventId,
+          time_system_id: fixture.timeSystemId,
+          kind: "interval",
+          earliest_start: { value: 1 },
+          latest_start: { value: 1 },
+          earliest_end: { value: 4 },
+          latest_end: { value: 4 },
+          precision: "bell",
+          certainty: "exact",
+          display_label: "First through fourth bell"
         }
       ],
       relations: [
@@ -162,6 +187,33 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           target_event_id: fixture.secondEventId,
           direction: "directed",
           attributes: {}
+        },
+        {
+          id: fixture.firstContainmentId,
+          canon_id: fixture.canonId,
+          type: "contains",
+          source_event_id: fixture.processEventId,
+          target_event_id: fixture.eventId,
+          direction: "directed",
+          attributes: {}
+        },
+        {
+          id: fixture.secondContainmentId,
+          canon_id: fixture.canonId,
+          type: "contains",
+          source_event_id: fixture.processEventId,
+          target_event_id: fixture.secondEventId,
+          direction: "directed",
+          attributes: {}
+        },
+        {
+          id: fixture.thirdContainmentId,
+          canon_id: fixture.canonId,
+          type: "contains",
+          source_event_id: fixture.processEventId,
+          target_event_id: fixture.thirdEventId,
+          direction: "directed",
+          attributes: {}
         }
       ],
       narratives: [
@@ -185,6 +237,17 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           kind: "primary",
           title: "An answer in the east",
           body: "The eastern keeper sees the first flame and raises a lantern in reply. The response is both acknowledgement and the next link in the opening sequence.",
+          public_references: []
+        },
+        {
+          id: fixture.processNarrativeId,
+          canon_id: fixture.canonId,
+          scope_type: "event",
+          scope_id: fixture.processEventId,
+          locale: "en",
+          kind: "primary",
+          title: "From signal to opening",
+          body: "Three contained events form the archive opening process.",
           public_references: []
         }
       ]
@@ -270,7 +333,8 @@ export async function readWorld(
   world: PublicWorld;
   canons: readonly PublicCanon[];
 }> {
-  const { pointer } = selected ?? (await selectPublication(worldId));
+  const publication = selected ?? (await selectPublication(worldId));
+  const { pointer } = publication;
   const document = await readJson<{
     world: PublicWorld;
     canons: readonly PublicCanon[];
@@ -293,6 +357,7 @@ export async function readCanon(
   timeSystems: readonly PublicTimeSystem[];
   timelineArtifacts: readonly PublicTimelineArtifactReference[];
   subjectArtifacts: readonly PublicSubjectArtifactReference[];
+  processArtifacts: readonly PublicProcessArtifactReference[];
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -303,6 +368,7 @@ export async function readCanon(
     time_systems: readonly PublicTimeSystem[];
     timeline_artifacts?: readonly PublicTimelineArtifactReference[];
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
+    process_artifacts?: readonly PublicProcessArtifactReference[];
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/canons/${canonId}.json`
@@ -319,7 +385,8 @@ export async function readCanon(
     narratives: document.narratives,
     timeSystems: document.time_systems,
     timelineArtifacts: document.timeline_artifacts ?? [],
-    subjectArtifacts: document.subject_artifacts ?? []
+    subjectArtifacts: document.subject_artifacts ?? [],
+    processArtifacts: document.process_artifacts ?? []
   };
 }
 
@@ -373,6 +440,30 @@ export async function readTimeline(
   return document;
 }
 
+export async function readProcess(
+  worldId: string,
+  canonId: string,
+  reference: PublicProcessArtifactReference,
+  selected?: SelectedPublication
+): Promise<PublicProcessProjection> {
+  assertPublicId(canonId);
+  assertPublicId(reference.process_event_id);
+  const { pointer } = selected ?? (await selectPublication(worldId));
+  const expectedKey = `worlds/${worldId}/revisions/${pointer.served_revision}/graph/canons/${canonId}/process-${reference.process_event_id}.json`;
+  if (reference.key !== expectedKey) throw new Error("invalid Process key");
+  const document = await readJson<PublicProcessProjection>(reference.key);
+  if (
+    document.world_id !== worldId ||
+    document.canon_id !== canonId ||
+    document.process_event_id !== reference.process_event_id ||
+    document.source_revision !== pointer.served_revision ||
+    document.algorithm_version !== reference.algorithm_version
+  ) {
+    throw new Error("mixed Publication revisions");
+  }
+  return document;
+}
+
 export async function readEvent(
   worldId: string,
   canonId: string,
@@ -386,10 +477,13 @@ export async function readEvent(
   timeSystems: readonly PublicTimeSystem[];
   relations: readonly PublicRelation[];
   relatedEvents: readonly PublicEvent[];
+  process: PublicProcessProjection | null;
+  parentProcessIds: readonly string[];
 }> {
   assertPublicId(canonId);
   assertPublicId(eventId);
-  const { pointer } = selected ?? (await selectPublication(worldId));
+  const publication = selected ?? (await selectPublication(worldId));
+  const { pointer } = publication;
   const document = await readJson<{
     event: PublicEvent;
     narratives: readonly PublicNarrative[];
@@ -397,6 +491,8 @@ export async function readEvent(
     time_systems: readonly PublicTimeSystem[];
     relations: readonly PublicRelation[];
     related_events: readonly PublicEvent[];
+    process_artifact?: PublicProcessArtifactReference | null;
+    parent_process_ids?: readonly string[];
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/events/${eventId}.json`
@@ -406,6 +502,14 @@ export async function readEvent(
     document.event.canon_id !== canonId
   )
     throw new Error("mixed Publication revisions");
+  const process = document.process_artifact
+    ? await readProcess(
+        worldId,
+        canonId,
+        document.process_artifact,
+        publication
+      )
+    : null;
   return {
     pointer,
     event: document.event,
@@ -413,7 +517,9 @@ export async function readEvent(
     temporalPlacements: document.temporal_placements,
     timeSystems: document.time_systems,
     relations: document.relations,
-    relatedEvents: document.related_events
+    relatedEvents: document.related_events,
+    process,
+    parentProcessIds: document.parent_process_ids ?? []
   };
 }
 

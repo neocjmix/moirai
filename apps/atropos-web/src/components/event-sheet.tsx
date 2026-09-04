@@ -3,6 +3,7 @@
 import type {
   PublicEvent,
   PublicNarrative,
+  PublicProcessProjection,
   PublicRelation,
   PublicTemporalPlacement,
   PublicTimeSystem
@@ -18,6 +19,8 @@ interface EventSheetProps {
   readonly worldId: string;
   readonly canonId: string;
   readonly eventId: string;
+  readonly process: PublicProcessProjection | null;
+  readonly parentProcessIds: readonly string[];
   readonly narratives: readonly PublicNarrative[];
   readonly temporalPlacements: readonly PublicTemporalPlacement[];
   readonly timeSystems: readonly PublicTimeSystem[];
@@ -33,6 +36,8 @@ export function EventSheet({
   worldId,
   canonId,
   eventId,
+  process,
+  parentProcessIds,
   narratives,
   temporalPlacements,
   timeSystems,
@@ -80,6 +85,79 @@ export function EventSheet({
             ) : null}
           </section>
         ))}
+        {process ? (
+          <section className="context-block" aria-labelledby="process-heading">
+            <p className="eyebrow" id="process-heading">
+              DERIVED PROCESS
+            </p>
+            <div className="context-row">
+              <span>
+                {process.direct_child_event_ids.length} direct events ·{" "}
+                {process.descendant_event_ids.length} total
+              </span>
+              <small>{process.completeness}</small>
+            </div>
+            {process.durations.map((duration) => (
+              <div className="context-row" key={duration.time_system_id}>
+                <span>
+                  Duration{" "}
+                  {duration.minimum === duration.maximum
+                    ? duration.minimum
+                    : `${duration.minimum}–${duration.maximum}`}{" "}
+                  {duration.precision}
+                </span>
+                <small>
+                  {timeSystemById.get(duration.time_system_id)?.title ??
+                    "Time System"}{" "}
+                  · {duration.kind}
+                </small>
+              </div>
+            ))}
+            {process.direct_child_event_ids.map((childId) => {
+              const child = eventById.get(childId);
+              return child ? (
+                <a
+                  className="relation-row"
+                  href={`/worlds/${worldId}/canons/${canonId}/events/${child.id}`}
+                  key={child.id}
+                >
+                  <span>contains</span>
+                  <b>{child.title}</b>
+                  <i aria-hidden="true">→</i>
+                </a>
+              ) : null;
+            })}
+            {process.diagnostics.length > 0 ? (
+              <p className="timeline-warning" role="status">
+                {process.diagnostics.map((item) => item.code).join(", ")}
+              </p>
+            ) : null}
+          </section>
+        ) : null}
+        {parentProcessIds.length > 0 ? (
+          <section
+            className="context-block"
+            aria-labelledby="parent-process-heading"
+          >
+            <p className="eyebrow" id="parent-process-heading">
+              PART OF PROCESS
+            </p>
+            {parentProcessIds.map((parentId) => {
+              const parent = eventById.get(parentId);
+              return parent ? (
+                <a
+                  className="relation-row"
+                  href={`/worlds/${worldId}/canons/${canonId}/events/${parent.id}`}
+                  key={parent.id}
+                >
+                  <span>process</span>
+                  <b>{parent.title}</b>
+                  <i aria-hidden="true">→</i>
+                </a>
+              ) : null;
+            })}
+          </section>
+        ) : null}
         {temporalPlacements.length > 0 ? (
           <section className="context-block" aria-labelledby="time-heading">
             <p className="eyebrow" id="time-heading">

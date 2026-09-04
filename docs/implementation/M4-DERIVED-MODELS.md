@@ -82,3 +82,36 @@
 - 검증 World: Clotho Synthetic Observatory `01995c2a-7b00-7000-8000-000000000101` 하나로 제한
 
 첫 구현 CI에서 기존 mobile WebKit 검사가 같은 Event를 가리키는 `causes`와 `identity_continues` 링크를 구별하지 못했다. 관계 종류까지 포함하는 selector로 회귀 검사의 의도를 명시한 뒤 전체 CI와 배포 경로를 다시 통과시켰다.
+
+## Slice C — Process와 Duration projection
+
+독자가 과정으로 지정된 Composite Event를 stable Event URL에서 열고 직접 child, 전체 descendant, 구조적 시작·종료 후보와 파생 Duration을 근거와 함께 읽을 수 있게 한다.
+
+### 외부에서 확인할 동작
+
+- `kind = composite`이면서 `roles`에 `process`가 있는 Event만 Process로 계산한다.
+- `contains`의 transitive closure를 artifact에서 계산하되 정본 Relation으로 다시 쓰지 않는다.
+- 직접 child, 전체 descendant, 포함 깊이와 내부 Relation을 구분한다.
+- descendant 시간 경계가 같은 Time System에서 비교 가능할 때만 Duration을 계산한다.
+- 불확실한 경계는 단일 값으로 축소하지 않고 최소–최대 범위로 공개한다.
+- 단일 point나 시간 근거가 없는 Process에는 0 duration을 만들지 않고 unresolved 진단을 공개한다.
+- Canon page와 Process Event page가 같은 served Revision의 immutable Process artifact를 읽는다.
+
+### 변경 경계
+
+- `@moirai/projections`: 순수 Process projector, containment closure와 Duration 범위
+- `@moirai/publication`: Revision별 Process artifact, Canon·Event reference와 manifest algorithm version
+- `@moirai/contracts`: 공개 Process·Duration document와 publication format version
+- `atropos-web`: Canon Process 목록과 stable Event route의 Process 근거
+
+정본 Event·Relation 계약과 Clotho/Lachesis 권한은 변경하지 않는다. State는 family별 결정적 rule registry가 선행돼야 하므로 M4-D로 분리한다. JointJS canvas, scope·LOD와 Canon 비교도 이번 slice에 포함하지 않는다.
+
+### 종료 조건
+
+1. shuffled input에서 nested containment closure와 semantic digest가 동일하다.
+2. 직접 child와 descendant가 구분되고 cycle·empty Process가 진단된다.
+3. 정확한 경계는 exact Duration, 부정확한 경계는 최소–최대 범위를 반환한다.
+4. 단일 point 또는 비교 불가능한 Time System에서 Duration을 발명하지 않는다.
+5. manifest가 Process algorithm version과 immutable artifact digest를 포함한다.
+6. Atropos Canon과 Event route가 같은 served Revision의 Process·child·Duration 근거를 server-render한다.
+7. 전체 CI와 Clotho synthetic Process→Publication→Atropos smoke가 통과한다.

@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `active` — M4-B 완료; 다음 M4 slice 미착수                                                                                     |
+| 실행 상태                  | `active` — M4-C Process·Duration projection 구현 중                                                                            |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                   |
-| 현재 slice                 | 없음 — 다음 slice는 사용자 지시 후 선택                                                                                        |
+| 현재 slice                 | M4-C — Process containment closure, Duration 범위와 공개 Event 경로                                                            |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결       |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -52,4 +52,8 @@ M4-B Subject handle reconciliation과 공개 Subject 경로까지 완료했다. 
 
 `a396a3a5c4e7dd64374813e56fd9e1d597a292e9`의 전체 CI와 Railway 3개 서비스 배포가 성공했다. 배포 smoke는 정확한 배포 SHA를 확인하고 승인된 synthetic World 하나에 identity Relation을 포함한 Change Plan을 commit·재실행한 뒤 revision 23의 Subject artifact·semantic digest·immutable cache header, Canon SSR과 stable Subject page를 검증했다.
 
-Process·State·Duration, JointJS canvas·subject lane 배치, 100k scope·LOD와 Canon 비교는 이번 slice에 포함하지 않는다.
+## M4-C 활성 범위
+
+`kind = composite`이고 `roles`에 `process`가 있는 Event에서 직접 child와 전체 descendant, 포함 경로, 구조적 시작·종료 후보와 내부 Relation을 결정적으로 계산한다. descendant의 같은 Time System 시간 경계가 충분할 때만 정확한 Duration 또는 최소–최대 범위를 만들고, 근거가 부족하면 `process_duration_unresolved`로 남긴다. Canon의 Process 진입점과 기존 stable Event URL에서 같은 served Revision의 근거를 읽을 수 있게 한다.
+
+State는 family별 start/end pattern과 subject resolver가 아직 등록되지 않았으므로 이번 slice에서 임의 추론하지 않는다. State rule registry는 M4-D로 분리한다. JointJS canvas·subject lane 배치, 100k scope·LOD와 Canon 비교도 후속 slice다.

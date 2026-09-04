@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   projectPublicDocuments,
+  projectProcesses,
   projectSubjects,
   projectTimeline
 } from "./index.js";
@@ -359,6 +360,156 @@ describe("Subject projection and handle reconciliation", () => {
       anchor_event_id: "event-b",
       projection_revision: 2,
       member_event_ids: ["event-b"]
+    });
+  });
+});
+
+describe("Process and Duration projection", () => {
+  const processView = {
+    ...timelineView,
+    events: [
+      {
+        ...timelineView.events[0]!,
+        id: "process",
+        kind: "composite" as const,
+        title: "A long process",
+        roles: ["process"]
+      },
+      ...timelineView.events
+    ],
+    temporalPlacements: [
+      {
+        ...timelineView.temporalPlacements[0]!,
+        id: "placement-a",
+        event_id: "event-a",
+        earliest_start: { value: 10 },
+        latest_start: { value: 12 }
+      },
+      {
+        ...timelineView.temporalPlacements[1]!,
+        id: "placement-c",
+        event_id: "event-c",
+        earliest_start: { value: 20 },
+        latest_start: { value: 23 }
+      }
+    ],
+    relations: [
+      {
+        id: "contains-a",
+        canon_id: "canon",
+        type: "contains" as const,
+        source_event_id: "process",
+        target_event_id: "event-a",
+        direction: "directed" as const,
+        attributes: {}
+      },
+      {
+        id: "contains-b",
+        canon_id: "canon",
+        type: "contains" as const,
+        source_event_id: "process",
+        target_event_id: "event-b",
+        direction: "directed" as const,
+        attributes: {}
+      },
+      {
+        id: "contains-c",
+        canon_id: "canon",
+        type: "contains" as const,
+        source_event_id: "event-b",
+        target_event_id: "event-c",
+        direction: "directed" as const,
+        attributes: {}
+      },
+      {
+        ...timelineView.relations[0]!,
+        id: "precedes-a-c",
+        source_event_id: "event-a",
+        target_event_id: "event-c"
+      }
+    ],
+    narratives: [
+      {
+        id: "process-narrative",
+        canon_id: "canon",
+        scope_type: "event" as const,
+        scope_id: "process",
+        locale: "en",
+        kind: "primary" as const,
+        title: "Process",
+        body: "Process narrative",
+        public_references: []
+      }
+    ]
+  };
+
+  it("is deterministic, closes nested containment and preserves uncertain duration bounds", () => {
+    const first = projectProcesses(processView, 9);
+    const shuffled = projectProcesses(
+      {
+        ...processView,
+        events: [...processView.events].reverse(),
+        relations: [...processView.relations].reverse(),
+        temporalPlacements: [...processView.temporalPlacements].reverse()
+      },
+      9
+    );
+
+    expect(shuffled).toEqual(first);
+    expect(first[0]).toMatchObject({
+      projection_type: "process",
+      process_event_id: "process",
+      direct_child_event_ids: ["event-a", "event-b"],
+      descendant_event_ids: ["event-a", "event-b", "event-c"],
+      start_event_ids: ["event-a", "event-b"],
+      end_event_ids: ["event-b", "event-c"],
+      narrative_ids: ["process-narrative"],
+      completeness: "complete",
+      durations: [
+        {
+          time_system_id: "time",
+          start_earliest: 10,
+          start_latest: 12,
+          end_earliest: 20,
+          end_latest: 23,
+          minimum: 8,
+          maximum: 13,
+          kind: "range",
+          evidence_ids: ["placement-a", "placement-c"]
+        }
+      ]
+    });
+    expect(first[0]?.semantic_digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("does not invent a duration for an empty Process", () => {
+    const result = projectProcesses(
+      {
+        ...timelineView,
+        events: [
+          {
+            ...timelineView.events[0]!,
+            id: "process",
+            kind: "composite" as const,
+            roles: ["process"]
+          }
+        ],
+        temporalPlacements: [],
+        relations: []
+      },
+      10
+    );
+
+    expect(result[0]).toMatchObject({
+      durations: [],
+      completeness: "partial",
+      diagnostics: [
+        { code: "empty_process", affected_ids: ["process"] },
+        {
+          code: "process_duration_unresolved",
+          affected_ids: ["process"]
+        }
+      ]
     });
   });
 });

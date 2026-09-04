@@ -27,7 +27,9 @@ export default async function EventPage({
       { canon },
       {
         event,
+        parentProcessIds,
         pointer,
+        process,
         narratives,
         temporalPlacements,
         timeSystems,
@@ -64,6 +66,8 @@ export default async function EventPage({
           worldId={worldId}
           canonId={canonId}
           eventId={eventId}
+          process={process}
+          parentProcessIds={parentProcessIds}
           narratives={narratives}
           temporalPlacements={temporalPlacements}
           timeSystems={timeSystems}

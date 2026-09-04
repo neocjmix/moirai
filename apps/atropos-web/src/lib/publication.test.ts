@@ -5,6 +5,7 @@ import {
   assertPublicId,
   readCanon,
   readEvent,
+  readProcess,
   readSubject,
   readTimeline,
   readWorld
@@ -26,8 +27,9 @@ describe("Atropos Revision-pinned reader", () => {
     expect(canon.pointer.served_revision).toBe(2);
     expect(event.pointer.served_revision).toBe(2);
     expect(event.event.title).toBe(SYNTHETIC_FIXTURE.eventTitle);
-    expect(event.relations).toHaveLength(2);
+    expect(event.relations).toHaveLength(3);
     expect(event.temporalPlacements).toHaveLength(1);
+    expect(event.parentProcessIds).toEqual([SYNTHETIC_FIXTURE.processEventId]);
   });
 
   it("rejects path-like public identifiers", () => {
@@ -46,12 +48,15 @@ describe("Atropos Revision-pinned reader", () => {
     );
 
     expect(timeline.source_revision).toBe(canon.pointer.served_revision);
-    expect(timeline.items).toHaveLength(3);
-    expect(timeline.items.map((item) => item.event_id)).toEqual([
-      SYNTHETIC_FIXTURE.eventId,
-      SYNTHETIC_FIXTURE.secondEventId,
-      SYNTHETIC_FIXTURE.thirdEventId
-    ]);
+    expect(timeline.items).toHaveLength(4);
+    expect(timeline.items.map((item) => item.event_id)).toEqual(
+      expect.arrayContaining([
+        SYNTHETIC_FIXTURE.eventId,
+        SYNTHETIC_FIXTURE.secondEventId,
+        SYNTHETIC_FIXTURE.thirdEventId,
+        SYNTHETIC_FIXTURE.processEventId
+      ])
+    );
   });
 
   it("reads a Subject handle and projection from the same immutable Revision", async () => {
@@ -73,5 +78,35 @@ describe("Atropos Revision-pinned reader", () => {
         SYNTHETIC_FIXTURE.secondEventId
       ]
     });
+  });
+
+  it("reads a Process and its Duration from the same immutable Revision", async () => {
+    const canon = await readCanon(
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId
+    );
+    const reference = canon.processArtifacts[0]!;
+    const process = await readProcess(
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId,
+      reference
+    );
+    const event = await readEvent(
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId,
+      SYNTHETIC_FIXTURE.processEventId
+    );
+
+    expect(process).toMatchObject({
+      source_revision: canon.pointer.served_revision,
+      process_event_id: SYNTHETIC_FIXTURE.processEventId,
+      direct_child_event_ids: [
+        SYNTHETIC_FIXTURE.eventId,
+        SYNTHETIC_FIXTURE.secondEventId,
+        SYNTHETIC_FIXTURE.thirdEventId
+      ],
+      durations: [{ minimum: 2, maximum: 3, kind: "range" }]
+    });
+    expect(event.process?.semantic_digest).toBe(process.semantic_digest);
   });
 });

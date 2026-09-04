@@ -293,6 +293,20 @@ async function main(): Promise<void> {
         },
         {
           kind: "create",
+          entity_type: "relation",
+          entity_id: id("subject-relation"),
+          origin_refs,
+          value: {
+            canon_id: canonId,
+            type: "identity_continues",
+            source_event_id: seedId,
+            target_event_id: id("event"),
+            direction: "directed",
+            attributes: {}
+          }
+        },
+        {
+          kind: "create",
           entity_type: "narrative",
           entity_id: id("narrative"),
           origin_refs,
@@ -399,8 +413,56 @@ async function main(): Promise<void> {
     if (
       !canonPage.ok ||
       !canonHtml.includes("DERIVED TIMELINE") ||
+      !canonHtml.includes("DERIVED SUBJECTS") ||
       !canonHtml.includes("Deployment Sequence") ||
       !canonHtml.includes(title)
+    )
+      return false;
+    const canonArtifact = await fetch(
+      new URL(
+        `/worlds/${worldId}/revisions/${revision}/canons/${canonId}.json`,
+        publicUrl
+      ),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const canonDocument = (await canonArtifact.json()) as {
+      subject_artifacts?: readonly {
+        key: string;
+        subject_handle_id: string;
+      }[];
+    };
+    const subjectReference = canonDocument.subject_artifacts?.find(
+      (reference) => reference.subject_handle_id.length > 0
+    );
+    if (!canonArtifact.ok || !subjectReference) return false;
+    const subjectArtifact = await fetch(
+      new URL(
+        `/worlds/${worldId}/revisions/${revision}/subjects/${subjectReference.subject_handle_id}.json`,
+        publicUrl
+      ),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const subjectBody = await subjectArtifact.text();
+    if (
+      !subjectArtifact.ok ||
+      !subjectArtifact.headers.get("cache-control")?.includes("immutable") ||
+      !subjectBody.includes('"projection_type":"subject"') ||
+      !subjectBody.includes(id("event")) ||
+      !subjectBody.includes('"semantic_digest"')
+    )
+      return false;
+    const subjectPage = await fetch(
+      new URL(
+        `/worlds/${worldId}/canons/${canonId}/subjects/${subjectReference.subject_handle_id}`,
+        publicUrl
+      ),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const subjectHtml = (await subjectPage.text()).replace(/<!--.*?-->/g, "");
+    if (
+      !subjectPage.ok ||
+      !subjectHtml.includes("DERIVED SUBJECT") ||
+      !subjectHtml.includes(title)
     )
       return false;
     return true;

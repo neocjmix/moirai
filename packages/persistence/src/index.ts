@@ -7,11 +7,16 @@ import type {
   PublicEvent,
   PublicNarrative,
   PublicRelation,
+  SubjectHandleRecord,
   PublicTemporalPlacement,
   PublicTimeSystem,
   PublicWorld,
   ValidationIssue
 } from "@moirai/contracts";
+import {
+  projectSubjects,
+  type SubjectProjectionBundle
+} from "@moirai/projections";
 import {
   ChangeSetError,
   type CanonicalState,
@@ -184,6 +189,22 @@ interface PublicationOutboxTable {
   completed_at: Date | null;
 }
 
+interface SubjectHandleTable {
+  id: string;
+  canon_id: string;
+  anchor_event_id: string;
+  status: SubjectHandleRecord["status"];
+  redirect_to: string | null;
+  created_revision: number;
+  projection_revision: number;
+}
+
+interface SubjectHandleMemberTable {
+  handle_id: string;
+  event_id: string;
+  projection_revision: number;
+}
+
 export interface DatabaseSchema {
   moirai_system_metadata: { key: string; value: string; updated_at: Date };
   worlds: WorldTable;
@@ -199,6 +220,8 @@ export interface DatabaseSchema {
   world_revisions: WorldRevisionTable;
   world_publication_state: PublicationStateTable;
   publication_outbox: PublicationOutboxTable;
+  subject_handles: SubjectHandleTable;
+  subject_handle_members: SubjectHandleMemberTable;
 }
 
 export type MoiraiDatabase = Kysely<DatabaseSchema>;
@@ -815,6 +838,94 @@ export async function readWorldAtRevision(
     narratives: byType("narrative") as unknown as PublicNarrative[],
     generatedAt: revisionRecord.committed_at.toISOString()
   };
+}
+
+export async function reconcileSubjectHandleState(
+  db: MoiraiDatabase,
+  view: RevisionView,
+  revision: number
+): Promise<SubjectProjectionBundle> {
+  return db.transaction().execute(async (transaction) => {
+    await sql`select pg_advisory_xact_lock(hashtextextended(${view.world.id}, 0))`.execute(
+      transaction
+    );
+    const canonIds = view.canons.map((canon) => canon.id);
+    if (canonIds.length === 0) return projectSubjects(view, revision);
+
+    const rows = await transaction
+      .selectFrom("subject_handles")
+      .selectAll()
+      .where("canon_id", "in", canonIds)
+      .execute();
+    const newestProjection = rows.reduce(
+      (latest, row) => Math.max(latest, row.projection_revision),
+      0
+    );
+    if (newestProjection > revision) {
+      throw new Error("subject_reconciliation_stale_revision");
+    }
+    const handleIds = rows.map((row) => row.id);
+    const memberRows =
+      handleIds.length === 0
+        ? []
+        : await transaction
+            .selectFrom("subject_handle_members")
+            .selectAll()
+            .where("handle_id", "in", handleIds)
+            .execute();
+    const previous: SubjectHandleRecord[] = rows.map((row) => ({
+      ...row,
+      member_event_ids: memberRows
+        .filter((member) => member.handle_id === row.id)
+        .map((member) => member.event_id)
+        .sort()
+    }));
+    const bundle = projectSubjects(view, revision, previous);
+    const values = (handle: SubjectHandleRecord) => ({
+      id: handle.id,
+      canon_id: handle.canon_id,
+      anchor_event_id: handle.anchor_event_id,
+      status: handle.status,
+      redirect_to: handle.redirect_to,
+      created_revision: handle.created_revision,
+      projection_revision: handle.projection_revision
+    });
+    for (const handle of [
+      ...bundle.handles.filter((item) => item.status !== "redirected"),
+      ...bundle.handles.filter((item) => item.status === "redirected")
+    ]) {
+      await transaction
+        .insertInto("subject_handles")
+        .values(values(handle))
+        .onConflict((conflict) =>
+          conflict.column("id").doUpdateSet(values(handle))
+        )
+        .execute();
+    }
+    const reconciledIds = bundle.handles.map((handle) => handle.id);
+    if (reconciledIds.length > 0) {
+      await transaction
+        .deleteFrom("subject_handle_members")
+        .where("handle_id", "in", reconciledIds)
+        .execute();
+    }
+    const members = bundle.handles
+      .filter((handle) => handle.status === "active")
+      .flatMap((handle) =>
+        handle.member_event_ids.map((eventId) => ({
+          handle_id: handle.id,
+          event_id: eventId,
+          projection_revision: revision
+        }))
+      );
+    if (members.length > 0) {
+      await transaction
+        .insertInto("subject_handle_members")
+        .values(members)
+        .execute();
+    }
+    return bundle;
+  });
 }
 
 export async function claimPublicationJob(

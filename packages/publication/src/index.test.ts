@@ -149,10 +149,54 @@ describe("Publication artifact contract", () => {
       time_system_id: "time"
     });
     expect(manifest.algorithms.timeline).toBe("m4-timeline-v1");
+    expect(manifest.algorithms.subject).toBe("m4-subject-v1");
     expect(
       manifest.documents.find(
         (document: { key: string }) => document.key === timeline!.key
       )?.sha256
     ).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("publishes stable Subject documents and Canon references", () => {
+    const subjectView = {
+      ...view,
+      events: [
+        view.events[0]!,
+        { ...view.events[0]!, id: "event-2", title: "Event continued" }
+      ],
+      relations: [
+        {
+          id: "identity",
+          canon_id: "canon",
+          type: "identity_continues" as const,
+          source_event_id: "event",
+          target_event_id: "event-2",
+          direction: "directed" as const,
+          attributes: {}
+        }
+      ]
+    };
+    const artifacts = buildPublicationArtifacts(
+      subjectView,
+      5,
+      "2026-01-05T00:00:00.000Z"
+    );
+    const canon = JSON.parse(
+      artifacts.documents.find((document) =>
+        document.key.endsWith("/canons/canon.json")
+      )!.body
+    );
+    const reference = canon.subject_artifacts[0];
+    const subject = JSON.parse(
+      artifacts.documents.find((document) => document.key === reference.key)!
+        .body
+    );
+
+    expect(reference).toMatchObject({ member_count: 2 });
+    expect(subject.subject).toMatchObject({
+      projection_type: "subject",
+      source_revision: 5,
+      member_event_ids: ["event", "event-2"]
+    });
   });
 });

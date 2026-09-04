@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 
-import { projectPublicDocuments, projectTimeline } from "./index.js";
+import {
+  projectPublicDocuments,
+  projectSubjects,
+  projectTimeline
+} from "./index.js";
 
 const timelineView = {
   world: { id: "world", slug: "world", title: "World", description: null },
@@ -217,5 +221,144 @@ describe("Timeline projection", () => {
       },
       { code: "timeline_unplaced", affected_ids: ["event-c"] }
     ]);
+  });
+});
+
+describe("Subject projection and handle reconciliation", () => {
+  const identityRelation = (
+    id: string,
+    source: string,
+    target: string,
+    type: "identity_continues" | "identity_splits" = "identity_continues"
+  ) => ({
+    id,
+    canon_id: "canon",
+    type,
+    source_event_id: source,
+    target_event_id: target,
+    direction: "directed" as const,
+    attributes: {}
+  });
+
+  it("is deterministic and does not merge matching names without identity evidence", () => {
+    const view = {
+      ...timelineView,
+      events: [
+        ...timelineView.events,
+        {
+          ...timelineView.events[0]!,
+          id: "event-d",
+          title: "A"
+        }
+      ],
+      relations: [identityRelation("identity-a-b", "event-a", "event-b")]
+    };
+    const first = projectSubjects(view, 7);
+    const shuffled = projectSubjects(
+      {
+        ...view,
+        events: [...view.events].reverse(),
+        relations: [...view.relations].reverse()
+      },
+      7
+    );
+
+    expect(shuffled).toEqual(first);
+    expect(first.projections).toHaveLength(1);
+    expect(first.projections[0]).toMatchObject({
+      member_event_ids: ["event-a", "event-b"],
+      label: "A",
+      label_evidence_event_id: "event-a"
+    });
+    expect(first.projections[0]?.semantic_digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("never lets an identity Relation cross a Canon boundary", () => {
+    const otherEvent = {
+      ...timelineView.events[0]!,
+      id: "event-other",
+      canon_id: "canon-other"
+    };
+    const result = projectSubjects(
+      {
+        ...timelineView,
+        canons: [
+          ...timelineView.canons,
+          { ...timelineView.canons[0]!, id: "canon-other" }
+        ],
+        events: [...timelineView.events, otherEvent],
+        relations: [identityRelation("cross-canon", "event-a", "event-other")]
+      },
+      7
+    );
+
+    expect(result.projections).toEqual([]);
+    expect(result.handles).toEqual([]);
+  });
+
+  it("keeps the anchored handle on split and redirects the younger handle on merge", () => {
+    const mergedSource = {
+      ...timelineView,
+      relations: [
+        identityRelation("identity-a-b", "event-a", "event-b"),
+        identityRelation("identity-b-c", "event-b", "event-c")
+      ]
+    };
+    const merged = projectSubjects(mergedSource, 1);
+    const originalHandle = merged.handles.find(
+      (handle) => handle.status === "active"
+    )!;
+    const split = projectSubjects(
+      {
+        ...mergedSource,
+        relations: [identityRelation("identity-a-b", "event-a", "event-b")]
+      },
+      2,
+      merged.handles
+    );
+    expect(
+      split.handles.filter((handle) => handle.status === "active")
+    ).toHaveLength(2);
+    expect(
+      split.handles.find((handle) => handle.id === originalHandle.id)
+    ).toMatchObject({
+      anchor_event_id: "event-a",
+      member_event_ids: ["event-a", "event-b"],
+      status: "active"
+    });
+
+    const remerged = projectSubjects(mergedSource, 3, split.handles);
+    const active = remerged.handles.find(
+      (handle) => handle.status === "active"
+    )!;
+    const redirected = remerged.handles.find(
+      (handle) => handle.status === "redirected"
+    )!;
+    expect(active.id).toBe(originalHandle.id);
+    expect(redirected.redirect_to).toBe(active.id);
+  });
+
+  it("keeps the handle and selects a stable replacement when its anchor is withdrawn", () => {
+    const source = {
+      ...timelineView,
+      relations: [identityRelation("identity-a-b", "event-a", "event-b")]
+    };
+    const initial = projectSubjects(source, 1);
+    const handle = initial.handles[0]!;
+    const afterWithdrawal = projectSubjects(
+      {
+        ...source,
+        events: source.events.filter((event) => event.id !== "event-a"),
+        relations: []
+      },
+      2,
+      initial.handles
+    );
+    expect(afterWithdrawal.handles).toContainEqual({
+      ...handle,
+      anchor_event_id: "event-b",
+      projection_revision: 2,
+      member_event_ids: ["event-b"]
+    });
   });
 });

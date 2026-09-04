@@ -5,6 +5,7 @@ import {
   assertPublicId,
   readCanon,
   readEvent,
+  readSubject,
   readTimeline,
   readWorld
 } from "./publication";
@@ -25,7 +26,7 @@ describe("Atropos Revision-pinned reader", () => {
     expect(canon.pointer.served_revision).toBe(2);
     expect(event.pointer.served_revision).toBe(2);
     expect(event.event.title).toBe(SYNTHETIC_FIXTURE.eventTitle);
-    expect(event.relations).toHaveLength(1);
+    expect(event.relations).toHaveLength(2);
     expect(event.temporalPlacements).toHaveLength(1);
   });
 
@@ -51,5 +52,26 @@ describe("Atropos Revision-pinned reader", () => {
       SYNTHETIC_FIXTURE.secondEventId,
       SYNTHETIC_FIXTURE.thirdEventId
     ]);
+  });
+
+  it("reads a Subject handle and projection from the same immutable Revision", async () => {
+    const canon = await readCanon(
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId
+    );
+    const reference = canon.subjectArtifacts[0]!;
+    const subject = await readSubject(
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId,
+      reference.subject_handle_id
+    );
+
+    expect(subject.document.subject).toMatchObject({
+      source_revision: canon.pointer.served_revision,
+      member_event_ids: [
+        SYNTHETIC_FIXTURE.eventId,
+        SYNTHETIC_FIXTURE.secondEventId
+      ]
+    });
   });
 });

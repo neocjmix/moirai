@@ -20,7 +20,14 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
     page.getByRole("heading", { name: "Ember Count" })
   ).toBeVisible();
   await expect(page.getByText("DERIVED TIMELINE")).toBeVisible();
+  await expect(page.getByText("DERIVED SUBJECTS")).toBeVisible();
   await expect(page.getByText("First bell")).toBeVisible();
+  await page.locator('a[href*="/subjects/"]').click();
+  await expect(page.getByText("DERIVED SUBJECT · REVISION 2")).toBeVisible();
+  await expect(page.getByText("stable handle anchor")).toBeVisible();
+  await page
+    .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
+    .click();
   await page
     .locator("a.event-card")
     .filter({ hasText: SYNTHETIC_FIXTURE.eventTitle })
@@ -108,5 +115,27 @@ test("health, status and immutable Event document expose allowlisted metadata", 
     canon_id: SYNTHETIC_FIXTURE.canonId,
     time_system_id: SYNTHETIC_FIXTURE.timeSystemId,
     completeness: "complete"
+  });
+
+  const canonDocument = await request.get(
+    `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/canons/${SYNTHETIC_FIXTURE.canonId}.json`
+  );
+  const canonPayload = (await canonDocument.json()) as {
+    subject_artifacts: readonly { key: string }[];
+  };
+  const subject = await request.get(
+    `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/${canonPayload.subject_artifacts[0]!.key.split("/revisions/2/")[1]}`
+  );
+  expect(subject.ok()).toBe(true);
+  expect(subject.headers()["cache-control"]).toContain("immutable");
+  expect(await subject.json()).toMatchObject({
+    subject: {
+      source_revision: 2,
+      projection_type: "subject",
+      member_event_ids: [
+        SYNTHETIC_FIXTURE.eventId,
+        SYNTHETIC_FIXTURE.secondEventId
+      ]
+    }
   });
 });

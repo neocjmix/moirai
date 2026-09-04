@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `active` — M4-A 완료; 다음 M4 slice 미착수                                                                                    |
+| 실행 상태                  | `active` — M4-B Subject projection 구현 중                                                                                    |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                   |
-| 현재 slice                 | 없음 — M4-A 마감                                                                                                              |
+| 현재 slice                 | M4-B — identity component, stable Subject handle reconciliation과 공개 Subject route                                           |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결       |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -41,4 +41,10 @@
 
 [M4 파생 모델 구현 기록](M4-DERIVED-MODELS.md)에 따라 기존 Canon·Event·시간 배치·`precedes` 관계만 읽는 결정적 Timeline projection, Revision별 immutable graph artifact와 Atropos의 접근 가능한 텍스트 탐색을 배포했다. `0bbabae947761b0cc380951a56677bd7e443db09`의 CI와 배포 smoke가 성공했다. smoke는 정확한 Clotho 배포 SHA 확인 후 승인된 synthetic World 하나에 원자적 Change Plan을 commit·재실행하고 revision 21의 Timeline artifact와 Canon SSR 공개를 확인했다.
 
-Subject handle reconciliation, Process·State·Duration, JointJS 상호작용, 100k scope·LOD와 Canon 비교는 아직 시작하지 않았다. 다음 M4 slice는 별도 선택 후 활성화한다.
+Subject handle reconciliation을 M4-B로 시작했다. Process·State·Duration, JointJS 상호작용, 100k scope·LOD와 Canon 비교는 아직 시작하지 않았다.
+
+## M4-B 활성 범위
+
+[M4 파생 모델 구현 기록](M4-DERIVED-MODELS.md)의 Slice B에 따라 Canon별 identity equivalence component와 lineage를 결정적으로 계산한다. `subject_handles` 운영 식별 표면은 분리 시 anchor component에 유지되고 병합 시 오래된 handle을 대표로 두며 나머지는 redirect한다. Revision별 Subject artifact, Canon 진입점, stable Subject URL과 검색을 공개한다.
+
+Process·State·Duration, JointJS canvas·subject lane 배치, 100k scope·LOD와 Canon 비교는 이번 slice에 포함하지 않는다.

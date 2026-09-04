@@ -5,6 +5,8 @@ import {
   type PublicNarrative,
   type PublicRelation,
   type PublicSearchEntry,
+  type PublicSubjectArtifactReference,
+  type PublicSubjectHandleDocument,
   type PublicTimelineArtifactReference,
   type PublicTimelineProjection,
   type PublicTemporalPlacement,
@@ -151,6 +153,15 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           target_event_id: fixture.thirdEventId,
           direction: "directed",
           attributes: {}
+        },
+        {
+          id: fixture.identityRelationId,
+          canon_id: fixture.canonId,
+          type: "identity_continues",
+          source_event_id: fixture.eventId,
+          target_event_id: fixture.secondEventId,
+          direction: "directed",
+          attributes: {}
         }
       ],
       narratives: [
@@ -281,6 +292,7 @@ export async function readCanon(
   narratives: readonly PublicNarrative[];
   timeSystems: readonly PublicTimeSystem[];
   timelineArtifacts: readonly PublicTimelineArtifactReference[];
+  subjectArtifacts: readonly PublicSubjectArtifactReference[];
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -290,6 +302,7 @@ export async function readCanon(
     narratives: readonly PublicNarrative[];
     time_systems: readonly PublicTimeSystem[];
     timeline_artifacts?: readonly PublicTimelineArtifactReference[];
+    subject_artifacts?: readonly PublicSubjectArtifactReference[];
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/canons/${canonId}.json`
@@ -305,8 +318,35 @@ export async function readCanon(
     events: document.events,
     narratives: document.narratives,
     timeSystems: document.time_systems,
-    timelineArtifacts: document.timeline_artifacts ?? []
+    timelineArtifacts: document.timeline_artifacts ?? [],
+    subjectArtifacts: document.subject_artifacts ?? []
   };
+}
+
+export async function readSubject(
+  worldId: string,
+  canonId: string,
+  subjectHandleId: string,
+  selected?: SelectedPublication
+): Promise<{
+  pointer: PublicationPointer;
+  document: PublicSubjectHandleDocument;
+}> {
+  assertPublicId(canonId);
+  assertPublicId(subjectHandleId);
+  const { pointer } = selected ?? (await selectPublication(worldId));
+  const document = await readJson<PublicSubjectHandleDocument>(
+    `worlds/${worldId}/revisions/${pointer.served_revision}/subjects/${subjectHandleId}.json`
+  );
+  if (
+    document.world_id !== worldId ||
+    document.served_revision !== pointer.served_revision ||
+    document.handle.canon_id !== canonId ||
+    document.handle.id !== subjectHandleId
+  ) {
+    throw new Error("mixed Publication revisions");
+  }
+  return { pointer, document };
 }
 
 export async function readTimeline(

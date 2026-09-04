@@ -5,8 +5,10 @@ import {
 } from "@moirai/contracts";
 import {
   projectPublicDocuments,
+  SUBJECT_ALGORITHM_VERSION,
   TIMELINE_ALGORITHM_VERSION,
-  type CanonicalRevisionView
+  type CanonicalRevisionView,
+  type SubjectProjectionBundle
 } from "@moirai/projections";
 import { createHash, createHmac } from "node:crypto";
 
@@ -81,11 +83,15 @@ function sha256(value: string | Uint8Array): string {
 export function buildPublicationArtifacts(
   view: CanonicalRevisionView,
   revision: number,
-  generatedAt: string
+  generatedAt: string,
+  subjects?: SubjectProjectionBundle
 ): PublicationArtifacts {
-  const documents = projectPublicDocuments(view, revision, generatedAt).map(
-    ({ key, value }) => ({ key, body: JSON.stringify(value) })
-  );
+  const documents = projectPublicDocuments(
+    view,
+    revision,
+    generatedAt,
+    subjects
+  ).map(({ key, value }) => ({ key, body: JSON.stringify(value) }));
   const manifestKey = `${revisionPrefix(view.world.id, revision)}/manifest.json`;
   const manifest: PublicationManifest = {
     world_id: view.world.id,
@@ -95,7 +101,8 @@ export function buildPublicationArtifacts(
     algorithms: {
       canonical: "m2-v1",
       search: "m2-text-v1",
-      timeline: TIMELINE_ALGORITHM_VERSION
+      timeline: TIMELINE_ALGORITHM_VERSION,
+      subject: SUBJECT_ALGORITHM_VERSION
     },
     locales: ["en"],
     documents: documents.map(({ key, body }) => ({

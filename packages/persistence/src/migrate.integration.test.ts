@@ -32,7 +32,8 @@ describeWithDatabase("versioned migrations", () => {
       from information_schema.tables
       where table_schema = 'public'
         and table_name in ('worlds', 'change_sets', 'publication_outbox',
-          'time_systems', 'event_temporal_placements', 'relations', 'narratives')
+          'time_systems', 'event_temporal_placements', 'relations', 'narratives',
+          'subject_handles', 'subject_handle_members')
       order by table_name
     `.execute(db);
     expect(canonical.rows).toEqual([
@@ -41,6 +42,8 @@ describeWithDatabase("versioned migrations", () => {
       { table_name: "narratives" },
       { table_name: "publication_outbox" },
       { table_name: "relations" },
+      { table_name: "subject_handle_members" },
+      { table_name: "subject_handles" },
       { table_name: "time_systems" },
       { table_name: "worlds" }
     ]);

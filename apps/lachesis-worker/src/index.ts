@@ -5,6 +5,7 @@ import {
   completePublicationJob,
   createDatabase,
   readWorldAtRevision,
+  reconcileSubjectHandleState,
   retryPublicationJob
 } from "@moirai/persistence";
 import {
@@ -36,10 +37,16 @@ async function processNextJob(): Promise<boolean> {
       job.worldId,
       job.targetRevision
     );
+    const subjects = await reconcileSubjectHandleState(
+      database,
+      view,
+      job.targetRevision
+    );
     const artifacts = buildPublicationArtifacts(
       view,
       job.targetRevision,
-      view.generatedAt
+      view.generatedAt,
+      subjects
     );
     const servedRevision = await publishArtifacts(publicationStore, artifacts);
     await completePublicationJob(database, job, servedRevision);

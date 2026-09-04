@@ -15,7 +15,9 @@ export function artifactPath(parts: readonly string[]): string {
   }
   if (
     parts.length === 2 &&
-    (parts[0] === "canons" || parts[0] === "events") &&
+    (parts[0] === "canons" ||
+      parts[0] === "events" ||
+      parts[0] === "subjects") &&
     parts[1]?.endsWith(".json")
   ) {
     assertPublicId(parts[1].slice(0, -5));

@@ -51,6 +51,7 @@ export default async function CanonPage({
       events,
       narratives,
       pointer,
+      subjectArtifacts,
       timeSystems,
       timelineArtifacts
     } = canonDocument;
@@ -156,6 +157,29 @@ export default async function CanonPage({
             </section>
           );
         })}
+        {subjectArtifacts.length > 0 ? (
+          <section className="card-dock" aria-labelledby="subjects-title">
+            <p className="eyebrow" id="subjects-title">
+              DERIVED SUBJECTS
+            </p>
+            <p className="timeline-note">
+              명시적인 정체성 관계로 연결된 사건 집합입니다.
+            </p>
+            <div className="card-list">
+              {subjectArtifacts.map((subject) => (
+                <a
+                  className="canon-card"
+                  href={`/worlds/${worldId}/canons/${canon.id}/subjects/${subject.subject_handle_id}`}
+                  key={subject.subject_handle_id}
+                >
+                  <span>{subject.label}</span>
+                  <small>{subject.member_count} identity events</small>
+                  <b aria-hidden="true">→</b>
+                </a>
+              ))}
+            </div>
+          </section>
+        ) : null}
         <section className="card-dock" aria-labelledby="events-title">
           <p className="eyebrow" id="events-title">
             EVENTS

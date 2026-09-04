@@ -5,14 +5,18 @@ import type {
   PublicNarrative,
   PublicRelation,
   PublicSearchEntry,
+  PublicSubjectLineageEdge,
+  PublicSubjectProjection,
   PublicTimelineProjection,
   PublicTemporalPlacement,
   PublicTimeSystem,
-  PublicWorld
+  PublicWorld,
+  SubjectHandleRecord
 } from "@moirai/contracts";
 import { createHash } from "node:crypto";
 
 export const TIMELINE_ALGORITHM_VERSION = "m4-timeline-v1";
+export const SUBJECT_ALGORITHM_VERSION = "m4-subject-v1";
 
 export interface CanonicalRevisionView {
   readonly world: PublicWorld;
@@ -33,6 +37,11 @@ export interface ProjectionDocument {
 export interface TimelineProjectionParameters {
   readonly canonId: string;
   readonly timeSystemId: string;
+}
+
+export interface SubjectProjectionBundle {
+  readonly handles: readonly SubjectHandleRecord[];
+  readonly projections: readonly PublicSubjectProjection[];
 }
 
 function stableValue(value: unknown): unknown {
@@ -386,6 +395,343 @@ export function projectTimeline(
   return { ...semantic, semantic_digest: digest(semantic) };
 }
 
+const EQUIVALENCE_RELATION_TYPES = new Set<PublicRelation["type"]>([
+  "identity_continues",
+  "identity_instance_of"
+]);
+const LINEAGE_RELATION_TYPES = new Set<PublicRelation["type"]>([
+  "identity_splits",
+  "identity_merges"
+]);
+
+function deterministicSubjectHandleId(
+  worldId: string,
+  canonId: string,
+  anchorEventId: string
+): string {
+  const value = createHash("sha256")
+    .update(`moirai-subject:${worldId}:${canonId}:${anchorEventId}`)
+    .digest("hex")
+    .slice(0, 32)
+    .split("");
+  value[12] = "5";
+  value[16] = ((Number.parseInt(value[16]!, 16) & 0x3) | 0x8).toString(16);
+  const compact = value.join("");
+  return `${compact.slice(0, 8)}-${compact.slice(8, 12)}-${compact.slice(12, 16)}-${compact.slice(16, 20)}-${compact.slice(20)}`;
+}
+
+function subjectComponents(
+  events: readonly PublicEvent[],
+  equivalence: readonly PublicRelation[]
+): readonly (readonly string[])[] {
+  const parent = new Map(events.map((event) => [event.id, event.id]));
+  const find = (id: string): string => {
+    const current = parent.get(id)!;
+    if (current === id) return id;
+    const root = find(current);
+    parent.set(id, root);
+    return root;
+  };
+  const join = (left: string, right: string): void => {
+    const leftRoot = find(left);
+    const rightRoot = find(right);
+    if (leftRoot === rightRoot) return;
+    const [first, second] = [leftRoot, rightRoot].sort();
+    parent.set(second!, first!);
+  };
+  for (const relation of equivalence) {
+    if (
+      parent.has(relation.source_event_id) &&
+      parent.has(relation.target_event_id)
+    ) {
+      join(relation.source_event_id, relation.target_event_id);
+    }
+  }
+  const components = new Map<string, string[]>();
+  for (const event of events) {
+    const root = find(event.id);
+    const members = components.get(root) ?? [];
+    members.push(event.id);
+    components.set(root, members);
+  }
+  return [...components.values()]
+    .map((members) => members.sort())
+    .sort((left, right) => left[0]!.localeCompare(right[0]!));
+}
+
+export function projectSubjects(
+  source: CanonicalRevisionView,
+  sourceRevision: number,
+  previousHandles: readonly SubjectHandleRecord[] = []
+): SubjectProjectionBundle {
+  const allHandles: SubjectHandleRecord[] = [];
+  const allProjections: PublicSubjectProjection[] = [];
+
+  for (const canon of sorted(source.canons)) {
+    const events = sorted(
+      source.events.filter((event) => event.canon_id === canon.id)
+    );
+    const eventIds = new Set(events.map((event) => event.id));
+    const identityRelations = sorted(
+      source.relations.filter(
+        (relation) =>
+          relation.canon_id === canon.id &&
+          (EQUIVALENCE_RELATION_TYPES.has(relation.type) ||
+            LINEAGE_RELATION_TYPES.has(relation.type)) &&
+          eventIds.has(relation.source_event_id) &&
+          eventIds.has(relation.target_event_id)
+      )
+    );
+    const equivalence = identityRelations.filter((relation) =>
+      EQUIVALENCE_RELATION_TYPES.has(relation.type)
+    );
+    const lineage = identityRelations.filter((relation) =>
+      LINEAGE_RELATION_TYPES.has(relation.type)
+    );
+    const previous = previousHandles.filter(
+      (handle) => handle.canon_id === canon.id
+    );
+    const previousMemberIds = new Set(
+      previous.flatMap((handle) => handle.member_event_ids)
+    );
+    const identityEventIds = new Set(
+      identityRelations.flatMap((relation) => [
+        relation.source_event_id,
+        relation.target_event_id
+      ])
+    );
+    const components = subjectComponents(events, equivalence).filter(
+      (component) =>
+        component.some((id) => identityEventIds.has(id)) ||
+        component.some((id) => previousMemberIds.has(id))
+    );
+    const componentIndexByEvent = new Map<string, number>();
+    components.forEach((component, index) => {
+      for (const eventId of component)
+        componentIndexByEvent.set(eventId, index);
+    });
+
+    const preferredComponent = new Map<string, number>();
+    for (const handle of previous.filter(
+      (item) => item.status !== "redirected"
+    )) {
+      const anchored = componentIndexByEvent.get(handle.anchor_event_id);
+      if (anchored !== undefined) {
+        preferredComponent.set(handle.id, anchored);
+        continue;
+      }
+      const overlaps = components
+        .map((component, index) => ({
+          index,
+          count: component.filter((id) => handle.member_event_ids.includes(id))
+            .length,
+          first: component[0]!
+        }))
+        .filter((item) => item.count > 0)
+        .sort(
+          (left, right) =>
+            right.count - left.count || left.first.localeCompare(right.first)
+        );
+      if (overlaps[0]) preferredComponent.set(handle.id, overlaps[0].index);
+    }
+
+    const handleByComponent = new Map<number, SubjectHandleRecord>();
+    const redirected = new Map<string, SubjectHandleRecord>();
+    components.forEach((component, index) => {
+      const candidates = previous
+        .filter(
+          (handle) =>
+            handle.status !== "redirected" &&
+            preferredComponent.get(handle.id) === index
+        )
+        .sort(
+          (left, right) =>
+            left.created_revision - right.created_revision ||
+            left.id.localeCompare(right.id)
+        );
+      const winner = candidates[0];
+      const anchorEventId =
+        winner && component.includes(winner.anchor_event_id)
+          ? winner.anchor_event_id
+          : component[0]!;
+      const active: SubjectHandleRecord = winner
+        ? {
+            ...winner,
+            anchor_event_id: anchorEventId,
+            status: "active",
+            redirect_to: null,
+            projection_revision: sourceRevision,
+            member_event_ids: component
+          }
+        : {
+            id: deterministicSubjectHandleId(
+              source.world.id,
+              canon.id,
+              anchorEventId
+            ),
+            canon_id: canon.id,
+            anchor_event_id: anchorEventId,
+            status: "active",
+            redirect_to: null,
+            created_revision: sourceRevision,
+            projection_revision: sourceRevision,
+            member_event_ids: component
+          };
+      handleByComponent.set(index, active);
+      for (const loser of candidates.slice(1)) {
+        redirected.set(loser.id, {
+          ...loser,
+          status: "redirected",
+          redirect_to: active.id,
+          projection_revision: sourceRevision,
+          member_event_ids: []
+        });
+      }
+    });
+
+    const assignedIds = new Set([
+      ...[...handleByComponent.values()].map((handle) => handle.id),
+      ...redirected.keys()
+    ]);
+    for (const handle of previous) {
+      if (assignedIds.has(handle.id)) continue;
+      if (handle.status === "redirected") {
+        redirected.set(handle.id, handle);
+      } else {
+        redirected.set(handle.id, {
+          ...handle,
+          status: "unresolved",
+          redirect_to: null,
+          projection_revision: sourceRevision,
+          member_event_ids: []
+        });
+      }
+    }
+
+    const activeHandles = [...handleByComponent.values()];
+    const handleByEvent = new Map<string, SubjectHandleRecord>();
+    for (const handle of activeHandles) {
+      for (const eventId of handle.member_event_ids)
+        handleByEvent.set(eventId, handle);
+    }
+    const lineageEdges = lineage.flatMap((relation) => {
+      const sourceHandle = handleByEvent.get(relation.source_event_id);
+      const targetHandle = handleByEvent.get(relation.target_event_id);
+      if (!sourceHandle || !targetHandle || sourceHandle.id === targetHandle.id)
+        return [];
+      return [
+        {
+          relation_id: relation.id,
+          type: relation.type as PublicSubjectLineageEdge["type"],
+          source_subject_handle_id: sourceHandle.id,
+          target_subject_handle_id: targetHandle.id
+        }
+      ];
+    });
+
+    for (const handle of activeHandles) {
+      const members = new Set(handle.member_event_ids);
+      const anchor = events.find(
+        (event) => event.id === handle.anchor_event_id
+      )!;
+      const componentEquivalence = equivalence.filter(
+        (relation) =>
+          members.has(relation.source_event_id) &&
+          members.has(relation.target_event_id)
+      );
+      const memberNarratives = sorted(
+        source.narratives.filter(
+          (narrative) =>
+            narrative.canon_id === canon.id &&
+            narrative.scope_type === "event" &&
+            members.has(narrative.scope_id)
+        )
+      );
+      const placements = sorted(
+        source.temporalPlacements.filter((placement) =>
+          members.has(placement.event_id)
+        )
+      );
+      const placementsByTime = new Map<string, PublicTemporalPlacement[]>();
+      for (const placement of placements) {
+        const values = placementsByTime.get(placement.time_system_id) ?? [];
+        values.push(placement);
+        placementsByTime.set(placement.time_system_id, values);
+      }
+      const timeRanges = [...placementsByTime]
+        .sort(([left], [right]) => left.localeCompare(right))
+        .map(([timeSystemId, values]) => ({
+          time_system_id: timeSystemId,
+          earliest: Math.min(
+            ...values.map((item) => item.earliest_start.value)
+          ),
+          latest: Math.max(
+            ...values.map(
+              (item) => item.latest_end?.value ?? item.latest_start.value
+            )
+          ),
+          evidence_ids: values.map((item) => item.id).sort()
+        }));
+      const incoming = lineageEdges
+        .filter((edge) => edge.target_subject_handle_id === handle.id)
+        .sort((left, right) =>
+          left.relation_id.localeCompare(right.relation_id)
+        );
+      const outgoing = lineageEdges
+        .filter((edge) => edge.source_subject_handle_id === handle.id)
+        .sort((left, right) =>
+          left.relation_id.localeCompare(right.relation_id)
+        );
+      const evidence = [
+        ...handle.member_event_ids,
+        ...componentEquivalence.map((relation) => relation.id),
+        ...incoming.map((edge) => edge.relation_id),
+        ...outgoing.map((edge) => edge.relation_id),
+        ...memberNarratives.map((narrative) => narrative.id),
+        ...placements.map((placement) => placement.id)
+      ]
+        .filter((value, index, values) => values.indexOf(value) === index)
+        .sort();
+      const semantic = {
+        world_id: source.world.id,
+        source_revision: sourceRevision,
+        projection_type: "subject" as const,
+        algorithm_version: SUBJECT_ALGORITHM_VERSION,
+        parameters_digest: digest({ canon_id: canon.id }),
+        canon_id: canon.id,
+        subject_handle_id: handle.id,
+        anchor_event_id: handle.anchor_event_id,
+        label: anchor.title,
+        label_evidence_event_id: anchor.id,
+        member_event_ids: handle.member_event_ids,
+        identity_relation_ids: componentEquivalence.map(
+          (relation) => relation.id
+        ),
+        instance_relation_ids: componentEquivalence
+          .filter((relation) => relation.type === "identity_instance_of")
+          .map((relation) => relation.id),
+        lineage: { incoming, outgoing },
+        narrative_ids: memberNarratives.map((narrative) => narrative.id),
+        time_ranges: timeRanges,
+        evidence,
+        diagnostics: [],
+        completeness: "complete" as const
+      };
+      allProjections.push({ ...semantic, semantic_digest: digest(semantic) });
+    }
+    allHandles.push(...activeHandles, ...redirected.values());
+  }
+
+  return {
+    handles: [...allHandles].sort((left, right) =>
+      left.id.localeCompare(right.id)
+    ),
+    projections: [...allProjections].sort((left, right) =>
+      left.subject_handle_id.localeCompare(right.subject_handle_id)
+    )
+  };
+}
+
 function sorted<T extends { readonly id: string }>(
   items: readonly T[]
 ): readonly T[] {
@@ -493,7 +839,8 @@ function narrativeText(
 
 function searchEntries(
   view: CanonicalRevisionView,
-  revision: number
+  revision: number,
+  subjects: readonly PublicSubjectProjection[] = []
 ): readonly PublicSearchEntry[] {
   const worldEntry: PublicSearchEntry = {
     target_id: view.world.id,
@@ -537,15 +884,39 @@ function searchEntries(
       .trim(),
     served_revision: revision
   }));
-  return [worldEntry, ...canonEntries, ...eventEntries];
+  const subjectEntries = [...subjects]
+    .sort((left, right) =>
+      left.subject_handle_id.localeCompare(right.subject_handle_id)
+    )
+    .map((subject): PublicSearchEntry => ({
+      target_id: subject.subject_handle_id,
+      target_type: "subject",
+      canonical_url: `/worlds/${view.world.id}/canons/${subject.canon_id}/subjects/${subject.subject_handle_id}`,
+      world_id: view.world.id,
+      canon_id: subject.canon_id,
+      title: subject.label,
+      text: [
+        subject.label,
+        ...subject.member_event_ids.map(
+          (eventId) =>
+            view.events.find((event) => event.id === eventId)?.title ?? ""
+        )
+      ]
+        .join(" ")
+        .trim(),
+      served_revision: revision
+    }));
+  return [worldEntry, ...canonEntries, ...eventEntries, ...subjectEntries];
 }
 
 export function projectPublicDocuments(
   source: CanonicalRevisionView,
   revision: number,
-  generatedAt: string
+  generatedAt: string,
+  subjectBundle?: SubjectProjectionBundle
 ): readonly ProjectionDocument[] {
   const view = allowlistView(source);
+  const subjects = subjectBundle ?? projectSubjects(view, revision);
   const prefix = `worlds/${view.world.id}/revisions/${revision}`;
   const metadata = {
     world_id: view.world.id,
@@ -575,6 +946,31 @@ export function projectPublicDocuments(
         value: { ...metadata, ...projection }
       }
     ];
+  });
+  const subjectDocuments = subjects.handles.map((handle) => {
+    const projection = subjects.projections.find(
+      (item) => item.subject_handle_id === handle.id
+    );
+    return {
+      key: `${prefix}/subjects/${handle.id}.json`,
+      value: {
+        ...metadata,
+        handle: {
+          id: handle.id,
+          canon_id: handle.canon_id,
+          anchor_event_id: handle.anchor_event_id,
+          status: handle.status,
+          redirect_to: handle.redirect_to,
+          created_revision: handle.created_revision,
+          projection_revision: handle.projection_revision
+        },
+        canonical_url: `/worlds/${view.world.id}/canons/${handle.canon_id}/subjects/${handle.id}`,
+        redirect_url: handle.redirect_to
+          ? `/worlds/${view.world.id}/canons/${handle.canon_id}/subjects/${handle.redirect_to}`
+          : null,
+        subject: projection ?? null
+      }
+    };
   });
   return [
     {
@@ -610,6 +1006,16 @@ export function projectPublicDocuments(
             time_system_id: String(document.value.time_system_id),
             key: document.key,
             algorithm_version: String(document.value.algorithm_version)
+          })),
+        subject_artifacts: subjects.projections
+          .filter((subject) => subject.canon_id === canon.id)
+          .map((subject) => ({
+            subject_handle_id: subject.subject_handle_id,
+            key: `${prefix}/subjects/${subject.subject_handle_id}.json`,
+            label: subject.label,
+            member_count: subject.member_event_ids.length,
+            algorithm_version: subject.algorithm_version,
+            completeness: subject.completeness
           }))
       }
     })),
@@ -647,7 +1053,10 @@ export function projectPublicDocuments(
           relations: eventRelations,
           related_events: events.filter((candidate) =>
             relatedIds.has(candidate.id)
-          )
+          ),
+          subject_handle_ids: subjects.projections
+            .filter((subject) => subject.member_event_ids.includes(event.id))
+            .map((subject) => subject.subject_handle_id)
         }
       };
     }),
@@ -656,9 +1065,10 @@ export function projectPublicDocuments(
       value: {
         ...metadata,
         locale: "en",
-        entries: searchEntries(view, revision)
+        entries: searchEntries(view, revision, subjects.projections)
       }
     },
-    ...timelineDocuments
+    ...timelineDocuments,
+    ...subjectDocuments
   ];
 }

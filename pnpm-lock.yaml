@@ -78,21 +78,21 @@ importers:
 
   apps/clotho-api:
     dependencies:
-      '@moirai/clotho-application':
-        specifier: workspace:*
-        version: link:../../packages/clotho-application
-      '@moirai/lachesis':
-        specifier: workspace:*
-        version: link:../../packages/lachesis
       '@modelcontextprotocol/sdk':
         specifier: ^1.30.0
         version: 1.30.0(zod@4.5.4)
+      '@moirai/clotho-application':
+        specifier: workspace:*
+        version: link:../../packages/clotho-application
       '@moirai/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
       '@moirai/domain':
         specifier: workspace:*
         version: link:../../packages/domain
+      '@moirai/lachesis':
+        specifier: workspace:*
+        version: link:../../packages/lachesis
       '@moirai/persistence':
         specifier: workspace:*
         version: link:../../packages/persistence
@@ -151,22 +151,6 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
-  packages/lachesis:
-    dependencies:
-      '@moirai/contracts':
-        specifier: workspace:*
-        version: link:../contracts
-      '@moirai/domain':
-        specifier: workspace:*
-        version: link:../domain
-      '@moirai/persistence':
-        specifier: workspace:*
-        version: link:../persistence
-    devDependencies:
-      typescript:
-        specifier: ^5.9.0
-        version: 5.9.3
-
   packages/contracts:
     devDependencies:
       typescript:
@@ -183,6 +167,22 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
+  packages/lachesis:
+    dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+      '@moirai/domain':
+        specifier: workspace:*
+        version: link:../domain
+      '@moirai/persistence':
+        specifier: workspace:*
+        version: link:../persistence
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/persistence:
     dependencies:
       '@moirai/contracts':
@@ -191,6 +191,9 @@ importers:
       '@moirai/domain':
         specifier: workspace:*
         version: link:../domain
+      '@moirai/projections':
+        specifier: workspace:*
+        version: link:../projections
       kysely:
         specifier: ^0.28.0
         version: 0.28.17

@@ -13,7 +13,8 @@ import {
   completePublicationJob,
   createDatabase,
   getPublicationStatus,
-  readWorldAtRevision
+  readWorldAtRevision,
+  reconcileSubjectHandleState
 } from "./index.js";
 import { migrateToLatest } from "./migrate.js";
 
@@ -26,7 +27,8 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   beforeAll(async () => migrateToLatest(databaseUrl ?? ""));
   beforeEach(async () => {
     await sql`
-      truncate publication_outbox, world_publication_state, change_operations,
+      truncate subject_handle_members, subject_handles, publication_outbox,
+        world_publication_state, change_operations,
         world_revisions, change_sets, narratives, relations,
         event_temporal_placements, canon_time_systems, time_systems,
         events, canons, worlds cascade
@@ -257,5 +259,56 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       servedRevision: 1,
       projectionStatus: "ready"
     });
+  });
+
+  it("persists and reuses stable Subject handles for identity components", async () => {
+    await commitCreateChangeSet(db, createSyntheticChangeSet());
+    const expansion = createSyntheticExpansionChangeSet();
+    await commitCreateChangeSet(db, expansion);
+    await commitCreateChangeSet(db, {
+      contract_version: expansion.contract_version,
+      change_set_id: "01995c2a-7b00-7000-8000-000000000012",
+      world_id: SYNTHETIC_FIXTURE.worldId,
+      expected_revision: 2,
+      actor: "synthetic-bootstrap",
+      intent: "Connect two observations as one derived Subject",
+      operations: [
+        {
+          kind: "create",
+          entity_type: "relation",
+          entity_id: SYNTHETIC_FIXTURE.identityRelationId,
+          value: {
+            canon_id: SYNTHETIC_FIXTURE.canonId,
+            type: "identity_continues",
+            source_event_id: SYNTHETIC_FIXTURE.eventId,
+            target_event_id: SYNTHETIC_FIXTURE.secondEventId,
+            direction: "directed",
+            attributes: {}
+          }
+        }
+      ],
+      origins: [
+        {
+          kind: "system_derived",
+          summary: "Synthetic Subject reconciliation fixture"
+        }
+      ]
+    });
+    const view = await readWorldAtRevision(db, SYNTHETIC_FIXTURE.worldId, 3);
+    const first = await reconcileSubjectHandleState(db, view, 3);
+    const replay = await reconcileSubjectHandleState(db, view, 3);
+
+    expect(first).toEqual(replay);
+    expect(first.handles).toHaveLength(1);
+    expect(first.projections[0]?.member_event_ids).toEqual([
+      SYNTHETIC_FIXTURE.eventId,
+      SYNTHETIC_FIXTURE.secondEventId
+    ]);
+    const counts = await sql<{ handles: number; members: number }>`
+      select
+        (select count(*)::int from subject_handles) as handles,
+        (select count(*)::int from subject_handle_members) as members
+    `.execute(db);
+    expect(counts.rows[0]).toEqual({ handles: 1, members: 2 });
   });
 });

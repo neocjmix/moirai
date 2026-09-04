@@ -41,3 +41,35 @@
 - 검증 World: Clotho Synthetic Observatory `01995c2a-7b00-7000-8000-000000000101` 하나로 제한
 
 중간 smoke에서 Atropos와 독립 배포되는 Clotho 서비스의 SHA 대기가 10분 상한에 도달했다. Clotho health identity를 `no-store`로 명시하고 smoke에 비밀정보를 포함하지 않는 단계 표식을 추가한 뒤 두 서비스의 동일 SHA와 전체 경로를 재검증했다.
+
+## Slice B — Subject projection과 stable handle
+
+독자가 동일한 인물·조직·장소·사물로 명시적으로 연결된 Event 집합을 안정적인 URL에서 읽을 수 있게 한다. 이름·title·Narrative 문자열은 정체성 병합 근거로 사용하지 않는다.
+
+### 외부에서 확인할 동작
+
+- `identity_continues`·`identity_instance_of`의 Canon별 weak component를 Subject로 계산한다.
+- `identity_splits`·`identity_merges`는 Subject를 합치지 않고 lineage edge로 보존한다.
+- 분리 후 anchor component가 기존 handle을 유지하고, 병합 후 오래된 handle이 대표가 되며 나머지는 redirect한다.
+- anchor Event가 철회돼도 기존 member가 남으면 안정적인 새 anchor를 선택하면서 handle ID를 유지한다.
+- Canon page, 검색과 `/subjects/{subjectHandleId}`가 같은 served Revision의 immutable artifact만 읽는다.
+- label과 모든 파생 결과는 Event·Relation·Narrative·시간 배치 evidence로 돌아갈 수 있다.
+
+### 변경 경계
+
+- `@moirai/projections`: 순수 Subject projector, 결정적 handle과 reconciliation
+- `@moirai/persistence`: 재생성 가능한 handle·member 운영 식별 표면
+- `@moirai/publication`: Revision별 Subject document, Canon reference와 검색 entry
+- `atropos-web`: Subject 목록과 stable public route
+
+정본 Event·Relation 계약, Clotho/Lachesis 권한과 Timeline 의미는 변경하지 않는다. Process·State·Duration, JointJS canvas·subject lane, scope·LOD와 Canon 비교는 후속 slice다.
+
+### 종료 조건
+
+1. 입력 순서와 문자열 일치가 Subject 구성을 바꾸지 않는다.
+2. Canon 경계를 넘는 identity Relation이 Subject를 합치지 않는다.
+3. split·merge·anchor 교체 test에서 기존 URL이 유지되거나 명시적으로 redirect된다.
+4. migration과 PostgreSQL integration test가 handle·member 재실행의 중복 방지를 검증한다.
+5. manifest가 Subject algorithm version과 artifact digest를 포함한다.
+6. Atropos가 동일 served Revision에서 Subject와 member Event evidence를 server-render한다.
+7. 전체 CI와 Clotho synthetic identity→Subject→Atropos smoke가 통과한다.

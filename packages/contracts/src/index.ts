@@ -19,6 +19,7 @@ export const SYNTHETIC_FIXTURE = Object.freeze({
   structuralRelationId: "01995c2a-7b00-7000-8000-00000000000e",
   canonNarrativeId: "01995c2a-7b00-7000-8000-00000000000f",
   eventNarrativeId: "01995c2a-7b00-7000-8000-000000000010",
+  identityRelationId: "01995c2a-7b00-7000-8000-000000000011",
   worldTitle: "The Lantern Archive",
   canonTitle: "Ember Canon",
   eventTitle: "The first lantern is lit",
@@ -295,7 +296,7 @@ export interface PublicNarrative {
 
 export interface PublicSearchEntry {
   readonly target_id: string;
-  readonly target_type: "world" | "canon" | "event";
+  readonly target_type: "world" | "canon" | "event" | "subject";
   readonly canonical_url: string;
   readonly world_id: string;
   readonly canon_id: string | null;
@@ -306,8 +307,84 @@ export interface PublicSearchEntry {
 
 export type ProjectionCompleteness = "complete" | "partial" | "unresolved";
 
+export type SubjectHandleStatus = "active" | "redirected" | "unresolved";
+
+export interface SubjectHandleRecord {
+  readonly id: string;
+  readonly canon_id: string;
+  readonly anchor_event_id: string;
+  readonly status: SubjectHandleStatus;
+  readonly redirect_to: string | null;
+  readonly created_revision: number;
+  readonly projection_revision: number;
+  readonly member_event_ids: readonly string[];
+}
+
+export interface PublicSubjectLineageEdge {
+  readonly relation_id: string;
+  readonly type: "identity_splits" | "identity_merges";
+  readonly source_subject_handle_id: string;
+  readonly target_subject_handle_id: string;
+}
+
+export interface PublicSubjectTimeRange {
+  readonly time_system_id: string;
+  readonly earliest: number;
+  readonly latest: number;
+  readonly evidence_ids: readonly string[];
+}
+
+export interface PublicSubjectProjection {
+  readonly world_id: string;
+  readonly source_revision: number;
+  readonly projection_type: "subject";
+  readonly algorithm_version: string;
+  readonly parameters_digest: string;
+  readonly semantic_digest: string;
+  readonly canon_id: string;
+  readonly subject_handle_id: string;
+  readonly anchor_event_id: string;
+  readonly label: string;
+  readonly label_evidence_event_id: string;
+  readonly member_event_ids: readonly string[];
+  readonly identity_relation_ids: readonly string[];
+  readonly instance_relation_ids: readonly string[];
+  readonly lineage: {
+    readonly incoming: readonly PublicSubjectLineageEdge[];
+    readonly outgoing: readonly PublicSubjectLineageEdge[];
+  };
+  readonly narrative_ids: readonly string[];
+  readonly time_ranges: readonly PublicSubjectTimeRange[];
+  readonly evidence: readonly string[];
+  readonly diagnostics: readonly PublicProjectionDiagnostic[];
+  readonly completeness: ProjectionCompleteness;
+}
+
+export interface PublicSubjectArtifactReference {
+  readonly subject_handle_id: string;
+  readonly key: string;
+  readonly label: string;
+  readonly member_count: number;
+  readonly algorithm_version: string;
+  readonly completeness: ProjectionCompleteness;
+}
+
+export interface PublicSubjectHandleDocument {
+  readonly world_id: string;
+  readonly served_revision: number;
+  readonly generated_at: string;
+  readonly handle: Omit<SubjectHandleRecord, "member_event_ids">;
+  readonly canonical_url: string;
+  readonly redirect_url: string | null;
+  readonly subject: PublicSubjectProjection | null;
+}
+
 export interface PublicProjectionDiagnostic {
-  readonly code: "timeline_cycle" | "timeline_unplaced";
+  readonly code:
+    | "timeline_cycle"
+    | "timeline_unplaced"
+    | "identity_component_ambiguous"
+    | "subject_anchor_unresolved";
   readonly affected_ids: readonly string[];
 }
 
@@ -365,6 +442,7 @@ export interface PublicationManifest {
     readonly canonical: string;
     readonly search: string;
     readonly timeline?: string;
+    readonly subject?: string;
   };
   readonly locales: readonly string[];
   readonly documents: readonly {

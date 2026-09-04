@@ -18,6 +18,7 @@
   "dependencies": {
     "@moirai/contracts": "workspace:*",
     "@moirai/domain": "workspace:*",
+    "@moirai/projections": "workspace:*",
     "kysely": "^0.28.0",
     "pg": "^8.16.0"
   },

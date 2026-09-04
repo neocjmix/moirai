@@ -31,4 +31,12 @@ describe("revision artifact route allowlist", () => {
       artifactPath(["graph", "canons", canonId, "timeline-private.json"])
     ).toThrow();
   });
+
+  it("serves ID-scoped Subject artifacts", () => {
+    const handleId = "01995c2a-7b00-7000-8000-000000000020";
+    expect(artifactPath(["subjects", `${handleId}.json`])).toBe(
+      `subjects/${handleId}.json`
+    );
+    expect(() => artifactPath(["subjects", "private.json"])).toThrow();
+  });
 });

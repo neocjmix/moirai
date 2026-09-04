@@ -22,7 +22,8 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await expect(page.getByText("DERIVED TIMELINE")).toBeVisible();
   await expect(page.getByText("First bell")).toBeVisible();
   await page
-    .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.eventTitle) })
+    .locator("a.event-card")
+    .filter({ hasText: SYNTHETIC_FIXTURE.eventTitle })
     .click();
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.eventTitle })

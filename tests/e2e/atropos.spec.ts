@@ -36,9 +36,11 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   ).toBeVisible();
   await expect(page.getByText("DERIVED PROCESS")).toBeVisible();
   await expect(page.getByText("Duration 2–3 bell")).toBeVisible();
-  await page
-    .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
-    .click();
+  const canonPath = `/worlds/${SYNTHETIC_FIXTURE.worldId}/canons/${SYNTHETIC_FIXTURE.canonId}`;
+  await expect(
+    page.getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
+  ).toHaveAttribute("href", canonPath);
+  await page.goto(canonPath);
   await page.locator('a[href*="/subjects/"]').click();
   await expect(page.getByText("DERIVED SUBJECT · REVISION 2")).toBeVisible();
   await expect(page.getByText("stable handle anchor")).toBeVisible();

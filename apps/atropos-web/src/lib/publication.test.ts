@@ -1,7 +1,13 @@
 import { SYNTHETIC_FIXTURE } from "@moirai/contracts";
 import { describe, expect, it } from "vitest";
 
-import { assertPublicId, readCanon, readEvent, readWorld } from "./publication";
+import {
+  assertPublicId,
+  readCanon,
+  readEvent,
+  readTimeline,
+  readWorld
+} from "./publication";
 
 describe("Atropos Revision-pinned reader", () => {
   it("reads World, Canon and Event from one Snapshot revision", async () => {
@@ -25,5 +31,25 @@ describe("Atropos Revision-pinned reader", () => {
 
   it("rejects path-like public identifiers", () => {
     expect(() => assertPublicId("../../private")).toThrow();
+  });
+
+  it("reads a Timeline from the same immutable Revision", async () => {
+    const canon = await readCanon(
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId
+    );
+    const timeline = await readTimeline(
+      SYNTHETIC_FIXTURE.worldId,
+      SYNTHETIC_FIXTURE.canonId,
+      canon.timelineArtifacts[0]!
+    );
+
+    expect(timeline.source_revision).toBe(canon.pointer.served_revision);
+    expect(timeline.items).toHaveLength(3);
+    expect(timeline.items.map((item) => item.event_id)).toEqual([
+      SYNTHETIC_FIXTURE.eventId,
+      SYNTHETIC_FIXTURE.secondEventId,
+      SYNTHETIC_FIXTURE.thirdEventId
+    ]);
   });
 });

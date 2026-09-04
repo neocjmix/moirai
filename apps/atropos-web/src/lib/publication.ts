@@ -5,6 +5,8 @@ import {
   type PublicNarrative,
   type PublicRelation,
   type PublicSearchEntry,
+  type PublicTimelineArtifactReference,
+  type PublicTimelineProjection,
   type PublicTemporalPlacement,
   type PublicTimeSystem,
   type PublicationManifest,
@@ -278,6 +280,7 @@ export async function readCanon(
   events: readonly PublicEvent[];
   narratives: readonly PublicNarrative[];
   timeSystems: readonly PublicTimeSystem[];
+  timelineArtifacts: readonly PublicTimelineArtifactReference[];
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -286,6 +289,7 @@ export async function readCanon(
     events: readonly PublicEvent[];
     narratives: readonly PublicNarrative[];
     time_systems: readonly PublicTimeSystem[];
+    timeline_artifacts?: readonly PublicTimelineArtifactReference[];
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/canons/${canonId}.json`
@@ -300,8 +304,33 @@ export async function readCanon(
     canon: document.canon,
     events: document.events,
     narratives: document.narratives,
-    timeSystems: document.time_systems
+    timeSystems: document.time_systems,
+    timelineArtifacts: document.timeline_artifacts ?? []
   };
+}
+
+export async function readTimeline(
+  worldId: string,
+  canonId: string,
+  reference: PublicTimelineArtifactReference,
+  selected?: SelectedPublication
+): Promise<PublicTimelineProjection> {
+  assertPublicId(canonId);
+  assertPublicId(reference.time_system_id);
+  const { pointer } = selected ?? (await selectPublication(worldId));
+  const expectedKey = `worlds/${worldId}/revisions/${pointer.served_revision}/graph/canons/${canonId}/timeline-${reference.time_system_id}.json`;
+  if (reference.key !== expectedKey) throw new Error("invalid Timeline key");
+  const document = await readJson<PublicTimelineProjection>(reference.key);
+  if (
+    document.world_id !== worldId ||
+    document.canon_id !== canonId ||
+    document.time_system_id !== reference.time_system_id ||
+    document.source_revision !== pointer.served_revision ||
+    document.algorithm_version !== reference.algorithm_version
+  ) {
+    throw new Error("mixed Publication revisions");
+  }
+  return document;
 }
 
 export async function readEvent(

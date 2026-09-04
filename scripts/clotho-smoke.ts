@@ -4,12 +4,15 @@ import {
   CONTRACT_VERSION,
   type ChangePlan,
   type ClothoMethod,
-  type CommitResult
+  type CommitResult,
+  type CreateOperation
 } from "../packages/contracts/src/index.js";
 
 const worldId = "01995c2a-7b00-7000-8000-000000000101";
 const canonId = "01995c2a-7b00-7000-8000-000000000102";
 const seedId = "01995c2a-7b00-7000-8000-000000000103";
+const timelineTimeSystemId = "019f0000-0000-7000-8000-000000000001";
+const timelineCanonTimeSystemId = "019f0000-0000-7000-8000-000000000002";
 const expectedSha = process.env.EXPECTED_COMMIT_SHA ?? "";
 const apiUrl = process.env.CLOTHO_API_URL ?? "";
 const publicUrl = process.env.PUBLIC_INTEGRATION_URL ?? "";
@@ -190,12 +193,15 @@ async function main(): Promise<void> {
   )
     throw new Error("MCP and CLI revision differ");
   call("canon.list", { world_id: worldId, at_revision: world.source_revision });
-  call("context.slice", {
-    world_id: worldId,
-    canon_ids: [canonId],
-    seed_ids: [seedId],
-    at_revision: world.source_revision
-  });
+  const context = call<{ time_systems: readonly { id: string }[] }>(
+    "context.slice",
+    {
+      world_id: worldId,
+      canon_ids: [canonId],
+      seed_ids: [seedId],
+      at_revision: world.source_revision
+    }
+  );
   const title = `Clotho verified signal ${expectedSha.slice(0, 12)}`;
   const existing = call<{ items: { id: string }[] }>("event.search", {
     world_id: worldId,
@@ -204,11 +210,42 @@ async function main(): Promise<void> {
   });
   let revision = world.source_revision;
   if (!existing.items.some((e) => e.id === id("event"))) {
+    const timelineSetup: readonly CreateOperation[] = context.time_systems.some(
+      (timeSystem) => timeSystem.id === timelineTimeSystemId
+    )
+      ? []
+      : [
+          {
+            kind: "create",
+            entity_type: "time_system",
+            entity_id: timelineTimeSystemId,
+            origin_refs,
+            value: {
+              world_id: worldId,
+              slug: "deployment-sequence",
+              title: "Deployment Sequence",
+              kind: "ordinal",
+              definition_version: "1",
+              definition: { coordinate: "integer", unit: "deployment" }
+            }
+          },
+          {
+            kind: "create",
+            entity_type: "canon_time_system",
+            entity_id: timelineCanonTimeSystemId,
+            origin_refs,
+            value: {
+              canon_id: canonId,
+              time_system_id: timelineTimeSystemId
+            }
+          }
+        ];
     const plan: ChangePlan = {
       ...base,
       change_set_id: id("change"),
       expected_revision: revision,
       operations: [
+        ...timelineSetup,
         {
           kind: "create",
           entity_type: "event",
@@ -224,12 +261,28 @@ async function main(): Promise<void> {
         },
         {
           kind: "create",
+          entity_type: "event_temporal_placement",
+          entity_id: id("timeline-placement"),
+          origin_refs,
+          value: {
+            event_id: id("event"),
+            time_system_id: timelineTimeSystemId,
+            kind: "point",
+            earliest_start: { value: revision + 1 },
+            latest_start: { value: revision + 1 },
+            precision: "deployment",
+            certainty: "exact",
+            display_label: `Deployment ${revision + 1}`
+          }
+        },
+        {
+          kind: "create",
           entity_type: "relation",
-          entity_id: id("relation"),
+          entity_id: id("timeline-relation"),
           origin_refs,
           value: {
             canon_id: canonId,
-            type: "causes",
+            type: "precedes",
             source_event_id: seedId,
             target_event_id: id("event"),
             direction: "directed",
@@ -318,6 +371,32 @@ async function main(): Promise<void> {
       "token_sha256"
     ])
       if (body.includes(forbidden)) throw new Error("Private artifact leak");
+    const timelinePath = `/worlds/${worldId}/revisions/${revision}/graph/canons/${canonId}/timeline-${timelineTimeSystemId}.json`;
+    const timelineArtifact = await fetch(new URL(timelinePath, publicUrl), {
+      signal: AbortSignal.timeout(10_000)
+    });
+    const timelineBody = await timelineArtifact.text();
+    if (
+      !timelineArtifact.ok ||
+      !timelineArtifact.headers.get("cache-control")?.includes("immutable") ||
+      !timelineBody.includes('"projection_type":"timeline"') ||
+      !timelineBody.includes(`"source_revision":${revision}`) ||
+      !timelineBody.includes(id("event")) ||
+      !timelineBody.includes('"semantic_digest"')
+    )
+      return false;
+    const canonPage = await fetch(
+      new URL(`/worlds/${worldId}/canons/${canonId}`, publicUrl),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const canonHtml = (await canonPage.text()).replace(/<!--.*?-->/g, "");
+    if (
+      !canonPage.ok ||
+      !canonHtml.includes("DERIVED TIMELINE") ||
+      !canonHtml.includes("Deployment Sequence") ||
+      !canonHtml.includes(title)
+    )
+      return false;
     return true;
   });
   process.stdout.write(

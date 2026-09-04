@@ -332,6 +332,118 @@ a {
   color: var(--coral);
   font-size: 0.78rem;
 }
+.timeline-dock {
+  width: min(42rem, 100%);
+  margin: 0 auto 1rem;
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: rgba(255, 253, 248, 0.86);
+  box-shadow: 0 24px 60px rgba(63, 49, 38, 0.09);
+}
+.timeline-heading {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.timeline-heading h2 {
+  margin: 0.2rem 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1.6rem;
+  font-weight: 400;
+}
+.timeline-heading > span {
+  padding: 0.35rem 0.6rem;
+  border-radius: 999px;
+  background: var(--sand);
+  color: var(--muted);
+  font-size: 0.68rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.timeline-note {
+  max-width: 34rem;
+  margin: 0.75rem 0 1.25rem;
+  color: var(--muted);
+  font-size: 0.78rem;
+  line-height: 1.55;
+}
+.timeline-groups {
+  display: grid;
+  gap: 0;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.timeline-group {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(6.5rem, 0.42fr) 1fr;
+  gap: 1rem;
+  padding: 0 0 1rem;
+}
+.timeline-group::before {
+  position: absolute;
+  top: 0.45rem;
+  bottom: -0.45rem;
+  left: calc(42% + 0.47rem);
+  width: 1px;
+  background: var(--line);
+  content: "";
+}
+.timeline-group:last-child::before {
+  bottom: 1.5rem;
+}
+.timeline-group > p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+.timeline-group > div {
+  display: grid;
+  gap: 0.45rem;
+}
+.timeline-group a {
+  position: relative;
+  display: grid;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fffcf7;
+  text-decoration: none;
+}
+.timeline-group a::before {
+  position: absolute;
+  top: 0.75rem;
+  left: -1.12rem;
+  width: 0.45rem;
+  height: 0.45rem;
+  border: 2px solid var(--ivory);
+  border-radius: 50%;
+  background: var(--coral);
+  content: "";
+}
+.timeline-group b {
+  font-family: Georgia, "Times New Roman", serif;
+  font-size: 1rem;
+  font-weight: 400;
+}
+.timeline-group small {
+  color: var(--muted);
+  font-size: 0.65rem;
+  text-transform: uppercase;
+}
+.timeline-warning {
+  margin: 0.5rem 0 0;
+  padding: 0.7rem;
+  border-radius: 12px;
+  background: #f8e4d6;
+  color: #784b38;
+  font-size: 0.72rem;
+}
 .card-dock {
   width: min(42rem, 100%);
   margin: 0 auto;

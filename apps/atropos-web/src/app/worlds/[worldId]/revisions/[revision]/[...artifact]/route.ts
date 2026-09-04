@@ -24,6 +24,17 @@ export function artifactPath(parts: readonly string[]): string {
   if (parts.length === 2 && parts[0] === "search" && parts[1] === "en.json") {
     return "search/en.json";
   }
+  if (
+    parts.length === 4 &&
+    parts[0] === "graph" &&
+    parts[1] === "canons" &&
+    parts[3]?.startsWith("timeline-") &&
+    parts[3].endsWith(".json")
+  ) {
+    assertPublicId(parts[2]!);
+    assertPublicId(parts[3].slice("timeline-".length, -".json".length));
+    return parts.join("/");
+  }
   throw new Error("unsupported artifact");
 }
 

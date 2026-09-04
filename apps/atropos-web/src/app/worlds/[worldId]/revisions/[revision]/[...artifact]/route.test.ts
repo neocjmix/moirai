@@ -15,4 +15,20 @@ describe("revision artifact route allowlist", () => {
       "unsupported artifact"
     );
   });
+
+  it("serves only ID-scoped Timeline graph artifacts", () => {
+    const canonId = "01995c2a-7b00-7000-8000-000000000002";
+    const timeSystemId = "01995c2a-7b00-7000-8000-000000000006";
+    expect(
+      artifactPath([
+        "graph",
+        "canons",
+        canonId,
+        `timeline-${timeSystemId}.json`
+      ])
+    ).toBe(`graph/canons/${canonId}/timeline-${timeSystemId}.json`);
+    expect(() =>
+      artifactPath(["graph", "canons", canonId, "timeline-private.json"])
+    ).toThrow();
+  });
 });

@@ -5,6 +5,7 @@ import {
 } from "@moirai/contracts";
 import {
   projectPublicDocuments,
+  TIMELINE_ALGORITHM_VERSION,
   type CanonicalRevisionView
 } from "@moirai/projections";
 import { createHash, createHmac } from "node:crypto";
@@ -91,7 +92,11 @@ export function buildPublicationArtifacts(
     served_revision: revision,
     format_version: PUBLICATION_FORMAT_VERSION,
     generated_at: generatedAt,
-    algorithms: { canonical: "m2-v1", search: "m2-text-v1" },
+    algorithms: {
+      canonical: "m2-v1",
+      search: "m2-text-v1",
+      timeline: TIMELINE_ALGORITHM_VERSION
+    },
     locales: ["en"],
     documents: documents.map(({ key, body }) => ({
       key,

@@ -16,6 +16,11 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
   ).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Ember Count" })
+  ).toBeVisible();
+  await expect(page.getByText("DERIVED TIMELINE")).toBeVisible();
+  await expect(page.getByText("First bell")).toBeVisible();
   await page
     .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.eventTitle) })
     .click();
@@ -90,4 +95,17 @@ test("health, status and immutable Event document expose allowlisted metadata", 
     event: { id: SYNTHETIC_FIXTURE.eventId }
   });
   expect(JSON.stringify(payload)).not.toContain("private-synthetic");
+
+  const timeline = await request.get(
+    `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/graph/canons/${SYNTHETIC_FIXTURE.canonId}/timeline-${SYNTHETIC_FIXTURE.timeSystemId}.json`
+  );
+  expect(timeline.ok()).toBe(true);
+  expect(timeline.headers()["cache-control"]).toContain("immutable");
+  expect(await timeline.json()).toMatchObject({
+    source_revision: 2,
+    projection_type: "timeline",
+    canon_id: SYNTHETIC_FIXTURE.canonId,
+    time_system_id: SYNTHETIC_FIXTURE.timeSystemId,
+    completeness: "complete"
+  });
 });

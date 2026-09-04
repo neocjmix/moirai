@@ -113,4 +113,46 @@ describe("Publication artifact contract", () => {
     expect(serialized).not.toContain("origins");
     expect(serialized).not.toContain("change_set");
   });
+
+  it("indexes deterministic Timeline artifacts and their algorithm", () => {
+    const timelineView = {
+      ...view,
+      timeSystems: [
+        {
+          id: "time",
+          world_id: "world",
+          slug: "time",
+          title: "Time",
+          kind: "ordinal" as const,
+          definition_version: "1",
+          definition: {}
+        }
+      ],
+      canonTimeSystems: [
+        { id: "canon-time", canon_id: "canon", time_system_id: "time" }
+      ]
+    };
+    const artifacts = buildPublicationArtifacts(
+      timelineView,
+      4,
+      "2026-01-04T00:00:00.000Z"
+    );
+    const timeline = artifacts.documents.find((document) =>
+      document.key.endsWith("/graph/canons/canon/timeline-time.json")
+    );
+    const manifest = JSON.parse(artifacts.manifestBody);
+
+    expect(JSON.parse(timeline!.body)).toMatchObject({
+      source_revision: 4,
+      projection_type: "timeline",
+      canon_id: "canon",
+      time_system_id: "time"
+    });
+    expect(manifest.algorithms.timeline).toBe("m4-timeline-v1");
+    expect(
+      manifest.documents.find(
+        (document: { key: string }) => document.key === timeline!.key
+      )?.sha256
+    ).toMatch(/^[a-f0-9]{64}$/);
+  });
 });

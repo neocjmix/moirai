@@ -304,6 +304,47 @@ export interface PublicSearchEntry {
   readonly served_revision: number;
 }
 
+export type ProjectionCompleteness = "complete" | "partial" | "unresolved";
+
+export interface PublicProjectionDiagnostic {
+  readonly code: "timeline_cycle" | "timeline_unplaced";
+  readonly affected_ids: readonly string[];
+}
+
+export interface PublicTimelineItem {
+  readonly event_id: string;
+  readonly placement_kind:
+    "authored_coordinate" | "structural_order" | "unplaced";
+  readonly range_start: number | null;
+  readonly range_end: number | null;
+  readonly structural_rank: number | null;
+  readonly unordered_group: string;
+  readonly display_label: string | null;
+  readonly certainty: PublicTemporalPlacement["certainty"] | null;
+  readonly evidence_ids: readonly string[];
+}
+
+export interface PublicTimelineProjection {
+  readonly world_id: string;
+  readonly source_revision: number;
+  readonly projection_type: "timeline";
+  readonly algorithm_version: string;
+  readonly parameters_digest: string;
+  readonly semantic_digest: string;
+  readonly canon_id: string;
+  readonly time_system_id: string;
+  readonly items: readonly PublicTimelineItem[];
+  readonly evidence: readonly string[];
+  readonly diagnostics: readonly PublicProjectionDiagnostic[];
+  readonly completeness: ProjectionCompleteness;
+}
+
+export interface PublicTimelineArtifactReference {
+  readonly time_system_id: string;
+  readonly key: string;
+  readonly algorithm_version: string;
+}
+
 export interface PublicationPointer {
   readonly world_id: string;
   readonly served_revision: number;
@@ -320,7 +361,11 @@ export interface PublicationManifest {
   readonly served_revision: number;
   readonly format_version: string;
   readonly generated_at: string;
-  readonly algorithms: { readonly canonical: string; readonly search: string };
+  readonly algorithms: {
+    readonly canonical: string;
+    readonly search: string;
+    readonly timeline?: string;
+  };
   readonly locales: readonly string[];
   readonly documents: readonly {
     readonly key: string;

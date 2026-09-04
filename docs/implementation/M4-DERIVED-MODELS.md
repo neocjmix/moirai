@@ -32,3 +32,12 @@
 4. manifest가 Timeline algorithm version과 artifact digest를 포함한다.
 5. Atropos Canon route가 동일 served Revision의 Timeline과 Event 근거 링크를 server-render하고 artifact가 evidence ID를 보존한다.
 6. 전체 CI, 기존 Lantern revision 2 회귀 smoke와 새 Clotho synthetic Timeline smoke가 통과한다.
+
+### 완료 근거
+
+- 구현 SHA: `0bbabae947761b0cc380951a56677bd7e443db09`
+- CI: [33861480738](https://github.com/neocjmix/moirai/actions/runs/33861480738) — 전체 품질·PostgreSQL integration·mobile WebKit·secret scan 성공
+- 배포 smoke: [33861786238](https://github.com/neocjmix/moirai/actions/runs/33861786238) — 정확한 Clotho SHA, HTTP·MCP 동일 결과, validate 무변경, commit replay, revision 21 publication과 Atropos SSR 성공
+- 검증 World: Clotho Synthetic Observatory `01995c2a-7b00-7000-8000-000000000101` 하나로 제한
+
+중간 smoke에서 Atropos와 독립 배포되는 Clotho 서비스의 SHA 대기가 10분 상한에 도달했다. Clotho health identity를 `no-store`로 명시하고 smoke에 비밀정보를 포함하지 않는 단계 표식을 추가한 뒤 두 서비스의 동일 SHA와 전체 경로를 재검증했다.

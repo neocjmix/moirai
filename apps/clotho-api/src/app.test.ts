@@ -28,6 +28,10 @@ describe("Clotho health metadata", () => {
         version: "1.2.3",
         commit_sha: "abc123"
       });
+      const redirect = await app.inject({ method: "GET", url: "/health" });
+      expect(redirect.statusCode).toBe(302);
+      expect(redirect.headers.location).toBe("/health/ready");
+      expect(redirect.headers["cache-control"]).toBe("no-store");
     } finally {
       await app.close();
     }

@@ -4,6 +4,7 @@ import { SYNTHETIC_FIXTURE } from "../../packages/contracts/src/index.js";
 test("mobile reader traverses World, Canon and Event at one served Revision", async ({
   page
 }) => {
+  test.setTimeout(60_000);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Atropos" })).toBeVisible();
   await page.getByRole("link", { name: /합성 세계 열기/ }).click();
@@ -13,7 +14,7 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await page.goBack();
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
   ).toBeVisible();

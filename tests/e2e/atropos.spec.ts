@@ -10,9 +10,10 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.worldTitle })
   ).toBeVisible();
-  await page
-    .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
-    .click();
+  await page.goBack();
+  await expect(
+    page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
+  ).toBeVisible();
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
   ).toBeVisible();

@@ -1,0 +1,26 @@
+{
+  "fixture_version": 1,
+  "requests": [
+    {
+      "request": {
+        "time_system_id": "019f3b00-0000-7000-8000-000000000003",
+        "definition_version": "1",
+        "coordinate": "2026-09-05T08:13:21.123456789012Z"
+      },
+      "repeat_count": 2,
+      "expected": {
+        "kind": "time_event",
+        "id": "time-event://019f3b00-0000-7000-8000-000000000003/1/2026-09-05T08%3A13%3A21.123456789012Z",
+        "time_system_id": "019f3b00-0000-7000-8000-000000000003",
+        "definition_version": "1",
+        "coordinate": "2026-09-05T08:13:21.123456789012Z",
+        "persisted": false
+      }
+    }
+  ],
+  "persistence_assertion": {
+    "before_resolve_event_count_equals_after_resolve_event_count": true,
+    "before_resolve_relation_count_equals_after_resolve_relation_count": true,
+    "resolve_changes_world_revision": false
+  }
+}

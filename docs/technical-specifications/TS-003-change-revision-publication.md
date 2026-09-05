@@ -30,16 +30,16 @@ traces:
 
 ### Change Set 입력
 
-| 필드 | 의미 |
-|---|---|
-| `change_set_id` | 재시도에 사용하는 client-generated UUIDv7 idempotency key |
-| `world_id` | 대상 World. 새 World이면 생성할 ID |
-| `expected_revision` | 작성자가 읽은 기준 Revision. 새 World이면 `0` |
-| `actor` | 인증된 운영 주체의 내부 식별자 |
-| `intent` | 사람이 확인할 수 있는 변경 목적 요약 |
-| `operations` | 순서 있는 typed Change Operation 목록 |
-| `origins` | 원자료, 인간 지시와 LLM 작성 유래 |
-| `contract_version` | 명령 schema version |
+| 필드                | 의미                                                      |
+| ------------------- | --------------------------------------------------------- |
+| `change_set_id`     | 재시도에 사용하는 client-generated UUIDv7 idempotency key |
+| `world_id`          | 대상 World. 새 World이면 생성할 ID                        |
+| `expected_revision` | 작성자가 읽은 기준 Revision. 새 World이면 `0`             |
+| `actor`             | 인증된 운영 주체의 내부 식별자                            |
+| `intent`            | 사람이 확인할 수 있는 변경 목적 요약                      |
+| `operations`        | 순서 있는 typed Change Operation 목록                     |
+| `origins`           | 원자료, 인간 지시와 LLM 작성 유래                         |
+| `contract_version`  | 명령 schema version                                       |
 
 LLM의 chain-of-thought나 숨은 추론 전문은 입력 또는 이력에 요구하지 않는다. `intent`와 origin에는 변경을 설명하고 감사하는 데 필요한 요약만 저장한다.
 
@@ -70,7 +70,7 @@ Change Set 검증은 다음 순서를 따른다.
 3. `expected_revision`과 현재 Revision을 비교한다.
 4. 임시 reference를 실제 ID 후보로 해석한다.
 5. Operation을 메모리의 후보 상태에 순서대로 적용한다.
-6. [TS-002](TS-002-canonical-data-model.md)의 참조·Canon·시간·관계 불변식을 검증한다.
+6. [TS-002](TS-002-canonical-data-model.md)의 참조·Canon·시간·관계 불변식과 [TS-010](TS-010-event-relational-time.md)의 시간 제약 모순을 검증한다.
 7. 철회와 수정이 관련 Relation, Narrative, correspondence와 공개 링크에 미치는 영향을 계산한다.
 8. 오류와 warning을 안정적인 code, 관련 ID와 수정 가능한 설명으로 반환한다.
 
@@ -78,7 +78,7 @@ Change Set 검증은 다음 순서를 따른다.
 
 - 오류가 하나라도 있으면 전체 Change Set을 거부한다.
 - warning은 변경을 막지 않지만 성공 결과와 운영 진단에 보존한다.
-- 오류 응답은 LLM이 수정 후 재시도할 수 있도록 `code`, `path`, `affected_ids`, `message`, `retryable`을 제공한다.
+- 오류 응답은 LLM이 수정 후 재시도할 수 있도록 `code`, `path`, `affected_ids`, `affected_refs`, `message`, `retryable`을 제공한다. `affected_refs`는 virtual Time Event의 정규 reference를 보존한다.
 - 검증 실패는 World Revision을 증가시키거나 Publication 전파를 만들지 않는다.
 
 ## TS-003.5 동시성 및 idempotency
@@ -160,6 +160,7 @@ Change Set 검증은 다음 순서를 따른다.
 - 철회 이유 원문은 비공개 운영 정보다.
 - 안정적 공개 링크에 표시할 `public_withdrawal_notice`는 별도로 명시한다.
 - Event 철회 시 해당 Event를 endpoint 또는 scope로 사용하는 활성 Relation, Narrative, 시간 배치와 correspondence member를 같은 Change Set에서 처리해야 한다.
+- virtual Time Event는 철회 대상이 아니다. 이를 참조하는 Canon Relation만 일반 Relation 생명주기로 수정·철회한다.
 - 기본 동작은 영향을 자동 삭제하는 것이 아니라 `dependent_content_active` 오류와 영향 목록을 반환하는 것이다.
 - 작성자는 의도에 따라 종속 항목을 함께 철회하거나 대상을 교체한다.
 - 철회된 ID와 slug alias는 새 콘텐츠에 재사용하지 않는다.
@@ -207,12 +208,12 @@ stateDiagram-v2
 
 운영자는 World별로 다음 값을 확인할 수 있어야 한다.
 
-| 값 | 의미 |
-|---|---|
-| `current_revision` | Lachesis에 성공적으로 저장된 최신 정본 Revision |
-| `publication_target_revision` | 자동 공개되어야 하는 최신 Revision |
-| `served_revision` | Atropos가 현재 완전한 Snapshot으로 제공하는 Revision |
-| `projection_status` | target Snapshot 생성의 운영 상태와 최근 오류 |
+| 값                            | 의미                                                 |
+| ----------------------------- | ---------------------------------------------------- |
+| `current_revision`            | Lachesis에 성공적으로 저장된 최신 정본 Revision      |
+| `publication_target_revision` | 자동 공개되어야 하는 최신 Revision                   |
+| `served_revision`             | Atropos가 현재 완전한 Snapshot으로 제공하는 Revision |
+| `projection_status`           | target Snapshot 생성의 운영 상태와 최근 오류         |
 
 `publication_target_revision`과 `served_revision`의 차이는 전파 지연 또는 장애를 뜻한다. 해당 Revision을 draft, 비공개 또는 승인 대기로 재분류하지 않는다.
 
@@ -251,3 +252,4 @@ stateDiagram-v2
 8. 오래된 worker가 최신 `served_revision` 포인터를 되돌리지 못한다.
 9. 공개 Snapshot에 원자료, LLM 작업 과정과 내부 actor 정보가 포함되지 않는다.
 10. Snapshot을 모두 삭제한 뒤 정본 Revision에서 동일한 의미의 공개본을 재생성할 수 있다.
+11. 시간 모순은 World Revision과 Publication target을 증가시키기 전에 충돌한 Relation과 virtual Time Event reference를 포함해 거절된다.

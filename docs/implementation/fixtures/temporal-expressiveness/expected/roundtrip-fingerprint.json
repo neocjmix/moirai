@@ -1,0 +1,41 @@
+{
+  "fixture_version": 1,
+  "algorithm": "temporal-semantic-fingerprint-v1",
+  "canonicalization": "Recursively sort object keys by Unicode code point, preserve array order after entity ID sorting, encode compact UTF-8 JSON, then SHA-256.",
+  "source_revision": 2,
+  "normalization": {
+    "include": [
+      "time_system.definition",
+      "time_system.definition_version",
+      "event.semantic_fields",
+      "relation.type",
+      "relation.direction",
+      "relation.normalized_endpoint_refs",
+      "virtual_time_event.coordinate",
+      "composite_boundary_roles",
+      "containment_membership"
+    ],
+    "exclude": [
+      "export_id",
+      "created_at",
+      "generated_at",
+      "artifact_paths",
+      "served_pointer",
+      "database_row_order"
+    ],
+    "clone_mode": "apply_exported_id_mapping_before_comparison"
+  },
+  "assertions": {
+    "export_contains_persisted_time_event_rows": false,
+    "source_and_imported_fingerprint_equal": true,
+    "source_and_imported_projection_semantic_digest_equal": true,
+    "source_and_imported_atropos_meaning_equal": true,
+    "picosecond_coordinates_byte_equal": true
+  },
+  "category_digests": {
+    "time_systems": "sha256:a441c6cf0a4f5f2228270a60e48693746b0661d3ebe752c0f6bfbc3ee1cc3ed2",
+    "events": "sha256:0c7309ef457810809893d4515259256e5a0bee93c203013c8423653e23efe1b2",
+    "relations": "sha256:3656a317ca2e3f2a4cebdadeb3c68ef5d25a215dd7e4ad8cb8dd091a9ff6ed20"
+  },
+  "expected_digest": "sha256:46d35ddcc87dc9e91983bf5455064eb1115f6e439cc5cba08281d9fef0e76a61"
+}

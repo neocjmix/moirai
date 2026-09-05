@@ -1,0 +1,143 @@
+{
+  "contract_version": 2,
+  "change_set_id": "019f3b00-0000-7000-8000-000000000302",
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_revision": 2,
+  "intent": "Reject a Composite Event whose end precedes its start.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "Negative TS-010 acceptance fixture te-bad-boundary."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000321",
+      "client_ref": "bad-boundary",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "bad-boundary",
+        "kind": "composite",
+        "title": "Reversed boundaries",
+        "summary": null,
+        "roles": ["process"],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000322",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "contains",
+        "source_ref": { "kind": "event", "client_ref": "bad-boundary" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:24.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000323",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "contains",
+        "source_ref": { "kind": "event", "client_ref": "bad-boundary" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000324",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "starts",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:24.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "bad-boundary" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000325",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "ends",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "bad-boundary" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000326",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:24.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    }
+  ]
+}

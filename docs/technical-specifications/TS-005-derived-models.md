@@ -38,17 +38,17 @@ project({
 
 ### 공통 결과
 
-| 필드 | 의미 |
-|---|---|
-| `world_id` | source World |
-| `source_revision` | 정확히 읽은 World Revision |
-| `projection_type` | Subject, Timeline 등 결과 종류 |
-| `algorithm_version` | 계산 규칙 version |
-| `parameters_digest` | Canon, Time System, 범위와 filter의 digest |
-| `items` | 파생 결과 |
-| `evidence` | 결과를 지지하는 Event·Relation·시간 배치 ID |
-| `diagnostics` | 불충분·모순·손상 정보를 숨기지 않는 진단 |
-| `completeness` | `complete`, `partial`, `unresolved` |
+| 필드                | 의미                                                                                  |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| `world_id`          | source World                                                                          |
+| `source_revision`   | 정확히 읽은 World Revision                                                            |
+| `projection_type`   | Subject, Timeline 등 결과 종류                                                        |
+| `algorithm_version` | 계산 규칙 version                                                                     |
+| `parameters_digest` | Canon, Time System, 범위와 filter의 digest                                            |
+| `items`             | 파생 결과                                                                             |
+| `evidence`          | 결과를 지지하는 Event·Relation ID, virtual Time Event reference와 legacy 시간 배치 ID |
+| `diagnostics`       | 불충분·모순·손상 정보를 숨기지 않는 진단                                              |
+| `completeness`      | `complete`, `partial`, `unresolved`                                                   |
 
 ### 결정성
 
@@ -159,14 +159,14 @@ State 계산은 범용 LLM 추론을 runtime projector로 사용하지 않는다
 
 ### State Rule 정의
 
-| 필드 | 의미 |
-|---|---|
-| `state_type` | `membership`, `marriage`, `reign`, `ownership`, `occupancy` 등 |
-| `start_patterns` | 상태 시작을 지지하는 Event·Relation pattern |
-| `end_patterns` | 상태 종료를 지지하는 pattern |
-| `subject_resolver` | 상태의 주체와 객체를 찾는 규칙 |
-| `overlap_policy` | 중복·복수 상태 처리 규칙 |
-| `algorithm_version` | rule version |
+| 필드                | 의미                                                           |
+| ------------------- | -------------------------------------------------------------- |
+| `state_type`        | `membership`, `marriage`, `reign`, `ownership`, `occupancy` 등 |
+| `start_patterns`    | 상태 시작을 지지하는 Event·Relation pattern                    |
+| `end_patterns`      | 상태 종료를 지지하는 pattern                                   |
+| `subject_resolver`  | 상태의 주체와 객체를 찾는 규칙                                 |
+| `overlap_policy`    | 중복·복수 상태 처리 규칙                                       |
+| `algorithm_version` | rule version                                                   |
 
 ### State 결과
 
@@ -181,12 +181,14 @@ State 계산은 범용 LLM 추론을 runtime projector로 사용하지 않는다
 
 ## TS-005.8 Duration Projection
 
-Duration은 Event 또는 State의 시간 경계에서 계산한다.
+Duration은 Event 또는 State의 명시적 시작·종료 경계에서 계산한다. Composite Event의 모든 descendant 외접 범위는 `descendant span`으로 분리하며 Duration의 대체 근거로 사용하지 않는다.
 
 - 정확한 시작·종료가 있으면 정확한 duration을 계산한다.
 - 부정확한 경계가 있으면 최소·최대 duration 범위를 반환한다.
 - 서로 다른 Time System 좌표는 명시적인 변환 adapter가 있을 때만 비교한다.
 - 변환 불가능한 좌표를 Gregorian 값으로 가정하지 않는다.
+- Time System이 difference capability를 제공하지 않으면 경계가 있어도 Duration은 근거와 함께 unresolved다.
+- 좌표와 Duration scalar는 JSON number로 축소하지 않고 lossless string과 단위를 반환한다.
 - point Event에 0 duration을 자동 저장하지 않는다.
 - open-ended 상태에는 완료된 duration 대신 경과 범위 또는 미정 상태를 반환한다.
 - display unit 변환은 원본 precision보다 더 정확한 표현을 만들지 않는다.
@@ -205,12 +207,14 @@ Timeline은 선택한 Canon, Event 범위와 Time System에 따른 Event 배열 
 
 ### Canon 내부 Timeline
 
-1. `precedes`, 경계와 registry가 시간 방향을 정의한 Relation으로 partial order graph를 만든다.
-2. Event의 temporal placement를 가능한 범위 제약으로 추가한다.
+1. strict `precedes`, non-strict `not_after`, `coincides`, 경계와 registry가 시간 방향을 정의한 Relation으로 constraint graph를 만든다.
+2. virtual Time Event 좌표를 해당 Time System adapter로 해석한다. legacy Event temporal placement는 호환 adapter를 통해 가능한 범위 제약으로 추가한다.
 3. 저장된 precision과 uncertainty를 유지한다.
 4. 비교 가능한 Event만 안정적으로 정렬한다.
 5. 순서를 결정할 근거가 없는 Event는 같은 unordered group 또는 `unplaced`로 반환한다.
 6. 순환 관계는 삭제하지 않고 strongly connected component로 묶어 loop 진단과 함께 표시한다.
+
+서로 다른 Time System에 놓인 일반 Event 사이의 authored ordering은 독립 사실로 보존한다. 이는 coordinate conversion이 아니며 공통 timeline 좌표나 cross-system Duration을 만들지 않는다. adapter가 없는 좌표 계산은 `time_system_incompatible` 또는 capability 진단과 함께 unresolved다.
 
 Timeline은 근거 없는 total order를 만들지 않는다. UI 배치를 위해 임시 좌표를 계산할 수 있지만 `placement_kind = inferred_layout`으로 표시하고 Canon의 시간 사실로 노출하지 않는다.
 
@@ -267,6 +271,8 @@ Atropos가 근거를 축약해 보여도 public Snapshot에는 공개 가능한 
 - `state_boundary_missing`
 - `state_evidence_conflict`
 - `time_system_incompatible`
+- `time_system_capability_missing`
+- `temporal_constraint_conflict`
 - `timeline_cycle`
 - `timeline_unplaced`
 - `correspondence_member_ambiguous`
@@ -305,3 +311,4 @@ Revision이 바뀌면 이전 cache를 수정하지 않고 새 결과를 만든�
 8. Timeline cycle이 데이터 삭제 없이 loop로 표시된다.
 9. Canon 비교가 어느 Canon도 기본·정본으로 표시하지 않는다.
 10. 같은 Revision과 algorithm version의 전체 rebuild와 scoped rebuild가 같은 의미의 결과를 만든다.
+11. Gregorian과 호환되지 않는 Time System이 자기 canonical coordinate를 보존하며 지원하지 않는 cross-system 계산을 꾸며내지 않는다.

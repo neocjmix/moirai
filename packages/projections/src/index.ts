@@ -6,6 +6,8 @@ import type {
   PublicProcessContainmentEdge,
   PublicProcessDuration,
   PublicProcessProjection,
+  PublicStateItem,
+  PublicStateProjection,
   PublicRelation,
   PublicSearchEntry,
   PublicSubjectLineageEdge,
@@ -21,6 +23,7 @@ import { createHash } from "node:crypto";
 export const TIMELINE_ALGORITHM_VERSION = "m4-timeline-v1";
 export const SUBJECT_ALGORITHM_VERSION = "m4-subject-v1";
 export const PROCESS_ALGORITHM_VERSION = "m4-process-v1";
+export const STATE_ALGORITHM_VERSION = "m4-state-membership-v1";
 
 export interface CanonicalRevisionView {
   readonly world: PublicWorld;
@@ -46,6 +49,298 @@ export interface TimelineProjectionParameters {
 export interface SubjectProjectionBundle {
   readonly handles: readonly SubjectHandleRecord[];
   readonly projections: readonly PublicSubjectProjection[];
+}
+
+export const STATE_RULES = Object.freeze([
+  {
+    state_type: "membership",
+    event_role: "state:membership",
+    start_patterns: ["starts"],
+    end_patterns: ["ends"],
+    subject_resolver: "boundary_subject",
+    overlap_policy: "allow",
+    algorithm_version: STATE_ALGORITHM_VERSION
+  }
+] as const);
+
+export function projectStates(
+  source: CanonicalRevisionView,
+  sourceRevision: number,
+  subjects: SubjectProjectionBundle = projectSubjects(source, sourceRevision)
+): readonly PublicStateProjection[] {
+  const projections: PublicStateProjection[] = [];
+  const subjectByEvent = new Map<string, PublicSubjectProjection>();
+  for (const subject of subjects.projections) {
+    for (const eventId of subject.member_event_ids) {
+      subjectByEvent.set(eventId, subject);
+    }
+  }
+
+  for (const canon of [...source.canons].sort((a, b) =>
+    a.id.localeCompare(b.id)
+  )) {
+    const events = source.events
+      .filter((event) => event.canon_id === canon.id)
+      .sort((a, b) => a.id.localeCompare(b.id));
+    const stateEvents = events.filter(
+      (event) =>
+        event.kind === "composite" &&
+        event.roles.includes("state") &&
+        event.roles.includes("state:membership")
+    );
+    const relations = source.relations
+      .filter(
+        (relation) =>
+          relation.canon_id === canon.id && relation.direction === "directed"
+      )
+      .sort((a, b) => a.id.localeCompare(b.id));
+    const items: PublicStateItem[] = [];
+
+    for (const stateEvent of stateEvents) {
+      const starts = relations.filter(
+        (relation) =>
+          relation.type === "starts" &&
+          relation.target_event_id === stateEvent.id
+      );
+      const ends = relations.filter(
+        (relation) =>
+          relation.type === "ends" && relation.target_event_id === stateEvent.id
+      );
+      const baseDiagnostics: PublicStateItem["diagnostics"] = [
+        ...(starts.length === 0
+          ? [
+              {
+                code: "state_boundary_missing" as const,
+                affected_ids: [stateEvent.id]
+              }
+            ]
+          : []),
+        ...(starts.length > 1 || ends.length > 1
+          ? [
+              {
+                code: "state_evidence_conflict" as const,
+                affected_ids: [...starts, ...ends]
+                  .map((relation) => relation.id)
+                  .sort()
+              }
+            ]
+          : [])
+      ];
+      const startEventId =
+        starts.length === 1 ? starts[0]!.source_event_id : null;
+      const endEventId = ends.length === 1 ? ends[0]!.source_event_id : null;
+      const startSubject = startEventId
+        ? subjectByEvent.get(startEventId)
+        : undefined;
+      const endSubject = endEventId
+        ? subjectByEvent.get(endEventId)
+        : undefined;
+      const subjectConflict = Boolean(
+        startSubject &&
+        endEventId &&
+        (!endSubject ||
+          endSubject.subject_handle_id !== startSubject.subject_handle_id)
+      );
+      const subject =
+        startSubject && !subjectConflict ? startSubject : undefined;
+      const subjectDiagnostics: PublicStateItem["diagnostics"] =
+        startEventId && !subject
+          ? [
+              {
+                code: subjectConflict
+                  ? "state_evidence_conflict"
+                  : "state_subject_unresolved",
+                affected_ids: [
+                  startEventId,
+                  ...(endEventId ? [endEventId] : [])
+                ].sort()
+              }
+            ]
+          : [];
+      const common = {
+        state_event_id: stateEvent.id,
+        state_type: "membership" as const,
+        label: stateEvent.title,
+        subject_handle_id: subject?.subject_handle_id ?? null,
+        value:
+          typeof stateEvent.attributes.state_value === "string"
+            ? stateEvent.attributes.state_value
+            : null,
+        start_event_id: startEventId,
+        end_event_id: endEventId,
+        open_ended: ends.length === 0
+      };
+      const boundaryEvidence = [
+        stateEvent.id,
+        ...(startEventId ? [startEventId] : []),
+        ...(endEventId ? [endEventId] : []),
+        ...starts.map((relation) => relation.id),
+        ...ends.map((relation) => relation.id),
+        ...(subject?.identity_relation_ids ?? [])
+      ];
+      const startPlacements = startEventId
+        ? source.temporalPlacements.filter(
+            (placement) => placement.event_id === startEventId
+          )
+        : [];
+      const timeSystemIds = [
+        ...new Set(startPlacements.map((placement) => placement.time_system_id))
+      ].sort();
+      if (
+        baseDiagnostics.length > 0 ||
+        subjectDiagnostics.length > 0 ||
+        timeSystemIds.length === 0
+      ) {
+        const diagnostics: PublicStateItem["diagnostics"] = [
+          ...baseDiagnostics,
+          ...subjectDiagnostics,
+          ...(timeSystemIds.length === 0 &&
+          baseDiagnostics.length === 0 &&
+          subjectDiagnostics.length === 0
+            ? [
+                {
+                  code: "state_time_unresolved" as const,
+                  affected_ids: [
+                    stateEvent.id,
+                    ...(startEventId ? [startEventId] : [])
+                  ].sort()
+                }
+              ]
+            : [])
+        ];
+        items.push({
+          ...common,
+          time_system_id: null,
+          start_earliest: null,
+          start_latest: null,
+          end_earliest: null,
+          end_latest: null,
+          duration: null,
+          certainty: "unresolved",
+          evidence_ids: [...new Set(boundaryEvidence)].sort(),
+          diagnostics,
+          completeness: "unresolved"
+        });
+        continue;
+      }
+
+      for (const timeSystemId of timeSystemIds) {
+        const startAt = startPlacements.filter(
+          (p) => p.time_system_id === timeSystemId
+        );
+        const endAt = endEventId
+          ? source.temporalPlacements.filter(
+              (p) =>
+                p.event_id === endEventId && p.time_system_id === timeSystemId
+            )
+          : [];
+        const reversed =
+          startAt.length === 1 &&
+          endAt.length === 1 &&
+          (endAt[0]!.latest_end ?? endAt[0]!.latest_start).value <
+            startAt[0]!.earliest_start.value;
+        const conflict =
+          startAt.length !== 1 ||
+          (endEventId !== null && endAt.length !== 1) ||
+          reversed;
+        if (conflict) {
+          const diagnostics = [
+            {
+              code: "state_evidence_conflict" as const,
+              affected_ids: [...startAt, ...endAt].map((p) => p.id).sort()
+            }
+          ];
+          items.push({
+            ...common,
+            time_system_id: timeSystemId,
+            start_earliest: null,
+            start_latest: null,
+            end_earliest: null,
+            end_latest: null,
+            duration: null,
+            certainty: "unresolved",
+            evidence_ids: [
+              ...boundaryEvidence,
+              ...diagnostics[0]!.affected_ids
+            ].sort(),
+            diagnostics,
+            completeness: "unresolved"
+          });
+          continue;
+        }
+        const start = startAt[0]!;
+        const end = endAt[0];
+        const endEarliest = end
+          ? (end.earliest_end ?? end.earliest_start).value
+          : null;
+        const endLatest = end
+          ? (end.latest_end ?? end.latest_start).value
+          : null;
+        const minimum = end
+          ? Math.max(0, endEarliest! - start.latest_start.value)
+          : null;
+        const maximum = end
+          ? Math.max(0, endLatest! - start.earliest_start.value)
+          : null;
+        const exact =
+          start.certainty === "exact" &&
+          (!end || end.certainty === "exact") &&
+          start.earliest_start.value === start.latest_start.value &&
+          (!end || (endEarliest === endLatest && minimum === maximum));
+        const evidenceIds = [
+          ...boundaryEvidence,
+          start.id,
+          ...(end ? [end.id] : [])
+        ];
+        items.push({
+          ...common,
+          time_system_id: timeSystemId,
+          start_earliest: start.earliest_start.value,
+          start_latest: start.latest_start.value,
+          end_earliest: endEarliest,
+          end_latest: endLatest,
+          duration:
+            end && minimum !== null && maximum !== null
+              ? {
+                  minimum,
+                  maximum,
+                  kind: exact ? "exact" : "range",
+                  precision:
+                    start.precision === end.precision
+                      ? start.precision
+                      : "mixed",
+                  evidence_ids: [start.id, end.id].sort()
+                }
+              : null,
+          certainty: exact ? "exact" : "range",
+          evidence_ids: [...new Set(evidenceIds)].sort(),
+          diagnostics: [],
+          completeness: "complete"
+        });
+      }
+    }
+    const diagnostics = items.flatMap((item) => item.diagnostics);
+    const semantic = {
+      world_id: source.world.id,
+      source_revision: sourceRevision,
+      projection_type: "state" as const,
+      algorithm_version: STATE_ALGORITHM_VERSION,
+      parameters_digest: digest({ canon_id: canon.id, rules: STATE_RULES }),
+      canon_id: canon.id,
+      rules: STATE_RULES,
+      items: items.sort(
+        (a, b) =>
+          a.state_event_id.localeCompare(b.state_event_id) ||
+          (a.time_system_id ?? "").localeCompare(b.time_system_id ?? "")
+      ),
+      evidence: [...new Set(items.flatMap((item) => item.evidence_ids))].sort(),
+      diagnostics,
+      completeness:
+        diagnostics.length === 0 ? ("complete" as const) : ("partial" as const)
+    };
+    projections.push({ ...semantic, semantic_digest: digest(semantic) });
+  }
+  return projections;
 }
 
 export function projectProcesses(
@@ -1224,6 +1519,7 @@ export function projectPublicDocuments(
   const relations = sorted(view.relations);
   const temporalPlacements = sorted(view.temporalPlacements);
   const processes = projectProcesses(view, revision);
+  const states = projectStates(view, revision, subjects);
   const timelineDocuments = sorted(view.canonTimeSystems).flatMap((link) => {
     if (
       !canons.some((canon) => canon.id === link.canon_id) ||
@@ -1270,6 +1566,10 @@ export function projectPublicDocuments(
   const processDocuments = processes.map((process) => ({
     key: `${prefix}/graph/canons/${process.canon_id}/process-${process.process_event_id}.json`,
     value: { ...metadata, ...process }
+  }));
+  const stateDocuments = states.map((state) => ({
+    key: `${prefix}/graph/canons/${state.canon_id}/states.json`,
+    value: { ...metadata, ...state }
   }));
   return [
     {
@@ -1326,7 +1626,16 @@ export function projectPublicDocuments(
             descendant_count: process.descendant_event_ids.length,
             algorithm_version: process.algorithm_version,
             completeness: process.completeness
-          }))
+          })),
+        state_artifact:
+          states
+            .filter((state) => state.canon_id === canon.id)
+            .map((state) => ({
+              key: `${prefix}/graph/canons/${canon.id}/states.json`,
+              item_count: state.items.length,
+              algorithm_version: state.algorithm_version,
+              completeness: state.completeness
+            }))[0] ?? null
       }
     })),
     ...events.map((event) => {
@@ -1406,6 +1715,7 @@ export function projectPublicDocuments(
     },
     ...timelineDocuments,
     ...subjectDocuments,
-    ...processDocuments
+    ...processDocuments,
+    ...stateDocuments
   ];
 }

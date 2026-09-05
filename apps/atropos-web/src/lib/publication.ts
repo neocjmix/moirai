@@ -6,6 +6,8 @@ import {
   type PublicProcessArtifactReference,
   type PublicProcessProjection,
   type PublicRelation,
+  type PublicStateArtifactReference,
+  type PublicStateProjection,
   type PublicSearchEntry,
   type PublicSubjectArtifactReference,
   type PublicSubjectHandleDocument,
@@ -69,6 +71,16 @@ function syntheticObjects(): ReadonlyMap<string, string> {
       summary: "The full process from the first signal to the opened doors.",
       roles: ["process"],
       attributes: {}
+    },
+    {
+      id: fixture.stateEventId,
+      canon_id: fixture.canonId,
+      slug: "archive-keeper-membership",
+      kind: "composite",
+      title: fixture.stateEventTitle,
+      summary: "The bounded period in which the subject serves the archive.",
+      roles: ["state", "state:membership"],
+      attributes: { state_value: "archive keeper" }
     }
   ];
   const timeSystem: PublicTimeSystem = {
@@ -212,6 +224,24 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           type: "contains",
           source_event_id: fixture.processEventId,
           target_event_id: fixture.thirdEventId,
+          direction: "directed",
+          attributes: {}
+        },
+        {
+          id: fixture.stateStartRelationId,
+          canon_id: fixture.canonId,
+          type: "starts",
+          source_event_id: fixture.eventId,
+          target_event_id: fixture.stateEventId,
+          direction: "directed",
+          attributes: {}
+        },
+        {
+          id: fixture.stateEndRelationId,
+          canon_id: fixture.canonId,
+          type: "ends",
+          source_event_id: fixture.secondEventId,
+          target_event_id: fixture.stateEventId,
           direction: "directed",
           attributes: {}
         }
@@ -358,6 +388,7 @@ export async function readCanon(
   timelineArtifacts: readonly PublicTimelineArtifactReference[];
   subjectArtifacts: readonly PublicSubjectArtifactReference[];
   processArtifacts: readonly PublicProcessArtifactReference[];
+  stateArtifact: PublicStateArtifactReference | null;
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -369,6 +400,7 @@ export async function readCanon(
     timeline_artifacts?: readonly PublicTimelineArtifactReference[];
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
     process_artifacts?: readonly PublicProcessArtifactReference[];
+    state_artifact?: PublicStateArtifactReference | null;
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/canons/${canonId}.json`
@@ -386,8 +418,31 @@ export async function readCanon(
     timeSystems: document.time_systems,
     timelineArtifacts: document.timeline_artifacts ?? [],
     subjectArtifacts: document.subject_artifacts ?? [],
-    processArtifacts: document.process_artifacts ?? []
+    processArtifacts: document.process_artifacts ?? [],
+    stateArtifact: document.state_artifact ?? null
   };
+}
+
+export async function readStates(
+  worldId: string,
+  canonId: string,
+  reference: PublicStateArtifactReference,
+  selected?: SelectedPublication
+): Promise<PublicStateProjection> {
+  assertPublicId(canonId);
+  const { pointer } = selected ?? (await selectPublication(worldId));
+  const expectedKey = `worlds/${worldId}/revisions/${pointer.served_revision}/graph/canons/${canonId}/states.json`;
+  if (reference.key !== expectedKey) throw new Error("invalid State key");
+  const document = await readJson<PublicStateProjection>(reference.key);
+  if (
+    document.world_id !== worldId ||
+    document.canon_id !== canonId ||
+    document.source_revision !== pointer.served_revision ||
+    document.algorithm_version !== reference.algorithm_version
+  ) {
+    throw new Error("mixed Publication revisions");
+  }
+  return document;
 }
 
 export async function readSubject(

@@ -272,6 +272,7 @@ async function main(): Promise<void> {
             }
           ];
     const processTitle = `Clotho verification process ${expectedSha.slice(0, 12)}`;
+    const stateTitle = `Clotho verification membership ${expectedSha.slice(0, 12)}`;
     const plan: ChangePlan = {
       ...base,
       change_set_id: id("change"),
@@ -297,6 +298,21 @@ async function main(): Promise<void> {
         {
           kind: "create",
           entity_type: "event",
+          entity_id: id("state-event"),
+          origin_refs,
+          value: {
+            canon_id: canonId,
+            kind: "composite",
+            title: stateTitle,
+            summary:
+              "A membership period derived only from explicit boundary evidence.",
+            roles: ["state", "state:membership"],
+            attributes: { state_value: "deployment verification" }
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "event",
           entity_id: id("event"),
           origin_refs,
           value: {
@@ -304,6 +320,34 @@ async function main(): Promise<void> {
             kind: "atomic",
             title,
             roles: [],
+            attributes: {}
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "relation",
+          entity_id: id("state-start"),
+          origin_refs,
+          value: {
+            canon_id: canonId,
+            type: "starts",
+            source_event_id: seedId,
+            target_event_id: id("state-event"),
+            direction: "directed",
+            attributes: {}
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "relation",
+          entity_id: id("state-end"),
+          origin_refs,
+          value: {
+            canon_id: canonId,
+            type: "ends",
+            source_event_id: id("event"),
+            target_event_id: id("state-event"),
+            direction: "directed",
             attributes: {}
           }
         },
@@ -531,6 +575,10 @@ async function main(): Promise<void> {
         key: string;
         process_event_id: string;
       }[];
+      state_artifact?: {
+        key: string;
+        algorithm_version: string;
+      } | null;
     };
     const subjectReference = canonDocument.subject_artifacts?.find(
       (reference) => reference.subject_handle_id.length > 0
@@ -540,6 +588,7 @@ async function main(): Promise<void> {
       (reference) => reference.process_event_id === id("process-event")
     );
     if (!processReference) return false;
+    if (!canonDocument.state_artifact) return false;
     const subjectArtifact = await fetch(
       new URL(
         `/worlds/${worldId}/revisions/${revision}/subjects/${subjectReference.subject_handle_id}.json`,
@@ -567,7 +616,31 @@ async function main(): Promise<void> {
     if (
       !subjectPage.ok ||
       !subjectHtml.includes("DERIVED SUBJECT") ||
-      !subjectHtml.includes(title)
+      !subjectHtml.includes(title) ||
+      !subjectHtml.includes("DERIVED STATE") ||
+      !subjectHtml.includes(
+        `Clotho verification membership ${expectedSha.slice(0, 12)}`
+      ) ||
+      !subjectHtml.includes("deployment verification")
+    )
+      return false;
+    const stateArtifact = await fetch(
+      new URL(
+        `/worlds/${worldId}/revisions/${revision}/graph/canons/${canonId}/states.json`,
+        publicUrl
+      ),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const stateBody = await stateArtifact.text();
+    if (
+      !stateArtifact.ok ||
+      !stateArtifact.headers.get("cache-control")?.includes("immutable") ||
+      !stateBody.includes('"projection_type":"state"') ||
+      !stateBody.includes(id("state-event")) ||
+      !stateBody.includes('"state_type":"membership"') ||
+      !stateBody.includes('"minimum":') ||
+      !stateBody.includes('"kind":"exact"') ||
+      !stateBody.includes('"semantic_digest"')
     )
       return false;
     const processArtifact = await fetch(

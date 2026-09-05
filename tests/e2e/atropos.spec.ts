@@ -44,6 +44,12 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await page.locator('a[href*="/subjects/"]').click();
   await expect(page.getByText("DERIVED SUBJECT · REVISION 2")).toBeVisible();
   await expect(page.getByText("stable handle anchor")).toBeVisible();
+  await expect(page.getByText("DERIVED STATE")).toBeVisible();
+  await expect(
+    page.getByRole("link", {
+      name: new RegExp(SYNTHETIC_FIXTURE.stateEventTitle)
+    })
+  ).toContainText("archive keeper · 1 bell");
   await page
     .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
     .click();
@@ -135,7 +141,7 @@ test("health, status and immutable Event document expose allowlisted metadata", 
     projection_type: "timeline",
     canon_id: SYNTHETIC_FIXTURE.canonId,
     time_system_id: SYNTHETIC_FIXTURE.timeSystemId,
-    completeness: "complete"
+    completeness: "partial"
   });
 
   const canonDocument = await request.get(
@@ -144,6 +150,7 @@ test("health, status and immutable Event document expose allowlisted metadata", 
   const canonPayload = (await canonDocument.json()) as {
     subject_artifacts: readonly { key: string }[];
     process_artifacts: readonly { key: string }[];
+    state_artifact: { key: string };
   };
   const subject = await request.get(
     `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/${canonPayload.subject_artifacts[0]!.key.split("/revisions/2/")[1]}`
@@ -171,5 +178,23 @@ test("health, status and immutable Event document expose allowlisted metadata", 
     projection_type: "process",
     process_event_id: SYNTHETIC_FIXTURE.processEventId,
     durations: [{ minimum: 2, maximum: 3, kind: "range" }]
+  });
+
+  const states = await request.get(
+    `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/${canonPayload.state_artifact.key.split("/revisions/2/")[1]}`
+  );
+  expect(states.ok()).toBe(true);
+  expect(states.headers()["cache-control"]).toContain("immutable");
+  expect(await states.json()).toMatchObject({
+    source_revision: 2,
+    projection_type: "state",
+    algorithm_version: "m4-state-membership-v1",
+    items: [
+      {
+        state_event_id: SYNTHETIC_FIXTURE.stateEventId,
+        subject_handle_id: expect.any(String),
+        duration: { minimum: 1, maximum: 1, kind: "exact" }
+      }
+    ]
   });
 });

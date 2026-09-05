@@ -314,4 +314,117 @@ describe("Publication artifact contract", () => {
     ]);
     expect(manifest.algorithms.process).toBe("m4-process-v1");
   });
+
+  it("publishes the Canon State artifact and its rule algorithm", () => {
+    const stateView = {
+      ...view,
+      timeSystems: [
+        {
+          id: "time",
+          world_id: "world",
+          slug: "time",
+          title: "Time",
+          kind: "ordinal" as const,
+          definition_version: "1",
+          definition: {}
+        }
+      ],
+      canonTimeSystems: [
+        { id: "canon-time", canon_id: "canon", time_system_id: "time" }
+      ],
+      events: [
+        view.events[0]!,
+        { ...view.events[0]!, id: "event-2", title: "Event continued" },
+        {
+          ...view.events[0]!,
+          id: "state",
+          kind: "composite" as const,
+          title: "Membership",
+          roles: ["state", "state:membership"],
+          attributes: { state_value: "guild" }
+        }
+      ],
+      temporalPlacements: [
+        {
+          id: "placement-1",
+          event_id: "event",
+          time_system_id: "time",
+          kind: "point" as const,
+          earliest_start: { value: 1 },
+          latest_start: { value: 1 },
+          earliest_end: null,
+          latest_end: null,
+          precision: "step",
+          certainty: "exact" as const,
+          display_label: "Step 1"
+        },
+        {
+          id: "placement-2",
+          event_id: "event-2",
+          time_system_id: "time",
+          kind: "point" as const,
+          earliest_start: { value: 4 },
+          latest_start: { value: 4 },
+          earliest_end: null,
+          latest_end: null,
+          precision: "step",
+          certainty: "exact" as const,
+          display_label: "Step 4"
+        }
+      ],
+      relations: [
+        {
+          id: "identity",
+          canon_id: "canon",
+          type: "identity_continues" as const,
+          source_event_id: "event",
+          target_event_id: "event-2",
+          direction: "directed" as const,
+          attributes: {}
+        },
+        {
+          id: "starts",
+          canon_id: "canon",
+          type: "starts" as const,
+          source_event_id: "event",
+          target_event_id: "state",
+          direction: "directed" as const,
+          attributes: {}
+        },
+        {
+          id: "ends",
+          canon_id: "canon",
+          type: "ends" as const,
+          source_event_id: "event-2",
+          target_event_id: "state",
+          direction: "directed" as const,
+          attributes: {}
+        }
+      ]
+    };
+    const artifacts = buildPublicationArtifacts(
+      stateView,
+      7,
+      "2026-01-07T00:00:00.000Z"
+    );
+    const canon = JSON.parse(
+      artifacts.documents.find((document) =>
+        document.key.endsWith("/canons/canon.json")
+      )!.body
+    );
+    const states = JSON.parse(
+      artifacts.documents.find(
+        (document) => document.key === canon.state_artifact.key
+      )!.body
+    );
+    const manifest = JSON.parse(artifacts.manifestBody);
+
+    expect(canon.state_artifact).toMatchObject({ item_count: 1 });
+    expect(states).toMatchObject({
+      projection_type: "state",
+      source_revision: 7,
+      items: [{ duration: { minimum: 3, maximum: 3, kind: "exact" } }]
+    });
+    expect(manifest.algorithms.state).toBe("m4-state-membership-v1");
+  });
 });

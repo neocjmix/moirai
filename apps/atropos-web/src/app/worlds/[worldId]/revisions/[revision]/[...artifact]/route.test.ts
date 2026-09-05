@@ -50,4 +50,11 @@ describe("revision artifact route allowlist", () => {
       artifactPath(["graph", "canons", canonId, "process-private.json"])
     ).toThrow();
   });
+
+  it("serves the Canon State graph artifact", () => {
+    const canonId = "01995c2a-7b00-7000-8000-000000000002";
+    expect(artifactPath(["graph", "canons", canonId, "states.json"])).toBe(
+      `graph/canons/${canonId}/states.json`
+    );
+  });
 });

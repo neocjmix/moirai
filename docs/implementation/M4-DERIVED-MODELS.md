@@ -115,3 +115,43 @@
 5. manifest가 Process algorithm version과 immutable artifact digest를 포함한다.
 6. Atropos Canon과 Event route가 같은 served Revision의 Process·child·Duration 근거를 server-render한다.
 7. 전체 CI와 Clotho synthetic Process→Publication→Atropos smoke가 통과한다.
+
+### 완료 근거
+
+- 병합·배포 SHA: `dc0728da0fb2a94770aace356ad92c4d1144679c`
+- PR: [#1](https://github.com/neocjmix/moirai/pull/1), CI [33895196445](https://github.com/neocjmix/moirai/actions/runs/33895196445) 성공
+- Railway의 Moirai·Clotho 배포 성공 후 Clotho synthetic revision 27에서 Process artifact, exact Duration, immutable header와 Atropos SSR을 확인했다.
+- 검증 Process `887f1fd8-5998-7678-8b0f-2f51b8cd2fb4`는 deployment 0의 seed와 deployment 27의 신규 Event를 직접 포함하며, 계산된 자체 구간은 0–27이다.
+
+## Slice D — 규칙 기반 State projection
+
+State를 자유 추론하지 않고 등록된 family의 명시적 경계만 계산한다. 첫 family는 `membership` 하나다. `kind = composite`, `roles`에 `state`와 `state:membership`가 모두 있는 Event가 대상이며, boundary Event에서 State Event로 향하는 `starts`·`ends` Relation을 사용한다.
+
+### 외부에서 확인할 동작
+
+- registry가 state type, Event role, start/end pattern, Subject resolver, overlap policy와 algorithm version을 고정한다.
+- 시작·종료 boundary Event가 동일한 Subject projection에 속할 때만 해당 Subject의 membership으로 계산한다.
+- 시작 boundary의 Time System별 배치를 보존하고, 종료 boundary가 같은 Time System에 있을 때만 완료 Duration을 계산한다.
+- 종료 Relation이 없으면 `open_ended`로 표시하고 “현재까지 계속”이나 완료 Duration을 만들지 않는다.
+- 경계 Relation·배치가 여러 개이거나 Subject가 일치하지 않으면 후보를 버리지 않고 unresolved 진단과 evidence ID를 공개한다.
+- Canon별 `states.json`은 Revision 고정 immutable artifact이며 Subject page가 자기 handle에 해당하는 State만 server-render한다.
+
+### 변경 경계
+
+- `@moirai/projections`: membership rule registry와 순수 State projector
+- `@moirai/publication`: Canon별 State artifact와 manifest algorithm version
+- `@moirai/contracts`: 공개 State item·Duration·diagnostic 계약과 publication format version
+- `atropos-web`: Revision 고정 State reader와 Subject의 계산된 상태 목록
+- Clotho synthetic smoke: identity로 연결된 두 boundary Event, membership State와 `starts`·`ends` 근거
+
+정본 Event·Relation 의미, Subject handle 계산, Process 계산과 Clotho/Lachesis 권한은 변경하지 않는다. 다른 State family, 자연어·LLM 기반 일반 추론, JointJS canvas, scope·LOD와 Canon 비교는 후속 slice다.
+
+### 종료 조건
+
+1. 입력 순서를 바꿔도 Subject, 경계, Duration과 semantic digest가 동일하다.
+2. 정확한 시작·종료는 exact Duration, 불확실한 경계는 범위로 보존된다.
+3. 종료 근거가 없으면 open-ended이지만 완료 기간이나 “현재” 주장은 없다.
+4. 중복 경계, Subject 불일치와 시간 근거 부족은 unresolved 진단으로 남는다.
+5. manifest와 Canon 문서가 State algorithm과 immutable artifact를 가리킨다.
+6. Atropos Subject route가 같은 served Revision의 State 값·기간·근거 Event 링크를 server-render한다.
+7. 전체 CI와 Clotho synthetic State→Publication→Subject SSR smoke가 통과한다.

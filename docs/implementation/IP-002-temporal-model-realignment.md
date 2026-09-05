@@ -100,6 +100,8 @@ flowchart TD
 
 adapter conformance는 최소한 허구 세계 custom coordinate, 빅뱅 이후 임의정밀도 경과량, 지질 연대의 불확실 범위를 다룬다. 이 사례는 Gregorian 변환 성공을 요구하지 않는다. 대신 원문 좌표 보존, adapter 내부 비교, 지원하지 않는 conversion·difference의 설명 가능한 `unresolved`, authored cross-system 관계의 독립 보존을 판정한다.
 
+2026-09-05 진행 checkpoint: `@moirai/domain` 독립 adapter·resolver·solver 초안과 로컬 conformance test를 작성했다. Gregorian 경계·피코초, 허구력 원문, 임의정밀도 scalar와 지질 BP 범위를 검증 중이며 production 경로에는 연결하지 않았다. Composite 경계 순서 통합, equality evidence, 입력 순서 독립성, 전체 거절 corpus 및 CI·secret scan 종료 검증이 남았다. 로컬 unit test만으로 Slice 2 완료 또는 종단간 수용시험 통과를 선언하지 않는다.
+
 ## Slice 3 — 호환 adapter와 shadow 비교
 
 legacy Placement를 새 제약 graph로 읽는 일방향 adapter를 추가한다. 결과를 다음으로 분류한다.

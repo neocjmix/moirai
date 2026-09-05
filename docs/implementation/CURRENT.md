@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `ready` — IP-002 Slice 1 완료; Slice 2 virtual Time Event·solver 승인 대기, runtime 의미 미변경                               |
+| 실행 상태                  | `in_progress` — IP-002 Slice 2 독립 solver 구현·검증 중; canonical runtime 의미 미변경                                       |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                    |
-| 현재 slice                 | 없음 — IP-002 Slice 2 승인 대기; JointJS 비활성                                                                               |
+| 현재 slice                 | IP-002 Slice 2 — 종료 검증 진행 중; Slice 3·JointJS 비활성                                                                    |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -40,7 +40,13 @@ IP-002 전체 완료 뒤에는 IP-001 M4-D 다음의 JointJS graph·scope artifa
 
 Slice 1은 [M4-D 시간 동작 특성화 기준선](M4D-TEMPORAL-CHARACTERIZATION.md)과 contracts·domain·projections golden test로 완료했다. current numeric Placement, 피코초 collapse, relative-only order, validate에서 허용되는 `precedes` cycle, descendant-span Process Duration, during 비-membership과 membership State 계산을 교정 전 관찰값으로 고정했다. 이는 TS-010 표현력 합격이 아니다.
 
+Slice 2의 독립 adapter·resolver·solver 초안을 구현하고 로컬 검증 중이다. 기존 runtime에서는 호출하지 않는다. Gregorian lossless 좌표, custom 허구력, 빅뱅 이후 scalar와 지질 BP 범위를 테스트한다. 모순 입력의 확정 projection을 억제하고 비교 불가능한 시간축은 unresolved로 남긴다. 남은 종료조건은 Composite 경계 순서 검증의 통합, equality 경로 evidence와 입력 순서 독립성 보강, 전체 거절 corpus 연결, 저장소 CI와 secret scan이다. 아직 Slice 2 완료나 실제 제품 경로 표현력 합격으로 판정하지 않는다. canonical write·schema·Placement·projector·Atropos·배포·World revision은 미변경이다.
+
 ## M3-C 검증 상태
+
+### IP-002 현재 실행 checkpoint
+
+2026-09-05 complete Composite 경계 순서, equality evidence·입력 순서 독립성 및 원본 JSON 거절 corpus 5개를 domain 검증에 연결했다. 이는 Clotho 실제 validate를 대체하지 않는다. Clotho synthetic World는 읽기 전용 재조회에서 Revision 29·ready다. Gitleaks 다운로드 재시도가 정상 완료되어 기존 로컬 2개 커밋 검사에서 secret 0건을 확인했다. 이전 네트워크 blocker는 해소됐으며 변경분 재검사 후 push·CI 종료 검증을 진행한다. Slice 2 완료와 제품 종단간 합격은 CI 및 이후 제품 경로 검증과 구분한다.
 
 2026-09-02~03 실제 ChatGPT OAuth로 작업했다. 전달받은 revision 14 대신 작업 전 15를 재조회했다. validate 후 revision 15와 신규 Event 부재를 확인하고, 한 Change Set으로 Event·Relation·Narrative를 commit해 revision 16을 만들었다. 동일 요청은 replay되며, 같은 ID의 다른 내용은 거절됐다. Atropos의 current/target/served 16, manifest와 Event digest, 공개 Narrative·Relation을 확인했다.
 

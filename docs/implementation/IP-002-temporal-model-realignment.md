@@ -8,7 +8,7 @@ depends_on:
 
 # IP-002 — 시간 모델 재정렬 구현 계획
 
-이 계획은 다음 milestone을 **활성화하지 않는다**. [TS-010](../technical-specifications/TS-010-event-relational-time.md)이 draft인 동안 runtime 의미, Canon schema와 production data를 바꾸지 않는다. 먼저 [드리프트 분석](TEMPORAL-MODEL-DRIFT.md)의 판단을 검토한다.
+이 계획은 다음 milestone을 **활성화하지 않는다**. [TS-010](../technical-specifications/TS-010-event-relational-time.md)이 draft인 동안 runtime 의미, Canon schema와 production data를 바꾸지 않는다. 먼저 [드리프트 분석](TEMPORAL-MODEL-DRIFT.md)의 판단과 [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)을 검토한다.
 
 ## 목표와 금지선
 
@@ -65,6 +65,8 @@ flowchart TD
 | BAD | 모순 cycle | commit 전 진단 |
 
 현재 synthetic World revision과 artifact digest는 비교 근거로 캡처하되 secret이나 bearer token은 저장하지 않는다.
+
+이 표는 기존 구현의 회귀 기준일 뿐 최종 표현력 합격 기준이 아니다. 실제 신규 모델의 합격은 별도 시험 World에 [구체적 corpus](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md#4-구체적-입력-corpus)를 입력하고 Canon·projection·Atropos 출력까지 확인해야 한다.
 
 ## Slice 2 — virtual Time Event와 solver
 
@@ -154,6 +156,7 @@ Atropos는 필요할 때 projection을 계산하고 다음을 구분해 표시�
 - `.moirai` export/import semantic fingerprint
 - 기존 M4-D synthetic World regression
 - production 전 Railway staging 또는 승인된 synthetic 범위 검증
+- `Temporal Expressiveness Observatory` corpus의 실제 validate→commit→read→publish→export/import 증거
 
 현재 로컬 환경에서 `pnpm`은 ignored build scripts 정책으로 실행이 막힐 수 있다. 이를 우회하려고 dependency 정책을 조용히 바꾸지 말고 CI 또는 승인된 설치 절차를 사용한다.
 
@@ -177,11 +180,12 @@ rollback은 단계별로 가능해야 한다.
 ## 다음 세션 체크리스트
 
 1. `docs/implementation/CURRENT.md`와 기준 SHA를 확인한다.
-2. `TEMPORAL-MODEL-DRIFT.md`, TS-010, 이 문서를 순서대로 읽는다.
+2. `TEMPORAL-MODEL-DRIFT.md`, TS-010, `TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md`, 이 문서를 순서대로 읽는다.
 3. TS-010 미결정 사항에 대한 사용자 결정을 기록한다.
 4. accepted 문서 변경 범위를 먼저 PR로 제시한다.
 5. 승인 전에는 Slice 1의 characterization test 외 runtime 변경을 하지 않는다.
 6. 원본 M4-D fixture와 deployment를 건드리지 않는다.
 7. 각 slice를 독립 PR·CI·rollback checkpoint로 유지한다.
+8. 구현 완료를 주장하기 전에 성공·거절 corpus의 실제 입력과 세 출력면을 증거로 남긴다.
 
 권장 첫 세션의 종료점은 Slice 0 결정과 Slice 1 테스트 계획까지다. schema migration이나 production semantic change가 아니다.

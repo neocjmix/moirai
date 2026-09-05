@@ -166,6 +166,8 @@ Composite Event의 Duration은 명시적 시작·종료 경계의 위치 차이�
 
 ## 12. 승인 수용 기준
 
+표현력의 최종 판정은 [시간 표현력 종단간 수용시험](../implementation/TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)을 따른다. 아래 항목의 unit test나 타입 구현만으로는 합격이 아니다. 구체적인 corpus를 Clotho로 validate·commit하고 Canon read-back, 계산 projection, Atropos 공개 출력과 export/import까지 확인해야 한다.
+
 - 연·월·일·ms·ps 예제가 단위별 Event 타입 없이 통과한다.
 - 지속 Event와 알려진 시간 범위가 서로 독립적으로 표현된다.
 - 다른 Event 도중이라는 사실을 containment 없이 표현한다.
@@ -178,3 +180,4 @@ Composite Event의 Duration은 명시적 시작·종료 경계의 위치 차이�
 - legacy Placement 변환의 손실 여부가 자동 분류된다.
 - 기존 M4 synthetic World의 의미가 migration 전후 비교된다.
 - 영향받는 accepted 명세가 같은 결정으로 개정된다.
+- 성공·거절 corpus 전체의 실제 입력과 출력 증거가 한 Revision 계보로 남는다.

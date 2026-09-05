@@ -32,7 +32,7 @@
 
 ## 시간 모델 재정렬 검토 대기
 
-[드리프트 분석](TEMPORAL-MODEL-DRIFT.md), draft [TS-010](../technical-specifications/TS-010-event-relational-time.md), draft [IP-002](IP-002-temporal-model-realignment.md)를 다음 세션의 판단 자료로 추가했다. 이는 계획 상태만 기록하며 milestone 또는 구현을 활성화하지 않는다.
+[드리프트 분석](TEMPORAL-MODEL-DRIFT.md), draft [TS-010](../technical-specifications/TS-010-event-relational-time.md), [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md), draft [IP-002](IP-002-temporal-model-realignment.md)를 다음 세션의 판단 자료로 추가했다. 이는 계획 상태만 기록하며 milestone 또는 구현을 활성화하지 않는다.
 
 다음 세션은 TS-010의 미결정 사항과 accepted 문서 개정 여부부터 결정한다. 그 전에는 JointJS, schema migration, canonical write와 production 의미를 바꾸지 않는다.
 

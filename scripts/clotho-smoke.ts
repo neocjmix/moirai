@@ -13,6 +13,7 @@ const canonId = "01995c2a-7b00-7000-8000-000000000102";
 const seedId = "01995c2a-7b00-7000-8000-000000000103";
 const timelineTimeSystemId = "019f0000-0000-7000-8000-000000000001";
 const timelineCanonTimeSystemId = "019f0000-0000-7000-8000-000000000002";
+const seedTimelinePlacementId = "019f0000-0000-7000-8000-000000000003";
 const expectedSha = process.env.EXPECTED_COMMIT_SHA ?? "";
 const apiUrl = process.env.CLOTHO_API_URL ?? "";
 const publicUrl = process.env.PUBLIC_INTEGRATION_URL ?? "";
@@ -195,15 +196,18 @@ async function main(): Promise<void> {
   )
     throw new Error("MCP and CLI revision differ");
   call("canon.list", { world_id: worldId, at_revision: world.source_revision });
-  const context = call<{ time_systems: readonly { id: string }[] }>(
-    "context.slice",
-    {
-      world_id: worldId,
-      canon_ids: [canonId],
-      seed_ids: [seedId],
-      at_revision: world.source_revision
-    }
-  );
+  const context = call<{
+    time_systems: readonly { id: string }[];
+    temporal_placements: readonly {
+      event_id: string;
+      time_system_id: string;
+    }[];
+  }>("context.slice", {
+    world_id: worldId,
+    canon_ids: [canonId],
+    seed_ids: [seedId],
+    at_revision: world.source_revision
+  });
   const title = `Clotho verified signal ${expectedSha.slice(0, 12)}`;
   const existing = call<{ items: { id: string }[] }>("event.search", {
     world_id: worldId,
@@ -242,12 +246,54 @@ async function main(): Promise<void> {
             }
           }
         ];
+    const seedPlacementSetup: readonly CreateOperation[] =
+      context.temporal_placements.some(
+        (placement) =>
+          placement.event_id === seedId &&
+          placement.time_system_id === timelineTimeSystemId
+      )
+        ? []
+        : [
+            {
+              kind: "create",
+              entity_type: "event_temporal_placement",
+              entity_id: seedTimelinePlacementId,
+              origin_refs,
+              value: {
+                event_id: seedId,
+                time_system_id: timelineTimeSystemId,
+                kind: "point",
+                earliest_start: { value: 0 },
+                latest_start: { value: 0 },
+                precision: "deployment",
+                certainty: "exact",
+                display_label: "Deployment 0"
+              }
+            }
+          ];
+    const processTitle = `Clotho verification process ${expectedSha.slice(0, 12)}`;
     const plan: ChangePlan = {
       ...base,
       change_set_id: id("change"),
       expected_revision: revision,
       operations: [
         ...timelineSetup,
+        ...seedPlacementSetup,
+        {
+          kind: "create",
+          entity_type: "event",
+          entity_id: id("process-event"),
+          origin_refs,
+          value: {
+            canon_id: canonId,
+            kind: "composite",
+            title: processTitle,
+            summary:
+              "The bounded process for one authenticated deployment verification.",
+            roles: ["process"],
+            attributes: {}
+          }
+        },
         {
           kind: "create",
           entity_type: "event",
@@ -259,6 +305,52 @@ async function main(): Promise<void> {
             title,
             roles: [],
             attributes: {}
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "relation",
+          entity_id: id("process-contains-seed"),
+          origin_refs,
+          value: {
+            canon_id: canonId,
+            type: "contains",
+            source_event_id: id("process-event"),
+            target_event_id: seedId,
+            direction: "directed",
+            attributes: {}
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "relation",
+          entity_id: id("process-contains-event"),
+          origin_refs,
+          value: {
+            canon_id: canonId,
+            type: "contains",
+            source_event_id: id("process-event"),
+            target_event_id: id("event"),
+            direction: "directed",
+            attributes: {}
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "event_temporal_placement",
+          entity_id: id("process-placement"),
+          origin_refs,
+          value: {
+            event_id: id("process-event"),
+            time_system_id: timelineTimeSystemId,
+            kind: "interval",
+            earliest_start: { value: 0 },
+            latest_start: { value: 0 },
+            earliest_end: { value: revision + 1 },
+            latest_end: { value: revision + 1 },
+            precision: "deployment",
+            certainty: "exact",
+            display_label: `Deployments 0–${revision + 1}`
           }
         },
         {
@@ -356,6 +448,7 @@ async function main(): Promise<void> {
     `authenticated write contract passed; revision=${revision}\n`
   );
   const path = `/worlds/${worldId}/canons/${canonId}/events/${id("event")}`;
+  const processPath = `/worlds/${worldId}/canons/${canonId}/events/${id("process-event")}`;
   process.stdout.write("waiting for revision-pinned public projection\n");
   await waitFor(async () => {
     const response = await fetch(new URL(path, publicUrl), {
@@ -414,8 +507,12 @@ async function main(): Promise<void> {
       !canonPage.ok ||
       !canonHtml.includes("DERIVED TIMELINE") ||
       !canonHtml.includes("DERIVED SUBJECTS") ||
+      !canonHtml.includes("DERIVED PROCESSES") ||
       !canonHtml.includes("Deployment Sequence") ||
-      !canonHtml.includes(title)
+      !canonHtml.includes(title) ||
+      !canonHtml.includes(
+        `Clotho verification process ${expectedSha.slice(0, 12)}`
+      )
     )
       return false;
     const canonArtifact = await fetch(
@@ -430,11 +527,19 @@ async function main(): Promise<void> {
         key: string;
         subject_handle_id: string;
       }[];
+      process_artifacts?: readonly {
+        key: string;
+        process_event_id: string;
+      }[];
     };
     const subjectReference = canonDocument.subject_artifacts?.find(
       (reference) => reference.subject_handle_id.length > 0
     );
     if (!canonArtifact.ok || !subjectReference) return false;
+    const processReference = canonDocument.process_artifacts?.find(
+      (reference) => reference.process_event_id === id("process-event")
+    );
+    if (!processReference) return false;
     const subjectArtifact = await fetch(
       new URL(
         `/worlds/${worldId}/revisions/${revision}/subjects/${subjectReference.subject_handle_id}.json`,
@@ -463,6 +568,36 @@ async function main(): Promise<void> {
       !subjectPage.ok ||
       !subjectHtml.includes("DERIVED SUBJECT") ||
       !subjectHtml.includes(title)
+    )
+      return false;
+    const processArtifact = await fetch(
+      new URL(
+        `/worlds/${worldId}/revisions/${revision}/graph/canons/${canonId}/process-${id("process-event")}.json`,
+        publicUrl
+      ),
+      { signal: AbortSignal.timeout(10_000) }
+    );
+    const processBody = await processArtifact.text();
+    if (
+      !processArtifact.ok ||
+      !processArtifact.headers.get("cache-control")?.includes("immutable") ||
+      !processBody.includes('"projection_type":"process"') ||
+      !processBody.includes(id("process-event")) ||
+      !processBody.includes(id("event")) ||
+      !processBody.includes('"semantic_digest"') ||
+      !processBody.includes('"kind":"exact"')
+    )
+      return false;
+    const processPage = await fetch(new URL(processPath, publicUrl), {
+      signal: AbortSignal.timeout(10_000)
+    });
+    const processHtml = (await processPage.text()).replace(/<!--.*?-->/g, "");
+    if (
+      !processPage.ok ||
+      !processHtml.includes("DERIVED PROCESS") ||
+      !processHtml.includes(
+        `Clotho verification process ${expectedSha.slice(0, 12)}`
+      )
     )
       return false;
     return true;

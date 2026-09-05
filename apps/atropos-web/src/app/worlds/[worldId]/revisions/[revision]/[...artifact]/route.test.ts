@@ -39,4 +39,15 @@ describe("revision artifact route allowlist", () => {
     );
     expect(() => artifactPath(["subjects", "private.json"])).toThrow();
   });
+
+  it("serves only ID-scoped Process graph artifacts", () => {
+    const canonId = "01995c2a-7b00-7000-8000-000000000002";
+    const processId = "01995c2a-7b00-7000-8000-000000000021";
+    expect(
+      artifactPath(["graph", "canons", canonId, `process-${processId}.json`])
+    ).toBe(`graph/canons/${canonId}/process-${processId}.json`);
+    expect(() =>
+      artifactPath(["graph", "canons", canonId, "process-private.json"])
+    ).toThrow();
+  });
 });

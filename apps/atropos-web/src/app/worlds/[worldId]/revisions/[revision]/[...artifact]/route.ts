@@ -30,11 +30,12 @@ export function artifactPath(parts: readonly string[]): string {
     parts.length === 4 &&
     parts[0] === "graph" &&
     parts[1] === "canons" &&
-    parts[3]?.startsWith("timeline-") &&
+    (parts[3]?.startsWith("timeline-") || parts[3]?.startsWith("process-")) &&
     parts[3].endsWith(".json")
   ) {
     assertPublicId(parts[2]!);
-    assertPublicId(parts[3].slice("timeline-".length, -".json".length));
+    const prefix = parts[3].startsWith("timeline-") ? "timeline-" : "process-";
+    assertPublicId(parts[3].slice(prefix.length, -".json".length));
     return parts.join("/");
   }
   throw new Error("unsupported artifact");

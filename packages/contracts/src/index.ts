@@ -20,11 +20,18 @@ export const SYNTHETIC_FIXTURE = Object.freeze({
   canonNarrativeId: "01995c2a-7b00-7000-8000-00000000000f",
   eventNarrativeId: "01995c2a-7b00-7000-8000-000000000010",
   identityRelationId: "01995c2a-7b00-7000-8000-000000000011",
+  processEventId: "01995c2a-7b00-7000-8000-000000000012",
+  processPlacementId: "01995c2a-7b00-7000-8000-000000000013",
+  firstContainmentId: "01995c2a-7b00-7000-8000-000000000014",
+  secondContainmentId: "01995c2a-7b00-7000-8000-000000000015",
+  thirdContainmentId: "01995c2a-7b00-7000-8000-000000000016",
+  processNarrativeId: "01995c2a-7b00-7000-8000-000000000017",
   worldTitle: "The Lantern Archive",
   canonTitle: "Ember Canon",
   eventTitle: "The first lantern is lit",
   secondEventTitle: "The eastern lantern answers",
-  thirdEventTitle: "The archive opens its doors"
+  thirdEventTitle: "The archive opens its doors",
+  processEventTitle: "The archive opening"
 });
 
 export type EntityType =
@@ -296,7 +303,7 @@ export interface PublicNarrative {
 
 export interface PublicSearchEntry {
   readonly target_id: string;
-  readonly target_type: "world" | "canon" | "event" | "subject";
+  readonly target_type: "world" | "canon" | "event" | "subject" | "process";
   readonly canonical_url: string;
   readonly world_id: string;
   readonly canon_id: string | null;
@@ -379,12 +386,68 @@ export interface PublicSubjectHandleDocument {
   readonly subject: PublicSubjectProjection | null;
 }
 
+export interface PublicProcessContainmentEdge {
+  readonly relation_id: string;
+  readonly parent_event_id: string;
+  readonly child_event_id: string;
+  readonly depth: number;
+}
+
+export interface PublicProcessDuration {
+  readonly time_system_id: string;
+  readonly start_earliest: number;
+  readonly start_latest: number;
+  readonly end_earliest: number;
+  readonly end_latest: number;
+  readonly minimum: number;
+  readonly maximum: number;
+  readonly kind: "exact" | "range";
+  readonly precision: string;
+  readonly evidence_ids: readonly string[];
+}
+
+export interface PublicProcessProjection {
+  readonly world_id: string;
+  readonly source_revision: number;
+  readonly projection_type: "process";
+  readonly algorithm_version: string;
+  readonly parameters_digest: string;
+  readonly semantic_digest: string;
+  readonly canon_id: string;
+  readonly process_event_id: string;
+  readonly label: string;
+  readonly direct_child_event_ids: readonly string[];
+  readonly descendant_event_ids: readonly string[];
+  readonly containment: readonly PublicProcessContainmentEdge[];
+  readonly start_event_ids: readonly string[];
+  readonly end_event_ids: readonly string[];
+  readonly internal_relation_ids: readonly string[];
+  readonly narrative_ids: readonly string[];
+  readonly durations: readonly PublicProcessDuration[];
+  readonly evidence: readonly string[];
+  readonly diagnostics: readonly PublicProjectionDiagnostic[];
+  readonly completeness: ProjectionCompleteness;
+}
+
+export interface PublicProcessArtifactReference {
+  readonly process_event_id: string;
+  readonly key: string;
+  readonly label: string;
+  readonly direct_child_count: number;
+  readonly descendant_count: number;
+  readonly algorithm_version: string;
+  readonly completeness: ProjectionCompleteness;
+}
+
 export interface PublicProjectionDiagnostic {
   readonly code:
     | "timeline_cycle"
     | "timeline_unplaced"
     | "identity_component_ambiguous"
-    | "subject_anchor_unresolved";
+    | "subject_anchor_unresolved"
+    | "empty_process"
+    | "process_containment_cycle"
+    | "process_duration_unresolved";
   readonly affected_ids: readonly string[];
 }
 
@@ -443,6 +506,7 @@ export interface PublicationManifest {
     readonly search: string;
     readonly timeline?: string;
     readonly subject?: string;
+    readonly process?: string;
   };
   readonly locales: readonly string[];
   readonly documents: readonly {

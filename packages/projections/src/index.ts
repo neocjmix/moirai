@@ -3,6 +3,9 @@ import type {
   PublicCanonTimeSystem,
   PublicEvent,
   PublicNarrative,
+  PublicProcessContainmentEdge,
+  PublicProcessDuration,
+  PublicProcessProjection,
   PublicRelation,
   PublicSearchEntry,
   PublicSubjectLineageEdge,
@@ -17,6 +20,7 @@ import { createHash } from "node:crypto";
 
 export const TIMELINE_ALGORITHM_VERSION = "m4-timeline-v1";
 export const SUBJECT_ALGORITHM_VERSION = "m4-subject-v1";
+export const PROCESS_ALGORITHM_VERSION = "m4-process-v1";
 
 export interface CanonicalRevisionView {
   readonly world: PublicWorld;
@@ -42,6 +46,293 @@ export interface TimelineProjectionParameters {
 export interface SubjectProjectionBundle {
   readonly handles: readonly SubjectHandleRecord[];
   readonly projections: readonly PublicSubjectProjection[];
+}
+
+export function projectProcesses(
+  source: CanonicalRevisionView,
+  sourceRevision: number
+): readonly PublicProcessProjection[] {
+  const projections: PublicProcessProjection[] = [];
+  for (const canon of [...source.canons].sort((left, right) =>
+    left.id.localeCompare(right.id)
+  )) {
+    const events = source.events
+      .filter((event) => event.canon_id === canon.id)
+      .sort((left, right) => left.id.localeCompare(right.id));
+    const eventIds = new Set(events.map((event) => event.id));
+    const relations = source.relations
+      .filter(
+        (relation) =>
+          relation.canon_id === canon.id &&
+          eventIds.has(relation.source_event_id) &&
+          eventIds.has(relation.target_event_id)
+      )
+      .sort((left, right) => left.id.localeCompare(right.id));
+    const contains = relations.filter(
+      (relation) => relation.type === "contains"
+    );
+    const childrenByParent = new Map<string, PublicRelation[]>();
+    for (const relation of contains) {
+      const children = childrenByParent.get(relation.source_event_id) ?? [];
+      children.push(relation);
+      childrenByParent.set(relation.source_event_id, children);
+    }
+    for (const children of childrenByParent.values()) {
+      children.sort(
+        (left, right) =>
+          left.target_event_id.localeCompare(right.target_event_id) ||
+          left.id.localeCompare(right.id)
+      );
+    }
+
+    for (const process of events.filter(
+      (event) => event.kind === "composite" && event.roles.includes("process")
+    )) {
+      const directRelations = childrenByParent.get(process.id) ?? [];
+      const descendants = new Set<string>();
+      const containmentByRelation = new Map<
+        string,
+        PublicProcessContainmentEdge
+      >();
+      const cycleIds = new Set<string>();
+      const cycleVisitState = new Map<string, "visiting" | "done">();
+      const visitForCycles = (parentId: string): void => {
+        cycleVisitState.set(parentId, "visiting");
+        for (const relation of childrenByParent.get(parentId) ?? []) {
+          const childId = relation.target_event_id;
+          const state = cycleVisitState.get(childId);
+          if (state === "visiting") {
+            cycleIds.add(parentId);
+            cycleIds.add(childId);
+            continue;
+          }
+          if (state !== "done") visitForCycles(childId);
+        }
+        cycleVisitState.set(parentId, "done");
+      };
+      visitForCycles(process.id);
+
+      const shortestDepth = new Map<string, number>([[process.id, 0]]);
+      const pending = [process.id];
+      while (pending.length > 0) {
+        const parentId = pending.shift()!;
+        const parentDepth = shortestDepth.get(parentId)!;
+        for (const relation of childrenByParent.get(parentId) ?? []) {
+          const childId = relation.target_event_id;
+          const depth = parentDepth + 1;
+          const previousEdge = containmentByRelation.get(relation.id);
+          if (!previousEdge || depth < previousEdge.depth) {
+            containmentByRelation.set(relation.id, {
+              relation_id: relation.id,
+              parent_event_id: parentId,
+              child_event_id: childId,
+              depth
+            });
+          }
+          if (childId === process.id) continue;
+          descendants.add(childId);
+          const previousDepth = shortestDepth.get(childId);
+          if (previousDepth === undefined || depth < previousDepth) {
+            shortestDepth.set(childId, depth);
+            pending.push(childId);
+          }
+        }
+      }
+      descendants.delete(process.id);
+      const descendantIds = [...descendants].sort();
+      const descendantSet = new Set(descendantIds);
+      const boundaryCandidate = (type: "starts" | "ends"): string[] =>
+        [
+          ...new Set(
+            relations
+              .filter(
+                (relation) =>
+                  relation.type === type &&
+                  ((relation.source_event_id === process.id &&
+                    descendantSet.has(relation.target_event_id)) ||
+                    (relation.target_event_id === process.id &&
+                      descendantSet.has(relation.source_event_id)))
+              )
+              .map((relation) =>
+                relation.source_event_id === process.id
+                  ? relation.target_event_id
+                  : relation.source_event_id
+              )
+          )
+        ].sort();
+      const precedence = relations.filter(
+        (relation) =>
+          relation.type === "precedes" &&
+          descendantSet.has(relation.source_event_id) &&
+          descendantSet.has(relation.target_event_id)
+      );
+      const explicitStarts = boundaryCandidate("starts");
+      const explicitEnds = boundaryCandidate("ends");
+      const startEventIds =
+        explicitStarts.length > 0
+          ? explicitStarts
+          : descendantIds.filter(
+              (eventId) =>
+                !precedence.some(
+                  (relation) => relation.target_event_id === eventId
+                )
+            );
+      const endEventIds =
+        explicitEnds.length > 0
+          ? explicitEnds
+          : descendantIds.filter(
+              (eventId) =>
+                !precedence.some(
+                  (relation) => relation.source_event_id === eventId
+                )
+            );
+      const internalRelations = relations.filter(
+        (relation) =>
+          relation.type !== "contains" &&
+          descendantSet.has(relation.source_event_id) &&
+          descendantSet.has(relation.target_event_id)
+      );
+      const durations: PublicProcessDuration[] = [];
+      for (const timeSystem of source.timeSystems
+        .filter((item) =>
+          source.canonTimeSystems.some(
+            (link) =>
+              link.canon_id === canon.id && link.time_system_id === item.id
+          )
+        )
+        .sort((left, right) => left.id.localeCompare(right.id))) {
+        const placements = source.temporalPlacements
+          .filter(
+            (placement) =>
+              placement.time_system_id === timeSystem.id &&
+              descendantSet.has(placement.event_id)
+          )
+          .sort((left, right) => left.id.localeCompare(right.id));
+        const placedEvents = new Set(placements.map((item) => item.event_id));
+        const hasInterval = placements.some(
+          (item) => item.earliest_end !== null && item.latest_end !== null
+        );
+        if (
+          placements.length === 0 ||
+          (!hasInterval && placedEvents.size < 2)
+        ) {
+          continue;
+        }
+        const startEarliest = Math.min(
+          ...placements.map((item) => item.earliest_start.value)
+        );
+        const startLatest = Math.min(
+          ...placements.map((item) => item.latest_start.value)
+        );
+        const endEarliest = Math.max(
+          ...placements.map(
+            (item) => item.earliest_end?.value ?? item.earliest_start.value
+          )
+        );
+        const endLatest = Math.max(
+          ...placements.map(
+            (item) => item.latest_end?.value ?? item.latest_start.value
+          )
+        );
+        const minimum = Math.max(0, endEarliest - startLatest);
+        const maximum = Math.max(0, endLatest - startEarliest);
+        const precisions = [
+          ...new Set(placements.map((item) => item.precision))
+        ];
+        durations.push({
+          time_system_id: timeSystem.id,
+          start_earliest: startEarliest,
+          start_latest: startLatest,
+          end_earliest: endEarliest,
+          end_latest: endLatest,
+          minimum,
+          maximum,
+          kind:
+            minimum === maximum &&
+            placements.every((item) => item.certainty === "exact")
+              ? "exact"
+              : "range",
+          precision: precisions.length === 1 ? precisions[0]! : "mixed",
+          evidence_ids: placements.map((item) => item.id)
+        });
+      }
+      const narratives = source.narratives
+        .filter(
+          (narrative) =>
+            narrative.scope_type === "event" &&
+            narrative.scope_id === process.id
+        )
+        .sort((left, right) => left.id.localeCompare(right.id));
+      const diagnostics: PublicProcessProjection["diagnostics"] = [
+        ...(directRelations.length === 0
+          ? [{ code: "empty_process" as const, affected_ids: [process.id] }]
+          : []),
+        ...(cycleIds.size > 0
+          ? [
+              {
+                code: "process_containment_cycle" as const,
+                affected_ids: [...cycleIds].sort()
+              }
+            ]
+          : []),
+        ...(durations.length === 0
+          ? [
+              {
+                code: "process_duration_unresolved" as const,
+                affected_ids: [process.id, ...descendantIds]
+              }
+            ]
+          : [])
+      ];
+      const containment = [...containmentByRelation.values()].sort(
+        (left, right) =>
+          left.depth - right.depth ||
+          left.relation_id.localeCompare(right.relation_id)
+      );
+      const evidence = [
+        process.id,
+        ...containment.map((item) => item.relation_id),
+        ...internalRelations.map((item) => item.id),
+        ...durations.flatMap((item) => item.evidence_ids),
+        ...narratives.map((item) => item.id)
+      ]
+        .filter((id, index, values) => values.indexOf(id) === index)
+        .sort();
+      const semantic = {
+        world_id: source.world.id,
+        source_revision: sourceRevision,
+        projection_type: "process" as const,
+        algorithm_version: PROCESS_ALGORITHM_VERSION,
+        parameters_digest: digest({
+          canon_id: canon.id,
+          process_event_id: process.id
+        }),
+        canon_id: canon.id,
+        process_event_id: process.id,
+        label: process.title,
+        direct_child_event_ids: directRelations
+          .map((relation) => relation.target_event_id)
+          .sort(),
+        descendant_event_ids: descendantIds,
+        containment,
+        start_event_ids: startEventIds,
+        end_event_ids: endEventIds,
+        internal_relation_ids: internalRelations.map((item) => item.id),
+        narrative_ids: narratives.map((item) => item.id),
+        durations,
+        evidence,
+        diagnostics,
+        completeness:
+          diagnostics.length === 0
+            ? ("complete" as const)
+            : ("partial" as const)
+      };
+      projections.push({ ...semantic, semantic_digest: digest(semantic) });
+    }
+  }
+  return projections.sort((left, right) =>
+    left.process_event_id.localeCompare(right.process_event_id)
+  );
 }
 
 function stableValue(value: unknown): unknown {
@@ -870,7 +1161,10 @@ function searchEntries(
   }));
   const eventEntries = sorted(view.events).map((event): PublicSearchEntry => ({
     target_id: event.id,
-    target_type: "event",
+    target_type:
+      event.kind === "composite" && event.roles.includes("process")
+        ? "process"
+        : "event",
     canonical_url: `/worlds/${view.world.id}/canons/${event.canon_id}/events/${event.id}`,
     world_id: view.world.id,
     canon_id: event.canon_id,
@@ -929,6 +1223,7 @@ export function projectPublicDocuments(
   const timeSystems = sorted(view.timeSystems);
   const relations = sorted(view.relations);
   const temporalPlacements = sorted(view.temporalPlacements);
+  const processes = projectProcesses(view, revision);
   const timelineDocuments = sorted(view.canonTimeSystems).flatMap((link) => {
     if (
       !canons.some((canon) => canon.id === link.canon_id) ||
@@ -972,6 +1267,10 @@ export function projectPublicDocuments(
       }
     };
   });
+  const processDocuments = processes.map((process) => ({
+    key: `${prefix}/graph/canons/${process.canon_id}/process-${process.process_event_id}.json`,
+    value: { ...metadata, ...process }
+  }));
   return [
     {
       key: `${prefix}/world.json`,
@@ -1016,6 +1315,17 @@ export function projectPublicDocuments(
             member_count: subject.member_event_ids.length,
             algorithm_version: subject.algorithm_version,
             completeness: subject.completeness
+          })),
+        process_artifacts: processes
+          .filter((process) => process.canon_id === canon.id)
+          .map((process) => ({
+            process_event_id: process.process_event_id,
+            key: `${prefix}/graph/canons/${canon.id}/process-${process.process_event_id}.json`,
+            label: process.label,
+            direct_child_count: process.direct_child_event_ids.length,
+            descendant_count: process.descendant_event_ids.length,
+            algorithm_version: process.algorithm_version,
+            completeness: process.completeness
           }))
       }
     })),
@@ -1038,6 +1348,15 @@ export function projectPublicDocuments(
       const placementTimeIds = new Set(
         placements.map((placement) => placement.time_system_id)
       );
+      const processProjection = processes.find(
+        (process) => process.process_event_id === event.id
+      );
+      const relevantTimeIds = new Set([
+        ...placementTimeIds,
+        ...(processProjection?.durations.map(
+          (duration) => duration.time_system_id
+        ) ?? [])
+      ]);
       return {
         key: `${prefix}/events/${event.id}.json`,
         value: {
@@ -1048,7 +1367,7 @@ export function projectPublicDocuments(
           ),
           temporal_placements: placements,
           time_systems: timeSystems.filter((timeSystem) =>
-            placementTimeIds.has(timeSystem.id)
+            relevantTimeIds.has(timeSystem.id)
           ),
           relations: eventRelations,
           related_events: events.filter((candidate) =>
@@ -1056,7 +1375,24 @@ export function projectPublicDocuments(
           ),
           subject_handle_ids: subjects.projections
             .filter((subject) => subject.member_event_ids.includes(event.id))
-            .map((subject) => subject.subject_handle_id)
+            .map((subject) => subject.subject_handle_id),
+          process_artifact: processProjection
+            ? {
+                process_event_id: processProjection.process_event_id,
+                key: `${prefix}/graph/canons/${processProjection.canon_id}/process-${processProjection.process_event_id}.json`,
+                label: processProjection.label,
+                direct_child_count:
+                  processProjection.direct_child_event_ids.length,
+                descendant_count: processProjection.descendant_event_ids.length,
+                algorithm_version: processProjection.algorithm_version,
+                completeness: processProjection.completeness
+              }
+            : null,
+          parent_process_ids: processes
+            .filter((process) =>
+              process.descendant_event_ids.includes(event.id)
+            )
+            .map((process) => process.process_event_id)
         }
       };
     }),
@@ -1069,6 +1405,7 @@ export function projectPublicDocuments(
       }
     },
     ...timelineDocuments,
-    ...subjectDocuments
+    ...subjectDocuments,
+    ...processDocuments
   ];
 }

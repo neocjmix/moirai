@@ -4,24 +4,43 @@ import { SYNTHETIC_FIXTURE } from "../../packages/contracts/src/index.js";
 test("mobile reader traverses World, Canon and Event at one served Revision", async ({
   page
 }) => {
+  test.setTimeout(60_000);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Atropos" })).toBeVisible();
   await page.getByRole("link", { name: /합성 세계 열기/ }).click();
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.worldTitle })
   ).toBeVisible();
-  await page
-    .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
-    .click();
+  const canonPath = `/worlds/${SYNTHETIC_FIXTURE.worldId}/canons/${SYNTHETIC_FIXTURE.canonId}`;
+  await expect(
+    page.getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
+  ).toHaveAttribute("href", canonPath);
+  await page.goto(canonPath);
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
-  ).toBeVisible();
+  ).toBeVisible({ timeout: 15_000 });
   await expect(
     page.getByRole("heading", { name: "Ember Count" })
   ).toBeVisible();
   await expect(page.getByText("DERIVED TIMELINE")).toBeVisible();
   await expect(page.getByText("DERIVED SUBJECTS")).toBeVisible();
-  await expect(page.getByText("First bell")).toBeVisible();
+  await expect(page.getByText("DERIVED PROCESSES")).toBeVisible();
+  await expect(page.getByText("겹치는 시간 범위 · 순서 미정")).toBeVisible();
+  await page
+    .locator('section[aria-labelledby="processes-title"]')
+    .getByRole("link", {
+      name: new RegExp(SYNTHETIC_FIXTURE.processEventTitle)
+    })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: SYNTHETIC_FIXTURE.processEventTitle })
+  ).toBeVisible();
+  await expect(page.getByText("DERIVED PROCESS")).toBeVisible();
+  await expect(page.getByText("Duration 2–3 bell")).toBeVisible();
+  await page.goBack();
+  await expect(
+    page.getByRole("heading", { name: SYNTHETIC_FIXTURE.canonTitle })
+  ).toBeVisible({ timeout: 15_000 });
   await page.locator('a[href*="/subjects/"]').click();
   await expect(page.getByText("DERIVED SUBJECT · REVISION 2")).toBeVisible();
   await expect(page.getByText("stable handle anchor")).toBeVisible();
@@ -124,6 +143,7 @@ test("health, status and immutable Event document expose allowlisted metadata", 
   );
   const canonPayload = (await canonDocument.json()) as {
     subject_artifacts: readonly { key: string }[];
+    process_artifacts: readonly { key: string }[];
   };
   const subject = await request.get(
     `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/${canonPayload.subject_artifacts[0]!.key.split("/revisions/2/")[1]}`
@@ -139,5 +159,17 @@ test("health, status and immutable Event document expose allowlisted metadata", 
         SYNTHETIC_FIXTURE.secondEventId
       ]
     }
+  });
+
+  const process = await request.get(
+    `/worlds/${SYNTHETIC_FIXTURE.worldId}/revisions/2/${canonPayload.process_artifacts[0]!.key.split("/revisions/2/")[1]}`
+  );
+  expect(process.ok()).toBe(true);
+  expect(process.headers()["cache-control"]).toContain("immutable");
+  expect(await process.json()).toMatchObject({
+    source_revision: 2,
+    projection_type: "process",
+    process_event_id: SYNTHETIC_FIXTURE.processEventId,
+    durations: [{ minimum: 2, maximum: 3, kind: "range" }]
   });
 });

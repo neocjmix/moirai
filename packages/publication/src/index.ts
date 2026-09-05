@@ -5,6 +5,7 @@ import {
 } from "@moirai/contracts";
 import {
   projectPublicDocuments,
+  PROCESS_ALGORITHM_VERSION,
   SUBJECT_ALGORITHM_VERSION,
   TIMELINE_ALGORITHM_VERSION,
   type CanonicalRevisionView,
@@ -102,7 +103,8 @@ export function buildPublicationArtifacts(
       canonical: "m2-v1",
       search: "m2-text-v1",
       timeline: TIMELINE_ALGORITHM_VERSION,
-      subject: SUBJECT_ALGORITHM_VERSION
+      subject: SUBJECT_ALGORITHM_VERSION,
+      process: PROCESS_ALGORITHM_VERSION
     },
     locales: ["en"],
     documents: documents.map(({ key, body }) => ({

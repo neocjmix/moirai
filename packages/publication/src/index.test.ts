@@ -199,4 +199,119 @@ describe("Publication artifact contract", () => {
       member_event_ids: ["event", "event-2"]
     });
   });
+
+  it("publishes Process artifacts, duration evidence and Canon references", () => {
+    const processView = {
+      ...view,
+      timeSystems: [
+        {
+          id: "time",
+          world_id: "world",
+          slug: "time",
+          title: "Time",
+          kind: "ordinal" as const,
+          definition_version: "1",
+          definition: {}
+        }
+      ],
+      canonTimeSystems: [
+        { id: "canon-time", canon_id: "canon", time_system_id: "time" }
+      ],
+      events: [
+        {
+          ...view.events[0]!,
+          id: "process",
+          kind: "composite" as const,
+          title: "Process",
+          roles: ["process"]
+        },
+        view.events[0]!,
+        { ...view.events[0]!, id: "event-2", title: "Event 2" }
+      ],
+      temporalPlacements: [
+        {
+          id: "placement-1",
+          event_id: "event",
+          time_system_id: "time",
+          kind: "point" as const,
+          earliest_start: { value: 1 },
+          latest_start: { value: 1 },
+          earliest_end: null,
+          latest_end: null,
+          precision: "step",
+          certainty: "exact" as const,
+          display_label: "Step 1"
+        },
+        {
+          id: "placement-2",
+          event_id: "event-2",
+          time_system_id: "time",
+          kind: "point" as const,
+          earliest_start: { value: 4 },
+          latest_start: { value: 4 },
+          earliest_end: null,
+          latest_end: null,
+          precision: "step",
+          certainty: "exact" as const,
+          display_label: "Step 4"
+        }
+      ],
+      relations: [
+        {
+          id: "contains-1",
+          canon_id: "canon",
+          type: "contains" as const,
+          source_event_id: "process",
+          target_event_id: "event",
+          direction: "directed" as const,
+          attributes: {}
+        },
+        {
+          id: "contains-2",
+          canon_id: "canon",
+          type: "contains" as const,
+          source_event_id: "process",
+          target_event_id: "event-2",
+          direction: "directed" as const,
+          attributes: {}
+        }
+      ]
+    };
+    const artifacts = buildPublicationArtifacts(
+      processView,
+      6,
+      "2026-01-06T00:00:00.000Z"
+    );
+    const canon = JSON.parse(
+      artifacts.documents.find((document) =>
+        document.key.endsWith("/canons/canon.json")
+      )!.body
+    );
+    const reference = canon.process_artifacts[0];
+    const process = JSON.parse(
+      artifacts.documents.find((document) => document.key === reference.key)!
+        .body
+    );
+    const processEvent = JSON.parse(
+      artifacts.documents.find((document) =>
+        document.key.endsWith("/events/process.json")
+      )!.body
+    );
+    const manifest = JSON.parse(artifacts.manifestBody);
+
+    expect(reference).toMatchObject({
+      process_event_id: "process",
+      direct_child_count: 2,
+      descendant_count: 2
+    });
+    expect(process).toMatchObject({
+      projection_type: "process",
+      source_revision: 6,
+      durations: [{ minimum: 3, maximum: 3, kind: "exact" }]
+    });
+    expect(processEvent.time_systems).toEqual([
+      expect.objectContaining({ id: "time", title: "Time" })
+    ]);
+    expect(manifest.algorithms.process).toBe("m4-process-v1");
+  });
 });

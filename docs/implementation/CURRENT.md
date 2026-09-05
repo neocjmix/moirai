@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `active` — M4-D 규칙 기반 State projection 구현 중                                                                              |
+| 실행 상태                  | `ready` — M4-D 완료; 다음 M4 slice 미착수                                                                                       |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                   |
-| 현재 slice                 | M4-D — membership State registry, 경계·Subject·Duration 계산과 공개 Subject 경로                                               |
+| 현재 slice                 | 없음 — 다음 계획 단계는 JointJS graph 기본 탐색                                                                               |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결       |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -19,9 +19,15 @@
 | M4-B 검증 application SHA  | `a396a3a5c4e7dd64374813e56fd9e1d597a292e9`                                                                                    |
 | M4-B 구현 CI               | [33879616711](https://github.com/neocjmix/moirai/actions/runs/33879616711) `success`                                          |
 | M4-B 배포 smoke            | [33879771900](https://github.com/neocjmix/moirai/actions/runs/33879771900) `success`; Clotho synthetic revision 23            |
+| M4-C 검증 application SHA  | `dc0728da0fb2a94770aace356ad92c4d1144679c`                                                                                    |
+| M4-C 구현 CI               | [33895196445](https://github.com/neocjmix/moirai/actions/runs/33895196445) `success`                                          |
+| M4-C 배포 smoke            | Railway 배포 성공; Clotho synthetic revision 27                                                                               |
+| M4-D 검증 application SHA  | `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                                                                    |
+| M4-D 구현 CI               | [33938273152](https://github.com/neocjmix/moirai/actions/runs/33938273152) `success`                                          |
+| M4-D 배포 smoke            | [33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968) `success`; Clotho synthetic revision 28            |
 | 최근 bearer smoke          | [33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972) `success`; 실제 OAuth 검증과 별도 근거             |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 현재 배포 SHA·마지막 smoke | 공개 `/__status`와 최신 `Post-deploy smoke` workflow 참조                                                                   |
+| 현재 배포 SHA·마지막 smoke | `350920bbdb3928f34e406940b9d9f0d95f7e8c65`; [33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968)       |
 
 ## M3-C 검증 상태
 
@@ -44,7 +50,7 @@
 
 [M4 파생 모델 구현 기록](M4-DERIVED-MODELS.md)에 따라 기존 Canon·Event·시간 배치·`precedes` 관계만 읽는 결정적 Timeline projection, Revision별 immutable graph artifact와 Atropos의 접근 가능한 텍스트 탐색을 배포했다. `0bbabae947761b0cc380951a56677bd7e443db09`의 CI와 배포 smoke가 성공했다. smoke는 정확한 Clotho 배포 SHA 확인 후 승인된 synthetic World 하나에 원자적 Change Plan을 commit·재실행하고 revision 21의 Timeline artifact와 Canon SSR 공개를 확인했다.
 
-M4-B Subject handle reconciliation과 공개 Subject 경로까지 완료했다. Process·State·Duration, JointJS 상호작용, 100k scope·LOD와 Canon 비교는 아직 시작하지 않았다.
+M4-B Subject handle reconciliation과 공개 Subject 경로까지 완료했다. 이후 M4-C Process·Duration과 M4-D membership State도 완료했다. JointJS 상호작용, 100k scope·LOD와 Canon 비교는 아직 시작하지 않았다.
 
 ## M4-B 완료
 
@@ -58,8 +64,10 @@ M4-B Subject handle reconciliation과 공개 Subject 경로까지 완료했다. 
 
 PR [#1](https://github.com/neocjmix/moirai/pull/1)을 squash 병합한 `dc0728da0fb2a94770aace356ad92c4d1144679c`의 CI [33895196445](https://github.com/neocjmix/moirai/actions/runs/33895196445)와 Railway 배포가 성공했다. Clotho synthetic revision 27에서 Process containment, exact Duration, immutable artifact와 Atropos SSR을 확인했다.
 
-## M4-D 활성 범위
+## M4-D 완료
 
 첫 State family를 `membership`로 제한한다. `state`·`state:membership` 역할이 있는 Composite Event와 그 Event를 향하는 `starts`·`ends` Relation만 읽는다. 경계 Event가 동일한 기존 Subject에 속하고 같은 Time System에 배치됐을 때만 상태와 완료 Duration을 계산한다. 종료 근거가 없으면 open-ended로 표시하되 현재까지 지속한다고 주장하지 않는다. 중복 경계·Subject 불일치·시간 근거 부족은 evidence와 unresolved 진단으로 보존한다.
 
-Canon별 immutable State artifact를 발행하고 Subject page에서 해당 handle의 계산된 상태를 공개한다. 다른 State family, 일반 LLM 추론, JointJS canvas·subject lane 배치, 100k scope·LOD와 Canon 비교는 후속 slice다.
+Canon별 immutable State artifact를 발행하고 Subject page에서 해당 handle의 계산된 상태를 공개한다. PR [#2](https://github.com/neocjmix/moirai/pull/2)를 squash 병합한 `350920bbdb3928f34e406940b9d9f0d95f7e8c65`의 CI [33938273152](https://github.com/neocjmix/moirai/actions/runs/33938273152), Railway 배포와 [post-deploy smoke 33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968)이 성공했다. Clotho synthetic revision 28에서 complete State artifact, exact membership Duration 28 deployment와 Atropos Subject SSR을 확인했다.
+
+다른 State family와 일반 LLM 추론은 현재 범위가 아니다. 다음 계획 단계인 JointJS canvas·subject lane 기본 탐색, 이후 100k scope·LOD와 Canon 비교는 아직 활성화하지 않았다.

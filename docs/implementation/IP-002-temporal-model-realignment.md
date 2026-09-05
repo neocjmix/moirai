@@ -14,6 +14,12 @@ depends_on:
 
 목표는 Event/Relation 기반 시간을 도입하면서 현재 M4-D 기준선, revision 원자성, publication 불변성, 재현 가능한 파생 모델을 보존하는 것이다.
 
+## 완료 후 IP-001 복귀 지점
+
+IP-002는 IP-001을 대체하지 않는 시간 모델 교정 interrupt다. IP-002의 종단간 수용시험과 종료 checkpoint가 통과하면 [IP-001 Milestone 4](IP-001-first-product-plan.md#ip-0018-milestone-4--파생-모델비교그래프)의 **M4-D 다음 단계인 JointJS graph·scope artifact 기본 탐색**으로 복귀한다. 이어서 vertical chronology, subject lane, metro routing, composite region, semantic zoom·LOD와 Canon 비교를 진행하고 Milestone 4 종료조건을 모두 만족한 뒤에만 Milestone 5로 넘어간다.
+
+IP-002 완료를 M4 또는 IP-001 전체 완료로 해석하지 않는다. `CURRENT.md`는 IP-002가 끝날 때 이 복귀 지점을 활성 slice로 명시해야 한다.
+
 - 기존 Placement 행을 삭제하거나 덮어쓰지 않는다.
 - 승인 전 schema migration과 canonical write 변경을 하지 않는다.
 - Branch·Run·시간여행 설계를 끌어들이지 않는다.
@@ -75,6 +81,8 @@ flowchart TD
 현재 synthetic World revision과 artifact digest는 비교 근거로 캡처하되 secret이나 bearer token은 저장하지 않는다.
 
 이 표는 기존 구현의 회귀 기준일 뿐 최종 표현력 합격 기준이 아니다. 실제 신규 모델의 합격은 별도 시험 World에 [구체적 corpus](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md#4-구체적-입력-corpus)를 입력하고 Canon·projection·Atropos 출력까지 확인해야 한다.
+
+2026-09-05 완료: [M4-D 시간 동작 특성화 기준선](M4D-TEMPORAL-CHARACTERIZATION.md)에 current numeric Placement 계약, Timeline relative order·cycle 진단, Process descendant-span Duration, during 비-membership과 membership State 계산을 exact golden output·semantic digest로 고정했다. 이는 알려진 드리프트를 승인된 의미로 승격하지 않는다.
 
 ## Slice 2 — virtual Time Event와 solver
 

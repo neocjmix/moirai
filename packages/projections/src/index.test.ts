@@ -3,6 +3,7 @@ import { describe, expect, it } from "vitest";
 import {
   projectPublicDocuments,
   projectProcesses,
+  projectStates,
   projectSubjects,
   projectTimeline
 } from "./index.js";
@@ -156,6 +157,159 @@ describe("public projection allowlist", () => {
     expect(
       documents.some((document) => document.key.endsWith("/search/en.json"))
     ).toBe(true);
+  });
+});
+
+describe("State projection", () => {
+  const stateView = {
+    ...timelineView,
+    events: [
+      ...timelineView.events,
+      {
+        id: "membership-state",
+        canon_id: "canon",
+        slug: null,
+        kind: "composite" as const,
+        title: "Guild membership",
+        summary: null,
+        roles: ["state", "state:membership"],
+        attributes: { state_value: "lantern guild" }
+      }
+    ],
+    temporalPlacements: [
+      {
+        ...timelineView.temporalPlacements[0]!,
+        id: "start-placement",
+        event_id: "event-a",
+        earliest_start: { value: 10 },
+        latest_start: { value: 10 },
+        certainty: "exact" as const
+      },
+      {
+        ...timelineView.temporalPlacements[1]!,
+        id: "end-placement",
+        event_id: "event-b",
+        earliest_start: { value: 15 },
+        latest_start: { value: 15 },
+        certainty: "exact" as const
+      }
+    ],
+    relations: [
+      {
+        id: "identity-a-b",
+        canon_id: "canon",
+        type: "identity_continues" as const,
+        source_event_id: "event-a",
+        target_event_id: "event-b",
+        direction: "directed" as const,
+        attributes: {}
+      },
+      {
+        id: "membership-start",
+        canon_id: "canon",
+        type: "starts" as const,
+        source_event_id: "event-a",
+        target_event_id: "membership-state",
+        direction: "directed" as const,
+        attributes: {}
+      },
+      {
+        id: "membership-end",
+        canon_id: "canon",
+        type: "ends" as const,
+        source_event_id: "event-b",
+        target_event_id: "membership-state",
+        direction: "directed" as const,
+        attributes: {}
+      }
+    ]
+  };
+
+  it("deterministically resolves a membership Subject and exact bounded duration", () => {
+    const first = projectStates(stateView, 11);
+    const shuffled = projectStates(
+      {
+        ...stateView,
+        events: [...stateView.events].reverse(),
+        relations: [...stateView.relations].reverse(),
+        temporalPlacements: [...stateView.temporalPlacements].reverse()
+      },
+      11
+    );
+
+    expect(shuffled).toEqual(first);
+    expect(first[0]).toMatchObject({
+      projection_type: "state",
+      algorithm_version: "m4-state-membership-v1",
+      completeness: "complete",
+      items: [
+        {
+          state_event_id: "membership-state",
+          state_type: "membership",
+          value: "lantern guild",
+          time_system_id: "time",
+          start_event_id: "event-a",
+          end_event_id: "event-b",
+          start_earliest: 10,
+          end_latest: 15,
+          open_ended: false,
+          duration: { minimum: 5, maximum: 5, kind: "exact" },
+          certainty: "exact",
+          completeness: "complete"
+        }
+      ]
+    });
+    expect(first[0]?.items[0]?.subject_handle_id).toMatch(/^[0-9a-f-]{36}$/);
+    expect(first[0]?.semantic_digest).toMatch(/^[a-f0-9]{64}$/);
+  });
+
+  it("marks a missing end as open-ended without inventing a duration", () => {
+    const result = projectStates(
+      {
+        ...stateView,
+        relations: stateView.relations.filter(
+          (relation) => relation.id !== "membership-end"
+        )
+      },
+      12
+    );
+
+    expect(result[0]?.items[0]).toMatchObject({
+      open_ended: true,
+      end_event_id: null,
+      end_earliest: null,
+      end_latest: null,
+      duration: null,
+      completeness: "complete"
+    });
+  });
+
+  it("keeps conflicting boundary evidence unresolved", () => {
+    const result = projectStates(
+      {
+        ...stateView,
+        relations: [
+          ...stateView.relations,
+          {
+            ...stateView.relations[1]!,
+            id: "membership-start-again",
+            source_event_id: "event-b"
+          }
+        ]
+      },
+      13
+    );
+
+    expect(result[0]).toMatchObject({
+      completeness: "partial",
+      items: [
+        {
+          certainty: "unresolved",
+          completeness: "unresolved",
+          diagnostics: [{ code: "state_evidence_conflict" }]
+        }
+      ]
+    });
   });
 });
 

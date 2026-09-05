@@ -44,6 +44,12 @@ test("mobile reader traverses World, Canon and Event at one served Revision", as
   await page.locator('a[href*="/subjects/"]').click();
   await expect(page.getByText("DERIVED SUBJECT · REVISION 2")).toBeVisible();
   await expect(page.getByText("stable handle anchor")).toBeVisible();
+  await expect(page.getByText("DERIVED STATE")).toBeVisible();
+  await expect(
+    page.getByRole("link", {
+      name: new RegExp(SYNTHETIC_FIXTURE.stateEventTitle)
+    })
+  ).toContainText("archive keeper · 1 bell");
   await page
     .getByRole("link", { name: new RegExp(SYNTHETIC_FIXTURE.canonTitle) })
     .click();

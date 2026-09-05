@@ -26,12 +26,16 @@ export const SYNTHETIC_FIXTURE = Object.freeze({
   secondContainmentId: "01995c2a-7b00-7000-8000-000000000015",
   thirdContainmentId: "01995c2a-7b00-7000-8000-000000000016",
   processNarrativeId: "01995c2a-7b00-7000-8000-000000000017",
+  stateEventId: "01995c2a-7b00-7000-8000-000000000018",
+  stateStartRelationId: "01995c2a-7b00-7000-8000-000000000019",
+  stateEndRelationId: "01995c2a-7b00-7000-8000-00000000001a",
   worldTitle: "The Lantern Archive",
   canonTitle: "Ember Canon",
   eventTitle: "The first lantern is lit",
   secondEventTitle: "The eastern lantern answers",
   thirdEventTitle: "The archive opens its doors",
-  processEventTitle: "The archive opening"
+  processEventTitle: "The archive opening",
+  stateEventTitle: "Archive keeper membership"
 });
 
 export type EntityType =
@@ -439,6 +443,67 @@ export interface PublicProcessArtifactReference {
   readonly completeness: ProjectionCompleteness;
 }
 
+export interface PublicStateRuleDefinition {
+  readonly state_type: "membership";
+  readonly event_role: "state:membership";
+  readonly start_patterns: readonly ["starts"];
+  readonly end_patterns: readonly ["ends"];
+  readonly subject_resolver: "boundary_subject";
+  readonly overlap_policy: "allow";
+  readonly algorithm_version: string;
+}
+
+export interface PublicStateDuration {
+  readonly minimum: number;
+  readonly maximum: number;
+  readonly kind: "exact" | "range";
+  readonly precision: string;
+  readonly evidence_ids: readonly string[];
+}
+
+export interface PublicStateItem {
+  readonly state_event_id: string;
+  readonly state_type: "membership";
+  readonly label: string;
+  readonly subject_handle_id: string | null;
+  readonly value: string | null;
+  readonly time_system_id: string | null;
+  readonly start_event_id: string | null;
+  readonly end_event_id: string | null;
+  readonly start_earliest: number | null;
+  readonly start_latest: number | null;
+  readonly end_earliest: number | null;
+  readonly end_latest: number | null;
+  readonly open_ended: boolean;
+  readonly duration: PublicStateDuration | null;
+  readonly certainty: "exact" | "range" | "unresolved";
+  readonly evidence_ids: readonly string[];
+  readonly diagnostics: readonly PublicProjectionDiagnostic[];
+  readonly completeness: ProjectionCompleteness;
+}
+
+export interface PublicStateProjection {
+  readonly world_id: string;
+  readonly source_revision: number;
+  readonly projection_type: "state";
+  readonly algorithm_version: string;
+  readonly parameters_digest: string;
+  readonly semantic_digest: string;
+  readonly canon_id: string;
+  readonly rules: readonly PublicStateRuleDefinition[];
+  readonly items: readonly PublicStateItem[];
+  readonly evidence: readonly string[];
+  readonly diagnostics: readonly PublicProjectionDiagnostic[];
+  readonly completeness: ProjectionCompleteness;
+}
+
+export interface PublicStateArtifactReference {
+  readonly key: string;
+  readonly item_count: number;
+  readonly algorithm_version: string;
+  readonly completeness: ProjectionCompleteness;
+}
+
 export interface PublicProjectionDiagnostic {
   readonly code:
     | "timeline_cycle"
@@ -447,7 +512,11 @@ export interface PublicProjectionDiagnostic {
     | "subject_anchor_unresolved"
     | "empty_process"
     | "process_containment_cycle"
-    | "process_duration_unresolved";
+    | "process_duration_unresolved"
+    | "state_boundary_missing"
+    | "state_evidence_conflict"
+    | "state_subject_unresolved"
+    | "state_time_unresolved";
   readonly affected_ids: readonly string[];
 }
 
@@ -507,6 +576,7 @@ export interface PublicationManifest {
     readonly timeline?: string;
     readonly subject?: string;
     readonly process?: string;
+    readonly state?: string;
   };
   readonly locales: readonly string[];
   readonly documents: readonly {

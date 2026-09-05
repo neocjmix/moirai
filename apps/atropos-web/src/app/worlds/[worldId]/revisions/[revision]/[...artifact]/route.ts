@@ -8,6 +8,15 @@ export const dynamic = "force-dynamic";
 
 export function artifactPath(parts: readonly string[]): string {
   if (
+    parts.length === 4 &&
+    parts[0] === "graph" &&
+    parts[1] === "canons" &&
+    parts[3] === "states.json"
+  ) {
+    assertPublicId(parts[2]!);
+    return parts.join("/");
+  }
+  if (
     parts.length === 1 &&
     (parts[0] === "manifest.json" || parts[0] === "world.json")
   ) {

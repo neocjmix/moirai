@@ -23,6 +23,7 @@
 | TS-007 | [반출·복구와 스키마 진화](TS-007-portability.md) | package, import, migration, 의미 보존 | accepted |
 | TS-008 | [보안·운영·성능과 배포 품질](TS-008-operations-quality.md) | 인증, backup, SLO, 관측성, 배포 | accepted |
 | TS-009 | [잠재 3D 그래프 레이아웃과 2D 투영](TS-009-latent-3d-graph-layout.md) | Y-constrained XZ-free layout, yaw projection, 기존 2D region·routing 재사용 | draft |
+| TS-010 | [Event 관계 기반 시간 모델](TS-010-event-relational-time.md) | virtual Time Event, 관계 기반 시간 제약, Placement 호환 전환 | draft |
 
 ## 1차 기술 기준선
 
@@ -43,6 +44,8 @@
 - 운영 장애와 공개 전파 지연은 콘텐츠의 draft·승인 상태로 표현하지 않는다.
 
 TS-009의 잠재 3D 레이아웃은 현재 `draft`이며 위 기준선의 필수 요소가 아니다. 검증·승인되기 전까지 TS-006의 2D constrained layout이 accepted 기준선이다.
+
+TS-010의 Event 관계 기반 시간 모델도 현재 `draft`다. 승인되기 전까지 TS-002의 TemporalPlacement 정본 계약을 대체하지 않으며 runtime 의미 변경을 지시하지 않는다.
 
 ## 일괄 검토 초점
 
@@ -72,3 +75,4 @@ TS-009의 잠재 3D 레이아웃은 현재 `draft`이며 위 기준선의 필수
 | TS-007 | CON-007, BR-002, BR-006, JRN-006 |
 | TS-008 | CON-002, CON-004, CON-005, CON-007, BR-002, BR-003, BR-005, BR-006, BR-007 |
 | TS-009 | CON-003, BR-003, BR-004, JRN-003, JRN-005 |
+| TS-010 | CON-003, CON-006, BR-002, BR-004 |

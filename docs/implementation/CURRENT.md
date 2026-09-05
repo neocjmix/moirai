@@ -5,11 +5,11 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `ready` — M4-D 완료; 시간 모델 재정렬은 문서 검토 대기, runtime 미착수                                                        |
-| 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                   |
-| 현재 slice                 | 없음 — TS-010·IP-002 방향 결정 전 JointJS graph 기본 탐색을 활성화하지 않음                                                  |
+| 실행 상태                  | `ready` — M4-D 완료; 시간 모델 Slice 0 문서·fixture 완료, Slice 1 승인 대기, runtime 미착수                                   |
+| 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                    |
+| 현재 slice                 | 없음 — IP-002 Slice 1 기존 동작 특성화 승인 대기; JointJS 비활성                                                              |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
-| 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결       |
+| 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
 | Clotho synthetic World     | <https://moirai-production-8ed1.up.railway.app/worlds/01995c2a-7b00-7000-8000-000000000101>                                   |
@@ -27,14 +27,14 @@
 | M4-D 배포 smoke            | [33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968) `success`; Clotho synthetic revision 28            |
 | 최근 bearer smoke          | [33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972) `success`; 실제 OAuth 검증과 별도 근거             |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 현재 배포 SHA·마지막 smoke | `350920bbdb3928f34e406940b9d9f0d95f7e8c65`; [33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968)       |
-| 문서 기준선                | `52dc241aeb7d48d658c4fbb7465c8a1fd448928a`; branch `baseline/m4d-2026-09-05`                                                |
+| 현재 배포 SHA·마지막 smoke | `350920bbdb3928f34e406940b9d9f0d95f7e8c65`; [33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968)        |
+| 문서 기준선                | `52dc241aeb7d48d658c4fbb7465c8a1fd448928a`; branch `baseline/m4d-2026-09-05`                                                  |
 
-## 시간 모델 재정렬 검토 대기
+## 시간 모델 재정렬 Slice 0
 
-[드리프트 분석](TEMPORAL-MODEL-DRIFT.md), draft [TS-010](../technical-specifications/TS-010-event-relational-time.md), [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md), draft [IP-002](IP-002-temporal-model-realignment.md)를 다음 세션의 판단 자료로 추가했다. 이는 계획 상태만 기록하며 milestone 또는 구현을 활성화하지 않는다.
+[드리프트 분석](TEMPORAL-MODEL-DRIFT.md)을 바탕으로 2026-09-05 사용자가 [TS-010](../technical-specifications/TS-010-event-relational-time.md)의 strictness, virtual Time Event reference와 Time System 계약을 승인했다. [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)과 [IP-002](IP-002-temporal-model-realignment.md)를 accepted 방향으로 정렬하고 [machine-readable fixture](fixtures/temporal-expressiveness/)를 고정했다.
 
-다음 세션은 TS-010의 미결정 사항과 accepted 문서 개정 여부부터 결정한다. 그 전에는 JointJS, schema migration, canonical write와 production 의미를 바꾸지 않는다.
+Slice 0 완료 뒤 다음 checkpoint는 Slice 1 기존 동작 특성화다. runtime, schema migration, canonical write, 배포와 시험 World write는 별도 승인 전 수행하지 않는다. JointJS 다음 단계도 계속 비활성이다.
 
 ## M3-C 검증 상태
 

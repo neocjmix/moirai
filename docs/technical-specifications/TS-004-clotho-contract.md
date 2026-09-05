@@ -61,37 +61,38 @@ Clotho는 첫 쓰기 전에 다음 사실을 사용자가 알 수 있게 해야 
 
 ### World와 Canon 탐색
 
-| 기능 | 목적 | 주요 입력 |
-|---|---|---|
-| `world.list` | 접근 가능한 World의 간략한 목록 | cursor, limit, text filter |
-| `world.get` | World의 Canon·Time System·Revision 개요 | world ID, at_revision |
-| `canon.list` | World 안의 Canon을 동등하게 나열 | world ID, cursor, limit |
-| `canon.get` | Canon의 범위, Narrative와 구조 요약 | canon ID, at_revision |
-| `time-system.list` | World 또는 Canon이 사용하는 시간 체계 확인 | world ID, optional canon ID |
-| `time-system.get` | 좌표 schema와 표시·비교 규칙 확인 | time system ID |
+| 기능                 | 목적                                                       | 주요 입력                                      |
+| -------------------- | ---------------------------------------------------------- | ---------------------------------------------- |
+| `world.list`         | 접근 가능한 World의 간략한 목록                            | cursor, limit, text filter                     |
+| `world.get`          | World의 Canon·Time System·Revision 개요                    | world ID, at_revision                          |
+| `canon.list`         | World 안의 Canon을 동등하게 나열                           | world ID, cursor, limit                        |
+| `canon.get`          | Canon의 범위, Narrative와 구조 요약                        | canon ID, at_revision                          |
+| `time-system.list`   | World 또는 Canon이 사용하는 시간 체계 확인                 | world ID, optional canon ID                    |
+| `time-system.get`    | 좌표 schema와 표시·비교 규칙 확인                          | time system ID                                 |
+| `time-event.resolve` | canonical coordinate를 결정적 virtual Time Event로 resolve | Time System ID, definition version, coordinate |
 
 `world.list`와 `canon.list`는 `default`, `official`, `recommended` Canon을 반환하지 않는다. 검색 relevance는 탐색 편의를 위한 정렬이지 Canon의 우열이 아니다.
 
 ### Event와 관계 탐색
 
-| 기능 | 목적 | 주요 입력 |
-|---|---|---|
-| `event.search` | 제목, Narrative, 공개·비공개 운영 색인에서 후보 검색 | canon ID, query, filters, cursor, limit |
-| `event.get` | Event의 전체 작성 맥락 확인 | event ID, at_revision, include flags |
-| `event.neighbors` | 주변 Relation과 인접 Event 탐색 | event ID, relation types, direction, depth, budget |
-| `event.ancestors` | Composite Event 포함 경로 확인 | event ID, max depth |
-| `event.descendants` | Composite Event 내부 범위 확인 | event ID, max depth, budget |
-| `narrative.get` | Canon 또는 Event 범위의 Narrative 확인 | scope, locale, kind |
-| `correspondence.get` | Canon 간 대응과 각 member 맥락 확인 | correspondence ID |
-| `subject.get` | 파생 Subject와 근거 Event·Relation 확인 | subject handle ID, at_revision |
+| 기능                 | 목적                                                 | 주요 입력                                          |
+| -------------------- | ---------------------------------------------------- | -------------------------------------------------- |
+| `event.search`       | 제목, Narrative, 공개·비공개 운영 색인에서 후보 검색 | canon ID, query, filters, cursor, limit            |
+| `event.get`          | Event의 전체 작성 맥락 확인                          | event ID, at_revision, include flags               |
+| `event.neighbors`    | 주변 Relation과 인접 Event 탐색                      | event ID, relation types, direction, depth, budget |
+| `event.ancestors`    | Composite Event 포함 경로 확인                       | event ID, max depth                                |
+| `event.descendants`  | Composite Event 내부 범위 확인                       | event ID, max depth, budget                        |
+| `narrative.get`      | Canon 또는 Event 범위의 Narrative 확인               | scope, locale, kind                                |
+| `correspondence.get` | Canon 간 대응과 각 member 맥락 확인                  | correspondence ID                                  |
+| `subject.get`        | 파생 Subject와 근거 Event·Relation 확인              | subject handle ID, at_revision                     |
 
 ### 변경과 진단 읽기
 
-| 기능 | 목적 |
-|---|---|
-| `change.get` | Change Set의 의도, Operation, warning과 결과 확인 |
-| `revision.diff` | 두 World Revision 사이의 의미 있는 차이 확인 |
-| `validation.list` | 현재 구조적 오류와 warning 탐색 |
+| 기능                 | 목적                                              |
+| -------------------- | ------------------------------------------------- |
+| `change.get`         | Change Set의 의도, Operation, warning과 결과 확인 |
+| `revision.diff`      | 두 World Revision 사이의 의미 있는 차이 확인      |
+| `validation.list`    | 현재 구조적 오류와 warning 탐색                   |
 | `publication.status` | current, target, served Revision과 전파 상태 확인 |
 
 비공개 작성 유래와 원자료는 운영 권한을 가진 호출에만 포함한다. public reference와 private origin을 같은 응답 필드에 섞지 않는다.
@@ -138,11 +139,11 @@ LLM은 고정된 전체 호출 순서를 의무적으로 실행하지 않는다.
 
 ## TS-004.8 Change Plan
 
-Clotho의 쓰기 입력은 [TS-003](TS-003-change-revision-publication.md)의 Change Set과 동일한 versioned `ChangePlan`이다.
+Clotho의 쓰기 입력은 [TS-003](TS-003-change-revision-publication.md)의 Change Set과 동일한 versioned `ChangePlan`이다. Event endpoint는 persisted Event, 같은 plan의 client Event 또는 virtual Time Event를 구분하는 tagged reference다.
 
 ```json
 {
-  "contract_version": 1,
+  "contract_version": 2,
   "change_set_id": "019...",
   "world_id": "019...",
   "expected_revision": 12,
@@ -151,6 +152,8 @@ Clotho의 쓰기 입력은 [TS-003](TS-003-change-revision-publication.md)의 Ch
   "origins": []
 }
 ```
+
+virtual Time Event reference는 `kind: time_event`, `time_system_ref`, `definition_version`, canonical string `coordinate`를 가진다. caller가 결정적 ID 문자열을 직접 조립해 입력하지 않는다. validate preview와 read API는 정규화된 reference, 결정적 ID와 `persisted: false`를 반환한다. virtual Time Event를 만드는 Operation은 허용하지 않는다.
 
 ### 임시 참조
 
@@ -184,11 +187,11 @@ LLM이 위험하거나 큰 작업에서 `change.validate`를 먼저 사용하는
 
 각 create·update Operation은 변경된 사실의 유래를 구분할 수 있어야 한다.
 
-| origin kind | 사용 조건 |
-|---|---|
-| `source_explicit` | 원자료가 직접 지지하는 내용 |
-| `human_instruction` | 사용자의 창작 의도나 직접 지시 |
-| `llm_inference` | 자료와 기존 맥락에서 LLM이 추론한 연결·서술 |
+| origin kind         | 사용 조건                                   |
+| ------------------- | ------------------------------------------- |
+| `source_explicit`   | 원자료가 직접 지지하는 내용                 |
+| `human_instruction` | 사용자의 창작 의도나 직접 지시              |
+| `llm_inference`     | 자료와 기존 맥락에서 LLM이 추론한 연결·서술 |
 
 - 하나의 Operation 안에서도 field별 origin을 다르게 연결할 수 있다.
 - 원자료가 연도까지만 제공하면 정확한 날짜를 추론해 저장하지 않는다.
@@ -216,14 +219,16 @@ LLM이 위험하거나 큰 작업에서 `change.validate`를 먼저 사용하는
 
 ### 대표 회복 동작
 
-| 오류 | 회복 |
-|---|---|
-| `revision_conflict` | 최신 관련 Context Slice를 읽고 의도를 재평가한다. |
-| `duplicate_candidate` | 후보 Event를 읽고 create 대신 update 또는 Relation 추가를 검토한다. |
-| `cross_canon_relation` | 올바른 Canon을 다시 선택하거나 Canon 간 대응을 사용한다. |
-| `dependent_content_active` | 영향 목록을 읽고 함께 수정·철회할 Operation을 계획한다. |
-| `invalid_time_coordinate` | Time System 정의와 원자료 정밀도를 다시 확인한다. |
-| `projection_warning` | 정본 사실은 유지하되 파생·표시 가능성과 근거를 점검한다. |
+| 오류                             | 회복                                                                                      |
+| -------------------------------- | ----------------------------------------------------------------------------------------- |
+| `revision_conflict`              | 최신 관련 Context Slice를 읽고 의도를 재평가한다.                                         |
+| `duplicate_candidate`            | 후보 Event를 읽고 create 대신 update 또는 Relation 추가를 검토한다.                       |
+| `cross_canon_relation`           | 올바른 Canon을 다시 선택하거나 Canon 간 대응을 사용한다.                                  |
+| `dependent_content_active`       | 영향 목록을 읽고 함께 수정·철회할 Operation을 계획한다.                                   |
+| `invalid_time_coordinate`        | Time System 정의와 원자료 정밀도를 다시 확인한다.                                         |
+| `temporal_constraint_conflict`   | affected Relation과 Event reference의 최소 충돌 경로를 읽고 사실을 다시 판단한다.         |
+| `time_system_capability_missing` | 요청한 compare·boundary·difference·conversion이 정의됐는지 확인하고 계산 주장을 제거한다. |
+| `projection_warning`             | 정본 사실은 유지하되 파생·표시 가능성과 근거를 점검한다.                                  |
 
 LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오류도 맥락 또는 plan을 변경한 뒤 재시도한다.
 
@@ -257,3 +262,4 @@ LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오�
 9. 성공 응답에서 target과 served Revision의 차이를 확인할 수 있다.
 10. LLM이나 skill 없이도 Clotho CLI에서 동일한 JSON 계약을 실행하고 검증할 수 있다.
 11. CLI와 MCP는 같은 Clotho application을 호출하며 Lachesis가 외부 adapter 없이도 최종 인가와 정본 규칙을 보장한다.
+12. CLI와 MCP가 같은 virtual Time Event reference를 validate·resolve하며 같은 결정적 ID와 lossless coordinate를 반환한다.

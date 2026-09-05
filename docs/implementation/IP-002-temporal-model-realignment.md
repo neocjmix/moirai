@@ -1,14 +1,14 @@
 ---
 id: IP-002
 title: 시간 모델 재정렬 구현 계획
-status: draft
+status: accepted
 depends_on:
   - TS-010
 ---
 
 # IP-002 — 시간 모델 재정렬 구현 계획
 
-이 계획은 다음 milestone을 **활성화하지 않는다**. [TS-010](../technical-specifications/TS-010-event-relational-time.md)이 draft인 동안 runtime 의미, Canon schema와 production data를 바꾸지 않는다. 먼저 [드리프트 분석](TEMPORAL-MODEL-DRIFT.md)의 판단과 [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)을 검토한다.
+이 계획은 2026-09-05 의미 결정과 함께 accepted됐다. 이는 runtime·schema migration·배포·시험 World 쓰기를 한꺼번에 승인하지 않는다. 각 slice의 변경과 외부 write는 아래 checkpoint를 지킨다.
 
 ## 목표와 금지선
 
@@ -40,29 +40,37 @@ flowchart TD
 
 산출물:
 
-- TS-010 미결정 7개에 대한 결정 기록
-- TS-002/003/004/005/007 영향 diff
+- TS-010 blocking 계약의 결정과 나머지 항목의 명시적 연기 기록
+- TS-002/003/004/005/006/007 영향 diff
 - Relation vocabulary와 strictness 결정
 - Time System·calendar adapter·고정밀 좌표 계약
 - migration 성공·중단 기준
 
-종료 조건: TS-010과 영향받는 상위 문서가 일관된 상태로 승인되거나, 제안이 기각되어 현재 모델 유지가 명시된다.
+종료 조건: TS-010과 영향받는 상위 문서가 일관된 accepted 상태이고, machine-readable 성공·거절 corpus와 expected Canon·projection·Atropos·round-trip 판정 파일이 존재한다.
+
+2026-09-05 완료 결정:
+
+- `precedes` strict, `not_after` non-strict, `coincides` equality
+- `[start, nextBoundary)` 범위
+- tagged virtual Time Event reference와 비영속성
+- Time System별 lossless canonical string과 capability 기반 adapter
+- 수용시험용 `proleptic-gregorian-utc@1`
 
 ## Slice 1 — 기존 동작 특성화
 
 코드 의미를 바꾸지 않고 현재 Placement, Timeline, Process Duration, membership State의 동작을 golden test로 고정한다.
 
-| ID | 사례 | 반드시 보존할 관찰값 |
-|---|---|---|
-| Y | 연도만 알려짐 | 연 경계와 화면 범위 |
-| M | 월만 알려짐 | 월 경계와 정렬 |
-| D | 날짜만 알려짐 | 날짜 경계와 timezone 정책 |
-| MS | 밀리초 | lossless API 왕복 |
-| PS | 피코초 | 새 구현에서 number coercion 없음 |
-| DUR | 지속 Composite | 명시적 start/end와 Duration |
-| IN | 다른 Event 도중 | 비-membership 시간 제약 |
-| REL | 상대 선후만 존재 | timestamp 없이 정렬·설명 |
-| BAD | 모순 cycle | commit 전 진단 |
+| ID  | 사례             | 반드시 보존할 관찰값             |
+| --- | ---------------- | -------------------------------- |
+| Y   | 연도만 알려짐    | 연 경계와 화면 범위              |
+| M   | 월만 알려짐      | 월 경계와 정렬                   |
+| D   | 날짜만 알려짐    | 날짜 경계와 timezone 정책        |
+| MS  | 밀리초           | lossless API 왕복                |
+| PS  | 피코초           | 새 구현에서 number coercion 없음 |
+| DUR | 지속 Composite   | 명시적 start/end와 Duration      |
+| IN  | 다른 Event 도중  | 비-membership 시간 제약          |
+| REL | 상대 선후만 존재 | timestamp 없이 정렬·설명         |
+| BAD | 모순 cycle       | commit 전 진단                   |
 
 현재 synthetic World revision과 artifact digest는 비교 근거로 캡처하되 secret이나 bearer token은 저장하지 않는다.
 
@@ -78,8 +86,11 @@ flowchart TD
 - Event/Relation 제약 graph normalizer
 - cycle·경계·cross-system validator
 - 근거 경로와 모순 설명
+- Gregorian과 무관한 custom·continuous scalar adapter conformance harness
 
 이 단계는 DB write를 하지 않는다. property test로 좌표 정규화의 멱등성, 순서 보존, serialize/deserialize 왕복을 검증한다.
+
+adapter conformance는 최소한 허구 세계 custom coordinate, 빅뱅 이후 임의정밀도 경과량, 지질 연대의 불확실 범위를 다룬다. 이 사례는 Gregorian 변환 성공을 요구하지 않는다. 대신 원문 좌표 보존, adapter 내부 비교, 지원하지 않는 conversion·difference의 설명 가능한 `unresolved`, authored cross-system 관계의 독립 보존을 판정한다.
 
 ## Slice 3 — 호환 adapter와 shadow 비교
 
@@ -94,17 +105,17 @@ legacy Placement를 새 제약 graph로 읽는 일방향 adapter를 추가한다
 
 종료 조건: 기준 fixture 전체와 실제 synthetic World에서 차이 목록이 설명되고, 예상하지 못한 차이가 0이다.
 
-## Slice 4 — 추가형 canonical write와 migration
+## Slice 4 — 추가형 canonical write
 
 TS-010 승인 후에만 수행한다.
 
 1. 기존 schema를 보존한 채 필요한 Relation/assertion reference를 추가한다.
 2. 동일 Change Set·revision·audit·outbox 트랜잭션 경계를 유지한다.
 3. Clotho validate가 virtual reference와 시간 모순을 commit 전에 보여준다.
-4. 기존 데이터는 별도 dry-run report를 만든 뒤 deterministic migration한다.
-5. migration 결과에 source row, 생성 relation, 손실 분류를 남긴다.
+4. 신규 시험 World에만 명시적으로 새 canonical write를 활성화한다.
+5. 기존 데이터 migration은 별도 dry-run report와 사용자 승인 전에는 실행하지 않는다.
 
-한 요청이 Placement와 Relation 양쪽을 독립 정본으로 쓰게 하지 않는다. 구형 client 입력은 adapter가 새 canonical write 한 경로로만 번역한다.
+한 요청이 Placement와 Relation 양쪽을 독립 정본으로 쓰게 하지 않는다. 구형 client 입력은 adapter가 새 canonical write 한 경로로만 번역한다. 기존 M4-D World와 production data migration은 종단간 신규 World 검증의 선행 조건이 아니다.
 
 ## Slice 5 — projector 전환
 
@@ -181,7 +192,7 @@ rollback은 단계별로 가능해야 한다.
 
 1. `docs/implementation/CURRENT.md`와 기준 SHA를 확인한다.
 2. `TEMPORAL-MODEL-DRIFT.md`, TS-010, `TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md`, 이 문서를 순서대로 읽는다.
-3. TS-010 미결정 사항에 대한 사용자 결정을 기록한다.
+3. 승인된 TS-010 결정과 machine-readable fixture가 유지되는지 확인한다.
 4. accepted 문서 변경 범위를 먼저 PR로 제시한다.
 5. 승인 전에는 Slice 1의 characterization test 외 runtime 변경을 하지 않는다.
 6. 원본 M4-D fixture와 deployment를 건드리지 않는다.

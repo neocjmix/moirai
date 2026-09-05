@@ -1,0 +1,111 @@
+{
+  "fixture_version": 1,
+  "required_metadata": [
+    "world_id",
+    "source_revision",
+    "algorithm_version",
+    "time_system_id",
+    "time_system_definition_version",
+    "evidence",
+    "semantic_digest"
+  ],
+  "items": [
+    {
+      "case_id": "te-year-220",
+      "kind": "bounded",
+      "lower": "0220-01-01T00:00:00.000000000000Z",
+      "lower_inclusive": true,
+      "upper": "0221-01-01T00:00:00.000000000000Z",
+      "upper_inclusive": false
+    },
+    {
+      "case_id": "te-month-1969-07",
+      "kind": "bounded",
+      "lower": "1969-07-01T00:00:00.000000000000Z",
+      "lower_inclusive": true,
+      "upper": "1969-08-01T00:00:00.000000000000Z",
+      "upper_inclusive": false
+    },
+    {
+      "case_id": "te-day-1969-07-20",
+      "kind": "bounded",
+      "lower": "1969-07-20T00:00:00.000000000000Z",
+      "lower_inclusive": true,
+      "upper": "1969-07-21T00:00:00.000000000000Z",
+      "upper_inclusive": false
+    },
+    {
+      "case_id": "te-ms-123",
+      "kind": "bounded",
+      "lower": "2026-09-05T08:13:21.123000000000Z",
+      "lower_inclusive": true,
+      "upper": "2026-09-05T08:13:21.124000000000Z",
+      "upper_inclusive": false,
+      "span": { "value": "1000000000", "unit": "picosecond" }
+    },
+    {
+      "case_id": "te-ps-012",
+      "kind": "bounded",
+      "lower": "2026-09-05T08:13:21.123456789012Z",
+      "lower_inclusive": true,
+      "upper": "2026-09-05T08:13:21.123456789013Z",
+      "upper_inclusive": false,
+      "span": { "value": "1", "unit": "picosecond" }
+    },
+    {
+      "case_id": "te-exact-time",
+      "kind": "exact_time_event",
+      "coordinate": "2026-09-05T08:13:21.123456789012Z",
+      "persisted": false
+    },
+    {
+      "case_id": "te-exact-observation",
+      "kind": "exact",
+      "coordinate": "2026-09-05T08:13:21.123456789012Z",
+      "evidence_relation_id": "019f3b00-0000-7000-8000-00000000020b"
+    },
+    {
+      "case_id": "te-window",
+      "kind": "explicit_duration",
+      "start": "2026-09-05T08:13:22.000000000000Z",
+      "end": "2026-09-05T08:13:24.000000000000Z",
+      "duration": {
+        "iso": "PT2S",
+        "value": "2000000000000",
+        "unit": "picosecond"
+      },
+      "basis": "explicit_boundaries"
+    },
+    {
+      "case_id": "te-child",
+      "kind": "descendant_span",
+      "parent_case_id": "te-window",
+      "membership": true,
+      "span": { "value": "1000000000", "unit": "picosecond" },
+      "changes_parent_duration": false
+    },
+    {
+      "case_id": "te-during",
+      "kind": "bounded_during",
+      "parent_case_id": "te-window",
+      "membership": false,
+      "lower": "2026-09-05T08:13:22.000000000000Z",
+      "lower_inclusive": true,
+      "upper": "2026-09-05T08:13:24.000000000000Z",
+      "upper_inclusive": false,
+      "exact_coordinate": null
+    },
+    {
+      "case_id": "te-relative-a",
+      "kind": "relative_only",
+      "before": ["te-relative-b"],
+      "absolute_coordinate": null
+    },
+    {
+      "case_id": "te-relative-b",
+      "kind": "relative_only",
+      "after": ["te-relative-a"],
+      "absolute_coordinate": null
+    }
+  ]
+}

@@ -1,0 +1,75 @@
+{
+  "contract_version": 2,
+  "change_set_id": "019f3b00-0000-7000-8000-000000000301",
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_revision": 2,
+  "intent": "Reject a strict precedence cycle.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "Negative TS-010 acceptance fixture te-bad-cycle."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000311",
+      "client_ref": "bad-cycle-a",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "bad-cycle-a",
+        "kind": "atomic",
+        "title": "Cycle A",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000312",
+      "client_ref": "bad-cycle-b",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "bad-cycle-b",
+        "kind": "atomic",
+        "title": "Cycle B",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000313",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "bad-cycle-a" },
+        "target_ref": { "kind": "event", "client_ref": "bad-cycle-b" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000314",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "bad-cycle-b" },
+        "target_ref": { "kind": "event", "client_ref": "bad-cycle-a" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    }
+  ]
+}

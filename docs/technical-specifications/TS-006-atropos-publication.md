@@ -87,13 +87,13 @@ Atropos server component와 client component가 각각 `current.json`을 읽어 
 
 ### 정본 대상 URL
 
-| 대상 | canonical route |
-|---|---|
-| World | `/worlds/{worldId}` |
-| Canon | `/worlds/{worldId}/canons/{canonId}` |
-| Event | `/worlds/{worldId}/canons/{canonId}/events/{eventId}` |
-| Subject | `/worlds/{worldId}/canons/{canonId}/subjects/{subjectHandleId}` |
-| Correspondence 비교 | `/worlds/{worldId}/compare/{correspondenceId}` |
+| 대상                | canonical route                                                 |
+| ------------------- | --------------------------------------------------------------- |
+| World               | `/worlds/{worldId}`                                             |
+| Canon               | `/worlds/{worldId}/canons/{canonId}`                            |
+| Event               | `/worlds/{worldId}/canons/{canonId}/events/{eventId}`           |
+| Subject             | `/worlds/{worldId}/canons/{canonId}/subjects/{subjectHandleId}` |
+| Correspondence 비교 | `/worlds/{worldId}/compare/{correspondenceId}`                  |
 
 - immutable ID가 URL 정체성을 결정한다.
 - slug는 ID 뒤에 사람이 읽는 optional segment 또는 별칭 route로 제공할 수 있다.
@@ -159,7 +159,7 @@ Event page는 다음 정보를 구분해 보여준다.
 - Event 범위 Narrative
 - 포함 parent와 child Event
 - Canon 내부 Relation
-- 시간 배치와 실제 precision·uncertainty
+- Event/Relation 기반 시간 projection, virtual Time Event의 lossless coordinate와 legacy 시간 배치
 - 공개 인용·출처 설명
 - 파생 Subject, State, Duration과 Timeline 위치
 - 다른 Canon의 명시적 대응
@@ -207,13 +207,13 @@ relevance는 텍스트 검색 결과의 순위일 뿐 Canon의 진실성이나 �
 
 JointJS cell은 Publication projection을 그리는 표현 객체이며 정본 데이터가 아니다.
 
-| 표현 | 의미 |
-|---|---|
-| point node | atomic Event 또는 현재 LOD의 대표 Event |
-| composite region | Composite Event와 포함 범위 |
-| process region | `process` 역할의 Composite Event |
-| relation link | Canon 내부 Relation |
-| subject lane | 파생 Subject의 Event lineage를 읽는 관점 |
+| 표현              | 의미                                              |
+| ----------------- | ------------------------------------------------- |
+| point node        | atomic Event 또는 현재 LOD의 대표 Event           |
+| composite region  | Composite Event와 포함 범위                       |
+| process region    | `process` 역할의 Composite Event                  |
+| relation link     | Canon 내부 Relation                               |
+| subject lane      | 파생 Subject의 Event lineage를 읽는 관점          |
 | comparison bridge | Canon 간 correspondence를 나타내는 별도 시각 표면 |
 
 comparison bridge를 Canon 내부 Relation과 같은 선 모양·색·layer로 렌더링하지 않는다.
@@ -226,12 +226,12 @@ comparison bridge를 Canon 내부 Relation과 같은 선 모양·색·layer로 �
 - 가로축: Subject lane과 충돌 회피를 위한 파생 배치
 - 정확한 authored coordinate가 없는 Event: structural constraint 안의 inferred layout
 
-inferred layout 좌표는 Event의 시간 사실로 표시하거나 export하지 않는다. Event detail은 실제 temporal placement와 layout inference를 구분한다.
+inferred layout 좌표는 Event의 시간 사실로 표시하거나 export하지 않는다. Event detail은 authored 시간 Relation, virtual Time Event, legacy placement와 layout inference를 구분한다. exact, bounded, relative-only, unresolved, Event Duration과 knowledge range를 서로 다른 의미로 제공한다.
 
 ### layout pipeline
 
 1. Publication projection이 Event, Relation, 포함 구조와 시간 제약을 준비한다.
-2. 시간 배치와 structural order로 가능한 세로 범위를 계산한다.
+2. strict·non-strict·equality 시간 Relation, virtual Time Event와 structural order로 가능한 세로 범위를 계산한다. legacy placement는 호환 adapter로 읽는다.
 3. 근거가 부족한 Event를 `unplaced` 또는 제약 범위 안의 inferred position으로 분류한다.
 4. Subject·관계 밀도를 고려해 가로 lane을 계산한다.
 5. atomic Event를 배치한다.
@@ -286,12 +286,12 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 
 ### LOD 원칙
 
-| 수준 | 표현 |
-|---|---|
-| overview | Canon Narrative, 주요 Process와 대표 Event |
-| process | 선택 Process, 직접 child와 주요 Relation |
-| neighborhood | focus Event 주변의 제한된 depth |
-| detail | 개별 Event, 정확한 Relation과 label |
+| 수준         | 표현                                       |
+| ------------ | ------------------------------------------ |
+| overview     | Canon Narrative, 주요 Process와 대표 Event |
+| process      | 선택 Process, 직접 child와 주요 Relation   |
+| neighborhood | focus Event 주변의 제한된 depth            |
+| detail       | 개별 Event, 정확한 Relation과 label        |
 
 - zoom in은 집계 표현을 더 구체적인 실제 Event로 교체한다.
 - 화면에 없는 label과 link는 생성하지 않는다.
@@ -333,6 +333,7 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 - 색만으로 Canon, Relation type, warning을 구분하지 않는다.
 - locale fallback은 요청 locale → World 기본 작성 locale → 사용 가능한 첫 locale 순으로 하되 Canon 우열과 무관하다.
 - 날짜 표시는 Time System과 원본 precision을 보존한다.
+- Gregorian과 호환되지 않는 Time System을 임의의 Gregorian 날짜로 표시하지 않는다. 지원하지 않는 계산은 접근 가능한 텍스트와 공개 JSON에서 unresolved 이유를 제공한다.
 - 모바일 viewport, reduced motion, 고대비와 200% text zoom을 지원한다.
 
 ## TS-006.20 수용 기준
@@ -347,3 +348,5 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 8. low zoom에서 label collision 결과가 render 순서에 따라 달라지지 않는다.
 9. graph를 사용할 수 없는 독자도 Narrative와 관계 목록으로 같은 핵심 내용을 탐색한다.
 10. Canon 비교 화면이 구조적 Relation과 correspondence를 시각적으로 혼동시키지 않는다.
+11. bounded 연·월·일은 아는 범위까지만 표시하고 ms·ps canonical coordinate는 공개 JSON과 상세 텍스트에서 손실 없이 읽힌다.
+12. child membership과 during-only 제약을 구분하고 relative-only Event에 날짜를 발명하지 않는다.

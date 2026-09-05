@@ -1,0 +1,69 @@
+{
+  "contract_version": 2,
+  "change_set_id": "019f3b00-0000-7000-8000-000000000303",
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_revision": 2,
+  "intent": "Reject a claimed coordinate-derived comparison across Time Systems without conversion capability.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "Negative TS-010 acceptance fixture te-bad-system."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "time_system",
+      "entity_id": "019f3b00-0000-7000-8000-000000000331",
+      "client_ref": "unconvertible-clock",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "world_id": "019f3b00-0000-7000-8000-000000000001",
+        "slug": "unconvertible-clock",
+        "title": "Unconvertible Clock",
+        "kind": "custom",
+        "definition_version": "1",
+        "definition": {
+          "coordinate_codec": "opaque-cycle-v1",
+          "capabilities": ["canonicalize", "equality", "compare"]
+        }
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "canon_time_system",
+      "entity_id": "019f3b00-0000-7000-8000-000000000332",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "time_system_id": { "client_ref": "unconvertible-clock" }
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000333",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.123456789012Z"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": { "client_ref": "unconvertible-clock" },
+          "definition_version": "1",
+          "coordinate": "cycle:000001"
+        },
+        "direction": "directed",
+        "attributes": { "basis": "coordinate_conversion" }
+      }
+    }
+  ]
+}

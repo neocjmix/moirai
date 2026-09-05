@@ -1,0 +1,73 @@
+{
+  "contract_version": 2,
+  "change_set_id": "019f3b00-0000-7000-8000-000000000305",
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_revision": 2,
+  "intent": "Reject two distinct starts for one Composite Event.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "Negative TS-010 acceptance fixture te-bad-duplicate-start."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000351",
+      "client_ref": "bad-duplicate-start",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "bad-duplicate-start",
+        "kind": "composite",
+        "title": "Duplicate starts",
+        "summary": null,
+        "roles": ["process"],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000352",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "starts",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "bad-duplicate-start" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000353",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "starts",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.500000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "bad-duplicate-start" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    }
+  ]
+}

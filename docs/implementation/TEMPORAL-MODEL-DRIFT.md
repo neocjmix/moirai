@@ -1,17 +1,17 @@
 # 시간 모델 드리프트 분석과 세션 인계
 
-이 문서는 **비규범 분석 기록**이다. 현재 accepted 명세나 실행 코드를 바꾸지 않는다. 제안 모델은 [TS-010](../technical-specifications/TS-010-event-relational-time.md), 이행 순서는 [IP-002](IP-002-temporal-model-realignment.md)에서 검토한다.
+이 문서는 **비규범 분석 기록**이다. 분석 뒤 제안 모델 [TS-010](../technical-specifications/TS-010-event-relational-time.md)과 이행 계획 [IP-002](IP-002-temporal-model-realignment.md)은 2026-09-05 accepted됐다. 이 기록 자체는 실행 코드나 schema를 바꾸지 않는다.
 
 ## 고정한 기준선
 
-| 항목 | 값 |
-|---|---|
-| 문서 기준 main | `52dc241aeb7d48d658c4fbb7465c8a1fd448928a` |
+| 항목                 | 값                                         |
+| -------------------- | ------------------------------------------ |
+| 문서 기준 main       | `52dc241aeb7d48d658c4fbb7465c8a1fd448928a` |
 | 배포 application SHA | `350920bbdb3928f34e406940b9d9f0d95f7e8c65` |
-| 보호 브랜치 | `baseline/m4d-2026-09-05` |
-| 로컬 annotated tag | `baseline-m4d-2026-09-05` — 원격 push 대기 |
-| main CI | `33950185636` success |
-| post-deploy smoke | `33950258266` success |
+| 보호 브랜치          | `baseline/m4d-2026-09-05`                  |
+| 로컬 annotated tag   | `baseline-m4d-2026-09-05` — 원격 push 대기 |
+| main CI              | `33950185636` success                      |
+| post-deploy smoke    | `33950258266` success                      |
 
 원격 tag가 필요하면 Git 인증이 있는 환경에서 다음 한 줄만 실행한다.
 
@@ -23,14 +23,14 @@ git push origin refs/tags/baseline-m4d-2026-09-05
 
 검토 당시 Urdr head는 `0267c8fd...`였다. 다음 blob을 기준으로 원래 모델의 의도를 복원했다.
 
-| 자료 | blob |
-|---|---|
-| GOAL_INDEX | `76402d...` |
-| URDR_01 | `89a05e...` |
-| URDR_02 | `d8ea873...` |
-| URDR_03 | `613022...` |
-| URDR_07 | `3716f4...` |
-| new-order | `1a46b8...` |
+| 자료       | blob         |
+| ---------- | ------------ |
+| GOAL_INDEX | `76402d...`  |
+| URDR_01    | `89a05e...`  |
+| URDR_02    | `d8ea873...` |
+| URDR_03    | `613022...`  |
+| URDR_07    | `3716f4...`  |
+| new-order  | `1a46b8...`  |
 
 ## 복원된 핵심 원칙
 
@@ -45,13 +45,13 @@ git push origin refs/tags/baseline-m4d-2026-09-05
 
 시간 표현에서 서로 독립적으로 보존해야 하는 축은 다음과 같다.
 
-| 축 | 예 | 관계 모델에서의 위치 |
-|---|---|---|
-| 사건 자체의 지속 | 전투가 사흘간 지속 | Composite Event와 시작·종료 경계 |
-| 알려진 시간 범위 | 220년에 일어남 | 두 virtual Time Event 사이 제약 |
-| 입력 해상도 | 연, 월, ms, ps | 경계 좌표를 해석하는 adapter |
-| 확실성·출처 | 추정, 기록 A | assertion provenance와 confidence |
-| 화면 표현 | 점, 막대, 범위 | 지연 계산되는 projection |
+| 축               | 예                 | 관계 모델에서의 위치              |
+| ---------------- | ------------------ | --------------------------------- |
+| 사건 자체의 지속 | 전투가 사흘간 지속 | Composite Event와 시작·종료 경계  |
+| 알려진 시간 범위 | 220년에 일어남     | 두 virtual Time Event 사이 제약   |
+| 입력 해상도      | 연, 월, ms, ps     | 경계 좌표를 해석하는 adapter      |
+| 확실성·출처      | 추정, 기록 A       | assertion provenance와 confidence |
+| 화면 표현        | 점, 막대, 범위     | 지연 계산되는 projection          |
 
 ## 현재 Moirai와의 드리프트
 
@@ -98,19 +98,19 @@ git push origin refs/tags/baseline-m4d-2026-09-05
 
 ## 위험과 안전장치
 
-| 위험 | 안전장치 |
-|---|---|
-| draft가 accepted 의미를 몰래 대체 | TS-010 승인 전 runtime·schema 변경 금지 |
-| 기존 데이터 의미 손실 | 원본 Placement 보존, adapter와 비교 진단부터 추가 |
-| 두 정본의 장기 공존 | canonical write 전환 시점을 명시하고 silent dual-write 금지 |
-| 고정밀 좌표 손실 | lossless decimal/canonical scalar string 사용 |
-| projection이 새 사실 생성 | 모든 결과에 source relation과 algorithm version 기록 |
-| 범위가 Branch/Run까지 팽창 | IP-002 비목표를 변경 승인 없이 넘지 않음 |
+| 위험                          | 안전장치                                                    |
+| ----------------------------- | ----------------------------------------------------------- |
+| 문서 승인과 runtime 상태 혼동 | IP-002 checkpoint와 별도 승인 전 runtime·schema 변경 금지   |
+| 기존 데이터 의미 손실         | 원본 Placement 보존, adapter와 비교 진단부터 추가           |
+| 두 정본의 장기 공존           | canonical write 전환 시점을 명시하고 silent dual-write 금지 |
+| 고정밀 좌표 손실              | lossless decimal/canonical scalar string 사용               |
+| projection이 새 사실 생성     | 모든 결과에 source relation과 algorithm version 기록        |
+| 범위가 Branch/Run까지 팽창    | IP-002 비목표를 변경 승인 없이 넘지 않음                    |
 
 ## 다음 세션 시작 순서
 
-1. 이 문서와 TS-010의 미결정 사항을 읽는다.
-2. accepted 문서를 실제로 고칠지 결정한다. 승인 전에는 코드에 손대지 않는다.
-3. [IP-002](IP-002-temporal-model-realignment.md)의 Slice 0과 characterization test만 수행한다.
+1. 이 문서와 accepted TS-010의 결정·연기 사항을 읽는다.
+2. machine-readable fixture와 accepted 문서가 일치하는지 확인한다.
+3. [IP-002](IP-002-temporal-model-realignment.md)의 다음 승인된 slice만 수행한다.
 4. 기존 M4-D 기준선과 synthetic World를 보존한다.
 5. JointJS 다음 단계는 시간 모델의 canonical 방향이 결정될 때까지 활성화하지 않는다.

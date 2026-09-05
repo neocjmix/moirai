@@ -1,0 +1,52 @@
+{
+  "contract_version": 2,
+  "change_set_id": "019f3b00-0000-7000-8000-000000000304",
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_revision": 2,
+  "intent": "Reject a non-canonical coordinate without rounding it.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "Negative TS-010 acceptance fixture te-bad-coordinate."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000341",
+      "client_ref": "bad-coordinate",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "bad-coordinate",
+        "kind": "atomic",
+        "title": "Non-canonical coordinate",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000342",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "coincides",
+        "source_ref": { "kind": "event", "client_ref": "bad-coordinate" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.1234567890120Z"
+        },
+        "direction": "undirected",
+        "attributes": {}
+      }
+    }
+  ]
+}

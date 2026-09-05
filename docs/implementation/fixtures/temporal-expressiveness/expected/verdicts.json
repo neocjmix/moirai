@@ -1,0 +1,69 @@
+{
+  "fixture_version": 1,
+  "aggregation": "all_required_assertions_must_pass",
+  "cases": [
+    {
+      "case_id": "te-year-220",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-month-1969-07",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-day-1969-07-20",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-ms-123",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-ps-012",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-exact-time",
+      "layers": ["canon", "resolver", "solver", "roundtrip"]
+    },
+    {
+      "case_id": "te-exact-observation",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-window",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-child",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-during",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-relative-a",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    {
+      "case_id": "te-relative-b",
+      "layers": ["canon", "solver", "atropos", "roundtrip"]
+    },
+    { "case_id": "te-bad-cycle", "layers": ["validate_rejection"] },
+    { "case_id": "te-bad-boundary", "layers": ["validate_rejection"] },
+    { "case_id": "te-bad-system", "layers": ["validate_rejection"] },
+    { "case_id": "te-bad-coordinate", "layers": ["validate_rejection"] },
+    { "case_id": "te-bad-duplicate-start", "layers": ["validate_rejection"] }
+  ],
+  "global_gates": [
+    "application_sha_matches_approved_write_packet",
+    "current_revision_equals_publication_target_revision",
+    "served_revision_equals_committed_revision",
+    "idempotent_replay_creates_no_revision",
+    "virtual_time_event_is_not_persisted",
+    "no_manual_database_mutation",
+    "no_legacy_dual_canonical_write",
+    "export_import_semantic_fingerprint_equal"
+  ]
+}

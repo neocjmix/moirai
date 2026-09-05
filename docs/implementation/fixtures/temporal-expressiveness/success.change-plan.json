@@ -1,0 +1,674 @@
+{
+  "contract_version": 2,
+  "change_set_id": "019f3b00-0000-7000-8000-000000000006",
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_revision": 1,
+  "intent": "Commit the complete TS-010 temporal expressiveness success corpus as one atomic Change Set.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "Exact synthetic coordinates and temporal meanings approved for TS-010 acceptance."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000101",
+      "client_ref": "te-year-220",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-year-220",
+        "kind": "atomic",
+        "title": "220년에 기록된 사건",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000102",
+      "client_ref": "te-month-1969-07",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-month-1969-07",
+        "kind": "atomic",
+        "title": "1969년 7월에 기록된 사건",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000103",
+      "client_ref": "te-day-1969-07-20",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-day-1969-07-20",
+        "kind": "atomic",
+        "title": "1969년 7월 20일에 기록된 사건",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000104",
+      "client_ref": "te-ms-123",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-ms-123",
+        "kind": "atomic",
+        "title": "밀리초 해상도 관측",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000105",
+      "client_ref": "te-ps-012",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-ps-012",
+        "kind": "atomic",
+        "title": "피코초 해상도 관측",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000106",
+      "client_ref": "te-exact-observation",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-exact-observation",
+        "kind": "atomic",
+        "title": "정확한 순간에 기록된 관측",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000107",
+      "client_ref": "te-window",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-window",
+        "kind": "composite",
+        "title": "센서 보정 작업",
+        "summary": null,
+        "roles": ["process"],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000108",
+      "client_ref": "te-child",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-child",
+        "kind": "atomic",
+        "title": "보정 중 측정",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-000000000109",
+      "client_ref": "te-during",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-during",
+        "kind": "atomic",
+        "title": "보정 중 외부 경보",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-00000000010a",
+      "client_ref": "te-relative-a",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-relative-a",
+        "kind": "atomic",
+        "title": "원인 불명의 선행 사건",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f3b00-0000-7000-8000-00000000010b",
+      "client_ref": "te-relative-b",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "slug": "te-relative-b",
+        "kind": "atomic",
+        "title": "원인 불명의 후행 사건",
+        "summary": null,
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000201",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "0220-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-year-220" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000202",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-year-220" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "0221-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000203",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1969-07-01T00:00:00.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-month-1969-07" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000204",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-month-1969-07" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1969-08-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000205",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1969-07-20T00:00:00.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-day-1969-07-20" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000206",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-day-1969-07-20" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1969-07-21T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000207",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.123000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-ms-123" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000208",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-ms-123" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.124000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000209",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.123456789012Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-ps-012" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-00000000020a",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-ps-012" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.123456789013Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-00000000020b",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "coincides",
+        "source_ref": { "kind": "event", "client_ref": "te-exact-observation" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.123456789012Z"
+        },
+        "direction": "undirected",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-00000000020c",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "contains",
+        "source_ref": { "kind": "event", "client_ref": "te-window" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-00000000020d",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "contains",
+        "source_ref": { "kind": "event", "client_ref": "te-window" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:24.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-00000000020e",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "starts",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-window" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-00000000020f",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "ends",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:24.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-window" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000210",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:24.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000211",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.500000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-child" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000212",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-child" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.501000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000213",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "contains",
+        "source_ref": { "kind": "event", "client_ref": "te-window" },
+        "target_ref": { "kind": "event", "client_ref": "te-child" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000214",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "target_ref": { "kind": "event", "client_ref": "te-during" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000215",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-during" },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:24.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000216",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": { "kind": "event", "client_ref": "te-relative-a" },
+        "target_ref": { "kind": "event", "client_ref": "te-relative-b" },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f3b00-0000-7000-8000-000000000217",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:21.123456789012Z"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "2026-09-05T08:13:22.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    }
+  ]
+}

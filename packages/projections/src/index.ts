@@ -1,7 +1,10 @@
 import { TEMPORAL_EXPRESSIVENESS_WORLD_ID } from "@moirai/contracts";
 import { canonicalRelationEndpoints, endpointEventId } from "@moirai/domain";
 import { projectRelationalTime } from "./relational-time.js";
-export { projectRelationalTime } from "./relational-time.js";
+export {
+  projectRelationalTime,
+  RELATIONAL_TIME_ALGORITHM_VERSION
+} from "./relational-time.js";
 import type {
   PublicCanon,
   PublicCanonTimeSystem,

@@ -131,7 +131,7 @@ export async function callClotho(
       );
     }
     if (!("result" in result)) throw new ClothoClientError("invalid_response");
-    return result.result;
+    return result;
   } catch (error) {
     if (error instanceof ClothoClientError) throw error;
     throw new ClothoClientError("transport_or_response_error", true);

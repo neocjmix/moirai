@@ -20,13 +20,16 @@ async function main(): Promise<void> {
     token: process.env.CLOTHO_TOKEN ?? ""
   };
   if (args[0] === "export" && args.length === 3) {
-    const result = (await callClotho(config, "world.export", {
+    const envelope = (await callClotho(config, "world.export", {
       world_id: args[1]
     })) as {
-      source_revision: number;
-      completeness: string;
-      snapshot: PortableWorld;
+      result: {
+        source_revision: number;
+        completeness: string;
+        snapshot: PortableWorld;
+      };
     };
+    const result = envelope.result;
     if (result.completeness !== "complete")
       throw new ClothoClientError("export_incomplete");
     const artifact = await exportWorldPackage(
@@ -48,9 +51,11 @@ async function main(): Promise<void> {
       throw new ClothoClientError("package_size_limit");
     const { view } = await readWorldPackage(await readFile(args[1]!));
     const preview = cloneWorldPlan(view, args[2]!);
-    const validation = await callClotho(config, "change.validate", {
-      plan: preview.plan
-    });
+    const validation = (
+      (await callClotho(config, "change.validate", {
+        plan: preview.plan
+      })) as { result: unknown }
+    ).result;
     process.stdout.write(JSON.stringify({ ...preview, validation }) + "\n");
     return;
   }

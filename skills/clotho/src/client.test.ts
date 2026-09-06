@@ -6,18 +6,6 @@ import { callClotho } from "./client.js";
 const token = randomBytes(32).toString("base64url");
 afterEach(() => vi.unstubAllGlobals());
 describe("Clotho JSON client", () => {
-  it("returns the Clotho result rather than its HTTP envelope", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn(
-        async () =>
-          new Response(JSON.stringify({ result: { source_revision: 2 } }))
-      )
-    );
-    await expect(
-      callClotho({ baseUrl: "https://example.com", token }, "world.list", {})
-    ).resolves.toEqual({ source_revision: 2 });
-  });
   it("requires HTTPS outside loopback and rejects URL credentials", async () => {
     for (const baseUrl of [
       "http://example.com",

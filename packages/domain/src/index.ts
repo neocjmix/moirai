@@ -1,5 +1,8 @@
 import {
   CONTRACT_VERSION,
+  TEMPORAL_CONTRACT_VERSION,
+  TEMPORAL_EXPRESSIVENESS_WORLD_ID,
+  type CanonicalEventReference,
   type CreateChangeSet,
   type CreateOperation,
   type PublicCanon,
@@ -13,22 +16,41 @@ import {
   type RelationType,
   type ValidationIssue
 } from "@moirai/contracts";
+import {
+  canonicalRelationEndpoints,
+  endpointEventId,
+  endpointKey,
+  temporalAdapterRegistry
+} from "./temporal-relations.js";
+import { solveTemporalGraph } from "./temporal-graph.js";
+import type {
+  CompositeTemporalRelation,
+  TemporalConstraint
+} from "./temporal.js";
 
 export * from "./temporal.js";
 export * from "./temporal-graph.js";
 export * from "./temporal-legacy.js";
+export * from "./temporal-relations.js";
 
 const UUID_V7 =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 const CLIENT_REF = /^[a-z][a-z0-9_-]{0,63}$/;
 
-type ResolveReferences<T> = T extends { readonly client_ref: string }
-  ? string
-  : T extends readonly (infer Item)[]
-    ? readonly ResolveReferences<Item>[]
-    : T extends object
-      ? { readonly [Key in keyof T]: ResolveReferences<T[Key]> }
-      : T;
+type ResolveReferences<T> = T extends {
+  readonly kind: "event";
+  readonly client_ref: string;
+}
+  ? { readonly kind: "event"; readonly event_id: string }
+  : T extends { readonly kind: "time_event" }
+    ? Extract<CanonicalEventReference, { readonly kind: "time_event" }>
+    : T extends { readonly client_ref: string }
+      ? string
+      : T extends readonly (infer Item)[]
+        ? readonly ResolveReferences<Item>[]
+        : T extends object
+          ? { readonly [Key in keyof T]: ResolveReferences<T[Key]> }
+          : T;
 
 export type ResolvedCreateOperation = ResolveReferences<CreateOperation> & {
   readonly entity_id: string;
@@ -98,7 +120,10 @@ function isClientReference(
 }
 
 export function validateCreateChangeSet(input: CreateChangeSet): void {
-  if (input.contract_version !== CONTRACT_VERSION) {
+  if (
+    input.contract_version !== CONTRACT_VERSION &&
+    input.contract_version !== TEMPORAL_CONTRACT_VERSION
+  ) {
     fail(
       "unsupported_contract_version",
       "contract_version",
@@ -110,6 +135,17 @@ export function validateCreateChangeSet(input: CreateChangeSet): void {
       "invalid_identifier",
       "change_set_id",
       "Change Set and World IDs must be UUIDv7"
+    );
+  }
+  if (
+    input.contract_version === TEMPORAL_CONTRACT_VERSION &&
+    input.world_id !== TEMPORAL_EXPRESSIVENESS_WORLD_ID
+  ) {
+    fail(
+      "temporal_write_not_enabled",
+      "world_id",
+      "TS-010 canonical write is enabled only for the approved Temporal Expressiveness Observatory World",
+      [input.world_id, TEMPORAL_EXPRESSIVENESS_WORLD_ID]
     );
   }
   if (
@@ -182,6 +218,52 @@ export function validateCreateChangeSet(input: CreateChangeSet): void {
       }
       clientRefs.add(operation.client_ref);
     }
+    if (
+      input.contract_version === TEMPORAL_CONTRACT_VERSION &&
+      operation.entity_type === "event_temporal_placement"
+    ) {
+      fail(
+        "legacy_placement_not_allowed",
+        path,
+        "Temporal Change Plans express time through Event Relations; Placement is not a second canonical write path"
+      );
+    }
+    if (operation.entity_type === "relation") {
+      const value = operation.value;
+      if (
+        input.contract_version !== TEMPORAL_CONTRACT_VERSION &&
+        (value.type === "not_after" || value.type === "coincides")
+      ) {
+        fail(
+          "relation_endpoint_contract_mismatch",
+          `${path}.value.type`,
+          "This Relation requires temporal contract version 2"
+        );
+      }
+      const hasLegacyEndpoints =
+        value.source_event_id !== undefined ||
+        value.target_event_id !== undefined;
+      const hasTemporalEndpoints =
+        value.source_ref !== undefined || value.target_ref !== undefined;
+      const expectsTemporal =
+        input.contract_version === TEMPORAL_CONTRACT_VERSION;
+      if (
+        (expectsTemporal &&
+          (!value.source_ref || !value.target_ref || hasLegacyEndpoints)) ||
+        (!expectsTemporal &&
+          (!value.source_event_id ||
+            !value.target_event_id ||
+            hasTemporalEndpoints))
+      ) {
+        fail(
+          "relation_endpoint_contract_mismatch",
+          `${path}.value`,
+          expectsTemporal
+            ? "Temporal Change Plans require source_ref and target_ref only"
+            : "Legacy Change Plans require source_event_id and target_event_id only"
+        );
+      }
+    }
   }
 }
 
@@ -217,6 +299,126 @@ function resolveValue(
   return value;
 }
 
+function resolveReferenceId(
+  value: unknown,
+  mapping: ReadonlyMap<string, string>,
+  path: string
+): string {
+  const resolved = resolveValue(value, mapping, path);
+  if (typeof resolved !== "string") {
+    fail("invalid_reference", path, "Reference must resolve to an identifier");
+  }
+  return resolved;
+}
+
+function resolveEventReference(
+  value: unknown,
+  mapping: ReadonlyMap<string, string>,
+  path: string
+): CanonicalEventReference {
+  if (!value || typeof value !== "object" || Array.isArray(value)) {
+    fail("invalid_event_reference", path, "Relation endpoint must be tagged");
+  }
+  const record = value as Record<string, unknown>;
+  if (record.kind === "event") {
+    const eventId =
+      typeof record.event_id === "string"
+        ? record.event_id
+        : resolveReferenceId(
+            { client_ref: record.client_ref },
+            mapping,
+            `${path}.client_ref`
+          );
+    return { kind: "event", event_id: eventId };
+  }
+  if (record.kind === "time_event") {
+    if (
+      !record.time_system_ref ||
+      typeof record.time_system_ref !== "object" ||
+      Array.isArray(record.time_system_ref) ||
+      typeof record.definition_version !== "string" ||
+      typeof record.coordinate !== "string"
+    ) {
+      fail(
+        "invalid_event_reference",
+        path,
+        "Time Event reference requires Time System, definition version, and coordinate"
+      );
+    }
+    const timeSystemRef = record.time_system_ref as Record<string, unknown>;
+    const timeSystemId =
+      typeof timeSystemRef.time_system_id === "string"
+        ? timeSystemRef.time_system_id
+        : resolveReferenceId(
+            { client_ref: timeSystemRef.client_ref },
+            mapping,
+            `${path}.time_system_ref.client_ref`
+          );
+    return {
+      kind: "time_event",
+      time_system_ref: { time_system_id: timeSystemId },
+      definition_version: record.definition_version,
+      coordinate: record.coordinate
+    };
+  }
+  fail("invalid_event_reference", path, "Unknown Event reference kind");
+}
+
+function resolveRelationValue(
+  input: CreateChangeSet,
+  value: Record<string, unknown>,
+  mapping: ReadonlyMap<string, string>,
+  path: string
+): Record<string, unknown> {
+  if (input.contract_version === TEMPORAL_CONTRACT_VERSION) {
+    let source = resolveEventReference(
+      value.source_ref,
+      mapping,
+      `${path}.source_ref`
+    );
+    let target = resolveEventReference(
+      value.target_ref,
+      mapping,
+      `${path}.target_ref`
+    );
+    if (
+      value.type === "coincides" &&
+      endpointKey(source) > endpointKey(target)
+    ) {
+      [source, target] = [target, source];
+    }
+    return {
+      ...value,
+      canon_id: resolveReferenceId(value.canon_id, mapping, `${path}.canon_id`),
+      source_ref: source,
+      target_ref: target
+    };
+  }
+  const sourceEventId = resolveReferenceId(
+    value.source_event_id,
+    mapping,
+    `${path}.source_event_id`
+  );
+  const targetEventId = resolveReferenceId(
+    value.target_event_id,
+    mapping,
+    `${path}.target_event_id`
+  );
+  let source = { kind: "event" as const, event_id: sourceEventId };
+  let target = { kind: "event" as const, event_id: targetEventId };
+  if (value.type === "coincides" && endpointKey(source) > endpointKey(target)) {
+    [source, target] = [target, source];
+  }
+  return {
+    ...value,
+    canon_id: resolveReferenceId(value.canon_id, mapping, `${path}.canon_id`),
+    source_event_id: source.event_id,
+    target_event_id: target.event_id,
+    source_ref: source,
+    target_ref: target
+  };
+}
+
 export function resolveCreateOperations(
   input: CreateChangeSet,
   generateId: () => string
@@ -238,7 +440,15 @@ export function resolveCreateOperations(
     const resolved = {
       ...operation,
       entity_id: entityId,
-      value: resolveValue(operation.value, mapping, `operations.${index}.value`)
+      value:
+        operation.entity_type === "relation"
+          ? resolveRelationValue(
+              input,
+              operation.value as unknown as Record<string, unknown>,
+              mapping,
+              `operations.${index}.value`
+            )
+          : resolveValue(operation.value, mapping, `operations.${index}.value`)
     } as ResolvedCreateOperation;
     if (operation.client_ref) mapping.set(operation.client_ref, entityId);
     return resolved;
@@ -251,6 +461,8 @@ const RELATION_REGISTRY: Readonly<
 > = {
   contains: { direction: "directed" },
   precedes: { direction: "directed" },
+  not_after: { direction: "directed" },
+  coincides: { direction: "undirected" },
   causes: { direction: "directed" },
   enables: { direction: "directed" },
   prevents: { direction: "directed" },
@@ -273,9 +485,14 @@ function wouldCreateContainmentCycle(
   const children = new Map<string, string[]>();
   for (const relation of relations) {
     if (relation.type !== "contains") continue;
-    const values = children.get(relation.source_event_id) ?? [];
-    values.push(relation.target_event_id);
-    children.set(relation.source_event_id, values);
+    const endpoints = canonicalRelationEndpoints(relation);
+    if (!endpoints) continue;
+    const sourceId = endpointEventId(endpoints.source);
+    const targetId = endpointEventId(endpoints.target);
+    if (!sourceId || !targetId) continue;
+    const values = children.get(sourceId) ?? [];
+    values.push(targetId);
+    children.set(sourceId, values);
   }
   const pending = [target];
   const seen = new Set<string>();
@@ -300,6 +517,390 @@ function finiteCoordinate(
       "Temporal coordinates must be finite numbers"
     );
   }
+}
+
+function validateTimeSystemDefinition(
+  definition: Readonly<Record<string, unknown>>,
+  contractVersion: CreateChangeSet["contract_version"],
+  path: string
+): void {
+  if (contractVersion === CONTRACT_VERSION) {
+    if (definition.coordinate !== "integer") {
+      fail(
+        "unsupported_time_definition",
+        `${path}.coordinate`,
+        "Legacy Change Plans require the versioned integer coordinate adapter"
+      );
+    }
+    return;
+  }
+  const codec = definition.coordinate_codec;
+  if (typeof codec !== "string") {
+    fail(
+      "unsupported_time_definition",
+      `${path}.coordinate_codec`,
+      "Temporal Time Systems require a versioned coordinate codec"
+    );
+  }
+  const capabilities = definition.capabilities;
+  if (
+    !Array.isArray(capabilities) ||
+    !capabilities.every((capability) => typeof capability === "string") ||
+    !capabilities.includes("canonicalize") ||
+    !capabilities.includes("equality")
+  ) {
+    fail(
+      "unsupported_time_definition",
+      `${path}.capabilities`,
+      "Temporal Time Systems must declare canonicalize and equality capabilities"
+    );
+  }
+  if (codec === "yyyy-iso-fields-fraction12-z-v1") {
+    if (
+      definition.calendar !== "proleptic-gregorian" ||
+      definition.timezone !== "UTC" ||
+      definition.fractional_digits !== 12 ||
+      definition.leap_second_policy !== "reject" ||
+      definition.interval_policy !== "half-open"
+    ) {
+      fail(
+        "unsupported_time_definition",
+        path,
+        "The Gregorian UTC adapter requires its accepted calendar, timezone, precision, leap-second, and half-open boundary contract"
+      );
+    }
+    if (
+      !["compare", "boundary", "difference"].every((capability) =>
+        capabilities.includes(capability)
+      )
+    ) {
+      fail(
+        "unsupported_time_definition",
+        `${path}.capabilities`,
+        "The accepted Gregorian UTC adapter requires compare, boundary, and difference capabilities"
+      );
+    }
+    return;
+  }
+  if (codec === "continuous-decimal-v1") {
+    if (
+      typeof definition.unit !== "string" ||
+      (definition.direction !== "ascending" &&
+        definition.direction !== "descending")
+    ) {
+      fail(
+        "unsupported_time_definition",
+        path,
+        "Continuous scalar Time Systems require a unit and direction"
+      );
+    }
+    return;
+  }
+  if (codec === "opaque-cycle-v1" || codec === "opaque-token-v1") return;
+  // A custom Time System may be authored before its executable adapter ships.
+  // A Time Event reference to it will later report the missing capability.
+}
+
+function requireRelationEndpoints(
+  value: unknown,
+  path: string
+): {
+  readonly source: CanonicalEventReference;
+  readonly target: CanonicalEventReference;
+} {
+  const endpoints = canonicalRelationEndpoints(value as PublicRelation);
+  if (!endpoints) {
+    fail(
+      "invalid_event_reference",
+      path,
+      "Relation requires two canonical Event references"
+    );
+  }
+  return endpoints;
+}
+
+function validateRelationReference(
+  reference: CanonicalEventReference,
+  canonId: string,
+  events: ReadonlyMap<string, PublicEvent>,
+  timeSystems: ReadonlyMap<string, PublicTimeSystem>,
+  canonTimeSystems: Iterable<PublicCanonTimeSystem>,
+  path: string,
+  relationId?: string
+): PublicEvent | null {
+  if (reference.kind === "event") {
+    const event = events.get(reference.event_id);
+    if (!event) {
+      fail(
+        "dangling_reference",
+        path,
+        "Relation Event endpoint does not exist",
+        [reference.event_id]
+      );
+    }
+    if (event.canon_id !== canonId) {
+      fail(
+        "cross_canon_relation",
+        path,
+        "Relation and Event endpoint must share one Canon",
+        [event.id]
+      );
+    }
+    return event;
+  }
+  const timeSystem = timeSystems.get(reference.time_system_ref.time_system_id);
+  if (!timeSystem) {
+    fail(
+      "dangling_reference",
+      path,
+      "Time Event references an unknown Time System",
+      [reference.time_system_ref.time_system_id]
+    );
+  }
+  if (timeSystem.definition_version !== reference.definition_version) {
+    fail(
+      "time_system_version_mismatch",
+      path,
+      "Time Event definition version does not match the linked Time System",
+      [timeSystem.id]
+    );
+  }
+  const linked = [...canonTimeSystems].some(
+    (item) => item.canon_id === canonId && item.time_system_id === timeSystem.id
+  );
+  if (!linked) {
+    fail(
+      "time_system_not_used_by_canon",
+      path,
+      "Time Event Time System is not linked to this Canon",
+      [timeSystem.id, canonId]
+    );
+  }
+  const adapter = temporalAdapterRegistry(timeSystems.values()).get(
+    timeSystem.id,
+    reference.definition_version
+  );
+  if (adapter) {
+    try {
+      const canonical = adapter.canonicalize(reference.coordinate);
+      if (canonical !== reference.coordinate) {
+        throw new Error(`Canonical coordinate is '${canonical}'`);
+      }
+    } catch (cause) {
+      throw new ChangeSetError(
+        "invalid_time_coordinate",
+        path,
+        `Invalid coordinate '${reference.coordinate}': ${cause instanceof Error ? cause.message : "adapter rejected the coordinate"}`,
+        [timeSystem.id, ...(relationId ? [relationId] : [])],
+        false,
+        { original_coordinate: reference.coordinate }
+      );
+    }
+  }
+  return null;
+}
+
+function validateRelationEndpointKinds(
+  type: RelationType,
+  sourceEvent: PublicEvent | null,
+  targetEvent: PublicEvent | null,
+  path: string
+): void {
+  if (type === "contains") {
+    if (!sourceEvent) {
+      fail(
+        "relation_endpoint_kind_invalid",
+        path,
+        "contains requires a persisted Event as its source"
+      );
+    }
+    return;
+  }
+  if (type === "starts" || type === "ends") {
+    if (!targetEvent || targetEvent.kind !== "composite") {
+      fail(
+        "relation_endpoint_kind_invalid",
+        path,
+        `${type} requires a Composite Event as its target`
+      );
+    }
+    return;
+  }
+  if (type === "precedes" || type === "not_after" || type === "coincides") {
+    return;
+  }
+  if (!sourceEvent || !targetEvent) {
+    fail(
+      "relation_endpoint_kind_invalid",
+      path,
+      `${type} requires persisted Event endpoints`
+    );
+  }
+}
+
+function temporalGraphFailure(
+  relations: readonly PublicRelation[],
+  events: readonly PublicEvent[],
+  timeSystems: readonly PublicTimeSystem[]
+): void {
+  const temporalRelations = relations.filter(
+    (relation) => relation.source_ref && relation.target_ref
+  );
+  if (temporalRelations.length === 0) return;
+  const registry = temporalAdapterRegistry(timeSystems);
+  const constraints: TemporalConstraint[] = [];
+  const structuralRelations: CompositeTemporalRelation[] = [];
+  for (const relation of temporalRelations) {
+    const endpoints = canonicalRelationEndpoints(relation);
+    if (!endpoints) continue;
+    if (
+      relation.type === "precedes" ||
+      relation.type === "not_after" ||
+      relation.type === "coincides"
+    ) {
+      constraints.push({
+        id: relation.id,
+        type: relation.type,
+        source: endpoints.source,
+        target: endpoints.target
+      });
+    }
+    if (
+      relation.type === "contains" ||
+      relation.type === "starts" ||
+      relation.type === "ends"
+    ) {
+      structuralRelations.push({
+        id: relation.id,
+        type: relation.type,
+        source: endpoints.source,
+        target: endpoints.target
+      });
+    }
+  }
+  const completeCompositeIds = events
+    .filter(
+      (event) =>
+        event.kind === "composite" &&
+        structuralRelations.some(
+          (relation) =>
+            (relation.type === "starts" || relation.type === "ends") &&
+            relation.target.kind === "event" &&
+            relation.target.event_id === event.id
+        )
+    )
+    .map((event) => event.id);
+  const result = solveTemporalGraph(
+    {
+      constraints,
+      structural_relations: structuralRelations,
+      complete_composite_ids: completeCompositeIds
+    },
+    registry
+  );
+  if (result.valid) return;
+
+  const relationById = new Map(
+    relations.map((relation) => [relation.id, relation])
+  );
+  const allConstraintIds = [
+    ...new Set(
+      result.diagnostics.flatMap((diagnostic) => diagnostic.constraint_ids)
+    )
+  ].sort();
+  const boundaryOrdering = result.diagnostics.some((diagnostic) => {
+    const types = diagnostic.constraint_ids
+      .map((id) => relationById.get(id)?.type)
+      .filter(
+        (type): type is "starts" | "ends" =>
+          type === "starts" || type === "ends"
+      );
+    return types.includes("starts") && types.includes("ends");
+  });
+  const duplicateBoundary = completeCompositeIds.some((compositeId) =>
+    (["starts", "ends"] as const).some(
+      (type) =>
+        structuralRelations.filter(
+          (relation) =>
+            relation.type === type &&
+            relation.target.kind === "event" &&
+            relation.target.event_id === compositeId
+        ).length > 1
+    )
+  );
+  const first = result.diagnostics[0]!;
+  const code = boundaryOrdering
+    ? "composite_boundary_order_invalid"
+    : duplicateBoundary
+      ? "composite_boundary_not_unique"
+      : first.code === "invalid_composite_boundary"
+        ? "composite_boundary_incomplete"
+        : first.code === "invalid_time_coordinate"
+          ? "invalid_time_coordinate"
+          : first.code === "unsupported_temporal_capability" ||
+              first.code === "unknown_time_system"
+            ? "time_system_capability_missing"
+            : "temporal_constraint_conflict";
+  const timeSystemIds = [
+    ...new Set(
+      allConstraintIds.flatMap((id) => {
+        const endpoints = relationById.get(id)
+          ? canonicalRelationEndpoints(relationById.get(id)!)
+          : null;
+        return endpoints
+          ? [endpoints.source, endpoints.target]
+              .filter(
+                (
+                  reference
+                ): reference is Extract<
+                  CanonicalEventReference,
+                  { readonly kind: "time_event" }
+                > => reference.kind === "time_event"
+              )
+              .map((reference) => reference.time_system_ref.time_system_id)
+          : [];
+      })
+    )
+  ].sort();
+  const originalCoordinates = allConstraintIds.flatMap((id) => {
+    const endpoints = relationById.get(id)
+      ? canonicalRelationEndpoints(relationById.get(id)!)
+      : null;
+    return endpoints
+      ? [endpoints.source, endpoints.target]
+          .filter(
+            (
+              reference
+            ): reference is Extract<
+              CanonicalEventReference,
+              { readonly kind: "time_event" }
+            > => reference.kind === "time_event"
+          )
+          .map((reference) => reference.coordinate)
+      : [];
+  });
+  throw new ChangeSetError(
+    code,
+    "operations",
+    first.message,
+    [...new Set([...allConstraintIds, ...timeSystemIds])].sort(),
+    false,
+    {
+      algorithm_version: result.algorithm_version,
+      constraint_ids: allConstraintIds,
+      event_refs: [
+        ...new Set(
+          result.diagnostics.flatMap((diagnostic) => diagnostic.event_refs)
+        )
+      ].sort(),
+      ...(first.required_capability
+        ? { required_capability: first.required_capability }
+        : {}),
+      ...(originalCoordinates.length > 0
+        ? { original_coordinates: [...new Set(originalCoordinates)].sort() }
+        : {})
+    }
+  );
 }
 
 export function validateCandidateChangeSet(
@@ -399,13 +1000,11 @@ export function validateCandidateChangeSet(
         nonEmpty(value.slug, `${path}.value.slug`);
         nonEmpty(value.title, `${path}.value.title`);
         nonEmpty(value.definition_version, `${path}.value.definition_version`);
-        if (value.definition.coordinate !== "integer") {
-          fail(
-            "unsupported_time_definition",
-            `${path}.value.definition.coordinate`,
-            "Milestone 2 requires the versioned integer coordinate adapter"
-          );
-        }
+        validateTimeSystemDefinition(
+          value.definition,
+          input.contract_version,
+          `${path}.value.definition`
+        );
         timeSystems.set(operation.entity_id, {
           id: operation.entity_id,
           ...value
@@ -548,31 +1147,37 @@ export function validateCandidateChangeSet(
       }
       case "relation": {
         const value = operation.value;
-        const source = events.get(value.source_event_id);
-        const target = events.get(value.target_event_id);
-        if (!source || !target) {
-          fail("dangling_reference", path, "Relation endpoint does not exist", [
-            value.source_event_id,
-            value.target_event_id
-          ]);
-        }
-        if (
-          source.canon_id !== target.canon_id ||
-          source.canon_id !== value.canon_id
-        ) {
-          fail(
-            "cross_canon_relation",
-            path,
-            "Relation and both endpoints must share one Canon",
-            [source.id, target.id]
-          );
-        }
-        if (source.id === target.id)
+        const endpoints = requireRelationEndpoints(value, path);
+        const source = validateRelationReference(
+          endpoints.source,
+          value.canon_id,
+          events,
+          timeSystems,
+          canonTimeSystems.values(),
+          input.contract_version === TEMPORAL_CONTRACT_VERSION
+            ? `${path}.value.source_ref`
+            : path,
+          operation.entity_id
+        );
+        const target = validateRelationReference(
+          endpoints.target,
+          value.canon_id,
+          events,
+          timeSystems,
+          canonTimeSystems.values(),
+          input.contract_version === TEMPORAL_CONTRACT_VERSION
+            ? `${path}.value.target_ref`
+            : path,
+          operation.entity_id
+        );
+        if (input.contract_version === TEMPORAL_CONTRACT_VERSION)
+          validateRelationEndpointKinds(value.type, source, target, path);
+        if (endpointKey(endpoints.source) === endpointKey(endpoints.target))
           fail(
             "self_relation_not_allowed",
             path,
             "This Relation type does not allow a self relation",
-            [source.id]
+            [endpointKey(endpoints.source)]
           );
         if (RELATION_REGISTRY[value.type].direction !== value.direction) {
           fail(
@@ -583,6 +1188,8 @@ export function validateCandidateChangeSet(
         }
         if (
           value.type === "contains" &&
+          source &&
+          target &&
           wouldCreateContainmentCycle(relations.values(), source.id, target.id)
         ) {
           fail(
@@ -594,7 +1201,14 @@ export function validateCandidateChangeSet(
         }
         relations.set(operation.entity_id, {
           id: operation.entity_id,
-          ...value
+          canon_id: value.canon_id,
+          type: value.type,
+          source_ref: endpoints.source,
+          target_ref: endpoints.target,
+          source_event_id: endpointEventId(endpoints.source),
+          target_event_id: endpointEventId(endpoints.target),
+          direction: value.direction,
+          attributes: value.attributes
         });
         break;
       }
@@ -685,13 +1299,24 @@ export function validateCandidateChangeSet(
     fail("world_missing", "world_id", "Change Set World does not exist", [
       input.world_id
     ]);
+  if (input.contract_version === TEMPORAL_CONTRACT_VERSION) {
+    temporalGraphFailure(
+      [...relations.values()],
+      [...events.values()],
+      [...timeSystems.values()]
+    );
+  }
   const warnings: ValidationIssue[] = [];
   for (const event of events.values()) {
     if (event.kind === "composite" && event.roles.includes("process")) {
-      const hasChildren = [...relations.values()].some(
-        (relation) =>
-          relation.type === "contains" && relation.source_event_id === event.id
-      );
+      const hasChildren = [...relations.values()].some((relation) => {
+        const endpoints = canonicalRelationEndpoints(relation);
+        return (
+          relation.type === "contains" &&
+          endpoints?.source.kind === "event" &&
+          endpoints.source.event_id === event.id
+        );
+      });
       if (!hasChildren) {
         warnings.push({
           code: "empty_process",

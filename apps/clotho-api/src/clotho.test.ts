@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { createHash, randomBytes } from "node:crypto";
 import Fastify from "fastify";
 import { describe, expect, it, vi } from "vitest";
@@ -39,6 +40,13 @@ const plan = {
     }
   ]
 };
+const temporalFixtureBase = new URL(
+  "../../../docs/implementation/fixtures/temporal-expressiveness/",
+  import.meta.url
+);
+const temporalPlan = JSON.parse(
+  readFileSync(new URL("success.change-plan.json", temporalFixtureBase), "utf8")
+) as { world_id: string };
 function setup(records: readonly Credential[] = [credential]) {
   const app = Fastify({
     ajv: { customOptions: { removeAdditional: false, coerceTypes: false } }
@@ -111,6 +119,19 @@ describe("Clotho authenticated boundary", () => {
     expect(execute).toHaveBeenCalledWith("change.commit", { plan }, principal);
     expect(JSON.stringify(execute.mock.calls)).not.toContain(hash);
     expect(result.body).not.toContain(token);
+    await app.close();
+  });
+  it("accepts the fixed TS-010 v2 corpus through the actual Clotho HTTP schema", async () => {
+    const { app, execute, send } = setup([
+      { ...credential, world_ids: [temporalPlan.world_id] }
+    ]);
+    const response = await send("change.validate", { plan: temporalPlan });
+    expect(response.statusCode).toBe(200);
+    expect(execute).toHaveBeenCalledWith(
+      "change.validate",
+      { plan: temporalPlan },
+      expect.objectContaining({ world_ids: [temporalPlan.world_id] })
+    );
     await app.close();
   });
   it("returns safe errors and useful revision recovery without raw diagnostics", async () => {

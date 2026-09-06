@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `in_progress` — IP-002 Slice 3 호환 shadow 검증·PR gate 중; canonical runtime 의미 미변경                                    |
+| 실행 상태                  | `in_progress` — IP-002 Slice 4 추가형 canonical write 구현·검증 중; production migration·배포·시험 World write 미수행       |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                    |
-| 현재 slice                 | IP-002 Slice 3 — CI·secret scan·PR 반영 중; Slice 4·JointJS 비활성                                                            |
+| 현재 slice                 | IP-002 Slice 4 — v2 Relation reference·validate·read 경로 구현 중; Slice 5·JointJS 비활성                                    |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -34,7 +34,7 @@
 
 [드리프트 분석](TEMPORAL-MODEL-DRIFT.md)을 바탕으로 2026-09-05 사용자가 [TS-010](../technical-specifications/TS-010-event-relational-time.md)의 strictness, virtual Time Event reference와 Time System 계약을 승인했다. [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)과 [IP-002](IP-002-temporal-model-realignment.md)를 accepted 방향으로 정렬하고 [machine-readable fixture](fixtures/temporal-expressiveness/)를 고정했다.
 
-Slice 0 완료 뒤 다음 checkpoint는 Slice 1 기존 동작 특성화다. runtime, schema migration, canonical write, 배포와 시험 World write는 별도 승인 전 수행하지 않는다. JointJS 다음 단계도 계속 비활성이다.
+Slice 0 완료 뒤 다음 checkpoint는 Slice 1 기존 동작 특성화다. 실제 schema migration 실행, 배포와 시험 World write는 별도 승인 전 수행하지 않는다. JointJS 다음 단계도 계속 비활성이다.
 
 IP-002 전체 완료 뒤에는 IP-001 M4-D 다음의 JointJS graph·scope artifact 기본 탐색으로 복귀한다. 100k scope·LOD와 Canon 비교를 포함한 M4 종료조건을 통과하기 전에는 M5로 넘어가지 않는다.
 
@@ -48,7 +48,9 @@ Slice 2의 독립 adapter·resolver·solver와 graph validator를 완료했다. 
 
 2026-09-05 Slice 2는 complete Composite 경계 순서, equality evidence·입력 순서 독립성 및 원본 JSON 거절 corpus 5개를 domain 검증에 연결하고 PR CI [33971023125](https://github.com/neocjmix/moirai/actions/runs/33971023125) 성공으로 마쳤다. 이는 Clotho 실제 validate나 제품 종단간 합격을 대체하지 않는다. Gitleaks는 변경 이력에서 secret 0건이었다.
 
-2026-09-06 Slice 3은 legacy Placement를 변경하지 않는 shadow reader와 실제 Revision 29 read-only evidence를 추가했다. 같은 input에서 기존 `m4-timeline-v1`은 interval 3건을 `0..0` authored coordinate로 표시하고, 새 reader는 명시적 boundary Event가 없으므로 `ambiguous`로 남긴다. 정확한 ordinal point 9건은 lossless virtual Time Event 제약으로 전환되고 모순은 없다. corpus를 기존 `Clotho Synthetic Observatory`에 쓰지 않았으며 해당 World의 revision은 바꾸지 않았다. 새 PR gate가 끝나기 전 Slice 4·canonical write·schema는 활성화하지 않는다.
+2026-09-06 Slice 3은 legacy Placement를 변경하지 않는 shadow reader와 실제 Revision 29 read-only evidence를 추가했다. 같은 input에서 기존 `m4-timeline-v1`은 interval 3건을 `0..0` authored coordinate로 표시하고, 새 reader는 명시적 boundary Event가 없으므로 `ambiguous`로 남긴다. 정확한 ordinal point 9건은 lossless virtual Time Event 제약으로 전환되고 모순은 없다. corpus를 기존 `Clotho Synthetic Observatory`에 쓰지 않았으며 해당 World의 revision은 바꾸지 않았다. PR CI [34000329987](https://github.com/neocjmix/moirai/actions/runs/34000329987)는 성공했다.
+
+2026-09-06 Slice 4는 numeric contract version `2`, tagged Event/virtual Time Event endpoint, strict `precedes`·`not_after`·`coincides`, deterministic resolver와 추가 migration을 구현 중이다. 기존 Relation ID columns와 Placement를 보존하고, v2 canonical write는 fixture의 `Temporal Expressiveness Observatory` ID로만 gate한다. 실제 migration 실행, Railway 배포, 시험 World validate·commit은 아직 하지 않았다.
 
 2026-09-02~03 실제 ChatGPT OAuth로 작업했다. 전달받은 revision 14 대신 작업 전 15를 재조회했다. validate 후 revision 15와 신규 Event 부재를 확인하고, 한 Change Set으로 Event·Relation·Narrative를 commit해 revision 16을 만들었다. 동일 요청은 replay되며, 같은 ID의 다른 내용은 거절됐다. Atropos의 current/target/served 16, manifest와 Event digest, 공개 Narrative·Relation을 확인했다.
 
@@ -60,7 +62,7 @@ Slice 2의 독립 adapter·resolver·solver와 graph validator를 완료했다. 
 
 - Auth0 운영자 한 명·synthetic World 하나·read/write 교집합 제한을 유지한다. provider 식별자·subject·token·설정 JSON은 공개 문서에 넣지 않는다.
 - Clotho가 외부 HTTP/MCP·인증·작성 맥락을, Lachesis가 내부 최종 인가·정본 질의·commit을 소유한다. Atropos는 공개, worker·DB·Lachesis application은 내부 경계를 유지한다.
-- 원본 Lantern fixture revision 2를 유지한다. 신규 검증 콘텐츠는 Clotho synthetic World에만 기록한다.
+- 원본 Lantern fixture revision 2를 유지한다. M3/M4 기존 검증 콘텐츠는 Clotho synthetic World 범위를 유지한다. IP-002 corpus는 별도 Temporal Expressiveness Observatory에만 쓰며 사전 대상·SHA·Change Plan·rollback 승인 후 실행한다.
 - M3-R 구현 `edfc16ee74afe06ef2ae6152472dcd66b370c3ad`의 [CI 33543491177](https://github.com/neocjmix/moirai/actions/runs/33543491177)·[smoke 33543795041](https://github.com/neocjmix/moirai/actions/runs/33543795041) 성공 이력을 유지한다. [M3-R 경계](M3-BOUNDARY.md), [연결·복원 절차](M3-CONNECTION.md)를 따른다.
 - 실제 iPhone 기기 시험과 application version rollback 실연은 하지 않았다. OIDC 설정 차단·복원과 application version rollback은 다른 검증이다.
 - M3-C의 동일 토큰 긴급 차단 live drill은 [운영자 가이드](M3-C-OIDC-DRILL.md)에 따라 별도 수행한다. M4 작업이 이를 완료한 것으로 바꾸지 않는다.

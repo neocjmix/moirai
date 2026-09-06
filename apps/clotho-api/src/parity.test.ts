@@ -56,6 +56,12 @@ const inputs: Record<ClothoMethod, Record<string, unknown>> = {
   "event.get": { world_id, event_id: entity },
   "event.neighbors": { world_id, event_id: entity },
   "context.slice": { world_id, canon_ids: [entity], seed_ids: [entity] },
+  "time-event.resolve": {
+    world_id,
+    time_system_id: entity,
+    definition_version: "1",
+    coordinate: "2026-09-05T08:13:21.123456789012Z"
+  },
   "change.validate": { plan },
   "change.commit": { plan }
 };
@@ -101,7 +107,7 @@ function setup() {
   return { app, store, pair };
 }
 describe("HTTP and MCP through the same Clotho and Lachesis applications", () => {
-  it("preserves all ten tool results and exposes no internal command route", async () => {
+  it("preserves every tool result and exposes no internal command route", async () => {
     const { app, store, pair } = setup();
     try {
       for (const method of CLOTHO_METHODS) {

@@ -34,6 +34,8 @@ const descriptions = {
   "event.neighbors": "Explore bounded neighboring Events and Relations.",
   "context.slice":
     "Read a revision-pinned, bounded context slice; inspect truncation boundaries.",
+  "time-event.resolve":
+    "Resolve one deterministic virtual Time Event without storing an Event row.",
   "change.validate":
     "Validate a ChangePlan without storing or publishing it. This is not commit authorization.",
   "change.commit":

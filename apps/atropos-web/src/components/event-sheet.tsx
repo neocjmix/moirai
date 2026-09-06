@@ -191,6 +191,7 @@ export function EventSheet({
               const relatedId = outgoing
                 ? relation.target_event_id
                 : relation.source_event_id;
+              if (!relatedId) return null;
               const related = eventById.get(relatedId);
               return related ? (
                 <a

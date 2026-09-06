@@ -51,6 +51,21 @@ export interface SubjectProjectionBundle {
   readonly projections: readonly PublicSubjectProjection[];
 }
 
+/** Legacy M4 projectors only understand two persisted Event endpoints. */
+type PersistedEndpointRelation = PublicRelation & {
+  readonly source_event_id: string;
+  readonly target_event_id: string;
+};
+
+function hasPersistedEndpointRelations(
+  relation: PublicRelation
+): relation is PersistedEndpointRelation {
+  return (
+    typeof relation.source_event_id === "string" &&
+    typeof relation.target_event_id === "string"
+  );
+}
+
 export const STATE_RULES = Object.freeze([
   {
     state_type: "membership",
@@ -90,8 +105,10 @@ export function projectStates(
     );
     const relations = source.relations
       .filter(
-        (relation) =>
-          relation.canon_id === canon.id && relation.direction === "directed"
+        (relation): relation is PersistedEndpointRelation =>
+          relation.canon_id === canon.id &&
+          relation.direction === "directed" &&
+          hasPersistedEndpointRelations(relation)
       )
       .sort((a, b) => a.id.localeCompare(b.id));
     const items: PublicStateItem[] = [];
@@ -357,8 +374,9 @@ export function projectProcesses(
     const eventIds = new Set(events.map((event) => event.id));
     const relations = source.relations
       .filter(
-        (relation) =>
+        (relation): relation is PersistedEndpointRelation =>
           relation.canon_id === canon.id &&
+          hasPersistedEndpointRelations(relation) &&
           eventIds.has(relation.source_event_id) &&
           eventIds.has(relation.target_event_id)
       )
@@ -366,7 +384,7 @@ export function projectProcesses(
     const contains = relations.filter(
       (relation) => relation.type === "contains"
     );
-    const childrenByParent = new Map<string, PublicRelation[]>();
+    const childrenByParent = new Map<string, PersistedEndpointRelation[]>();
     for (const relation of contains) {
       const children = childrenByParent.get(relation.source_event_id) ?? [];
       children.push(relation);
@@ -650,7 +668,7 @@ function digest(value: unknown): string {
 
 function stronglyConnectedComponents(
   eventIds: readonly string[],
-  relations: readonly PublicRelation[]
+  relations: readonly PersistedEndpointRelation[]
 ): readonly (readonly string[])[] {
   const adjacency = new Map(eventIds.map((id) => [id, [] as string[]]));
   for (const relation of relations) {
@@ -706,7 +724,7 @@ function stronglyConnectedComponents(
 
 function structuralRanks(
   components: readonly (readonly string[])[],
-  relations: readonly PublicRelation[]
+  relations: readonly PersistedEndpointRelation[]
 ): ReadonlyMap<string, number> {
   const componentByEvent = new Map<string, number>();
   components.forEach((component, index) => {
@@ -788,9 +806,10 @@ export function projectTimeline(
   const eventIds = new Set(events.map((event) => event.id));
   const precedence = sorted(
     source.relations.filter(
-      (relation) =>
+      (relation): relation is PersistedEndpointRelation =>
         relation.canon_id === parameters.canonId &&
         relation.type === "precedes" &&
+        hasPersistedEndpointRelations(relation) &&
         eventIds.has(relation.source_event_id) &&
         eventIds.has(relation.target_event_id)
     )
@@ -1008,7 +1027,7 @@ function deterministicSubjectHandleId(
 
 function subjectComponents(
   events: readonly PublicEvent[],
-  equivalence: readonly PublicRelation[]
+  equivalence: readonly PersistedEndpointRelation[]
 ): readonly (readonly string[])[] {
   const parent = new Map(events.map((event) => [event.id, event.id]));
   const find = (id: string): string => {
@@ -1060,10 +1079,11 @@ export function projectSubjects(
     const eventIds = new Set(events.map((event) => event.id));
     const identityRelations = sorted(
       source.relations.filter(
-        (relation) =>
+        (relation): relation is PersistedEndpointRelation =>
           relation.canon_id === canon.id &&
           (EQUIVALENCE_RELATION_TYPES.has(relation.type) ||
             LINEAGE_RELATION_TYPES.has(relation.type)) &&
+          hasPersistedEndpointRelations(relation) &&
           eventIds.has(relation.source_event_id) &&
           eventIds.has(relation.target_event_id)
       )
@@ -1380,8 +1400,14 @@ function allowlistView(view: CanonicalRevisionView): CanonicalRevisionView {
       id: item.id,
       canon_id: item.canon_id,
       type: item.type,
-      source_event_id: item.source_event_id,
-      target_event_id: item.target_event_id,
+      ...(item.source_ref ? { source_ref: item.source_ref } : {}),
+      ...(item.target_ref ? { target_ref: item.target_ref } : {}),
+      ...(item.source_event_id !== undefined
+        ? { source_event_id: item.source_event_id }
+        : {}),
+      ...(item.target_event_id !== undefined
+        ? { target_event_id: item.target_event_id }
+        : {}),
       direction: item.direction,
       attributes: item.attributes
     })),
@@ -1645,10 +1671,11 @@ export function projectPublicDocuments(
           relation.target_event_id === event.id
       );
       const relatedIds = new Set(
-        eventRelations.flatMap((relation) => [
-          relation.source_event_id,
-          relation.target_event_id
-        ])
+        eventRelations.flatMap((relation) =>
+          [relation.source_event_id, relation.target_event_id].flatMap((id) =>
+            typeof id === "string" ? [id] : []
+          )
+        )
       );
       relatedIds.delete(event.id);
       const placements = temporalPlacements.filter(

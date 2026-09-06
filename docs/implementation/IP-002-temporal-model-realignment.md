@@ -129,6 +129,8 @@ TS-010 승인 후에만 수행한다.
 
 한 요청이 Placement와 Relation 양쪽을 독립 정본으로 쓰게 하지 않는다. 구형 client 입력은 adapter가 새 canonical write 한 경로로만 번역한다. 기존 M4-D World와 production data migration은 종단간 신규 World 검증의 선행 조건이 아니다.
 
+2026-09-06 진행 checkpoint: numeric contract version `2`의 tagged Event/virtual Time Event endpoint, `not_after`·`coincides`, canonical coordinate adapter 검증, deterministic `time-event.resolve`, append-only Relation reference migration과 PostgreSQL integration fixture를 구현 중이다. 기존 `source_event_id`·`target_event_id`와 Placement는 보존하며 기존 row를 backfill하지 않는다. v2 write는 fixture의 `Temporal Expressiveness Observatory` World ID로만 gate한다. 실제 migration 실행, Railway 배포와 해당 World의 실제 commit은 사용자 승인 전 수행하지 않는다. validate는 읽기 전용 검증이며 별도 쓰기 승인이 필요하지 않다.
+
 ## Slice 5 — projector 전환
 
 - Timeline bound와 정렬을 새 solver에서 계산한다.

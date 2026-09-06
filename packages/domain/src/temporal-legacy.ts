@@ -10,6 +10,7 @@ import {
   type TemporalConstraint,
   type TemporalEventReference
 } from "./temporal.js";
+import { canonicalRelationEndpoints } from "./temporal-relations.js";
 
 export interface LegacyTemporalRead {
   readonly classification:
@@ -197,14 +198,27 @@ export function shadowLegacyTemporalState(
       );
     }
   }
-  const authored: TemporalConstraint[] = source.relations
-    .filter((relation) => relation.type === "precedes")
-    .map((relation) => ({
-      id: relation.id,
-      type: "precedes" as const,
-      source: { kind: "event", event_id: relation.source_event_id },
-      target: { kind: "event", event_id: relation.target_event_id }
-    }));
+  const authored: TemporalConstraint[] = source.relations.flatMap(
+    (relation) => {
+      if (relation.type !== "precedes") return [];
+      const endpoints = canonicalRelationEndpoints(relation);
+      if (
+        !endpoints ||
+        endpoints.source.kind !== "event" ||
+        endpoints.target.kind !== "event"
+      ) {
+        return [];
+      }
+      return [
+        {
+          id: relation.id,
+          type: "precedes" as const,
+          source: endpoints.source,
+          target: endpoints.target
+        }
+      ];
+    }
+  );
   const initial = source.temporalPlacements.map((placement) => {
     const system = systems.get(placement.time_system_id);
     return system

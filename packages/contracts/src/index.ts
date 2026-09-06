@@ -693,3 +693,5 @@ export interface PublicStatusResponse {
     readonly status: "ok";
   };
 }
+
+export * from "./relational-time.js";

@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import type { CreateChangeSet } from "@moirai/contracts";
+import { projectPublicDocuments } from "@moirai/projections";
 import { sql, type Kysely } from "kysely";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
@@ -70,6 +71,29 @@ describeWithDatabase("TS-010 canonical Relation write", () => {
     expect(view.events).toHaveLength(11);
     expect(view.temporalPlacements).toEqual([]);
     expect(view.relations).toHaveLength(23);
+    const artifacts = projectPublicDocuments(view, 2, "2026-09-06T00:00:00Z");
+    expect(
+      artifacts.find((item) => item.key.endsWith("/temporal.json"))?.value
+    ).toMatchObject({
+      source_revision: 2,
+      served_revision: 2,
+      positions: expect.arrayContaining([
+        expect.objectContaining({
+          event_id: "019f3b00-0000-7000-8000-000000000105",
+          kind: "bounded",
+          knowledge_span: { value: "1", unit: "picosecond" }
+        })
+      ]),
+      composites: expect.arrayContaining([
+        expect.objectContaining({
+          duration: expect.objectContaining({
+            basis: "explicit_boundaries",
+            amount: { value: "2000000000000", unit: "picosecond" }
+          })
+        })
+      ])
+    });
+
     const canon = await queryClotho(
       db,
       "canon.get",

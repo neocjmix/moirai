@@ -216,6 +216,9 @@ importers:
       '@moirai/contracts':
         specifier: workspace:*
         version: link:../contracts
+      '@moirai/domain':
+        specifier: workspace:*
+        version: link:../domain
     devDependencies:
       typescript:
         specifier: ^5.9.0

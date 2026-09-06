@@ -1,3 +1,7 @@
+import { TEMPORAL_EXPRESSIVENESS_WORLD_ID } from "@moirai/contracts";
+import { canonicalRelationEndpoints, endpointEventId } from "@moirai/domain";
+import { projectRelationalTime } from "./relational-time.js";
+export { projectRelationalTime } from "./relational-time.js";
 import type {
   PublicCanon,
   PublicCanonTimeSystem,
@@ -1544,9 +1548,26 @@ export function projectPublicDocuments(
   const timeSystems = sorted(view.timeSystems);
   const relations = sorted(view.relations);
   const temporalPlacements = sorted(view.temporalPlacements);
-  const processes = projectProcesses(view, revision);
-  const states = projectStates(view, revision, subjects);
-  const timelineDocuments = sorted(view.canonTimeSystems).flatMap((link) => {
+  const relational = view.world.id === TEMPORAL_EXPRESSIVENESS_WORLD_ID;
+  const temporalDocuments = relational
+    ? canons.map((canon) => ({
+        key: `${prefix}/graph/canons/${canon.id}/temporal.json`,
+        value: {
+          ...metadata,
+          ...projectRelationalTime(
+            view,
+            revision,
+            canon.id,
+            subjects.projections
+          )
+        }
+      }))
+    : [];
+  const processes = relational ? [] : projectProcesses(view, revision);
+  const states = relational ? [] : projectStates(view, revision, subjects);
+  const timelineDocuments = (
+    relational ? [] : sorted(view.canonTimeSystems)
+  ).flatMap((link) => {
     if (
       !canons.some((canon) => canon.id === link.canon_id) ||
       !timeSystems.some((timeSystem) => timeSystem.id === link.time_system_id)
@@ -1623,6 +1644,16 @@ export function projectPublicDocuments(
               link.time_system_id === timeSystem.id
           )
         ),
+        ...(relational
+          ? {
+              temporal_artifact: {
+                key: `${prefix}/graph/canons/${canon.id}/temporal.json`,
+                algorithm_version: temporalDocuments.find(
+                  (document) => document.value.canon_id === canon.id
+                )!.value.algorithm_version
+              }
+            }
+          : {}),
         timeline_artifacts: timelineDocuments
           .filter((document) =>
             document.key.includes(`/graph/canons/${canon.id}/`)
@@ -1665,11 +1696,15 @@ export function projectPublicDocuments(
       }
     })),
     ...events.map((event) => {
-      const eventRelations = relations.filter(
-        (relation) =>
-          relation.source_event_id === event.id ||
-          relation.target_event_id === event.id
-      );
+      const eventRelations = relations.filter((relation) => {
+        const endpoints = canonicalRelationEndpoints(relation);
+        return (
+          endpoints &&
+          [endpoints.source, endpoints.target].some(
+            (ref) => endpointEventId(ref) === event.id
+          )
+        );
+      });
       const relatedIds = new Set(
         eventRelations.flatMap((relation) =>
           [relation.source_event_id, relation.target_event_id].flatMap((id) =>
@@ -1701,6 +1736,13 @@ export function projectPublicDocuments(
           narratives: narratives.filter(
             (item) => item.scope_type === "event" && item.scope_id === event.id
           ),
+          ...(relational
+            ? {
+                temporal_artifact: {
+                  key: `${prefix}/graph/canons/${event.canon_id}/temporal.json`
+                }
+              }
+            : {}),
           temporal_placements: placements,
           time_systems: timeSystems.filter((timeSystem) =>
             relevantTimeIds.has(timeSystem.id)
@@ -1740,6 +1782,7 @@ export function projectPublicDocuments(
         entries: searchEntries(view, revision, subjects.projections)
       }
     },
+    ...temporalDocuments,
     ...timelineDocuments,
     ...subjectDocuments,
     ...processDocuments,

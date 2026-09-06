@@ -131,6 +131,8 @@ TS-010 승인 후에만 수행한다.
 
 2026-09-06 진행 checkpoint: numeric contract version `2`의 tagged Event/virtual Time Event endpoint, `not_after`·`coincides`, canonical coordinate adapter 검증, deterministic `time-event.resolve`, append-only Relation reference migration과 PostgreSQL integration fixture를 구현 중이다. 기존 `source_event_id`·`target_event_id`와 Placement는 보존하며 기존 row를 backfill하지 않는다. v2 write는 fixture의 `Temporal Expressiveness Observatory` World ID로만 gate한다. 실제 migration 실행, Railway 배포와 해당 World의 실제 commit은 사용자 승인 전 수행하지 않는다. validate는 읽기 전용 검증이며 별도 쓰기 승인이 필요하지 않다.
 
+Slice 4 검증 완료: commit `203763a89ac96bfb15bfc56daa61c3875491a9da`, [CI 34014969062](https://github.com/neocjmix/moirai/actions/runs/34014969062) 전체 성공. PostgreSQL에서 실제 bootstrap·corpus transaction과 Canon read-back·resolve 비영속성·5개 거절 corpus를 확인했다. 이는 CI 전용 DB의 근거이며 승인된 cloud 시험 World 종단간 검증을 대체하지 않는다.
+
 ## Slice 5 — projector 전환
 
 - Timeline bound와 정렬을 새 solver에서 계산한다.
@@ -140,6 +142,8 @@ TS-010 승인 후에만 수행한다.
 - revision별 artifact와 semantic digest의 결정성을 유지한다.
 
 전환은 World 단위 feature flag 또는 shadow gate로 제한한다. 새/구 projector 결과가 허용된 차이 목록에 없으면 publication target을 전진시키지 않는다.
+
+2026-09-06 구현 중: 시험 World에 한해 revision별 `temporal.json` artifact를 새 solver에서 생성한다. 기존 numeric Timeline·descendant Duration·membership State artifact는 해당 World에서 새 artifact로 대체하고, 기존 World는 기존 projector를 유지한다. 알려진 범위·exact·relative-only·명시적 Duration·descendant span·관계 증거 기반 during·membership boundary resolver를 분리한다. fixed corpus와 PostgreSQL read-back을 publication 생성까지 검증한다. UI 연결은 Slice 6에서 수행한다.
 
 ## Slice 6 — Clotho와 Atropos
 

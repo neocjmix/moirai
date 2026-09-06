@@ -707,11 +707,11 @@ function validateRelationEndpointKinds(
   path: string
 ): void {
   if (type === "contains") {
-    if (!sourceEvent) {
+    if (!sourceEvent || sourceEvent.kind !== "composite") {
       fail(
         "relation_endpoint_kind_invalid",
         path,
-        "contains requires a persisted Event as its source"
+        "contains requires a Composite Event as its source"
       );
     }
     return;

@@ -1,5 +1,9 @@
+import { readFile } from "node:fs/promises";
+import { join } from "node:path";
 import {
   SYNTHETIC_FIXTURE,
+  TEMPORAL_EXPRESSIVENESS_WORLD_ID,
+  type PublicRelationalTemporalProjection,
   type PublicCanon,
   type PublicEvent,
   type PublicNarrative,
@@ -319,6 +323,21 @@ export async function readPublicationObject(key: string): Promise<ObjectRead> {
     ) {
       throw new Error("Publication Store is not configured");
     }
+    if (
+      process.env.ALLOW_SYNTHETIC_PUBLICATION_FIXTURE === "true" &&
+      process.env.TEMPORAL_PUBLICATION_FIXTURE_DIR &&
+      key.startsWith(`worlds/${TEMPORAL_EXPRESSIVENESS_WORLD_ID}/`)
+    ) {
+      try {
+        const body = await readFile(
+          join(process.env.TEMPORAL_PUBLICATION_FIXTURE_DIR, key),
+          "utf8"
+        );
+        return { status: 200, body, etag: '"temporal-ci-fixture"' };
+      } catch {
+        return { status: 404, body: null, etag: null };
+      }
+    }
     const body = localObjects.get(key);
     return body
       ? { status: 200, body, etag: '"local-m2"' }
@@ -389,6 +408,7 @@ export async function readCanon(
   subjectArtifacts: readonly PublicSubjectArtifactReference[];
   processArtifacts: readonly PublicProcessArtifactReference[];
   stateArtifact: PublicStateArtifactReference | null;
+  temporalArtifact: { key: string; algorithm_version: string } | null;
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -401,6 +421,7 @@ export async function readCanon(
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
     process_artifacts?: readonly PublicProcessArtifactReference[];
     state_artifact?: PublicStateArtifactReference | null;
+    temporal_artifact?: { key: string; algorithm_version: string };
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/canons/${canonId}.json`
@@ -419,7 +440,8 @@ export async function readCanon(
     timelineArtifacts: document.timeline_artifacts ?? [],
     subjectArtifacts: document.subject_artifacts ?? [],
     processArtifacts: document.process_artifacts ?? [],
-    stateArtifact: document.state_artifact ?? null
+    stateArtifact: document.state_artifact ?? null,
+    temporalArtifact: document.temporal_artifact ?? null
   };
 }
 
@@ -608,4 +630,32 @@ export async function searchWorld(
           return terms.every((term) => haystack.includes(term));
         });
   return { pointer, entries };
+}
+
+export async function readRelationalTime(
+  worldId: string,
+  canonId: string,
+  reference: { key: string; algorithm_version: string },
+  selected: SelectedPublication
+): Promise<PublicRelationalTemporalProjection> {
+  assertPublicId(canonId);
+  const revision = selected.pointer.served_revision;
+  if (
+    selected.pointer.world_id !== worldId ||
+    reference.key !==
+      `worlds/${worldId}/revisions/${revision}/graph/canons/${canonId}/temporal.json`
+  )
+    throw new Error("invalid temporal artifact key");
+  const document = await readJson<
+    PublicRelationalTemporalProjection & { served_revision: number }
+  >(reference.key);
+  if (
+    document.world_id !== worldId ||
+    document.canon_id !== canonId ||
+    document.source_revision !== revision ||
+    document.served_revision !== revision ||
+    document.algorithm_version !== reference.algorithm_version
+  )
+    throw new Error("mixed Publication revisions");
+  return document;
 }

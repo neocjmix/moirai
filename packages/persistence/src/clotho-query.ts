@@ -1,5 +1,12 @@
 import type { ClothoMethod, PublicEvent } from "@moirai/contracts";
-import { ChangeSetError, stableStringify } from "@moirai/domain";
+import {
+  ChangeSetError,
+  TEMPORAL_SOLVER_VERSION,
+  canonicalRelationEndpoints,
+  resolveTimeEvent,
+  stableStringify,
+  temporalAdapterRegistry
+} from "@moirai/domain";
 import { createHash } from "node:crypto";
 import {
   getPublicationStatus,
@@ -94,7 +101,8 @@ function graph(
   seeds: readonly string[],
   canons: readonly string[],
   input: Input,
-  cursor: Cursor
+  cursor: Cursor,
+  wholeCanon = false
 ) {
   const depth = Number(input.depth ?? 1);
   const types = input.relation_types as string[] | undefined;
@@ -106,21 +114,29 @@ function graph(
       canons.includes(relation.canon_id) &&
       (!types || types.includes(relation.type))
   );
-  const reached = new Set(seeds);
+  const reached = new Set(wholeCanon ? events.map((event) => event.id) : seeds);
   let frontier = new Set(seeds);
   for (let hop = 0; hop < depth; hop++) {
     const next = new Set<string>();
     for (const relation of relations) {
+      const endpoints = canonicalRelationEndpoints(relation);
+      if (
+        !endpoints ||
+        endpoints.source.kind !== "event" ||
+        endpoints.target.kind !== "event"
+      ) {
+        continue;
+      }
       if (
         (direction !== "incoming" || relation.direction === "undirected") &&
-        frontier.has(relation.source_event_id)
+        frontier.has(endpoints.source.event_id)
       )
-        next.add(relation.target_event_id);
+        next.add(endpoints.target.event_id);
       if (
         (direction !== "outgoing" || relation.direction === "undirected") &&
-        frontier.has(relation.target_event_id)
+        frontier.has(endpoints.target.event_id)
       )
-        next.add(relation.source_event_id);
+        next.add(endpoints.source.event_id);
     }
     frontier = new Set([...next].filter((id) => !reached.has(id)));
     for (const id of frontier) reached.add(id);
@@ -129,11 +145,17 @@ function graph(
     .filter((event) => reached.has(event.id))
     .sort((a, b) => a.id.localeCompare(b.id));
   const selectedRelations = relations
-    .filter(
-      (relation) =>
-        reached.has(relation.source_event_id) &&
-        reached.has(relation.target_event_id)
-    )
+    .filter((relation) => {
+      const endpoints = canonicalRelationEndpoints(relation);
+      if (!endpoints) return false;
+      const eventIds = [endpoints.source, endpoints.target].flatMap(
+        (reference) => (reference.kind === "event" ? [reference.event_id] : [])
+      );
+      return (
+        (wholeCanon || eventIds.length > 0) &&
+        eventIds.every((id) => reached.has(id))
+      );
+    })
     .sort((a, b) => a.id.localeCompare(b.id));
   const selectedNarratives = view.narratives
     .filter(
@@ -217,9 +239,20 @@ function graph(
     next.chars < position ||
     next.times < times.length ||
     next.placements < placements.length;
-  const boundary = relations.some(
-    (r) => reached.has(r.source_event_id) !== reached.has(r.target_event_id)
-  );
+  const boundary = relations.some((relation) => {
+    const endpoints = canonicalRelationEndpoints(relation);
+    if (
+      !endpoints ||
+      endpoints.source.kind !== "event" ||
+      endpoints.target.kind !== "event"
+    ) {
+      return false;
+    }
+    return (
+      reached.has(endpoints.source.event_id) !==
+      reached.has(endpoints.target.event_id)
+    );
+  });
   return {
     source_revision: cursor.revision,
     world: view.world,
@@ -231,14 +264,26 @@ function graph(
     relations: relationPage,
     narratives: narrativePage,
     time_systems: timePage,
+    canon_time_systems: view.canonTimeSystems
+      .filter(
+        (link) =>
+          canons.includes(link.canon_id) &&
+          timePage.some((system) => system.id === link.time_system_id)
+      )
+      .sort((a, b) => a.id.localeCompare(b.id)),
     temporal_placements: placementPage,
-    containment_paths: relationPage
-      .filter((r) => r.type === "contains")
-      .map((r) => [r.source_event_id, r.target_event_id]),
+    containment_paths: relationPage.flatMap((relation) => {
+      const endpoints = canonicalRelationEndpoints(relation);
+      return relation.type === "contains" &&
+        endpoints?.source.kind === "event" &&
+        endpoints.target.kind === "event"
+        ? [[endpoints.source.event_id, endpoints.target.event_id]]
+        : [];
+    }),
     truncated,
     depth_boundary: boundary,
     next_cursor: truncated ? encode(next) : null,
-    returned_scope: "bounded_neighborhood",
+    returned_scope: wholeCanon ? "bounded_canon" : "bounded_neighborhood",
     warnings: [],
     totals: {
       events: selectedEvents.length,
@@ -293,6 +338,64 @@ export async function queryClotho(
   if (cursor.revision > status.currentRevision)
     return error("invalid_revision", "at_revision");
   const view = await readWorldAtRevision(db, worldId, cursor.revision);
+  if (method === "time-event.resolve") {
+    const timeSystem = find(
+      view.timeSystems,
+      input.time_system_id,
+      "time_system_id"
+    );
+    if (timeSystem.definition_version !== input.definition_version) {
+      throw new ChangeSetError(
+        "time_system_version_mismatch",
+        "definition_version",
+        "Time System definition version does not match the requested resolver version",
+        [timeSystem.id]
+      );
+    }
+    try {
+      return {
+        source_revision: cursor.revision,
+        time_event: resolveTimeEvent(
+          {
+            kind: "time_event",
+            time_system_ref: { time_system_id: timeSystem.id },
+            definition_version: String(input.definition_version),
+            coordinate: String(input.coordinate)
+          },
+          temporalAdapterRegistry(view.timeSystems)
+        )
+      };
+    } catch (cause) {
+      const message =
+        cause instanceof Error ? cause.message : "resolver failed";
+      const code = message.startsWith("Unknown Time System adapter")
+        ? "time_system_capability_missing"
+        : "invalid_time_coordinate";
+      throw new ChangeSetError(
+        code,
+        "coordinate",
+        message,
+        [timeSystem.id],
+        false,
+        {
+          algorithm_version: TEMPORAL_SOLVER_VERSION,
+          ...(code === "time_system_capability_missing"
+            ? { required_capability: "canonicalize" }
+            : { original_coordinate: input.coordinate })
+        }
+      );
+    }
+  }
+  if (method === "world.export") {
+    if (Buffer.byteLength(JSON.stringify(view)) > 3_145_728)
+      return error("export_budget_exceeded", "world_id");
+    return {
+      source_revision: cursor.revision,
+      export_kind: "content",
+      completeness: "complete",
+      snapshot: view
+    };
+  }
   if (method === "world.get") {
     const result = page(
       [...view.timeSystems].sort((a, b) => a.id.localeCompare(b.id)),
@@ -317,7 +420,7 @@ export async function queryClotho(
     return {
       canon,
       event_count: view.events.filter((e) => e.canon_id === canon.id).length,
-      ...graph(view, [], [canon.id], input, cursor)
+      ...graph(view, [], [canon.id], input, cursor, true)
     };
   }
   if (method === "event.search") {

@@ -9,7 +9,10 @@
     "start": "node dist/cli.js"
   },
   "dependencies": {
-    "@moirai/contracts": "workspace:*"
+    "@moirai/contracts": "workspace:*",
+    "@moirai/domain": "workspace:*",
+    "yauzl": "3.4.0",
+    "yazl": "3.3.1"
   },
   "devDependencies": {
     "typescript": "^5.9.0"

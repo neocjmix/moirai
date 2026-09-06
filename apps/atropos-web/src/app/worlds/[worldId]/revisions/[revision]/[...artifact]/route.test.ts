@@ -57,4 +57,14 @@ describe("revision artifact route allowlist", () => {
       `graph/canons/${canonId}/states.json`
     );
   });
+
+  it("serves the Canon relational-time graph artifact", () => {
+    const canonId = "019f3b00-0000-7000-8000-000000000002";
+    expect(artifactPath(["graph", "canons", canonId, "temporal.json"])).toBe(
+      `graph/canons/${canonId}/temporal.json`
+    );
+    expect(() =>
+      artifactPath(["graph", "canons", "private", "temporal.json"])
+    ).toThrow();
+  });
 });

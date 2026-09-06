@@ -1,4 +1,7 @@
-import type { CONTRACT_VERSION } from "./versions.js";
+import type {
+  CONTRACT_VERSION,
+  TEMPORAL_CONTRACT_VERSION
+} from "./versions.js";
 export * from "./versions.js";
 export * from "./clotho.js";
 
@@ -50,6 +53,41 @@ export type EntityType =
 export type ProjectionStatus = "ready" | "building" | "failed";
 export type SmokeResult = "passed" | "failed" | "running" | "unknown";
 export type EntityReference = string | { readonly client_ref: string };
+export type ChangeSetContractVersion =
+  typeof CONTRACT_VERSION | typeof TEMPORAL_CONTRACT_VERSION;
+
+/** A stored Event or a dynamic Time Event. Dynamic references never create Event rows. */
+export type CanonicalEventReference =
+  | {
+      readonly kind: "event";
+      readonly event_id: string;
+    }
+  | {
+      readonly kind: "time_event";
+      readonly time_system_ref: { readonly time_system_id: string };
+      readonly definition_version: string;
+      readonly coordinate: string;
+    };
+
+export type ChangePlanEventReference =
+  | CanonicalEventReference
+  | {
+      readonly kind: "event";
+      readonly client_ref: string;
+    }
+  | {
+      readonly kind: "time_event";
+      readonly time_system_ref: { readonly client_ref: string };
+      readonly definition_version: string;
+      readonly coordinate: string;
+    };
+
+export type ResolvedEventReference =
+  | Extract<CanonicalEventReference, { readonly kind: "event" }>
+  | (Extract<CanonicalEventReference, { readonly kind: "time_event" }> & {
+      readonly id: string;
+      readonly persisted: false;
+    });
 
 interface CreateOperationBase {
   readonly kind: "create";
@@ -136,6 +174,8 @@ export interface CreateTemporalPlacementOperation extends CreateOperationBase {
 export type RelationType =
   | "contains"
   | "precedes"
+  | "not_after"
+  | "coincides"
   | "causes"
   | "enables"
   | "prevents"
@@ -154,8 +194,12 @@ export interface CreateRelationOperation extends CreateOperationBase {
   readonly value: {
     readonly canon_id: EntityReference;
     readonly type: RelationType;
-    readonly source_event_id: EntityReference;
-    readonly target_event_id: EntityReference;
+    /** Legacy 0.3.0 endpoint form. It is normalized to source_ref/target_ref. */
+    readonly source_event_id?: EntityReference;
+    readonly target_event_id?: EntityReference;
+    /** TS-010 endpoint form. The two legacy fields must be absent. */
+    readonly source_ref?: ChangePlanEventReference;
+    readonly target_ref?: ChangePlanEventReference;
     readonly direction: "directed" | "undirected";
     readonly attributes: Readonly<Record<string, unknown>>;
   };
@@ -191,7 +235,7 @@ export type CreateOperation =
   | CreateNarrativeOperation;
 
 export interface CreateChangeSet {
-  readonly contract_version: typeof CONTRACT_VERSION;
+  readonly contract_version: ChangeSetContractVersion;
   readonly change_set_id: string;
   readonly world_id: string;
   readonly expected_revision: number;
@@ -287,8 +331,12 @@ export interface PublicRelation {
   readonly id: string;
   readonly canon_id: string;
   readonly type: RelationType;
-  readonly source_event_id: string;
-  readonly target_event_id: string;
+  /** Canonical TS-010 endpoint references. Legacy rows are decorated on read. */
+  readonly source_ref?: CanonicalEventReference;
+  readonly target_ref?: CanonicalEventReference;
+  /** Compatibility/index fields. Null means the endpoint is a virtual Time Event. */
+  readonly source_event_id?: string | null;
+  readonly target_event_id?: string | null;
   readonly direction: "directed" | "undirected";
   readonly attributes: Readonly<Record<string, unknown>>;
 }
@@ -645,3 +693,5 @@ export interface PublicStatusResponse {
     readonly status: "ok";
   };
 }
+
+export * from "./relational-time.js";

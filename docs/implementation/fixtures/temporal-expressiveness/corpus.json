@@ -1,0 +1,52 @@
+{
+  "fixture_version": 1,
+  "contract_version": 2,
+  "world": {
+    "id": "019f3b00-0000-7000-8000-000000000001",
+    "slug": "temporal-expressiveness",
+    "title": "Temporal Expressiveness Observatory"
+  },
+  "canon_id": "019f3b00-0000-7000-8000-000000000002",
+  "time_system": {
+    "id": "019f3b00-0000-7000-8000-000000000003",
+    "slug": "proleptic-gregorian-utc",
+    "definition_version": "1"
+  },
+  "coordinates": {
+    "year_start": "0220-01-01T00:00:00.000000000000Z",
+    "year_end": "0221-01-01T00:00:00.000000000000Z",
+    "month_start": "1969-07-01T00:00:00.000000000000Z",
+    "month_end": "1969-08-01T00:00:00.000000000000Z",
+    "day_start": "1969-07-20T00:00:00.000000000000Z",
+    "day_end": "1969-07-21T00:00:00.000000000000Z",
+    "millisecond_start": "2026-09-05T08:13:21.123000000000Z",
+    "millisecond_end": "2026-09-05T08:13:21.124000000000Z",
+    "picosecond_start": "2026-09-05T08:13:21.123456789012Z",
+    "picosecond_end": "2026-09-05T08:13:21.123456789013Z",
+    "window_start": "2026-09-05T08:13:22.000000000000Z",
+    "window_end": "2026-09-05T08:13:24.000000000000Z",
+    "child_start": "2026-09-05T08:13:22.500000000000Z",
+    "child_end": "2026-09-05T08:13:22.501000000000Z"
+  },
+  "cases": [
+    { "id": "te-year-220", "expected_kind": "bounded" },
+    { "id": "te-month-1969-07", "expected_kind": "bounded" },
+    { "id": "te-day-1969-07-20", "expected_kind": "bounded" },
+    { "id": "te-ms-123", "expected_kind": "bounded" },
+    { "id": "te-ps-012", "expected_kind": "bounded" },
+    { "id": "te-exact-time", "expected_kind": "exact_time_event" },
+    { "id": "te-exact-observation", "expected_kind": "exact" },
+    { "id": "te-window", "expected_kind": "explicit_duration" },
+    { "id": "te-child", "expected_kind": "descendant_span" },
+    { "id": "te-during", "expected_kind": "during_not_contained" },
+    { "id": "te-relative-a", "expected_kind": "relative_only" },
+    { "id": "te-relative-b", "expected_kind": "relative_only" }
+  ],
+  "rejection_cases": [
+    "te-bad-cycle",
+    "te-bad-boundary",
+    "te-bad-system",
+    "te-bad-coordinate",
+    "te-bad-duplicate-start"
+  ]
+}

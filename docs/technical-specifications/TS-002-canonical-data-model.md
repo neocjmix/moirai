@@ -29,16 +29,17 @@ traces:
 - 식별자는 생성 후 변경하거나 재사용하지 않는다.
 - 사람이 읽는 `slug`, `title`, `label`과 외부 자료의 식별자를 primary key로 사용하지 않는다.
 - 공개 URL의 정체성은 immutable ID에 기반한다. slug는 읽기 편의를 위한 별칭이며 변경 후에도 기존 별칭을 redirect할 수 있어야 한다.
+- 좌표에서 동적으로 resolve되는 Time Event는 지속 레코드가 아니므로 UUIDv7 생명주기 규칙의 대상이 아니다. 식별자는 Time System ID, definition version과 canonical coordinate로 결정한다.
 
 ### 공통 운영 필드
 
 정본 레코드는 최소한 다음 운영 필드를 가진다.
 
-| 필드 | 의미 |
-|---|---|
-| `id` | immutable UUIDv7 |
-| `created_revision` | 레코드를 처음 만든 World Revision |
-| `updated_revision` | 현재 값을 만든 마지막 World Revision |
+| 필드                 | 의미                                                     |
+| -------------------- | -------------------------------------------------------- |
+| `id`                 | immutable UUIDv7                                         |
+| `created_revision`   | 레코드를 처음 만든 World Revision                        |
+| `updated_revision`   | 현재 값을 만든 마지막 World Revision                     |
 | `withdrawn_revision` | 현재 공개 상태에서 철회된 Revision. 활성 상태이면 `null` |
 
 생성·수정 시각과 actor는 레코드마다 중복 저장하지 않고 Change Set에서 추적할 수 있다. 조회 최적화를 위한 중복 필드는 허용하지만 Change Set 기록과 모순되어서는 안 된다.
@@ -70,14 +71,14 @@ erDiagram
 
 `worlds`는 함께 작성·관리·반출하는 최상위 트랜잭션 범위다.
 
-| 필드 | 제약 |
-|---|---|
-| `id` | primary key |
-| `slug` | 현재 공개 별칭. 설치 범위에서 unique |
-| `title` | 필수 표시 이름 |
-| `description` | 선택적 운영·탐색 설명 |
-| `current_revision` | 성공한 최신 World Revision 번호 |
-| `publication_target_revision` | 자동 공개 대상인 최신 Revision 번호 |
+| 필드                          | 제약                                 |
+| ----------------------------- | ------------------------------------ |
+| `id`                          | primary key                          |
+| `slug`                        | 현재 공개 별칭. 설치 범위에서 unique |
+| `title`                       | 필수 표시 이름                       |
+| `description`                 | 선택적 운영·탐색 설명                |
+| `current_revision`            | 성공한 최신 World Revision 번호      |
+| `publication_target_revision` | 자동 공개 대상인 최신 Revision 번호  |
 
 World는 Canon 사이의 진위를 판정하는 필드나 `default_canon_id`를 갖지 않는다.
 
@@ -85,13 +86,13 @@ World는 Canon 사이의 진위를 판정하는 필드나 `default_canon_id`를 
 
 `canons`는 Event와 Relation이 사실로 성립하는 범위다.
 
-| 필드 | 제약 |
-|---|---|
-| `id` | primary key |
-| `world_id` | 필수 World 참조 |
-| `slug` | World 안에서 unique인 공개 별칭 |
-| `title` | 필수 표시 이름 |
-| `description` | 선택적 범위 설명 |
+| 필드          | 제약                            |
+| ------------- | ------------------------------- |
+| `id`          | primary key                     |
+| `world_id`    | 필수 World 참조                 |
+| `slug`        | World 안에서 unique인 공개 별칭 |
+| `title`       | 필수 표시 이름                  |
+| `description` | 선택적 범위 설명                |
 
 금지되는 필드와 동작:
 
@@ -101,41 +102,57 @@ World는 Canon 사이의 진위를 판정하는 필드나 `default_canon_id`를 
 
 Canon을 다른 World로 이동하는 것은 1차 구현에서 지원하지 않는다.
 
-## TS-002.6 Time System과 시간 배치
+## TS-002.6 Time System과 시간 reference
 
 ### Time System
 
 `time_systems`는 하나의 World 안에서 좌표와 비교 규칙을 정의한다. 같은 의미의 일반 시간 체계라도 World 반출의 자기완결성을 위해 각 World가 필요한 정의를 소유한다.
 
-| 필드 | 제약 |
-|---|---|
-| `id` | primary key |
-| `world_id` | 필수 World 참조 |
-| `slug` | World 안에서 unique |
-| `title` | 필수 표시 이름 |
-| `kind` | `calendar`, `ordinal`, `relative`, `custom` 중 하나 |
-| `definition_version` | 좌표 해석 schema version |
-| `definition` | 좌표 검증·정렬·표시에 필요한 JSON document |
+| 필드                 | 제약                                                |
+| -------------------- | --------------------------------------------------- |
+| `id`                 | primary key                                         |
+| `world_id`           | 필수 World 참조                                     |
+| `slug`               | World 안에서 unique                                 |
+| `title`              | 필수 표시 이름                                      |
+| `kind`               | `calendar`, `ordinal`, `relative`, `custom` 중 하나 |
+| `definition_version` | 좌표 해석 schema version                            |
+| `definition`         | 좌표 검증·정렬·표시에 필요한 JSON document          |
 
 `canon_time_systems`는 Canon과 Time System의 다대다 사용 관계를 보존한다. 같은 World에 속한 Canon과 Time System만 연결할 수 있다. 어떤 연결도 기본 또는 정본 시간축으로 표시하지 않는다.
 
-### 시간 배치
+Time System `definition`은 최소한 canonical coordinate codec과 equality를 제공한다. compare, boundary, difference와 다른 Time System으로의 conversion은 선택적 capability다. 좌표는 adapter별 lossless canonical string이며 Moirai core는 이를 Gregorian 또는 JSON number로 강제 변환하지 않는다. capability가 없는 계산은 값을 추측하지 않고 unresolved로 남긴다.
 
-Event의 시간은 `event_temporal_placements`로 표현한다. 시간 배치는 Canon의 Event와 그 Canon이 사용하는 Time System을 연결하는 Canon 내부 사실이다.
+### virtual Time Event reference
 
-| 필드 | 의미 |
-|---|---|
-| `id` | 시간 배치 식별자 |
-| `event_id` | 대상 Event |
-| `time_system_id` | 좌표를 해석할 Time System |
-| `kind` | `point` 또는 `interval` |
-| `earliest_start`, `latest_start` | 시작 좌표의 가능한 경계 |
-| `earliest_end`, `latest_end` | 종료 좌표의 가능한 경계. point이면 `null` 가능 |
-| `precision` | 좌표의 유효 정밀도 |
-| `certainty` | `exact`, `approximate`, `uncertain` |
-| `display_label` | 원자료의 표기를 보존해야 할 때 사용하는 선택적 문자열 |
+정확한 수학적 좌표 하나는 저장 Event가 아니라 virtual Time Event로 resolve한다.
 
-각 좌표는 Time System의 `definition_version`으로 검증되는 JSON 값이다. 정렬과 범위 비교는 Time System adapter가 담당하며 임의 문자열 비교를 사용하지 않는다.
+| 필드                 | 의미                                                                                        |
+| -------------------- | ------------------------------------------------------------------------------------------- |
+| `kind`               | `time_event`                                                                                |
+| `time_system_ref`    | `time_system_id` 또는 같은 Change Plan의 `client_ref`를 가진 tagged reference               |
+| `definition_version` | 좌표를 해석하는 고정 version                                                                |
+| `coordinate`         | adapter가 검증한 canonical string                                                           |
+| `id`                 | resolve된 Time System ID, version, coordinate의 canonical encoding에서 결정되는 동적 식별자 |
+
+virtual Time Event는 Event table, Change Operation의 entity lifecycle 또는 Revision별 활성 행을 갖지 않는다. Relation과 projection evidence는 tagged reference 전체를 보존한다. 같은 세 입력은 항상 같은 ID를 resolve한다.
+
+### legacy 시간 배치
+
+기존 `event_temporal_placements`는 전환 기간의 호환 입력·출력이다. 신규 Canon 시간 의미는 EventReference endpoint를 가진 Relation이 소유한다. legacy Placement는 원본을 보존한 채 adapter가 관계 제약으로 분류하며, 새 입력을 Placement와 Relation 양쪽에 독립 정본으로 이중 기록하지 않는다.
+
+| 필드                             | 의미                                                  |
+| -------------------------------- | ----------------------------------------------------- |
+| `id`                             | 시간 배치 식별자                                      |
+| `event_id`                       | 대상 Event                                            |
+| `time_system_id`                 | 좌표를 해석할 Time System                             |
+| `kind`                           | `point` 또는 `interval`                               |
+| `earliest_start`, `latest_start` | 시작 좌표의 가능한 경계                               |
+| `earliest_end`, `latest_end`     | 종료 좌표의 가능한 경계. point이면 `null` 가능        |
+| `precision`                      | 좌표의 유효 정밀도                                    |
+| `certainty`                      | `exact`, `approximate`, `uncertain`                   |
+| `display_label`                  | 원자료의 표기를 보존해야 할 때 사용하는 선택적 문자열 |
+
+기존 각 좌표는 Time System의 당시 `definition_version`으로 검증된다. 정렬과 범위 비교는 Time System adapter가 담당하며 임의 문자열 비교를 사용하지 않는다. 신규 좌표 reference와 projection은 lossless canonical string을 사용한다.
 
 - 정확한 point는 `earliest_start`와 `latest_start`가 같다.
 - 부정확한 point는 두 경계 사이의 어느 지점임을 뜻한다.
@@ -147,15 +164,15 @@ Event의 시간은 `event_temporal_placements`로 표현한다. 시간 배치는
 
 `events`는 특정 Canon 안에서 발생하거나 성립하는 사실의 핵심 단위다.
 
-| 필드 | 제약 |
-|---|---|
-| `id` | primary key |
-| `canon_id` | 필수 Canon 참조, 생성 후 변경 불가 |
-| `slug` | Canon 안에서 선택적으로 unique |
-| `kind` | `atomic` 또는 `composite` |
-| `title` | 필수 표시 이름 |
-| `summary` | 선택적 짧은 설명 |
-| `roles` | open vocabulary 문자열 배열 |
+| 필드         | 제약                                       |
+| ------------ | ------------------------------------------ |
+| `id`         | primary key                                |
+| `canon_id`   | 필수 Canon 참조, 생성 후 변경 불가         |
+| `slug`       | Canon 안에서 선택적으로 unique             |
+| `kind`       | `atomic` 또는 `composite`                  |
+| `title`      | 필수 표시 이름                             |
+| `summary`    | 선택적 짧은 설명                           |
+| `roles`      | open vocabulary 문자열 배열                |
 | `attributes` | versioned JSON schema로 검증되는 확장 속성 |
 
 ### Composite Event와 Process
@@ -171,32 +188,35 @@ Event의 시간은 `event_temporal_placements`로 표현한다. 시간 배치는
 
 `relations`는 같은 Canon의 Event 사이에 성립하는 사실이다.
 
-| 필드 | 제약 |
-|---|---|
-| `id` | primary key |
-| `canon_id` | 양 endpoint와 동일한 Canon |
-| `type` | versioned open vocabulary의 관계 type |
-| `source_event_id` | 필수 Event 참조 |
-| `target_event_id` | 필수 Event 참조 |
-| `direction` | `directed` 또는 `undirected` |
-| `attributes` | 관계별 schema로 검증되는 확장 속성 |
+| 필드         | 제약                                  |
+| ------------ | ------------------------------------- |
+| `id`         | primary key                           |
+| `canon_id`   | 양 endpoint와 동일한 Canon            |
+| `type`       | versioned open vocabulary의 관계 type |
+| `source_ref` | 필수 tagged Event reference           |
+| `target_ref` | 필수 tagged Event reference           |
+| `direction`  | `directed` 또는 `undirected`          |
+| `attributes` | 관계별 schema로 검증되는 확장 속성    |
 
 초기 vocabulary는 최소한 다음 의미 영역을 포함한다.
 
 - 구성: `contains`
 - 구조적 순서: `precedes`
+- 비엄격 시간 경계: `not_after`
+- 동일 위치: `coincides`
 - 인과: `causes`, `enables`, `prevents`, `influences`
 - 경계: `starts`, `ends`
 - 정체성: `identity_continues`, `identity_instance_of`, `identity_splits`, `identity_merges`
 - 유래와 전달: `derives_from`, `transfers`
 
-관계 type은 문자열만 추가해 의미를 바꾸지 않는다. 새 type은 방향성, 허용 endpoint, 역관계, cycle 허용 여부와 파생 영향 규칙을 registry에 정의해야 한다. identity type은 추가로 Subject component를 합치는 `equivalent`인지 서로 다른 Subject 사이의 계보만 잇는 `lineage`인지 선언한다.
+`precedes`는 strict `<`, `not_after`는 `≤`, `coincides`는 대칭인 `=`다. calendar와 granularity 범위는 lower bound에 `not_after`, exclusive upper bound에 `precedes`를 사용한다. 관계 type은 문자열만 추가해 의미를 바꾸지 않는다. 새 type은 방향성, 허용 endpoint, 역관계, cycle 허용 여부와 파생 영향 규칙을 registry에 정의해야 한다. identity type은 추가로 Subject component를 합치는 `equivalent`인지 서로 다른 Subject 사이의 계보만 잇는 `lineage`인지 선언한다.
 
 ### 무결성
 
-- endpoint는 모두 존재하고 활성 또는 같은 Change Set에서 생성되어야 한다.
-- Relation과 endpoint는 같은 Canon에 속해야 한다.
+- persisted Event endpoint는 모두 존재하고 활성 또는 같은 Change Set에서 생성되어야 한다.
+- persisted Event endpoint와 Relation은 같은 Canon에 속해야 한다. virtual Time Event endpoint의 Time System은 같은 World에 속하고 해당 Canon이 사용해야 한다.
 - `contains`는 cycle을 만들 수 없다.
+- `precedes`와 strict·non-strict·equality 제약 결합은 모순을 만들 수 없다.
 - self relation은 type registry가 명시적으로 허용하지 않는 한 거부한다.
 - endpoint 철회 시 영향을 받는 Relation을 같은 Change Set에서 철회하거나 유효한 대체 구조를 제공해야 한다.
 
@@ -204,17 +224,17 @@ Event의 시간은 `event_temporal_placements`로 표현한다. 시간 배치는
 
 `narratives`는 사람이 읽을 수 있는 서술이다.
 
-| 필드 | 제약 |
-|---|---|
-| `id` | primary key |
-| `canon_id` | Narrative의 Canon 범위 |
-| `scope_type` | `canon` 또는 `event` |
-| `scope_id` | Canon 또는 Event 식별자 |
-| `locale` | BCP 47 언어 tag |
-| `kind` | `primary`, `summary`, `annotation` 등 versioned vocabulary |
-| `title` | 선택적 제목 |
-| `body` | CommonMark Markdown 원문 |
-| `public_references` | 명시적으로 공개할 인용·출처 설명의 내장 배열 |
+| 필드                | 제약                                                       |
+| ------------------- | ---------------------------------------------------------- |
+| `id`                | primary key                                                |
+| `canon_id`          | Narrative의 Canon 범위                                     |
+| `scope_type`        | `canon` 또는 `event`                                       |
+| `scope_id`          | Canon 또는 Event 식별자                                    |
+| `locale`            | BCP 47 언어 tag                                            |
+| `kind`              | `primary`, `summary`, `annotation` 등 versioned vocabulary |
+| `title`             | 선택적 제목                                                |
+| `body`              | CommonMark Markdown 원문                                   |
+| `public_references` | 명시적으로 공개할 인용·출처 설명의 내장 배열               |
 
 Composite Event와 Process Narrative도 Event를 대상으로 하므로 별도 scope type을 만들지 않는다. 렌더링 시 raw HTML은 기본적으로 허용하지 않으며 허용할 경우 Publication 생성 단계에서 정화한다.
 
@@ -242,14 +262,14 @@ Canon 간 대응은 Canon 내부의 사실이 아닌 World 범위의 관리·비
 
 Subject는 identity Relation으로 연결된 Event 집합에서 계산한다. 정본 Subject 테이블은 만들지 않지만 공개 링크와 Canon 간 대응을 위해 `subject_handles`라는 운영 식별 표면을 둔다.
 
-| 필드 | 의미 |
-|---|---|
-| `id` | 안정적인 opaque 식별자 |
-| `canon_id` | Subject가 파생되는 Canon |
-| `anchor_event_id` | handle의 연속성을 결정하는 활성 Event |
-| `status` | `active`, `redirected`, `unresolved` |
-| `redirect_to` | 병합으로 대체된 handle |
-| `projection_revision` | 마지막으로 해석된 Revision |
+| 필드                  | 의미                                  |
+| --------------------- | ------------------------------------- |
+| `id`                  | 안정적인 opaque 식별자                |
+| `canon_id`            | Subject가 파생되는 Canon              |
+| `anchor_event_id`     | handle의 연속성을 결정하는 활성 Event |
+| `status`              | `active`, `redirected`, `unresolved`  |
+| `redirect_to`         | 병합으로 대체된 handle                |
+| `projection_revision` | 마지막으로 해석된 Revision            |
 
 규칙:
 
@@ -277,13 +297,14 @@ Change Set과 Operation의 구체적인 구조는 TS-003에서 정의한다.
 
 ## TS-002.13 정본과 파생 저장소 분류
 
-| 분류 | 데이터 |
-|---|---|
-| 현재 정본 | World, Canon, Time System, Canon-Time System 연결, Event, 시간 배치, Relation, Narrative, Canon 간 대응 |
-| 정본 운영 이력 | Change Set, Change Operation, World Revision, 작성 유래, 철회 기록 |
-| 운영 식별 표면 | Subject Handle, slug alias |
-| 재생성 가능한 파생 | Subject 구성, Process·State·Duration·Timeline, 검증 진단, 검색 문서 |
-| 공개 읽기 모델 | Publication Snapshot, 그래프 배치, 비교 view, 공개 tombstone |
+| 분류               | 데이터                                                                                                      |
+| ------------------ | ----------------------------------------------------------------------------------------------------------- |
+| 현재 정본          | World, Canon, Time System, Canon-Time System 연결, Event, EventReference Relation, Narrative, Canon 간 대응 |
+| legacy 호환        | 전환 전 시간 배치와 그 변환 분류                                                                            |
+| 정본 운영 이력     | Change Set, Change Operation, World Revision, 작성 유래, 철회 기록                                          |
+| 운영 식별 표면     | Subject Handle, slug alias                                                                                  |
+| 재생성 가능한 파생 | Subject 구성, Process·State·Duration·Timeline, 검증 진단, 검색 문서                                         |
+| 공개 읽기 모델     | Publication Snapshot, 그래프 배치, 비교 view, 공개 tombstone                                                |
 
 UI 좌표, 그래프 hull, lane, 색상, zoom level과 layout cache는 정본 테이블에 저장하지 않는다.
 
@@ -292,7 +313,7 @@ UI 좌표, 그래프 hull, lane, 색상, zoom level과 layout cache는 정본 �
 PostgreSQL table layout은 반출 형식이 아니다. 반출은 다음을 가진 versioned 논리 문서로 정의한다.
 
 - World와 모든 핵심 내용
-- Time System 정의와 시간 배치
+- Time System 정의, virtual Time Event reference를 포함한 Relation과 legacy 시간 배치
 - Canon 간 대응
 - 공개 상태와 철회 정보
 - Change·Revision 이력과 구분 가능한 작성 유래

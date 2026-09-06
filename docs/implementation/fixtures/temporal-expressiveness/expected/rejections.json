@@ -1,0 +1,54 @@
+{
+  "fixture_version": 1,
+  "cases": [
+    {
+      "case_id": "te-bad-cycle",
+      "expected_code": "temporal_constraint_conflict",
+      "required_relation_ids": [
+        "019f3b00-0000-7000-8000-000000000313",
+        "019f3b00-0000-7000-8000-000000000314"
+      ],
+      "commit_allowed": false
+    },
+    {
+      "case_id": "te-bad-boundary",
+      "expected_code": "composite_boundary_order_invalid",
+      "required_relation_ids": [
+        "019f3b00-0000-7000-8000-000000000324",
+        "019f3b00-0000-7000-8000-000000000325",
+        "019f3b00-0000-7000-8000-000000000326"
+      ],
+      "commit_allowed": false
+    },
+    {
+      "case_id": "te-bad-system",
+      "expected_code": "time_system_capability_missing",
+      "required_time_system_ids": [
+        "019f3b00-0000-7000-8000-000000000003",
+        "019f3b00-0000-7000-8000-000000000331"
+      ],
+      "required_capability": "conversion",
+      "commit_allowed": false
+    },
+    {
+      "case_id": "te-bad-coordinate",
+      "expected_code": "invalid_time_coordinate",
+      "required_original_coordinate": "2026-09-05T08:13:21.1234567890120Z",
+      "commit_allowed": false
+    },
+    {
+      "case_id": "te-bad-duplicate-start",
+      "expected_code": "composite_boundary_not_unique",
+      "required_relation_ids": [
+        "019f3b00-0000-7000-8000-000000000352",
+        "019f3b00-0000-7000-8000-000000000353"
+      ],
+      "commit_allowed": false
+    }
+  ],
+  "global_assertions": {
+    "validation_increases_revision": false,
+    "validation_changes_publication_target": false,
+    "error_code_without_conflict_evidence_is_pass": false
+  }
+}

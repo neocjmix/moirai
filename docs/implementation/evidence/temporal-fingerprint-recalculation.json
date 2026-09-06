@@ -1,0 +1,41 @@
+{
+  "kind": "expected_fingerprint_recalculation",
+  "date": "2026-09-06",
+  "reason": "The recorded Relation and aggregate digests do not reproduce from the fixed source corpus under the documented normalization. Independent Python hashlib and TypeScript crypto implementations agree on the corrected values. Source Event/Relation data and coordinates are unchanged.",
+  "canonicalization": "Recursively sort object keys by Unicode code point, preserve array order after entity ID sorting, encode compact UTF-8 JSON, then SHA-256.",
+  "source_files": {
+    "bootstrap.change-plan.json": "sha256:39f1fe83bc45d82e56329643049f7ebfdef660ce4ef07746ecd6db594a4bc37d",
+    "success.change-plan.json": "sha256:e8b3c580e3cbc51efbcc0d347f7d7f1e5c6abb4ecbb0801718afbdaae1eae42c"
+  },
+  "normalized_sections": [
+    "time_systems",
+    "events",
+    "relations"
+  ],
+  "normalized_relation_fields": [
+    "id",
+    "canon_id",
+    "type",
+    "source_ref",
+    "target_ref",
+    "direction",
+    "attributes"
+  ],
+  "normalization": "Resolve client_ref; preserve tagged references; strip resolver-only id/persisted fields and legacy traversal indexes; order coincides endpoints by event:/time: key; sort entity arrays by id.",
+  "previous": {
+    "category_digests": {
+      "time_systems": "sha256:a441c6cf0a4f5f2228270a60e48693746b0661d3ebe752c0f6bfbc3ee1cc3ed2",
+      "events": "sha256:0c7309ef457810809893d4515259256e5a0bee93c203013c8423653e23efe1b2",
+      "relations": "sha256:3656a317ca2e3f2a4cebdadeb3c68ef5d25a215dd7e4ad8cb8dd091a9ff6ed20"
+    },
+    "expected_digest": "sha256:46d35ddcc87dc9e91983bf5455064eb1115f6e439cc5cba08281d9fef0e76a61"
+  },
+  "corrected": {
+    "category_digests": {
+      "time_systems": "sha256:a441c6cf0a4f5f2228270a60e48693746b0661d3ebe752c0f6bfbc3ee1cc3ed2",
+      "events": "sha256:0c7309ef457810809893d4515259256e5a0bee93c203013c8423653e23efe1b2",
+      "relations": "sha256:7c3297abcdbefcac65bcf6d85878f0ba5f2c926356e5e7b16dc124947330e18f"
+    },
+    "expected_digest": "sha256:e5dd8fdb07743f963fd7823e18d2485222a64ce8274b264ef45f40dddbd4d9b8"
+  }
+}

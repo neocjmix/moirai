@@ -8,10 +8,11 @@ import type {
   PublicTemporalPlacement,
   PublicTimeSystem
 } from "@moirai/contracts";
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import Markdown from "react-markdown";
 
 interface EventSheetProps {
+  readonly temporalContent?: ReactNode;
   readonly title: string;
   readonly summary: string | null;
   readonly kind: string;
@@ -29,6 +30,7 @@ interface EventSheetProps {
 }
 
 export function EventSheet({
+  temporalContent,
   title,
   summary,
   kind,
@@ -68,6 +70,7 @@ export function EventSheet({
         <p className="event-summary">
           {summary ?? "이 사건에는 아직 요약이 없습니다."}
         </p>
+        {temporalContent}
         {narratives.map((narrative) => (
           <section className="narrative-block" key={narrative.id}>
             {narrative.title ? <h2>{narrative.title}</h2> : null}
@@ -191,6 +194,7 @@ export function EventSheet({
               const relatedId = outgoing
                 ? relation.target_event_id
                 : relation.source_event_id;
+              if (!relatedId) return null;
               const related = eventById.get(relatedId);
               return related ? (
                 <a

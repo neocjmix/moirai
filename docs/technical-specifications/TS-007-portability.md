@@ -20,12 +20,12 @@ traces:
 
 ## TS-007.2 반출 종류
 
-| 종류 | 목적 | private 정보 |
-|---|---|---|
-| `owner-full` | 완전한 보관·복구·이전 | Change 이력과 선택한 원자료 포함 |
-| `content` | 세계 의미의 이동과 교환 | private origin과 원자료 원문 제외 가능 |
-| `public` | 현재 공개본의 재배포 | Publication에 허용된 정보만 포함 |
-| `scoped` | Canon·시간·Event 범위의 부분 반출 | 누락 범위와 복구 제한을 manifest에 명시 |
+| 종류         | 목적                              | private 정보                            |
+| ------------ | --------------------------------- | --------------------------------------- |
+| `owner-full` | 완전한 보관·복구·이전             | Change 이력과 선택한 원자료 포함        |
+| `content`    | 세계 의미의 이동과 교환           | private origin과 원자료 원문 제외 가능  |
+| `public`     | 현재 공개본의 재배포              | Publication에 허용된 정보만 포함        |
+| `scoped`     | Canon·시간·Event 범위의 부분 반출 | 누락 범위와 복구 제한을 manifest에 명시 |
 
 `public` export는 owner backup을 대신하지 않는다. `scoped` export는 원본 World 전체를 손실 없이 복구할 수 있다고 표시하지 않는다.
 
@@ -43,6 +43,7 @@ traces:
 - 대량 record는 NDJSON
 - UUID와 opaque ID는 문자열
 - 시각은 RFC 3339 UTC, 세계 내부 시간은 Time System 좌표로 보존
+- 세계 내부 canonical coordinate는 JSON number로 변환하지 않고 Time System별 canonical string으로 보존
 
 ZIP은 운반 container일 뿐 의미 schema가 아니다. 동일한 논리 document를 directory tree로도 materialize할 수 있어야 한다.
 
@@ -55,7 +56,7 @@ content/canons.ndjson
 content/time-systems.ndjson
 content/canon-time-systems.ndjson
 content/events.ndjson
-content/temporal-placements.ndjson
+content/temporal-placements.ndjson # legacy 호환 section, 존재할 때만
 content/relations.ndjson
 content/narratives.ndjson
 content/correspondences.ndjson
@@ -76,23 +77,23 @@ export 종류에 따라 일부 파일이 없을 수 있으며 manifest의 `inclu
 
 `manifest.json`은 최소한 다음을 포함한다.
 
-| 필드 | 의미 |
-|---|---|
-| `format` | `moirai-world-package` |
-| `format_version` | package schema의 major/minor version |
-| `export_id` | UUIDv7 |
-| `export_kind` | owner-full, content, public, scoped |
-| `created_at` | export 시각 |
-| `generator_version` | 생성한 Moirai version |
-| `world_id` | 원본 World ID |
-| `source_revision` | 일관되게 읽은 World Revision |
-| `publication_revision` | public export이면 served Revision |
-| `scope` | 포함한 Canon, Event, 시간 범위 |
-| `included_sections` | 실제 포함 영역 |
-| `omitted_sections` | 제외 영역과 이유 |
-| `schema_versions` | content, history, origin별 schema version |
-| `files` | path, media type, size, SHA-256 |
-| `completeness` | complete, scoped, degraded |
+| 필드                   | 의미                                      |
+| ---------------------- | ----------------------------------------- |
+| `format`               | `moirai-world-package`                    |
+| `format_version`       | package schema의 major/minor version      |
+| `export_id`            | UUIDv7                                    |
+| `export_kind`          | owner-full, content, public, scoped       |
+| `created_at`           | export 시각                               |
+| `generator_version`    | 생성한 Moirai version                     |
+| `world_id`             | 원본 World ID                             |
+| `source_revision`      | 일관되게 읽은 World Revision              |
+| `publication_revision` | public export이면 served Revision         |
+| `scope`                | 포함한 Canon, Event, 시간 범위            |
+| `included_sections`    | 실제 포함 영역                            |
+| `omitted_sections`     | 제외 영역과 이유                          |
+| `schema_versions`      | content, history, origin별 schema version |
+| `files`                | path, media type, size, SHA-256           |
+| `completeness`         | complete, scoped, degraded                |
 
 manifest 자체의 digest는 package 밖에 별도 `.sha256` 파일로 제공할 수 있다.
 
@@ -102,8 +103,9 @@ manifest 자체의 digest는 package 밖에 별도 `.sha256` 파일로 제공할
 
 - World, Canon과 동등성
 - Time System 정의와 Canon의 다대다 사용 관계
-- Event, 시간 배치와 실제 precision·uncertainty
-- Relation type, 방향과 endpoint
+- Event와 legacy 시간 배치의 실제 precision·uncertainty
+- Relation type, 방향과 persisted 또는 virtual EventReference endpoint
+- virtual Time Event를 재생성하는 Time System ID, definition version과 canonical coordinate
 - Narrative, locale와 공개 인용
 - 철회 상태와 공개 tombstone 정보
 - Canon 간 correspondence와 member
@@ -219,7 +221,7 @@ round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semant
 
 - Canon별 활성·철회 Event 집합
 - Relation type, endpoint와 Canon 경계
-- Time System 정의와 시간 배치 precision
+- Time System 정의·capability, virtual Time Event reference와 legacy 시간 배치 precision
 - 포함 graph와 Process 역할
 - Narrative scope·locale·body digest
 - correspondence member
@@ -230,11 +232,11 @@ ID remap이 있는 clone mode에서는 mapping을 적용한 뒤 비교한다.
 
 ## TS-007.13 backup과 export의 차이
 
-| 수단 | 목적 |
-|---|---|
-| World export | 사용자 소유, 제품 교체, 선택적 복구와 장기 접근 |
-| PostgreSQL backup/PITR | 운영 장애와 전체 서비스 복구 |
-| Publication Snapshot | 공개 읽기 지속성과 cache 재사용 |
+| 수단                   | 목적                                            |
+| ---------------------- | ----------------------------------------------- |
+| World export           | 사용자 소유, 제품 교체, 선택적 복구와 장기 접근 |
+| PostgreSQL backup/PITR | 운영 장애와 전체 서비스 복구                    |
+| Publication Snapshot   | 공개 읽기 지속성과 cache 재사용                 |
 
 세 수단은 서로 대체하지 않는다. 특히 Publication Snapshot에는 private 이력과 정본 전체가 없으므로 backup이 아니다.
 
@@ -259,3 +261,4 @@ ID remap이 있는 clone mode에서는 mapping을 적용한 뒤 비교한다.
 8. path traversal, symlink와 zip bomb package가 정본 write 전에 거부된다.
 9. public export에 private origin과 원자료가 포함되지 않는다.
 10. export→import→export의 semantic fingerprint가 허용된 변환 밖에서 동일하다.
+11. export에는 virtual Time Event 행이 생기지 않으며 import 후 같은 Time System·version·coordinate가 같은 결정적 ID로 resolve된다.

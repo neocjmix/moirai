@@ -1,9 +1,11 @@
+import { RelationalTime } from "../../../../../components/relational-time";
 import type { PublicTimelineItem } from "@moirai/contracts";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import { StatusIsland } from "../../../../../components/status-island";
 import {
   readCanon,
+  readRelationalTime,
   readTimeline,
   readWorld,
   selectPublication
@@ -61,6 +63,14 @@ export default async function CanonPage({
         readTimeline(worldId, canonId, reference, selected)
       )
     );
+    const temporal = canonDocument.temporalArtifact
+      ? await readRelationalTime(
+          worldId,
+          canonId,
+          canonDocument.temporalArtifact,
+          selected
+        )
+      : null;
     const eventById = new Map(events.map((event) => [event.id, event]));
     const timeSystemById = new Map(
       timeSystems.map((timeSystem) => [timeSystem.id, timeSystem])
@@ -104,6 +114,9 @@ export default async function CanonPage({
             이 World 검색 →
           </a>
         </section>
+        {temporal ? (
+          <RelationalTime projection={temporal} events={events} />
+        ) : null}
         {timelines.map((timeline) => {
           const groups = groupTimelineItems(timeline.items);
           return (

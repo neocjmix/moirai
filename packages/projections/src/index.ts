@@ -1,3 +1,10 @@
+import { TEMPORAL_EXPRESSIVENESS_WORLD_IDS } from "@moirai/contracts";
+import { canonicalRelationEndpoints, endpointEventId } from "@moirai/domain";
+import { projectRelationalTime } from "./relational-time.js";
+export {
+  projectRelationalTime,
+  RELATIONAL_TIME_ALGORITHM_VERSION
+} from "./relational-time.js";
 import type {
   PublicCanon,
   PublicCanonTimeSystem,
@@ -51,6 +58,21 @@ export interface SubjectProjectionBundle {
   readonly projections: readonly PublicSubjectProjection[];
 }
 
+/** Legacy M4 projectors only understand two persisted Event endpoints. */
+type PersistedEndpointRelation = PublicRelation & {
+  readonly source_event_id: string;
+  readonly target_event_id: string;
+};
+
+function hasPersistedEndpointRelations(
+  relation: PublicRelation
+): relation is PersistedEndpointRelation {
+  return (
+    typeof relation.source_event_id === "string" &&
+    typeof relation.target_event_id === "string"
+  );
+}
+
 export const STATE_RULES = Object.freeze([
   {
     state_type: "membership",
@@ -90,8 +112,10 @@ export function projectStates(
     );
     const relations = source.relations
       .filter(
-        (relation) =>
-          relation.canon_id === canon.id && relation.direction === "directed"
+        (relation): relation is PersistedEndpointRelation =>
+          relation.canon_id === canon.id &&
+          relation.direction === "directed" &&
+          hasPersistedEndpointRelations(relation)
       )
       .sort((a, b) => a.id.localeCompare(b.id));
     const items: PublicStateItem[] = [];
@@ -357,8 +381,9 @@ export function projectProcesses(
     const eventIds = new Set(events.map((event) => event.id));
     const relations = source.relations
       .filter(
-        (relation) =>
+        (relation): relation is PersistedEndpointRelation =>
           relation.canon_id === canon.id &&
+          hasPersistedEndpointRelations(relation) &&
           eventIds.has(relation.source_event_id) &&
           eventIds.has(relation.target_event_id)
       )
@@ -366,7 +391,7 @@ export function projectProcesses(
     const contains = relations.filter(
       (relation) => relation.type === "contains"
     );
-    const childrenByParent = new Map<string, PublicRelation[]>();
+    const childrenByParent = new Map<string, PersistedEndpointRelation[]>();
     for (const relation of contains) {
       const children = childrenByParent.get(relation.source_event_id) ?? [];
       children.push(relation);
@@ -650,7 +675,7 @@ function digest(value: unknown): string {
 
 function stronglyConnectedComponents(
   eventIds: readonly string[],
-  relations: readonly PublicRelation[]
+  relations: readonly PersistedEndpointRelation[]
 ): readonly (readonly string[])[] {
   const adjacency = new Map(eventIds.map((id) => [id, [] as string[]]));
   for (const relation of relations) {
@@ -706,7 +731,7 @@ function stronglyConnectedComponents(
 
 function structuralRanks(
   components: readonly (readonly string[])[],
-  relations: readonly PublicRelation[]
+  relations: readonly PersistedEndpointRelation[]
 ): ReadonlyMap<string, number> {
   const componentByEvent = new Map<string, number>();
   components.forEach((component, index) => {
@@ -788,9 +813,10 @@ export function projectTimeline(
   const eventIds = new Set(events.map((event) => event.id));
   const precedence = sorted(
     source.relations.filter(
-      (relation) =>
+      (relation): relation is PersistedEndpointRelation =>
         relation.canon_id === parameters.canonId &&
         relation.type === "precedes" &&
+        hasPersistedEndpointRelations(relation) &&
         eventIds.has(relation.source_event_id) &&
         eventIds.has(relation.target_event_id)
     )
@@ -1008,7 +1034,7 @@ function deterministicSubjectHandleId(
 
 function subjectComponents(
   events: readonly PublicEvent[],
-  equivalence: readonly PublicRelation[]
+  equivalence: readonly PersistedEndpointRelation[]
 ): readonly (readonly string[])[] {
   const parent = new Map(events.map((event) => [event.id, event.id]));
   const find = (id: string): string => {
@@ -1060,10 +1086,11 @@ export function projectSubjects(
     const eventIds = new Set(events.map((event) => event.id));
     const identityRelations = sorted(
       source.relations.filter(
-        (relation) =>
+        (relation): relation is PersistedEndpointRelation =>
           relation.canon_id === canon.id &&
           (EQUIVALENCE_RELATION_TYPES.has(relation.type) ||
             LINEAGE_RELATION_TYPES.has(relation.type)) &&
+          hasPersistedEndpointRelations(relation) &&
           eventIds.has(relation.source_event_id) &&
           eventIds.has(relation.target_event_id)
       )
@@ -1380,8 +1407,14 @@ function allowlistView(view: CanonicalRevisionView): CanonicalRevisionView {
       id: item.id,
       canon_id: item.canon_id,
       type: item.type,
-      source_event_id: item.source_event_id,
-      target_event_id: item.target_event_id,
+      ...(item.source_ref ? { source_ref: item.source_ref } : {}),
+      ...(item.target_ref ? { target_ref: item.target_ref } : {}),
+      ...(item.source_event_id !== undefined
+        ? { source_event_id: item.source_event_id }
+        : {}),
+      ...(item.target_event_id !== undefined
+        ? { target_event_id: item.target_event_id }
+        : {}),
       direction: item.direction,
       attributes: item.attributes
     })),
@@ -1518,9 +1551,26 @@ export function projectPublicDocuments(
   const timeSystems = sorted(view.timeSystems);
   const relations = sorted(view.relations);
   const temporalPlacements = sorted(view.temporalPlacements);
-  const processes = projectProcesses(view, revision);
-  const states = projectStates(view, revision, subjects);
-  const timelineDocuments = sorted(view.canonTimeSystems).flatMap((link) => {
+  const relational = TEMPORAL_EXPRESSIVENESS_WORLD_IDS.includes(view.world.id);
+  const temporalDocuments = relational
+    ? canons.map((canon) => ({
+        key: `${prefix}/graph/canons/${canon.id}/temporal.json`,
+        value: {
+          ...metadata,
+          ...projectRelationalTime(
+            view,
+            revision,
+            canon.id,
+            subjects.projections
+          )
+        }
+      }))
+    : [];
+  const processes = relational ? [] : projectProcesses(view, revision);
+  const states = relational ? [] : projectStates(view, revision, subjects);
+  const timelineDocuments = (
+    relational ? [] : sorted(view.canonTimeSystems)
+  ).flatMap((link) => {
     if (
       !canons.some((canon) => canon.id === link.canon_id) ||
       !timeSystems.some((timeSystem) => timeSystem.id === link.time_system_id)
@@ -1597,6 +1647,16 @@ export function projectPublicDocuments(
               link.time_system_id === timeSystem.id
           )
         ),
+        ...(relational
+          ? {
+              temporal_artifact: {
+                key: `${prefix}/graph/canons/${canon.id}/temporal.json`,
+                algorithm_version: temporalDocuments.find(
+                  (document) => document.value.canon_id === canon.id
+                )!.value.algorithm_version
+              }
+            }
+          : {}),
         timeline_artifacts: timelineDocuments
           .filter((document) =>
             document.key.includes(`/graph/canons/${canon.id}/`)
@@ -1639,16 +1699,21 @@ export function projectPublicDocuments(
       }
     })),
     ...events.map((event) => {
-      const eventRelations = relations.filter(
-        (relation) =>
-          relation.source_event_id === event.id ||
-          relation.target_event_id === event.id
-      );
+      const eventRelations = relations.filter((relation) => {
+        const endpoints = canonicalRelationEndpoints(relation);
+        return (
+          endpoints &&
+          [endpoints.source, endpoints.target].some(
+            (ref) => endpointEventId(ref) === event.id
+          )
+        );
+      });
       const relatedIds = new Set(
-        eventRelations.flatMap((relation) => [
-          relation.source_event_id,
-          relation.target_event_id
-        ])
+        eventRelations.flatMap((relation) =>
+          [relation.source_event_id, relation.target_event_id].flatMap((id) =>
+            typeof id === "string" ? [id] : []
+          )
+        )
       );
       relatedIds.delete(event.id);
       const placements = temporalPlacements.filter(
@@ -1674,6 +1739,13 @@ export function projectPublicDocuments(
           narratives: narratives.filter(
             (item) => item.scope_type === "event" && item.scope_id === event.id
           ),
+          ...(relational
+            ? {
+                temporal_artifact: {
+                  key: `${prefix}/graph/canons/${event.canon_id}/temporal.json`
+                }
+              }
+            : {}),
           temporal_placements: placements,
           time_systems: timeSystems.filter((timeSystem) =>
             relevantTimeIds.has(timeSystem.id)
@@ -1713,6 +1785,7 @@ export function projectPublicDocuments(
         entries: searchEntries(view, revision, subjects.projections)
       }
     },
+    ...temporalDocuments,
     ...timelineDocuments,
     ...subjectDocuments,
     ...processDocuments,

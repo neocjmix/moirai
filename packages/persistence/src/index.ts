@@ -1,5 +1,6 @@
 import type {
   CommitResult,
+  CanonicalEventReference,
   CreateChangeSet,
   ProjectionStatus,
   PublicCanon,
@@ -7,6 +8,7 @@ import type {
   PublicEvent,
   PublicNarrative,
   PublicRelation,
+  ResolvedEventReference,
   SubjectHandleRecord,
   PublicTemporalPlacement,
   PublicTimeSystem,
@@ -19,10 +21,13 @@ import {
 } from "@moirai/projections";
 import {
   ChangeSetError,
+  canonicalRelationEndpoints,
+  resolveEventReference,
   type CanonicalState,
   type ResolvedCreateOperation,
   resolveCreateOperations,
   stableStringify,
+  temporalAdapterRegistry,
   validateCandidateChangeSet,
   validateCreateChangeSet
 } from "@moirai/domain";
@@ -113,8 +118,18 @@ interface RelationTable extends RevisionFields {
   id: string;
   canon_id: string;
   type: PublicRelation["type"];
-  source_event_id: string;
-  target_event_id: string;
+  source_event_id: string | null;
+  target_event_id: string | null;
+  source_ref: JSONColumnType<
+    CanonicalEventReference | null,
+    string | null,
+    string | null
+  >;
+  target_ref: JSONColumnType<
+    CanonicalEventReference | null,
+    string | null,
+    string | null
+  >;
   direction: PublicRelation["direction"];
   attributes: JSONColumnType<PublicRelation["attributes"]>;
 }
@@ -137,7 +152,7 @@ interface ChangeSetTable {
   request_digest: string;
   actor: string;
   intent: string;
-  contract_version: string;
+  contract_version: string | number;
   origins: JSONColumnType<CreateChangeSet["origins"]>;
   warnings: JSONColumnType<readonly ValidationIssue[]>;
   result: JSONColumnType<CommitResult>;
@@ -338,7 +353,18 @@ function publicRecord(
     }
     case "relation": {
       const value = operation.value;
-      return { id: operation.entity_id, ...value };
+      if (!value.source_ref || !value.target_ref) {
+        throw new Error("Resolved Relation has no canonical endpoints");
+      }
+      return {
+        id: operation.entity_id,
+        canon_id: value.canon_id,
+        type: value.type,
+        source_ref: value.source_ref,
+        target_ref: value.target_ref,
+        direction: value.direction,
+        attributes: value.attributes
+      };
     }
     case "narrative": {
       const value = operation.value;
@@ -435,10 +461,18 @@ async function applyCreate(
     }
     case "relation": {
       const item = record as unknown as PublicRelation;
+      const sourceEventId =
+        item.source_ref?.kind === "event" ? item.source_ref.event_id : null;
+      const targetEventId =
+        item.target_ref?.kind === "event" ? item.target_ref.event_id : null;
       await transaction
         .insertInto("relations")
         .values({
           ...item,
+          source_event_id: sourceEventId,
+          target_event_id: targetEventId,
+          source_ref: item.source_ref ? JSON.stringify(item.source_ref) : null,
+          target_ref: item.target_ref ? JSON.stringify(item.target_ref) : null,
           attributes: JSON.stringify(item.attributes),
           ...revisionData
         })
@@ -482,6 +516,151 @@ function withoutRevision<T extends RevisionFields>(
   void _updated;
   void _withdrawn;
   return record;
+}
+
+function decorateLegacyRelation(relation: PublicRelation): PublicRelation {
+  if (relation.source_ref && relation.target_ref) {
+    return {
+      ...relation,
+      source_event_id:
+        relation.source_ref.kind === "event"
+          ? relation.source_ref.event_id
+          : null,
+      target_event_id:
+        relation.target_ref.kind === "event"
+          ? relation.target_ref.event_id
+          : null
+    };
+  }
+  if (!relation.source_event_id || !relation.target_event_id) return relation;
+  return {
+    ...relation,
+    source_ref: { kind: "event", event_id: relation.source_event_id },
+    target_ref: { kind: "event", event_id: relation.target_event_id }
+  };
+}
+
+interface SelectedRelationRow extends RevisionFields {
+  readonly id: string;
+  readonly canon_id: string;
+  readonly type: PublicRelation["type"];
+  readonly source_event_id: string | null;
+  readonly target_event_id: string | null;
+  readonly source_ref: CanonicalEventReference | null;
+  readonly target_ref: CanonicalEventReference | null;
+  readonly direction: PublicRelation["direction"];
+  readonly attributes: PublicRelation["attributes"];
+}
+
+function toPublicRelation(
+  row: SelectedRelationRow,
+  decorateLegacy = true
+): PublicRelation {
+  const relation: PublicRelation = {
+    id: row.id,
+    canon_id: row.canon_id,
+    type: row.type,
+    ...(row.source_ref && row.target_ref
+      ? { source_ref: row.source_ref, target_ref: row.target_ref }
+      : {}),
+    ...(row.source_event_id !== null && row.target_event_id !== null
+      ? {
+          source_event_id: row.source_event_id,
+          target_event_id: row.target_event_id
+        }
+      : {}),
+    direction: row.direction,
+    attributes: row.attributes
+  };
+  return decorateLegacy ? decorateLegacyRelation(relation) : relation;
+}
+
+function decorateVirtualRelation(
+  relation: PublicRelation,
+  registry: ReturnType<typeof temporalAdapterRegistry>
+): PublicRelation {
+  const endpoints = canonicalRelationEndpoints(relation);
+  if (!endpoints) return relation;
+  try {
+    return {
+      ...relation,
+      source_ref: resolveEventReference(endpoints.source, registry),
+      target_ref: resolveEventReference(endpoints.target, registry)
+    };
+  } catch {
+    // A historical row remains readable even when a later deployment no longer
+    // has its adapter; it simply cannot claim a newly resolved virtual ID.
+    return relation;
+  }
+}
+
+function isResolvedVirtualTimeEvent(
+  value: unknown
+): value is Extract<ResolvedEventReference, { readonly kind: "time_event" }> {
+  return Boolean(
+    value &&
+    typeof value === "object" &&
+    (value as { kind?: unknown }).kind === "time_event" &&
+    typeof (value as { id?: unknown }).id === "string" &&
+    (value as { persisted?: unknown }).persisted === false
+  );
+}
+
+function temporalPreview(
+  operations: readonly ResolvedCreateOperation[],
+  existingTimeSystems: readonly PublicTimeSystem[]
+): {
+  readonly operations: readonly ResolvedCreateOperation[];
+  readonly virtualTimeEvents: readonly Record<string, unknown>[];
+} {
+  const createdTimeSystems = operations.flatMap((operation) =>
+    operation.entity_type === "time_system"
+      ? [
+          {
+            id: operation.entity_id,
+            ...operation.value
+          } as PublicTimeSystem
+        ]
+      : []
+  );
+  const registry = temporalAdapterRegistry([
+    ...existingTimeSystems,
+    ...createdTimeSystems
+  ]);
+  const preview = operations.map((operation) => {
+    if (operation.entity_type !== "relation") return operation;
+    const endpoints = canonicalRelationEndpoints(
+      operation.value as PublicRelation
+    );
+    if (!endpoints) return operation;
+    return {
+      ...operation,
+      value: {
+        ...operation.value,
+        source_ref: resolveEventReference(endpoints.source, registry),
+        target_ref: resolveEventReference(endpoints.target, registry)
+      }
+    } as ResolvedCreateOperation;
+  });
+  const virtualTimeEvents = preview
+    .filter((operation) => operation.entity_type === "relation")
+    .flatMap((operation) => {
+      const value = operation.value as {
+        readonly source_ref?: unknown;
+        readonly target_ref?: unknown;
+      };
+      return [value.source_ref, value.target_ref];
+    })
+    .filter(isResolvedVirtualTimeEvent)
+    .map((reference) => ({ ...reference }));
+  return {
+    operations: preview,
+    virtualTimeEvents: [
+      ...new Map(
+        virtualTimeEvents.map((item) => [String(item.id), item])
+      ).values()
+    ].sort((left, right) => String(left.id).localeCompare(String(right.id)))
+  };
 }
 
 async function loadCurrentState(
@@ -571,7 +750,9 @@ async function loadCurrentState(
     temporalPlacements: placements.map(
       (item) => withoutRevision(item) as PublicTemporalPlacement
     ),
-    relations: relations.map((item) => withoutRevision(item) as PublicRelation),
+    // Keep old Relation rows visibly legacy here. TS-010 validation only uses
+    // stored tagged endpoints and therefore cannot reinterpret old data.
+    relations: relations.map((item) => toPublicRelation(item, false)),
     narratives: narratives.map(
       (item) => withoutRevision(item) as PublicNarrative
     )
@@ -673,7 +854,7 @@ export async function commitCreateChangeSet(
         request_digest: requestDigest,
         actor: input.actor,
         intent: input.intent,
-        contract_version: input.contract_version,
+        contract_version: String(input.contract_version),
         origins: JSON.stringify(input.origins),
         warnings: JSON.stringify(warnings),
         result: JSON.stringify(result)
@@ -772,11 +953,13 @@ export async function validateChangePlan(
         uuidV7()
       );
       const warnings = validateCandidateChangeSet(input, operations, existing);
+      const preview = temporalPreview(operations, existing.timeSystems);
       return {
         valid: true,
         source_revision: revision,
         plan_digest: changeSetDigest(input),
-        operations,
+        operations: preview.operations,
+        virtual_time_events: preview.virtualTimeEvents,
         id_mapping: idMapping,
         affected_ids: operations.map((op) => op.entity_id),
         errors: [],
@@ -823,10 +1006,12 @@ export async function readWorldAtRevision(
       .map((item) => item.after!);
   const world = byType("world")[0] as unknown as PublicWorld | undefined;
   if (!world) throw new Error("revision view has no World");
+  const timeSystems = byType("time_system") as unknown as PublicTimeSystem[];
+  const relationRegistry = temporalAdapterRegistry(timeSystems);
   return {
     world,
     canons: byType("canon") as unknown as PublicCanon[],
-    timeSystems: byType("time_system") as unknown as PublicTimeSystem[],
+    timeSystems,
     canonTimeSystems: byType(
       "canon_time_system"
     ) as unknown as PublicCanonTimeSystem[],
@@ -834,7 +1019,13 @@ export async function readWorldAtRevision(
     temporalPlacements: byType(
       "event_temporal_placement"
     ) as unknown as PublicTemporalPlacement[],
-    relations: byType("relation") as unknown as PublicRelation[],
+    relations: (byType("relation") as unknown as PublicRelation[]).map(
+      (relation) =>
+        decorateVirtualRelation(
+          decorateLegacyRelation(relation),
+          relationRegistry
+        )
+    ),
     narratives: byType("narrative") as unknown as PublicNarrative[],
     generatedAt: revisionRecord.committed_at.toISOString()
   };

@@ -1,10 +1,12 @@
 import {
   PUBLICATION_FORMAT_VERSION,
+  TEMPORAL_EXPRESSIVENESS_WORLD_IDS,
   type PublicationManifest,
   type PublicationPointer
 } from "@moirai/contracts";
 import {
   projectPublicDocuments,
+  RELATIONAL_TIME_ALGORITHM_VERSION,
   PROCESS_ALGORITHM_VERSION,
   STATE_ALGORITHM_VERSION,
   SUBJECT_ALGORITHM_VERSION,
@@ -106,7 +108,10 @@ export function buildPublicationArtifacts(
       timeline: TIMELINE_ALGORITHM_VERSION,
       subject: SUBJECT_ALGORITHM_VERSION,
       process: PROCESS_ALGORITHM_VERSION,
-      state: STATE_ALGORITHM_VERSION
+      state: STATE_ALGORITHM_VERSION,
+      ...(TEMPORAL_EXPRESSIVENESS_WORLD_IDS.includes(view.world.id)
+        ? { relational_time: RELATIONAL_TIME_ALGORITHM_VERSION }
+        : {})
     },
     locales: ["en"],
     documents: documents.map(({ key, body }) => ({

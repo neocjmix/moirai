@@ -1,0 +1,351 @@
+{
+  "evidence_version": 1,
+  "trial": "IP-002 Temporal Expressiveness Observatory live acceptance",
+  "executed_at_utc": "2026-09-06",
+  "approved_application_sha": "8ee04b47843b8d080014325e39be3dda4aac88c6",
+  "approved_packet": {
+    "path": "temporal-write-packet-8ee04b4.json",
+    "sha256": "bc3e8e3b60925bfde279cc72945e147198183b3321ac50dfc6f565abbc2af99b"
+  },
+  "targets": {
+    "source_world_id": "019f3b00-0000-7000-8000-000000000001",
+    "source_canon_id": "019f3b00-0000-7000-8000-000000000002",
+    "import_world_id": "019f3b00-0000-7000-8000-000000000401",
+    "import_canon_id": "01a077ed-37a4-7250-a8dd-b18807b65181"
+  },
+  "deployment": {
+    "candidate": {
+      "clotho_health_sha": "8ee04b47843b8d080014325e39be3dda4aac88c6",
+      "atropos_status_sha": "8ee04b47843b8d080014325e39be3dda4aac88c6",
+      "ci_run": 34049509069,
+      "ci_conclusion": "success"
+    },
+    "post_trial": {
+      "atropos_sha": "350920bbdb3928f34e406940b9d9f0d95f7e8c65",
+      "worker_base_sha": "350920bbdb3928f34e406940b9d9f0d95f7e8c65",
+      "clotho_compatibility_bridge_sha": "3ac0b0deafbe00b5aaa4aa474b7ad4a8e9cc6bb8",
+      "clotho_bridge_base_sha": "350920bbdb3928f34e406940b9d9f0d95f7e8c65",
+      "clotho_bridge_delta": [
+        "packages/persistence/src/migrations/006_event_relation_time.ts"
+      ],
+      "health": "ready"
+    }
+  },
+  "source_write": {
+    "initial_world_list": [],
+    "bootstrap_validate": {
+      "valid": true,
+      "source_revision": 0,
+      "plan_digest": "da9e7e47d107e879f77289372eed1d4f30fd3095ccd8b2914dbe3d68d324cc46"
+    },
+    "bootstrap_commit": {
+      "change_set_id": "019f3b00-0000-7000-8000-000000000005",
+      "current_revision": 1,
+      "publication_target_revision": 1
+    },
+    "success_validate": {
+      "valid": true,
+      "source_revision": 1,
+      "plan_digest": "98500b6f96722aa8bd7a6ca6f99e2f6f4efd489aad128e08d9817cc0caca8cf8",
+      "virtual_time_event_count": 14
+    },
+    "success_commit": {
+      "change_set_id": "019f3b00-0000-7000-8000-000000000006",
+      "current_revision": 2,
+      "publication_target_revision": 2
+    },
+    "exact_replay": {
+      "idempotent_replay": true,
+      "current_revision": 2
+    },
+    "canon_read_back": {
+      "source_revision": 2,
+      "event_count": 11,
+      "relation_count": 23,
+      "time_system_count": 1,
+      "temporal_placement_count": 0,
+      "truncated": false
+    }
+  },
+  "virtual_time_event": {
+    "source": {
+      "coordinate": "2026-09-05T08:13:21.123456789012Z",
+      "resolved_twice_same_id": true,
+      "persisted": false,
+      "source_revision": 2
+    },
+    "import": {
+      "coordinate": "2026-09-05T08:13:21.123456789012Z",
+      "resolved_twice_same_id": true,
+      "persisted": false,
+      "source_revision": 1
+    },
+    "export_contains_persisted_rows": false
+  },
+  "source_projection": {
+    "source_revision": 2,
+    "served_revision": 2,
+    "semantic_digest": "018be8a8ab610e59b22002e5ed3ff8a50e7bc9dfb0a6e612aafabd57cf413642",
+    "algorithm_version": "event-relational-projection/1",
+    "solver_algorithm_version": "event-relational-time/1",
+    "position_count": 11,
+    "relation_count": 23,
+    "composite_count": 1,
+    "assertions": {
+      "bounded_year_month_day_ms_ps": true,
+      "exact_time_event": true,
+      "relative_only_without_absolute_date": true,
+      "explicit_boundary_duration_picoseconds": "2000000000000",
+      "descendant_span_separate": true,
+      "contains_membership_true": true,
+      "during_membership_false": true,
+      "source_evidence_present": true,
+      "picosecond_coordinates_byte_equal": true
+    }
+  },
+  "atropos": {
+    "captured_before_rollback": true,
+    "source": {
+      "served_revision": 2,
+      "accessible_text": true,
+      "bounded_labels": true,
+      "raw_picosecond_coordinates": true,
+      "explicit_duration": true,
+      "component_and_during_distinct": true,
+      "relative_only_has_no_invented_date": true
+    },
+    "import": {
+      "served_revision": 1,
+      "accessible_text": true,
+      "bounded_labels": true,
+      "raw_picosecond_coordinates": true,
+      "explicit_duration": true,
+      "component_and_during_distinct": true,
+      "relative_only_has_no_invented_date": true
+    }
+  },
+  "round_trip": {
+    "package": {
+      "format": "moirai-world-package",
+      "format_version": "1.0",
+      "source_revision": 2,
+      "completeness": "complete",
+      "bytes": 17659
+    },
+    "source_fingerprint": {
+      "algorithm": "temporal-semantic-fingerprint-v1",
+      "category_digests": {
+        "time_systems": "sha256:a441c6cf0a4f5f2228270a60e48693746b0661d3ebe752c0f6bfbc3ee1cc3ed2",
+        "events": "sha256:0c7309ef457810809893d4515259256e5a0bee93c203013c8423653e23efe1b2",
+        "relations": "sha256:7c3297abcdbefcac65bcf6d85878f0ba5f2c926356e5e7b16dc124947330e18f"
+      },
+      "digest": "sha256:e5dd8fdb07743f963fd7823e18d2485222a64ce8274b264ef45f40dddbd4d9b8"
+    },
+    "import_preview": {
+      "valid": true,
+      "source_revision": 0,
+      "plan_digest": "2f238b22f93a0757097337ba7622d21b090cb5eb282564938156b45f62c341ec",
+      "change_set_id": "01a077ed-37a5-71af-a2ce-513b6be8a7fc",
+      "operation_count": 38
+    },
+    "import_commit": {
+      "current_revision": 1,
+      "publication_target_revision": 1
+    },
+    "id_mapping": {
+      "019f3b00-0000-7000-8000-000000000001": "019f3b00-0000-7000-8000-000000000401",
+      "019f3b00-0000-7000-8000-000000000002": "01a077ed-37a4-7250-a8dd-b18807b65181",
+      "019f3b00-0000-7000-8000-000000000003": "01a077ed-37a4-74b9-a813-af92ece503c6",
+      "019f3b00-0000-7000-8000-000000000004": "01a077ed-37a4-7844-acac-c3a051301960",
+      "019f3b00-0000-7000-8000-000000000101": "01a077ed-37a4-764a-8429-ed47fae0d900",
+      "019f3b00-0000-7000-8000-000000000102": "01a077ed-37a4-7280-8311-680dcab1b649",
+      "019f3b00-0000-7000-8000-000000000103": "01a077ed-37a4-7152-99c4-4ddafbaf5502",
+      "019f3b00-0000-7000-8000-000000000104": "01a077ed-37a4-7ff5-9db1-e055b024ab12",
+      "019f3b00-0000-7000-8000-000000000105": "01a077ed-37a4-79e3-bc98-f62ff516742d",
+      "019f3b00-0000-7000-8000-000000000106": "01a077ed-37a5-740c-bc65-ffb8440aebca",
+      "019f3b00-0000-7000-8000-000000000107": "01a077ed-37a5-7085-a81c-17bc3c942e0b",
+      "019f3b00-0000-7000-8000-000000000108": "01a077ed-37a5-76ea-9c08-4ae5ed099b4e",
+      "019f3b00-0000-7000-8000-000000000109": "01a077ed-37a5-74e9-b6d8-befc79fba83c",
+      "019f3b00-0000-7000-8000-00000000010a": "01a077ed-37a5-7a3b-bb36-f5a64028ff99",
+      "019f3b00-0000-7000-8000-00000000010b": "01a077ed-37a5-7a72-aecf-c1cfef54eb4a",
+      "019f3b00-0000-7000-8000-000000000201": "01a077ed-37a5-7f1c-b2a7-5dbed639b745",
+      "019f3b00-0000-7000-8000-000000000202": "01a077ed-37a5-732c-b334-e288e8543f7a",
+      "019f3b00-0000-7000-8000-000000000203": "01a077ed-37a5-727b-9eec-4da78d51ad55",
+      "019f3b00-0000-7000-8000-000000000204": "01a077ed-37a5-78c2-ab50-42a07918e7f6",
+      "019f3b00-0000-7000-8000-000000000205": "01a077ed-37a5-7626-906c-8d9945755433",
+      "019f3b00-0000-7000-8000-000000000206": "01a077ed-37a5-7af6-bfa8-da2f28772da4",
+      "019f3b00-0000-7000-8000-000000000207": "01a077ed-37a5-7e63-b74f-d7dcd957a9af",
+      "019f3b00-0000-7000-8000-000000000208": "01a077ed-37a5-709c-a2d2-51872dc03243",
+      "019f3b00-0000-7000-8000-000000000209": "01a077ed-37a5-7f51-825b-1add1eaa4d72",
+      "019f3b00-0000-7000-8000-00000000020a": "01a077ed-37a5-7ecd-8cff-a5a581d5a931",
+      "019f3b00-0000-7000-8000-00000000020b": "01a077ed-37a5-7d8b-bfaa-20a7c573d94b",
+      "019f3b00-0000-7000-8000-00000000020c": "01a077ed-37a5-7666-8e6f-7ff559c64bcf",
+      "019f3b00-0000-7000-8000-00000000020d": "01a077ed-37a5-79f8-bbc5-2ea8f5eb802d",
+      "019f3b00-0000-7000-8000-00000000020e": "01a077ed-37a5-73e6-b4a1-602c10ebf66a",
+      "019f3b00-0000-7000-8000-00000000020f": "01a077ed-37a5-7ae0-b685-5b932f1c3f94",
+      "019f3b00-0000-7000-8000-000000000210": "01a077ed-37a5-78c0-b0f2-81da30938fb1",
+      "019f3b00-0000-7000-8000-000000000211": "01a077ed-37a5-7c74-9937-4bcc0a498425",
+      "019f3b00-0000-7000-8000-000000000212": "01a077ed-37a5-7828-8ee3-2c4373d25ad2",
+      "019f3b00-0000-7000-8000-000000000213": "01a077ed-37a5-7127-8bd3-f21775bda0c3",
+      "019f3b00-0000-7000-8000-000000000214": "01a077ed-37a5-7a45-bb47-a1ba8001241b",
+      "019f3b00-0000-7000-8000-000000000215": "01a077ed-37a5-731c-9904-56257b1b8ef6",
+      "019f3b00-0000-7000-8000-000000000216": "01a077ed-37a5-7ba4-81b3-9622aabf3b64",
+      "019f3b00-0000-7000-8000-000000000217": "01a077ed-37a5-7150-ba9f-96b421d837f5"
+    },
+    "import_fingerprint_after_inverse_mapping": "sha256:e5dd8fdb07743f963fd7823e18d2485222a64ce8274b264ef45f40dddbd4d9b8",
+    "projection_semantic_fingerprint": {
+      "algorithm": "temporal-projection-semantic-fingerprint-v1",
+      "source": "d030ee799da1d99c0c8106880194eaf9fc4974e2dee46999f746b1fd75140e66",
+      "import_after_inverse_mapping": "d030ee799da1d99c0c8106880194eaf9fc4974e2dee46999f746b1fd75140e66",
+      "equal": true
+    },
+    "public_meaning_equal": true,
+    "source_served_revision": 2,
+    "import_served_revision": 1
+  },
+  "rejections": [
+    {
+      "fixture": "bad-boundary.change-plan.json",
+      "code": "composite_boundary_order_invalid",
+      "path": "operations",
+      "affected_ids": [
+        "019f3b00-0000-7000-8000-000000000003",
+        "019f3b00-0000-7000-8000-00000000020e",
+        "019f3b00-0000-7000-8000-00000000020f",
+        "019f3b00-0000-7000-8000-000000000210",
+        "019f3b00-0000-7000-8000-000000000214",
+        "019f3b00-0000-7000-8000-000000000215",
+        "019f3b00-0000-7000-8000-000000000217",
+        "019f3b00-0000-7000-8000-000000000324",
+        "019f3b00-0000-7000-8000-000000000325",
+        "019f3b00-0000-7000-8000-000000000326"
+      ]
+    },
+    {
+      "fixture": "bad-coordinate.change-plan.json",
+      "code": "invalid_time_coordinate",
+      "path": "operations.1.value.target_ref",
+      "affected_ids": [
+        "019f3b00-0000-7000-8000-000000000003",
+        "019f3b00-0000-7000-8000-000000000342"
+      ]
+    },
+    {
+      "fixture": "bad-cycle.change-plan.json",
+      "code": "temporal_constraint_conflict",
+      "path": "operations",
+      "affected_ids": [
+        "019f3b00-0000-7000-8000-000000000313",
+        "019f3b00-0000-7000-8000-000000000314"
+      ]
+    },
+    {
+      "fixture": "bad-duplicate-start.change-plan.json",
+      "code": "composite_boundary_not_unique",
+      "path": "operations",
+      "affected_ids": [
+        "019f3b00-0000-7000-8000-000000000003",
+        "019f3b00-0000-7000-8000-000000000352",
+        "019f3b00-0000-7000-8000-000000000353"
+      ]
+    },
+    {
+      "fixture": "bad-system.change-plan.json",
+      "code": "time_system_capability_missing",
+      "path": "operations",
+      "affected_ids": [
+        "019f3b00-0000-7000-8000-000000000003",
+        "019f3b00-0000-7000-8000-000000000331",
+        "019f3b00-0000-7000-8000-000000000333"
+      ]
+    }
+  ],
+  "credential_lifecycle": {
+    "temporary_scope_only_two_trial_worlds": true,
+    "existing_credential_scope_restored": true,
+    "temporary_credential_removed": true,
+    "removed_token_probe": "unauthorized",
+    "local_token_destroyed": true
+  },
+  "rollback_rehearsal": {
+    "exact_sha_result": "failed_safe",
+    "exact_sha": "350920bbdb3928f34e406940b9d9f0d95f7e8c65",
+    "error": "corrupted migrations: previously executed migration 006_event_relation_time is missing",
+    "database_downgrade_attempted": false,
+    "trial_rows_deleted_or_rewritten": false,
+    "compatibility_bridge_result": "passed",
+    "required_policy": "After migration 006 has executed, rollback must retain the exact 006_event_relation_time migration file even when application runtime returns to the M4-D code."
+  },
+  "verdicts": [
+    {
+      "case": "year bounded range",
+      "result": "pass"
+    },
+    {
+      "case": "month bounded range",
+      "result": "pass"
+    },
+    {
+      "case": "day bounded range",
+      "result": "pass"
+    },
+    {
+      "case": "millisecond lossless range",
+      "result": "pass"
+    },
+    {
+      "case": "picosecond lossless range",
+      "result": "pass"
+    },
+    {
+      "case": "exact virtual Time Event",
+      "result": "pass"
+    },
+    {
+      "case": "Composite explicit Event boundaries and Duration",
+      "result": "pass"
+    },
+    {
+      "case": "descendant span separated from Duration",
+      "result": "pass"
+    },
+    {
+      "case": "during separated from contains",
+      "result": "pass"
+    },
+    {
+      "case": "relative-only without invented absolute date",
+      "result": "pass"
+    },
+    {
+      "case": "conflicts rejected with Event and Relation IDs",
+      "result": "pass"
+    },
+    {
+      "case": "Canon read-back",
+      "result": "pass"
+    },
+    {
+      "case": "Atropos same served Revision",
+      "result": "pass"
+    },
+    {
+      "case": ".moirai export/import semantic round-trip",
+      "result": "pass"
+    },
+    {
+      "case": "virtual Time Event non-persistence",
+      "result": "pass"
+    },
+    {
+      "case": "temporary authorization cleanup",
+      "result": "pass"
+    },
+    {
+      "case": "exact pre-migration application SHA rollback",
+      "result": "fail-safe; corrected by migration-ledger compatibility bridge"
+    }
+  ],
+  "overall_temporal_acceptance": "pass",
+  "next_work": "Return to IP-001 M4-D next step: JointJS graph/scope artifact exploration, including 100k LOD and Canon comparison before M5."
+}

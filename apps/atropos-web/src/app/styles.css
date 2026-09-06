@@ -740,3 +740,44 @@ a {
     animation-duration: 0.01ms !important;
   }
 }
+
+.temporal-reading {
+  margin-block: 1.5rem;
+  min-width: 0;
+}
+.temporal-event {
+  padding-block: 1rem;
+  border-top: 1px solid #ffffff24;
+}
+.temporal-reading code {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+.temporal-reading details {
+  margin-block: 0.75rem;
+}
+.temporal-reading summary {
+  cursor: pointer;
+}
+.temporal-metadata {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+.temporal-metadata th {
+  width: 5rem;
+  text-align: left;
+}
+.temporal-metadata th,
+.temporal-metadata td {
+  padding-block: 0.4rem;
+  vertical-align: top;
+}
+.temporal-component {
+  border-left: 2px solid currentColor;
+  padding-left: 0.75rem;
+}
+.temporal-during {
+  border-left: 2px dashed currentColor;
+  padding-left: 0.75rem;
+}

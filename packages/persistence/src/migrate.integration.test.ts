@@ -52,4 +52,24 @@ describeWithDatabase("versioned migrations", () => {
   it("is idempotent", async () => {
     await expect(migrateToLatest(databaseUrl ?? "")).resolves.toBeUndefined();
   });
+
+  it("keeps legacy Relation IDs while adding nullable canonical endpoint references", async () => {
+    const result = await sql<{
+      column_name: string;
+      is_nullable: "YES" | "NO";
+    }>`
+      select column_name, is_nullable
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'relations'
+        and column_name in ('source_event_id', 'target_event_id', 'source_ref', 'target_ref')
+      order by column_name
+    `.execute(db);
+    expect(result.rows).toEqual([
+      { column_name: "source_event_id", is_nullable: "YES" },
+      { column_name: "source_ref", is_nullable: "YES" },
+      { column_name: "target_event_id", is_nullable: "YES" },
+      { column_name: "target_ref", is_nullable: "YES" }
+    ]);
+  });
 });

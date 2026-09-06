@@ -1,3 +1,10 @@
+import { readFile, stat, writeFile } from "node:fs/promises";
+import {
+  exportWorldPackage,
+  readWorldPackage,
+  cloneWorldPlan,
+  type PortableWorld
+} from "./portability.js";
 import {
   CLOTHO_METHODS,
   clothoInputSchema,
@@ -7,10 +14,57 @@ import { callClotho, ClothoClientError } from "./client.js";
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
+
+  const config = {
+    baseUrl: process.env.CLOTHO_API_URL ?? "",
+    token: process.env.CLOTHO_TOKEN ?? ""
+  };
+  if (args[0] === "export" && args.length === 3) {
+    const envelope = (await callClotho(config, "world.export", {
+      world_id: args[1]
+    })) as {
+      result: {
+        source_revision: number;
+        completeness: string;
+        snapshot: PortableWorld;
+      };
+    };
+    const result = envelope.result;
+    if (result.completeness !== "complete")
+      throw new ClothoClientError("export_incomplete");
+    const artifact = await exportWorldPackage(
+      result.snapshot,
+      result.source_revision
+    );
+    await writeFile(args[2]!, artifact.bytes, { flag: "wx" });
+    process.stdout.write(
+      JSON.stringify({
+        file: args[2],
+        source_revision: result.source_revision,
+        fingerprint: artifact.fingerprint
+      }) + "\n"
+    );
+    return;
+  }
+  if (args[0] === "import-preview" && args.length === 3) {
+    if ((await stat(args[1]!)).size > 11 * 1024 * 1024)
+      throw new ClothoClientError("package_size_limit");
+    const { view } = await readWorldPackage(await readFile(args[1]!));
+    const preview = cloneWorldPlan(view, args[2]!);
+    const validation = (
+      (await callClotho(config, "change.validate", {
+        plan: preview.plan
+      })) as { result: unknown }
+    ).result;
+    process.stdout.write(JSON.stringify({ ...preview, validation }) + "\n");
+    return;
+  }
   const schema = args[0] === "schema";
   const method = args[schema ? 1 : 0] as ClothoMethod;
   if (!CLOTHO_METHODS.includes(method) || args.length !== (schema ? 2 : 1))
-    throw new ClothoClientError("usage_clotho_method_or_schema_method");
+    throw new ClothoClientError(
+      "usage_clotho_method_schema_export_or_import_preview"
+    );
   if (schema) {
     process.stdout.write(`${JSON.stringify(clothoInputSchema(method))}\n`);
     return;
@@ -43,7 +97,14 @@ void main().catch((error: unknown) => {
   const safe =
     error instanceof ClothoClientError
       ? error
-      : new ClothoClientError("client_error");
+      : new ClothoClientError(
+          error instanceof Error &&
+            /^(package|clone|legacy_placement_export)_[a-z_]+$/.test(
+              error.message
+            )
+            ? error.message
+            : "client_error"
+        );
   process.stderr.write(
     `${JSON.stringify({ error: { code: safe.code, retryable: safe.retryable, ...safe.details, ...(safe.recovery ? { recovery: safe.recovery } : {}) } })}\n`
   );

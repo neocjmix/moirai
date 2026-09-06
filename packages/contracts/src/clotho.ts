@@ -1,16 +1,18 @@
 import type { CreateChangeSet } from "./index.js";
-import { CONTRACT_VERSION } from "./versions.js";
+import { CONTRACT_VERSION, TEMPORAL_CONTRACT_VERSION } from "./versions.js";
 
 export type ChangePlan = Omit<CreateChangeSet, "actor">;
 export const CLOTHO_METHODS = [
   "world.list",
   "world.get",
+  "world.export",
   "canon.list",
   "canon.get",
   "event.search",
   "event.get",
   "event.neighbors",
   "context.slice",
+  "time-event.resolve",
   "change.validate",
   "change.commit"
 ] as const;
@@ -67,6 +69,8 @@ const choice = (...values: string[]): JsonSchema => ({
 const relationTypes = [
   "contains",
   "precedes",
+  "not_after",
+  "coincides",
   "causes",
   "enables",
   "prevents",
@@ -80,6 +84,37 @@ const relationTypes = [
   "derives_from",
   "transfers"
 ];
+const eventReference = {
+  oneOf: [
+    object({ kind: { const: "event" }, event_id: id }, ["kind", "event_id"]),
+    object(
+      {
+        kind: { const: "event" },
+        client_ref: { type: "string", pattern: "^[a-z][a-z0-9_-]{0,63}$" }
+      },
+      ["kind", "client_ref"]
+    ),
+    object(
+      {
+        kind: { const: "time_event" },
+        time_system_ref: {
+          oneOf: [
+            object({ time_system_id: id }),
+            object({
+              client_ref: {
+                type: "string",
+                pattern: "^[a-z][a-z0-9_-]{0,63}$"
+              }
+            })
+          ]
+        },
+        definition_version: str(64),
+        coordinate: str(1000)
+      },
+      ["kind", "time_system_ref", "definition_version", "coordinate"]
+    )
+  ]
+};
 const operation = (
   entity: string,
   properties: Record<string, unknown>,
@@ -106,159 +141,193 @@ const operation = (
   ),
   anyOf: [{ required: ["entity_id"] }, { required: ["client_ref"] }]
 });
-export const CHANGE_PLAN_SCHEMA: JsonSchema = object({
-  contract_version: { const: CONTRACT_VERSION },
-  change_set_id: id,
-  world_id: id,
-  expected_revision: {
-    type: "integer",
-    minimum: 0,
-    maximum: Number.MAX_SAFE_INTEGER
-  },
-  intent: str(2000),
-  origins: {
-    ...array(
-      object({
-        kind: choice("source_explicit", "human_instruction", "llm_inference"),
-        summary: str(4000)
-      })
+function changePlanSchema(
+  contractVersion: typeof CONTRACT_VERSION | typeof TEMPORAL_CONTRACT_VERSION,
+  relation: JsonSchema
+): JsonSchema {
+  return object({
+    contract_version: { const: contractVersion },
+    change_set_id: id,
+    world_id: id,
+    expected_revision: {
+      type: "integer",
+      minimum: 0,
+      maximum: Number.MAX_SAFE_INTEGER
+    },
+    intent: str(2000),
+    origins: {
+      ...array(
+        object({
+          kind: choice("source_explicit", "human_instruction", "llm_inference"),
+          summary: str(4000)
+        })
+      ),
+      minItems: 1
+    },
+    operations: {
+      ...array(
+        {
+          oneOf: [
+            operation(
+              "world",
+              {
+                slug: str(128),
+                title: str(500),
+                description: nullable(str(10000))
+              },
+              ["slug", "title"]
+            ),
+            operation(
+              "canon",
+              {
+                world_id: ref,
+                slug: str(128),
+                title: str(500),
+                description: nullable(str(10000))
+              },
+              ["world_id", "slug", "title"]
+            ),
+            operation(
+              "event",
+              {
+                canon_id: ref,
+                slug: nullable(str(128)),
+                kind: choice("atomic", "composite"),
+                title: str(500),
+                summary: nullable(str(10000)),
+                roles: array(str(128)),
+                attributes: attrs
+              },
+              ["canon_id", "kind", "title", "roles", "attributes"]
+            ),
+            relation,
+            operation(
+              "narrative",
+              {
+                canon_id: ref,
+                scope_type: choice("canon", "event"),
+                scope_id: ref,
+                locale: str(32),
+                kind: choice("primary", "summary", "annotation"),
+                title: nullable(str(500)),
+                body: str(100000),
+                public_references: array(
+                  object({ label: str(500), url: str(2000) })
+                )
+              },
+              [
+                "canon_id",
+                "scope_type",
+                "scope_id",
+                "locale",
+                "kind",
+                "body",
+                "public_references"
+              ]
+            ),
+            operation(
+              "time_system",
+              {
+                world_id: ref,
+                slug: str(128),
+                title: str(500),
+                kind: choice("calendar", "ordinal", "relative", "custom"),
+                definition_version: str(64),
+                definition: attrs
+              },
+              [
+                "world_id",
+                "slug",
+                "title",
+                "kind",
+                "definition_version",
+                "definition"
+              ]
+            ),
+            operation(
+              "canon_time_system",
+              { canon_id: ref, time_system_id: ref },
+              ["canon_id", "time_system_id"]
+            ),
+            ...(contractVersion === TEMPORAL_CONTRACT_VERSION
+              ? []
+              : [
+                  operation(
+                    "event_temporal_placement",
+                    {
+                      event_id: ref,
+                      time_system_id: ref,
+                      kind: choice("point", "interval"),
+                      earliest_start: coordinate,
+                      latest_start: coordinate,
+                      earliest_end: nullable(coordinate),
+                      latest_end: nullable(coordinate),
+                      precision: str(128),
+                      certainty: choice("exact", "approximate", "uncertain"),
+                      display_label: nullable(str(500))
+                    },
+                    [
+                      "event_id",
+                      "time_system_id",
+                      "kind",
+                      "earliest_start",
+                      "latest_start",
+                      "precision",
+                      "certainty"
+                    ]
+                  )
+                ])
+          ]
+        },
+        500
+      ),
+      minItems: 1
+    }
+  });
+}
+
+const legacyRelationOperation = operation(
+  "relation",
+  {
+    canon_id: ref,
+    type: choice(
+      ...relationTypes.filter(
+        (type) => type !== "not_after" && type !== "coincides"
+      )
     ),
-    minItems: 1
+    source_event_id: ref,
+    target_event_id: ref,
+    direction: choice("directed", "undirected"),
+    attributes: attrs
   },
-  operations: {
-    ...array(
-      {
-        oneOf: [
-          operation(
-            "world",
-            {
-              slug: str(128),
-              title: str(500),
-              description: nullable(str(10000))
-            },
-            ["slug", "title"]
-          ),
-          operation(
-            "canon",
-            {
-              world_id: ref,
-              slug: str(128),
-              title: str(500),
-              description: nullable(str(10000))
-            },
-            ["world_id", "slug", "title"]
-          ),
-          operation(
-            "event",
-            {
-              canon_id: ref,
-              slug: nullable(str(128)),
-              kind: choice("atomic", "composite"),
-              title: str(500),
-              summary: nullable(str(10000)),
-              roles: array(str(128)),
-              attributes: attrs
-            },
-            ["canon_id", "kind", "title", "roles", "attributes"]
-          ),
-          operation(
-            "relation",
-            {
-              canon_id: ref,
-              type: choice(...relationTypes),
-              source_event_id: ref,
-              target_event_id: ref,
-              direction: choice("directed", "undirected"),
-              attributes: attrs
-            },
-            [
-              "canon_id",
-              "type",
-              "source_event_id",
-              "target_event_id",
-              "direction",
-              "attributes"
-            ]
-          ),
-          operation(
-            "narrative",
-            {
-              canon_id: ref,
-              scope_type: choice("canon", "event"),
-              scope_id: ref,
-              locale: str(32),
-              kind: choice("primary", "summary", "annotation"),
-              title: nullable(str(500)),
-              body: str(100000),
-              public_references: array(
-                object({ label: str(500), url: str(2000) })
-              )
-            },
-            [
-              "canon_id",
-              "scope_type",
-              "scope_id",
-              "locale",
-              "kind",
-              "body",
-              "public_references"
-            ]
-          ),
-          operation(
-            "time_system",
-            {
-              world_id: ref,
-              slug: str(128),
-              title: str(500),
-              kind: choice("calendar", "ordinal", "relative", "custom"),
-              definition_version: str(64),
-              definition: attrs
-            },
-            [
-              "world_id",
-              "slug",
-              "title",
-              "kind",
-              "definition_version",
-              "definition"
-            ]
-          ),
-          operation(
-            "canon_time_system",
-            { canon_id: ref, time_system_id: ref },
-            ["canon_id", "time_system_id"]
-          ),
-          operation(
-            "event_temporal_placement",
-            {
-              event_id: ref,
-              time_system_id: ref,
-              kind: choice("point", "interval"),
-              earliest_start: coordinate,
-              latest_start: coordinate,
-              earliest_end: nullable(coordinate),
-              latest_end: nullable(coordinate),
-              precision: str(128),
-              certainty: choice("exact", "approximate", "uncertain"),
-              display_label: nullable(str(500))
-            },
-            [
-              "event_id",
-              "time_system_id",
-              "kind",
-              "earliest_start",
-              "latest_start",
-              "precision",
-              "certainty"
-            ]
-          )
-        ]
-      },
-      500
-    ),
-    minItems: 1
-  }
-});
+  [
+    "canon_id",
+    "type",
+    "source_event_id",
+    "target_event_id",
+    "direction",
+    "attributes"
+  ]
+);
+const temporalRelationOperation = operation(
+  "relation",
+  {
+    canon_id: ref,
+    type: choice(...relationTypes),
+    source_ref: eventReference,
+    target_ref: eventReference,
+    direction: choice("directed", "undirected"),
+    attributes: attrs
+  },
+  ["canon_id", "type", "source_ref", "target_ref", "direction", "attributes"]
+);
+
+export const CHANGE_PLAN_SCHEMA: JsonSchema = {
+  oneOf: [
+    changePlanSchema(CONTRACT_VERSION, legacyRelationOperation),
+    changePlanSchema(TEMPORAL_CONTRACT_VERSION, temporalRelationOperation)
+  ]
+};
 const page = {
   cursor: str(2000),
   limit: { type: "integer", minimum: 1, maximum: 100 }
@@ -268,7 +337,7 @@ const world = {
   at_revision: { type: "integer", minimum: 1, maximum: Number.MAX_SAFE_INTEGER }
 };
 const graph = {
-  relation_types: array(choice(...relationTypes), 14),
+  relation_types: array(choice(...relationTypes), relationTypes.length),
   direction: choice("incoming", "outgoing", "both"),
   depth: { type: "integer", minimum: 0, maximum: 5 },
   max_events: { type: "integer", minimum: 1, maximum: 100 },
@@ -280,6 +349,8 @@ export function clothoInputSchema(method: ClothoMethod): JsonSchema {
   switch (method) {
     case "world.list":
       return object({ ...page, query: str(500) }, []);
+    case "world.export":
+      return object({ ...world }, ["world_id"]);
     case "world.get":
       return object({ ...world, ...page }, ["world_id"]);
     case "canon.list":
@@ -314,6 +385,16 @@ export function clothoInputSchema(method: ClothoMethod): JsonSchema {
           seed_ids: { ...array(id, 50), minItems: 1 }
         },
         ["world_id", "canon_ids", "seed_ids"]
+      );
+    case "time-event.resolve":
+      return object(
+        {
+          ...world,
+          time_system_id: id,
+          definition_version: str(64),
+          coordinate: str(1000)
+        },
+        ["world_id", "time_system_id", "definition_version", "coordinate"]
       );
     case "change.validate":
     case "change.commit":

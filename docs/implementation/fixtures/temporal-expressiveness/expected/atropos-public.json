@@ -1,0 +1,71 @@
+{
+  "fixture_version": 1,
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_served_revision": 2,
+  "required_public_surfaces": ["accessible_text", "revision_json"],
+  "assertions": [
+    {
+      "case_id": "te-year-220",
+      "meaning": "220년 범위",
+      "must_not_claim_exact_timestamp": true
+    },
+    {
+      "case_id": "te-month-1969-07",
+      "meaning": "1969년 7월 범위",
+      "must_not_claim_day": true
+    },
+    {
+      "case_id": "te-day-1969-07-20",
+      "meaning": "1969년 7월 20일 범위",
+      "must_not_claim_time_of_day": true
+    },
+    {
+      "case_id": "te-ms-123",
+      "required_text": [
+        "2026-09-05T08:13:21.123000000000Z",
+        "2026-09-05T08:13:21.124000000000Z"
+      ]
+    },
+    {
+      "case_id": "te-ps-012",
+      "required_text": [
+        "2026-09-05T08:13:21.123456789012Z",
+        "2026-09-05T08:13:21.123456789013Z"
+      ]
+    },
+    {
+      "case_id": "te-exact-observation",
+      "required_text": ["2026-09-05T08:13:21.123456789012Z"],
+      "meaning": "정확한 순간과 coincides",
+      "must_not_claim_range": true
+    },
+    {
+      "case_id": "te-window",
+      "required_text": [
+        "2026-09-05T08:13:22.000000000000Z",
+        "2026-09-05T08:13:24.000000000000Z",
+        "2 seconds"
+      ]
+    },
+    {
+      "case_id": "te-child",
+      "relationship_label": "component",
+      "membership": true
+    },
+    {
+      "case_id": "te-during",
+      "relationship_label": "occurred during",
+      "membership": false
+    },
+    {
+      "case_id": "te-relative-a",
+      "required_text": ["before", "원인 불명의 후행 사건"],
+      "forbid_date": true
+    },
+    {
+      "case_id": "te-relative-b",
+      "required_text": ["after", "원인 불명의 선행 사건"],
+      "forbid_date": true
+    }
+  ]
+}

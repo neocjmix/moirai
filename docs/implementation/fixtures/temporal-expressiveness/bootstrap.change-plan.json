@@ -1,0 +1,76 @@
+{
+  "contract_version": 2,
+  "change_set_id": "019f3b00-0000-7000-8000-000000000005",
+  "world_id": "019f3b00-0000-7000-8000-000000000001",
+  "expected_revision": 0,
+  "intent": "Create the isolated Temporal Expressiveness Observatory World and its acceptance Time System.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "Dedicated synthetic World approved only for TS-010 acceptance after a separate pre-write approval."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "world",
+      "entity_id": "019f3b00-0000-7000-8000-000000000001",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "slug": "temporal-expressiveness",
+        "title": "Temporal Expressiveness Observatory",
+        "description": "Isolated synthetic World for TS-010 acceptance only."
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "canon",
+      "entity_id": "019f3b00-0000-7000-8000-000000000002",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "world_id": "019f3b00-0000-7000-8000-000000000001",
+        "slug": "acceptance",
+        "title": "Temporal Acceptance Canon",
+        "description": "Synthetic facts used only by the temporal expressiveness corpus."
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "time_system",
+      "entity_id": "019f3b00-0000-7000-8000-000000000003",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "world_id": "019f3b00-0000-7000-8000-000000000001",
+        "slug": "proleptic-gregorian-utc",
+        "title": "Proleptic Gregorian UTC",
+        "kind": "calendar",
+        "definition_version": "1",
+        "definition": {
+          "coordinate_codec": "yyyy-iso-fields-fraction12-z-v1",
+          "calendar": "proleptic-gregorian",
+          "timezone": "UTC",
+          "fractional_digits": 12,
+          "leap_second_policy": "reject",
+          "interval_policy": "half-open",
+          "capabilities": [
+            "canonicalize",
+            "equality",
+            "compare",
+            "boundary",
+            "difference"
+          ]
+        }
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "canon_time_system",
+      "entity_id": "019f3b00-0000-7000-8000-000000000004",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "canon_id": "019f3b00-0000-7000-8000-000000000002",
+        "time_system_id": "019f3b00-0000-7000-8000-000000000003"
+      }
+    }
+  ]
+}

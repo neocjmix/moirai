@@ -100,6 +100,8 @@ process.stdout.write(
       },
       rollback: {
         application_sha: "350920bbdb3928f34e406940b9d9f0d95f7e8c65",
+        migration_ledger_policy:
+          "After migration 006 has executed, retain 006_event_relation_time in any rollback build even when runtime code returns to the M4-D application SHA",
         database_policy:
           "Do not delete or rewrite trial rows; stop publication advancement and preserve isolated append-only revisions as evidence",
         authorization_policy:

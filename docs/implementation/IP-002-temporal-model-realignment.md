@@ -193,6 +193,28 @@ Clotho에는 revision-bounded complete snapshot인 `world.export`를 추가한�
 - production 전 Railway staging 또는 승인된 synthetic 범위 검증
 - `Temporal Expressiveness Observatory` corpus의 실제 validate→commit→read→publish→export/import 증거
 
+2026-09-06 실제 종단간 검증을 완료했다. 승인된 application SHA
+`8ee04b47843b8d080014325e39be3dda4aac88c6`와 승인 패킷 SHA-256
+`bc3e8e3b60925bfde279cc72945e147198183b3321ac50dfc6f565abbc2af99b`를 사용했다.
+별도 source World revision 2와 import World revision 1에서 Canon read-back, 결정적
+virtual Time Event resolve와 비영속성, solver projection, 같은 served Revision의
+Atropos 텍스트·JSON, `.moirai` export/import 역매핑 fingerprint, 거절 corpus 5개를
+모두 확인했다. [machine-readable live evidence](evidence/ip-002-live-acceptance-2026-09-06.json)에
+실제 Change Set ID, revision, import ID mapping, digest와 사례별 판정을 고정했다.
+
+rollback rehearsal에서는 migration 006 실행 뒤 exact M4-D SHA가 migration 파일을
+모르기 때문에 pre-deploy에서 fail-safe로 중단되는 운영 계획 결함을 발견했다. DB를
+downgrade하거나 trial Relation을 삭제하지 않았다. M4-D runtime 위에 실행된
+`006_event_relation_time` 파일만 보존한 compatibility bridge
+`3ac0b0deafbe00b5aaa4aa474b7ad4a8e9cc6bb8`로 Clotho readiness를 복구했다.
+따라서 migration 006 이후 rollback은 pre-migration SHA 단독이 아니라 그 SHA의
+runtime과 migration 006 ledger 파일을 함께 사용해야 한다.
+
+이 증거로 IP-002 Slice 0–6과 관계 기반 시간 표현력 수용시험을 완료한다. Slice 7의
+legacy 제거는 별도 승인 조건이므로 수행하지 않았고 IP-002 완료 조건에 포함하지
+않는다. 다음 활성 작업은 위에 기록한 IP-001 M4-D 다음 JointJS graph·scope artifact
+기본 탐색이며, 100k LOD와 Canon 비교를 통과하기 전에는 M5로 넘어가지 않는다.
+
 현재 로컬 환경에서 `pnpm`은 ignored build scripts 정책으로 실행이 막힐 수 있다. 이를 우회하려고 dependency 정책을 조용히 바꾸지 말고 CI 또는 승인된 설치 절차를 사용한다.
 
 ## 관측과 rollback

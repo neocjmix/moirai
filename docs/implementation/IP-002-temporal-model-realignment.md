@@ -100,7 +100,7 @@ flowchart TD
 
 adapter conformance는 최소한 허구 세계 custom coordinate, 빅뱅 이후 임의정밀도 경과량, 지질 연대의 불확실 범위를 다룬다. 이 사례는 Gregorian 변환 성공을 요구하지 않는다. 대신 원문 좌표 보존, adapter 내부 비교, 지원하지 않는 conversion·difference의 설명 가능한 `unresolved`, authored cross-system 관계의 독립 보존을 판정한다.
 
-2026-09-05 진행 checkpoint: `@moirai/domain` 독립 adapter·resolver·solver 초안과 로컬 conformance test를 작성했다. Gregorian 경계·피코초, 허구력 원문, 임의정밀도 scalar와 지질 BP 범위를 검증 중이며 production 경로에는 연결하지 않았다. Composite 경계 순서 통합, equality evidence, 입력 순서 독립성, 전체 거절 corpus 및 CI·secret scan 종료 검증이 남았다. 로컬 unit test만으로 Slice 2 완료 또는 종단간 수용시험 통과를 선언하지 않는다.
+2026-09-05 완료: `@moirai/domain`에 독립 adapter·resolver·solver와 graph validator를 추가했다. Gregorian 경계·피코초, 허구력 원문, 빅뱅 이후 임의정밀도 scalar와 지질 BP 범위, Composite 경계 순서, equality evidence, 입력 순서 독립성 및 원본 거절 corpus 5개를 검증했다. PR CI [33971023125](https://github.com/neocjmix/moirai/actions/runs/33971023125)가 성공했고 secret scan도 변경 이력에서 0건이다. production 경로에는 연결하지 않았다. 이 결과는 Slice 2 완료일 뿐 실제 제품 경로 표현력 수용시험 통과가 아니다.
 
 ## Slice 3 — 호환 adapter와 shadow 비교
 
@@ -114,6 +114,8 @@ legacy Placement를 새 제약 graph로 읽는 일방향 adapter를 추가한다
 기존 projector와 새 solver를 같은 revision에 실행해 차이를 기록한다. 사용자 응답과 publication은 계속 기존 경로가 소유한다. 차이를 자동으로 “새 구현이 맞음”으로 처리하지 않는다.
 
 종료 조건: 기준 fixture 전체와 실제 synthetic World에서 차이 목록이 설명되고, 예상하지 못한 차이가 0이다.
+
+2026-09-06 완료 checkpoint: `event_temporal_placement`를 변경하지 않는 일방향 reader를 추가했다. versioned ordinal integer의 exact point 9건만 virtual Time Event `coincides` 제약으로 lossless 전환하고, interval 3건은 명시적 start/end Event가 없으므로 `ambiguous`로 남긴다. [Revision 29 읽기 전용 shadow evidence](evidence/temporal-shadow-clotho-synthetic-r29.json)는 기존 `m4-timeline-v1`과 새 solver를 같은 입력에서 함께 실행한다. 기존 Timeline은 그 3건을 모두 start coordinate `0..0`으로 표시하지만 새 solver는 boundary·Duration을 발명하지 않는다. 이 차이는 예상된 차이이며 publication은 아직 기존 projector가 소유한다. 이 과정에서 corpus를 `Clotho Synthetic Observatory`에 쓰지 않았고 World revision도 바꾸지 않았다.
 
 ## Slice 4 — 추가형 canonical write
 

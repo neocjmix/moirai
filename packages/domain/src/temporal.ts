@@ -580,6 +580,42 @@ export function createContinuousScalarAdapter(options: {
   return adapter;
 }
 
+const INTEGER_COORDINATE = /^-?(0|[1-9]\d*)$/;
+
+/** Lossless adapter for an already-versioned discrete ordinal coordinate. */
+export function createIntegerOrdinalAdapter(options: {
+  readonly timeSystemId: string;
+  readonly definitionVersion: string;
+  readonly unit: string;
+}): TemporalAdapter {
+  const canonicalize = (coordinate: string): string => {
+    if (!INTEGER_COORDINATE.test(coordinate)) {
+      throw new Error("Coordinate must be a canonical signed integer string");
+    }
+    return BigInt(coordinate).toString();
+  };
+  return {
+    timeSystemId: options.timeSystemId,
+    definitionVersion: options.definitionVersion,
+    capabilities: new Set<TemporalCapability>([
+      "canonicalize",
+      "equality",
+      "compare",
+      "difference"
+    ]),
+    canonicalize,
+    equals: (left, right) => canonicalize(left) === canonicalize(right),
+    compare: (left, right) =>
+      compareBigInt(BigInt(canonicalize(left)), BigInt(canonicalize(right))),
+    difference: (start, end) => ({
+      value: (
+        BigInt(canonicalize(end)) - BigInt(canonicalize(start))
+      ).toString(),
+      unit: options.unit
+    })
+  };
+}
+
 export function createOpaqueCustomAdapter(options: {
   readonly timeSystemId: string;
   readonly definitionVersion: string;

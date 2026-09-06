@@ -1,0 +1,463 @@
+{
+  "evidence_version": 1,
+  "kind": "read_only_legacy_temporal_shadow",
+  "source": {
+    "world_id": "01995c2a-7b00-7000-8000-000000000101",
+    "world_title": "Clotho Synthetic Observatory",
+    "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+    "canon_title": "Synthetic Signals",
+    "source_revision": 29,
+    "application_sha": "350920bbdb3928f34e406940b9d9f0d95f7e8c65",
+    "access": "read_only",
+    "captured_at": "2026-09-05",
+    "query": "context_slice at revision 29; twelve explicit seed Events; depth 0; precedes Relations only"
+  },
+  "world": {
+    "id": "01995c2a-7b00-7000-8000-000000000101",
+    "slug": "clotho-synthetic",
+    "title": "Clotho Synthetic Observatory",
+    "description": null
+  },
+  "canons": [
+    {
+      "id": "01995c2a-7b00-7000-8000-000000000102",
+      "world_id": "01995c2a-7b00-7000-8000-000000000101",
+      "slug": "signals",
+      "title": "Synthetic Signals",
+      "description": null
+    }
+  ],
+  "time_systems": [
+    {
+      "id": "019f0000-0000-7000-8000-000000000001",
+      "world_id": "01995c2a-7b00-7000-8000-000000000101",
+      "slug": "deployment-sequence",
+      "title": "Deployment Sequence",
+      "kind": "ordinal",
+      "definition_version": "1",
+      "definition": {
+        "coordinate": "integer",
+        "unit": "deployment"
+      }
+    }
+  ],
+  "canon_time_systems": [
+    {
+      "id": "019f0000-0000-7000-8000-000000000002",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001"
+    }
+  ],
+  "events": [
+    {
+      "id": "01995c2a-7b00-7000-8000-000000000103",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "The observatory receives its first signal",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "2545f412-e4f5-7aa4-89de-a2cb0717ff90",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal a396a3a5c4e7",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "2e0d89f0-5572-7836-8b97-9ae893d5fe1e",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal 350920bbdb39",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "5fa422b7-2198-77c1-8aa7-79dcf90c915e",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "composite",
+      "title": "Clotho verification process 350920bbdb39",
+      "summary": "The bounded process for one authenticated deployment verification.",
+      "roles": ["process"],
+      "attributes": {}
+    },
+    {
+      "id": "887f1fd8-5998-7678-8b0f-2f51b8cd2fb4",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "composite",
+      "title": "Clotho verification process dc0728da0fb2",
+      "summary": "The bounded process for one authenticated deployment verification.",
+      "roles": ["process"],
+      "attributes": {}
+    },
+    {
+      "id": "99d88d9e-5caf-78a7-81b0-68c835bdbc62",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal 2096addc1a8e",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "99f686a8-af58-74dc-8a94-97ca26cfb114",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal 52dc241aeb7d",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "99f8aecb-5c52-70f3-8647-ef25d7e6c333",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal 0bbabae94776",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "b4934d57-8cf4-7b0f-8298-5f4f0e305f63",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal 9713bd8517c7",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "d69a2c0d-654e-7356-87e3-542c1529ebf3",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal 21f9b117ac36",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    },
+    {
+      "id": "e8a1cdf0-5184-771f-823d-51678ff3a2b4",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "composite",
+      "title": "Clotho verification process 52dc241aeb7d",
+      "summary": "The bounded process for one authenticated deployment verification.",
+      "roles": ["process"],
+      "attributes": {}
+    },
+    {
+      "id": "f4aeb4a2-548b-7268-8b9d-444af021f8a7",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "slug": null,
+      "kind": "atomic",
+      "title": "Clotho verified signal dc0728da0fb2",
+      "summary": null,
+      "roles": [],
+      "attributes": {}
+    }
+  ],
+  "temporal_placements": [
+    {
+      "id": "019f0000-0000-7000-8000-000000000003",
+      "event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 0 },
+      "latest_start": { "value": 0 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 0"
+    },
+    {
+      "id": "06a63b79-6310-7fef-8fce-6468f12df29d",
+      "event_id": "d69a2c0d-654e-7356-87e3-542c1529ebf3",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 24 },
+      "latest_start": { "value": 24 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 24"
+    },
+    {
+      "id": "2d24fd74-4f0f-77d9-8f14-49e42d2c6f6a",
+      "event_id": "b4934d57-8cf4-7b0f-8298-5f4f0e305f63",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 26 },
+      "latest_start": { "value": 26 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 26"
+    },
+    {
+      "id": "311a8a37-1993-7ed3-8aa7-fa1727ed7955",
+      "event_id": "2e0d89f0-5572-7836-8b97-9ae893d5fe1e",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 28 },
+      "latest_start": { "value": 28 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 28"
+    },
+    {
+      "id": "675dacab-eb2c-71ec-82d4-07fca15784d8",
+      "event_id": "99d88d9e-5caf-78a7-81b0-68c835bdbc62",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 22 },
+      "latest_start": { "value": 22 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 22"
+    },
+    {
+      "id": "81d1e732-f3f8-7083-8773-0f6f67a1e8aa",
+      "event_id": "99f8aecb-5c52-70f3-8647-ef25d7e6c333",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 21 },
+      "latest_start": { "value": 21 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 21"
+    },
+    {
+      "id": "8203b5cd-ec28-7a5f-8889-26fd86c68e1e",
+      "event_id": "2545f412-e4f5-7aa4-89de-a2cb0717ff90",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 23 },
+      "latest_start": { "value": 23 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 23"
+    },
+    {
+      "id": "8d6f3e26-1a0f-7686-8ebf-57d536a3550a",
+      "event_id": "5fa422b7-2198-77c1-8aa7-79dcf90c915e",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "interval",
+      "earliest_start": { "value": 0 },
+      "latest_start": { "value": 0 },
+      "earliest_end": { "value": 28 },
+      "latest_end": { "value": 28 },
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployments 0–28"
+    },
+    {
+      "id": "c7ad7ade-5d6a-790c-8c9f-e7fefa51d36c",
+      "event_id": "e8a1cdf0-5184-771f-823d-51678ff3a2b4",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "interval",
+      "earliest_start": { "value": 0 },
+      "latest_start": { "value": 0 },
+      "earliest_end": { "value": 29 },
+      "latest_end": { "value": 29 },
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployments 0–29"
+    },
+    {
+      "id": "cba84ab9-2810-7d67-8ffa-4e4beb75e5f5",
+      "event_id": "99f686a8-af58-74dc-8a94-97ca26cfb114",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 29 },
+      "latest_start": { "value": 29 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 29"
+    },
+    {
+      "id": "ef390a6a-3f3c-740c-8fb7-fd923170a533",
+      "event_id": "f4aeb4a2-548b-7268-8b9d-444af021f8a7",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "point",
+      "earliest_start": { "value": 27 },
+      "latest_start": { "value": 27 },
+      "earliest_end": null,
+      "latest_end": null,
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployment 27"
+    },
+    {
+      "id": "fd6698a5-fc97-76ab-8ba9-b7b8dd46cdf8",
+      "event_id": "887f1fd8-5998-7678-8b0f-2f51b8cd2fb4",
+      "time_system_id": "019f0000-0000-7000-8000-000000000001",
+      "kind": "interval",
+      "earliest_start": { "value": 0 },
+      "latest_start": { "value": 0 },
+      "earliest_end": { "value": 27 },
+      "latest_end": { "value": 27 },
+      "precision": "deployment",
+      "certainty": "exact",
+      "display_label": "Deployments 0–27"
+    }
+  ],
+  "relations": [
+    {
+      "id": "1ad1e360-4805-776b-8f3c-546286ab5412",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "2545f412-e4f5-7aa4-89de-a2cb0717ff90",
+      "direction": "directed",
+      "attributes": {}
+    },
+    {
+      "id": "42126bf3-412e-785c-8511-c65d36ae2343",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "99f8aecb-5c52-70f3-8647-ef25d7e6c333",
+      "direction": "directed",
+      "attributes": {}
+    },
+    {
+      "id": "4e5b18a9-0bbe-7a5d-8c04-e374a74e8441",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "99d88d9e-5caf-78a7-81b0-68c835bdbc62",
+      "direction": "directed",
+      "attributes": {}
+    },
+    {
+      "id": "8cf3b84c-75e9-7568-81b4-f3e27dd3fbe9",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "2e0d89f0-5572-7836-8b97-9ae893d5fe1e",
+      "direction": "directed",
+      "attributes": {}
+    },
+    {
+      "id": "ad5db003-19ff-7e83-86eb-cc5d46d0c0ac",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "b4934d57-8cf4-7b0f-8298-5f4f0e305f63",
+      "direction": "directed",
+      "attributes": {}
+    },
+    {
+      "id": "cee64ce7-77e4-7d2b-8d44-a9f9248f91e5",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "d69a2c0d-654e-7356-87e3-542c1529ebf3",
+      "direction": "directed",
+      "attributes": {}
+    },
+    {
+      "id": "e041b524-471f-7ad4-8c7f-fb724f636a1a",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "99f686a8-af58-74dc-8a94-97ca26cfb114",
+      "direction": "directed",
+      "attributes": {}
+    },
+    {
+      "id": "f767cbb0-e7ed-7f11-8242-3b5f0bdde966",
+      "canon_id": "01995c2a-7b00-7000-8000-000000000102",
+      "type": "precedes",
+      "source_event_id": "01995c2a-7b00-7000-8000-000000000103",
+      "target_event_id": "f4aeb4a2-548b-7268-8b9d-444af021f8a7",
+      "direction": "directed",
+      "attributes": {}
+    }
+  ],
+  "expected": {
+    "classification_counts": {
+      "lossless": 9,
+      "ambiguous": 3,
+      "unsupported": 0,
+      "conflicting": 0
+    },
+    "ambiguous_placement_ids": [
+      "8d6f3e26-1a0f-7686-8ebf-57d536a3550a",
+      "c7ad7ade-5d6a-790c-8c9f-e7fefa51d36c",
+      "fd6698a5-fc97-76ab-8ba9-b7b8dd46cdf8"
+    ],
+    "solver": {
+      "valid": true,
+      "diagnostic_codes": [],
+      "exact_coordinates_by_event": {
+        "01995c2a-7b00-7000-8000-000000000103": "0",
+        "2545f412-e4f5-7aa4-89de-a2cb0717ff90": "23",
+        "2e0d89f0-5572-7836-8b97-9ae893d5fe1e": "28",
+        "99d88d9e-5caf-78a7-81b0-68c835bdbc62": "22",
+        "99f686a8-af58-74dc-8a94-97ca26cfb114": "29",
+        "99f8aecb-5c52-70f3-8647-ef25d7e6c333": "21",
+        "b4934d57-8cf4-7b0f-8298-5f4f0e305f63": "26",
+        "d69a2c0d-654e-7356-87e3-542c1529ebf3": "24",
+        "f4aeb4a2-548b-7268-8b9d-444af021f8a7": "27"
+      }
+    },
+    "legacy_timeline": {
+      "algorithm_version": "m4-timeline-v1",
+      "item_count": 12,
+      "authored_coordinate_count": 12,
+      "interval_items": [
+        {
+          "event_id": "5fa422b7-2198-77c1-8aa7-79dcf90c915e",
+          "range_start": 0,
+          "range_end": 0,
+          "display_label": "Deployments 0–28"
+        },
+        {
+          "event_id": "e8a1cdf0-5184-771f-823d-51678ff3a2b4",
+          "range_start": 0,
+          "range_end": 0,
+          "display_label": "Deployments 0–29"
+        },
+        {
+          "event_id": "887f1fd8-5998-7678-8b0f-2f51b8cd2fb4",
+          "range_start": 0,
+          "range_end": 0,
+          "display_label": "Deployments 0–27"
+        }
+      ]
+    },
+    "expected_difference": {
+      "legacy_interval_placements": 3,
+      "new_constraints_for_intervals": 0,
+      "reason": "An interval Placement does not identify its start and end as Event nodes, so the shadow run preserves it as ambiguous instead of inventing boundaries or a Duration."
+    }
+  }
+}

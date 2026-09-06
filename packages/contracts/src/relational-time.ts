@@ -23,6 +23,7 @@ export interface PublicTemporalPosition {
   readonly reason?: string;
   readonly source_constraint_ids: readonly string[];
   readonly algorithm_version: string;
+  readonly display_label: string;
   readonly knowledge_span: PublicTemporalAmount | null;
 }
 export interface PublicTemporalExtent {

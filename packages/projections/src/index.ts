@@ -1,4 +1,4 @@
-import { TEMPORAL_EXPRESSIVENESS_WORLD_ID } from "@moirai/contracts";
+import { TEMPORAL_EXPRESSIVENESS_WORLD_IDS } from "@moirai/contracts";
 import { canonicalRelationEndpoints, endpointEventId } from "@moirai/domain";
 import { projectRelationalTime } from "./relational-time.js";
 export {
@@ -1551,7 +1551,7 @@ export function projectPublicDocuments(
   const timeSystems = sorted(view.timeSystems);
   const relations = sorted(view.relations);
   const temporalPlacements = sorted(view.temporalPlacements);
-  const relational = view.world.id === TEMPORAL_EXPRESSIVENESS_WORLD_ID;
+  const relational = TEMPORAL_EXPRESSIVENESS_WORLD_IDS.includes(view.world.id);
   const temporalDocuments = relational
     ? canons.map((canon) => ({
         key: `${prefix}/graph/canons/${canon.id}/temporal.json`,

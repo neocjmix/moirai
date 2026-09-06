@@ -49,6 +49,7 @@ const plan = {
 };
 const inputs: Record<ClothoMethod, Record<string, unknown>> = {
   "world.list": {},
+  "world.export": { world_id },
   "world.get": { world_id },
   "canon.list": { world_id },
   "canon.get": { world_id, canon_id: entity },

@@ -1,8 +1,10 @@
+import { RelationalTime } from "../../../../../../../components/relational-time";
 import { notFound } from "next/navigation";
 import { EventSheet } from "../../../../../../../components/event-sheet";
 import { StatusIsland } from "../../../../../../../components/status-island";
 import {
   readCanon,
+  readRelationalTime,
   readEvent,
   readWorld,
   selectPublication
@@ -24,7 +26,7 @@ export default async function EventPage({
     const selected = await selectPublication(worldId);
     const [
       { world },
-      { canon },
+      canonDocument,
       {
         event,
         parentProcessIds,
@@ -41,6 +43,15 @@ export default async function EventPage({
       readCanon(worldId, canonId, selected),
       readEvent(worldId, canonId, eventId, selected)
     ]);
+    const { canon } = canonDocument;
+    const temporal = canonDocument.temporalArtifact
+      ? await readRelationalTime(
+          worldId,
+          canonId,
+          canonDocument.temporalArtifact,
+          selected
+        )
+      : null;
     return (
       <main className="event-canvas">
         <StatusIsland
@@ -73,6 +84,15 @@ export default async function EventPage({
           timeSystems={timeSystems}
           relations={relations}
           relatedEvents={relatedEvents}
+          temporalContent={
+            temporal ? (
+              <RelationalTime
+                projection={temporal}
+                events={canonDocument.events}
+                eventId={eventId}
+              />
+            ) : null
+          }
         />
       </main>
     );

@@ -264,6 +264,13 @@ function graph(
     relations: relationPage,
     narratives: narrativePage,
     time_systems: timePage,
+    canon_time_systems: view.canonTimeSystems
+      .filter(
+        (link) =>
+          canons.includes(link.canon_id) &&
+          timePage.some((system) => system.id === link.time_system_id)
+      )
+      .sort((a, b) => a.id.localeCompare(b.id)),
     temporal_placements: placementPage,
     containment_paths: relationPage.flatMap((relation) => {
       const endpoints = canonicalRelationEndpoints(relation);
@@ -378,6 +385,16 @@ export async function queryClotho(
         }
       );
     }
+  }
+  if (method === "world.export") {
+    if (Buffer.byteLength(JSON.stringify(view)) > 3_145_728)
+      return error("export_budget_exceeded", "world_id");
+    return {
+      source_revision: cursor.revision,
+      export_kind: "content",
+      completeness: "complete",
+      snapshot: view
+    };
   }
   if (method === "world.get") {
     const result = page(

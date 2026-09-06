@@ -5,6 +5,7 @@ export type ChangePlan = Omit<CreateChangeSet, "actor">;
 export const CLOTHO_METHODS = [
   "world.list",
   "world.get",
+  "world.export",
   "canon.list",
   "canon.get",
   "event.search",
@@ -348,6 +349,8 @@ export function clothoInputSchema(method: ClothoMethod): JsonSchema {
   switch (method) {
     case "world.list":
       return object({ ...page, query: str(500) }, []);
+    case "world.export":
+      return object({ ...world }, ["world_id"]);
     case "world.get":
       return object({ ...world, ...page }, ["world_id"]);
     case "canon.list":

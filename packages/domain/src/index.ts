@@ -1,7 +1,7 @@
 import {
   CONTRACT_VERSION,
   TEMPORAL_CONTRACT_VERSION,
-  TEMPORAL_EXPRESSIVENESS_WORLD_ID,
+  TEMPORAL_EXPRESSIVENESS_WORLD_IDS,
   type CanonicalEventReference,
   type CreateChangeSet,
   type CreateOperation,
@@ -139,13 +139,13 @@ export function validateCreateChangeSet(input: CreateChangeSet): void {
   }
   if (
     input.contract_version === TEMPORAL_CONTRACT_VERSION &&
-    input.world_id !== TEMPORAL_EXPRESSIVENESS_WORLD_ID
+    !TEMPORAL_EXPRESSIVENESS_WORLD_IDS.includes(input.world_id)
   ) {
     fail(
       "temporal_write_not_enabled",
       "world_id",
       "TS-010 canonical write is enabled only for the approved Temporal Expressiveness Observatory World",
-      [input.world_id, TEMPORAL_EXPRESSIVENESS_WORLD_ID]
+      [input.world_id, ...TEMPORAL_EXPRESSIVENESS_WORLD_IDS]
     );
   }
   if (

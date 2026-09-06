@@ -1,6 +1,6 @@
 import {
   PUBLICATION_FORMAT_VERSION,
-  TEMPORAL_EXPRESSIVENESS_WORLD_ID,
+  TEMPORAL_EXPRESSIVENESS_WORLD_IDS,
   type PublicationManifest,
   type PublicationPointer
 } from "@moirai/contracts";
@@ -109,7 +109,7 @@ export function buildPublicationArtifacts(
       subject: SUBJECT_ALGORITHM_VERSION,
       process: PROCESS_ALGORITHM_VERSION,
       state: STATE_ALGORITHM_VERSION,
-      ...(view.world.id === TEMPORAL_EXPRESSIVENESS_WORLD_ID
+      ...(TEMPORAL_EXPRESSIVENESS_WORLD_IDS.includes(view.world.id)
         ? { relational_time: RELATIONAL_TIME_ALGORITHM_VERSION }
         : {})
     },

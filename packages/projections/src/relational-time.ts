@@ -135,8 +135,66 @@ export function projectRelationalTime(
             registry
           )
         : null;
+    let displayLabel =
+      position.kind === "exact"
+        ? "정확한 순간"
+        : position.kind === "relative-only"
+          ? "절대 날짜 미상 · 상대 순서만 알려짐"
+          : position.kind === "unresolved"
+            ? "시간 정보 미정"
+            : "알려진 시간 범위";
+    if (
+      position.kind === "bounded" &&
+      position.lower?.inclusive &&
+      position.upper &&
+      !position.upper.inclusive
+    ) {
+      const lower = position.lower.time_event;
+      const upper = position.upper.time_event;
+      const system = systems.find(
+        (system) => system.id === lower.time_system_ref.time_system_id
+      );
+      const adapter = registry.get(
+        lower.time_system_ref.time_system_id,
+        lower.definition_version
+      );
+      if (
+        system?.definition.coordinate_codec ===
+          "yyyy-iso-fields-fraction12-z-v1" &&
+        lower.time_system_ref.time_system_id ===
+          upper.time_system_ref.time_system_id &&
+        lower.definition_version === upper.definition_version &&
+        adapter?.nextBoundary
+      ) {
+        const coordinate = lower.coordinate;
+        for (const granularity of ["year", "month", "day"]) {
+          const atStart =
+            granularity === "year"
+              ? coordinate.slice(4) === "-01-01T00:00:00.000000000000Z"
+              : granularity === "month"
+                ? coordinate.slice(7) === "-01T00:00:00.000000000000Z"
+                : coordinate.slice(10) === "T00:00:00.000000000000Z";
+          if (
+            atStart &&
+            adapter.nextBoundary(coordinate, granularity) === upper.coordinate
+          ) {
+            const year = BigInt(coordinate.slice(0, 4)).toString(),
+              month = BigInt(coordinate.slice(5, 7)).toString(),
+              day = BigInt(coordinate.slice(8, 10)).toString();
+            displayLabel =
+              granularity === "year"
+                ? `${year}년 범위`
+                : granularity === "month"
+                  ? `${year}년 ${month}월 범위`
+                  : `${year}년 ${month}월 ${day}일 범위`;
+            break;
+          }
+        }
+      }
+    }
     return {
       ...position,
+      display_label: displayLabel,
       knowledge_span: difference && "value" in difference ? difference : null
     };
   });

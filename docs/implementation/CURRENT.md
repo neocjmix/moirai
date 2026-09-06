@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `in_progress` — IP-002 Slice 5 projector 전환 구현 중; production migration·배포·시험 World write 미수행       |
+| 실행 상태                  | `in_progress` — IP-002 Slice 6 제품 표면·이식성 검증 중; production migration·배포·시험 World write 미수행   |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                    |
-| 현재 slice                 | IP-002 Slice 5 — 시험 World의 관계 기반 projection; JointJS 비활성                                    |
+| 현재 slice                 | IP-002 Slice 6 — Clotho export/import와 Atropos 관계 기반 시간 표면; JointJS 비활성                            |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -50,7 +50,11 @@ Slice 2의 독립 adapter·resolver·solver와 graph validator를 완료했다. 
 
 2026-09-06 Slice 3은 legacy Placement를 변경하지 않는 shadow reader와 실제 Revision 29 read-only evidence를 추가했다. 같은 input에서 기존 `m4-timeline-v1`은 interval 3건을 `0..0` authored coordinate로 표시하고, 새 reader는 명시적 boundary Event가 없으므로 `ambiguous`로 남긴다. 정확한 ordinal point 9건은 lossless virtual Time Event 제약으로 전환되고 모순은 없다. corpus를 기존 `Clotho Synthetic Observatory`에 쓰지 않았으며 해당 World의 revision은 바꾸지 않았다. PR CI [34000329987](https://github.com/neocjmix/moirai/actions/runs/34000329987)는 성공했다.
 
-2026-09-06 Slice 4는 numeric contract version `2`, tagged Event/virtual Time Event endpoint, strict `precedes`·`not_after`·`coincides`, deterministic resolver와 추가 migration을 구현 중이다. 기존 Relation ID columns와 Placement를 보존하고, v2 canonical write는 fixture의 `Temporal Expressiveness Observatory` ID로만 gate한다. 실제 migration 실행, Railway 배포, 시험 World validate·commit은 아직 하지 않았다.
+2026-09-06 Slice 4는 numeric contract version `2`, tagged Event/virtual Time Event endpoint, strict `precedes`·`not_after`·`coincides`, deterministic resolver와 추가 migration을 구현했다. 기존 Relation ID columns와 Placement를 보존하고, v2 canonical write는 fixture의 `Temporal Expressiveness Observatory` source/import World ID로만 gate한다. commit `203763a89ac96bfb15bfc56daa61c3875491a9da`의 PR CI [34014969062](https://github.com/neocjmix/moirai/actions/runs/34014969062)가 성공했다. 실제 migration 실행, Railway 배포, 시험 World validate·commit은 아직 하지 않았다.
+
+2026-09-06 Slice 5는 source/import 시험 World에만 `relational-time-v1` projection과 revision별 `temporal.json`을 연결했다. bounded·exact·relative-only, 명시적 boundary Duration과 descendant span, containment와 during, source evidence와 algorithm version을 분리한다. 기존 World의 M4 projector는 그대로 유지한다. commit `eff9d359cd917bb139a65bcfcc4ef97d19008ed1`의 PR CI [34015422657](https://github.com/neocjmix/moirai/actions/runs/34015422657)가 mobile 포함 전체 성공했다.
+
+Slice 6은 Atropos의 접근 가능한 관계 기반 시간 표시와 동일 served Revision 공개 JSON, Clotho `world.export`, 안전한 ZIP64 `.moirai` content package, 빈 import 시험 World용 ID 재매핑 Change Plan과 semantic fingerprint 비교를 구현 중이다. URDR UI 참고 기준은 commit `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 `urdr/apps/web/src/components/graph-shell.tsx`이며, Event drawer의 tab/table 구조만 참고하고 Moirai 시간 의미는 accepted 명세와 projection에서 가져온다.
 
 2026-09-02~03 실제 ChatGPT OAuth로 작업했다. 전달받은 revision 14 대신 작업 전 15를 재조회했다. validate 후 revision 15와 신규 Event 부재를 확인하고, 한 Change Set으로 Event·Relation·Narrative를 commit해 revision 16을 만들었다. 동일 요청은 replay되며, 같은 ID의 다른 내용은 거절됐다. Atropos의 current/target/served 16, manifest와 Event digest, 공개 Narrative·Relation을 확인했다.
 
@@ -93,4 +97,4 @@ Canon별 immutable State artifact를 발행하고 Subject page에서 해당 hand
 
 다른 State family와 일반 LLM 추론은 현재 범위가 아니다. 다음 계획 단계인 JointJS canvas·subject lane 기본 탐색, 이후 100k scope·LOD와 Canon 비교는 아직 활성화하지 않았다.
 
-2026-09-06 Slice 4 완료: `203763a89ac96bfb15bfc56daa61c3875491a9da`, PR CI [34014969062](https://github.com/neocjmix/moirai/actions/runs/34014969062) 전체 성공(PostgreSQL corpus commit/read/resolve·거절 검증, migration, mobile, Gitleaks 포함). 실제 cloud 시험 World 쓰기·배포는 미수행이다. Slice 5의 World 제한 projector 전환을 시작한다.
+2026-09-06 Slice 4 완료: `203763a89ac96bfb15bfc56daa61c3875491a9da`, PR CI [34014969062](https://github.com/neocjmix/moirai/actions/runs/34014969062) 전체 성공(PostgreSQL corpus commit/read/resolve·거절 검증, migration, mobile, Gitleaks 포함). Slice 5 완료: `eff9d359cd917bb139a65bcfcc4ef97d19008ed1`, PR CI [34015422657](https://github.com/neocjmix/moirai/actions/runs/34015422657) 전체 성공. 실제 cloud 시험 World 쓰기·배포는 미수행이며 Slice 6 제품 표면·이식성 종료 검증을 진행한다.

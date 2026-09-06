@@ -109,6 +109,24 @@ describeWithDatabase("TS-010 canonical Relation write", () => {
       events: view.events,
       relations: view.relations
     });
+    const portable = await queryClotho(
+      db,
+      "world.export",
+      {
+        world_id: success.world_id,
+        at_revision: 2
+      },
+      [success.world_id]
+    );
+    expect(portable).toMatchObject({
+      source_revision: 2,
+      completeness: "complete",
+      snapshot: {
+        events: view.events,
+        relations: view.relations,
+        temporalPlacements: []
+      }
+    });
     const persistedRelation = view.relations.find(
       (relation) =>
         relation.source_ref?.kind === "event" &&

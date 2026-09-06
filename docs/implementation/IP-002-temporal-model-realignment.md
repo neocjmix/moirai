@@ -143,7 +143,7 @@ Slice 4 검증 완료: commit `203763a89ac96bfb15bfc56daa61c3875491a9da`, [CI 34
 
 전환은 World 단위 feature flag 또는 shadow gate로 제한한다. 새/구 projector 결과가 허용된 차이 목록에 없으면 publication target을 전진시키지 않는다.
 
-2026-09-06 구현 중: 시험 World에 한해 revision별 `temporal.json` artifact를 새 solver에서 생성한다. 기존 numeric Timeline·descendant Duration·membership State artifact는 해당 World에서 새 artifact로 대체하고, 기존 World는 기존 projector를 유지한다. 알려진 범위·exact·relative-only·명시적 Duration·descendant span·관계 증거 기반 during·membership boundary resolver를 분리한다. fixed corpus와 PostgreSQL read-back을 publication 생성까지 검증한다. UI 연결은 Slice 6에서 수행한다.
+2026-09-06 완료: source/import 시험 World에 한해 revision별 `temporal.json` artifact를 새 solver에서 생성한다. 기존 World는 기존 numeric Timeline·Process·State projector를 그대로 유지한다. 알려진 범위·exact·relative-only·명시적 Duration·descendant span·관계 증거 기반 during·membership boundary resolver를 분리한다. fixed corpus와 PostgreSQL read-back을 publication 생성까지 검증했다. commit `eff9d359cd917bb139a65bcfcc4ef97d19008ed1`의 PR CI [34015422657](https://github.com/neocjmix/moirai/actions/runs/34015422657)가 mobile 포함 전체 성공했다. 이는 승인된 cloud 시험 World 종단간 합격을 대체하지 않는다.
 
 ## Slice 6 — Clotho와 Atropos
 
@@ -158,6 +158,12 @@ Atropos는 필요할 때 projection을 계산하고 다음을 구분해 표시�
 - Event duration과 knowledge range
 
 100k/LOD 작업 전 viewport 기반 lazy evaluation 예산과 cache key를 측정한다.
+
+2026-09-06 진행 checkpoint: Atropos Canon·Event 경로에 exact·bounded·relative-only, 명시적 Duration·descendant span, component와 during을 구분하는 접근 가능한 텍스트를 연결하고 같은 served Revision의 공개 `temporal.json`을 노출한다. millisecond·picosecond 원문 좌표는 접을 수 있는 세부 정보에서 lossless하게 확인한다. CI 전용 별도 publication fixture로 mobile Safari 경로를 검증하며 기존 Lantern·Clotho Synthetic Observatory를 재사용하지 않는다.
+
+Clotho에는 revision-bounded complete snapshot인 `world.export`를 추가한다. Clotho CLI는 Time Event row나 legacy Placement가 없는 경우에만 digest가 붙은 ZIP64 `.moirai` content package를 만들고, 경로 순회·symlink·암호화·중복 entry·compression bomb·digest 변조를 거절한다. import preview는 모든 persisted ID를 빈 전용 import World로 재매핑한 단일 Change Plan을 실제 `change.validate`에 보낼 뿐 자동 commit하지 않는다. source→target mapping의 역함수를 적용한 `temporal-semantic-fingerprint-v1` 비교로 export/import 뒤 의미 동일성을 판정한다.
+
+비교 UI의 참고 근거는 URDR commit `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 `urdr/apps/web/src/components/graph-shell.tsx` Event drawer tab/table 구조다. 시각적 상호작용만 참고했으며 시간 의미·data model·runtime 의존성은 복사하지 않았다.
 
 ## Slice 7 — legacy 제거
 

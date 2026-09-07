@@ -5,7 +5,10 @@ export const dynamic = "force-dynamic";
 
 export async function GET(): Promise<Response> {
   const runtime = getPublicRuntimeMetadata();
-  if (hasPublicationStoreConfig()) {
+  if (
+    hasPublicationStoreConfig() ||
+    process.env.ALLOW_SYNTHETIC_PUBLICATION_FIXTURE === "true"
+  ) {
     return Response.json(
       {
         status: "ok",

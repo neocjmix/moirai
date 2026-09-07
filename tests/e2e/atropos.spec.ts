@@ -25,7 +25,7 @@ test("mobile reader traverses relational Canon and Event at one Revision", async
   await expect(
     page.getByRole("heading", { name: SYNTHETIC_FIXTURE.eventTitle })
   ).toBeVisible();
-  await expect(page.getByText("Revision 2")).toBeVisible();
+  await expect(page.getByText("Revision 2", { exact: true })).toBeVisible();
   await expect(
     page.getByRole("link", { name: "같은 Revision의 공개 시간 JSON" })
   ).toBeVisible();

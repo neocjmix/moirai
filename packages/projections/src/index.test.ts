@@ -39,7 +39,7 @@ describe("Event/Relation public projections", () => {
     const dirty = {
       ...view,
       events: [{ ...view.events[0]!, actor: "private" }]
-    } as CanonicalRevisionView;
+    } as unknown as CanonicalRevisionView;
     const documents = projectPublicDocuments(dirty, 7, "2026-09-07T00:00:00Z");
     expect(documents.some((item) => item.key.endsWith("/temporal.json"))).toBe(
       true

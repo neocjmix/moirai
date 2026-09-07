@@ -150,7 +150,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     };
     await expect(commitCreateChangeSet(db, dangling)).rejects.toMatchObject({
       code: "dangling_reference",
-      path: "operations.4"
+      path: "operations.4.value.target_ref"
     });
 
     const crossCanon: CreateChangeSet = {

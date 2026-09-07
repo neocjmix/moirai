@@ -226,7 +226,7 @@ function syntheticObjects(): ReadonlyMap<string, string> {
 const localObjects = syntheticObjects();
 let objectStore: S3ObjectStore | undefined;
 
-function hasS3Config(): boolean {
+export function hasPublicationStoreConfig(): boolean {
   return [
     "AWS_ACCESS_KEY_ID",
     "AWS_S3_BUCKET_NAME",
@@ -243,7 +243,7 @@ export function assertPublicId(value: string): void {
 export async function readPublicationObject(key: string): Promise<ObjectRead> {
   if (!/^[a-z0-9/._-]+$/i.test(key) || key.includes(".."))
     throw new Error("invalid publication key");
-  if (!hasS3Config()) {
+  if (!hasPublicationStoreConfig()) {
     if (
       process.env.NODE_ENV === "production" &&
       process.env.ALLOW_SYNTHETIC_PUBLICATION_FIXTURE !== "true"

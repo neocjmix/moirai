@@ -1,0 +1,50 @@
+name: Temporal production E2E
+
+on:
+  workflow_dispatch:
+    inputs:
+      expected_commit_sha:
+        description: Exact deployed main SHA
+        required: true
+      evidence_label:
+        description: Evidence artifact label
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: temporal-production-e2e
+  cancel-in-progress: false
+
+jobs:
+  acceptance:
+    if: github.ref == 'refs/heads/main' && inputs.expected_commit_sha == github.sha
+    runs-on: ubuntu-latest
+    env:
+      CLOTHO_API_URL: ${{ vars.CLOTHO_API_URL }}
+      CLOTHO_TOKEN: ${{ secrets.CLOTHO_TOKEN }}
+      PUBLIC_INTEGRATION_URL: ${{ vars.PUBLIC_INTEGRATION_URL || 'https://moirai-production-8ed1.up.railway.app' }}
+      EXPECTED_COMMIT_SHA: ${{ inputs.expected_commit_sha }}
+      TEMPORAL_EVIDENCE_PATH: temporal-production-evidence.json
+      TEMPORAL_PACKAGE_PATH: temporal-expressiveness.moirai
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Run production corpus through Clotho, Canon and Atropos
+        run: pnpm test:temporal-production
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ inputs.evidence_label }}
+          path: |
+            temporal-production-evidence.json
+            temporal-expressiveness.moirai
+          if-no-files-found: error
+          retention-days: 30

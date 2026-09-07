@@ -2,13 +2,11 @@ import {
   CONTRACT_VERSION,
   PUBLICATION_FORMAT_VERSION,
   SCHEMA_VERSION,
-  SYNTHETIC_FIXTURE,
   type PublicStatusResponse,
   type SmokeResult
 } from "@moirai/contracts";
 
 import { getPublicRuntimeMetadata } from "./runtime";
-import { selectPublication } from "./publication";
 
 interface WorkflowRun {
   readonly conclusion: string | null;
@@ -49,11 +47,7 @@ export async function getLatestSmoke(): Promise<PublicStatusResponse["smoke"]> {
 
 export async function getPublicStatus(): Promise<PublicStatusResponse> {
   const runtime = getPublicRuntimeMetadata();
-  const [smoke, publication] = await Promise.all([
-    getLatestSmoke(),
-    selectPublication(SYNTHETIC_FIXTURE.worldId)
-  ]);
-  const pointer = publication.pointer;
+  const smoke = await getLatestSmoke();
   return {
     application: {
       service: "atropos-web",
@@ -65,16 +59,6 @@ export async function getPublicStatus(): Promise<PublicStatusResponse> {
       contract: String(CONTRACT_VERSION),
       schema: SCHEMA_VERSION,
       publication_format: PUBLICATION_FORMAT_VERSION
-    },
-    synthetic_world: {
-      world_id: SYNTHETIC_FIXTURE.worldId,
-      canon_id: SYNTHETIC_FIXTURE.canonId,
-      event_id: SYNTHETIC_FIXTURE.eventId,
-      label: SYNTHETIC_FIXTURE.worldTitle,
-      current_revision: pointer.current_revision,
-      publication_target_revision: pointer.publication_target_revision,
-      served_revision: pointer.served_revision,
-      projection_status: pointer.projection_status
     },
     smoke,
     surfaces: { atropos: "ok", health: "ok", status: "ok" }

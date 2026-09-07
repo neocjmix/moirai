@@ -96,7 +96,7 @@ const tools = await mcp<{ tools: { name: string }[] }>("tools/list", {});
 if (!tools.tools.some((tool) => tool.name === "change_commit"))
   throw new Error("MCP tool discovery failed");
 call("world.list", {});
-const publicHealth = await fetch(new URL("/api/health", publicUrl), {
+const publicHealth = await fetch(new URL("/health", publicUrl), {
   signal: AbortSignal.timeout(10_000)
 });
 if (!publicHealth.ok) throw new Error("Atropos health check failed");

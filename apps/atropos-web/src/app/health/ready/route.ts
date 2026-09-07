@@ -3,7 +3,7 @@ import { getPublicRuntimeMetadata } from "../../../lib/runtime";
 
 export const dynamic = "force-dynamic";
 
-export function GET(): Response {
+export async function GET(): Promise<Response> {
   const runtime = getPublicRuntimeMetadata();
   if (hasPublicationStoreConfig()) {
     return Response.json(

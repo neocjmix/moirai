@@ -62,7 +62,7 @@ export async function getPublicStatus(): Promise<PublicStatusResponse> {
       deployed_at: runtime.deployedAt
     },
     versions: {
-      contract: CONTRACT_VERSION,
+      contract: String(CONTRACT_VERSION),
       schema: SCHEMA_VERSION,
       publication_format: PUBLICATION_FORMAT_VERSION
     },

@@ -1,7 +1,4 @@
-import type {
-  CONTRACT_VERSION,
-  TEMPORAL_CONTRACT_VERSION
-} from "./versions.js";
+import type { CONTRACT_VERSION } from "./versions.js";
 export * from "./versions.js";
 export * from "./clotho.js";
 
@@ -47,14 +44,12 @@ export type EntityType =
   | "time_system"
   | "canon_time_system"
   | "event"
-  | "event_temporal_placement"
   | "relation"
   | "narrative";
 export type ProjectionStatus = "ready" | "building" | "failed";
 export type SmokeResult = "passed" | "failed" | "running" | "unknown";
 export type EntityReference = string | { readonly client_ref: string };
-export type ChangeSetContractVersion =
-  typeof CONTRACT_VERSION | typeof TEMPORAL_CONTRACT_VERSION;
+export type ChangeSetContractVersion = typeof CONTRACT_VERSION;
 
 /** A stored Event or a dynamic Time Event. Dynamic references never create Event rows. */
 export type CanonicalEventReference =
@@ -151,26 +146,6 @@ export interface CreateEventOperation extends CreateOperationBase {
   };
 }
 
-export interface TemporalCoordinate {
-  readonly value: number;
-}
-
-export interface CreateTemporalPlacementOperation extends CreateOperationBase {
-  readonly entity_type: "event_temporal_placement";
-  readonly value: {
-    readonly event_id: EntityReference;
-    readonly time_system_id: EntityReference;
-    readonly kind: "point" | "interval";
-    readonly earliest_start: TemporalCoordinate;
-    readonly latest_start: TemporalCoordinate;
-    readonly earliest_end?: TemporalCoordinate | null;
-    readonly latest_end?: TemporalCoordinate | null;
-    readonly precision: string;
-    readonly certainty: "exact" | "approximate" | "uncertain";
-    readonly display_label?: string | null;
-  };
-}
-
 export type RelationType =
   | "contains"
   | "precedes"
@@ -194,12 +169,8 @@ export interface CreateRelationOperation extends CreateOperationBase {
   readonly value: {
     readonly canon_id: EntityReference;
     readonly type: RelationType;
-    /** Legacy 0.3.0 endpoint form. It is normalized to source_ref/target_ref. */
-    readonly source_event_id?: EntityReference;
-    readonly target_event_id?: EntityReference;
-    /** TS-010 endpoint form. The two legacy fields must be absent. */
-    readonly source_ref?: ChangePlanEventReference;
-    readonly target_ref?: ChangePlanEventReference;
+    readonly source_ref: ChangePlanEventReference;
+    readonly target_ref: ChangePlanEventReference;
     readonly direction: "directed" | "undirected";
     readonly attributes: Readonly<Record<string, unknown>>;
   };
@@ -230,7 +201,6 @@ export type CreateOperation =
   | CreateTimeSystemOperation
   | CreateCanonTimeSystemOperation
   | CreateEventOperation
-  | CreateTemporalPlacementOperation
   | CreateRelationOperation
   | CreateNarrativeOperation;
 
@@ -313,30 +283,12 @@ export interface PublicEvent {
   readonly attributes: Readonly<Record<string, unknown>>;
 }
 
-export interface PublicTemporalPlacement {
-  readonly id: string;
-  readonly event_id: string;
-  readonly time_system_id: string;
-  readonly kind: "point" | "interval";
-  readonly earliest_start: TemporalCoordinate;
-  readonly latest_start: TemporalCoordinate;
-  readonly earliest_end: TemporalCoordinate | null;
-  readonly latest_end: TemporalCoordinate | null;
-  readonly precision: string;
-  readonly certainty: "exact" | "approximate" | "uncertain";
-  readonly display_label: string | null;
-}
-
 export interface PublicRelation {
   readonly id: string;
   readonly canon_id: string;
   readonly type: RelationType;
-  /** Canonical TS-010 endpoint references. Legacy rows are decorated on read. */
-  readonly source_ref?: CanonicalEventReference;
-  readonly target_ref?: CanonicalEventReference;
-  /** Compatibility/index fields. Null means the endpoint is a virtual Time Event. */
-  readonly source_event_id?: string | null;
-  readonly target_event_id?: string | null;
+  readonly source_ref: CanonicalEventReference;
+  readonly target_ref: CanonicalEventReference;
   readonly direction: "directed" | "undirected";
   readonly attributes: Readonly<Record<string, unknown>>;
 }
@@ -577,7 +529,7 @@ export interface PublicTimelineItem {
   readonly structural_rank: number | null;
   readonly unordered_group: string;
   readonly display_label: string | null;
-  readonly certainty: PublicTemporalPlacement["certainty"] | null;
+  readonly certainty: "exact" | "approximate" | "uncertain" | null;
   readonly evidence_ids: readonly string[];
 }
 
@@ -621,10 +573,8 @@ export interface PublicationManifest {
   readonly algorithms: {
     readonly canonical: string;
     readonly search: string;
-    readonly timeline?: string;
     readonly subject?: string;
-    readonly process?: string;
-    readonly state?: string;
+    readonly relational_time: string;
   };
   readonly locales: readonly string[];
   readonly documents: readonly {

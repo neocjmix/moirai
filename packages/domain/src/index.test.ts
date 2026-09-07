@@ -77,7 +77,6 @@ describe("create Change Set validation", () => {
       timeSystems: [],
       canonTimeSystems: [],
       events: [],
-      temporalPlacements: [],
       relations: [],
       narratives: []
     };

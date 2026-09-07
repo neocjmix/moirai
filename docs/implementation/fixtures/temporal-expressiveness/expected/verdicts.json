@@ -63,7 +63,7 @@
     "idempotent_replay_creates_no_revision",
     "virtual_time_event_is_not_persisted",
     "no_manual_database_mutation",
-    "no_legacy_dual_canonical_write",
+    "single_event_relation_canonical_write",
     "export_import_semantic_fingerprint_equal"
   ]
 }

@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import type { CreateChangeSet } from "@moirai/contracts";
 import { projectPublicDocuments } from "@moirai/projections";
-import { sql, type Kysely } from "kysely";
+import { sql } from "kysely";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import {
@@ -12,7 +12,6 @@ import {
   validateChangePlan
 } from "./index.js";
 import { migrateToLatest } from "./migrate.js";
-import { down as rollbackTemporalRelationMigration } from "./migrations/006_event_relation_time.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 const describeWithDatabase = databaseUrl ? describe : describe.skip;
@@ -37,7 +36,7 @@ describeWithDatabase("TS-010 canonical Relation write", () => {
       truncate subject_handle_members, subject_handles, publication_outbox,
         world_publication_state, change_operations,
         world_revisions, change_sets, narratives, relations,
-        event_temporal_placements, canon_time_systems, time_systems,
+        canon_time_systems, time_systems,
         events, canons, worlds cascade
     `.execute(db);
   });
@@ -69,7 +68,6 @@ describeWithDatabase("TS-010 canonical Relation write", () => {
 
     const view = await readWorldAtRevision(db, success.world_id, 2);
     expect(view.events).toHaveLength(11);
-    expect(view.temporalPlacements).toEqual([]);
     expect(view.relations).toHaveLength(23);
     const artifacts = projectPublicDocuments(view, 2, "2026-09-06T00:00:00Z");
     expect(
@@ -123,22 +121,9 @@ describeWithDatabase("TS-010 canonical Relation write", () => {
       completeness: "complete",
       snapshot: {
         events: view.events,
-        relations: view.relations,
-        temporalPlacements: []
+        relations: view.relations
       }
     });
-    const persistedRelation = view.relations.find(
-      (relation) =>
-        relation.source_ref?.kind === "event" &&
-        relation.target_ref?.kind === "event"
-    );
-    expect(persistedRelation?.source_event_id).toBe(
-      (persistedRelation?.source_ref as { event_id: string }).event_id
-    );
-    expect(persistedRelation?.target_event_id).toBe(
-      (persistedRelation?.target_ref as { event_id: string }).event_id
-    );
-
     const exact = view.relations.find(
       (relation) => relation.id === "019f3b00-0000-7000-8000-00000000020b"
     );
@@ -176,11 +161,6 @@ describeWithDatabase("TS-010 canonical Relation write", () => {
       where id::text like 'time-event://%'
     `.execute(db);
     expect(eventRows.rows[0]?.count).toBe(0);
-    await expect(
-      rollbackTemporalRelationMigration(db as unknown as Kysely<unknown>)
-    ).rejects.toThrow(
-      "Cannot roll back event relation time migration while virtual Time Event Relations exist"
-    );
   });
 
   it.each([

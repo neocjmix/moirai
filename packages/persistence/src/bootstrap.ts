@@ -91,7 +91,11 @@ export function createSyntheticExpansionChangeSet(): CreateChangeSet {
           title: "Ember Count",
           kind: "ordinal",
           definition_version: "1",
-          definition: { coordinate: "integer", unit: "bell" }
+          definition: {
+            coordinate_codec: "opaque-token-v1",
+            capabilities: ["canonicalize", "equality"],
+            unit: "bell"
+          }
         }
       },
       {
@@ -135,58 +139,13 @@ export function createSyntheticExpansionChangeSet(): CreateChangeSet {
       },
       {
         kind: "create",
-        entity_type: "event_temporal_placement",
-        entity_id: fixture.firstPlacementId,
-        value: {
-          event_id: fixture.eventId,
-          time_system_id: { client_ref: "ember-time" },
-          kind: "point",
-          earliest_start: { value: 1 },
-          latest_start: { value: 1 },
-          precision: "bell",
-          certainty: "exact",
-          display_label: "First bell"
-        }
-      },
-      {
-        kind: "create",
-        entity_type: "event_temporal_placement",
-        entity_id: fixture.secondPlacementId,
-        value: {
-          event_id: { client_ref: "eastern-answer" },
-          time_system_id: { client_ref: "ember-time" },
-          kind: "point",
-          earliest_start: { value: 2 },
-          latest_start: { value: 2 },
-          precision: "bell",
-          certainty: "exact",
-          display_label: "Second bell"
-        }
-      },
-      {
-        kind: "create",
-        entity_type: "event_temporal_placement",
-        entity_id: fixture.thirdPlacementId,
-        value: {
-          event_id: { client_ref: "archive-opens" },
-          time_system_id: { client_ref: "ember-time" },
-          kind: "point",
-          earliest_start: { value: 3 },
-          latest_start: { value: 4 },
-          precision: "bell",
-          certainty: "approximate",
-          display_label: "Between the third and fourth bell"
-        }
-      },
-      {
-        kind: "create",
         entity_type: "relation",
         entity_id: fixture.causalRelationId,
         value: {
           canon_id: fixture.canonId,
           type: "causes",
-          source_event_id: fixture.eventId,
-          target_event_id: { client_ref: "eastern-answer" },
+          source_ref: { kind: "event", event_id: fixture.eventId },
+          target_ref: { kind: "event", client_ref: "eastern-answer" },
           direction: "directed",
           attributes: {}
         }
@@ -198,8 +157,8 @@ export function createSyntheticExpansionChangeSet(): CreateChangeSet {
         value: {
           canon_id: fixture.canonId,
           type: "precedes",
-          source_event_id: { client_ref: "eastern-answer" },
-          target_event_id: { client_ref: "archive-opens" },
+          source_ref: { kind: "event", client_ref: "eastern-answer" },
+          target_ref: { kind: "event", client_ref: "archive-opens" },
           direction: "directed",
           attributes: {}
         }

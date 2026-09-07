@@ -41,8 +41,7 @@ function corpus(): CanonicalRevisionView {
     canonTimeSystems: rows("canon_time_system"),
     events: rows("event"),
     relations: rows("relation"),
-    narratives: rows("narrative"),
-    temporalPlacements: []
+    narratives: rows("narrative")
   } as CanonicalRevisionView;
 }
 const canonId = "019f3b00-0000-7000-8000-000000000002";

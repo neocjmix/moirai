@@ -1,5 +1,5 @@
 import type { CreateChangeSet } from "./index.js";
-import { CONTRACT_VERSION, TEMPORAL_CONTRACT_VERSION } from "./versions.js";
+import { CONTRACT_VERSION } from "./versions.js";
 
 export type ChangePlan = Omit<CreateChangeSet, "actor">;
 export const CLOTHO_METHODS = [
@@ -55,13 +55,6 @@ const ref = {
   ]
 };
 const attrs = { type: "object", maxProperties: 100 };
-const coordinate = object({
-  value: {
-    type: "integer",
-    minimum: -Number.MAX_SAFE_INTEGER,
-    maximum: Number.MAX_SAFE_INTEGER
-  }
-});
 const choice = (...values: string[]): JsonSchema => ({
   type: "string",
   enum: values
@@ -141,12 +134,9 @@ const operation = (
   ),
   anyOf: [{ required: ["entity_id"] }, { required: ["client_ref"] }]
 });
-function changePlanSchema(
-  contractVersion: typeof CONTRACT_VERSION | typeof TEMPORAL_CONTRACT_VERSION,
-  relation: JsonSchema
-): JsonSchema {
+function changePlanSchema(relation: JsonSchema): JsonSchema {
   return object({
-    contract_version: { const: contractVersion },
+    contract_version: { const: CONTRACT_VERSION },
     change_set_id: id,
     world_id: id,
     expected_revision: {
@@ -248,35 +238,7 @@ function changePlanSchema(
               "canon_time_system",
               { canon_id: ref, time_system_id: ref },
               ["canon_id", "time_system_id"]
-            ),
-            ...(contractVersion === TEMPORAL_CONTRACT_VERSION
-              ? []
-              : [
-                  operation(
-                    "event_temporal_placement",
-                    {
-                      event_id: ref,
-                      time_system_id: ref,
-                      kind: choice("point", "interval"),
-                      earliest_start: coordinate,
-                      latest_start: coordinate,
-                      earliest_end: nullable(coordinate),
-                      latest_end: nullable(coordinate),
-                      precision: str(128),
-                      certainty: choice("exact", "approximate", "uncertain"),
-                      display_label: nullable(str(500))
-                    },
-                    [
-                      "event_id",
-                      "time_system_id",
-                      "kind",
-                      "earliest_start",
-                      "latest_start",
-                      "precision",
-                      "certainty"
-                    ]
-                  )
-                ])
+            )
           ]
         },
         500
@@ -286,29 +248,6 @@ function changePlanSchema(
   });
 }
 
-const legacyRelationOperation = operation(
-  "relation",
-  {
-    canon_id: ref,
-    type: choice(
-      ...relationTypes.filter(
-        (type) => type !== "not_after" && type !== "coincides"
-      )
-    ),
-    source_event_id: ref,
-    target_event_id: ref,
-    direction: choice("directed", "undirected"),
-    attributes: attrs
-  },
-  [
-    "canon_id",
-    "type",
-    "source_event_id",
-    "target_event_id",
-    "direction",
-    "attributes"
-  ]
-);
 const temporalRelationOperation = operation(
   "relation",
   {
@@ -322,12 +261,9 @@ const temporalRelationOperation = operation(
   ["canon_id", "type", "source_ref", "target_ref", "direction", "attributes"]
 );
 
-export const CHANGE_PLAN_SCHEMA: JsonSchema = {
-  oneOf: [
-    changePlanSchema(CONTRACT_VERSION, legacyRelationOperation),
-    changePlanSchema(TEMPORAL_CONTRACT_VERSION, temporalRelationOperation)
-  ]
-};
+export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
+  temporalRelationOperation
+);
 const page = {
   cursor: str(2000),
   limit: { type: "integer", minimum: 1, maximum: 100 }

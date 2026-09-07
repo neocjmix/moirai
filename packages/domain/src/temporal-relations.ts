@@ -20,28 +20,15 @@ export interface CanonicalRelationEndpoints {
   readonly target: CanonicalEventReference;
 }
 
-type RelationEndpointShape = Pick<
-  PublicRelation,
-  "source_ref" | "target_ref" | "source_event_id" | "target_event_id"
->;
+type RelationEndpointShape = Pick<PublicRelation, "source_ref" | "target_ref">;
 
 /**
- * Return the authoritative tagged endpoints. Old rows are adapted at the
- * boundary so callers never have to invent a virtual Event row.
+ * Return the authoritative tagged endpoints.
  */
 export function canonicalRelationEndpoints(
   relation: RelationEndpointShape
-): CanonicalRelationEndpoints | null {
-  if (relation.source_ref && relation.target_ref) {
-    return { source: relation.source_ref, target: relation.target_ref };
-  }
-  if (relation.source_event_id && relation.target_event_id) {
-    return {
-      source: { kind: "event", event_id: relation.source_event_id },
-      target: { kind: "event", event_id: relation.target_event_id }
-    };
-  }
-  return null;
+): CanonicalRelationEndpoints {
+  return { source: relation.source_ref, target: relation.target_ref };
 }
 
 export function endpointEventId(

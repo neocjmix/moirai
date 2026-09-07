@@ -33,7 +33,6 @@ export default async function EventPage({
         pointer,
         process,
         narratives,
-        temporalPlacements,
         timeSystems,
         relations,
         relatedEvents
@@ -80,7 +79,6 @@ export default async function EventPage({
           process={process}
           parentProcessIds={parentProcessIds}
           narratives={narratives}
-          temporalPlacements={temporalPlacements}
           timeSystems={timeSystems}
           relations={relations}
           relatedEvents={relatedEvents}

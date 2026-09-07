@@ -108,12 +108,12 @@ commit 후 Canon 조회에서 다음을 확인한다.
 - 입력한 일반 Event와 Composite Event가 stable ID로 존재한다.
 - 입력한 `precedes`, `contains`, `starts`, `ends` 근거가 source ID와 함께 존재한다.
 - `te-during`과 `te-window` 사이에는 `contains`가 없다.
-- `te-relative-a`, `te-relative-b`에는 absolute Placement가 새로 생기지 않는다.
+- `te-relative-a`, `te-relative-b`에는 absolute coordinate 관계가 새로 생기지 않는다.
 - `.123456789012`와 `.123456789013`가 문자열 그대로 왕복한다.
 - `T(...)` reference는 resolve되지만 persisted Event row 수에 포함되지 않는다.
 - 같은 Time System·version·coordinate를 두 번 resolve하면 같은 Time Event ID가 나온다.
 
-legacy 호환 기간에는 기존 Placement가 남아 있을 수 있다. 하지만 새 입력 한 건이 Placement와 Relation 양쪽에 서로 독립적인 정본으로 이중 기록되면 실패다.
+Canon·DB·Publication·반출 결과에 Placement 또는 숫자 시간 좌표가 하나라도 나타나면 실패다.
 
 ## 6. 기대 계산 출력
 

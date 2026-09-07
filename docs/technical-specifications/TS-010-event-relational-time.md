@@ -31,7 +31,7 @@ traces:
 | Canon      | Atomic Event, Composite Event, Relation             | 저장되는 세계의 사실                         |
 | 동적 기준  | Time Event                                          | 좌표로부터 결정적으로 구해지며 저장하지 않음 |
 | 관리 정보  | provenance, confidence, assertion metadata          | 사실을 어떻게 아는지 설명                    |
-| Projection | TemporalPlacement, timeline geometry, duration view | 필요할 때 계산하는 편의 표현                 |
+| Projection | temporal position, timeline geometry, duration view | 필요할 때 계산하는 편의 표현                 |
 
 사건의 지속, 알려진 범위, 기록의 확실성, 입력 해상도와 화면 모양은 서로 다른 축이다. 하나의 `kind` 또는 `precision` 필드로 합치지 않는다.
 
@@ -175,16 +175,9 @@ Atropos와 검색은 정본 관계를 다음과 같은 읽기 모델로 투영�
 
 Projection은 revision, algorithm version, source Event/Relation을 기록한다. 정본에 없는 절대 시각을 만들거나 상대 순서를 exact timestamp로 꾸며서는 안 된다. 대규모 동적 그래프에서는 viewport·LOD·질의 범위에 따라 지연 계산할 수 있다.
 
-## 9. 기존 TemporalPlacement 호환
+## 9. 단일 시간 체계
 
-현재 `event_temporal_placements`는 전환 기간에 호환 입력·출력으로만 취급한다.
-
-1. legacy Placement를 경계 Time Event와 Relation 제약으로 읽는 adapter를 만든다.
-2. 변환이 손실 없는지, 모호한지, 불가능한지를 진단한다.
-3. 새 모델과 기존 projector의 결과를 비교한다.
-4. canonical write 소유권을 한 번에 전환한다.
-
-같은 사실을 Placement와 Relation에 조용히 이중 기록해서는 안 된다. 충돌 우선순위가 없는 dual-write는 제3의 의미를 만든다.
+`event_temporal_placements`와 숫자 좌표 호환 형식은 제거됐다. API·DB·Publication·`.moirai`는 tagged EventReference endpoint를 가진 Relation만 시간 정본으로 받는다. 일반 Event endpoint와 virtual Time Event endpoint는 같은 필드에 직렬화되며 별도 ID column을 병행하지 않는다.
 
 ## 10. Duration
 
@@ -208,7 +201,6 @@ Composite Event의 Duration은 명시적 시작·종료 경계의 위치 차이�
 - 진행 중 Composite Event와 단순 미상 종료의 구분은 이번 corpus 밖이며 후속 명세에서 결정한다.
 - expanded year, 음수 연도와 leap second는 `proleptic-gregorian-utc@1`에서 지원하지 않고 후속 adapter version으로 연기한다.
 - Time System 간 conversion의 신뢰도 schema는 실제 conversion adapter 도입 전까지 연기한다.
-- 기존 Placement certainty의 assertion metadata migration은 legacy dry-run 분류 뒤 결정한다.
 - virtual Time Event는 전용 resolver와 Relation expansion으로 읽는다. 일반 persisted Event 목록에는 나타나지 않는다.
 
 ## 13. 승인 수용 기준
@@ -224,7 +216,6 @@ Composite Event의 Duration은 명시적 시작·종료 경계의 위치 차이�
 - `precedes`와 경계 모순이 commit 전에 설명 가능하게 거절된다.
 - Duration은 명시적 경계만, descendant span은 별도로 계산된다.
 - Projection은 source evidence와 algorithm version을 가진다.
-- legacy Placement 변환의 손실 여부가 자동 분류된다.
-- 기존 M4 synthetic World의 의미가 migration 전후 비교된다.
+- Canon·DB·Publication·export 어디에도 Placement 또는 숫자 좌표 호환 형식이 없다.
 - 영향받는 accepted 명세가 같은 결정으로 개정된다.
 - 성공·거절 corpus 전체의 실제 입력과 출력 증거가 한 Revision 계보로 남는다.

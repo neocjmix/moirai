@@ -26,34 +26,19 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       constraint canon_time_systems_pair_unique unique (canon_id, time_system_id)
     );
 
-    create table event_temporal_placements (
-      id uuid primary key,
-      event_id uuid not null references events(id),
-      time_system_id uuid not null references time_systems(id),
-      kind varchar(32) not null,
-      earliest_start jsonb not null,
-      latest_start jsonb not null,
-      earliest_end jsonb,
-      latest_end jsonb,
-      precision varchar(64) not null,
-      certainty varchar(32) not null,
-      display_label varchar(500),
-      created_revision integer not null,
-      updated_revision integer not null,
-      withdrawn_revision integer
-    );
-
     create table relations (
       id uuid primary key,
       canon_id uuid not null references canons(id),
       type varchar(64) not null,
-      source_event_id uuid not null references events(id),
-      target_event_id uuid not null references events(id),
+      source_ref jsonb not null,
+      target_ref jsonb not null,
       direction varchar(32) not null,
       attributes jsonb not null,
       created_revision integer not null,
       updated_revision integer not null,
-      withdrawn_revision integer
+      withdrawn_revision integer,
+      constraint relations_source_ref_shape check (source_ref ? 'kind'),
+      constraint relations_target_ref_shape check (target_ref ? 'kind')
     );
 
     create table narratives (
@@ -81,7 +66,6 @@ export async function down(db: Kysely<unknown>): Promise<void> {
   for (const table of [
     "narratives",
     "relations",
-    "event_temporal_placements",
     "canon_time_systems",
     "time_systems"
   ]) {

@@ -10,7 +10,6 @@ import type {
   PublicRelation,
   ResolvedEventReference,
   SubjectHandleRecord,
-  PublicTemporalPlacement,
   PublicTimeSystem,
   PublicWorld,
   ValidationIssue
@@ -92,44 +91,12 @@ interface EventTable extends RevisionFields {
   attributes: JSONColumnType<PublicEvent["attributes"]>;
 }
 
-interface TemporalPlacementTable extends RevisionFields {
-  id: string;
-  event_id: string;
-  time_system_id: string;
-  kind: PublicTemporalPlacement["kind"];
-  earliest_start: JSONColumnType<PublicTemporalPlacement["earliest_start"]>;
-  latest_start: JSONColumnType<PublicTemporalPlacement["latest_start"]>;
-  earliest_end: JSONColumnType<
-    PublicTemporalPlacement["earliest_end"],
-    string | null,
-    string | null
-  >;
-  latest_end: JSONColumnType<
-    PublicTemporalPlacement["latest_end"],
-    string | null,
-    string | null
-  >;
-  precision: string;
-  certainty: PublicTemporalPlacement["certainty"];
-  display_label: string | null;
-}
-
 interface RelationTable extends RevisionFields {
   id: string;
   canon_id: string;
   type: PublicRelation["type"];
-  source_event_id: string | null;
-  target_event_id: string | null;
-  source_ref: JSONColumnType<
-    CanonicalEventReference | null,
-    string | null,
-    string | null
-  >;
-  target_ref: JSONColumnType<
-    CanonicalEventReference | null,
-    string | null,
-    string | null
-  >;
+  source_ref: JSONColumnType<CanonicalEventReference, string, string>;
+  target_ref: JSONColumnType<CanonicalEventReference, string, string>;
   direction: PublicRelation["direction"];
   attributes: JSONColumnType<PublicRelation["attributes"]>;
 }
@@ -227,7 +194,6 @@ export interface DatabaseSchema {
   time_systems: TimeSystemTable;
   canon_time_systems: CanonTimeSystemTable;
   events: EventTable;
-  event_temporal_placements: TemporalPlacementTable;
   relations: RelationTable;
   narratives: NarrativeTable;
   change_sets: ChangeSetTable;
@@ -335,22 +301,6 @@ function publicRecord(
         attributes: value.attributes
       };
     }
-    case "event_temporal_placement": {
-      const value = operation.value;
-      return {
-        id: operation.entity_id,
-        event_id: value.event_id,
-        time_system_id: value.time_system_id,
-        kind: value.kind,
-        earliest_start: value.earliest_start,
-        latest_start: value.latest_start,
-        earliest_end: value.earliest_end ?? null,
-        latest_end: value.latest_end ?? null,
-        precision: value.precision,
-        certainty: value.certainty,
-        display_label: value.display_label ?? null
-      };
-    }
     case "relation": {
       const value = operation.value;
       if (!value.source_ref || !value.target_ref) {
@@ -442,37 +392,14 @@ async function applyCreate(
         .execute();
       break;
     }
-    case "event_temporal_placement": {
-      const item = record as unknown as PublicTemporalPlacement;
-      await transaction
-        .insertInto("event_temporal_placements")
-        .values({
-          ...item,
-          earliest_start: JSON.stringify(item.earliest_start),
-          latest_start: JSON.stringify(item.latest_start),
-          earliest_end: item.earliest_end
-            ? JSON.stringify(item.earliest_end)
-            : null,
-          latest_end: item.latest_end ? JSON.stringify(item.latest_end) : null,
-          ...revisionData
-        })
-        .execute();
-      break;
-    }
     case "relation": {
       const item = record as unknown as PublicRelation;
-      const sourceEventId =
-        item.source_ref?.kind === "event" ? item.source_ref.event_id : null;
-      const targetEventId =
-        item.target_ref?.kind === "event" ? item.target_ref.event_id : null;
       await transaction
         .insertInto("relations")
         .values({
           ...item,
-          source_event_id: sourceEventId,
-          target_event_id: targetEventId,
-          source_ref: item.source_ref ? JSON.stringify(item.source_ref) : null,
-          target_ref: item.target_ref ? JSON.stringify(item.target_ref) : null,
+          source_ref: JSON.stringify(item.source_ref),
+          target_ref: JSON.stringify(item.target_ref),
           attributes: JSON.stringify(item.attributes),
           ...revisionData
         })
@@ -518,61 +445,26 @@ function withoutRevision<T extends RevisionFields>(
   return record;
 }
 
-function decorateLegacyRelation(relation: PublicRelation): PublicRelation {
-  if (relation.source_ref && relation.target_ref) {
-    return {
-      ...relation,
-      source_event_id:
-        relation.source_ref.kind === "event"
-          ? relation.source_ref.event_id
-          : null,
-      target_event_id:
-        relation.target_ref.kind === "event"
-          ? relation.target_ref.event_id
-          : null
-    };
-  }
-  if (!relation.source_event_id || !relation.target_event_id) return relation;
-  return {
-    ...relation,
-    source_ref: { kind: "event", event_id: relation.source_event_id },
-    target_ref: { kind: "event", event_id: relation.target_event_id }
-  };
-}
-
 interface SelectedRelationRow extends RevisionFields {
   readonly id: string;
   readonly canon_id: string;
   readonly type: PublicRelation["type"];
-  readonly source_event_id: string | null;
-  readonly target_event_id: string | null;
-  readonly source_ref: CanonicalEventReference | null;
-  readonly target_ref: CanonicalEventReference | null;
+  readonly source_ref: CanonicalEventReference;
+  readonly target_ref: CanonicalEventReference;
   readonly direction: PublicRelation["direction"];
   readonly attributes: PublicRelation["attributes"];
 }
 
-function toPublicRelation(
-  row: SelectedRelationRow,
-  decorateLegacy = true
-): PublicRelation {
-  const relation: PublicRelation = {
+function toPublicRelation(row: SelectedRelationRow): PublicRelation {
+  return {
     id: row.id,
     canon_id: row.canon_id,
     type: row.type,
-    ...(row.source_ref && row.target_ref
-      ? { source_ref: row.source_ref, target_ref: row.target_ref }
-      : {}),
-    ...(row.source_event_id !== null && row.target_event_id !== null
-      ? {
-          source_event_id: row.source_event_id,
-          target_event_id: row.target_event_id
-        }
-      : {}),
+    source_ref: row.source_ref,
+    target_ref: row.target_ref,
     direction: row.direction,
     attributes: row.attributes
   };
-  return decorateLegacy ? decorateLegacyRelation(relation) : relation;
 }
 
 function decorateVirtualRelation(
@@ -674,7 +566,6 @@ async function loadCurrentState(
       timeSystems: [],
       canonTimeSystems: [],
       events: [],
-      temporalPlacements: [],
       relations: [],
       narratives: []
     };
@@ -701,42 +592,32 @@ async function loadCurrentState(
           .where("withdrawn_revision", "is", null)
           .execute()
       : [];
-  const eventIds = events.map((item) => item.id);
-  const [canonTimeSystems, placements, relations, narratives] =
-    await Promise.all([
-      canonIds.length > 0
-        ? db
-            .selectFrom("canon_time_systems")
-            .selectAll()
-            .where("canon_id", "in", canonIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : [],
-      eventIds.length > 0
-        ? db
-            .selectFrom("event_temporal_placements")
-            .selectAll()
-            .where("event_id", "in", eventIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : [],
-      canonIds.length > 0
-        ? db
-            .selectFrom("relations")
-            .selectAll()
-            .where("canon_id", "in", canonIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : [],
-      canonIds.length > 0
-        ? db
-            .selectFrom("narratives")
-            .selectAll()
-            .where("canon_id", "in", canonIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : []
-    ]);
+  const [canonTimeSystems, relations, narratives] = await Promise.all([
+    canonIds.length > 0
+      ? db
+          .selectFrom("canon_time_systems")
+          .selectAll()
+          .where("canon_id", "in", canonIds)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : [],
+    canonIds.length > 0
+      ? db
+          .selectFrom("relations")
+          .selectAll()
+          .where("canon_id", "in", canonIds)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : [],
+    canonIds.length > 0
+      ? db
+          .selectFrom("narratives")
+          .selectAll()
+          .where("canon_id", "in", canonIds)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : []
+  ]);
   return {
     world: toPublicWorld(worldRow),
     canons: canons.map((item) => withoutRevision(item) as PublicCanon),
@@ -747,12 +628,7 @@ async function loadCurrentState(
       (item) => withoutRevision(item) as PublicCanonTimeSystem
     ),
     events: events.map((item) => withoutRevision(item) as PublicEvent),
-    temporalPlacements: placements.map(
-      (item) => withoutRevision(item) as PublicTemporalPlacement
-    ),
-    // Keep old Relation rows visibly legacy here. TS-010 validation only uses
-    // stored tagged endpoints and therefore cannot reinterpret old data.
-    relations: relations.map((item) => toPublicRelation(item, false)),
+    relations: relations.map((item) => toPublicRelation(item)),
     narratives: narratives.map(
       (item) => withoutRevision(item) as PublicNarrative
     )
@@ -1016,15 +892,8 @@ export async function readWorldAtRevision(
       "canon_time_system"
     ) as unknown as PublicCanonTimeSystem[],
     events: byType("event") as unknown as PublicEvent[],
-    temporalPlacements: byType(
-      "event_temporal_placement"
-    ) as unknown as PublicTemporalPlacement[],
     relations: (byType("relation") as unknown as PublicRelation[]).map(
-      (relation) =>
-        decorateVirtualRelation(
-          decorateLegacyRelation(relation),
-          relationRegistry
-        )
+      (relation) => decorateVirtualRelation(relation, relationRegistry)
     ),
     narratives: byType("narrative") as unknown as PublicNarrative[],
     generatedAt: revisionRecord.committed_at.toISOString()

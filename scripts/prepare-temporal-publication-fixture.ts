@@ -39,8 +39,7 @@ const view = {
   canonTimeSystems: rows("canon_time_system"),
   events: rows("event"),
   relations: rows("relation"),
-  narratives: rows("narrative"),
-  temporalPlacements: []
+  narratives: rows("narrative")
 } as CanonicalRevisionView;
 const artifacts = buildPublicationArtifacts(view, 2, "2026-09-06T00:00:00Z");
 const root = resolve(

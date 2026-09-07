@@ -46,7 +46,7 @@ project({
 | `algorithm_version` | 계산 규칙 version                                                                     |
 | `parameters_digest` | Canon, Time System, 범위와 filter의 digest                                            |
 | `items`             | 파생 결과                                                                             |
-| `evidence`          | 결과를 지지하는 Event·Relation ID, virtual Time Event reference와 legacy 시간 배치 ID |
+| `evidence`          | 결과를 지지하는 Event·Relation ID와 virtual Time Event reference |
 | `diagnostics`       | 불충분·모순·손상 정보를 숨기지 않는 진단                                              |
 | `completeness`      | `complete`, `partial`, `unresolved`                                                   |
 
@@ -208,7 +208,7 @@ Timeline은 선택한 Canon, Event 범위와 Time System에 따른 Event 배열 
 ### Canon 내부 Timeline
 
 1. strict `precedes`, non-strict `not_after`, `coincides`, 경계와 registry가 시간 방향을 정의한 Relation으로 constraint graph를 만든다.
-2. virtual Time Event 좌표를 해당 Time System adapter로 해석한다. legacy Event temporal placement는 호환 adapter를 통해 가능한 범위 제약으로 추가한다.
+2. virtual Time Event 좌표를 해당 Time System adapter로 해석한다. 시간 범위와 정확한 순간은 오직 Relation 제약에서 계산한다.
 3. 저장된 precision과 uncertainty를 유지한다.
 4. 비교 가능한 Event만 안정적으로 정렬한다.
 5. 순서를 결정할 근거가 없는 Event는 같은 unordered group 또는 `unplaced`로 반환한다.

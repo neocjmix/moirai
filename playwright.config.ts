@@ -17,7 +17,7 @@ export default defineConfig({
   ],
   webServer: {
     command:
-      "./node_modules/.bin/tsc -p packages/contracts/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/domain/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/projections/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/publication/tsconfig.build.json && node --import tsx scripts/prepare-temporal-publication-fixture.ts && cd apps/atropos-web && ./node_modules/.bin/next build && ALLOW_SYNTHETIC_PUBLICATION_FIXTURE=true TEMPORAL_PUBLICATION_FIXTURE_DIR=/tmp/moirai-temporal-publication-fixture ./node_modules/.bin/next start --hostname 127.0.0.1",
+      "./node_modules/.bin/tsc -p packages/contracts/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/domain/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/projections/tsconfig.build.json && ./node_modules/.bin/tsc -p packages/publication/tsconfig.build.json && node --import tsx scripts/prepare-temporal-publication-fixture.ts && cd apps/atropos-web && LOCAL_PUBLICATION_FIXTURE_DIR=/tmp/moirai-temporal-publication-fixture ./node_modules/.bin/next start --hostname 127.0.0.1",
     url: "http://127.0.0.1:3000/health",
     reuseExistingServer: !process.env.CI,
     timeout: 120_000

@@ -17,15 +17,6 @@ export function artifactPath(parts: readonly string[]): string {
     return parts.join("/");
   }
   if (
-    parts.length === 4 &&
-    parts[0] === "graph" &&
-    parts[1] === "canons" &&
-    parts[3] === "states.json"
-  ) {
-    assertPublicId(parts[2]!);
-    return parts.join("/");
-  }
-  if (
     parts.length === 1 &&
     (parts[0] === "manifest.json" || parts[0] === "world.json")
   ) {
@@ -43,18 +34,6 @@ export function artifactPath(parts: readonly string[]): string {
   }
   if (parts.length === 2 && parts[0] === "search" && parts[1] === "en.json") {
     return "search/en.json";
-  }
-  if (
-    parts.length === 4 &&
-    parts[0] === "graph" &&
-    parts[1] === "canons" &&
-    (parts[3]?.startsWith("timeline-") || parts[3]?.startsWith("process-")) &&
-    parts[3].endsWith(".json")
-  ) {
-    assertPublicId(parts[2]!);
-    const prefix = parts[3].startsWith("timeline-") ? "timeline-" : "process-";
-    assertPublicId(parts[3].slice(prefix.length, -".json".length));
-    return parts.join("/");
   }
   throw new Error("unsupported artifact");
 }

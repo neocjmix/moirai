@@ -1,29 +1,20 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
-  SYNTHETIC_FIXTURE,
   TEMPORAL_EXPRESSIVENESS_WORLD_ID,
   type PublicRelationalTemporalProjection,
   type PublicCanon,
   type PublicEvent,
   type PublicNarrative,
-  type PublicProcessArtifactReference,
-  type PublicProcessProjection,
   type PublicRelation,
-  type PublicStateArtifactReference,
-  type PublicStateProjection,
   type PublicSearchEntry,
   type PublicSubjectArtifactReference,
   type PublicSubjectHandleDocument,
-  type PublicTimelineArtifactReference,
-  type PublicTimelineProjection,
-  type PublicTimeSystem,
   type PublicationManifest,
   type PublicationPointer,
   type PublicWorld
 } from "@moirai/contracts";
 import {
-  buildPublicationArtifacts,
   currentKey,
   S3ObjectStore,
   type ObjectRead
@@ -32,198 +23,6 @@ import {
 const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
-function syntheticObjects(): ReadonlyMap<string, string> {
-  const fixture = SYNTHETIC_FIXTURE;
-  const events: PublicEvent[] = [
-    {
-      id: fixture.eventId,
-      canon_id: fixture.canonId,
-      slug: "first-lantern",
-      kind: "atomic",
-      title: fixture.eventTitle,
-      summary: "At dusk, the archive keeper lights the first lantern.",
-      roles: [],
-      attributes: {}
-    },
-    {
-      id: fixture.secondEventId,
-      canon_id: fixture.canonId,
-      slug: "eastern-lantern-answers",
-      kind: "atomic",
-      title: fixture.secondEventTitle,
-      summary: "A second light answers from the archive's eastern tower.",
-      roles: [],
-      attributes: {}
-    },
-    {
-      id: fixture.thirdEventId,
-      canon_id: fixture.canonId,
-      slug: "archive-opens",
-      kind: "atomic",
-      title: fixture.thirdEventTitle,
-      summary: "The paired lights signal that the archive may open.",
-      roles: [],
-      attributes: {}
-    },
-    {
-      id: fixture.processEventId,
-      canon_id: fixture.canonId,
-      slug: "archive-opening",
-      kind: "composite",
-      title: fixture.processEventTitle,
-      summary: "The full process from the first signal to the opened doors.",
-      roles: ["process"],
-      attributes: {}
-    },
-    {
-      id: fixture.stateEventId,
-      canon_id: fixture.canonId,
-      slug: "archive-keeper-membership",
-      kind: "composite",
-      title: fixture.stateEventTitle,
-      summary: "The bounded period in which the subject serves the archive.",
-      roles: ["state", "state:membership"],
-      attributes: { state_value: "archive keeper" }
-    }
-  ];
-  const timeSystem: PublicTimeSystem = {
-    id: fixture.timeSystemId,
-    world_id: fixture.worldId,
-    slug: "ember-count",
-    title: "Ember Count",
-    kind: "ordinal",
-    definition_version: "1",
-    definition: { coordinate: "integer", unit: "bell" }
-  };
-  const artifacts = buildPublicationArtifacts(
-    {
-      world: {
-        id: fixture.worldId,
-        slug: "lantern-archive",
-        title: fixture.worldTitle,
-        description: "A synthetic World that proves Moirai's publication path."
-      },
-      canons: [
-        {
-          id: fixture.canonId,
-          world_id: fixture.worldId,
-          slug: "ember-canon",
-          title: fixture.canonTitle,
-          description: "One self-contained synthetic truth context."
-        }
-      ],
-      timeSystems: [timeSystem],
-      canonTimeSystems: [
-        {
-          id: fixture.canonTimeSystemId,
-          canon_id: fixture.canonId,
-          time_system_id: fixture.timeSystemId
-        }
-      ],
-      events,
-      relations: [
-        {
-          id: fixture.causalRelationId,
-          canon_id: fixture.canonId,
-          type: "causes",
-          source_ref: { kind: "event", event_id: fixture.eventId },
-          target_ref: { kind: "event", event_id: fixture.secondEventId },
-          direction: "directed",
-          attributes: {}
-        },
-        {
-          id: fixture.structuralRelationId,
-          canon_id: fixture.canonId,
-          type: "precedes",
-          source_ref: { kind: "event", event_id: fixture.secondEventId },
-          target_ref: { kind: "event", event_id: fixture.thirdEventId },
-          direction: "directed",
-          attributes: {}
-        },
-        {
-          id: fixture.identityRelationId,
-          canon_id: fixture.canonId,
-          type: "identity_continues",
-          source_ref: { kind: "event", event_id: fixture.eventId },
-          target_ref: { kind: "event", event_id: fixture.secondEventId },
-          direction: "directed",
-          attributes: {}
-        },
-        {
-          id: fixture.firstContainmentId,
-          canon_id: fixture.canonId,
-          type: "contains",
-          source_ref: { kind: "event", event_id: fixture.processEventId },
-          target_ref: { kind: "event", event_id: fixture.eventId },
-          direction: "directed",
-          attributes: {}
-        },
-        {
-          id: fixture.secondContainmentId,
-          canon_id: fixture.canonId,
-          type: "contains",
-          source_ref: { kind: "event", event_id: fixture.processEventId },
-          target_ref: { kind: "event", event_id: fixture.secondEventId },
-          direction: "directed",
-          attributes: {}
-        },
-        {
-          id: fixture.thirdContainmentId,
-          canon_id: fixture.canonId,
-          type: "contains",
-          source_ref: { kind: "event", event_id: fixture.processEventId },
-          target_ref: { kind: "event", event_id: fixture.thirdEventId },
-          direction: "directed",
-          attributes: {}
-        }
-      ],
-      narratives: [
-        {
-          id: fixture.canonNarrativeId,
-          canon_id: fixture.canonId,
-          scope_type: "canon",
-          scope_id: fixture.canonId,
-          locale: "en",
-          kind: "primary",
-          title: "When the lanterns answer",
-          body: "Each evening begins with one deliberate flame. The answering light carries its signal across the archive, and the doors open only after both towers are visible.",
-          public_references: []
-        },
-        {
-          id: fixture.eventNarrativeId,
-          canon_id: fixture.canonId,
-          scope_type: "event",
-          scope_id: fixture.secondEventId,
-          locale: "en",
-          kind: "primary",
-          title: "An answer in the east",
-          body: "The eastern keeper sees the first flame and raises a lantern in reply. The response is both acknowledgement and the next link in the opening sequence.",
-          public_references: []
-        },
-        {
-          id: fixture.processNarrativeId,
-          canon_id: fixture.canonId,
-          scope_type: "event",
-          scope_id: fixture.processEventId,
-          locale: "en",
-          kind: "primary",
-          title: "From signal to opening",
-          body: "Three contained events form the archive opening process.",
-          public_references: []
-        }
-      ]
-    },
-    2,
-    "2026-08-31T00:00:00.000Z"
-  );
-  return new Map([
-    ...artifacts.documents.map(({ key, body }) => [key, body] as const),
-    [artifacts.manifestKey, artifacts.manifestBody],
-    [currentKey(artifacts.worldId), JSON.stringify(artifacts.pointer)]
-  ]);
-}
-
-const localObjects = syntheticObjects();
 let objectStore: S3ObjectStore | undefined;
 
 export function hasPublicationStoreConfig(): boolean {
@@ -245,30 +44,20 @@ export async function readPublicationObject(key: string): Promise<ObjectRead> {
     throw new Error("invalid publication key");
   if (!hasPublicationStoreConfig()) {
     if (
-      process.env.NODE_ENV === "production" &&
-      process.env.ALLOW_SYNTHETIC_PUBLICATION_FIXTURE !== "true"
-    ) {
-      throw new Error("Publication Store is not configured");
-    }
-    if (
-      process.env.ALLOW_SYNTHETIC_PUBLICATION_FIXTURE === "true" &&
-      process.env.TEMPORAL_PUBLICATION_FIXTURE_DIR &&
+      process.env.LOCAL_PUBLICATION_FIXTURE_DIR &&
       key.startsWith(`worlds/${TEMPORAL_EXPRESSIVENESS_WORLD_ID}/`)
     ) {
       try {
         const body = await readFile(
-          join(process.env.TEMPORAL_PUBLICATION_FIXTURE_DIR, key),
+          join(process.env.LOCAL_PUBLICATION_FIXTURE_DIR, key),
           "utf8"
         );
-        return { status: 200, body, etag: '"temporal-ci-fixture"' };
+        return { status: 200, body, etag: '"local-temporal-fixture"' };
       } catch {
         return { status: 404, body: null, etag: null };
       }
     }
-    const body = localObjects.get(key);
-    return body
-      ? { status: 200, body, etag: '"local-m2"' }
-      : { status: 404, body: null, etag: null };
+    throw new Error("Publication Store is not configured");
   }
   objectStore ??= new S3ObjectStore();
   return objectStore.get(key);
@@ -330,12 +119,8 @@ export async function readCanon(
   canon: PublicCanon;
   events: readonly PublicEvent[];
   narratives: readonly PublicNarrative[];
-  timeSystems: readonly PublicTimeSystem[];
-  timelineArtifacts: readonly PublicTimelineArtifactReference[];
   subjectArtifacts: readonly PublicSubjectArtifactReference[];
-  processArtifacts: readonly PublicProcessArtifactReference[];
-  stateArtifact: PublicStateArtifactReference | null;
-  temporalArtifact: { key: string; algorithm_version: string } | null;
+  temporalArtifact: { key: string; algorithm_version: string };
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -343,12 +128,8 @@ export async function readCanon(
     canon: PublicCanon;
     events: readonly PublicEvent[];
     narratives: readonly PublicNarrative[];
-    time_systems: readonly PublicTimeSystem[];
-    timeline_artifacts?: readonly PublicTimelineArtifactReference[];
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
-    process_artifacts?: readonly PublicProcessArtifactReference[];
-    state_artifact?: PublicStateArtifactReference | null;
-    temporal_artifact?: { key: string; algorithm_version: string };
+    temporal_artifact: { key: string; algorithm_version: string };
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/canons/${canonId}.json`
@@ -363,35 +144,9 @@ export async function readCanon(
     canon: document.canon,
     events: document.events,
     narratives: document.narratives,
-    timeSystems: document.time_systems,
-    timelineArtifacts: document.timeline_artifacts ?? [],
     subjectArtifacts: document.subject_artifacts ?? [],
-    processArtifacts: document.process_artifacts ?? [],
-    stateArtifact: document.state_artifact ?? null,
-    temporalArtifact: document.temporal_artifact ?? null
+    temporalArtifact: document.temporal_artifact
   };
-}
-
-export async function readStates(
-  worldId: string,
-  canonId: string,
-  reference: PublicStateArtifactReference,
-  selected?: SelectedPublication
-): Promise<PublicStateProjection> {
-  assertPublicId(canonId);
-  const { pointer } = selected ?? (await selectPublication(worldId));
-  const expectedKey = `worlds/${worldId}/revisions/${pointer.served_revision}/graph/canons/${canonId}/states.json`;
-  if (reference.key !== expectedKey) throw new Error("invalid State key");
-  const document = await readJson<PublicStateProjection>(reference.key);
-  if (
-    document.world_id !== worldId ||
-    document.canon_id !== canonId ||
-    document.source_revision !== pointer.served_revision ||
-    document.algorithm_version !== reference.algorithm_version
-  ) {
-    throw new Error("mixed Publication revisions");
-  }
-  return document;
 }
 
 export async function readSubject(
@@ -420,54 +175,6 @@ export async function readSubject(
   return { pointer, document };
 }
 
-export async function readTimeline(
-  worldId: string,
-  canonId: string,
-  reference: PublicTimelineArtifactReference,
-  selected?: SelectedPublication
-): Promise<PublicTimelineProjection> {
-  assertPublicId(canonId);
-  assertPublicId(reference.time_system_id);
-  const { pointer } = selected ?? (await selectPublication(worldId));
-  const expectedKey = `worlds/${worldId}/revisions/${pointer.served_revision}/graph/canons/${canonId}/timeline-${reference.time_system_id}.json`;
-  if (reference.key !== expectedKey) throw new Error("invalid Timeline key");
-  const document = await readJson<PublicTimelineProjection>(reference.key);
-  if (
-    document.world_id !== worldId ||
-    document.canon_id !== canonId ||
-    document.time_system_id !== reference.time_system_id ||
-    document.source_revision !== pointer.served_revision ||
-    document.algorithm_version !== reference.algorithm_version
-  ) {
-    throw new Error("mixed Publication revisions");
-  }
-  return document;
-}
-
-export async function readProcess(
-  worldId: string,
-  canonId: string,
-  reference: PublicProcessArtifactReference,
-  selected?: SelectedPublication
-): Promise<PublicProcessProjection> {
-  assertPublicId(canonId);
-  assertPublicId(reference.process_event_id);
-  const { pointer } = selected ?? (await selectPublication(worldId));
-  const expectedKey = `worlds/${worldId}/revisions/${pointer.served_revision}/graph/canons/${canonId}/process-${reference.process_event_id}.json`;
-  if (reference.key !== expectedKey) throw new Error("invalid Process key");
-  const document = await readJson<PublicProcessProjection>(reference.key);
-  if (
-    document.world_id !== worldId ||
-    document.canon_id !== canonId ||
-    document.process_event_id !== reference.process_event_id ||
-    document.source_revision !== pointer.served_revision ||
-    document.algorithm_version !== reference.algorithm_version
-  ) {
-    throw new Error("mixed Publication revisions");
-  }
-  return document;
-}
-
 export async function readEvent(
   worldId: string,
   canonId: string,
@@ -477,11 +184,8 @@ export async function readEvent(
   pointer: PublicationPointer;
   event: PublicEvent;
   narratives: readonly PublicNarrative[];
-  timeSystems: readonly PublicTimeSystem[];
   relations: readonly PublicRelation[];
   relatedEvents: readonly PublicEvent[];
-  process: PublicProcessProjection | null;
-  parentProcessIds: readonly string[];
 }> {
   assertPublicId(canonId);
   assertPublicId(eventId);
@@ -490,11 +194,8 @@ export async function readEvent(
   const document = await readJson<{
     event: PublicEvent;
     narratives: readonly PublicNarrative[];
-    time_systems: readonly PublicTimeSystem[];
     relations: readonly PublicRelation[];
     related_events: readonly PublicEvent[];
-    process_artifact?: PublicProcessArtifactReference | null;
-    parent_process_ids?: readonly string[];
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/events/${eventId}.json`
@@ -504,23 +205,12 @@ export async function readEvent(
     document.event.canon_id !== canonId
   )
     throw new Error("mixed Publication revisions");
-  const process = document.process_artifact
-    ? await readProcess(
-        worldId,
-        canonId,
-        document.process_artifact,
-        publication
-      )
-    : null;
   return {
     pointer,
     event: document.event,
     narratives: document.narratives,
-    timeSystems: document.time_systems,
     relations: document.relations,
-    relatedEvents: document.related_events,
-    process,
-    parentProcessIds: document.parent_process_ids ?? []
+    relatedEvents: document.related_events
   };
 }
 

@@ -3,22 +3,22 @@ import { describe, expect, it } from "vitest";
 import {
   CONTRACT_VERSION,
   HEALTH_RESPONSE_SCHEMA,
-  SYNTHETIC_FIXTURE,
   type CreateChangeSet
 } from "./index.js";
+import { TEST_FIXTURE } from "./testing.js";
 
 describe("Milestone 2 contracts", () => {
   it("uses stable opaque UUIDv7 fixture identifiers", () => {
     for (const id of [
-      SYNTHETIC_FIXTURE.worldId,
-      SYNTHETIC_FIXTURE.canonId,
-      SYNTHETIC_FIXTURE.eventId,
-      SYNTHETIC_FIXTURE.changeSetId,
-      SYNTHETIC_FIXTURE.expansionChangeSetId,
-      SYNTHETIC_FIXTURE.timeSystemId,
-      SYNTHETIC_FIXTURE.secondEventId,
-      SYNTHETIC_FIXTURE.causalRelationId,
-      SYNTHETIC_FIXTURE.canonNarrativeId
+      TEST_FIXTURE.worldId,
+      TEST_FIXTURE.canonId,
+      TEST_FIXTURE.eventId,
+      TEST_FIXTURE.changeSetId,
+      TEST_FIXTURE.expansionChangeSetId,
+      TEST_FIXTURE.timeSystemId,
+      TEST_FIXTURE.secondEventId,
+      TEST_FIXTURE.causalRelationId,
+      TEST_FIXTURE.canonNarrativeId
     ]) {
       expect(id).toMatch(
         /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/
@@ -29,11 +29,11 @@ describe("Milestone 2 contracts", () => {
   it("types one World-scoped ordered create Change Set", () => {
     const changeSet: CreateChangeSet = {
       contract_version: CONTRACT_VERSION,
-      change_set_id: SYNTHETIC_FIXTURE.changeSetId,
-      world_id: SYNTHETIC_FIXTURE.worldId,
+      change_set_id: TEST_FIXTURE.changeSetId,
+      world_id: TEST_FIXTURE.worldId,
       expected_revision: 0,
-      actor: "synthetic-bootstrap",
-      intent: "Create the Milestone 1 synthetic fixture",
+      actor: "test-actor",
+      intent: "Create the Milestone 1 test fixture",
       operations: [],
       origins: []
     };

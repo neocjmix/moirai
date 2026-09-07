@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { createHash, randomBytes } from "node:crypto";
 import Fastify from "fastify";
 import { describe, expect, it, vi } from "vitest";
-import { CONTRACT_VERSION, SYNTHETIC_FIXTURE } from "@moirai/contracts";
+import { CONTRACT_VERSION } from "@moirai/contracts";
+import { TEST_FIXTURE } from "@moirai/contracts/testing";
 import { ChangeSetError } from "@moirai/domain";
 import { parseCredentials, type Credential } from "./auth.js";
 import { registerClotho } from "./clotho.js";
@@ -12,13 +13,13 @@ const credential: Credential = {
   token_sha256: createHash("sha256").update(token).digest("hex"),
   actor_id: "01995c2a-7b00-7000-8000-000000000099",
   scopes: ["world:read", "world:write"],
-  world_ids: [SYNTHETIC_FIXTURE.worldId],
+  world_ids: [TEST_FIXTURE.worldId],
   expires_at: "2099-01-01T00:00:00Z"
 };
 const plan = {
   contract_version: CONTRACT_VERSION,
-  change_set_id: SYNTHETIC_FIXTURE.changeSetId,
-  world_id: SYNTHETIC_FIXTURE.worldId,
+  change_set_id: TEST_FIXTURE.changeSetId,
+  world_id: TEST_FIXTURE.worldId,
   expected_revision: 2,
   intent: "Synthetic test",
   origins: [
@@ -31,7 +32,7 @@ const plan = {
       client_ref: "event",
       origin_refs: [{ field: "*", origin_index: 0 }],
       value: {
-        canon_id: SYNTHETIC_FIXTURE.canonId,
+        canon_id: TEST_FIXTURE.canonId,
         kind: "atomic",
         title: "Test",
         roles: [],
@@ -81,7 +82,7 @@ describe("Clotho authenticated boundary", () => {
     expect(
       (
         await readOnly.send("world.get", {
-          world_id: SYNTHETIC_FIXTURE.canonId
+          world_id: TEST_FIXTURE.canonId
         })
       ).statusCode
     ).toBe(403);

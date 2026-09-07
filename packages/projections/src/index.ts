@@ -267,7 +267,6 @@ export function projectSubjects(
           .map((relation) => relation.id),
         lineage: { incoming, outgoing },
         narrative_ids: narrativeIds,
-        time_ranges: [],
         evidence,
         diagnostics: [],
         completeness: "complete" as const
@@ -427,10 +426,7 @@ function searchEntries(
   for (const event of sorted(view.events))
     entries.push({
       target_id: event.id,
-      target_type:
-        event.kind === "composite" && event.roles.includes("process")
-          ? "process"
-          : "event",
+      target_type: "event",
       canonical_url: `/worlds/${view.world.id}/canons/${event.canon_id}/events/${event.id}`,
       world_id: view.world.id,
       canon_id: event.canon_id,

@@ -43,7 +43,7 @@ const view = {
 } as CanonicalRevisionView;
 const artifacts = buildPublicationArtifacts(view, 2, "2026-09-06T00:00:00Z");
 const root = resolve(
-  process.env.TEMPORAL_PUBLICATION_FIXTURE_DIR ??
+  process.env.LOCAL_PUBLICATION_FIXTURE_DIR ??
     "/tmp/moirai-temporal-publication-fixture"
 );
 for (const item of [

@@ -7,7 +7,7 @@ export async function GET(): Promise<Response> {
   const runtime = getPublicRuntimeMetadata();
   if (
     hasPublicationStoreConfig() ||
-    process.env.ALLOW_SYNTHETIC_PUBLICATION_FIXTURE === "true"
+    Boolean(process.env.LOCAL_PUBLICATION_FIXTURE_DIR)
   ) {
     return Response.json(
       {

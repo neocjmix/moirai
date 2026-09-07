@@ -27,30 +27,19 @@ export default async function EventPage({
     const [
       { world },
       canonDocument,
-      {
-        event,
-        parentProcessIds,
-        pointer,
-        process,
-        narratives,
-        timeSystems,
-        relations,
-        relatedEvents
-      }
+      { event, pointer, narratives, relations, relatedEvents }
     ] = await Promise.all([
       readWorld(worldId, selected),
       readCanon(worldId, canonId, selected),
       readEvent(worldId, canonId, eventId, selected)
     ]);
     const { canon } = canonDocument;
-    const temporal = canonDocument.temporalArtifact
-      ? await readRelationalTime(
-          worldId,
-          canonId,
-          canonDocument.temporalArtifact,
-          selected
-        )
-      : null;
+    const temporal = await readRelationalTime(
+      worldId,
+      canonId,
+      canonDocument.temporalArtifact,
+      selected
+    );
     return (
       <main className="event-canvas">
         <StatusIsland
@@ -65,7 +54,7 @@ export default async function EventPage({
           <span>/</span>
           <a href={`/worlds/${worldId}/canons/${canonId}`}>{canon.title}</a>
         </nav>
-        <div className="lantern-orbit" aria-hidden="true">
+        <div className="temporal-orbit" aria-hidden="true">
           <span />
         </div>
         <EventSheet
@@ -76,20 +65,15 @@ export default async function EventPage({
           worldId={worldId}
           canonId={canonId}
           eventId={eventId}
-          process={process}
-          parentProcessIds={parentProcessIds}
           narratives={narratives}
-          timeSystems={timeSystems}
           relations={relations}
           relatedEvents={relatedEvents}
           temporalContent={
-            temporal ? (
-              <RelationalTime
-                projection={temporal}
-                events={canonDocument.events}
-                eventId={eventId}
-              />
-            ) : null
+            <RelationalTime
+              projection={temporal}
+              events={canonDocument.events}
+              eventId={eventId}
+            />
           }
         />
       </main>

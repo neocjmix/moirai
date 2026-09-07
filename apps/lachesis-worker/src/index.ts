@@ -1,4 +1,3 @@
-import { SYNTHETIC_FIXTURE } from "@moirai/contracts";
 import {
   checkDatabaseReady,
   claimPublicationJob,
@@ -112,7 +111,7 @@ const server = createServer((request, response) => {
     void Promise.all([
       checkDatabaseReady(database),
       publicationStore
-        .get(`worlds/${SYNTHETIC_FIXTURE.worldId}/current.json`)
+        .get("health/readiness.json")
         .then((result) => {
           if (result.status !== 200 && result.status !== 404) {
             throw new Error("Publication Store is unavailable");

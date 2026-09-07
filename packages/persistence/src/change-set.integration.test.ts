@@ -96,9 +96,9 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       idempotent_replay: false,
       warnings: [],
       id_mapping: {
-        "ember-time": TEST_FIXTURE.timeSystemId,
-        "eastern-answer": TEST_FIXTURE.secondEventId,
-        "archive-opens": TEST_FIXTURE.thirdEventId
+        "test-time": TEST_FIXTURE.timeSystemId,
+        "second-event": TEST_FIXTURE.secondEventId,
+        "third-event": TEST_FIXTURE.thirdEventId
       }
     });
     const counts = await sql<{

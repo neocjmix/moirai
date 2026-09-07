@@ -56,7 +56,6 @@ content/canons.ndjson
 content/time-systems.ndjson
 content/canon-time-systems.ndjson
 content/events.ndjson
-content/temporal-placements.ndjson # legacy 호환 section, 존재할 때만
 content/relations.ndjson
 content/narratives.ndjson
 content/correspondences.ndjson
@@ -103,7 +102,7 @@ manifest 자체의 digest는 package 밖에 별도 `.sha256` 파일로 제공할
 
 - World, Canon과 동등성
 - Time System 정의와 Canon의 다대다 사용 관계
-- Event와 legacy 시간 배치의 실제 precision·uncertainty
+- Event Relation과 virtual Time Event 좌표의 실제 precision·uncertainty
 - Relation type, 방향과 persisted 또는 virtual EventReference endpoint
 - virtual Time Event를 재생성하는 Time System ID, definition version과 canonical coordinate
 - Narrative, locale와 공개 인용
@@ -221,7 +220,7 @@ round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semant
 
 - Canon별 활성·철회 Event 집합
 - Relation type, endpoint와 Canon 경계
-- Time System 정의·capability, virtual Time Event reference와 legacy 시간 배치 precision
+- Time System 정의·capability와 virtual Time Event reference precision
 - 포함 graph와 Process 역할
 - Narrative scope·locale·body digest
 - correspondence member

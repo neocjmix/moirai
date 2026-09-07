@@ -23,7 +23,6 @@ interface Cursor {
   relations: number;
   chars: number;
   times: number;
-  placements: number;
 }
 function error(code: string, path: string): never {
   throw new ChangeSetError(
@@ -48,8 +47,7 @@ function cursorFor(
       events: 0,
       relations: 0,
       chars: 0,
-      times: 0,
-      placements: 0
+      times: 0
     };
   try {
     const value = JSON.parse(
@@ -62,8 +60,7 @@ function cursorFor(
         value.events,
         value.relations,
         value.chars,
-        value.times,
-        value.placements
+        value.times
       ].some((n) => !Number.isSafeInteger(n) || n < 0) ||
       (at_revision !== undefined && value.revision !== at_revision)
     )
@@ -208,11 +205,7 @@ function graph(
     }
     position += narrative.body.length;
   }
-  const placements = view.temporalPlacements
-    .filter((p) => reached.has(p.event_id))
-    .sort((a, b) => a.id.localeCompare(b.id));
   const timeIds = new Set([
-    ...placements.map((p) => p.time_system_id),
     ...view.canonTimeSystems
       .filter((l) => canons.includes(l.canon_id))
       .map((l) => l.time_system_id)
@@ -221,24 +214,18 @@ function graph(
     .filter((t) => timeIds.has(t.id))
     .sort((a, b) => a.id.localeCompare(b.id));
   const timePage = times.slice(cursor.times, cursor.times + 20);
-  const placementPage = placements.slice(
-    cursor.placements,
-    cursor.placements + 100
-  );
   const next = {
     ...cursor,
     events: cursor.events + eventPage.length,
     relations: cursor.relations + relationPage.length,
     chars: cursor.chars + consumed,
-    times: cursor.times + timePage.length,
-    placements: cursor.placements + placementPage.length
+    times: cursor.times + timePage.length
   };
   const truncated =
     next.events < selectedEvents.length ||
     next.relations < selectedRelations.length ||
     next.chars < position ||
-    next.times < times.length ||
-    next.placements < placements.length;
+    next.times < times.length;
   const boundary = relations.some((relation) => {
     const endpoints = canonicalRelationEndpoints(relation);
     if (
@@ -271,7 +258,6 @@ function graph(
           timePage.some((system) => system.id === link.time_system_id)
       )
       .sort((a, b) => a.id.localeCompare(b.id)),
-    temporal_placements: placementPage,
     containment_paths: relationPage.flatMap((relation) => {
       const endpoints = canonicalRelationEndpoints(relation);
       return relation.type === "contains" &&

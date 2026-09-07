@@ -136,9 +136,9 @@ Time System `definition`은 최소한 canonical coordinate codec과 equality를 
 
 virtual Time Event는 Event table, Change Operation의 entity lifecycle 또는 Revision별 활성 행을 갖지 않는다. Relation과 projection evidence는 tagged reference 전체를 보존한다. 같은 세 입력은 항상 같은 ID를 resolve한다.
 
-### legacy 시간 배치
+### 시간 정본
 
-기존 `event_temporal_placements`는 전환 기간의 호환 입력·출력이다. 신규 Canon 시간 의미는 EventReference endpoint를 가진 Relation이 소유한다. legacy Placement는 원본을 보존한 채 adapter가 관계 제약으로 분류하며, 새 입력을 Placement와 Relation 양쪽에 독립 정본으로 이중 기록하지 않는다.
+Canon의 모든 시간 의미는 EventReference endpoint를 가진 Relation이 소유한다. `event_temporal_placements`, 숫자 좌표, Relation의 별도 Event ID endpoint는 Canon·API·DB·반출 형식에 존재하지 않는다. 저장 Event와 virtual Time Event는 같은 tagged endpoint 계약을 사용한다.
 
 | 필드                             | 의미                                                  |
 | -------------------------------- | ----------------------------------------------------- |
@@ -300,7 +300,6 @@ Change Set과 Operation의 구체적인 구조는 TS-003에서 정의한다.
 | 분류               | 데이터                                                                                                      |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
 | 현재 정본          | World, Canon, Time System, Canon-Time System 연결, Event, EventReference Relation, Narrative, Canon 간 대응 |
-| legacy 호환        | 전환 전 시간 배치와 그 변환 분류                                                                            |
 | 정본 운영 이력     | Change Set, Change Operation, World Revision, 작성 유래, 철회 기록                                          |
 | 운영 식별 표면     | Subject Handle, slug alias                                                                                  |
 | 재생성 가능한 파생 | Subject 구성, Process·State·Duration·Timeline, 검증 진단, 검색 문서                                         |
@@ -313,7 +312,7 @@ UI 좌표, 그래프 hull, lane, 색상, zoom level과 layout cache는 정본 �
 PostgreSQL table layout은 반출 형식이 아니다. 반출은 다음을 가진 versioned 논리 문서로 정의한다.
 
 - World와 모든 핵심 내용
-- Time System 정의, virtual Time Event reference를 포함한 Relation과 legacy 시간 배치
+- Time System 정의와 virtual Time Event reference를 포함한 Relation
 - Canon 간 대응
 - 공개 상태와 철회 정보
 - Change·Revision 이력과 구분 가능한 작성 유래

@@ -52,8 +52,7 @@ const sourceView = {
   canonTimeSystems: rows("canon_time_system"),
   events: rows("event"),
   relations: rows("relation"),
-  narratives: rows("narrative"),
-  temporalPlacements: []
+  narratives: rows("narrative")
 } as unknown as PortableWorld;
 let sequence = 0x500;
 const clone = cloneWorldPlan(
@@ -106,8 +105,7 @@ process.stdout.write(
           "Do not delete or rewrite trial rows; stop publication advancement and preserve isolated append-only revisions as evidence",
         authorization_policy:
           "Remove the two trial World IDs from the temporary Clotho credential scope after verification",
-        production_data_migration: false,
-        legacy_placement_deletion: false
+        production_data_migration: false
       }
     },
     null,

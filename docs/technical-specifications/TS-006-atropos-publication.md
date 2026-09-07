@@ -159,7 +159,7 @@ Event page는 다음 정보를 구분해 보여준다.
 - Event 범위 Narrative
 - 포함 parent와 child Event
 - Canon 내부 Relation
-- Event/Relation 기반 시간 projection, virtual Time Event의 lossless coordinate와 legacy 시간 배치
+- Event/Relation 기반 시간 projection과 virtual Time Event의 lossless coordinate
 - 공개 인용·출처 설명
 - 파생 Subject, State, Duration과 Timeline 위치
 - 다른 Canon의 명시적 대응
@@ -226,12 +226,12 @@ comparison bridge를 Canon 내부 Relation과 같은 선 모양·색·layer로 �
 - 가로축: Subject lane과 충돌 회피를 위한 파생 배치
 - 정확한 authored coordinate가 없는 Event: structural constraint 안의 inferred layout
 
-inferred layout 좌표는 Event의 시간 사실로 표시하거나 export하지 않는다. Event detail은 authored 시간 Relation, virtual Time Event, legacy placement와 layout inference를 구분한다. exact, bounded, relative-only, unresolved, Event Duration과 knowledge range를 서로 다른 의미로 제공한다.
+inferred layout 좌표는 Event의 시간 사실로 표시하거나 export하지 않는다. Event detail은 authored 시간 Relation, virtual Time Event와 layout inference를 구분한다. exact, bounded, relative-only, unresolved, Event Duration과 knowledge range를 서로 다른 의미로 제공한다.
 
 ### layout pipeline
 
 1. Publication projection이 Event, Relation, 포함 구조와 시간 제약을 준비한다.
-2. strict·non-strict·equality 시간 Relation, virtual Time Event와 structural order로 가능한 세로 범위를 계산한다. legacy placement는 호환 adapter로 읽는다.
+2. strict·non-strict·equality 시간 Relation, virtual Time Event와 structural order로 가능한 세로 범위를 계산한다.
 3. 근거가 부족한 Event를 `unplaced` 또는 제약 범위 안의 inferred position으로 분류한다.
 4. Subject·관계 밀도를 고려해 가로 lane을 계산한다.
 5. atomic Event를 배치한다.

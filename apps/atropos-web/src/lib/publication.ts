@@ -17,7 +17,6 @@ import {
   type PublicSubjectHandleDocument,
   type PublicTimelineArtifactReference,
   type PublicTimelineProjection,
-  type PublicTemporalPlacement,
   type PublicTimeSystem,
   type PublicationManifest,
   type PublicationPointer,
@@ -122,67 +121,13 @@ function syntheticObjects(): ReadonlyMap<string, string> {
         }
       ],
       events,
-      temporalPlacements: [
-        {
-          id: fixture.firstPlacementId,
-          event_id: fixture.eventId,
-          time_system_id: fixture.timeSystemId,
-          kind: "point",
-          earliest_start: { value: 1 },
-          latest_start: { value: 1 },
-          earliest_end: null,
-          latest_end: null,
-          precision: "bell",
-          certainty: "exact",
-          display_label: "First bell"
-        },
-        {
-          id: fixture.secondPlacementId,
-          event_id: fixture.secondEventId,
-          time_system_id: fixture.timeSystemId,
-          kind: "point",
-          earliest_start: { value: 2 },
-          latest_start: { value: 2 },
-          earliest_end: null,
-          latest_end: null,
-          precision: "bell",
-          certainty: "exact",
-          display_label: "Second bell"
-        },
-        {
-          id: fixture.thirdPlacementId,
-          event_id: fixture.thirdEventId,
-          time_system_id: fixture.timeSystemId,
-          kind: "point",
-          earliest_start: { value: 3 },
-          latest_start: { value: 4 },
-          earliest_end: null,
-          latest_end: null,
-          precision: "bell",
-          certainty: "approximate",
-          display_label: "Between the third and fourth bell"
-        },
-        {
-          id: fixture.processPlacementId,
-          event_id: fixture.processEventId,
-          time_system_id: fixture.timeSystemId,
-          kind: "interval",
-          earliest_start: { value: 1 },
-          latest_start: { value: 1 },
-          earliest_end: { value: 4 },
-          latest_end: { value: 4 },
-          precision: "bell",
-          certainty: "exact",
-          display_label: "First through fourth bell"
-        }
-      ],
       relations: [
         {
           id: fixture.causalRelationId,
           canon_id: fixture.canonId,
           type: "causes",
-          source_event_id: fixture.eventId,
-          target_event_id: fixture.secondEventId,
+          source_ref: { kind: "event", event_id: fixture.eventId },
+          target_ref: { kind: "event", event_id: fixture.secondEventId },
           direction: "directed",
           attributes: {}
         },
@@ -190,8 +135,8 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           id: fixture.structuralRelationId,
           canon_id: fixture.canonId,
           type: "precedes",
-          source_event_id: fixture.secondEventId,
-          target_event_id: fixture.thirdEventId,
+          source_ref: { kind: "event", event_id: fixture.secondEventId },
+          target_ref: { kind: "event", event_id: fixture.thirdEventId },
           direction: "directed",
           attributes: {}
         },
@@ -199,8 +144,8 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           id: fixture.identityRelationId,
           canon_id: fixture.canonId,
           type: "identity_continues",
-          source_event_id: fixture.eventId,
-          target_event_id: fixture.secondEventId,
+          source_ref: { kind: "event", event_id: fixture.eventId },
+          target_ref: { kind: "event", event_id: fixture.secondEventId },
           direction: "directed",
           attributes: {}
         },
@@ -208,8 +153,8 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           id: fixture.firstContainmentId,
           canon_id: fixture.canonId,
           type: "contains",
-          source_event_id: fixture.processEventId,
-          target_event_id: fixture.eventId,
+          source_ref: { kind: "event", event_id: fixture.processEventId },
+          target_ref: { kind: "event", event_id: fixture.eventId },
           direction: "directed",
           attributes: {}
         },
@@ -217,8 +162,8 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           id: fixture.secondContainmentId,
           canon_id: fixture.canonId,
           type: "contains",
-          source_event_id: fixture.processEventId,
-          target_event_id: fixture.secondEventId,
+          source_ref: { kind: "event", event_id: fixture.processEventId },
+          target_ref: { kind: "event", event_id: fixture.secondEventId },
           direction: "directed",
           attributes: {}
         },
@@ -226,26 +171,8 @@ function syntheticObjects(): ReadonlyMap<string, string> {
           id: fixture.thirdContainmentId,
           canon_id: fixture.canonId,
           type: "contains",
-          source_event_id: fixture.processEventId,
-          target_event_id: fixture.thirdEventId,
-          direction: "directed",
-          attributes: {}
-        },
-        {
-          id: fixture.stateStartRelationId,
-          canon_id: fixture.canonId,
-          type: "starts",
-          source_event_id: fixture.eventId,
-          target_event_id: fixture.stateEventId,
-          direction: "directed",
-          attributes: {}
-        },
-        {
-          id: fixture.stateEndRelationId,
-          canon_id: fixture.canonId,
-          type: "ends",
-          source_event_id: fixture.secondEventId,
-          target_event_id: fixture.stateEventId,
+          source_ref: { kind: "event", event_id: fixture.processEventId },
+          target_ref: { kind: "event", event_id: fixture.thirdEventId },
           direction: "directed",
           attributes: {}
         }
@@ -550,7 +477,6 @@ export async function readEvent(
   pointer: PublicationPointer;
   event: PublicEvent;
   narratives: readonly PublicNarrative[];
-  temporalPlacements: readonly PublicTemporalPlacement[];
   timeSystems: readonly PublicTimeSystem[];
   relations: readonly PublicRelation[];
   relatedEvents: readonly PublicEvent[];
@@ -564,7 +490,6 @@ export async function readEvent(
   const document = await readJson<{
     event: PublicEvent;
     narratives: readonly PublicNarrative[];
-    temporal_placements: readonly PublicTemporalPlacement[];
     time_systems: readonly PublicTimeSystem[];
     relations: readonly PublicRelation[];
     related_events: readonly PublicEvent[];
@@ -591,7 +516,6 @@ export async function readEvent(
     pointer,
     event: document.event,
     narratives: document.narratives,
-    temporalPlacements: document.temporal_placements,
     timeSystems: document.time_systems,
     relations: document.relations,
     relatedEvents: document.related_events,

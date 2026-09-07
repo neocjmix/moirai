@@ -32,13 +32,12 @@ describeWithDatabase("versioned migrations", () => {
       from information_schema.tables
       where table_schema = 'public'
         and table_name in ('worlds', 'change_sets', 'publication_outbox',
-          'time_systems', 'event_temporal_placements', 'relations', 'narratives',
+          'time_systems', 'relations', 'narratives',
           'subject_handles', 'subject_handle_members')
       order by table_name
     `.execute(db);
     expect(canonical.rows).toEqual([
       { table_name: "change_sets" },
-      { table_name: "event_temporal_placements" },
       { table_name: "narratives" },
       { table_name: "publication_outbox" },
       { table_name: "relations" },
@@ -53,7 +52,7 @@ describeWithDatabase("versioned migrations", () => {
     await expect(migrateToLatest(databaseUrl ?? "")).resolves.toBeUndefined();
   });
 
-  it("keeps legacy Relation IDs while adding nullable canonical endpoint references", async () => {
+  it("creates only non-null canonical Relation endpoint references", async () => {
     const result = await sql<{
       column_name: string;
       is_nullable: "YES" | "NO";
@@ -66,10 +65,8 @@ describeWithDatabase("versioned migrations", () => {
       order by column_name
     `.execute(db);
     expect(result.rows).toEqual([
-      { column_name: "source_event_id", is_nullable: "YES" },
-      { column_name: "source_ref", is_nullable: "YES" },
-      { column_name: "target_event_id", is_nullable: "YES" },
-      { column_name: "target_ref", is_nullable: "YES" }
+      { column_name: "source_ref", is_nullable: "NO" },
+      { column_name: "target_ref", is_nullable: "NO" }
     ]);
   });
 });

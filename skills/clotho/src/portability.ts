@@ -11,8 +11,7 @@ import type {
   PublicCanonTimeSystem,
   PublicEvent,
   PublicRelation,
-  PublicNarrative,
-  PublicTemporalPlacement
+  PublicNarrative
 } from "@moirai/contracts";
 import {
   canonicalRelationEndpoints,
@@ -29,7 +28,6 @@ export interface PortableWorld {
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
-  readonly temporalPlacements: readonly PublicTemporalPlacement[];
 }
 const LIMIT = 10 * 1024 * 1024;
 const uuid =
@@ -177,8 +175,6 @@ export async function exportWorldPackage(
   manifest: Manifest;
   fingerprint: ReturnType<typeof temporalSemanticFingerprint>;
 }> {
-  if (view.temporalPlacements.length)
-    fail("legacy_placement_export_requires_migration_report");
   if (
     !uuid.test(view.world.id) ||
     !Number.isSafeInteger(revision) ||
@@ -208,8 +204,7 @@ export async function exportWorldPackage(
     Buffer.from(
       portableStringify({
         fingerprint,
-        virtual_time_event_rows: 0,
-        legacy_placement_rows: 0
+        virtual_time_event_rows: 0
       })
     )
   );
@@ -234,10 +229,6 @@ export async function exportWorldPackage(
       {
         section: "operations/subject-handles.ndjson",
         reason: "Operational handles are regenerated in the clone"
-      },
-      {
-        section: "content/temporal-placements.ndjson",
-        reason: "No legacy Placement rows in this World"
       },
       {
         section: "content/correspondences.ndjson",
@@ -412,8 +403,7 @@ export async function readWorldPackage(
     world: decode("content/world.json"),
     ...Object.fromEntries(
       Object.entries(sectionNames).map(([key, name]) => [key, rows(name)])
-    ),
-    temporalPlacements: []
+    )
   } as unknown as PortableWorld;
   if (view.world.id !== manifest.world_id) fail("package_world_mismatch");
   const fingerprint = temporalSemanticFingerprint(view);
@@ -532,8 +522,7 @@ export function cloneWorldPlan(
     canonTimeSystems: [],
     events: [],
     relations: [],
-    narratives: [],
-    temporalPlacements: []
+    narratives: []
   });
   return { plan, id_mapping: Object.fromEntries(mapping) };
 }

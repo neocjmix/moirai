@@ -169,8 +169,8 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
               canon_id: canonId,
               type: "causes",
               direction: "directed",
-              source_event_id: firstId,
-              target_event_id: secondId,
+              source_ref: { kind: "event", event_id: firstId },
+              target_ref: { kind: "event", event_id: secondId },
               attributes: {}
             }
           },

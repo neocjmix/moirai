@@ -82,9 +82,8 @@
   ],
   "absence_assertions": [
     {
-      "entity_type": "event_temporal_placement",
-      "created_by_change_set": "019f3b00-0000-7000-8000-000000000006",
-      "expected_count": 0
+      "forbidden_canonical_shape": "numeric_temporal_placement",
+      "expected_occurrences": 0
     },
     {
       "entity_type": "event",
@@ -93,8 +92,14 @@
     },
     {
       "relation_type": "contains",
-      "source_event_id": "019f3b00-0000-7000-8000-000000000107",
-      "target_event_id": "019f3b00-0000-7000-8000-000000000109",
+      "source_ref": {
+        "kind": "event",
+        "event_id": "019f3b00-0000-7000-8000-000000000107"
+      },
+      "target_ref": {
+        "kind": "event",
+        "event_id": "019f3b00-0000-7000-8000-000000000109"
+      },
       "expected_count": 0
     },
     {

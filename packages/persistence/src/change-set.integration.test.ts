@@ -30,7 +30,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       truncate subject_handle_members, subject_handles, publication_outbox,
         world_publication_state, change_operations,
         world_revisions, change_sets, narratives, relations,
-        event_temporal_placements, canon_time_systems, time_systems,
+        canon_time_systems, time_systems,
         events, canons, worlds cascade
     `.execute(db);
   });
@@ -103,7 +103,6 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     const counts = await sql<{
       events: number;
       relations: number;
-      placements: number;
       narratives: number;
       revisions: number;
       jobs: number;
@@ -111,7 +110,6 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       select
         (select count(*)::int from events) as events,
         (select count(*)::int from relations) as relations,
-        (select count(*)::int from event_temporal_placements) as placements,
         (select count(*)::int from narratives) as narratives,
         (select count(*)::int from world_revisions) as revisions,
         (select count(*)::int from publication_outbox) as jobs
@@ -119,7 +117,6 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     expect(counts.rows[0]).toEqual({
       events: 3,
       relations: 2,
-      placements: 3,
       narratives: 2,
       revisions: 2,
       jobs: 2
@@ -142,7 +139,10 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
               ...operation,
               value: {
                 ...operation.value,
-                target_event_id: "01995c2a-7b00-7000-8000-000000000099"
+                target_ref: {
+                  kind: "event" as const,
+                  event_id: "01995c2a-7b00-7000-8000-000000000099"
+                }
               }
             }
           : operation
@@ -150,7 +150,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     };
     await expect(commitCreateChangeSet(db, dangling)).rejects.toMatchObject({
       code: "dangling_reference",
-      path: "operations.7"
+      path: "operations.4.value.target_ref"
     });
 
     const crossCanon: CreateChangeSet = {
@@ -188,8 +188,11 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
           value: {
             canon_id: SYNTHETIC_FIXTURE.canonId,
             type: "causes",
-            source_event_id: SYNTHETIC_FIXTURE.eventId,
-            target_event_id: { client_ref: "other-event" },
+            source_ref: {
+              kind: "event",
+              event_id: SYNTHETIC_FIXTURE.eventId
+            },
+            target_ref: { kind: "event", client_ref: "other-event" },
             direction: "directed",
             attributes: {}
           }
@@ -280,8 +283,14 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
           value: {
             canon_id: SYNTHETIC_FIXTURE.canonId,
             type: "identity_continues",
-            source_event_id: SYNTHETIC_FIXTURE.eventId,
-            target_event_id: SYNTHETIC_FIXTURE.secondEventId,
+            source_ref: {
+              kind: "event",
+              event_id: SYNTHETIC_FIXTURE.eventId
+            },
+            target_ref: {
+              kind: "event",
+              event_id: SYNTHETIC_FIXTURE.secondEventId
+            },
             direction: "directed",
             attributes: {}
           }

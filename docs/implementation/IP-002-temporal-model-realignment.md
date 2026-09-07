@@ -8,7 +8,7 @@ depends_on:
 
 # IP-002 — 시간 모델 재정렬 구현 계획
 
-이 계획은 2026-09-05 의미 결정과 함께 accepted됐다. 이는 runtime·schema migration·배포·시험 World 쓰기를 한꺼번에 승인하지 않는다. 각 slice의 변경과 외부 write는 아래 checkpoint를 지킨다.
+이 계획은 2026-09-05 의미 결정과 함께 accepted됐다. 2026-09-07 사용자는 PR #4 병합, 기존 데이터 전체 삭제, production 단일 환경에서 Slice 7 활성화와 두 차례 종단간 재검증을 승인했다. 이 결정은 이전 호환·migration·별도 staging 전제를 대체한다.
 
 ## 목표와 금지선
 
@@ -20,12 +20,10 @@ IP-002는 IP-001을 대체하지 않는 시간 모델 교정 interrupt다. IP-00
 
 IP-002 완료를 M4 또는 IP-001 전체 완료로 해석하지 않는다. `CURRENT.md`는 IP-002가 끝날 때 이 복귀 지점을 활성 slice로 명시해야 한다.
 
-- 기존 Placement 행을 삭제하거나 덮어쓰지 않는다.
-- 승인 전 schema migration과 canonical write 변경을 하지 않는다.
+- 삭제 승인 전에 데이터를 변경하지 않는다. 2026-09-07 승인과 inventory 뒤 Canon DB와 Publication object를 전부 삭제했다.
 - Branch·Run·시간여행 설계를 끌어들이지 않는다.
 - JointJS 작업과 시간 정본 변경을 한 PR에 섞지 않는다.
-- production에서 최초 검증하지 않는다. synthetic fixture와 shadow 비교가 먼저다.
-- rollback 불가능한 전환은 하지 않는다.
+- 별도 환경이나 임시 이중화를 만들지 않는다. 승인된 production primary 경로에서 corpus를 검증한다.
 
 ## 전환 흐름
 
@@ -33,11 +31,10 @@ IP-002 완료를 M4 또는 IP-001 전체 완료로 해석하지 않는다. `CURR
 flowchart TD
     A["의미 결정"] --> B["기존 동작 특성화"]
     B --> C["virtual Time Event와 solver"]
-    C --> D["Placement 호환 adapter"]
-    D --> E["dual-read shadow 비교"]
-    E --> F["새 canonical write"]
-    F --> G["projector 전환"]
-    G --> H["legacy deprecation"]
+    C --> D["새 canonical write"]
+    D --> E["projector 전환"]
+    E --> F["단일 체계 정리"]
+    F --> G["production 종단간 재검증"]
 ```
 
 각 화살표는 별도 승인 가능한 체크포인트다. 뒤 단계의 코드를 미리 배포하더라도 feature flag가 의미 전환을 일으키면 안 된다.
@@ -167,15 +164,16 @@ Clotho에는 revision-bounded complete snapshot인 `world.export`를 추가한�
 
 ## Slice 7 — legacy 제거
 
-다음 조건을 모두 만족한 뒤 별도 승인으로 수행한다.
+2026-09-07 활성화됐다. 서비스가 아직 production user data 호환성을 요구하지 않는다는 사용자 결정에 따라 migration·dual-read 기간 대신 clean reset을 사용한다.
 
-- 지원 World의 migration이 lossless 또는 명시적으로 승인된 예외다.
-- 두 release 이상 새 canonical write만 사용했다.
-- export/import와 rollback rehearsal가 성공했다.
-- legacy field를 읽는 client·worker·snapshot이 없다.
-- TS-002에서 Placement의 canonical 지위가 공식 제거됐다.
+완료 조건:
 
-그 전에는 legacy table을 삭제하지 않는다.
+- Change Plan contract version은 `2` 하나이며 모든 World에 동일하게 적용된다.
+- Relation은 non-null tagged `source_ref`·`target_ref`만 저장하고 공개한다.
+- `event_temporal_placements`, numeric coordinate, legacy adapter와 World allowlist가 코드·schema·artifact에 없다.
+- Clotho pre-deploy는 migration만 실행하며 synthetic data를 자동 seed하지 않는다.
+- 실제 production corpus validate→commit→Canon→resolve→projection→Atropos→export/import와 거절 corpus가 통과한다.
+- 리팩터링 후 같은 전체 판정을 다시 통과한다.
 
 ## 검증 게이트
 
@@ -189,8 +187,7 @@ Clotho에는 revision-bounded complete snapshot인 `world.export`를 추가한�
 - worker artifact determinism test
 - Atropos SSR와 접근성 smoke
 - `.moirai` export/import semantic fingerprint
-- 기존 M4-D synthetic World regression
-- production 전 Railway staging 또는 승인된 synthetic 범위 검증
+- canonical Event/Relation regression
 - `Temporal Expressiveness Observatory` corpus의 실제 validate→commit→read→publish→export/import 증거
 
 2026-09-06 실제 종단간 검증을 완료했다. 승인된 application SHA
@@ -210,10 +207,10 @@ downgrade하거나 trial Relation을 삭제하지 않았다. M4-D runtime 위에
 따라서 migration 006 이후 rollback은 pre-migration SHA 단독이 아니라 그 SHA의
 runtime과 migration 006 ledger 파일을 함께 사용해야 한다.
 
-이 증거로 IP-002 Slice 0–6과 관계 기반 시간 표현력 수용시험을 완료한다. Slice 7의
-legacy 제거는 별도 승인 조건이므로 수행하지 않았고 IP-002 완료 조건에 포함하지
-않는다. 다음 활성 작업은 위에 기록한 IP-001 M4-D 다음 JointJS graph·scope artifact
-기본 탐색이며, 100k LOD와 Canon 비교를 통과하기 전에는 M5로 넘어가지 않는다.
+이 증거로 IP-002 Slice 0–6과 첫 관계 기반 시간 표현력 수용시험을 완료했다. 이후
+2026-09-07 clean-slate 결정으로 Slice 7을 활성화했다. Slice 7의 두 번째 종단간
+검증까지 끝난 뒤에만 위에 기록한 IP-001 M4-D 다음 JointJS graph·scope artifact
+기본 탐색으로 복귀하며, 100k LOD와 Canon 비교를 통과하기 전에는 M5로 넘어가지 않는다.
 
 현재 로컬 환경에서 `pnpm`은 ignored build scripts 정책으로 실행이 막힐 수 있다. 이를 우회하려고 dependency 정책을 조용히 바꾸지 말고 CI 또는 승인된 설치 절차를 사용한다.
 

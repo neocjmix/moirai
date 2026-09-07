@@ -5,7 +5,6 @@ import type {
   PublicNarrative,
   PublicProcessProjection,
   PublicRelation,
-  PublicTemporalPlacement,
   PublicTimeSystem
 } from "@moirai/contracts";
 import { useState, type ReactNode } from "react";
@@ -23,7 +22,6 @@ interface EventSheetProps {
   readonly process: PublicProcessProjection | null;
   readonly parentProcessIds: readonly string[];
   readonly narratives: readonly PublicNarrative[];
-  readonly temporalPlacements: readonly PublicTemporalPlacement[];
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly relations: readonly PublicRelation[];
   readonly relatedEvents: readonly PublicEvent[];
@@ -41,7 +39,6 @@ export function EventSheet({
   process,
   parentProcessIds,
   narratives,
-  temporalPlacements,
   timeSystems,
   relations,
   relatedEvents
@@ -161,26 +158,6 @@ export function EventSheet({
             })}
           </section>
         ) : null}
-        {temporalPlacements.length > 0 ? (
-          <section className="context-block" aria-labelledby="time-heading">
-            <p className="eyebrow" id="time-heading">
-              TIME
-            </p>
-            {temporalPlacements.map((placement) => (
-              <div className="context-row" key={placement.id}>
-                <span>
-                  {placement.display_label ??
-                    `${placement.earliest_start.value}–${placement.latest_start.value}`}
-                </span>
-                <small>
-                  {timeSystemById.get(placement.time_system_id)?.title ??
-                    "Time System"}{" "}
-                  · {placement.certainty}
-                </small>
-              </div>
-            ))}
-          </section>
-        ) : null}
         {relations.length > 0 ? (
           <section
             className="context-block"
@@ -190,10 +167,16 @@ export function EventSheet({
               RELATED CONTEXT
             </p>
             {relations.map((relation) => {
-              const outgoing = relation.source_event_id === eventId;
-              const relatedId = outgoing
-                ? relation.target_event_id
-                : relation.source_event_id;
+              const sourceId =
+                relation.source_ref.kind === "event"
+                  ? relation.source_ref.event_id
+                  : null;
+              const targetId =
+                relation.target_ref.kind === "event"
+                  ? relation.target_ref.event_id
+                  : null;
+              const outgoing = sourceId === eventId;
+              const relatedId = outgoing ? targetId : sourceId;
               if (!relatedId) return null;
               const related = eventById.get(relatedId);
               return related ? (

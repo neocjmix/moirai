@@ -42,8 +42,7 @@ function corpus(): PortableWorld {
     canonTimeSystems: rows("canon_time_system"),
     events: rows("event"),
     relations: rows("relation"),
-    narratives: rows("narrative"),
-    temporalPlacements: []
+    narratives: rows("narrative")
   } as PortableWorld;
 }
 async function archive(options: {
@@ -124,8 +123,7 @@ describe("TS-007 temporal content package", () => {
       canonTimeSystems: clonedRows("canon_time_system"),
       events: clonedRows("event"),
       relations: clonedRows("relation"),
-      narratives: clonedRows("narrative"),
-      temporalPlacements: []
+      narratives: clonedRows("narrative")
     } as unknown as PortableWorld;
     const targetToSource = Object.fromEntries(
       Object.entries(preview.id_mapping).map(([source, target]) => [

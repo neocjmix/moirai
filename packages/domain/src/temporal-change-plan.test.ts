@@ -34,7 +34,6 @@ function bootstrapState(): CanonicalState {
     timeSystems: [],
     canonTimeSystems: [],
     events: [],
-    temporalPlacements: [],
     relations: [],
     narratives: []
   });
@@ -56,7 +55,6 @@ function bootstrapState(): CanonicalState {
       ...operation.value
     })),
     events: [],
-    temporalPlacements: [],
     relations: [],
     narratives: []
   } as CanonicalState;
@@ -68,7 +66,7 @@ function resolved(path: string) {
 }
 
 describe("TS-010 Change Plan validation", () => {
-  it("keeps v2 canonical write disabled outside the dedicated Observatory", () => {
+  it("accepts the canonical contract for every World", () => {
     const plan = fixture("success.change-plan.json");
     const disabled = {
       ...plan,
@@ -79,34 +77,7 @@ describe("TS-010 Change Plan validation", () => {
         disabled,
         () => "019f3b00-0000-7000-8000-000000000399"
       )
-    ).toThrow(expect.objectContaining({ code: "temporal_write_not_enabled" }));
-  });
-
-  it("rejects a second canonical Placement write path in v2", () => {
-    const plan = fixture("success.change-plan.json");
-    const withPlacement = {
-      ...plan,
-      operations: [
-        ...plan.operations,
-        {
-          action: "create",
-          entity_type: "event_temporal_placement",
-          entity_id: "019f3b00-0000-7000-8000-000000000399",
-          value: {
-            event_id: "019f3b00-0000-7000-8000-000000000101",
-            time_system_id: "019f3b00-0000-7000-8000-000000000003",
-            kind: "point",
-            earliest_start: { value: 0 },
-            latest_start: { value: 0 },
-            precision: "day",
-            certainty: "exact"
-          }
-        }
-      ]
-    } as CreateChangeSet;
-    expect(() => resolveCreateOperations(withPlacement, () => "")).toThrow(
-      expect.objectContaining({ code: "legacy_placement_not_allowed" })
-    );
+    ).not.toThrow();
   });
 
   it("accepts the full v2 corpus without creating a Time Event row", () => {

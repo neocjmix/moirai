@@ -99,9 +99,7 @@ void main().catch((error: unknown) => {
       ? error
       : new ClothoClientError(
           error instanceof Error &&
-            /^(package|clone|legacy_placement_export)_[a-z_]+$/.test(
-              error.message
-            )
+            /^(package|clone)_[a-z_]+$/.test(error.message)
             ? error.message
             : "client_error"
         );

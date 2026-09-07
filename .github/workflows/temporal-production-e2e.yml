@@ -38,6 +38,8 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Build Clotho and its workspace dependencies
+        run: pnpm --filter @moirai/clotho... build
       - name: Run production corpus through Clotho, Canon and Atropos
         run: pnpm test:temporal-production
       - uses: actions/upload-artifact@v4

@@ -2,42 +2,6 @@ import type { CONTRACT_VERSION } from "./versions.js";
 export * from "./versions.js";
 export * from "./clotho.js";
 
-export const SYNTHETIC_FIXTURE = Object.freeze({
-  changeSetId: "01995c2a-7b00-7000-8000-000000000004",
-  expansionChangeSetId: "01995c2a-7b00-7000-8000-000000000005",
-  worldId: "01995c2a-7b00-7000-8000-000000000001",
-  canonId: "01995c2a-7b00-7000-8000-000000000002",
-  eventId: "01995c2a-7b00-7000-8000-000000000003",
-  timeSystemId: "01995c2a-7b00-7000-8000-000000000006",
-  canonTimeSystemId: "01995c2a-7b00-7000-8000-000000000007",
-  secondEventId: "01995c2a-7b00-7000-8000-000000000008",
-  thirdEventId: "01995c2a-7b00-7000-8000-000000000009",
-  firstPlacementId: "01995c2a-7b00-7000-8000-00000000000a",
-  secondPlacementId: "01995c2a-7b00-7000-8000-00000000000b",
-  thirdPlacementId: "01995c2a-7b00-7000-8000-00000000000c",
-  causalRelationId: "01995c2a-7b00-7000-8000-00000000000d",
-  structuralRelationId: "01995c2a-7b00-7000-8000-00000000000e",
-  canonNarrativeId: "01995c2a-7b00-7000-8000-00000000000f",
-  eventNarrativeId: "01995c2a-7b00-7000-8000-000000000010",
-  identityRelationId: "01995c2a-7b00-7000-8000-000000000011",
-  processEventId: "01995c2a-7b00-7000-8000-000000000012",
-  processPlacementId: "01995c2a-7b00-7000-8000-000000000013",
-  firstContainmentId: "01995c2a-7b00-7000-8000-000000000014",
-  secondContainmentId: "01995c2a-7b00-7000-8000-000000000015",
-  thirdContainmentId: "01995c2a-7b00-7000-8000-000000000016",
-  processNarrativeId: "01995c2a-7b00-7000-8000-000000000017",
-  stateEventId: "01995c2a-7b00-7000-8000-000000000018",
-  stateStartRelationId: "01995c2a-7b00-7000-8000-000000000019",
-  stateEndRelationId: "01995c2a-7b00-7000-8000-00000000001a",
-  worldTitle: "The Lantern Archive",
-  canonTitle: "Ember Canon",
-  eventTitle: "The first lantern is lit",
-  secondEventTitle: "The eastern lantern answers",
-  thirdEventTitle: "The archive opens its doors",
-  processEventTitle: "The archive opening",
-  stateEventTitle: "Archive keeper membership"
-});
-
 export type EntityType =
   | "world"
   | "canon"
@@ -307,7 +271,7 @@ export interface PublicNarrative {
 
 export interface PublicSearchEntry {
   readonly target_id: string;
-  readonly target_type: "world" | "canon" | "event" | "subject" | "process";
+  readonly target_type: "world" | "canon" | "event" | "subject";
   readonly canonical_url: string;
   readonly world_id: string;
   readonly canon_id: string | null;
@@ -338,13 +302,6 @@ export interface PublicSubjectLineageEdge {
   readonly target_subject_handle_id: string;
 }
 
-export interface PublicSubjectTimeRange {
-  readonly time_system_id: string;
-  readonly earliest: number;
-  readonly latest: number;
-  readonly evidence_ids: readonly string[];
-}
-
 export interface PublicSubjectProjection {
   readonly world_id: string;
   readonly source_revision: number;
@@ -365,7 +322,6 @@ export interface PublicSubjectProjection {
     readonly outgoing: readonly PublicSubjectLineageEdge[];
   };
   readonly narrative_ids: readonly string[];
-  readonly time_ranges: readonly PublicSubjectTimeRange[];
   readonly evidence: readonly string[];
   readonly diagnostics: readonly PublicProjectionDiagnostic[];
   readonly completeness: ProjectionCompleteness;
@@ -390,168 +346,9 @@ export interface PublicSubjectHandleDocument {
   readonly subject: PublicSubjectProjection | null;
 }
 
-export interface PublicProcessContainmentEdge {
-  readonly relation_id: string;
-  readonly parent_event_id: string;
-  readonly child_event_id: string;
-  readonly depth: number;
-}
-
-export interface PublicProcessDuration {
-  readonly time_system_id: string;
-  readonly start_earliest: number;
-  readonly start_latest: number;
-  readonly end_earliest: number;
-  readonly end_latest: number;
-  readonly minimum: number;
-  readonly maximum: number;
-  readonly kind: "exact" | "range";
-  readonly precision: string;
-  readonly evidence_ids: readonly string[];
-}
-
-export interface PublicProcessProjection {
-  readonly world_id: string;
-  readonly source_revision: number;
-  readonly projection_type: "process";
-  readonly algorithm_version: string;
-  readonly parameters_digest: string;
-  readonly semantic_digest: string;
-  readonly canon_id: string;
-  readonly process_event_id: string;
-  readonly label: string;
-  readonly direct_child_event_ids: readonly string[];
-  readonly descendant_event_ids: readonly string[];
-  readonly containment: readonly PublicProcessContainmentEdge[];
-  readonly start_event_ids: readonly string[];
-  readonly end_event_ids: readonly string[];
-  readonly internal_relation_ids: readonly string[];
-  readonly narrative_ids: readonly string[];
-  readonly durations: readonly PublicProcessDuration[];
-  readonly evidence: readonly string[];
-  readonly diagnostics: readonly PublicProjectionDiagnostic[];
-  readonly completeness: ProjectionCompleteness;
-}
-
-export interface PublicProcessArtifactReference {
-  readonly process_event_id: string;
-  readonly key: string;
-  readonly label: string;
-  readonly direct_child_count: number;
-  readonly descendant_count: number;
-  readonly algorithm_version: string;
-  readonly completeness: ProjectionCompleteness;
-}
-
-export interface PublicStateRuleDefinition {
-  readonly state_type: "membership";
-  readonly event_role: "state:membership";
-  readonly start_patterns: readonly ["starts"];
-  readonly end_patterns: readonly ["ends"];
-  readonly subject_resolver: "boundary_subject";
-  readonly overlap_policy: "allow";
-  readonly algorithm_version: string;
-}
-
-export interface PublicStateDuration {
-  readonly minimum: number;
-  readonly maximum: number;
-  readonly kind: "exact" | "range";
-  readonly precision: string;
-  readonly evidence_ids: readonly string[];
-}
-
-export interface PublicStateItem {
-  readonly state_event_id: string;
-  readonly state_type: "membership";
-  readonly label: string;
-  readonly subject_handle_id: string | null;
-  readonly value: string | null;
-  readonly time_system_id: string | null;
-  readonly start_event_id: string | null;
-  readonly end_event_id: string | null;
-  readonly start_earliest: number | null;
-  readonly start_latest: number | null;
-  readonly end_earliest: number | null;
-  readonly end_latest: number | null;
-  readonly open_ended: boolean;
-  readonly duration: PublicStateDuration | null;
-  readonly certainty: "exact" | "range" | "unresolved";
-  readonly evidence_ids: readonly string[];
-  readonly diagnostics: readonly PublicProjectionDiagnostic[];
-  readonly completeness: ProjectionCompleteness;
-}
-
-export interface PublicStateProjection {
-  readonly world_id: string;
-  readonly source_revision: number;
-  readonly projection_type: "state";
-  readonly algorithm_version: string;
-  readonly parameters_digest: string;
-  readonly semantic_digest: string;
-  readonly canon_id: string;
-  readonly rules: readonly PublicStateRuleDefinition[];
-  readonly items: readonly PublicStateItem[];
-  readonly evidence: readonly string[];
-  readonly diagnostics: readonly PublicProjectionDiagnostic[];
-  readonly completeness: ProjectionCompleteness;
-}
-
-export interface PublicStateArtifactReference {
-  readonly key: string;
-  readonly item_count: number;
-  readonly algorithm_version: string;
-  readonly completeness: ProjectionCompleteness;
-}
-
 export interface PublicProjectionDiagnostic {
-  readonly code:
-    | "timeline_cycle"
-    | "timeline_unplaced"
-    | "identity_component_ambiguous"
-    | "subject_anchor_unresolved"
-    | "empty_process"
-    | "process_containment_cycle"
-    | "process_duration_unresolved"
-    | "state_boundary_missing"
-    | "state_evidence_conflict"
-    | "state_subject_unresolved"
-    | "state_time_unresolved";
+  readonly code: "identity_component_ambiguous" | "subject_anchor_unresolved";
   readonly affected_ids: readonly string[];
-}
-
-export interface PublicTimelineItem {
-  readonly event_id: string;
-  readonly placement_kind:
-    "authored_coordinate" | "structural_order" | "unplaced";
-  readonly range_start: number | null;
-  readonly range_end: number | null;
-  readonly structural_rank: number | null;
-  readonly unordered_group: string;
-  readonly display_label: string | null;
-  readonly certainty: "exact" | "approximate" | "uncertain" | null;
-  readonly evidence_ids: readonly string[];
-}
-
-export interface PublicTimelineProjection {
-  readonly world_id: string;
-  readonly source_revision: number;
-  readonly projection_type: "timeline";
-  readonly algorithm_version: string;
-  readonly parameters_digest: string;
-  readonly semantic_digest: string;
-  readonly canon_id: string;
-  readonly time_system_id: string;
-  readonly items: readonly PublicTimelineItem[];
-  readonly evidence: readonly string[];
-  readonly diagnostics: readonly PublicProjectionDiagnostic[];
-  readonly completeness: ProjectionCompleteness;
-}
-
-export interface PublicTimelineArtifactReference {
-  readonly time_system_id: string;
-  readonly key: string;
-  readonly algorithm_version: string;
 }
 
 export interface PublicationPointer {

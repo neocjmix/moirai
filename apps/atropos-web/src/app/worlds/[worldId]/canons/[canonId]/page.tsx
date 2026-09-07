@@ -1,40 +1,15 @@
 import { RelationalTime } from "../../../../../components/relational-time";
-import type { PublicTimelineItem } from "@moirai/contracts";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import { StatusIsland } from "../../../../../components/status-island";
 import {
   readCanon,
   readRelationalTime,
-  readTimeline,
   readWorld,
   selectPublication
 } from "../../../../../lib/publication";
 
 export const dynamic = "force-dynamic";
-
-function groupTimelineItems(
-  items: readonly PublicTimelineItem[]
-): readonly (readonly [string, readonly PublicTimelineItem[]])[] {
-  const groups = new Map<string, PublicTimelineItem[]>();
-  for (const item of items) {
-    const group = groups.get(item.unordered_group) ?? [];
-    group.push(item);
-    groups.set(item.unordered_group, group);
-  }
-  return [...groups];
-}
-
-function timelineGroupLabel(items: readonly PublicTimelineItem[]): string {
-  const first = items[0];
-  if (!first) return "시간 배치 없음";
-  if (items.length > 1 && first.placement_kind === "authored_coordinate") {
-    return "겹치는 시간 범위 · 순서 미정";
-  }
-  if (first.display_label) return first.display_label;
-  if (first.placement_kind === "unplaced") return "시간 배치 없음";
-  return `구조 순서 ${first.structural_rank ?? 0}`;
-}
 
 export default async function CanonPage({
   params
@@ -53,27 +28,14 @@ export default async function CanonPage({
       events,
       narratives,
       pointer,
-      processArtifacts,
       subjectArtifacts,
-      timeSystems,
-      timelineArtifacts
+      temporalArtifact
     } = canonDocument;
-    const timelines = await Promise.all(
-      timelineArtifacts.map((reference) =>
-        readTimeline(worldId, canonId, reference, selected)
-      )
-    );
-    const temporal = canonDocument.temporalArtifact
-      ? await readRelationalTime(
-          worldId,
-          canonId,
-          canonDocument.temporalArtifact,
-          selected
-        )
-      : null;
-    const eventById = new Map(events.map((event) => [event.id, event]));
-    const timeSystemById = new Map(
-      timeSystems.map((timeSystem) => [timeSystem.id, timeSystem])
+    const temporal = await readRelationalTime(
+      worldId,
+      canonId,
+      temporalArtifact,
+      selected
     );
     return (
       <main className="world-canvas">
@@ -114,89 +76,7 @@ export default async function CanonPage({
             이 World 검색 →
           </a>
         </section>
-        {temporal ? (
-          <RelationalTime projection={temporal} events={events} />
-        ) : null}
-        {timelines.map((timeline) => {
-          const groups = groupTimelineItems(timeline.items);
-          return (
-            <section
-              className="timeline-dock"
-              aria-labelledby={`timeline-${timeline.time_system_id}`}
-              key={timeline.time_system_id}
-            >
-              <div className="timeline-heading">
-                <div>
-                  <p className="eyebrow">DERIVED TIMELINE</p>
-                  <h2 id={`timeline-${timeline.time_system_id}`}>
-                    {timeSystemById.get(timeline.time_system_id)?.title ??
-                      "Timeline"}
-                  </h2>
-                </div>
-                <span>{timeline.completeness}</span>
-              </div>
-              <p className="timeline-note">
-                저장된 시간 좌표와 구조 관계에서 계산한 관점입니다. 같은 묶음
-                안의 사건에는 임의의 순서를 부여하지 않습니다.
-              </p>
-              <ol className="timeline-groups">
-                {groups.map(([groupId, items]) => (
-                  <li className="timeline-group" key={groupId}>
-                    <p>{timelineGroupLabel(items)}</p>
-                    <div>
-                      {items.map((item) => {
-                        const event = eventById.get(item.event_id);
-                        return event ? (
-                          <a
-                            href={`/worlds/${worldId}/canons/${canon.id}/events/${event.id}`}
-                            key={event.id}
-                          >
-                            <b>{event.title}</b>
-                            <small>
-                              {item.placement_kind.replaceAll("_", " ")}
-                              {item.certainty ? ` · ${item.certainty}` : ""}
-                            </small>
-                          </a>
-                        ) : null;
-                      })}
-                    </div>
-                  </li>
-                ))}
-              </ol>
-              {timeline.diagnostics.length > 0 ? (
-                <p className="timeline-warning" role="status">
-                  {timeline.diagnostics.map((item) => item.code).join(", ")}
-                </p>
-              ) : null}
-            </section>
-          );
-        })}
-        {processArtifacts.length > 0 ? (
-          <section className="card-dock" aria-labelledby="processes-title">
-            <p className="eyebrow" id="processes-title">
-              DERIVED PROCESSES
-            </p>
-            <p className="timeline-note">
-              과정으로 지정된 복합 사건과 그 안에 포함된 사건 범위입니다.
-            </p>
-            <div className="card-list">
-              {processArtifacts.map((process) => (
-                <a
-                  className="canon-card"
-                  href={`/worlds/${worldId}/canons/${canon.id}/events/${process.process_event_id}`}
-                  key={process.process_event_id}
-                >
-                  <span>{process.label}</span>
-                  <small>
-                    {process.direct_child_count} direct ·{" "}
-                    {process.descendant_count} total · {process.completeness}
-                  </small>
-                  <b aria-hidden="true">→</b>
-                </a>
-              ))}
-            </div>
-          </section>
-        ) : null}
+        <RelationalTime projection={temporal} events={events} />
         {subjectArtifacts.length > 0 ? (
           <section className="card-dock" aria-labelledby="subjects-title">
             <p className="eyebrow" id="subjects-title">

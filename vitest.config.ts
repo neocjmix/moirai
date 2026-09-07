@@ -16,6 +16,9 @@ export default defineConfig({
       "@moirai/persistence": fileURLToPath(
         new URL("./packages/persistence/src/index.ts", import.meta.url)
       ),
+      "@moirai/contracts/testing": fileURLToPath(
+        new URL("./packages/contracts/src/testing.ts", import.meta.url)
+      ),
       "@moirai/contracts": fileURLToPath(
         new URL("./packages/contracts/src/index.ts", import.meta.url)
       ),

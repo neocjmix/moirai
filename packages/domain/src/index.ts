@@ -1110,29 +1110,7 @@ export function validateCandidateChangeSet(
     [...events.values()],
     [...timeSystems.values()]
   );
-  const warnings: ValidationIssue[] = [];
-  for (const event of events.values()) {
-    if (event.kind === "composite" && event.roles.includes("process")) {
-      const hasChildren = [...relations.values()].some((relation) => {
-        const endpoints = canonicalRelationEndpoints(relation);
-        return (
-          relation.type === "contains" &&
-          endpoints?.source.kind === "event" &&
-          endpoints.source.event_id === event.id
-        );
-      });
-      if (!hasChildren) {
-        warnings.push({
-          code: "empty_process",
-          path: "operations",
-          affected_ids: [event.id],
-          message: "Process Event has no contained child Event",
-          retryable: false
-        });
-      }
-    }
-  }
-  return warnings;
+  return [];
 }
 
 export function stableStringify(value: unknown): string {

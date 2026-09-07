@@ -523,7 +523,7 @@ a {
 .event-breadcrumb {
   z-index: 2;
 }
-.lantern-orbit {
+.temporal-orbit {
   position: absolute;
   top: 29%;
   left: 50%;
@@ -533,18 +533,18 @@ a {
   border-radius: 50%;
   transform: translate(-50%, -50%);
 }
-.lantern-orbit::before,
-.lantern-orbit::after {
+.temporal-orbit::before,
+.temporal-orbit::after {
   content: "";
   position: absolute;
   border: 1px solid rgba(216, 128, 94, 0.16);
   border-radius: 50%;
   inset: 1.4rem;
 }
-.lantern-orbit::after {
+.temporal-orbit::after {
   inset: 3.2rem;
 }
-.lantern-orbit span {
+.temporal-orbit span {
   position: absolute;
   top: 50%;
   left: 50%;

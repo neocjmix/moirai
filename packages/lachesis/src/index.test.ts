@@ -1,8 +1,5 @@
-import {
-  CONTRACT_VERSION,
-  SYNTHETIC_FIXTURE,
-  type ChangePlan
-} from "@moirai/contracts";
+import { CONTRACT_VERSION, type ChangePlan } from "@moirai/contracts";
+import { TEST_FIXTURE } from "@moirai/contracts/testing";
 import { describe, expect, it, vi } from "vitest";
 import {
   createLachesis,
@@ -12,14 +9,14 @@ import {
 
 const actor: ActorContext = {
   actor_id: "01995c2a-7b00-7000-8000-000000000099",
-  world_ids: [SYNTHETIC_FIXTURE.worldId],
+  world_ids: [TEST_FIXTURE.worldId],
   scopes: ["world:read", "world:write"],
   expires_at: "2099-01-01T00:00:00Z"
 };
 const plan: ChangePlan = {
   contract_version: CONTRACT_VERSION,
-  change_set_id: SYNTHETIC_FIXTURE.changeSetId,
-  world_id: SYNTHETIC_FIXTURE.worldId,
+  change_set_id: TEST_FIXTURE.changeSetId,
+  world_id: TEST_FIXTURE.worldId,
   expected_revision: 0,
   intent: "Synthetic authorization test",
   origins: [{ kind: "human_instruction", summary: "Synthetic" }],

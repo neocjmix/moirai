@@ -16,9 +16,15 @@ traces:
 
 # TS-005 — 파생 모델과 Canon 간 비교
 
+> 2026-09-07 정렬: Subject와 Canon 비교 계약은 유지한다. 기존 숫자형
+> Timeline·Process·State 공개 projection 계약은 [TS-010](TS-010-event-relational-time.md)의
+> 단일 Event/Relation 시간 projection으로 대체됐다. Composite, 경계, Duration,
+> descendant span, containment, during과 membership 해석은 모두 같은
+> `event_relational_time` 결과 안에서 근거 Relation과 lossless coordinate를 사용한다.
+
 ## TS-005.1 목적
 
-이 명세는 Event, Relation, Canon과 Time System으로부터 Subject, Process, State, Duration과 Timeline을 계산하는 공통 규칙을 정의한다. 또한 Canon 내부 사실을 합치지 않고 명시적인 대응을 통해 여러 Canon을 비교하는 방식을 정의한다.
+이 명세는 Event, Relation, Canon과 Time System으로부터 Subject를 계산하고 Canon 내부 사실을 합치지 않은 채 여러 Canon을 비교하는 공통 규칙을 정의한다. 시간 파생 의미는 TS-010의 단일 Event/Relation projection 계약을 따른다.
 
 파생 결과는 유용한 해석이지만 새로운 Canon의 사실이 아니다.
 
@@ -129,7 +135,11 @@ label은 저장된 별도 Subject 이름이 아니라 Event title과 Narrative�
 - anchor 변경은 운영 기록에 남기고 handle ID는 유지한다.
 - component 자체를 결정할 수 없으면 `unresolved`로 두며 다른 Subject에 임의 연결하지 않는다.
 
-## TS-005.6 Process Projection
+## TS-005.6 Process Projection — superseded
+
+이 절의 독립 `process` projection과 숫자형 Duration 출력은 더 이상 공개 계약이
+아니다. Composite Event의 직접 child·descendant, 명시적 시작·종료, Duration과
+descendant span은 TS-010 `event_relational_time.composites`에서 계산한다.
 
 Process는 `kind = composite`이고 `roles`에 `process`를 가진 Event에서 계산한다.
 
@@ -149,9 +159,13 @@ Process는 `kind = composite`이고 `roles`에 `process`를 가진 Event에서 �
 - child의 시간 범위를 단순 합쳐 Process의 정본 기간으로 저장하지 않는다.
 - 모든 Composite Event를 자동으로 Process라고 부르지 않는다.
 - Process Narrative는 같은 Event를 scope로 하는 Narrative다.
-- 포함 child가 없어도 Event는 저장될 수 있지만 `empty_process` warning을 만든다.
+- 포함 child가 없는 Composite Event도 유효하며 역할 이름만으로 별도 warning을 만들지 않는다.
 
-## TS-005.7 State Projection
+## TS-005.7 State Projection — superseded
+
+이 절의 독립 `state` artifact와 숫자형 경계 필드는 더 이상 공개 계약이 아니다.
+membership 역할이 필요한 경우에도 Composite Event의 경계 Relation과 Subject
+근거를 TS-010의 같은 temporal projection 안에서 해석한다.
 
 State는 특정 Subject 또는 범위에 관해 어느 시점·구간에 성립한다고 읽히는 파생 결과다.
 
@@ -193,7 +207,11 @@ Duration은 Event 또는 State의 명시적 시작·종료 경계에서 계산�
 - open-ended 상태에는 완료된 duration 대신 경과 범위 또는 미정 상태를 반환한다.
 - display unit 변환은 원본 precision보다 더 정확한 표현을 만들지 않는다.
 
-## TS-005.9 Timeline Projection
+## TS-005.9 Timeline Projection — superseded
+
+이 절의 독립 `timeline-{timeSystemId}.json` artifact와 숫자 범위 필드는 더 이상
+공개 계약이 아니다. 위치·정렬·모순은 TS-010 `temporal.json`의 lossless
+coordinate, relative-only 결과와 evidence로 제공한다.
 
 Timeline은 선택한 Canon, Event 범위와 Time System에 따른 Event 배열 관점이다.
 
@@ -252,10 +270,10 @@ Canon 비교는 [TS-002.10](TS-002-canonical-data-model.md#ts-00210-canon-간-�
 모든 사용자에게 의미 있는 파생 결과는 근거로 이동할 수 있어야 한다.
 
 - Subject → member Event와 identity Relation
-- Process → Composite Event와 contains Relation
-- State → 시작·종료 Event 및 Relation
-- Duration → 사용한 시간 배치와 경계
-- Timeline 위치 → authored coordinate, structural order 또는 inferred layout 구분
+- Composite → Composite Event와 contains·starts·ends Relation
+- membership 해석 → 시작·종료 Event, Subject와 Relation
+- Duration → 사용한 virtual Time Event와 경계 Relation
+- 시간 위치 → exact, bounded, relative-only 또는 unresolved와 근거 Relation
 - Canon 비교 → correspondence member와 각 Canon의 독립 사실
 
 Atropos가 근거를 축약해 보여도 public Snapshot에는 공개 가능한 evidence ID가 남아 있어야 한다.
@@ -266,15 +284,10 @@ Atropos가 근거를 축약해 보여도 public Snapshot에는 공개 가능한 
 
 - `identity_component_ambiguous`
 - `subject_anchor_unresolved`
-- `containment_cycle`
-- `empty_process`
-- `state_boundary_missing`
-- `state_evidence_conflict`
+- `composite_boundary_order_invalid`
 - `time_system_incompatible`
 - `time_system_capability_missing`
 - `temporal_constraint_conflict`
-- `timeline_cycle`
-- `timeline_unplaced`
 - `correspondence_member_ambiguous`
 - `projection_input_withdrawn`
 
@@ -292,8 +305,8 @@ Projection cache key는 최소한 다음을 포함한다.
 Revision이 바뀌면 이전 cache를 수정하지 않고 새 결과를 만든다. scoped rebuild를 위해 projector는 사용한 evidence ID를 dependency index로 반환할 수 있다.
 
 - identity Relation 변경 → 관련 Subject, correspondence comparison, Subject Timeline
-- contains·process role 변경 → Process, State, Duration, graph region
-- 시간 배치·시간 방향 Relation 변경 → Duration, Timeline과 graph layout
+- contains·starts·ends Relation 변경 → Composite, membership, Duration, graph region
+- virtual Time Event·시간 방향 Relation 변경 → position, Duration과 graph layout
 - Narrative 변경 → 설명·검색 projection
 - correspondence 변경 → Canon 비교만 재계산하며 Canon 내부 projection은 유지
 

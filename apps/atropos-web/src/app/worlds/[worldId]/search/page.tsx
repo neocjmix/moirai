@@ -47,7 +47,7 @@ export default async function SearchPage({
                 defaultValue={q}
                 id="world-search"
                 name="q"
-                placeholder="lantern"
+                placeholder="사건 제목"
                 type="search"
               />
               <button type="submit">검색</button>

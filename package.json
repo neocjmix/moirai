@@ -18,7 +18,6 @@
     "test:integration": "vitest run --config vitest.integration.config.ts",
     "test:e2e": "playwright test",
     "migrate": "pnpm --filter @moirai/persistence migrate",
-    "bootstrap:synthetic": "pnpm --filter @moirai/persistence bootstrap:synthetic",
     "smoke": "tsx scripts/post-deploy-smoke.ts",
     "test:temporal-production": "tsx scripts/temporal-production-e2e.ts",
     "check:boundaries": "tsx scripts/check-boundaries.ts"

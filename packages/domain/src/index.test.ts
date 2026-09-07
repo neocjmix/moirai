@@ -1,8 +1,5 @@
-import {
-  CONTRACT_VERSION,
-  SYNTHETIC_FIXTURE,
-  type CreateChangeSet
-} from "@moirai/contracts";
+import { CONTRACT_VERSION, type CreateChangeSet } from "@moirai/contracts";
+import { TEST_FIXTURE } from "@moirai/contracts/testing";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -16,39 +13,39 @@ import {
 function fixture(): CreateChangeSet {
   return {
     contract_version: CONTRACT_VERSION,
-    change_set_id: SYNTHETIC_FIXTURE.changeSetId,
-    world_id: SYNTHETIC_FIXTURE.worldId,
+    change_set_id: TEST_FIXTURE.changeSetId,
+    world_id: TEST_FIXTURE.worldId,
     expected_revision: 0,
-    actor: "synthetic-bootstrap",
+    actor: "test-actor",
     intent: "Create fixture",
-    origins: [{ kind: "human_instruction", summary: "Synthetic fixture only" }],
+    origins: [{ kind: "human_instruction", summary: "Test fixture" }],
     operations: [
       {
         kind: "create",
         entity_type: "world",
-        entity_id: SYNTHETIC_FIXTURE.worldId,
-        value: { slug: "lantern-archive", title: SYNTHETIC_FIXTURE.worldTitle }
+        entity_id: TEST_FIXTURE.worldId,
+        value: { slug: "test-world", title: TEST_FIXTURE.worldTitle }
       },
       {
         kind: "create",
         entity_type: "canon",
-        entity_id: SYNTHETIC_FIXTURE.canonId,
+        entity_id: TEST_FIXTURE.canonId,
         value: {
-          world_id: SYNTHETIC_FIXTURE.worldId,
-          slug: "ember-canon",
-          title: SYNTHETIC_FIXTURE.canonTitle
+          world_id: TEST_FIXTURE.worldId,
+          slug: "test-canon",
+          title: TEST_FIXTURE.canonTitle
         }
       },
       {
         kind: "create",
         entity_type: "event",
-        entity_id: SYNTHETIC_FIXTURE.eventId,
+        entity_id: TEST_FIXTURE.eventId,
         value: {
-          canon_id: SYNTHETIC_FIXTURE.canonId,
-          slug: "first-lantern",
+          canon_id: TEST_FIXTURE.canonId,
+          slug: "first-test-event",
           kind: "atomic",
-          title: SYNTHETIC_FIXTURE.eventTitle,
-          summary: "A synthetic event used to verify the publication path.",
+          title: TEST_FIXTURE.eventTitle,
+          summary: "A test event used to verify the transaction path.",
           roles: [],
           attributes: {}
         }
@@ -115,9 +112,9 @@ describe("create Change Set validation", () => {
     const resolved = resolveCreateOperations(withClientReference, () => {
       throw new Error("unexpected generated ID");
     });
-    expect(resolved.idMapping["created-canon"]).toBe(SYNTHETIC_FIXTURE.canonId);
+    expect(resolved.idMapping["created-canon"]).toBe(TEST_FIXTURE.canonId);
     expect(resolved.operations[2]?.value).toMatchObject({
-      canon_id: SYNTHETIC_FIXTURE.canonId
+      canon_id: TEST_FIXTURE.canonId
     });
   });
 

@@ -1,12 +1,13 @@
-import { SYNTHETIC_FIXTURE, type CreateChangeSet } from "@moirai/contracts";
+import type { CreateChangeSet } from "@moirai/contracts";
+import { TEST_FIXTURE } from "@moirai/contracts/testing";
 import { ChangeSetError } from "@moirai/domain";
 import { sql } from "kysely";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 
 import {
-  createSyntheticChangeSet,
-  createSyntheticExpansionChangeSet
-} from "./bootstrap.js";
+  createTestChangeSet,
+  createTestExpansionChangeSet
+} from "./test-fixture.js";
 import {
   claimPublicationJob,
   commitCreateChangeSet,
@@ -37,7 +38,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   afterAll(async () => db.destroy());
 
   it("commits World, Canon, Event, one Revision and outbox atomically", async () => {
-    const input = createSyntheticChangeSet();
+    const input = createTestChangeSet();
     const result = await commitCreateChangeSet(db, input);
     expect(result).toMatchObject({
       current_revision: 1,
@@ -74,7 +75,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
 
   it("returns the original result for the same digest without duplicates", async () => {
-    const input = createSyntheticChangeSet();
+    const input = createTestChangeSet();
     await commitCreateChangeSet(db, input);
     const replay = await commitCreateChangeSet(db, input);
     expect(replay.idempotent_replay).toBe(true);
@@ -85,8 +86,8 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
 
   it("atomically expands one World with client refs, Events, Relations, time and Narrative", async () => {
-    await commitCreateChangeSet(db, createSyntheticChangeSet());
-    const expansion = createSyntheticExpansionChangeSet();
+    await commitCreateChangeSet(db, createTestChangeSet());
+    const expansion = createTestExpansionChangeSet();
     const result = await commitCreateChangeSet(db, expansion);
     expect(result).toMatchObject({
       current_revision: 2,
@@ -95,9 +96,9 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       idempotent_replay: false,
       warnings: [],
       id_mapping: {
-        "ember-time": SYNTHETIC_FIXTURE.timeSystemId,
-        "eastern-answer": SYNTHETIC_FIXTURE.secondEventId,
-        "archive-opens": SYNTHETIC_FIXTURE.thirdEventId
+        "test-time": TEST_FIXTURE.timeSystemId,
+        "second-event": TEST_FIXTURE.secondEventId,
+        "third-event": TEST_FIXTURE.thirdEventId
       }
     });
     const counts = await sql<{
@@ -128,8 +129,8 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
 
   it("rejects dangling and cross-Canon Relations without partial writes", async () => {
-    await commitCreateChangeSet(db, createSyntheticChangeSet());
-    const expansion = createSyntheticExpansionChangeSet();
+    await commitCreateChangeSet(db, createTestChangeSet());
+    const expansion = createTestExpansionChangeSet();
     const dangling: CreateChangeSet = {
       ...expansion,
       operations: expansion.operations.map((operation) =>
@@ -163,7 +164,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
           entity_id: "01995c2a-7b00-7000-8000-000000000091",
           client_ref: "other-canon",
           value: {
-            world_id: SYNTHETIC_FIXTURE.worldId,
+            world_id: TEST_FIXTURE.worldId,
             slug: "other-canon",
             title: "Other Canon"
           }
@@ -186,11 +187,11 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
           entity_type: "relation",
           entity_id: "01995c2a-7b00-7000-8000-000000000093",
           value: {
-            canon_id: SYNTHETIC_FIXTURE.canonId,
+            canon_id: TEST_FIXTURE.canonId,
             type: "causes",
             source_ref: {
               kind: "event",
-              event_id: SYNTHETIC_FIXTURE.eventId
+              event_id: TEST_FIXTURE.eventId
             },
             target_ref: { kind: "event", client_ref: "other-event" },
             direction: "directed",
@@ -202,7 +203,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     await expect(commitCreateChangeSet(db, crossCanon)).rejects.toMatchObject({
       code: "cross_canon_relation"
     });
-    const state = await getPublicationStatus(db, SYNTHETIC_FIXTURE.worldId);
+    const state = await getPublicationStatus(db, TEST_FIXTURE.worldId);
     expect(state?.currentRevision).toBe(1);
     const relationCount = await sql<{ count: number }>`
       select count(*)::int as count from relations
@@ -211,8 +212,8 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
 
   it("preserves conflict and timeout retry semantics on an existing World", async () => {
-    await commitCreateChangeSet(db, createSyntheticChangeSet());
-    const expansion = createSyntheticExpansionChangeSet();
+    await commitCreateChangeSet(db, createTestChangeSet());
+    const expansion = createTestExpansionChangeSet();
     await commitCreateChangeSet(db, expansion);
     const replay = await commitCreateChangeSet(db, expansion);
     expect(replay.idempotent_replay).toBe(true);
@@ -233,7 +234,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
 
   it("rejects digest reuse and revision conflict without partial records", async () => {
-    const input = createSyntheticChangeSet();
+    const input = createTestChangeSet();
     await commitCreateChangeSet(db, input);
     await expect(
       commitCreateChangeSet(db, { ...input, intent: "different intent" })
@@ -248,7 +249,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
 
   it("claims retries once and advances served state after projection", async () => {
-    const input = createSyntheticChangeSet();
+    const input = createTestChangeSet();
     await commitCreateChangeSet(db, input);
     const job = await claimPublicationJob(db);
     expect(job).toMatchObject({ targetRevision: 1, attemptCount: 1 });
@@ -265,31 +266,31 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
 
   it("persists and reuses stable Subject handles for identity components", async () => {
-    await commitCreateChangeSet(db, createSyntheticChangeSet());
-    const expansion = createSyntheticExpansionChangeSet();
+    await commitCreateChangeSet(db, createTestChangeSet());
+    const expansion = createTestExpansionChangeSet();
     await commitCreateChangeSet(db, expansion);
     await commitCreateChangeSet(db, {
       contract_version: expansion.contract_version,
       change_set_id: "01995c2a-7b00-7000-8000-000000000012",
-      world_id: SYNTHETIC_FIXTURE.worldId,
+      world_id: TEST_FIXTURE.worldId,
       expected_revision: 2,
-      actor: "synthetic-bootstrap",
+      actor: "test-actor",
       intent: "Connect two observations as one derived Subject",
       operations: [
         {
           kind: "create",
           entity_type: "relation",
-          entity_id: SYNTHETIC_FIXTURE.identityRelationId,
+          entity_id: TEST_FIXTURE.identityRelationId,
           value: {
-            canon_id: SYNTHETIC_FIXTURE.canonId,
+            canon_id: TEST_FIXTURE.canonId,
             type: "identity_continues",
             source_ref: {
               kind: "event",
-              event_id: SYNTHETIC_FIXTURE.eventId
+              event_id: TEST_FIXTURE.eventId
             },
             target_ref: {
               kind: "event",
-              event_id: SYNTHETIC_FIXTURE.secondEventId
+              event_id: TEST_FIXTURE.secondEventId
             },
             direction: "directed",
             attributes: {}
@@ -299,19 +300,19 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       origins: [
         {
           kind: "system_derived",
-          summary: "Synthetic Subject reconciliation fixture"
+          summary: "Test Subject reconciliation fixture"
         }
       ]
     });
-    const view = await readWorldAtRevision(db, SYNTHETIC_FIXTURE.worldId, 3);
+    const view = await readWorldAtRevision(db, TEST_FIXTURE.worldId, 3);
     const first = await reconcileSubjectHandleState(db, view, 3);
     const replay = await reconcileSubjectHandleState(db, view, 3);
 
     expect(first).toEqual(replay);
     expect(first.handles).toHaveLength(1);
     expect(first.projections[0]?.member_event_ids).toEqual([
-      SYNTHETIC_FIXTURE.eventId,
-      SYNTHETIC_FIXTURE.secondEventId
+      TEST_FIXTURE.eventId,
+      TEST_FIXTURE.secondEventId
     ]);
     const counts = await sql<{ handles: number; members: number }>`
       select

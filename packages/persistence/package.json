@@ -11,7 +11,6 @@
   },
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
-    "bootstrap:synthetic": "tsx src/bootstrap.ts",
     "migrate": "tsx src/migrate.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },

@@ -608,17 +608,6 @@ export const HEALTH_RESPONSE_SCHEMA = {
   }
 } as const;
 
-export interface SyntheticWorldStatus {
-  readonly world_id: string;
-  readonly canon_id: string;
-  readonly event_id: string;
-  readonly label: string;
-  readonly current_revision: number;
-  readonly publication_target_revision: number;
-  readonly served_revision: number;
-  readonly projection_status: ProjectionStatus;
-}
-
 export interface PublicStatusResponse {
   readonly application: {
     readonly service: "atropos-web";
@@ -631,7 +620,6 @@ export interface PublicStatusResponse {
     readonly schema: string;
     readonly publication_format: string;
   };
-  readonly synthetic_world: SyntheticWorldStatus;
   readonly smoke: {
     readonly result: SmokeResult;
     readonly checked_at: string | null;

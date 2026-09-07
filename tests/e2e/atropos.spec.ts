@@ -7,9 +7,8 @@ test("mobile reader traverses relational Canon and Event at one Revision", async
   test.setTimeout(60_000);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Atropos" })).toBeVisible();
-  await page.getByRole("link", { name: /합성 세계 열기/ }).click();
   await expect(
-    page.getByRole("heading", { name: SYNTHETIC_FIXTURE.worldTitle })
+    page.getByRole("link", { name: /공개 상태 확인/ })
   ).toBeVisible();
   const canonPath = `/worlds/${SYNTHETIC_FIXTURE.worldId}/canons/${SYNTHETIC_FIXTURE.canonId}`;
   await page.goto(canonPath);
@@ -55,8 +54,9 @@ test("health and immutable relational artifacts expose allowlisted metadata", as
   });
   expect(status.ok()).toBe(true);
   expect(await status.json()).toMatchObject({
+    application: { service: "atropos-web" },
     versions: { contract: "2", schema: "1.0.0", publication_format: "1.0.0" },
-    synthetic_world: { served_revision: 2, projection_status: "ready" }
+    surfaces: { atropos: "ok", health: "ok", status: "ok" }
   });
 
   const event = await request.get(

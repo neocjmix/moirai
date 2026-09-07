@@ -299,7 +299,7 @@ const canon = await clotho<{
   at_revision: 2,
   max_events: 100,
   max_relations: 100,
-  max_narrative_chars: 100000
+  max_narrative_chars: 20000
 });
 const canonText = JSON.stringify(canon);
 assert(

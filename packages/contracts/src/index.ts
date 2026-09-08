@@ -372,6 +372,7 @@ export interface PublicationManifest {
     readonly search: string;
     readonly subject?: string;
     readonly relational_time: string;
+    readonly graph_scope?: string;
   };
   readonly locales: readonly string[];
   readonly documents: readonly {
@@ -380,6 +381,58 @@ export interface PublicationManifest {
     readonly sha256: string;
   }[];
   readonly completeness: "complete";
+}
+
+export interface PublicGraphScopeNode {
+  readonly cell_id: string;
+  readonly event_id: string;
+  readonly title: string;
+  readonly kind: "atomic" | "composite";
+  readonly roles: readonly string[];
+  readonly x: number;
+  readonly y: number;
+  readonly layout_basis: "stable_overview";
+  readonly canonical_url: string;
+  readonly evidence: readonly string[];
+}
+
+export interface PublicGraphScopeLink {
+  readonly cell_id: string;
+  readonly relation_id: string;
+  readonly type: RelationType;
+  readonly direction: "directed" | "undirected";
+  readonly source_event_id: string;
+  readonly target_event_id: string;
+  readonly source_cell_id: string;
+  readonly target_cell_id: string;
+  readonly evidence: readonly string[];
+}
+
+export interface PublicGraphScopeArtifact {
+  readonly world_id: string;
+  readonly canon_id: string;
+  readonly source_revision: number;
+  readonly served_revision: number;
+  readonly projection_type: "graph_scope";
+  readonly algorithm_version: string;
+  readonly parameters_digest: string;
+  readonly semantic_digest: string;
+  readonly scope: { readonly kind: "canon"; readonly id: string };
+  readonly lod: "overview";
+  readonly nodes: readonly PublicGraphScopeNode[];
+  readonly links: readonly PublicGraphScopeLink[];
+  readonly source_counts: {
+    readonly events: number;
+    readonly event_relations: number;
+  };
+  readonly budget: {
+    readonly max_cells: 1000;
+    readonly max_labels: 250;
+    readonly visible_cells: number;
+    readonly visible_labels: number;
+  };
+  readonly truncated: boolean;
+  readonly next_scope_hint: string | null;
 }
 
 export interface HealthResponse {

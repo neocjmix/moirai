@@ -1,0 +1,87 @@
+{
+  "evidence_version": "m4-e-graph-scope-production-v1",
+  "status": "pass_with_operational_debt",
+  "application_sha": "e8d1434f0f59bd7a7bf836e28a47206fd3846bff",
+  "implementation": {
+    "pull_request": 11,
+    "pr_ci_run": 34218821271,
+    "main_ci_run": 34219040771,
+    "pr_ci_status": "success",
+    "main_ci_status": "success"
+  },
+  "deployment": {
+    "atropos_deployment_id": "78077720-4783-49ec-929a-e33cc6cd9bbc",
+    "atropos_status": "success",
+    "clotho_status": "success",
+    "lachesis_worker_status": "success",
+    "health_commit_sha_equal": true
+  },
+  "trial": {
+    "world_id": "01995c2a-7b00-7000-8000-000000000101",
+    "world_title": "Graph Scope Observatory",
+    "canon_id": "019f4c00-0000-7000-8000-000000000102",
+    "change_set_id": "019f4c00-0000-7000-8000-000000000501",
+    "plan_digest": "85900125f15d4e767aad543d73ffe5c99acf37e4e43098bfc708ad1bff366df4",
+    "validate_valid": true,
+    "validate_errors": 0,
+    "validate_warnings": 0,
+    "committed_revision": 1,
+    "publication_target_revision": 1,
+    "served_revision": 1,
+    "projection_status": "ready",
+    "canon_event_count": 4,
+    "canon_relation_count": 4
+  },
+  "graph_scope": {
+    "algorithm_version": "event-relational-graph-scope/1",
+    "source_revision": 1,
+    "served_revision": 1,
+    "scope": "canon",
+    "lod": "overview",
+    "node_count": 4,
+    "link_count": 4,
+    "visible_cells": 8,
+    "max_cells": 1000,
+    "visible_labels": 4,
+    "max_labels": 250,
+    "truncated": false,
+    "layout_basis": "stable_overview",
+    "composite_event_preserved": true,
+    "contains_relation_preserved": true,
+    "non_membership_influences_relation_preserved": true,
+    "immutable_cache_control": "public, max-age=31536000, immutable",
+    "etag_present": true
+  },
+  "atropos": {
+    "public_artifact_status": 200,
+    "public_focus_status": 200,
+    "graph_heading_server_rendered": true,
+    "accessible_text_fallback_server_rendered": true,
+    "event_titles_server_rendered": true,
+    "focus_detail_link_server_rendered": true,
+    "hydrated_jointjs_mobile_ci": true,
+    "same_served_revision": true
+  },
+  "scope_boundaries": {
+    "temporal_expressiveness_worlds_modified": false,
+    "schema_modified": false,
+    "clotho_write_contract_modified": false,
+    "relational_time_solver_modified": false,
+    "m5_active": false
+  },
+  "operational_debt": {
+    "post_deploy_run": 34219201148,
+    "public_readiness_step": "success",
+    "authenticated_github_bearer_step": "failure",
+    "failure_point": "MCP initialize HTTP response",
+    "product_oauth_validate_commit_read": "success",
+    "slice_e_semantic_result": "pass",
+    "follow_up": "Restore or replace the stale GitHub bearer credential without weakening OAuth or hiding the failed check."
+  },
+  "next": {
+    "plan": "IP-001",
+    "milestone": "M4",
+    "slice": "F - relation-based vertical chronology",
+    "m5_active": false
+  }
+}

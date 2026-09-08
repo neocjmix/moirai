@@ -34,6 +34,13 @@ describe("revision artifact route allowlist", () => {
     ).toThrow();
   });
 
+  it("serves the bounded Canon overview graph scope", () => {
+    const canonId = "019f3b00-0000-7000-8000-000000000002";
+    expect(
+      artifactPath(["graph", "canons", canonId, "scope-overview.json"])
+    ).toBe(`graph/canons/${canonId}/scope-overview.json`);
+  });
+
   it("rejects superseded numeric temporal artifacts", () => {
     const canonId = "019f3b00-0000-7000-8000-000000000002";
     for (const name of [

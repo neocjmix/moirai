@@ -175,6 +175,8 @@ Clotho에는 revision-bounded complete snapshot인 `world.export`를 추가한�
 - 실제 production corpus validate→commit→Canon→resolve→projection→Atropos→export/import와 거절 corpus가 통과한다.
 - 리팩터링 후 같은 전체 판정을 다시 통과한다.
 
+2026-09-08 완료: PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`에서 contract v2 단일 체계로 정리하고 Placement·numeric coordinate·legacy adapter·World allowlist·자동 seed를 제거했다. 전체 CI [34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511)이 성공했다. clean reset 뒤 리팩터링 전 [production E2E 34120376433](https://github.com/neocjmix/moirai/actions/runs/34120376433)과 리팩터링 후 [production E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154)가 모두 통과했다. 동적 application SHA·실행 시각·artifact 생성 시각을 제외한 두 실행의 의미 차이는 0건이다. 세 production 서비스는 검증 시 같은 merge SHA를 실행했다.
+
 ## 검증 게이트
 
 각 구현 slice는 해당 package test 외에 저장소 표준 CI를 통과해야 한다. 구체 명령은 당시 `package.json`과 CI workflow를 source of truth로 재확인한다.
@@ -208,9 +210,15 @@ downgrade하거나 trial Relation을 삭제하지 않았다. M4-D runtime 위에
 runtime과 migration 006 ledger 파일을 함께 사용해야 한다.
 
 이 증거로 IP-002 Slice 0–6과 첫 관계 기반 시간 표현력 수용시험을 완료했다. 이후
-2026-09-07 clean-slate 결정으로 Slice 7을 활성화했다. Slice 7의 두 번째 종단간
-검증까지 끝난 뒤에만 위에 기록한 IP-001 M4-D 다음 JointJS graph·scope artifact
-기본 탐색으로 복귀하며, 100k LOD와 Canon 비교를 통과하기 전에는 M5로 넘어가지 않는다.
+2026-09-07 clean-slate 결정으로 Slice 7을 활성화했고, 2026-09-08 두 번째 종단간
+검증까지 완료했다. Canon 11 Event·23 Relation, lossless 좌표, 결정적 virtual Time
+Event resolve와 비영속성, solver projection, 같은 served Revision의 Atropos 출력,
+`.moirai` 왕복 fingerprint, 설명 가능한 거절 corpus 5건이 모두 통과했다. 상세 실행
+ID·artifact digest와 리팩터링 전후 비교는 [Slice 7 machine-readable evidence](evidence/ip-002-slice7-production-revalidation-2026-09-08.json)에 고정했다.
+
+따라서 IP-002는 완료다. 실행 포인터는 IP-001 M4-D 다음 JointJS graph·scope artifact
+기본 탐색으로 복귀한다. 100k scope·LOD와 Canon 비교를 포함한 M4 종료조건을 모두
+통과하기 전에는 M5를 활성화하지 않는다.
 
 현재 로컬 환경에서 `pnpm`은 ignored build scripts 정책으로 실행이 막힐 수 있다. 이를 우회하려고 dependency 정책을 조용히 바꾸지 말고 CI 또는 승인된 설치 절차를 사용한다.
 
@@ -224,22 +232,19 @@ runtime과 migration 006 ledger 파일을 함께 사용해야 한다.
 - 계산 latency와 cache hit
 - publication 보류 사유
 
-rollback은 단계별로 가능해야 한다.
+Slice 0–6에서 사용한 단계별 rollback 전제는 clean-slate 전환의 이력으로 보존한다.
 
 - Slice 2–3: 코드를 끄면 저장 데이터 변화 없음
 - Slice 4: 원본 Placement와 migration map으로 역추적
 - Slice 5–6: projector flag를 legacy로 복귀, immutable 이전 artifact 유지
 - schema 제거: export/import와 restore rehearsal 전에는 실행 금지
 
-## 다음 세션 체크리스트
+Slice 7 이후 production rollback은 호환 계층 재활성화나 데이터 downgrade가 아니다. merge commit을 revert하고 빈 clean schema에 승인된 package를 다시 import하는 방식이다. 이미 제거한 legacy data를 복원하거나 Placement를 재생성하지 않는다.
 
-1. `docs/implementation/CURRENT.md`와 기준 SHA를 확인한다.
-2. `TEMPORAL-MODEL-DRIFT.md`, TS-010, `TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md`, 이 문서를 순서대로 읽는다.
-3. 승인된 TS-010 결정과 machine-readable fixture가 유지되는지 확인한다.
-4. accepted 문서 변경 범위를 먼저 PR로 제시한다.
-5. 승인 전에는 Slice 1의 characterization test 외 runtime 변경을 하지 않는다.
-6. 원본 M4-D fixture와 deployment를 건드리지 않는다.
-7. 각 slice를 독립 PR·CI·rollback checkpoint로 유지한다.
-8. 구현 완료를 주장하기 전에 성공·거절 corpus의 실제 입력과 세 출력면을 증거로 남긴다.
+## 완료 후 실행 포인터
 
-권장 첫 세션의 종료점은 Slice 0 결정과 Slice 1 테스트 계획까지다. schema migration이나 production semantic change가 아니다.
+1. `docs/implementation/CURRENT.md`의 IP-001 M4 활성 slice를 따른다.
+2. JointJS graph·scope artifact 기본 탐색부터 시작한다.
+3. 이후 vertical chronology, subject lane, metro routing, composite region, semantic zoom·LOD와 Canon 비교를 진행한다.
+4. IP-002의 Event/Relation 시간 정본과 production acceptance corpus는 M4 그래프의 회귀 기준으로 유지한다.
+5. M4 종료조건을 모두 통과하기 전에는 M5를 활성화하지 않는다.

@@ -1,0 +1,168 @@
+{
+  "evidence_version": "ip-002-slice7-production-revalidation-v1",
+  "status": "pass",
+  "application_sha": "e4265a627b121ef9d4274b693db094362146924c",
+  "implementation": {
+    "pull_request": 9,
+    "merge_sha": "e4265a627b121ef9d4274b693db094362146924c",
+    "ci_run": 34125253511,
+    "ci_status": "success"
+  },
+  "clean_reset": {
+    "database": "all pre-existing World rows removed before the clean-schema deployment",
+    "publication_store": "all pre-existing worlds/ objects removed before the clean-schema deployment",
+    "compatibility_required": false,
+    "separate_environment_created": false
+  },
+  "production_trials": {
+    "source_world_id": "019f3b00-0000-7000-8000-000000000001",
+    "import_world_id": "019f3b00-0000-7000-8000-000000000401",
+    "pre_refactor": {
+      "application_sha": "8559527f3261c88e5b97927d0ca3fc6368ef4fad",
+      "actions_run": 34120376433,
+      "actions_job": 101736830549,
+      "artifact_id": 10017959454,
+      "artifact_name": "ip002-slice7-pre-refactor-8559527f",
+      "artifact_zip_sha256": "1b4e8c1bbee5bad46c8d89c8ab862ae276caa8f32149c846cd1514aec1b83cab",
+      "package_sha256": "42c7ae8f2c0c8c9750adb072ca3e0ebaca078971eda12a991de6a6cd653874a5",
+      "status": "pass"
+    },
+    "post_refactor": {
+      "application_sha": "e4265a627b121ef9d4274b693db094362146924c",
+      "actions_run": 34195243154,
+      "actions_job": 101961416419,
+      "artifact_id": 10043655034,
+      "artifact_name": "ip002-slice7-post-refactor-e4265a62",
+      "artifact_zip_sha256": "72cd7f45e772926434195e520ecca06432e57ef596b91a994eb7f31eca819717",
+      "evidence_json_sha256": "4afdf4ab0addc8c89b038d74b92f28f2429e372d0922ebd5983ce6c4f801e03a",
+      "package_sha256": "f1bf466df5bdc5e4cdd99553a62f4baf1a35513d6a92f7bec675c45d85caef88",
+      "status": "pass"
+    }
+  },
+  "post_refactor_results": {
+    "canon": {
+      "source_revision": 2,
+      "event_count": 11,
+      "relation_count": 23,
+      "time_system_count": 1,
+      "truncated": false,
+      "legacy_shape_absent": true
+    },
+    "projection": {
+      "source_revision": 2,
+      "served_revision": 2,
+      "algorithm_version": "event-relational-projection/1",
+      "semantic_digest": "018be8a8ab610e59b22002e5ed3ff8a50e7bc9dfb0a6e612aafabd57cf413642",
+      "assertions": {
+        "bounded_year_month_day_ms_ps": true,
+        "exact_time_event": true,
+        "relative_only_without_absolute_date": true,
+        "explicit_boundary_duration_picoseconds": "2000000000000",
+        "descendant_span_separate": true,
+        "contains_membership_true": true,
+        "during_membership_false": true,
+        "source_evidence_present": true,
+        "picosecond_coordinates_byte_equal": true
+      }
+    },
+    "virtual_time_event": {
+      "resolved_twice_same_id": true,
+      "persisted": false,
+      "exported_event_row_count": 0,
+      "coordinate": "2026-09-05T08:13:21.123456789012Z"
+    },
+    "atropos": {
+      "source_current_revision": 2,
+      "source_target_revision": 2,
+      "source_served_revision": 2,
+      "source_accessible_text": true,
+      "source_revision_json": true,
+      "import_current_revision": 1,
+      "import_target_revision": 1,
+      "import_served_revision": 1,
+      "import_revision_json": true
+    },
+    "round_trip": {
+      "format": "moirai-world-package",
+      "format_version": "1.0",
+      "source_revision": 2,
+      "completeness": "complete",
+      "bytes": 17534,
+      "fingerprint_algorithm": "temporal-semantic-fingerprint-v1",
+      "category_digests": {
+        "time_systems": "sha256:a441c6cf0a4f5f2228270a60e48693746b0661d3ebe752c0f6bfbc3ee1cc3ed2",
+        "events": "sha256:0c7309ef457810809893d4515259256e5a0bee93c203013c8423653e23efe1b2",
+        "relations": "sha256:7c3297abcdbefcac65bcf6d85878f0ba5f2c926356e5e7b16dc124947330e18f"
+      },
+      "semantic_digest": "sha256:e5dd8fdb07743f963fd7823e18d2485222a64ce8274b264ef45f40dddbd4d9b8",
+      "source_import_equal": true
+    },
+    "rejections": [
+      {
+        "case_id": "te-bad-cycle",
+        "code": "temporal_constraint_conflict",
+        "affected_ids": [
+          "019f3b00-0000-7000-8000-000000000313",
+          "019f3b00-0000-7000-8000-000000000314"
+        ]
+      },
+      {
+        "case_id": "te-bad-boundary",
+        "code": "composite_boundary_order_invalid",
+        "affected_ids": [
+          "019f3b00-0000-7000-8000-000000000003",
+          "019f3b00-0000-7000-8000-00000000020e",
+          "019f3b00-0000-7000-8000-00000000020f",
+          "019f3b00-0000-7000-8000-000000000210",
+          "019f3b00-0000-7000-8000-000000000214",
+          "019f3b00-0000-7000-8000-000000000215",
+          "019f3b00-0000-7000-8000-000000000217",
+          "019f3b00-0000-7000-8000-000000000324",
+          "019f3b00-0000-7000-8000-000000000325",
+          "019f3b00-0000-7000-8000-000000000326"
+        ]
+      },
+      {
+        "case_id": "te-bad-system",
+        "code": "time_system_capability_missing",
+        "affected_ids": [
+          "019f3b00-0000-7000-8000-000000000003",
+          "019f3b00-0000-7000-8000-000000000331",
+          "019f3b00-0000-7000-8000-000000000333"
+        ]
+      },
+      {
+        "case_id": "te-bad-coordinate",
+        "code": "invalid_time_coordinate",
+        "affected_ids": [
+          "019f3b00-0000-7000-8000-000000000003",
+          "019f3b00-0000-7000-8000-000000000342"
+        ]
+      },
+      {
+        "case_id": "te-bad-duplicate-start",
+        "code": "composite_boundary_not_unique",
+        "affected_ids": [
+          "019f3b00-0000-7000-8000-000000000003",
+          "019f3b00-0000-7000-8000-000000000352",
+          "019f3b00-0000-7000-8000-000000000353"
+        ]
+      }
+    ]
+  },
+  "pre_post_semantic_comparison": {
+    "ignored_dynamic_fields": [
+      "application_sha",
+      "executed_at_utc",
+      "generated_at"
+    ],
+    "difference_count": 0,
+    "equal": true
+  },
+  "return_to": {
+    "plan": "IP-001",
+    "milestone": "M4",
+    "slice": "JointJS graph and scope artifact basic exploration",
+    "m5_active": false
+  }
+}

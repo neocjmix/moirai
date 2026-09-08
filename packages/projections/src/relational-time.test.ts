@@ -3,6 +3,7 @@ import type { CreateChangeSet } from "@moirai/contracts";
 import { resolveCreateOperations } from "@moirai/domain";
 import { describe, expect, it } from "vitest";
 import {
+  projectCanonGraphScope,
   projectRelationalTime,
   projectPublicDocuments,
   type CanonicalRevisionView
@@ -146,6 +147,38 @@ describe("TS-010 publication projection", () => {
     ).toMatchObject({ temporal_artifact: { key: artifact.key } });
     expect(result.virtual_time_events.every((t) => t.persisted === false)).toBe(
       true
+    );
+  });
+
+  it("lays out coordinate and relative-only chronology without exporting numeric time", () => {
+    const view = corpus();
+    const temporal = projectRelationalTime(view, 2, canonId);
+    const graph = projectCanonGraphScope(view, 2, canonId, temporal);
+    const byId = new Map(graph.nodes.map((node) => [node.event_id, node]));
+    const coordinateIds = ["101", "102", "103", "104", "105", "106"].map(
+      eventId
+    );
+    expect(coordinateIds.map((id) => byId.get(id)!.chronology.mode)).toEqual(
+      Array(6).fill("coordinate")
+    );
+    // Overlapping knowledge ranges share a band; no false total order is made.
+    expect(coordinateIds.map((id) => byId.get(id)!.chronology.rank)).toEqual([
+      0, 1, 1, 2, 2, 2
+    ]);
+    expect(byId.get(eventId("102"))!.x).not.toBe(byId.get(eventId("103"))!.x);
+    const relativeA = byId.get(eventId("10a"))!;
+    const relativeB = byId.get(eventId("10b"))!;
+    expect(relativeA.chronology).toMatchObject({ mode: "relative", rank: 0 });
+    expect(relativeB.chronology).toMatchObject({ mode: "relative", rank: 1 });
+    expect(relativeA.chronology.component_id).toBe(
+      relativeB.chronology.component_id
+    );
+    expect(relativeA.chronology.time_system_ref).toBeNull();
+    expect(
+      graph.nodes.every((node) => node.layout_basis === "inferred_chronology")
+    ).toBe(true);
+    expect(JSON.stringify(graph)).not.toContain(
+      "2026-09-05T08:13:21.123456789012Z"
     );
   });
 });

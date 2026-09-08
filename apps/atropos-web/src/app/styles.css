@@ -24,6 +24,7 @@ body {
   margin: 0;
 }
 body {
+  overflow-x: clip;
   background:
     radial-gradient(
       circle at 18% 18%,

@@ -11,7 +11,7 @@ export function artifactPath(parts: readonly string[]): string {
     parts.length === 4 &&
     parts[0] === "graph" &&
     parts[1] === "canons" &&
-    parts[3] === "temporal.json"
+    (parts[3] === "temporal.json" || parts[3] === "scope-overview.json")
   ) {
     assertPublicId(parts[2]!);
     return parts.join("/");

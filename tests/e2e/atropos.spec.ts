@@ -11,10 +11,13 @@ test("mobile reader traverses the single relational temporal model", async ({
   test.setTimeout(60_000);
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "Atropos" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "공개 World" })).toBeVisible();
   await expect(
-    page.getByRole("link", { name: /공개 상태 확인/ })
+    page.getByRole("heading", { name: "Temporal Expressiveness Observatory" })
   ).toBeVisible();
-  await page.goto(`/worlds/${worldId}/canons/${canonId}`);
+  await expect(page.getByText("SERVED REVISION 2")).toBeVisible();
+  await page.getByRole("link", { name: /Temporal Acceptance Canon/ }).click();
+  await expect(page).toHaveURL(`/worlds/${worldId}/canons/${canonId}`);
   await expect(
     page.getByRole("heading", { name: "Temporal Acceptance Canon" })
   ).toBeVisible({ timeout: 15_000 });

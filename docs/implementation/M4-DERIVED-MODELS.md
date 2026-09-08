@@ -155,3 +155,37 @@ State를 자유 추론하지 않고 등록된 family의 명시적 경계만 계�
 5. manifest와 Canon 문서가 State algorithm과 immutable artifact를 가리킨다.
 6. Atropos Subject route가 같은 served Revision의 State 값·기간·근거 Event 링크를 server-render한다.
 7. 전체 CI와 Clotho synthetic State→Publication→Subject SSR smoke가 통과한다.
+
+## Slice E — JointJS Canon overview와 scope artifact
+
+독자가 같은 served Revision의 Canon Event·Relation을 bounded overview로 열고 Event를 선택해 stable URL로 이동할 수 있게 한다. 첫 artifact는 `scope = canon`, `lod = overview` 하나로 제한하며 vertical chronology, subject lane, composite region, neighborhood/detail LOD와 Canon 비교는 후속 slice다.
+
+### 외부에서 확인할 동작
+
+- Canon document가 Revision별 immutable `scope-overview.json`을 가리킨다.
+- scope artifact는 Event node와 Event↔Event Relation만 포함하고 virtual Time Event를 저장 Event node로 만들지 않는다.
+- JointJS `dia.Graph`에는 artifact의 bounded cell만 넣고 전체 Canon을 넣은 뒤 CSS로 숨기지 않는다.
+- Event 선택은 `view=graph&focus={eventId}`와 동기화하고 stable Event URL을 제공한다.
+- graph를 사용하지 못하는 독자에게 같은 Event·Relation의 접근 가능한 텍스트 목록을 제공한다.
+- overview의 안정적 격자 좌표는 `stable_overview` presentation layout으로 표기하며 authored 또는 inferred time으로 공개하지 않는다.
+
+### 변경 경계
+
+- `@moirai/contracts`: 공개 graph scope node·link·budget 계약
+- `@moirai/projections`: 입력 순서와 무관한 bounded Canon overview projector
+- `@moirai/publication`: scope artifact와 manifest algorithm reference
+- `atropos-web`: Revision 고정 reader, JointJS client surface, focus URL과 텍스트 대안
+
+정본 Event/Relation, schema, Clotho/Lachesis write, relational-time solver와 기존 시험 World의 내용은 변경하지 않는다. `1000` cell·`250` label 상한을 넘기면 `truncated`와 좁은 scope 안내를 반환한다.
+
+UI interaction과 visual identity는 URDR commit `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 `urdr/apps/web/src/components/graph-shell.tsx`에서 fullscreen ivory graph, compact control, 선택 feedback과 mobile sheet 문법을 참고한다. URDR의 데이터 모델·Vite runtime·Gregorian 숫자 변환은 복사하지 않는다.
+
+### 종료 조건
+
+1. shuffled input이 같은 semantic digest와 cell 순서를 만든다.
+2. artifact가 `1000` cell·`250` label budget을 넘지 않고 초과 입력을 `truncated`로 설명한다.
+3. virtual Time Event endpoint가 Event node로 나타나지 않는다.
+4. Canon SSR, hydrated JointJS graph와 공개 scope JSON이 같은 served Revision을 사용한다.
+5. 모바일에서 graph 표시, zoom, Event 선택, focus URL과 Event 상세 이동이 통과한다.
+6. JavaScript 또는 graph 사용 불가 시 Event·Relation 목록으로 같은 핵심 대상을 탐색한다.
+7. 전체 CI, production 배포 SHA 확인과 Temporal Expressiveness Observatory 공개 smoke가 통과한다.

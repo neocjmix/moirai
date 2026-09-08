@@ -13,11 +13,16 @@ import type {
 import { endpointEventId } from "@moirai/domain";
 import { createHash } from "node:crypto";
 import { projectRelationalTime } from "./relational-time.js";
+import { projectCanonGraphScope } from "./graph-scope.js";
 
 export {
   projectRelationalTime,
   RELATIONAL_TIME_ALGORITHM_VERSION
 } from "./relational-time.js";
+export {
+  GRAPH_SCOPE_ALGORITHM_VERSION,
+  projectCanonGraphScope
+} from "./graph-scope.js";
 
 export const SUBJECT_ALGORITHM_VERSION = "event-relational-subject/1";
 
@@ -473,6 +478,12 @@ export function projectPublicDocuments(
       projectRelationalTime(view, revision, canon.id, subjects.projections)
     ])
   );
+  const graphScopes = new Map(
+    canons.map((canon) => [
+      canon.id,
+      projectCanonGraphScope(view, revision, canon.id)
+    ])
+  );
   const documents: ProjectionDocument[] = [
     {
       key: `${prefix}/world.json`,
@@ -486,10 +497,15 @@ export function projectPublicDocuments(
   ];
   for (const canon of canons) {
     const projection = temporal.get(canon.id)!;
+    const graphScope = graphScopes.get(canon.id)!;
     documents.push(
       {
         key: `${prefix}/graph/canons/${canon.id}/temporal.json`,
         value: { ...metadata, ...projection }
+      },
+      {
+        key: `${prefix}/graph/canons/${canon.id}/scope-overview.json`,
+        value: { ...metadata, ...graphScope }
       },
       {
         key: `${prefix}/canons/${canon.id}.json`,
@@ -509,6 +525,12 @@ export function projectPublicDocuments(
           temporal_artifact: {
             key: `${prefix}/graph/canons/${canon.id}/temporal.json`,
             algorithm_version: projection.algorithm_version
+          },
+          graph_scope_artifact: {
+            key: `${prefix}/graph/canons/${canon.id}/scope-overview.json`,
+            algorithm_version: graphScope.algorithm_version,
+            scope: "canon",
+            lod: "overview"
           },
           subject_artifacts: subjects.projections
             .filter((subject) => subject.canon_id === canon.id)

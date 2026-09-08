@@ -5,6 +5,7 @@ import {
 } from "@moirai/contracts";
 import {
   projectPublicDocuments,
+  GRAPH_SCOPE_ALGORITHM_VERSION,
   RELATIONAL_TIME_ALGORITHM_VERSION,
   SUBJECT_ALGORITHM_VERSION,
   type CanonicalRevisionView,
@@ -102,7 +103,8 @@ export function buildPublicationArtifacts(
       canonical: "m2-v1",
       search: "m2-text-v1",
       subject: SUBJECT_ALGORITHM_VERSION,
-      relational_time: RELATIONAL_TIME_ALGORITHM_VERSION
+      relational_time: RELATIONAL_TIME_ALGORITHM_VERSION,
+      graph_scope: GRAPH_SCOPE_ALGORITHM_VERSION
     },
     locales: ["en"],
     documents: documents.map(({ key, body }) => ({

@@ -59,9 +59,12 @@ a {
 }
 .landing {
   display: grid;
-  place-items: center;
+  align-content: start;
+  justify-items: center;
+  gap: 2.5rem;
   padding: calc(env(safe-area-inset-top) + 4rem) 1.25rem
     calc(env(safe-area-inset-bottom) + 7rem);
+  overflow: visible;
 }
 .landing-mark {
   position: absolute;
@@ -77,6 +80,10 @@ a {
   position: relative;
   width: min(36rem, 100%);
 }
+.observation-home .landing-copy {
+  width: min(64rem, 100%);
+  padding-top: clamp(2rem, 8vw, 6rem);
+}
 .landing h1,
 .world-intro h1,
 .event-sheet h1 {
@@ -86,7 +93,7 @@ a {
   letter-spacing: -0.04em;
 }
 .landing h1 {
-  font-size: clamp(4.5rem, 22vw, 9rem);
+  font-size: clamp(4.5rem, 18vw, 9rem);
 }
 .lead {
   margin: 0 0 2rem;
@@ -110,7 +117,8 @@ a {
   box-shadow: 0 18px 44px rgba(24, 32, 44, 0.18);
 }
 .deployment-strip {
-  position: absolute;
+  position: fixed;
+  z-index: 20;
   right: 1rem;
   bottom: calc(env(safe-area-inset-bottom) + 1.2rem);
   left: 1rem;
@@ -120,6 +128,9 @@ a {
   gap: 0.55rem;
   color: #7d756e;
   font-size: 0.68rem;
+}
+.deployment-strip a {
+  text-underline-offset: 0.2em;
 }
 .deployment-dot {
   width: 3px;
@@ -140,6 +151,121 @@ a {
   align-items: center;
   color: #776e67;
   font-size: 0.72rem;
+}
+
+.world-observatory {
+  position: relative;
+  width: min(64rem, 100%);
+  padding: clamp(1.25rem, 3vw, 2rem);
+  border: 1px solid var(--line);
+  border-radius: 2rem;
+  background: rgba(255, 253, 248, 0.86);
+  box-shadow: 0 32px 80px rgba(63, 49, 38, 0.1);
+  backdrop-filter: blur(18px);
+}
+.observatory-heading,
+.world-card-heading {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.observatory-heading h2,
+.published-world-card h3 {
+  margin: 0.25rem 0 0;
+  font-family: Georgia, "Times New Roman", serif;
+  font-weight: 400;
+}
+.observatory-heading h2 {
+  font-size: clamp(2rem, 7vw, 3.5rem);
+}
+.world-count {
+  display: grid;
+  width: 3rem;
+  height: 3rem;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--ink);
+  color: var(--ivory);
+  font-family: Georgia, serif;
+  font-size: 1.3rem;
+}
+.published-world-list {
+  display: grid;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+.published-world-card,
+.observatory-empty {
+  padding: 1.25rem;
+  border: 1px solid var(--line);
+  border-radius: 1.4rem;
+  background: var(--paper);
+}
+.published-world-card h3 {
+  font-size: clamp(1.5rem, 5vw, 2.25rem);
+}
+.published-world-card > p,
+.observatory-empty span {
+  color: var(--muted);
+  line-height: 1.6;
+}
+.published-world-card > code {
+  display: block;
+  margin-top: 1rem;
+  color: #85776c;
+  font-size: 0.68rem;
+  overflow-wrap: anywhere;
+}
+.published-world-card.unavailable {
+  border-color: rgba(171, 63, 48, 0.35);
+}
+.world-open-action {
+  flex: none;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  font-size: 0.78rem;
+  font-weight: 800;
+  text-underline-offset: 0.22em;
+}
+.canon-observation-list {
+  display: grid;
+  gap: 0.5rem;
+  margin-top: 1.25rem;
+}
+.canon-observation-list a {
+  display: flex;
+  min-height: 48px;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.9rem;
+  border-radius: 1rem;
+  background: var(--sand);
+  text-decoration: none;
+}
+.canon-observation-list span {
+  font-weight: 750;
+}
+.canon-observation-list small {
+  color: var(--muted);
+}
+.observatory-empty {
+  display: grid;
+  gap: 0.35rem;
+  margin-top: 1.5rem;
+}
+.graph-unavailable {
+  margin-block: 1rem;
+  padding: 1rem;
+  border: 1px solid var(--line);
+  border-radius: 1rem;
+  background: rgba(255, 253, 248, 0.72);
+}
+.graph-unavailable p {
+  margin-bottom: 0;
+  color: var(--muted);
 }
 
 .status-chrome {

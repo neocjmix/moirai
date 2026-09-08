@@ -37,10 +37,20 @@ export default async function CanonPage({
       temporalArtifact,
       graphScopeArtifact
     } = canonDocument;
-    const [temporal, graphScope] = await Promise.all([
-      readRelationalTime(worldId, canonId, temporalArtifact, selected),
-      readGraphScope(worldId, canonId, graphScopeArtifact, selected)
-    ]);
+    const temporal = await readRelationalTime(
+      worldId,
+      canonId,
+      temporalArtifact,
+      selected
+    );
+    const graphScope = graphScopeArtifact
+      ? await readGraphScope(
+          worldId,
+          canonId,
+          graphScopeArtifact,
+          selected
+        ).catch(() => null)
+      : null;
     return (
       <main className="world-canvas">
         <StatusIsland
@@ -80,10 +90,21 @@ export default async function CanonPage({
             이 World 검색 →
           </a>
         </section>
-        <GraphExplorer
-          artifact={graphScope}
-          initialFocus={typeof query.focus === "string" ? query.focus : null}
-        />
+        {graphScope ? (
+          <GraphExplorer
+            artifact={graphScope}
+            initialFocus={typeof query.focus === "string" ? query.focus : null}
+          />
+        ) : (
+          <section className="graph-unavailable" aria-label="그래프 준비 상태">
+            <p className="eyebrow">CANON GRAPH</p>
+            <h2>이 Revision에는 현재 그래프 projection이 없습니다.</h2>
+            <p>
+              Event와 관계 기반 시간 내용은 아래에서 그대로 탐색할 수 있습니다.
+              다음 Publication Revision에서 그래프가 생성됩니다.
+            </p>
+          </section>
+        )}
         <RelationalTime projection={temporal} events={events} />
         {subjectArtifacts.length > 0 ? (
           <section className="card-dock" aria-labelledby="subjects-title">

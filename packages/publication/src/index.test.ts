@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildPublicationArtifacts } from "./index.js";
+import { buildPublicationArtifacts, parseCommonPrefixes } from "./index.js";
 
 describe("single Event/Relation publication format", () => {
   it("indexes the relational temporal artifact globally", () => {
@@ -40,5 +40,33 @@ describe("single Event/Relation publication format", () => {
       artifacts.documents.some((item) => item.key.endsWith("/temporal.json"))
     ).toBe(true);
     expect(JSON.stringify(artifacts)).not.toContain("temporal_placements");
+  });
+});
+
+describe("Publication Store discovery", () => {
+  it("reads World prefixes and the escaped pagination token", () => {
+    expect(
+      parseCommonPrefixes(`<?xml version="1.0" encoding="UTF-8"?>
+        <ListBucketResult>
+          <IsTruncated>true</IsTruncated>
+          <CommonPrefixes><Prefix>worlds/019f3b00-0000-7000-8000-000000000001/</Prefix></CommonPrefixes>
+          <CommonPrefixes><Prefix>worlds/019f4c00-0000-7000-8000-000000000101/</Prefix></CommonPrefixes>
+          <NextContinuationToken>next&amp;page</NextContinuationToken>
+        </ListBucketResult>`)
+    ).toEqual({
+      prefixes: [
+        "worlds/019f3b00-0000-7000-8000-000000000001/",
+        "worlds/019f4c00-0000-7000-8000-000000000101/"
+      ],
+      nextContinuationToken: "next&page"
+    });
+  });
+
+  it("rejects a truncated response without a continuation token", () => {
+    expect(() =>
+      parseCommonPrefixes(
+        "<ListBucketResult><IsTruncated>true</IsTruncated></ListBucketResult>"
+      )
+    ).toThrow("prefix_list_missing_token");
   });
 });

@@ -198,3 +198,35 @@ UI interaction과 visual identity는 URDR commit `0267c8fd081ca9a3cd556f8f7319c6
 - 자동 post-deploy run [34219201148](https://github.com/neocjmix/moirai/actions/runs/34219201148)은 공개 readiness와 정확한 Atropos SHA까지 통과했다. 이후 독립 GitHub bearer credential의 MCP initialize가 실패했지만, 실제 Clotho OAuth validate→commit→Canon read와 공개 Atropos JSON/SSR 검증은 성공했다. 상세 판정은 [machine-readable production evidence](evidence/m4-e-graph-scope-production-2026-09-08.json)에 기록한다.
 
 다음 Slice F는 Event/Relation 시간 제약으로부터 vertical chronology layout을 계산한다. overview 격자 좌표를 시간으로 재해석하지 않고, 비교 불가능한 Time System과 relative-only component를 억지로 한 축에 합치지 않는다.
+
+## Slice F — 관계 기반 vertical chronology
+
+Event/Relation 정본과 `temporal.json`의 계산 결과를 읽어 graph node의 세로 배치만
+결정적으로 계산한다. 같은 Time System에서 비교 가능한 exact·bounded 위치는 adapter의
+`compare`만 사용한다. 서로 겹치는 knowledge range는 같은 band에 남겨 근거 없는 total
+order를 만들지 않는다. `precedes`·`not_after`·`coincides`가 Event 사이에 직접 쓴
+순서는 절대 날짜가 없어도 보존한다.
+
+각 node는 `placement_kind = inferred_layout`, stable `component_id`, `mode`, 정수 `rank`,
+근거 Relation ID를 공개한다. `mode`는 다음 네 가지다.
+
+- `coordinate`: 한 Time System 안에서 좌표 비교가 가능한 component
+- `relative`: 절대 좌표 없이 authored Relation만으로 순서를 아는 component
+- `mixed`: 서로 환산하지 않는 Time System 사이의 authored ordering 또는 좌표·상대 위치가 섞인 component
+- `unplaced`: 순서를 정할 근거가 없는 component
+
+허구력, 빅뱅 이후 scalar와 지질 BP처럼 Gregorian과 호환되지 않는 좌표도 등록된
+adapter 안에서는 같은 방법으로 배치할 수 있다. conversion adapter가 없으면 다른
+Time System과 같은 축을 만들지 않는다. authored cross-system Relation은 독립적인
+선후 사실로만 보존한다. graph artifact는 원문 coordinate나 JavaScript timestamp를
+복제하지 않으며 lossless 좌표의 정본 공개 위치는 계속 `temporal.json`이다.
+
+### 종료 조건
+
+1. 같은 Time System의 명백히 분리된 범위만 위아래 band로 나뉘고 겹친 범위는 같은 band에 남는다.
+2. relative-only `precedes` chain은 날짜 없이 안정적인 rank와 evidence를 가진다.
+3. 변환 불가능한 Time System은 별도 component이며 cross-system Relation이 있어도 공통 coordinate를 만들지 않는다.
+4. 근거 없는 Event는 `unplaced`이고 배치값을 authored 시간이나 export 의미로 표시하지 않는다.
+5. shuffled input은 같은 component, rank, cell 순서와 semantic digest를 만든다.
+6. Atropos JointJS와 접근 가능한 텍스트가 같은 served Revision에서 mode와 band 의미를 제공한다.
+7. 전체 CI와 별도 Graph Scope Observatory의 production chronology smoke가 통과한다.

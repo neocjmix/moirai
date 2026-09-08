@@ -108,6 +108,12 @@
   text-decoration: none;
 }
 
+.selection small {
+  color: var(--muted);
+  font-size: 0.7rem;
+  line-height: 1.45;
+}
+
 .textAlternative {
   padding: 0.85rem 1rem;
   border-bottom: 1px solid var(--line);

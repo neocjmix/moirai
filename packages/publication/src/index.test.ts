@@ -34,7 +34,7 @@ describe("single Event/Relation publication format", () => {
       "event-relational-projection/1"
     );
     expect(manifest.algorithms.graph_scope).toBe(
-      "event-relational-graph-scope/1"
+      "event-relational-graph-scope/2"
     );
     expect(
       artifacts.documents.some((item) => item.key.endsWith("/temporal.json"))

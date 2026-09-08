@@ -17,6 +17,16 @@ interface ViewState {
 
 const INITIAL_VIEW: ViewState = { scale: 0.78, x: 24, y: 28 };
 
+const chronologyLabel = (
+  mode: PublicGraphScopeArtifact["nodes"][number]["chronology"]["mode"]
+) =>
+  ({
+    coordinate: "같은 시간계에서 비교 가능한 범위",
+    relative: "절대 날짜 없이 관계로 정해진 순서",
+    mixed: "서로 환산하지 않은 시간계 사이의 관계 순서",
+    unplaced: "시간 순서를 정할 근거 없음"
+  })[mode];
+
 function focusFromLocation(artifact: PublicGraphScopeArtifact): string | null {
   const value = new URL(window.location.href).searchParams.get("focus");
   return artifact.nodes.some((node) => node.event_id === value) ? value : null;
@@ -203,8 +213,9 @@ export function GraphExplorer({
           </p>
           <h2 id="graph-title">사건 관계 탐색</h2>
           <p>
-            이 좌표는 시간 사실이 아닌 결정적 overview 배치입니다. 시간 의미는
-            아래 관계 기반 시간 표면에서 확인할 수 있습니다.
+            위에서 아래로 비교 가능한 시간 또는 관계 순서를 읽습니다. 서로
+            환산할 수 없는 시간계는 별도 열에 두며, 화면 좌표 자체는 정본 시간
+            사실이 아닙니다.
           </p>
         </div>
         <div className={styles.controls} aria-label="그래프 확대 및 맞춤">
@@ -227,6 +238,10 @@ export function GraphExplorer({
               {selected.kind === "composite" ? "Composite Event" : "Event"}
             </span>
             <strong>{selected.title}</strong>
+            <small>
+              {chronologyLabel(selected.chronology.mode)} · band{" "}
+              {selected.chronology.rank}
+            </small>
             <a href={selected.canonical_url}>Event 상세 열기 →</a>
           </aside>
         ) : null}
@@ -240,6 +255,10 @@ export function GraphExplorer({
                 {node.title}
               </button>
               <span>{node.kind}</span>
+              <span>
+                {chronologyLabel(node.chronology.mode)} · band{" "}
+                {node.chronology.rank}
+              </span>
               <a href={node.canonical_url}>상세</a>
             </li>
           ))}

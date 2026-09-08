@@ -481,7 +481,7 @@ export function projectPublicDocuments(
   const graphScopes = new Map(
     canons.map((canon) => [
       canon.id,
-      projectCanonGraphScope(view, revision, canon.id)
+      projectCanonGraphScope(view, revision, canon.id, temporal.get(canon.id)!)
     ])
   );
   const documents: ProjectionDocument[] = [

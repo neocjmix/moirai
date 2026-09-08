@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `in_progress` — IP-001 M4 JointJS graph·scope artifact 기본 탐색                                                              |
+| 실행 상태                  | `in_progress` — IP-001 M4 vertical chronology projection                                                                      |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                    |
-| 현재 slice                 | IP-001 M4-D 다음 — JointJS graph·scope artifact 기본 탐색; M5 비활성                                                          |
+| 현재 slice                 | IP-001 M4 Slice F — 관계 기반 vertical chronology; M5 비활성                                                                  |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -25,6 +25,9 @@
 | M4-D 검증 application SHA  | `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                                                                    |
 | M4-D 구현 CI               | [33938273152](https://github.com/neocjmix/moirai/actions/runs/33938273152) `success`                                          |
 | M4-D 배포 smoke            | [33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968) `success`; Clotho synthetic revision 28            |
+| M4-E 검증 application SHA  | `e8d1434f0f59bd7a7bf836e28a47206fd3846bff`                                                                                    |
+| M4-E 구현 CI               | PR #11 [34218821271](https://github.com/neocjmix/moirai/actions/runs/34218821271), main [34219040771](https://github.com/neocjmix/moirai/actions/runs/34219040771) `success` |
+| M4-E production 검증       | Graph Scope Observatory revision 1; [machine-readable evidence](evidence/m4-e-graph-scope-production-2026-09-08.json)         |
 | 최근 bearer smoke          | [33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972) `success`; 실제 OAuth 검증과 별도 근거             |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
 | 현재 배포 SHA·마지막 E2E   | 세 서비스 `e4265a627b121ef9d4274b693db094362146924c`; [production E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154) `success` |
@@ -59,7 +62,9 @@ Slice 6과 IP-002 종단간 수용시험을 완료했다. 승인 SHA `8ee04b4784
 
 2026-09-07 PR #4를 merge commit `776029c38f9be8bbe403215397fec546982d7f93`로 병합했다. production DB의 `public` schema와 Publication Store `worlds/` 581개 object를 승인된 전체 삭제로 비웠다. 호환 migration 대신 clean schema를 구축하며 별도 환경·임시 이중화는 만들지 않는다. 복귀 지점은 IP-001 M4-D 다음 JointJS graph·scope artifact 기본 탐색이고 M5는 계속 비활성이다.
 
-2026-09-08 Slice 7을 완료했다. PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`는 contract v2 단일 write/read/publication 체계만 남기고 Placement·numeric coordinate·legacy adapter·World allowlist·자동 seed를 제거했다. 전체 CI [34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511)이 성공했고 세 production 서비스가 같은 SHA를 실행했다. clean reset 뒤 리팩터링 전 [E2E 34120376433](https://github.com/neocjmix/moirai/actions/runs/34120376433)과 리팩터링 후 [E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154)가 모두 통과했으며, 동적 메타데이터를 제외한 의미 차이는 0건이다. Canon 11 Event·23 Relation, virtual Time Event 비영속성, projection, 같은 served Revision의 Atropos 텍스트·JSON, `.moirai` 왕복 fingerprint와 설명 가능한 거절 5건을 [machine-readable evidence](evidence/ip-002-slice7-production-revalidation-2026-09-08.json)에 고정했다. IP-002는 종료됐고 활성 작업은 IP-001 M4의 JointJS graph·scope artifact 기본 탐색이다.
+2026-09-08 Slice 7을 완료했다. PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`는 contract v2 단일 write/read/publication 체계만 남기고 Placement·numeric coordinate·legacy adapter·World allowlist·자동 seed를 제거했다. 전체 CI [34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511)이 성공했고 세 production 서비스가 같은 SHA를 실행했다. clean reset 뒤 리팩터링 전 [E2E 34120376433](https://github.com/neocjmix/moirai/actions/runs/34120376433)과 리팩터링 후 [E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154)가 모두 통과했으며, 동적 메타데이터를 제외한 의미 차이는 0건이다. Canon 11 Event·23 Relation, virtual Time Event 비영속성, projection, 같은 served Revision의 Atropos 텍스트·JSON, `.moirai` 왕복 fingerprint와 설명 가능한 거절 5건을 [machine-readable evidence](evidence/ip-002-slice7-production-revalidation-2026-09-08.json)에 고정했다. IP-002는 종료됐다.
+
+2026-09-08 IP-001 M4 Slice E를 완료했다. PR #11 merge `e8d1434f0f59bd7a7bf836e28a47206fd3846bff`는 bounded Canon overview scope artifact와 JointJS 4.x graph, stable focus URL, server-rendered text fallback을 추가했다. PR·main CI의 PostgreSQL 및 WebKit 검증이 모두 성공했다. production Graph Scope Observatory revision 1에 Clotho OAuth로 4 Event·4 Relation을 commit하고 Canon read-back, 8-cell/4-label immutable graph JSON, composite 구분, `contains`와 non-membership `influences` 분리, same-Revision SSR/focus 출력을 확인했다. 자동 post-deploy run `34219201148`은 공개 readiness와 정확한 Atropos SHA까지 통과했으나 별도 GitHub bearer credential의 MCP initialize가 실패했다. 실제 OAuth 제품 경로 검증은 성공했으며 이 bearer 운영 부채는 완료로 숨기지 않는다. 활성 작업은 M4 Slice F 관계 기반 vertical chronology다.
 
 2026-09-02~03 실제 ChatGPT OAuth로 작업했다. 전달받은 revision 14 대신 작업 전 15를 재조회했다. validate 후 revision 15와 신규 Event 부재를 확인하고, 한 Change Set으로 Event·Relation·Narrative를 commit해 revision 16을 만들었다. 동일 요청은 replay되며, 같은 ID의 다른 내용은 거절됐다. Atropos의 current/target/served 16, manifest와 Event digest, 공개 Narrative·Relation을 확인했다.
 

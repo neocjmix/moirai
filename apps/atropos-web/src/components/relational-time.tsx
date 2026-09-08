@@ -68,7 +68,9 @@ export function RelationalTime({
             ) : null}
             <p>
               {composite
-                ? "시작과 종료가 있는 기간 사건"
+                ? composite.start_ref && composite.end_ref
+                  ? "시작과 종료가 있는 기간 사건"
+                  : "Composite Event · 시작·종료 경계 미정"
                 : position.display_label}
             </p>
             {position.kind === "exact" && position.time_event ? (

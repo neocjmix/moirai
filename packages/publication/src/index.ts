@@ -27,6 +27,10 @@ export interface ObjectWrite {
   readonly etag: string | null;
 }
 
+export interface PrefixList {
+  readonly prefixes: readonly string[];
+}
+
 export interface ObjectStore {
   get(key: string): Promise<ObjectRead>;
   put(
@@ -208,6 +212,13 @@ function hmac(key: string | Uint8Array, value: string): Uint8Array {
   return createHmac("sha256", key).update(value).digest();
 }
 
+function awsEncode(value: string): string {
+  return encodeURIComponent(value).replace(
+    /[!'()*]/g,
+    (character) => `%${character.charCodeAt(0).toString(16).toUpperCase()}`
+  );
+}
+
 export class S3ObjectStore implements ObjectStore {
   private readonly settings: S3Config;
 
@@ -226,9 +237,15 @@ export class S3ObjectStore implements ObjectStore {
     method: "GET" | "PUT",
     key: string,
     body = "",
-    headers: Readonly<Record<string, string>> = {}
+    headers: Readonly<Record<string, string>> = {},
+    query: Readonly<Record<string, string>> = {}
   ): Promise<Response> {
     const url = this.objectUrl(key);
+    const canonicalQuery = Object.entries(query)
+      .sort(([left], [right]) => (left < right ? -1 : left > right ? 1 : 0))
+      .map(([name, value]) => `${awsEncode(name)}=${awsEncode(value)}`)
+      .join("&");
+    url.search = canonicalQuery;
     const now = new Date();
     const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, "");
     const date = amzDate.slice(0, 8);
@@ -238,7 +255,7 @@ export class S3ObjectStore implements ObjectStore {
     const canonicalRequest = [
       method,
       url.pathname,
-      "",
+      canonicalQuery,
       canonicalHeaders,
       signedHeaders,
       bodyHash
@@ -297,4 +314,60 @@ export class S3ObjectStore implements ObjectStore {
     });
     return { status: response.status, etag: response.headers.get("etag") };
   }
+
+  async listCommonPrefixes(prefix: string): Promise<PrefixList> {
+    const prefixes: string[] = [];
+    let continuationToken: string | undefined;
+    do {
+      const response = await this.request(
+        "GET",
+        "",
+        "",
+        {},
+        {
+          delimiter: "/",
+          "list-type": "2",
+          prefix,
+          ...(continuationToken
+            ? { "continuation-token": continuationToken }
+            : {})
+        }
+      );
+      if (!response.ok) throw new Error(`prefix_list_${response.status}`);
+      const parsed = parseCommonPrefixes(await response.text());
+      prefixes.push(...parsed.prefixes);
+      continuationToken = parsed.nextContinuationToken ?? undefined;
+    } while (continuationToken);
+    return { prefixes };
+  }
+}
+
+function decodeXmlText(value: string): string {
+  return value
+    .replaceAll("&lt;", "<")
+    .replaceAll("&gt;", ">")
+    .replaceAll("&quot;", '"')
+    .replaceAll("&apos;", "'")
+    .replaceAll("&amp;", "&");
+}
+
+export function parseCommonPrefixes(xml: string): {
+  readonly prefixes: readonly string[];
+  readonly nextContinuationToken: string | null;
+} {
+  const prefixes = Array.from(
+    xml.matchAll(
+      /<CommonPrefixes>\s*<Prefix>([^<]+)<\/Prefix>\s*<\/CommonPrefixes>/g
+    ),
+    (match) => decodeXmlText(match[1] ?? "")
+  );
+  const truncated = /<IsTruncated>true<\/IsTruncated>/.test(xml);
+  const token = xml.match(
+    /<NextContinuationToken>([^<]+)<\/NextContinuationToken>/
+  )?.[1];
+  if (truncated && !token) throw new Error("prefix_list_missing_token");
+  return {
+    prefixes,
+    nextContinuationToken: token ? decodeXmlText(token) : null
+  };
 }

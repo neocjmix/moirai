@@ -26,6 +26,19 @@ const UUID =
 
 let objectStore: S3ObjectStore | undefined;
 
+export type PublishedWorldObservation =
+  | {
+      readonly availability: "ready";
+      readonly worldId: string;
+      readonly pointer: PublicationPointer;
+      readonly world: PublicWorld;
+      readonly canons: readonly PublicCanon[];
+    }
+  | {
+      readonly availability: "unavailable";
+      readonly worldId: string;
+    };
+
 export function hasPublicationStoreConfig(): boolean {
   return [
     "AWS_ACCESS_KEY_ID",
@@ -62,6 +75,47 @@ export async function readPublicationObject(key: string): Promise<ObjectRead> {
   }
   objectStore ??= new S3ObjectStore();
   return objectStore.get(key);
+}
+
+export async function readPublishedWorlds(): Promise<
+  readonly PublishedWorldObservation[]
+> {
+  if (!hasPublicationStoreConfig()) {
+    if (process.env.LOCAL_PUBLICATION_FIXTURE_DIR) {
+      const publication = await readWorld(TEMPORAL_EXPRESSIVENESS_WORLD_ID);
+      return [
+        {
+          availability: "ready",
+          worldId: publication.world.id,
+          ...publication
+        }
+      ];
+    }
+    throw new Error("Publication Store is not configured");
+  }
+  objectStore ??= new S3ObjectStore();
+  const { prefixes } = await objectStore.listCommonPrefixes("worlds/");
+  const worldIds = prefixes.flatMap((prefix) => {
+    const match = prefix.match(/^worlds\/([^/]+)\/$/);
+    return match?.[1] && UUID.test(match[1]) ? [match[1]] : [];
+  });
+  const observations = await Promise.all(
+    worldIds.map(async (worldId): Promise<PublishedWorldObservation> => {
+      try {
+        const publication = await readWorld(worldId);
+        return {
+          availability: "ready",
+          worldId,
+          ...publication
+        };
+      } catch {
+        return { availability: "unavailable", worldId };
+      }
+    })
+  );
+  return observations.toSorted((left, right) =>
+    left.worldId.localeCompare(right.worldId)
+  );
 }
 
 async function readJson<T>(key: string): Promise<T> {
@@ -127,7 +181,7 @@ export async function readCanon(
     algorithm_version: string;
     scope: "canon";
     lod: "overview";
-  };
+  } | null;
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -137,7 +191,7 @@ export async function readCanon(
     narratives: readonly PublicNarrative[];
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
     temporal_artifact: { key: string; algorithm_version: string };
-    graph_scope_artifact: {
+    graph_scope_artifact?: {
       key: string;
       algorithm_version: string;
       scope: "canon";
@@ -159,7 +213,7 @@ export async function readCanon(
     narratives: document.narratives,
     subjectArtifacts: document.subject_artifacts ?? [],
     temporalArtifact: document.temporal_artifact,
-    graphScopeArtifact: document.graph_scope_artifact
+    graphScopeArtifact: document.graph_scope_artifact ?? null
   };
 }
 
@@ -194,6 +248,12 @@ export async function readGraphScope(
     document.scope.id !== canonId ||
     document.lod !== "overview" ||
     document.algorithm_version !== reference.algorithm_version ||
+    document.nodes.some(
+      (node) =>
+        node.layout_basis !== "inferred_chronology" ||
+        !node.chronology ||
+        node.chronology.placement_kind !== "inferred_layout"
+    ) ||
     document.budget.visible_cells > document.budget.max_cells ||
     document.budget.visible_labels > document.budget.max_labels
   )

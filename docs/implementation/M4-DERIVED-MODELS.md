@@ -188,4 +188,13 @@ UI interaction과 visual identity는 URDR commit `0267c8fd081ca9a3cd556f8f7319c6
 4. Canon SSR, hydrated JointJS graph와 공개 scope JSON이 같은 served Revision을 사용한다.
 5. 모바일에서 graph 표시, zoom, Event 선택, focus URL과 Event 상세 이동이 통과한다.
 6. JavaScript 또는 graph 사용 불가 시 Event·Relation 목록으로 같은 핵심 대상을 탐색한다.
-7. 전체 CI, production 배포 SHA 확인과 Temporal Expressiveness Observatory 공개 smoke가 통과한다.
+7. 전체 CI, production 배포 SHA 확인과 별도 Graph Scope Observatory 공개 smoke가 통과한다.
+
+### 완료 근거
+
+- PR [#11](https://github.com/neocjmix/moirai/pull/11)을 squash 병합한 `e8d1434f0f59bd7a7bf836e28a47206fd3846bff`의 PR CI [34218821271](https://github.com/neocjmix/moirai/actions/runs/34218821271)과 main CI [34219040771](https://github.com/neocjmix/moirai/actions/runs/34219040771)이 성공했다.
+- Railway 세 서비스가 같은 SHA로 성공했고 Atropos deployment `78077720-4783-49ec-929a-e33cc6cd9bbc`가 Active다.
+- production Graph Scope Observatory revision 1의 4 Event·4 Relation이 Canon과 immutable `scope-overview.json`에 보존됐다. artifact는 8 cell·4 label, `truncated = false`, `layout_basis = stable_overview`이며 Canon SSR의 접근 가능한 목록과 focus 상세 링크가 같은 Revision을 사용한다.
+- 자동 post-deploy run [34219201148](https://github.com/neocjmix/moirai/actions/runs/34219201148)은 공개 readiness와 정확한 Atropos SHA까지 통과했다. 이후 독립 GitHub bearer credential의 MCP initialize가 실패했지만, 실제 Clotho OAuth validate→commit→Canon read와 공개 Atropos JSON/SSR 검증은 성공했다. 상세 판정은 [machine-readable production evidence](evidence/m4-e-graph-scope-production-2026-09-08.json)에 기록한다.
+
+다음 Slice F는 Event/Relation 시간 제약으로부터 vertical chronology layout을 계산한다. overview 격자 좌표를 시간으로 재해석하지 않고, 비교 불가능한 Time System과 relative-only component를 억지로 한 축에 합치지 않는다.

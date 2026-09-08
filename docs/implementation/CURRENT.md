@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `in_progress` — IP-002 Slice 7 clean-slate 단일 Event/Relation 체계와 production 재검증 |
+| 실행 상태                  | `in_progress` — IP-001 M4 JointJS graph·scope artifact 기본 탐색                                                              |
 | 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                    |
-| 현재 slice                 | IP-002 Slice 7 — legacy 제거, 첫 E2E, 리팩터링, 두 번째 E2E; 완료 뒤 IP-001 M4-D 다음으로 복귀 |
+| 현재 slice                 | IP-001 M4-D 다음 — JointJS graph·scope artifact 기본 탐색; M5 비활성                                                          |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
@@ -27,16 +27,15 @@
 | M4-D 배포 smoke            | [33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968) `success`; Clotho synthetic revision 28            |
 | 최근 bearer smoke          | [33787516972](https://github.com/neocjmix/moirai/actions/runs/33787516972) `success`; 실제 OAuth 검증과 별도 근거             |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 현재 배포 SHA·마지막 smoke | Atropos·worker M4-D `350920bbdb3928f34e406940b9d9f0d95f7e8c65`; Clotho migration-ledger bridge `3ac0b0deafbe00b5aaa4aa474b7ad4a8e9cc6bb8` |
-| 문서 기준선                | `52dc241aeb7d48d658c4fbb7465c8a1fd448928a`; branch `baseline/m4d-2026-09-05`                                                  |
+| 현재 배포 SHA·마지막 E2E   | 세 서비스 `e4265a627b121ef9d4274b693db094362146924c`; [production E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154) `success` |
+| IP-002 구현 CI             | PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`; [CI 34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511) `success` |
+| 보호 기준선                | branch `baseline/m4d-2026-09-05`; M4-D SHA `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                      |
 
 ## 시간 모델 재정렬 Slice 0
 
 [드리프트 분석](TEMPORAL-MODEL-DRIFT.md)을 바탕으로 2026-09-05 사용자가 [TS-010](../technical-specifications/TS-010-event-relational-time.md)의 strictness, virtual Time Event reference와 Time System 계약을 승인했다. [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)과 [IP-002](IP-002-temporal-model-realignment.md)를 accepted 방향으로 정렬하고 [machine-readable fixture](fixtures/temporal-expressiveness/)를 고정했다.
 
-Slice 0 완료 뒤 다음 checkpoint는 Slice 1 기존 동작 특성화다. 실제 schema migration 실행, 배포와 시험 World write는 별도 승인 전 수행하지 않는다. JointJS 다음 단계도 계속 비활성이다.
-
-IP-002 Slice 7의 두 차례 production 종단간 검증 완료 뒤에는 IP-001 M4-D 다음의 JointJS graph·scope artifact 기본 탐색으로 복귀한다. 100k scope·LOD와 Canon 비교를 포함한 M4 종료조건을 통과하기 전에는 M5로 넘어가지 않는다.
+Slice 0–7과 두 차례 production 종단간 검증을 완료했다. IP-001 M4-D 다음의 JointJS graph·scope artifact 기본 탐색으로 복귀했으며, 100k scope·LOD와 Canon 비교를 포함한 M4 종료조건을 통과하기 전에는 M5로 넘어가지 않는다.
 
 Slice 1은 [M4-D 시간 동작 특성화 기준선](M4D-TEMPORAL-CHARACTERIZATION.md)과 contracts·domain·projections golden test로 완료했다. current numeric Placement, 피코초 collapse, relative-only order, validate에서 허용되는 `precedes` cycle, descendant-span Process Duration, during 비-membership과 membership State 계산을 교정 전 관찰값으로 고정했다. 이는 TS-010 표현력 합격이 아니다.
 
@@ -59,6 +58,8 @@ Slice 6과 IP-002 종단간 수용시험을 완료했다. 승인 SHA `8ee04b4784
 임시 Clotho credential은 두 시험 World에만 제한해 사용한 뒤 제거했고 제거된 토큰의 `unauthorized`를 확인했다. exact M4-D rollback은 실행된 migration 006 파일 부재로 fail-safe 중단됐다. DB downgrade·trial row 삭제 없이 M4-D runtime에 migration 006 ledger 파일만 보존한 bridge `3ac0b0deafbe00b5aaa4aa474b7ad4a8e9cc6bb8`로 Clotho를 복구했다. Atropos·worker는 `350920bbdb3928f34e406940b9d9f0d95f7e8c65`다.
 
 2026-09-07 PR #4를 merge commit `776029c38f9be8bbe403215397fec546982d7f93`로 병합했다. production DB의 `public` schema와 Publication Store `worlds/` 581개 object를 승인된 전체 삭제로 비웠다. 호환 migration 대신 clean schema를 구축하며 별도 환경·임시 이중화는 만들지 않는다. 복귀 지점은 IP-001 M4-D 다음 JointJS graph·scope artifact 기본 탐색이고 M5는 계속 비활성이다.
+
+2026-09-08 Slice 7을 완료했다. PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`는 contract v2 단일 write/read/publication 체계만 남기고 Placement·numeric coordinate·legacy adapter·World allowlist·자동 seed를 제거했다. 전체 CI [34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511)이 성공했고 세 production 서비스가 같은 SHA를 실행했다. clean reset 뒤 리팩터링 전 [E2E 34120376433](https://github.com/neocjmix/moirai/actions/runs/34120376433)과 리팩터링 후 [E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154)가 모두 통과했으며, 동적 메타데이터를 제외한 의미 차이는 0건이다. Canon 11 Event·23 Relation, virtual Time Event 비영속성, projection, 같은 served Revision의 Atropos 텍스트·JSON, `.moirai` 왕복 fingerprint와 설명 가능한 거절 5건을 [machine-readable evidence](evidence/ip-002-slice7-production-revalidation-2026-09-08.json)에 고정했다. IP-002는 종료됐고 활성 작업은 IP-001 M4의 JointJS graph·scope artifact 기본 탐색이다.
 
 2026-09-02~03 실제 ChatGPT OAuth로 작업했다. 전달받은 revision 14 대신 작업 전 15를 재조회했다. validate 후 revision 15와 신규 Event 부재를 확인하고, 한 Change Set으로 Event·Relation·Narrative를 commit해 revision 16을 만들었다. 동일 요청은 replay되며, 같은 ID의 다른 내용은 거절됐다. Atropos의 current/target/served 16, manifest와 Event digest, 공개 Narrative·Relation을 확인했다.
 
@@ -99,6 +100,4 @@ PR [#1](https://github.com/neocjmix/moirai/pull/1)을 squash 병합한 `dc0728da
 
 Canon별 immutable State artifact를 발행하고 Subject page에서 해당 handle의 계산된 상태를 공개한다. PR [#2](https://github.com/neocjmix/moirai/pull/2)를 squash 병합한 `350920bbdb3928f34e406940b9d9f0d95f7e8c65`의 CI [33938273152](https://github.com/neocjmix/moirai/actions/runs/33938273152), Railway 배포와 [post-deploy smoke 33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968)이 성공했다. Clotho synthetic revision 28에서 complete State artifact, exact membership Duration 28 deployment와 Atropos Subject SSR을 확인했다.
 
-다른 State family와 일반 LLM 추론은 현재 범위가 아니다. 다음 계획 단계인 JointJS canvas·subject lane 기본 탐색, 이후 100k scope·LOD와 Canon 비교는 아직 활성화하지 않았다.
-
-2026-09-06 Slice 4 완료: `203763a89ac96bfb15bfc56daa61c3875491a9da`, PR CI [34014969062](https://github.com/neocjmix/moirai/actions/runs/34014969062) 전체 성공(PostgreSQL corpus commit/read/resolve·거절 검증, migration, mobile, Gitleaks 포함). Slice 5 완료: `eff9d359cd917bb139a65bcfcc4ef97d19008ed1`, PR CI [34015422657](https://github.com/neocjmix/moirai/actions/runs/34015422657) 전체 성공. 실제 cloud 시험 World 쓰기·배포는 미수행이며 Slice 6 제품 표면·이식성 종료 검증을 진행한다.
+다른 State family와 일반 LLM 추론은 현재 범위가 아니다. 다음 계획 단계인 JointJS graph·scope artifact 기본 탐색을 활성화했다. 이후 vertical chronology, subject lane, metro routing, composite region, 100k scope·LOD와 Canon 비교 순서를 유지한다.

@@ -19,6 +19,16 @@ test("mobile reader traverses the single relational temporal model", async ({
     page.getByRole("heading", { name: "Temporal Acceptance Canon" })
   ).toBeVisible({ timeout: 15_000 });
   await expect(page.getByText("시간 · REVISION 2")).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "사건 관계 탐색" })
+  ).toBeVisible();
+  await expect(page.getByTestId("jointjs-graph-stage")).toBeVisible();
+  await page.getByText("접근 가능한 사건과 관계 목록").click();
+  await page.getByRole("button", { name: firstEventTitle }).click();
+  await expect(page).toHaveURL(new RegExp(`view=graph.*focus=${firstEventId}`));
+  await expect(
+    page.getByRole("link", { name: "Event 상세 열기 →" })
+  ).toBeVisible();
   await expect(page.getByText("DERIVED TIMELINE")).toHaveCount(0);
   await expect(page.getByText("DERIVED PROCESSES")).toHaveCount(0);
   await page
@@ -77,6 +87,21 @@ test("health and immutable artifacts expose only the relational model", async ({
     projection_type: "event_relational_time",
     canon_id: canonId,
     algorithm_version: "event-relational-projection/1"
+  });
+
+  const graphScope = await request.get(
+    `/worlds/${worldId}/revisions/2/graph/canons/${canonId}/scope-overview.json`
+  );
+  expect(graphScope.ok()).toBe(true);
+  expect(graphScope.headers()["cache-control"]).toContain("immutable");
+  expect(await graphScope.json()).toMatchObject({
+    source_revision: 2,
+    served_revision: 2,
+    projection_type: "graph_scope",
+    canon_id: canonId,
+    algorithm_version: "event-relational-graph-scope/1",
+    budget: { max_cells: 1000, max_labels: 250 },
+    truncated: false
   });
 
   for (const name of [

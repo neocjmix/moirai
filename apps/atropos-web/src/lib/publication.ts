@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
   TEMPORAL_EXPRESSIVENESS_WORLD_ID,
+  type PublicGraphScopeArtifact,
   type PublicRelationalTemporalProjection,
   type PublicCanon,
   type PublicEvent,
@@ -121,6 +122,12 @@ export async function readCanon(
   narratives: readonly PublicNarrative[];
   subjectArtifacts: readonly PublicSubjectArtifactReference[];
   temporalArtifact: { key: string; algorithm_version: string };
+  graphScopeArtifact: {
+    key: string;
+    algorithm_version: string;
+    scope: "canon";
+    lod: "overview";
+  };
 }> {
   assertPublicId(canonId);
   const { pointer } = selected ?? (await selectPublication(worldId));
@@ -130,6 +137,12 @@ export async function readCanon(
     narratives: readonly PublicNarrative[];
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
     temporal_artifact: { key: string; algorithm_version: string };
+    graph_scope_artifact: {
+      key: string;
+      algorithm_version: string;
+      scope: "canon";
+      lod: "overview";
+    };
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/canons/${canonId}.json`
@@ -145,8 +158,47 @@ export async function readCanon(
     events: document.events,
     narratives: document.narratives,
     subjectArtifacts: document.subject_artifacts ?? [],
-    temporalArtifact: document.temporal_artifact
+    temporalArtifact: document.temporal_artifact,
+    graphScopeArtifact: document.graph_scope_artifact
   };
+}
+
+export async function readGraphScope(
+  worldId: string,
+  canonId: string,
+  reference: {
+    key: string;
+    algorithm_version: string;
+    scope: "canon";
+    lod: "overview";
+  },
+  selected: SelectedPublication
+): Promise<PublicGraphScopeArtifact> {
+  assertPublicId(canonId);
+  const revision = selected.pointer.served_revision;
+  if (
+    selected.pointer.world_id !== worldId ||
+    reference.scope !== "canon" ||
+    reference.lod !== "overview" ||
+    reference.key !==
+      `worlds/${worldId}/revisions/${revision}/graph/canons/${canonId}/scope-overview.json`
+  )
+    throw new Error("invalid graph scope artifact key");
+  const document = await readJson<PublicGraphScopeArtifact>(reference.key);
+  if (
+    document.world_id !== worldId ||
+    document.canon_id !== canonId ||
+    document.source_revision !== revision ||
+    document.served_revision !== revision ||
+    document.scope.kind !== "canon" ||
+    document.scope.id !== canonId ||
+    document.lod !== "overview" ||
+    document.algorithm_version !== reference.algorithm_version ||
+    document.budget.visible_cells > document.budget.max_cells ||
+    document.budget.visible_labels > document.budget.max_labels
+  )
+    throw new Error("mixed Publication revisions");
+  return document;
 }
 
 export async function readSubject(

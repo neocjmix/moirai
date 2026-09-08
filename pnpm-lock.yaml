@@ -41,6 +41,9 @@ importers:
 
   apps/atropos-web:
     dependencies:
+      '@joint/core':
+        specifier: ^4.3.3
+        version: 4.3.3
       '@moirai/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -645,6 +648,9 @@ packages:
     engines: {node: '>=20.9.0'}
     cpu: [x64]
     os: [win32]
+
+  '@joint/core@4.3.3':
+    resolution: {integrity: sha512-cAOpWbeUZ1le9dIkWCIWNLkzJtCHbhkszJYklytMM1BnuLTVQW9ADuHRRVxT9HZHqye/NRgYtlYDmwgeSiNNFw==}
 
   '@jridgewell/sourcemap-codec@1.6.0':
     resolution: {integrity: sha512-T7jf+5zgsZHwNJ4lvQ7/aezbyk0nNX+zJVWpmHA7VYsEx7a7qr5Rg5IbtJFqkgze5Y2sruq1RUY8Q837Od7iFw==}
@@ -2539,6 +2545,8 @@ snapshots:
 
   '@img/sharp-win32-x64@0.35.4':
     optional: true
+
+  '@joint/core@4.3.3': {}
 
   '@jridgewell/sourcemap-codec@1.6.0': {}
 

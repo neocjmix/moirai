@@ -1,9 +1,11 @@
 import { RelationalTime } from "../../../../../components/relational-time";
+import { GraphExplorer } from "../../../../../components/graph-explorer";
 import { notFound } from "next/navigation";
 import Markdown from "react-markdown";
 import { StatusIsland } from "../../../../../components/status-island";
 import {
   readCanon,
+  readGraphScope,
   readRelationalTime,
   readWorld,
   selectPublication
@@ -12,11 +14,14 @@ import {
 export const dynamic = "force-dynamic";
 
 export default async function CanonPage({
-  params
+  params,
+  searchParams
 }: {
   readonly params: Promise<{ worldId: string; canonId: string }>;
+  readonly searchParams: Promise<{ focus?: string | string[] }>;
 }) {
   const { worldId, canonId } = await params;
+  const query = await searchParams;
   try {
     const selected = await selectPublication(worldId);
     const [{ world }, canonDocument] = await Promise.all([
@@ -29,14 +34,13 @@ export default async function CanonPage({
       narratives,
       pointer,
       subjectArtifacts,
-      temporalArtifact
-    } = canonDocument;
-    const temporal = await readRelationalTime(
-      worldId,
-      canonId,
       temporalArtifact,
-      selected
-    );
+      graphScopeArtifact
+    } = canonDocument;
+    const [temporal, graphScope] = await Promise.all([
+      readRelationalTime(worldId, canonId, temporalArtifact, selected),
+      readGraphScope(worldId, canonId, graphScopeArtifact, selected)
+    ]);
     return (
       <main className="world-canvas">
         <StatusIsland
@@ -76,6 +80,10 @@ export default async function CanonPage({
             이 World 검색 →
           </a>
         </section>
+        <GraphExplorer
+          artifact={graphScope}
+          initialFocus={typeof query.focus === "string" ? query.focus : null}
+        />
         <RelationalTime projection={temporal} events={events} />
         {subjectArtifacts.length > 0 ? (
           <section className="card-dock" aria-labelledby="subjects-title">

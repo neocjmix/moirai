@@ -10,6 +10,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
+    "@joint/core": "^4.3.3",
     "@moirai/contracts": "workspace:*",
     "@moirai/projections": "workspace:*",
     "@moirai/publication": "workspace:*",

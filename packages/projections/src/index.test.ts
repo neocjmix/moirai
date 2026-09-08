@@ -44,6 +44,9 @@ describe("Event/Relation public projections", () => {
     expect(documents.some((item) => item.key.endsWith("/temporal.json"))).toBe(
       true
     );
+    expect(
+      documents.some((item) => item.key.endsWith("/scope-overview.json"))
+    ).toBe(true);
     expect(JSON.stringify(documents)).not.toContain("private");
     expect(JSON.stringify(documents)).not.toContain("temporal_placements");
   });

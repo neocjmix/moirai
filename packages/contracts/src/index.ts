@@ -391,7 +391,15 @@ export interface PublicGraphScopeNode {
   readonly roles: readonly string[];
   readonly x: number;
   readonly y: number;
-  readonly layout_basis: "stable_overview";
+  readonly layout_basis: "inferred_chronology";
+  readonly chronology: {
+    readonly placement_kind: "inferred_layout";
+    readonly component_id: string;
+    readonly mode: "coordinate" | "relative" | "mixed" | "unplaced";
+    readonly rank: number;
+    readonly time_system_ref: { readonly time_system_id: string } | null;
+    readonly evidence: readonly string[];
+  };
   readonly canonical_url: string;
   readonly evidence: readonly string[];
 }

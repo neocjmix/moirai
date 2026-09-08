@@ -99,7 +99,15 @@ test("health and immutable artifacts expose only the relational model", async ({
     served_revision: 2,
     projection_type: "graph_scope",
     canon_id: canonId,
-    algorithm_version: "event-relational-graph-scope/1",
+    algorithm_version: "event-relational-graph-scope/2",
+    nodes: expect.arrayContaining([
+      expect.objectContaining({
+        layout_basis: "inferred_chronology",
+        chronology: expect.objectContaining({
+          placement_kind: "inferred_layout"
+        })
+      })
+    ]),
     budget: { max_cells: 1000, max_labels: 250 },
     truncated: false
   });

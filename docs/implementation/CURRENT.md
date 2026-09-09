@@ -28,12 +28,12 @@
 | M4-E 검증 application SHA  | `e8d1434f0f59bd7a7bf836e28a47206fd3846bff`                                                                                    |
 | M4-E 구현 CI               | PR #11 [34218821271](https://github.com/neocjmix/moirai/actions/runs/34218821271), main [34219040771](https://github.com/neocjmix/moirai/actions/runs/34219040771) `success` |
 | M4-E production 검증       | Graph Scope Observatory revision 1; [machine-readable evidence](evidence/m4-e-graph-scope-production-2026-09-08.json)         |
-| M4-F 검증 application SHA  | `43b0d8fea67d1afd679360a91203b501136ec84b`; 현재 Atropos·Clotho `5abc536527afa61dd34a8b760060a83e3e99aab8`                  |
+| M4-F 검증 application SHA  | 구현 `43b0d8fea67d1afd679360a91203b501136ec84b`; production 검증 `5abc536527afa61dd34a8b760060a83e3e99aab8`              |
 | M4-F 구현 CI               | PR #13 [34225538578](https://github.com/neocjmix/moirai/actions/runs/34225538578) `success`                                   |
 | M4-F production 검증       | Graph Scope Observatory revision 2; [machine-readable evidence](evidence/m4-f-vertical-chronology-production-2026-09-09.json) |
 | 최근 bearer smoke          | [34293280937](https://github.com/neocjmix/moirai/actions/runs/34293280937) `failure`; readiness 성공 후 stale bearer MCP 실패 |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 현재 배포 SHA·마지막 E2E   | Atropos·Clotho `5abc536527afa61dd34a8b760060a83e3e99aab8`; [production E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154) `success` |
+| 마지막 runtime 검증 SHA·E2E | Atropos·Clotho `5abc536527afa61dd34a8b760060a83e3e99aab8`; [production E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154) `success` |
 | IP-002 구현 CI             | PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`; [CI 34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511) `success` |
 | 보호 기준선                | branch `baseline/m4d-2026-09-05`; M4-D SHA `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                      |
 
@@ -69,7 +69,7 @@ Slice 6과 IP-002 종단간 수용시험을 완료했다. 승인 SHA `8ee04b4784
 
 2026-09-08 IP-001 M4 Slice E를 완료했다. PR #11 merge `e8d1434f0f59bd7a7bf836e28a47206fd3846bff`는 bounded Canon overview scope artifact와 JointJS 4.x graph, stable focus URL, server-rendered text fallback을 추가했다. PR·main CI의 PostgreSQL 및 WebKit 검증이 모두 성공했다. production Graph Scope Observatory revision 1에 Clotho OAuth로 4 Event·4 Relation을 commit하고 Canon read-back, 8-cell/4-label immutable graph JSON, composite 구분, `contains`와 non-membership `influences` 분리, same-Revision SSR/focus 출력을 확인했다. 자동 post-deploy run `34219201148`은 공개 readiness와 정확한 Atropos SHA까지 통과했으나 별도 GitHub bearer credential의 MCP initialize가 실패했다. 실제 OAuth 제품 경로 검증은 성공했으며 이 bearer 운영 부채는 완료로 숨기지 않는다. 활성 작업은 M4 Slice F 관계 기반 vertical chronology다.
 
-2026-09-09 IP-001 M4 Slice F의 production 검증을 완료했다. PR #13 merge `43b0d8fea67d1afd679360a91203b501136ec84b`의 relation-based vertical chronology가 현재 배포 `5abc536527afa61dd34a8b760060a83e3e99aab8`에 포함됐다. 실제 Clotho OAuth로 Graph Scope Observatory에 Canon annotation 하나만 append해 revision 2를 만들고 replay의 idempotency를 확인했다. immutable graph artifact v2는 `Signal detected`와 `Investigation`을 같은 relative component의 rank 0·1로 배치하고 원본 `precedes` Relation을 evidence로 보존했으며, 근거 없는 두 Event는 `unplaced`로 남겼다. Atropos 메인→Canon→JointJS→focus URL과 접근 가능한 텍스트, 8-cell/4-label budget, horizontal overflow 부재를 production 브라우저에서 확인했다. 자동 smoke [34293280937](https://github.com/neocjmix/moirai/actions/runs/34293280937)은 readiness 후 stale bearer MCP 단계에서 계속 실패하므로 별도 운영 부채다.
+2026-09-09 IP-001 M4 Slice F의 production 검증을 완료했다. PR #13 merge `43b0d8fea67d1afd679360a91203b501136ec84b`의 relation-based vertical chronology가 검증 배포 `5abc536527afa61dd34a8b760060a83e3e99aab8`에 포함됐다. 실제 Clotho OAuth로 Graph Scope Observatory에 Canon annotation 하나만 append해 revision 2를 만들고 replay의 idempotency를 확인했다. immutable graph artifact v2는 `Signal detected`와 `Investigation`을 같은 relative component의 rank 0·1로 배치하고 원본 `precedes` Relation을 evidence로 보존했으며, 근거 없는 두 Event는 `unplaced`로 남겼다. Atropos 메인→Canon→JointJS→focus URL과 접근 가능한 텍스트, 8-cell/4-label budget, horizontal overflow 부재를 production 브라우저에서 확인했다. 자동 smoke [34293280937](https://github.com/neocjmix/moirai/actions/runs/34293280937)은 readiness 후 stale bearer MCP 단계에서 계속 실패하므로 별도 운영 부채다.
 
 2026-09-02~03 실제 ChatGPT OAuth로 작업했다. 전달받은 revision 14 대신 작업 전 15를 재조회했다. validate 후 revision 15와 신규 Event 부재를 확인하고, 한 Change Set으로 Event·Relation·Narrative를 commit해 revision 16을 만들었다. 동일 요청은 replay되며, 같은 ID의 다른 내용은 거절됐다. Atropos의 current/target/served 16, manifest와 Event digest, 공개 Narrative·Relation을 확인했다.
 

@@ -12,6 +12,9 @@
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
 | `/graph` 기준 application  | PR #19 merge `458cca0183a8b995b6a4edafa12fc104a0659574`; production route 렌더·interaction 확인                              |
+| M4.5-A 계약 checkpoint     | [PR #21](https://github.com/neocjmix/moirai/pull/21) merge `6e8feace3b5d39466b725f44980aede714406a96`; [CI 34390674821](https://github.com/neocjmix/moirai/actions/runs/34390674821) success |
+| M4.5-B App shell checkpoint | [PR #22](https://github.com/neocjmix/moirai/pull/22) merge `a012fad3b60df91f1a16819b82d243e5d1283801`; [CI 34392698639](https://github.com/neocjmix/moirai/actions/runs/34392698639) success |
+| M4.5-B locale 후속          | [PR #23](https://github.com/neocjmix/moirai/pull/23) merge·production `cf0f5a7f747acb9c110cbea0c7db4a3ae068c6ce`; [CI 34393637840](https://github.com/neocjmix/moirai/actions/runs/34393637840) success |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
 | M4.5 graph 기준 URL        | <https://moirai-production-8ed1.up.railway.app/graph>                                                                         |
@@ -64,7 +67,9 @@ M4.5-B는 app-level screen registry와 reload 가능한 `/graph/private`, `/grap
 `/graph/settings` 경로를 추가하고 완료했다. Private·Explore는 명시적으로 unavailable이며
 향후 auth-gated Operations slot은 하단 navigation에 노출하지 않는다. dock 전환은 graph
 query string을 보존하고 `/graph/operations`는 `404`로 닫힌다. 다음 활성 slice는
-M4.5-C Sources query island다.
+M4.5-C Sources query island다. Production `cf0f5a7f747acb9c110cbea0c7db4a3ae068c6ce`에서
+Atropos·Clotho·worker Railway 배포 성공, 공개 `/__status` SHA 일치와 네 화면 `200`을
+확인했다.
 
 ## 시간 모델 재정렬 Slice 0
 

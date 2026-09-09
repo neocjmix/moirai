@@ -108,20 +108,11 @@ const SCREEN_ICONS = {
 export function App({ initialScreen = "graph", loader = graphReadLoader, renderGraphPage }: AppProps = {}) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
-  const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(() => readManualAppLocaleOverride());
+  const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
+  const [browserLocale, setBrowserLocale] = useState<AppLocale>("ko");
+  const [localePreferenceLoaded, setLocalePreferenceLoaded] = useState(false);
   const [activePage, setActivePage] = useState<AtroposScreenId>(initialScreen);
   const [tabBarCollapsed, setTabBarCollapsed] = useState(false);
-  const browserLocale = useMemo(
-    () =>
-      resolveBrowserLocale(
-        typeof window === "undefined"
-          ? undefined
-          : window.navigator.languages?.length
-            ? window.navigator.languages
-            : [window.navigator.language],
-      ),
-    [],
-  );
   const locale = manualLocaleOverride ?? browserLocale;
   const copy = SHELL_PAGE_COPY[locale];
   const loadingWorkspace = useMemo(() => createLoadingWorkspace(locale), [locale]);
@@ -140,6 +131,16 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
         locale={locale}
       />
     ) : null;
+
+  useEffect(() => {
+    setManualLocaleOverride(readManualAppLocaleOverride());
+    setBrowserLocale(
+      resolveBrowserLocale(
+        window.navigator.languages?.length ? window.navigator.languages : [window.navigator.language],
+      ),
+    );
+    setLocalePreferenceLoaded(true);
+  }, []);
 
   useEffect(() => {
     setWorkspaceStatus("loading");
@@ -173,8 +174,10 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
   }, [loader, locale]);
 
   useEffect(() => {
-    writeManualAppLocaleOverride(manualLocaleOverride);
-  }, [manualLocaleOverride]);
+    if (localePreferenceLoaded) {
+      writeManualAppLocaleOverride(manualLocaleOverride);
+    }
+  }, [localePreferenceLoaded, manualLocaleOverride]);
 
   useEffect(() => {
     document.documentElement.lang = locale;

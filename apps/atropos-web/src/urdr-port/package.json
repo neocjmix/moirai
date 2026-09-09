@@ -1,0 +1,32 @@
+{
+  "name": "@urdr/web",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "bake:static-graph": "pnpm --filter @urdr/api bake:full",
+    "verify:static-graph": "pnpm exec tsx scripts/verify-static-graph.ts",
+    "dev": "vite",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@radix-ui/react-dialog": "^1.1.15",
+    "@radix-ui/react-dropdown-menu": "^2.1.16",
+    "@radix-ui/react-icons": "^1.3.2",
+    "@radix-ui/themes": "^3.3.0",
+    "@urdr/contracts": "workspace:*",
+    "@urdr/domain": "workspace:*",
+    "clipper2-ts": "2.0.1-15",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0"
+  },
+  "devDependencies": {
+    "@types/react": "^19.1.6",
+    "@types/react-dom": "^19.1.5",
+    "@vitejs/plugin-react": "^5.0.4",
+    "eruda": "^3.4.3",
+    "typescript": "^5.8.3",
+    "vite": "^7.3.1"
+  }
+}
+

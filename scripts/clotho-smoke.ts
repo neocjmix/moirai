@@ -39,7 +39,7 @@ async function mcp<T>(method: string, params: unknown): Promise<T> {
     body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
     signal: AbortSignal.timeout(30_000)
   });
-  if (!response.ok) throw new Error("MCP smoke request failed");
+  if (!response.ok)\n    throw new Error(`MCP smoke request failed (${response.status})`);
   const body = (await response.json()) as {
     error?: unknown;
     result: T & { isError?: boolean };

@@ -9,7 +9,7 @@ export {
   type GraphShellAbsoluteUrlPatch,
   type GraphShellDrawerStage,
   type GraphShellShareLinkDrawerSlice,
-  type GraphShellShareLinkShellSlice,
+  type GraphShellShareLinkShellSlice
 } from "./domain/graph-shell-share-link";
 
 export type ChartPlaneXForceLayoutOptions = {

@@ -3,15 +3,21 @@ import type {
   GraphShellChartPlaneEntity,
   GraphShellViewportQuery,
   GraphShellViewportResponse,
-  GraphShellWorkspaceShell,
+  GraphShellWorkspaceShell
 } from "@urdr/contracts";
 
 import type { AppLocale } from "./locale";
 
 export type GraphReadLoader = {
   loadWorkspace(locale: AppLocale): Promise<GraphShellWorkspaceShell>;
-  loadViewport(locale: AppLocale, query: GraphShellViewportQuery): Promise<GraphShellViewportResponse>;
-  loadEventDetail(locale: AppLocale, eventId: string): Promise<EventDetailResponse>;
+  loadViewport(
+    locale: AppLocale,
+    query: GraphShellViewportQuery
+  ): Promise<GraphShellViewportResponse>;
+  loadEventDetail(
+    locale: AppLocale,
+    eventId: string
+  ): Promise<EventDetailResponse>;
 };
 
 const CANON_ID = "canon:mock-joseon";
@@ -21,7 +27,7 @@ const point = (
   label: string,
   x: number,
   y: number,
-  containedBy?: string,
+  containedBy?: string
 ): GraphShellChartPlaneEntity => ({
   id,
   eventId: id,
@@ -33,7 +39,7 @@ const point = (
   containedBy,
   diagnostics: [],
   viewportClass: "visible",
-  position: { x, y },
+  position: { x, y }
 });
 
 const segment = (
@@ -42,7 +48,7 @@ const segment = (
   fromId: string,
   toId: string,
   start: { x: number; y: number },
-  end: { x: number; y: number },
+  end: { x: number; y: number }
 ): GraphShellChartPlaneEntity => ({
   id,
   eventId: id,
@@ -54,7 +60,7 @@ const segment = (
   diagnostics: [],
   viewportClass: "visible",
   start,
-  end,
+  end
 });
 
 const mockPoints = [
@@ -67,16 +73,58 @@ const mockPoints = [
   point("event:war", "임진왜란", 220, 355, "region:mid-joseon"),
   point("t_anchor_1392", "anchor 1392", -360, -250),
   point("t_anchor_1446", "anchor 1446", -360, 38),
-  point("t_anchor_1592", "anchor 1592", -360, 355),
+  point("t_anchor_1592", "anchor 1592", -360, 355)
 ] satisfies GraphShellChartPlaneEntity[];
 
 const mockSegments = [
-  segment("edge:founding-capital", "ORDER", "event:founding", "event:capital", { x: -210, y: -250 }, { x: 35, y: -175 }),
-  segment("edge:capital-hunmin", "CAUSES", "event:capital", "event:hunmin", { x: 35, y: -175 }, { x: -105, y: -40 }),
-  segment("edge:hunmin-promulgation", "ORDER", "event:hunmin", "event:promulgation", { x: -105, y: -40 }, { x: 155, y: 38 }),
-  segment("edge:promulgation-sarim", "INFLUENCES", "event:promulgation", "event:sarim", { x: 155, y: 38 }, { x: -185, y: 155 }),
-  segment("edge:sarim-reform", "CAUSES", "event:sarim", "event:reform", { x: -185, y: 155 }, { x: 75, y: 235 }),
-  segment("edge:reform-war", "ORDER", "event:reform", "event:war", { x: 75, y: 235 }, { x: 220, y: 355 }),
+  segment(
+    "edge:founding-capital",
+    "ORDER",
+    "event:founding",
+    "event:capital",
+    { x: -210, y: -250 },
+    { x: 35, y: -175 }
+  ),
+  segment(
+    "edge:capital-hunmin",
+    "CAUSES",
+    "event:capital",
+    "event:hunmin",
+    { x: 35, y: -175 },
+    { x: -105, y: -40 }
+  ),
+  segment(
+    "edge:hunmin-promulgation",
+    "ORDER",
+    "event:hunmin",
+    "event:promulgation",
+    { x: -105, y: -40 },
+    { x: 155, y: 38 }
+  ),
+  segment(
+    "edge:promulgation-sarim",
+    "INFLUENCES",
+    "event:promulgation",
+    "event:sarim",
+    { x: 155, y: 38 },
+    { x: -185, y: 155 }
+  ),
+  segment(
+    "edge:sarim-reform",
+    "CAUSES",
+    "event:sarim",
+    "event:reform",
+    { x: -185, y: 155 },
+    { x: 75, y: 235 }
+  ),
+  segment(
+    "edge:reform-war",
+    "ORDER",
+    "event:reform",
+    "event:war",
+    { x: 75, y: 235 },
+    { x: 220, y: 355 }
+  )
 ] satisfies GraphShellChartPlaneEntity[];
 
 const mockRegions: GraphShellChartPlaneEntity[] = [
@@ -87,10 +135,15 @@ const mockRegions: GraphShellChartPlaneEntity[] = [
     label: "조선 전기",
     geometryKind: "region",
     validationState: "ok",
-    contains: ["event:founding", "event:capital", "event:hunmin", "event:promulgation"],
+    contains: [
+      "event:founding",
+      "event:capital",
+      "event:hunmin",
+      "event:promulgation"
+    ],
     diagnostics: [],
     viewportClass: "visible",
-    worldBounds: { minX: -260, minY: -300, maxX: 205, maxY: 88 },
+    worldBounds: { minX: -260, minY: -300, maxX: 205, maxY: 88 }
   },
   {
     id: "region:mid-joseon",
@@ -102,32 +155,36 @@ const mockRegions: GraphShellChartPlaneEntity[] = [
     contains: ["event:sarim", "event:reform", "event:war"],
     diagnostics: [],
     viewportClass: "visible",
-    worldBounds: { minX: -235, minY: 105, maxX: 270, maxY: 405 },
-  },
+    worldBounds: { minX: -235, minY: 105, maxX: 270, maxY: 405 }
+  }
 ];
 
 function createMockWorkspace(locale: AppLocale): GraphShellWorkspaceShell {
   const ko = locale === "ko";
   return {
     menuItems: [{ id: "global", label: ko ? "전체" : "Global", active: true }],
-    tabs: [{
-      id: "timeline:gregorian",
-      label: ko ? "그레고리력" : "Gregorian",
-      description: ko ? "MOCK 연표" : "MOCK timeline",
-      availableCanonIds: [CANON_ID],
-      defaultEnabledCanonIds: [CANON_ID],
-      timeSystemId: "time:gregorian-historical",
-      compatibilityKey: "gregorian-historical",
-    }],
-    canons: [{
-      id: CANON_ID,
-      label: ko ? "조선 왕조" : "Joseon Dynasty",
-      worldId: "world:mock-history",
-      worldLabel: ko ? "세계사" : "World History",
-      timeSystemId: "time:gregorian-historical",
-      timeSystemLabel: ko ? "그레고리력" : "Gregorian",
-      compatibilityKey: "gregorian-historical",
-    }],
+    tabs: [
+      {
+        id: "timeline:gregorian",
+        label: ko ? "그레고리력" : "Gregorian",
+        description: ko ? "MOCK 연표" : "MOCK timeline",
+        availableCanonIds: [CANON_ID],
+        defaultEnabledCanonIds: [CANON_ID],
+        timeSystemId: "time:gregorian-historical",
+        compatibilityKey: "gregorian-historical"
+      }
+    ],
+    canons: [
+      {
+        id: CANON_ID,
+        label: ko ? "조선 왕조" : "Joseon Dynasty",
+        worldId: "world:mock-history",
+        worldLabel: ko ? "세계사" : "World History",
+        timeSystemId: "time:gregorian-historical",
+        timeSystemLabel: ko ? "그레고리력" : "Gregorian",
+        compatibilityKey: "gregorian-historical"
+      }
+    ],
     defaultTabId: "timeline:gregorian",
     buildRevision: "mock-urdr-graph-v1",
     chronologyBoard: {
@@ -138,16 +195,19 @@ function createMockWorkspace(locale: AppLocale): GraphShellWorkspaceShell {
         compatibilityKey: "gregorian-historical",
         startYear: 1388,
         endYear: 1598,
-        tickYears: [1388, 1392, 1443, 1446, 1506, 1592, 1598],
+        tickYears: [1388, 1392, 1443, 1446, 1506, 1592, 1598]
       },
       columns: [],
       placements: [],
-      unplaced: [],
-    },
+      unplaced: []
+    }
   };
 }
 
-function createMockEventDetail(eventId: string, locale: AppLocale): EventDetailResponse {
+function createMockEventDetail(
+  eventId: string,
+  locale: AppLocale
+): EventDetailResponse {
   const entity = mockPoints.find((candidate) => candidate.eventId === eventId);
   const title = entity?.label ?? eventId;
   return {
@@ -157,15 +217,16 @@ function createMockEventDetail(eventId: string, locale: AppLocale): EventDetailR
     title,
     participantEventIds: [],
     figureHandleIds: [],
-    notes: locale === "ko"
-      ? `**MOCK 데이터** — ${title} 사건의 상세 설명입니다. 실제 URDR API 연결 전 렌더링 확인용입니다.`
-      : `**MOCK data** — Render-only detail for ${title} before the URDR API is connected.`,
+    notes:
+      locale === "ko"
+        ? `**MOCK 데이터** — ${title} 사건의 상세 설명입니다. 실제 URDR API 연결 전 렌더링 확인용입니다.`
+        : `**MOCK data** — Render-only detail for ${title} before the URDR API is connected.`,
     contextEventIds: [],
     chronologySummary: locale === "ko" ? "조선 시대" : "Joseon period",
     placeEvents: [],
     people: [],
     causeEvents: [],
-    resultEvents: [],
+    resultEvents: []
   };
 }
 
@@ -186,10 +247,10 @@ export const graphReadLoader: GraphReadLoader = {
       regions: mockRegions,
       diagnostics: [],
       truncated: false,
-      cache: { stale: false },
+      cache: { stale: false }
     };
   },
   async loadEventDetail(locale, eventId) {
     return createMockEventDetail(eventId, locale);
-  },
+  }
 };

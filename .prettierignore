@@ -5,3 +5,11 @@ playwright-report
 test-results
 pnpm-lock.yaml
 docs
+apps/atropos-web/src/urdr-port/package.json
+apps/atropos-web/src/urdr-port/shared/contracts
+apps/atropos-web/src/urdr-port/shared/domain
+apps/atropos-web/src/urdr-port/src/App.tsx
+apps/atropos-web/src/urdr-port/src/app-shell.module.css
+apps/atropos-web/src/urdr-port/src/app.css
+apps/atropos-web/src/urdr-port/src/components
+apps/atropos-web/src/urdr-port/src/locale.ts

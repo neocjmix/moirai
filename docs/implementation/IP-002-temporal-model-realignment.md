@@ -16,6 +16,11 @@ depends_on:
 
 ## 완료 후 IP-001 복귀 지점
 
+> 후속 상태: IP-002 종료 뒤 실제로 M4-E와 M4-F까지 수행했다. 2026-09-09 KST 사용자
+> 결정으로 M4는 그 검증 결과를 보존한 채 조기 종료됐고, 남은 graph 작업은
+> [IP-001 M4.5](M4.5-ATROPOS-EXPLORATION-UI.md)로 이관됐다. 아래 문단은 IP-002 종료
+> 당시의 복귀 계약을 기록한 역사적 기준이다.
+
 IP-002는 IP-001을 대체하지 않는 시간 모델 교정 interrupt다. IP-002의 종단간 수용시험과 종료 checkpoint가 통과하면 [IP-001 Milestone 4](IP-001-first-product-plan.md#ip-0018-milestone-4--파생-모델비교그래프)의 **M4-D 다음 단계인 JointJS graph·scope artifact 기본 탐색**으로 복귀한다. 이어서 vertical chronology, subject lane, metro routing, composite region, semantic zoom·LOD와 Canon 비교를 진행하고 Milestone 4 종료조건을 모두 만족한 뒤에만 Milestone 5로 넘어간다.
 
 IP-002 완료를 M4 또는 IP-001 전체 완료로 해석하지 않는다. `CURRENT.md`는 IP-002가 끝날 때 이 복귀 지점을 활성 slice로 명시해야 한다.
@@ -216,9 +221,9 @@ Event resolve와 비영속성, solver projection, 같은 served Revision의 Atro
 `.moirai` 왕복 fingerprint, 설명 가능한 거절 corpus 5건이 모두 통과했다. 상세 실행
 ID·artifact digest와 리팩터링 전후 비교는 [Slice 7 machine-readable evidence](evidence/ip-002-slice7-production-revalidation-2026-09-08.json)에 고정했다.
 
-따라서 IP-002는 완료다. 실행 포인터는 IP-001 M4-D 다음 JointJS graph·scope artifact
-기본 탐색으로 복귀한다. 100k scope·LOD와 Canon 비교를 포함한 M4 종료조건을 모두
-통과하기 전에는 M5를 활성화하지 않는다.
+따라서 IP-002는 완료다. 당시 실행 포인터는 IP-001 M4-D 다음 JointJS graph·scope
+artifact 기본 탐색으로 복귀했고, 실제 M4-E·F까지 완료했다. 2026-09-09 이후 실행
+포인터는 M4.5이며 M4.5 종료 전에는 M5를 활성화하지 않는다.
 
 현재 로컬 환경에서 `pnpm`은 ignored build scripts 정책으로 실행이 막힐 수 있다. 이를 우회하려고 dependency 정책을 조용히 바꾸지 말고 CI 또는 승인된 설치 절차를 사용한다.
 
@@ -243,8 +248,8 @@ Slice 7 이후 production rollback은 호환 계층 재활성화나 데이터 do
 
 ## 완료 후 실행 포인터
 
-1. `docs/implementation/CURRENT.md`의 IP-001 M4 활성 slice를 따른다.
-2. JointJS graph·scope artifact 기본 탐색부터 시작한다.
-3. 이후 vertical chronology, subject lane, metro routing, composite region, semantic zoom·LOD와 Canon 비교를 진행한다.
-4. IP-002의 Event/Relation 시간 정본과 production acceptance corpus는 M4 그래프의 회귀 기준으로 유지한다.
-5. M4 종료조건을 모두 통과하기 전에는 M5를 활성화하지 않는다.
+1. `docs/implementation/CURRENT.md`의 활성 slice를 따른다.
+2. M4-E JointJS graph·scope와 M4-F vertical chronology 완료 이력을 보존한다.
+3. 남은 subject lane, metro routing, composite region, semantic zoom·LOD와 Canon 비교는 [M4.5 계획](M4.5-ATROPOS-EXPLORATION-UI.md)을 따른다.
+4. IP-002의 Event/Relation 시간 정본과 production acceptance corpus는 M4.5 graph의 회귀 기준으로 유지한다.
+5. M4.5 종료조건을 모두 통과하기 전에는 M5를 활성화하지 않는다.

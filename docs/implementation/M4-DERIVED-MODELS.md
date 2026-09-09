@@ -2,6 +2,12 @@
 
 관련 기준: CON-003, BR-003, BR-004, JRN-005, TS-005, TS-006, IS-001, IP-001 M4.
 
+> 2026-09-09 KST 사용자 결정으로 M4는 Slice A~F의 검증 결과를 보존한 채 조기
+> 종료됐다. 원래 M4 종료조건을 모두 만족한 완료가 아니다. 이후 graph query, Canon
+> 비교, 규모 제어와 viewport 작업은
+> [M4.5 Atropos 탐색 UI 계획](M4.5-ATROPOS-EXPLORATION-UI.md)에서 Moirai-native
+> 계약으로 다시 시작한다.
+
 ## Slice A — 결정적 Timeline projection
 
 독자가 Clotho Synthetic Observatory의 chronology를 공개 Atropos에서 읽을 수 있게 한다. 입력은 정확한 World Revision의 Canon, Event, Time System, temporal placement와 `precedes` Relation이다. 출력은 Canon의 사실을 수정하지 않는 Revision별 immutable graph artifact다. 로컬 contract test는 고정된 Lantern revision 2 fixture를 사용한다.

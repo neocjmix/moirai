@@ -20,7 +20,7 @@ traces:
 
 ## TS-006.1 목적
 
-이 명세는 Atropos가 Publication Snapshot을 읽어 World, Canon, Event, Narrative와 파생 관점을 공개하고, 안정적인 URL과 그래프 탐색을 제공하는 방식을 정의한다.
+이 명세는 Atropos가 Publication Snapshot을 읽어 World, Canon, Event, Narrative와 파생 관점을 공개하고, 안정적인 URL과 단일·복수 World 그래프 탐색을 제공하는 방식을 정의한다.
 
 Atropos는 유일한 공개 사용자 서비스다. 공개 화면은 정본 저장소의 관리 UI가 아니며 내부 데이터 구조를 그대로 노출하지 않는다.
 
@@ -83,6 +83,10 @@ Publication Store는 S3-compatible object storage에 Revision별 artifact를 기
 
 Atropos server component와 client component가 각각 `current.json`을 읽어 서로 다른 Revision을 선택해서는 안 된다. server가 선택한 Revision을 page bootstrap data로 전달한다.
 
+복수 World graph session은 각 World에서 위 절차를 독립적으로 수행하고
+`world_id → served_revision` vector를 고정한다. 하나의 합성 Revision 번호를 만들거나,
+한 source의 실패 때문에 다른 source를 새 Revision으로 이동시키지 않는다.
+
 ## TS-006.5 공개 URL
 
 ### 정본 대상 URL
@@ -111,6 +115,8 @@ Atropos server component와 client component가 각각 `current.json`을 읽어 
 - `range`: 선택한 시간 범위
 - `relations`: relation type filter
 - `canons`: 비교할 Canon ID 목록
+- `queryVersion`: 복수 source graph query encoding version
+- `sources`: World, Canon, served Revision을 보존하는 정규화된 source set
 - `zoom`, `x`, `y`: 그래프 viewport를 공유할 때의 정규화된 값
 
 UI 내부의 일시적 panel open 상태와 hover 상태는 URL에 넣지 않는다. 공유 URL을 생성할 때 parameter 순서와 기본값을 정규화한다.
@@ -142,8 +148,9 @@ Atropos의 공개 graph surface는 다음 디자인 문법을 유지한다.
 - 화면의 중심은 여백 없이 이어지는 fullscreen graph·chronology canvas다.
 - 배경은 따뜻한 ivory 계열, 기본 text와 선택 대상은 짙은 slate 계열을 사용한다.
 - 강조색은 muted coral·amber 계열을 사용하되 Canon 우열을 암시하는 고정 색 체계를 만들지 않는다.
-- chrome은 최소화하고 상단 중앙의 compact status island에 현재 World·Canon·view와 공개 가능한 projection·불확실성 경고를 모은다.
-- status island는 pill 상태에서 검색·Canon·Timeline 선택 panel로 확장된다.
+- chrome은 최소화하고 상단 중앙의 compact status island에 현재 Time System,
+  World·Canon source set, view와 공개 가능한 projection·불확실성 경고를 모은다.
+- status island는 pill 상태에서 source, entity, relation, 검색과 diagnostic query panel로 확장된다.
 - Event detail은 모바일 우선의 bottom sheet로 열리며 peek와 fullscreen 두 단계를 가진다.
 - surface는 16~28px의 큰 radius, 얇은 중립 border와 낮은 대비 shadow를 사용한다.
 - animation은 짧은 opacity 변화와 `cubic-bezier(0.2, 0.9, 0.22, 1)` 계열의 부드러운 위치·크기 전환을 사용한다.
@@ -350,3 +357,28 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 10. Canon 비교 화면이 구조적 Relation과 correspondence를 시각적으로 혼동시키지 않는다.
 11. bounded 연·월·일은 아는 범위까지만 표시하고 ms·ps canonical coordinate는 공개 JSON과 상세 텍스트에서 손실 없이 읽힌다.
 12. child membership과 during-only 제약을 구분하고 relative-only Event에 날짜를 발명하지 않는다.
+13. 선택한 Time System과 호환되는 World만 복수 source에 추가할 수 있다.
+14. 복수 World graph와 text fallback이 같은 World별 Revision vector를 읽는다.
+15. 같은 화면의 World·Canon이 사실, Relation, Subject 또는 Revision 하나로 병합되지 않는다.
+16. 이름·slug·calendar kind가 같다는 이유만으로 Time System compatibility를 만들지 않는다.
+
+## TS-006.21 복수 World graph query composition
+
+복수 World graph는 canonical federation이 아니라 Atropos의 read-only composition이다.
+
+1. 사용자가 하나의 target Time System 관점을 선택한다.
+2. Atropos는 accepted adapter 계약으로 target과 비교 가능한 source Time System을 찾는다.
+3. 호환 Time System을 사용하는 World를 복수 선택하고 각 World의 Canon을 복수 선택한다.
+4. source별 `current.json`에서 선택한 served Revision을 고정한 뒤 immutable artifact만 읽는다.
+5. 결과는 World·Canon·Revision source identity를 모든 Event, Relation, 파생 결과와
+   diagnostic에 보존한다.
+6. cross-World Event identity, Relation 또는 Canon correspondence는 별도 명시적 근거
+   없이 만들지 않는다.
+
+Time System 호환성과 Event 배치 가능성은 구분한다. World가 선택한 target과
+호환되더라도 시간 근거가 없는 Event는 제거하거나 가짜 좌표를 부여하지 않고
+`unplaced`로 남긴다.
+
+복수 World query의 의미 결과는 renderer cell과 독립적이어야 한다. 기존 UI를 위한
+adapter가 일부 의미를 표시하지 못하면 그 손실을 diagnostic으로 공개하며, renderer의
+제약을 Publication 또는 graph query contract로 역전파하지 않는다.

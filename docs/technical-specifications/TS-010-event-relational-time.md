@@ -149,6 +149,14 @@ Moirai core는 Gregorian을 절대 시간축으로 채택하지 않는다. 모�
 
 좌표 family는 calendar, ordinal, continuous scalar, relative, custom을 지원할 수 있으나 이는 Event 종류가 아니라 adapter의 문법과 능력이다. Gregorian과 호환되지 않는 가상력, 지질 시간, 빅뱅 이후 임의정밀도 우주 시간도 자기 adapter 안에서 동일한 Time Event·Relation 문법을 사용한다. 지원하지 않는 계산은 좌표를 꾸며내지 않고 `unresolved`로 반환한다.
 
+Atropos가 복수 World를 하나의 시간 관점에 함께 놓을 때도 이 capability 경계를
+유지한다. 각 World는 반출의 자기완결성을 위해 별도 Time System ID를 가지므로 ID
+일치 자체를 요구하지 않지만, accepted contract가 정한 동일한 adapter identity,
+comparison domain과 definition version을 사용하거나 target으로 가는 등록된 lossless
+conversion이 있어야 한다. title, slug, `kind` 또는 좌표 문자열 모양의 일치는
+호환성 근거가 아니다. 호환성은 World·Canon의 사실 병합이나 cross-World identity를
+만들지 않는다.
+
 예를 들어 스타워즈 같은 허구 세계의 달력은 출전이 정의한 custom coordinate를 그대로 보존하며, 정의되지 않은 Gregorian 환산을 만들지 않는다. 빅뱅 직후 사건은 기원 이후 경과량을 임의정밀도 scalar string으로 표현하고 해당 adapter가 제공하는 범위에서만 비교·차이를 계산한다. 칙술루브 충돌과 공룡 멸종은 각각 별도 Event 또는 Composite Event로 두고, 지질 연대의 알려진 범위와 둘 사이의 authored 관계를 함께 보존한다. 학설이 다른 경우에는 Canon 또는 provenance를 분리하며 하나의 exact Gregorian timestamp로 합치지 않는다.
 
 수용시험의 공통 adapter는 `proleptic-gregorian-utc@1`이다.

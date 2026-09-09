@@ -24,6 +24,7 @@ function target(from: string, spec: string): string {
   return spec;
 }
 function forbidden(from: string, to: string): boolean {
+  if (from.startsWith("packages/contracts/")) return to.includes("urdr-port");
   if (from.startsWith("packages/clotho-application/"))
     return (
       /^(packages\/(persistence|publication)|apps\/|skills\/|fastify|jose|@modelcontextprotocol|pg(?:\/|$)|kysely)/.test(
@@ -91,6 +92,7 @@ function scan(dir: string): void {
 }
 for (const dir of [
   "apps/clotho-api/src",
+  "packages/contracts/src",
   "packages/clotho-application/src",
   "packages/lachesis/src"
 ])
@@ -106,4 +108,4 @@ for (const name of ["@moirai/clotho-application"]) {
 }
 if (failures.length)
   throw new Error(`Architecture boundary violations:\n${failures.join("\n")}`);
-process.stdout.write("Clotho/Lachesis dependency boundaries passed\n");
+process.stdout.write("Moirai architecture dependency boundaries passed\n");

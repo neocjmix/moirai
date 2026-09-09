@@ -1,6 +1,7 @@
 import type { CONTRACT_VERSION } from "./versions.js";
 export * from "./versions.js";
 export * from "./clotho.js";
+export * from "./graph.js";
 
 export type EntityType =
   | "world"

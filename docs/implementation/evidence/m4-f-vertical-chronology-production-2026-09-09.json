@@ -1,0 +1,85 @@
+{
+  "evidence_version": "m4-f-vertical-chronology-production-v1",
+  "status": "pass_with_operational_debt",
+  "implementation_sha": "43b0d8fea67d1afd679360a91203b501136ec84b",
+  "deployed_application_sha": "5abc536527afa61dd34a8b760060a83e3e99aab8",
+  "implementation": {
+    "pull_request": 13,
+    "pr_ci_run": 34225538578,
+    "pr_ci_status": "success"
+  },
+  "deployment": {
+    "atropos_health_status": "ok",
+    "clotho_readiness_status": "ok",
+    "atropos_clotho_sha_equal": true,
+    "publication_projection_status": "ready"
+  },
+  "trial": {
+    "world_id": "01995c2a-7b00-7000-8000-000000000101",
+    "canon_id": "019f4c00-0000-7000-8000-000000000102",
+    "change_set_id": "01a083a3-ba19-7596-8ac6-28e222298a1b",
+    "narrative_id": "01a083a3-e129-751f-99db-8afa25ad4448",
+    "plan_digest": "c096ff53ac0d174981e55967123cc18f7dd752648427f9f8f952fafd391d7a76",
+    "validate_valid": true,
+    "validate_errors": 0,
+    "validate_warnings": 0,
+    "committed_revision": 2,
+    "publication_target_revision": 2,
+    "served_revision": 2,
+    "idempotent_replay": true,
+    "existing_event_relation_semantics_changed": false
+  },
+  "graph_scope": {
+    "algorithm_version": "event-relational-graph-scope/2",
+    "semantic_digest": "cdb52d6fdaa03c4b5cd11c1d8ddc5f873eec0f108cc06f54088184247d7b7ce9",
+    "source_revision": 2,
+    "served_revision": 2,
+    "node_count": 4,
+    "link_count": 4,
+    "visible_cells": 8,
+    "visible_labels": 4,
+    "truncated": false,
+    "relative_component_preserved": true,
+    "relative_ranks": {
+      "019f4c00-0000-7000-8000-000000000201": 0,
+      "019f4c00-0000-7000-8000-000000000202": 1
+    },
+    "chronology_evidence_relation_id": "019f4c00-0000-7000-8000-000000000301",
+    "unplaced_event_count": 2,
+    "immutable_cache_control": "public, max-age=31536000, immutable",
+    "etag_present": true
+  },
+  "atropos": {
+    "home_discovers_world_revision_2": true,
+    "canon_revision_2_server_rendered": true,
+    "jointjs_cell_count": 8,
+    "jointjs_event_labels_rendered": 4,
+    "event_selection_panel_rendered": true,
+    "focus_query_url_updated": true,
+    "accessible_chronology_text_rendered": true,
+    "horizontal_page_overflow": false
+  },
+  "scope_boundaries": {
+    "temporal_expressiveness_worlds_modified": false,
+    "schema_modified": false,
+    "clotho_write_contract_modified": false,
+    "existing_events_created_or_modified": false,
+    "existing_relations_created_or_modified": false,
+    "m5_active": false
+  },
+  "operational_debt": {
+    "post_deploy_run": 34293280937,
+    "public_readiness_step": "success",
+    "clotho_build_step": "success",
+    "authenticated_github_bearer_step": "failure",
+    "failure_point": "MCP request with stale GitHub Actions CLOTHO_TOKEN",
+    "product_oauth_validate_commit_read": "success",
+    "follow_up": "Rotate the dedicated CI bearer in both GitHub Actions and the Clotho credential registry without weakening OIDC."
+  },
+  "next": {
+    "plan": "IP-001",
+    "milestone": "M4",
+    "candidate_slice": "subject lanes and metro routing",
+    "m5_active": false
+  }
+}

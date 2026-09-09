@@ -230,3 +230,12 @@ Time System과 같은 축을 만들지 않는다. authored cross-system Relation
 5. shuffled input은 같은 component, rank, cell 순서와 semantic digest를 만든다.
 6. Atropos JointJS와 접근 가능한 텍스트가 같은 served Revision에서 mode와 band 의미를 제공한다.
 7. 전체 CI와 별도 Graph Scope Observatory의 production chronology smoke가 통과한다.
+
+### 완료 근거
+
+- PR [#13](https://github.com/neocjmix/moirai/pull/13)을 squash 병합한 `43b0d8fea67d1afd679360a91203b501136ec84b`의 PR CI [34225538578](https://github.com/neocjmix/moirai/actions/runs/34225538578)가 성공했다.
+- production은 후속 Atropos 관측면 수정까지 포함한 `5abc536527afa61dd34a8b760060a83e3e99aab8`을 제공한다. Atropos와 Clotho readiness SHA가 일치한다.
+- 실제 Clotho OAuth로 Graph Scope Observatory에 Canon annotation 하나만 append해 revision 2를 만들었다. 같은 Change Plan replay는 새 Revision 없이 `idempotent_replay = true`를 반환했다.
+- revision 2의 immutable `scope-overview.json`은 `event-relational-graph-scope/2`, 8 cell·4 label, `truncated = false`다. `Signal detected`와 `Investigation`은 같은 relative component의 rank 0·1이며 원본 `precedes` Relation ID를 evidence로 가진다. 시간 근거가 없는 Event 두 개는 `unplaced`다.
+- Atropos 메인에서 served revision 2를 발견하고 Canon, hydrated JointJS, Event 선택 panel, focus query URL과 접근 가능한 시간 텍스트까지 같은 Revision으로 확인했다. body horizontal overflow는 없었다.
+- 자동 post-deploy smoke [34293280937](https://github.com/neocjmix/moirai/actions/runs/34293280937)은 공개 readiness와 build 뒤 별도 GitHub bearer의 MCP 요청에서 실패했다. 실제 OAuth 제품 경로 성공과 분리된 운영 부채로 유지한다. 상세 판정은 [machine-readable production evidence](evidence/m4-f-vertical-chronology-production-2026-09-09.json)에 기록한다.

@@ -5,6 +5,39 @@ const canonId = "019f3b00-0000-7000-8000-000000000002";
 const firstEventId = "019f3b00-0000-7000-8000-000000000101";
 const firstEventTitle = "220년에 기록된 사건";
 
+test("mobile graph shell navigates app screens without consuming graph query state", async ({
+  page
+}) => {
+  await page.goto("/graph?queryVersion=1&sources=fixture");
+
+  const graph = page.getByRole("button", { name: /공개 그래프|Public graph/ });
+  await expect(graph).toHaveAttribute("aria-current", "page");
+
+  await page.getByRole("button", { name: /프라이빗|Private/ }).click();
+  await expect(page).toHaveURL(/\/graph\/private/);
+  expect(new URL(page.url()).searchParams.get("queryVersion")).toBe("1");
+  expect(new URL(page.url()).searchParams.get("sources")).toBe("fixture");
+  await expect(
+    page.getByText(
+      /준비 중 · 현재 사용할 수 없음|Planned · currently unavailable/
+    )
+  ).toBeVisible();
+  await expect(
+    page.getByText(/권한 모델이 승인되기 전|access rules are approved/)
+  ).toBeVisible();
+
+  await page.reload();
+  await expect(
+    page.getByRole("button", { name: /프라이빗|Private/ })
+  ).toHaveAttribute("aria-current", "page");
+
+  await page.getByRole("button", { name: /공개 그래프|Public graph/ }).click();
+  await expect(page).toHaveURL(/\/graph\?/);
+  expect(new URL(page.url()).searchParams.get("queryVersion")).toBe("1");
+  expect(new URL(page.url()).searchParams.get("sources")).toBe("fixture");
+  await expect(graph).toHaveAttribute("aria-current", "page");
+});
+
 test("mobile reader traverses the single relational temporal model", async ({
   page
 }) => {

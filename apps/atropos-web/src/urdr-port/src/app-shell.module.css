@@ -1,0 +1,287 @@
+.shell {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  width: 100vw;
+  height: 100dvh;
+  overflow: hidden;
+  background: linear-gradient(180deg, var(--gray-2) 0%, var(--gray-3) 100%);
+  color: var(--gray-12);
+}
+
+.body {
+  position: relative;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.shellPage {
+  width: 100%;
+  height: 100%;
+  padding: calc(env(safe-area-inset-top) + 72px) 16px calc(env(safe-area-inset-bottom) + 88px);
+  box-sizing: border-box;
+  overflow: auto;
+}
+
+.shellPageSurface {
+  display: grid;
+  gap: 12px;
+  width: min(640px, 100%);
+  padding: 18px;
+  border: 1px solid var(--gray-6);
+  border-radius: 20px;
+  background: var(--gray-1);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+}
+
+.shellSectionTitle {
+  color: var(--gray-12);
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.shellSectionBody {
+  color: var(--gray-11);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.shellLanguagePanel {
+  display: grid;
+  gap: 10px;
+}
+
+.shellLanguageHeader {
+  color: var(--gray-12);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shellLanguageHint {
+  color: var(--gray-10);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.shellLanguageActions {
+  display: grid;
+  gap: 8px;
+}
+
+.shellLanguageStatus {
+  color: var(--gray-11);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.shellSettingsSection {
+  display: grid;
+  gap: 10px;
+  padding-top: 4px;
+  border-top: 1px solid var(--gray-6);
+}
+
+.shellSegmentedControl {
+  display: inline-grid;
+  grid-auto-flow: column;
+  gap: 8px;
+}
+
+.shellSegmentedButton {
+  min-height: 32px;
+  padding: 0 14px;
+  border: 1px solid var(--gray-6);
+  border-radius: 16px;
+  background: var(--gray-2);
+  color: #111;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.shellSegmentedButtonActive {
+  background: #111;
+  color: #fff;
+}
+
+.shellSliderList {
+  display: grid;
+  gap: 10px;
+}
+
+.shellSliderItem {
+  display: grid;
+  gap: 6px;
+}
+
+.shellSliderLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  color: var(--gray-11);
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.shellSlider {
+  width: 100%;
+}
+
+.shellSecondaryButton {
+  min-height: 32px;
+  width: fit-content;
+  padding: 0 14px;
+  border: 1px solid var(--gray-6);
+  border-radius: 16px;
+  background: var(--gray-2);
+  color: #111;
+  font: inherit;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.bottomTabCollapseButton,
+.bottomTabButton {
+  border: 0;
+  color: inherit;
+  font: inherit;
+}
+
+.bottomTabDock {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 10020;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  padding: 0;
+  pointer-events: none;
+}
+
+.bottomTabRail {
+  --bottom-tab-toggle-height: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  pointer-events: none;
+  transition: transform 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.bottomTabCollapseButton {
+  pointer-events: auto;
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: var(--bottom-tab-toggle-height);
+  border-radius: 10px 10px 0 0;
+  border: 1px solid var(--gray-6);
+  border-bottom: 0;
+  background: var(--gray-1);
+  transform: translateY(1px);
+  margin-bottom: -1px;
+  transition:
+    transform 220ms cubic-bezier(0.22, 1, 0.36, 1),
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.bottomTabCollapseButton svg {
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.bottomTabBar {
+  pointer-events: auto;
+  position: relative;
+  z-index: 1;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 6px;
+  width: 100%;
+  padding: 8px 0 max(18px, calc(env(safe-area-inset-bottom) + 10px));
+  border: 1px solid var(--gray-6);
+  border-bottom: 0;
+  border-radius: 0;
+  background: var(--gray-1);
+  box-shadow: 0 24px 60px rgba(15, 23, 42, 0.14);
+  margin-top: -1px;
+  transform: translateY(0);
+  transform-origin: bottom center;
+  transition:
+    transform 260ms cubic-bezier(0.22, 1, 0.36, 1),
+    box-shadow 220ms ease;
+}
+
+.bottomTabButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 36px;
+  padding: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--gray-9);
+  transform: translateY(0);
+  transition:
+    transform 180ms ease,
+    background-color 180ms ease,
+    color 180ms ease;
+}
+
+.bottomTabButton:hover,
+.bottomTabButton:focus-visible {
+  transform: translateY(-2px);
+}
+
+.bottomTabButtonActive {
+  color: var(--gray-12);
+}
+
+.bottomTabDock[data-collapsed="true"] .bottomTabCollapseButton {
+  transform: translateY(0);
+}
+
+.bottomTabDock[data-collapsed="true"] .bottomTabCollapseButton svg {
+  transform: rotate(180deg);
+}
+
+.bottomTabDock[data-collapsed="true"] .bottomTabRail {
+  transform: translateY(calc(100% - var(--bottom-tab-toggle-height)));
+}
+
+.bottomTabDock[data-collapsed="true"] .bottomTabBar {
+  box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+}
+
+@media (min-width: 768px) {
+  .shellPage {
+    padding-right: 24px;
+    padding-left: 24px;
+  }
+
+  .shellPageSurface {
+    padding: 20px;
+  }
+
+  .body {
+    padding: 0;
+  }
+
+  .bottomTabBar {
+    gap: 8px;
+    padding: 10px 0 max(10px, env(safe-area-inset-bottom));
+  }
+
+  .bottomTabButton {
+    min-height: 40px;
+  }
+}

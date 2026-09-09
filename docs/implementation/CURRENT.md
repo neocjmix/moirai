@@ -7,7 +7,7 @@
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
 | 실행 상태                  | `in_progress` — IP-001 M4.5 계획 활성; M4는 Slice A~F 증거를 보존하고 조기 종료                                               |
 | 활성 milestone             | [M4.5 — Atropos 탐색 UI와 Moirai-native graph query](M4.5-ATROPOS-EXPLORATION-UI.md)                                          |
-| 현재 slice                 | M4.5-B App shell 의미 재구성; graph viewport 변경 금지, M5 비활성                                                            |
+| 현재 slice                 | M4.5-C Sources query island; graph viewport 변경 금지, M5 비활성                                                             |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
@@ -58,7 +58,13 @@ M4.5-A는 versioned `MoiraiGraphQuery`, `MoiraiGraphQueryResult`, URL state와 l
 report를 `@moirai/contracts`에 고정하고 완료했다. 모든 canonical EventReference와 Relation
 type의 JSON 왕복, World별 `7·42` Revision vector 보존, 명시적 adapter identity가 다른
 동명·동종 Time System의 비호환, URDR import 금지를 golden test와 architecture 검사로
-검증했다. 다음 활성 slice는 M4.5-B이며 기존 viewport algorithm은 계속 변경하지 않는다.
+검증했다. 이어서 M4.5-B를 수행했으며 기존 viewport algorithm은 변경하지 않았다.
+
+M4.5-B는 app-level screen registry와 reload 가능한 `/graph/private`, `/graph/explore`,
+`/graph/settings` 경로를 추가하고 완료했다. Private·Explore는 명시적으로 unavailable이며
+향후 auth-gated Operations slot은 하단 navigation에 노출하지 않는다. dock 전환은 graph
+query string을 보존하고 `/graph/operations`는 `404`로 닫힌다. 다음 활성 slice는
+M4.5-C Sources query island다.
 
 ## 시간 모델 재정렬 Slice 0
 

@@ -4,6 +4,12 @@
 import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
 import { GearIcon, GlobeIcon, LockClosedIcon, MagnifyingGlassIcon, ChevronDownIcon } from "@radix-ui/react-icons";
 import { graphShellWorkspaceShellSchema, type GraphShellWorkspaceShell } from "@urdr/contracts";
+import {
+  ATROPOS_PRIMARY_SCREENS,
+  getAtroposScreen,
+  resolveAtroposScreen,
+  type AtroposScreenId,
+} from "../../lib/atropos-screen-registry";
 
 import appShellStyles from "./app-shell.module.css";
 import { GraphShell } from "./components/graph-shell";
@@ -18,11 +24,10 @@ import {
   type AppLocale,
 } from "./locale";
 
-type ShellPage = "global" | "private" | "explore" | "settings";
-
 type AppProps = {
+  initialScreen?: AtroposScreenId;
   loader?: GraphReadLoader;
-  renderGlobalPage?: (args: {
+  renderGraphPage?: (args: {
     workspace: GraphShellWorkspaceShell;
     locale: AppLocale;
     compositeHullMode: CompositeHullMode;
@@ -58,36 +63,13 @@ function createLoadingWorkspace(locale: AppLocale): GraphShellWorkspaceShell {
   };
 }
 
-function resolveShellPage(pathname: string): ShellPage {
-  if (pathname === "/" || pathname === "/global") {
-    return "global";
-  }
-
-  if (pathname === "/private") {
-    return "private";
-  }
-
-  if (pathname === "/explore") {
-    return "explore";
-  }
-
-  if (pathname === "/settings") {
-    return "settings";
-  }
-
-  return "global";
-}
-
-function getShellPagePath(page: ShellPage) {
-  return page === "global" ? "/" : `/${page}`;
-}
-
 const SHELL_PAGE_COPY = {
   ko: {
     privateTitle: "프라이빗",
-    privateBody: "개인 타임라인과 비공개 작업 공간을 위한 페이지입니다. 곧 실제 기능을 채울 예정입니다.",
+    privateBody: "개인 데이터 영역의 진입점입니다. 비공개 Publication과 권한 모델이 승인되기 전에는 사용할 수 없습니다.",
     exploreTitle: "탐색",
-    exploreBody: "캐논을 넘나드는 탐색과 발견 경험을 위한 페이지입니다. 곧 실제 기능을 채울 예정입니다.",
+    exploreBody: "그래프와 별개인 발견 화면의 자리입니다. 현재 릴리스에서는 사용할 수 없습니다.",
+    unavailableLabel: "준비 중 · 현재 사용할 수 없음",
     settingsTitle: "언어",
     settingsBody: "브라우저 언어를 우선 사용하되, 여기서 수동으로 덮어쓸 수 있습니다.",
     settingsLanguageTitle: "앱 언어",
@@ -100,9 +82,10 @@ const SHELL_PAGE_COPY = {
   },
   en: {
     privateTitle: "Private",
-    privateBody: "A page for personal timelines and private workspaces. Real functionality will land here next.",
+    privateBody: "Entry point for personal data. It remains unavailable until private Publication and access rules are approved.",
     exploreTitle: "Explore",
-    exploreBody: "A page for cross-canon discovery and browsing. Real functionality will land here next.",
+    exploreBody: "Reserved for discovery outside the graph. It is unavailable in this release.",
+    unavailableLabel: "Planned · currently unavailable",
     settingsTitle: "Language",
     settingsBody: "The app prefers the browser locale, but you can override it here.",
     settingsLanguageTitle: "App language",
@@ -115,20 +98,18 @@ const SHELL_PAGE_COPY = {
   },
 } as const;
 
-const APP_SHELL_SECTIONS = [
-  { id: "global" as const, label: { ko: "글로벌", en: "Global" }, icon: GlobeIcon },
-  { id: "private" as const, label: { ko: "프라이빗", en: "Private" }, icon: LockClosedIcon },
-  { id: "explore" as const, label: { ko: "탐색", en: "Explore" }, icon: MagnifyingGlassIcon },
-  { id: "settings" as const, label: { ko: "설정", en: "Settings" }, icon: GearIcon },
-];
+const SCREEN_ICONS = {
+  graph: GlobeIcon,
+  private: LockClosedIcon,
+  explore: MagnifyingGlassIcon,
+  settings: GearIcon,
+} as const;
 
-export function App({ loader = graphReadLoader, renderGlobalPage }: AppProps = {}) {
+export function App({ initialScreen = "graph", loader = graphReadLoader, renderGraphPage }: AppProps = {}) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(() => readManualAppLocaleOverride());
-  const [activePage, setActivePage] = useState<ShellPage>(() =>
-    resolveShellPage(typeof window === "undefined" ? "/graph" : window.location.pathname)
-  );
+  const [activePage, setActivePage] = useState<AtroposScreenId>(initialScreen);
   const [tabBarCollapsed, setTabBarCollapsed] = useState(false);
   const browserLocale = useMemo(
     () =>
@@ -146,10 +127,10 @@ export function App({ loader = graphReadLoader, renderGlobalPage }: AppProps = {
   const loadingWorkspace = useMemo(() => createLoadingWorkspace(locale), [locale]);
   const [workspace, setWorkspace] = useState<GraphShellWorkspaceShell | null>(null);
   const [workspaceStatus, setWorkspaceStatus] = useState<"loading" | "ready" | "unavailable">("loading");
-  const graphWorkspace = workspace ?? (workspaceStatus === "loading" && !renderGlobalPage ? loadingWorkspace : null);
-  const GlobalPageContent = () =>
-    graphWorkspace ? renderGlobalPage ? (
-      <>{renderGlobalPage({ workspace: graphWorkspace, locale, compositeHullMode, compositeSplineTuning })}</>
+  const graphWorkspace = workspace ?? (workspaceStatus === "loading" && !renderGraphPage ? loadingWorkspace : null);
+  const GraphPageContent = () =>
+    graphWorkspace ? renderGraphPage ? (
+      <>{renderGraphPage({ workspace: graphWorkspace, locale, compositeHullMode, compositeSplineTuning })}</>
     ) : (
       <GraphShell
         initialWorkspace={graphWorkspace}
@@ -201,55 +182,23 @@ export function App({ loader = graphReadLoader, renderGlobalPage }: AppProps = {
 
   useEffect(() => {
     const handlePopState = () => {
-      setActivePage(resolveShellPage(window.location.pathname));
+      setActivePage(resolveAtroposScreen(window.location.pathname) ?? "graph");
     };
 
     window.addEventListener("popstate", handlePopState);
     return () => window.removeEventListener("popstate", handlePopState);
   }, []);
 
-  const handleNavigate = useCallback((page: ShellPage) => {
-    const nextPath = getShellPagePath(page);
+  const handleNavigate = useCallback((page: AtroposScreenId) => {
+    const nextPath = getAtroposScreen(page).path;
     if (window.location.pathname !== nextPath) {
-      window.history.pushState({}, "", nextPath);
+      window.history.pushState({}, "", `${nextPath}${window.location.search}${window.location.hash}`);
     }
     setActivePage(page);
   }, []);
 
-  useEffect(() => {
-    if (typeof window === "undefined") {
-      return;
-    }
-
-    const namespace = window._URDR_ ?? {};
-    namespace.toggleHud = () => {
-      const nextPage = activePage === "settings" ? "global" : "settings";
-      handleNavigate(nextPage);
-      return nextPage === "settings";
-    };
-    namespace.showHud = () => {
-      handleNavigate("settings");
-      return true;
-    };
-    namespace.hideHud = () => {
-      handleNavigate("global");
-      return false;
-    };
-    namespace.isHudVisible = () => activePage === "settings";
-    window._URDR_ = namespace;
-
-    return () => {
-      if (window._URDR_ === namespace) {
-        delete namespace.toggleHud;
-        delete namespace.showHud;
-        delete namespace.hideHud;
-        delete namespace.isHudVisible;
-      }
-    };
-  }, [activePage, handleNavigate]);
-
   const renderPage = () => {
-    if (activePage === "global") {
+    if (activePage === "graph") {
       if (workspaceStatus === "unavailable") {
         return (
           <div className={appShellStyles.shellPage}>
@@ -288,7 +237,7 @@ export function App({ loader = graphReadLoader, renderGlobalPage }: AppProps = {
             </div>
           )}
         >
-          <GlobalPageContent />
+          <GraphPageContent />
         </RuntimeErrorBoundary>
       );
     }
@@ -343,6 +292,9 @@ export function App({ loader = graphReadLoader, renderGlobalPage }: AppProps = {
     return (
       <div className={appShellStyles.shellPage}>
         <div className={appShellStyles.shellPageSurface}>
+          <div className={appShellStyles.shellUnavailableStatus} role="status">
+            {copy.unavailableLabel}
+          </div>
           <div className={appShellStyles.shellSectionTitle}>{title}</div>
           <div className={appShellStyles.shellSectionBody}>{body}</div>
         </div>
@@ -366,13 +318,14 @@ export function App({ loader = graphReadLoader, renderGlobalPage }: AppProps = {
           </button>
 
           <nav aria-hidden={tabBarCollapsed} aria-label={copy.primarySectionsAriaLabel} className={appShellStyles.bottomTabBar}>
-            {APP_SHELL_SECTIONS.map((section) => {
-              const SectionIcon = section.icon;
+            {ATROPOS_PRIMARY_SCREENS.map((section) => {
+              const SectionIcon = SCREEN_ICONS[section.id];
               const active = section.id === activePage;
 
               return (
                 <button
                   aria-label={section.label[locale]}
+                  aria-current={active ? "page" : undefined}
                   aria-pressed={active}
                   className={`${appShellStyles.bottomTabButton} ${active ? appShellStyles.bottomTabButtonActive : ""}`}
                   key={section.id}

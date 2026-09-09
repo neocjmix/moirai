@@ -241,6 +241,14 @@ Atropos의 시각적 표현과 interaction은 URDR UI를 기본 reference implem
 
 명시적 근거 없이 URDR UI를 전면 재설계하거나 일반적인 placeholder UI로 대체하지 않는다. 반대로 URDR의 NestJS, Drizzle, Vite application architecture, data model, service contract와 runtime dependency는 복사하지 않는다. UI 코드를 크게 복사하는 slice는 self-review가 가능한 수준으로 URDR source path와 기준 commit을 구현 기록에 남기되, URDR를 제품 의미의 source of truth나 Moirai의 runtime dependency로 만들지 않는다.
 
+복사된 UI component의 prop, loader와 workspace shape도 Moirai의 새 public/query
+contract가 아니다. 이 UI를 연결하기 위해 translation이 필요하면 renderer 직전의
+단방향 반부패 계층에 격리하고 표현하지 못한 의미를 diagnostic으로 남긴다. Moirai의
+EventReference, Relation, Time System, Canon 경계, projection evidence와 lossless
+coordinate를 URDR UI가 받을 수 있는 형태로 축소했다는 이유로 upstream 계약까지
+같은 형태로 바꾸지 않는다. 최종 renderer는 반부패 계층 없이 Moirai-native 결과를
+표현할 수 있어야 한다.
+
 ### 인프라 재사용
 
 역사 문서에서 확인된 재사용 후보는 다음과 같다.

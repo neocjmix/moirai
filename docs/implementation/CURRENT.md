@@ -5,13 +5,16 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `in_progress` — IP-001 M4; Slice F production 검증 완료, 다음 graph slice 준비                                                |
-| 활성 milestone             | M4 — 파생 모델·비교·그래프                                                                                                    |
-| 현재 slice                 | IP-001 M4 Slice F 완료 — 다음 최소 단위는 subject lane·metro routing; M5 비활성                                              |
+| 실행 상태                  | `in_progress` — IP-001 M4.5 계획 활성; M4는 Slice A~F 증거를 보존하고 조기 종료                                               |
+| 활성 milestone             | [M4.5 — Atropos 탐색 UI와 Moirai-native graph query](M4.5-ATROPOS-EXPLORATION-UI.md)                                          |
+| 현재 slice                 | M4.5-A 계약과 anti-corruption 경계; graph viewport 변경 금지, M5 비활성                                                       |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
+| M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
+| `/graph` 기준 application  | PR #19 merge `458cca0183a8b995b6a4edafa12fc104a0659574`; production route 렌더·interaction 확인                              |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
+| M4.5 graph 기준 URL        | <https://moirai-production-8ed1.up.railway.app/graph>                                                                         |
 | Clotho synthetic World     | <https://moirai-production-8ed1.up.railway.app/worlds/01995c2a-7b00-7000-8000-000000000101>                                   |
 | Clotho 인증 API            | <https://desirable-vitality-production-eb95.up.railway.app>                                                                   |
 | M4-A 구현 CI               | [33861480738](https://github.com/neocjmix/moirai/actions/runs/33861480738) `success`                                          |
@@ -37,11 +40,27 @@
 | IP-002 구현 CI             | PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`; [CI 34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511) `success` |
 | 보호 기준선                | branch `baseline/m4d-2026-09-05`; M4-D SHA `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                      |
 
+## M4 종료와 M4.5 활성화
+
+2026-09-09 KST 사용자 결정으로 M4의 추가 구현을 즉시 중단하고 조기 종료했다. M4-A~F의
+구현·CI·production 증거는 보존하지만 원래 M4 종료조건을 모두 만족한 완료로 보고하지
+않는다. 남은 Canon 비교, 100k scope·LOD, subject lane, metro routing과 composite
+region은 [M4.5 상세 계획](M4.5-ATROPOS-EXPLORATION-UI.md)으로 이관했다.
+
+M4.5는 현재 `/graph`의 fullscreen viewport, top floating island, bottom app navigation과
+detail sheet 배치를 유지한다. URDR에서 계승하는 것은 이 UI 구성과 interaction 문법뿐이다.
+entity, query, Time System compatibility, multi-World source, Revision vector와 projection
+결과는 Moirai-native 계약으로 설계한다. legacy translation은 renderer 직전의 단방향
+반부패 계층에만 허용하며 새 계약을 URDR shape에 맞추지 않는다. graph viewport는
+M4.5-A~G 종료 뒤 마지막 M4.5-H에서만 전면 재구축한다.
+
 ## 시간 모델 재정렬 Slice 0
 
 [드리프트 분석](TEMPORAL-MODEL-DRIFT.md)을 바탕으로 2026-09-05 사용자가 [TS-010](../technical-specifications/TS-010-event-relational-time.md)의 strictness, virtual Time Event reference와 Time System 계약을 승인했다. [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)과 [IP-002](IP-002-temporal-model-realignment.md)를 accepted 방향으로 정렬하고 [machine-readable fixture](fixtures/temporal-expressiveness/)를 고정했다.
 
-Slice 0–7과 두 차례 production 종단간 검증을 완료했다. IP-001 M4-D 다음의 JointJS graph·scope artifact 기본 탐색으로 복귀했으며, 100k scope·LOD와 Canon 비교를 포함한 M4 종료조건을 통과하기 전에는 M5로 넘어가지 않는다.
+Slice 0–7과 두 차례 production 종단간 검증을 완료했다. 이후 M4-E·F까지 수행했으며,
+남은 graph 작업은 현재 M4.5로 이관됐다. M4.5 종료와 사용자 승인 전에는 M5로
+넘어가지 않는다.
 
 Slice 1은 [M4-D 시간 동작 특성화 기준선](M4D-TEMPORAL-CHARACTERIZATION.md)과 contracts·domain·projections golden test로 완료했다. current numeric Placement, 피코초 collapse, relative-only order, validate에서 허용되는 `precedes` cycle, descendant-span Process Duration, during 비-membership과 membership State 계산을 교정 전 관찰값으로 고정했다. 이는 TS-010 표현력 합격이 아니다.
 
@@ -67,7 +86,7 @@ Slice 6과 IP-002 종단간 수용시험을 완료했다. 승인 SHA `8ee04b4784
 
 2026-09-08 Slice 7을 완료했다. PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`는 contract v2 단일 write/read/publication 체계만 남기고 Placement·numeric coordinate·legacy adapter·World allowlist·자동 seed를 제거했다. 전체 CI [34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511)이 성공했고 세 production 서비스가 같은 SHA를 실행했다. clean reset 뒤 리팩터링 전 [E2E 34120376433](https://github.com/neocjmix/moirai/actions/runs/34120376433)과 리팩터링 후 [E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154)가 모두 통과했으며, 동적 메타데이터를 제외한 의미 차이는 0건이다. Canon 11 Event·23 Relation, virtual Time Event 비영속성, projection, 같은 served Revision의 Atropos 텍스트·JSON, `.moirai` 왕복 fingerprint와 설명 가능한 거절 5건을 [machine-readable evidence](evidence/ip-002-slice7-production-revalidation-2026-09-08.json)에 고정했다. IP-002는 종료됐다.
 
-2026-09-08 IP-001 M4 Slice E를 완료했다. PR #11 merge `e8d1434f0f59bd7a7bf836e28a47206fd3846bff`는 bounded Canon overview scope artifact와 JointJS 4.x graph, stable focus URL, server-rendered text fallback을 추가했다. PR·main CI의 PostgreSQL 및 WebKit 검증이 모두 성공했다. production Graph Scope Observatory revision 1에 Clotho OAuth로 4 Event·4 Relation을 commit하고 Canon read-back, 8-cell/4-label immutable graph JSON, composite 구분, `contains`와 non-membership `influences` 분리, same-Revision SSR/focus 출력을 확인했다. 자동 post-deploy run `34219201148`은 공개 readiness와 정확한 Atropos SHA까지 통과했으나 별도 GitHub bearer credential의 MCP initialize가 실패했다. 실제 OAuth 제품 경로 검증은 성공했으며 이 bearer 운영 부채는 완료로 숨기지 않는다. 활성 작업은 M4 Slice F 관계 기반 vertical chronology다.
+2026-09-08 IP-001 M4 Slice E를 완료했다. PR #11 merge `e8d1434f0f59bd7a7bf836e28a47206fd3846bff`는 bounded Canon overview scope artifact와 JointJS 4.x graph, stable focus URL, server-rendered text fallback을 추가했다. PR·main CI의 PostgreSQL 및 WebKit 검증이 모두 성공했다. production Graph Scope Observatory revision 1에 Clotho OAuth로 4 Event·4 Relation을 commit하고 Canon read-back, 8-cell/4-label immutable graph JSON, composite 구분, `contains`와 non-membership `influences` 분리, same-Revision SSR/focus 출력을 확인했다. 자동 post-deploy run `34219201148`은 공개 readiness와 정확한 Atropos SHA까지 통과했으나 별도 GitHub bearer credential의 MCP initialize가 실패했다. 실제 OAuth 제품 경로 검증은 성공했으며 이 bearer 운영 부채는 완료로 숨기지 않는다. 당시 다음 작업은 M4 Slice F 관계 기반 vertical chronology였다.
 
 2026-09-09 IP-001 M4 Slice F의 production 검증을 완료했다. PR #13 merge `43b0d8fea67d1afd679360a91203b501136ec84b`의 relation-based vertical chronology가 검증 배포 `5abc536527afa61dd34a8b760060a83e3e99aab8`에 포함됐다. 실제 Clotho OAuth로 Graph Scope Observatory에 Canon annotation 하나만 append해 revision 2를 만들고 replay의 idempotency를 확인했다. immutable graph artifact v2는 `Signal detected`와 `Investigation`을 같은 relative component의 rank 0·1로 배치하고 원본 `precedes` Relation을 evidence로 보존했으며, 근거 없는 두 Event는 `unplaced`로 남겼다. Atropos 메인→Canon→JointJS→focus URL과 접근 가능한 텍스트, 8-cell/4-label budget, horizontal overflow 부재를 production 브라우저에서 확인했다. 자동 smoke [34293280937](https://github.com/neocjmix/moirai/actions/runs/34293280937)은 readiness 후 stale bearer MCP 단계에서 계속 실패하므로 별도 운영 부채다.
 
@@ -110,4 +129,7 @@ PR [#1](https://github.com/neocjmix/moirai/pull/1)을 squash 병합한 `dc0728da
 
 Canon별 immutable State artifact를 발행하고 Subject page에서 해당 handle의 계산된 상태를 공개한다. PR [#2](https://github.com/neocjmix/moirai/pull/2)를 squash 병합한 `350920bbdb3928f34e406940b9d9f0d95f7e8c65`의 CI [33938273152](https://github.com/neocjmix/moirai/actions/runs/33938273152), Railway 배포와 [post-deploy smoke 33942566968](https://github.com/neocjmix/moirai/actions/runs/33942566968)이 성공했다. Clotho synthetic revision 28에서 complete State artifact, exact membership Duration 28 deployment와 Atropos Subject SSR을 확인했다.
 
-다른 State family와 일반 LLM 추론은 현재 범위가 아니다. 다음 계획 단계인 JointJS graph·scope artifact 기본 탐색을 활성화했다. 이후 vertical chronology, subject lane, metro routing, composite region, 100k scope·LOD와 Canon 비교 순서를 유지한다.
+다른 State family와 일반 LLM 추론은 현재 범위가 아니다. 당시 다음 단계였던 JointJS
+graph·scope와 vertical chronology는 M4-E·F에서 완료했다. 이후 subject lane, metro
+routing, composite region, 100k scope·LOD와 Canon 비교는 M4 조기 종료 뒤 M4.5로
+이관됐다.

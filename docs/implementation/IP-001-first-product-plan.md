@@ -244,6 +244,14 @@ Clotho가 synthetic World의 기존 맥락을 읽고 Event와 Narrative를 추�
 
 ## IP-001.8 Milestone 4 — 파생 모델·비교·그래프
 
+### 상태 — 2026-09-09 조기 종료
+
+사용자 결정으로 Slice A~F의 검증 결과를 보존한 채 추가 구현을 중단하고 M4를 조기
+종료했다. 아래 원래 종료조건을 모두 만족한 완료가 아니다. Canon 비교, 100k
+scope·LOD, subject lane, metro routing과 composite region은
+[M4.5 Atropos 탐색 UI 계획](M4.5-ATROPOS-EXPLORATION-UI.md)으로 이관한다. M4의
+부분 완료를 M5 시작 근거로 사용하지 않는다.
+
 ### 목표
 
 독자가 World의 구조를 Subject, 시간, 과정과 Canon 비교 관점에서 모바일 그래프로 탐색할 수 있게 한다.
@@ -271,7 +279,39 @@ Clotho가 synthetic World의 기존 맥락을 읽고 Event와 Narrative를 추�
 5. 실제 mobile viewport에서 pan, pinch zoom, selection, bottom sheet와 URL 복원이 통과한다.
 6. Canon 비교가 명시적 correspondence 밖의 동일성을 추론하지 않는다.
 
-Milestone 4가 너무 커져 하나의 안전한 배포 단위가 되지 않으면 파생 모델, graph 기본 탐색과 Canon 비교의 세 하위 slice로 나눈다. milestone의 종료조건은 유지한다.
+기존에는 milestone의 종료조건을 유지한 채 파생 모델, graph 기본 탐색과 Canon 비교로
+분할할 계획이었다. 이 분할 규칙은 2026-09-09 M4 조기 종료 결정으로 후속 실행에
+대해서는 대체됐으며, 남은 범위는 아래 M4.5의 새 경계와 종료조건을 따른다.
+
+## IP-001.8A Milestone 4.5 — Atropos 탐색 UI와 Moirai-native graph query
+
+### 목표
+
+현재 `/graph`의 fullscreen viewport, floating query island, bottom app navigation과
+detail sheet라는 기본 UI 구성을 유지하면서 각 영역의 내용과 데이터 계약을 Moirai에
+맞게 재구성한다. Time System을 최상위 graph source 조건으로 삼고, 호환되는 World와
+각 World의 Canon을 복수 선택해 Event·Relation과 파생 읽기 모델을 손실 없이
+탐색한다. graph viewport는 shell·query·inspector와 Moirai-native result 계약이
+확정된 뒤 마지막에 전면 재구축한다.
+
+### 핵심 경계
+
+- URDR는 layout, visual identity와 interaction reference일 뿐 제품 의미의 source가 아니다.
+- graph query/result 계약은 URDR component prop이 아니라 Moirai의 EventReference,
+  Relation, Time System, Subject, Composite, State, Narrative, evidence와 diagnostic을
+  직접 표현한다.
+- 필요한 legacy adapter는 renderer 직전의 단방향 반부패 계층에만 두고 손실을
+  diagnostic으로 공개한다.
+- multi-World read는 각 World의 Revision·access·export 경계를 유지하며 Revision
+  vector를 사용한다.
+- Time System compatibility는 이름이나 `kind`로 추론하지 않고 accepted adapter 계약만
+  사용한다.
+
+### 실행 계획과 종료조건
+
+Slice A~H의 observable outcome, 검증 fixture, 제외 범위와 전체 종료조건은
+[M4.5 상세 계획](M4.5-ATROPOS-EXPLORATION-UI.md)이 소유한다. M4.5 전체 종료 전에는
+M5를 활성화하지 않는다.
 
 ## IP-001.9 Milestone 5 — 생명주기·이동성·출시 품질
 

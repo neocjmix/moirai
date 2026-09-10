@@ -1,14 +1,13 @@
 // @ts-nocheck -- Next.js adapter: URDR was authored under its own TS config.
 "use client";
 
-import { Cross2Icon } from "@radix-ui/react-icons";
 import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
-import { TextField } from "@radix-ui/themes";
 
 import { chartPlaneDiagnosticSchema, eventDetailResponseSchema, graphShellChartPlaneEntitySchema, graphShellChartPlaneRegionEntitySchema, graphShellViewportResponseSchema, type EventDetailResponse, type EventRecord, type GraphShellChartPlane, type GraphShellChartPlaneEntity, type GraphShellChartPlaneRegionEntity, type GraphShellWorkspaceShell, type WorldAnchor } from "@urdr/contracts";
 import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
 import { graphReadLoader, type GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
+import { GraphSourceIsland } from "../../../components/graph-source-island";
 
 import {
   createChartPlaneSnapshot,
@@ -1060,27 +1059,6 @@ const GRAPH_SHELL_COPY: Record<AppLocale, GraphShellCopy> = {
   },
 };
 
-type TimelineSearchIslandContentProps = {
-  locale: AppLocale;
-  selectedTimelineId: string;
-  onSelectTimeline: (timelineId: string) => void;
-  workspace: GraphShellBootstrapWorkspace;
-};
-
-type CanonSearchIslandContentProps = {
-  locale: AppLocale;
-  canonQuery: string;
-  timelineCanonIds?: string[];
-  onCanonQueryChange: (value: string) => void;
-  enabledCanonIds: ReadonlySet<string>;
-  onToggleCanon: (canonId: string) => void;
-  workspace: GraphShellBootstrapWorkspace;
-};
-
-type WarningIslandContentProps = {
-  warnings: WarningItem[];
-};
-
 type EventDrawerContentProps = {
   copy: GraphShellCopy;
   eventLinkGraphFragment: EventLinkGraphFragment;
@@ -1096,8 +1074,6 @@ type EventDrawerContentProps = {
   viewportRef: React.RefObject<HTMLDivElement | null>;
   onTabChange: (tab: EventDrawerTab) => void;
 };
-
-type IslandPanelMode = "timeline" | "canon" | "warning";
 
 type EventDrawerTab = "notes" | "links";
 
@@ -1126,16 +1102,6 @@ type EventLinkGraphFragment = {
   regions: EventLinkGraphRegion[];
   segments: RelationSegment[];
   hasContext: boolean;
-};
-
-type WarningItem = {
-  sourceId: string;
-  sourceLabel: string;
-  relatedId: string;
-  problem: string;
-  suggestedFix: string;
-  acceptLabel: string;
-  acceptAlert: string;
 };
 
 type EventDrawerSelection = {
@@ -1985,161 +1951,6 @@ export function formatXForceValue(value: number, step: number) {
   return value.toFixed(decimals);
 }
 
-export function TimelineSearchIslandContent({
-  locale,
-  selectedTimelineId,
-  onSelectTimeline,
-  workspace
-}: TimelineSearchIslandContentProps) {
-  const copy = GRAPH_SHELL_COPY[locale];
-  const [query, setQuery] = useState("");
-  const normalizedQuery = query.trim().toLowerCase();
-  const visibleTabs = workspace.tabs.filter((tab) => {
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    return `${tab.label} ${tab.description}`.toLowerCase().includes(normalizedQuery);
-  });
-
-  return (
-    <div className={styles.timelineDialogSurface}>
-      <div className={styles.timelineSearchField}>
-        <TextField.Root className={styles.statusIslandSearchInput} onChange={(event) => setQuery(event.target.value)} placeholder={copy.timelineSearchPlaceholder} size="3" value={query} />
-      </div>
-
-      <div className={styles.timelineOptionList}>
-        {visibleTabs.map((tab) => (
-          <button
-            aria-pressed={tab.id === selectedTimelineId}
-            className={`${styles.timelineOptionButton} ${tab.id === selectedTimelineId ? styles.timelineOptionButtonActive : ""}`}
-            key={tab.id}
-            onClick={() => onSelectTimeline(tab.id)}
-            type="button"
-          >
-            <span className={styles.timelineOptionLabel}>{tab.label}</span>
-          </button>
-        ))}
-      </div>
-    </div>
-  );
-}
-
-export function CanonSearchIslandContent({
-  locale,
-  canonQuery,
-  timelineCanonIds,
-  onCanonQueryChange,
-  enabledCanonIds,
-  onToggleCanon,
-  workspace
-}: CanonSearchIslandContentProps) {
-  const copy = GRAPH_SHELL_COPY[locale];
-  const [showHiddenCanons, setShowHiddenCanons] = useState(false);
-  const allowedCanonIds = timelineCanonIds ? new Set(timelineCanonIds) : null;
-  const normalizedQuery = canonQuery.trim().toLowerCase();
-  const filteredCanons = workspace.canons.filter((canon) => {
-    if (!normalizedQuery) {
-      return true;
-    }
-
-    return `${canon.label} ${canon.worldLabel} ${canon.timeSystemLabel}`.toLowerCase().includes(normalizedQuery);
-  });
-  const primaryCanons = filteredCanons.filter((canon) => !allowedCanonIds || allowedCanonIds.has(canon.id));
-  const hiddenCanons = filteredCanons.filter((canon) => allowedCanonIds && !allowedCanonIds.has(canon.id));
-  const renderedCanons = showHiddenCanons ? [...primaryCanons, ...hiddenCanons] : primaryCanons;
-
-  return (
-    <div className={styles.timelineDialogSurface}>
-      <div className={styles.timelineSearchField}>
-        <TextField.Root
-          className={styles.statusIslandSearchInput}
-          onChange={(event) => onCanonQueryChange(event.target.value)}
-          placeholder={copy.canonSearchPlaceholder}
-          size="3"
-          value={canonQuery}
-        />
-      </div>
-
-      {hiddenCanons.length > 0 ? (
-        <label className={styles.canonRevealToggle}>
-          <input
-            checked={showHiddenCanons}
-            className={styles.canonRevealToggleInput}
-            onChange={(event) => setShowHiddenCanons(event.target.checked)}
-            type="checkbox"
-          />
-          <span aria-hidden="true" className={styles.canonRevealToggleBox}>
-            {showHiddenCanons ? "\u2713" : ""}
-          </span>
-          <span className={styles.canonRevealToggleText}>{copy.canonRevealHiddenLabel(hiddenCanons.length)}</span>
-        </label>
-      ) : null}
-
-      <div className={styles.timelineOptionList}>
-        {renderedCanons.map((canon) => {
-          const isEnabled = enabledCanonIds.has(canon.id);
-          const isHidden = allowedCanonIds ? !allowedCanonIds.has(canon.id) : false;
-          return (
-            <label
-              className={`${styles.canonOptionCard} ${isEnabled ? styles.canonOptionCardActive : styles.canonOptionCardInactive}`}
-              data-hidden={isHidden ? "true" : "false"}
-              key={canon.id}
-            >
-              <input
-                checked={isEnabled}
-                className={styles.canonOptionInput}
-                onChange={() => onToggleCanon(canon.id)}
-                type="checkbox"
-              />
-              <span aria-hidden="true" className={styles.canonOptionCheck}>
-                {isEnabled ? "\u2713" : ""}
-              </span>
-              <span className={styles.canonOptionContent}>
-                <span className={styles.canonOptionTitleRow}>
-                  <span className={styles.timelineOptionLabel}>{canon.label}</span>
-                  {isHidden ? <span className={styles.canonOptionBadge}>{copy.canonHiddenBadgeLabel}</span> : null}
-                </span>
-                <span className={styles.canonOptionMeta}>{canon.worldLabel} - {canon.timeSystemLabel}</span>
-                {isHidden ? <span className={styles.canonOptionHint}>{copy.canonHiddenHint}</span> : null}
-              </span>
-              <span className={styles.canonOptionState}>{isEnabled ? copy.canonSelectedStateLabel : copy.canonUnselectedStateLabel}</span>
-            </label>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-export function WarningIslandContent({ warnings }: WarningIslandContentProps) {
-  return (
-    <div className={styles.timelineDialogSurface}>
-      <div className={styles.warningList}>
-        {warnings.map((warning) => (
-          <div className={styles.warningItem} key={`${warning.sourceId}:${warning.relatedId}`}>
-            <div className={styles.warningItemHeader}>
-              <span className={styles.warningItemMarker}>!</span>
-              <span className={styles.warningItemSource}>{warning.sourceLabel}</span>
-            </div>
-            <div className={styles.warningItemSection}>
-              <div className={styles.warningItemLabel}>Problem</div>
-              <div className={styles.warningItemBody}>{warning.problem}</div>
-            </div>
-            <div className={styles.warningItemSection}>
-              <div className={styles.warningItemLabel}>Suggested fix</div>
-              <div className={styles.warningItemBody}>{warning.suggestedFix}</div>
-            </div>
-            <button className={styles.warningAcceptButton} onClick={() => window.alert(warning.acceptAlert)} type="button">
-              {warning.acceptLabel}
-            </button>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
-}
-
 function EventDrawerContent({
   copy,
   eventLinkGraphFragment,
@@ -2428,12 +2239,9 @@ export function GraphShell({
   const workspace = initialWorkspace;
   const usesLoadingWorkspace = initialWorkspace.buildRevision === GRAPH_SHELL_LOADING_WORKSPACE_BUILD_REVISION;
   const defaultShellSlice = useMemo(() => createDefaultShellSlice(workspace), [workspace]);
-  const [statusDialogOpen, setStatusDialogOpen] = useState(false);
   const [hasHydratedRestorableState, setHasHydratedRestorableState] = useState(false);
-  const [islandPanelMode, setIslandPanelMode] = useState<IslandPanelMode>("timeline");
   const [selectedTimelineId, setSelectedTimelineId] = useState(defaultShellSlice.selectedTimelineId);
   const [enabledCanonIds, setEnabledCanonIds] = useState<ReadonlySet<string>>(() => new Set(defaultShellSlice.enabledCanonIds));
-  const [canonQuery, setCanonQuery] = useState("");
   const [imageViewportState, setImageViewportState] = useState(() => createImageViewportState());
   const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
   const [visibleCompositeRegions, setVisibleCompositeRegions] = useState<CompositeFadePresence<CompositeRegion>[]>([]);
@@ -2464,7 +2272,6 @@ export function GraphShell({
   const applyResolvedGraphShellState = useCallback((nextState: ReturnType<typeof resolveGraphShellRestorableState>) => {
     setSelectedTimelineId(nextState.shell.selectedTimelineId);
     setEnabledCanonIds(new Set(nextState.shell.enabledCanonIds));
-    setCanonQuery("");
     setImageViewportState((current) => {
       const nextView = createImageViewportViewFromRestorableSlice(nextState.viewport, viewportSize);
       return nextView ? resetViewportView(current, nextView) : resetViewportView(current);
@@ -2552,20 +2359,6 @@ export function GraphShell({
     const fallbackId = selectedTimelineCanonIds[0] ?? workspace.canons[0]?.id;
     return fallbackId ? new Set([fallbackId]) : new Set<string>();
   }, [enabledCanonIds, selectedTimelineCanonIds, workspace.canons]);
-  const selectedTimelineLabel = selectedTimeline?.label ?? (locale === "ko" ? "그레고리안 호환" : "Gregorian Compatible");
-  const activeCanonLabel = useMemo(() => {
-    const labels = workspace.canons
-      .filter((canon) => effectiveEnabledCanonIds.has(canon.id))
-      .map((canon) => canon.label);
-    if (labels.length === 0) {
-      return copy.noCanonLabel;
-    }
-    if (labels.length === 1) {
-      return labels[0]!;
-    }
-    return `${labels[0]} +${labels.length - 1}`;
-  }, [copy.noCanonLabel, effectiveEnabledCanonIds, workspace.canons]);
-
   // enabledCanonIds are intersected with timeline-available canons via effectiveEnabledCanonIds memo above.
 
   const bootstrapVisibleChartPlaneEntities = useMemo(() => {
@@ -3242,75 +3035,6 @@ export function GraphShell({
     });
   }, [allProjectedInstantPoints, chartCompositeRegions.descendantOpacityById, farZoomElisionState.hiddenPointIds, viewportSize.height, viewportSize.width, view.scaleY]);
 
-  const unresolvedVisibleWarnings = useMemo(() => {
-    const runtimeWarningMode = runtimeViewportLoadState !== "idle";
-    if (!runtimeWarningMode && !bootstrapChartPlane) {
-      return [] as WarningItem[];
-    }
-
-    const warningEntities = runtimeWarningMode ? visibleChartPlaneEntities : bootstrapVisibleChartPlaneEntities;
-    const fullEntityById = new Map(warningEntities.map((entity) => [entity.id, entity]));
-    const runtimeDiagnostics = runtimeViewportResponse ? runtimeViewportResponse.diagnostics : [];
-    const diagnosticMessages = runtimeWarningMode
-      ? [
-          ...runtimeDiagnostics,
-          ...warningEntities.flatMap((entity) => entity.diagnostics),
-        ]
-      : [...(bootstrapChartPlane?.diagnostics ?? [])];
-    const visibleSourceIds = new Set<string>([
-      ...chartInstantPoints.map((point) => point.id),
-      ...chartCompositeRegions.regions.map((region) => region.id)
-    ]);
-
-    const visibleSourceEntities = warningEntities.filter((entity) => visibleSourceIds.has(entity.id));
-    const warnings: WarningItem[] = [];
-    const seen = new Set<string>();
-
-    for (const entity of visibleSourceEntities) {
-      const relatedIds = [...entity.contains, ...(entity.containedBy ? [entity.containedBy] : [])];
-      for (const relatedId of relatedIds) {
-        if (fullEntityById.has(relatedId)) {
-          continue;
-        }
-
-        const warningKey = `${entity.id}:${relatedId}`;
-        if (seen.has(warningKey)) {
-          continue;
-        }
-        seen.add(warningKey);
-
-        const matchingDiagnostic = diagnosticMessages.find((diagnostic) => diagnostic.message.includes(relatedId));
-        const problem = matchingDiagnostic?.message ?? copy.unresolvedWarningMessage(relatedId);
-        const suggestedFix =
-          locale === "ko"
-            ? `원본 데이터에서 ${relatedId} 를 추가하거나, ${entity.label} 주변의 포함/경계 관계를 다시 정리하세요.`
-            : `Add ${relatedId} in the source data or correct the containment and boundary relations around ${entity.label}.`;
-        warnings.push({
-          sourceId: entity.id,
-          sourceLabel: entity.label,
-          relatedId,
-          problem,
-          suggestedFix,
-          acceptLabel: locale === "ko" ? "수락" : "Accept",
-          acceptAlert:
-            locale === "ko"
-              ? `이 경고는 아직 앱 안에서 직접 수리할 수 없습니다. 백로그에 기록된 후속 작업으로 실제 repair flow를 추가할 예정입니다.`
-              : `This warning cannot be repaired directly in the app yet. It has been captured as backlog work until a real repair flow is added.`
-        });
-      }
-    }
-
-    return warnings;
-  }, [bootstrapChartPlane, bootstrapVisibleChartPlaneEntities, chartCompositeRegions.regions, chartInstantPoints, copy, locale, runtimeViewportLoadState, runtimeViewportResponse, visibleChartPlaneEntities]);
-
-  const hasUnresolvedVisibleWarnings = unresolvedVisibleWarnings.length > 0;
-
-  useEffect(() => {
-    if (!hasUnresolvedVisibleWarnings && islandPanelMode === "warning") {
-      setIslandPanelMode("timeline");
-    }
-  }, [hasUnresolvedVisibleWarnings, islandPanelMode]);
-
   useEffect(() => {
     selectedEventSelectionRef.current = renderedEventSelection;
   }, [renderedEventSelection]);
@@ -3649,32 +3373,6 @@ export function GraphShell({
     setImageViewportState((current) => removeViewportPointer(current, event.pointerId));
   }, [imageViewportState.activePointers]);
 
-  const handleToggleCanon = useCallback((canonId: string) => {
-    setEnabledCanonIds((current) => {
-      const next = new Set(current);
-      if (next.has(canonId)) {
-        next.delete(canonId);
-        if (next.size === 0) {
-          return current;
-        }
-      } else {
-        next.add(canonId);
-      }
-      return next;
-    });
-  }, []);
-
-  const handleIslandModePress = useCallback((mode: IslandPanelMode) => {
-    setStatusDialogOpen((currentOpen) => {
-      if (currentOpen && islandPanelMode === mode) {
-        return false;
-      }
-
-      return true;
-    });
-    setIslandPanelMode(mode);
-  }, [islandPanelMode]);
-
   const handleCloseSelectedEvent = useCallback(() => {
     pendingRestoredDrawerStageRef.current = null;
     setSelectedEventSelection(null);
@@ -3842,119 +3540,7 @@ export function GraphShell({
 
   return (
     <>
-      <div className={styles.shellChrome}>
-        <div className={styles.statusIslandStack} data-open={statusDialogOpen ? "true" : "false"}>
-          {statusDialogOpen ? (
-            <div className={styles.statusIslandHeaderExpanded} role="tablist" aria-label={copy.islandSearchModeAriaLabel}>
-              <div className={styles.statusIslandTabGroup}>
-                <button
-                  aria-label={copy.timelineTabAriaLabel}
-                  aria-expanded={statusDialogOpen}
-                  aria-selected={islandPanelMode === "timeline"}
-                  className={`${styles.statusIslandModeButton} ${islandPanelMode === "timeline" ? styles.statusIslandModeButtonActive : ""}`}
-                  onClick={() => handleIslandModePress("timeline")}
-                  role="tab"
-                  type="button"
-                >
-                  <span className={styles.statusIslandModeText}>{selectedTimelineLabel}</span>
-                </button>
-
-                <button
-                  aria-label={copy.canonTabAriaLabel}
-                  aria-expanded={statusDialogOpen}
-                  aria-selected={islandPanelMode === "canon"}
-                  className={`${styles.statusIslandModeButton} ${islandPanelMode === "canon" ? styles.statusIslandModeButtonActive : ""}`}
-                  onClick={() => handleIslandModePress("canon")}
-                  role="tab"
-                  type="button"
-                >
-                  <span className={styles.statusIslandCanon}>{activeCanonLabel}</span>
-                </button>
-
-                {hasUnresolvedVisibleWarnings ? (
-                  <button
-                    aria-label={copy.warningTabAriaLabel}
-                    aria-expanded={statusDialogOpen}
-                    aria-selected={islandPanelMode === "warning"}
-                    className={`${styles.statusIslandModeButton} ${styles.statusIslandWarningTab} ${islandPanelMode === "warning" ? styles.statusIslandModeButtonActive : ""}`}
-                    onClick={() => handleIslandModePress("warning")}
-                    role="tab"
-                    type="button"
-                  >
-                    <span className={styles.statusIslandWarningMarker}>!</span>
-                  </button>
-                ) : null}
-              </div>
-
-              <button
-                aria-label={copy.closeIslandLabel}
-                className={styles.statusIslandCloseButton}
-                onClick={() => setStatusDialogOpen(false)}
-                type="button"
-              >
-                <Cross2Icon />
-              </button>
-            </div>
-          ) : (
-            <div className={styles.statusIslandHeaderCollapsed}>
-              <button
-                aria-label={copy.timelineTabAriaLabel}
-                className={styles.statusIslandCollapsedButton}
-                onClick={() => handleIslandModePress("timeline")}
-                type="button"
-              >
-                <span className={styles.statusIslandModeText}>{selectedTimelineLabel}</span>
-              </button>
-              <span aria-hidden="true" className={styles.statusIslandDivider} />
-              <button
-                aria-label={copy.canonTabAriaLabel}
-                className={styles.statusIslandCollapsedButton}
-                onClick={() => handleIslandModePress("canon")}
-                type="button"
-              >
-                <span className={styles.statusIslandCanon}>{activeCanonLabel}</span>
-              </button>
-              {hasUnresolvedVisibleWarnings ? (
-                <button
-                  aria-label={copy.warningTabAriaLabel}
-                  className={styles.statusIslandCollapsedWarningButton}
-                  onClick={() => handleIslandModePress("warning")}
-                  type="button"
-                >
-                  <span className={styles.statusIslandInlineWarningMarker}>!</span>
-                </button>
-              ) : null}
-            </div>
-          )}
-
-          <div aria-hidden={!statusDialogOpen} className={styles.statusIslandViewport} data-open={statusDialogOpen ? "true" : "false"}>
-            {statusDialogOpen ? (
-              <div className={styles.statusIslandPanel} data-open={statusDialogOpen ? "true" : "false"}>
-                {islandPanelMode === "timeline" ? (
-                  <TimelineSearchIslandContent
-                    locale={locale}
-                    onSelectTimeline={setSelectedTimelineId}
-                    selectedTimelineId={selectedTimelineId}
-                    workspace={workspace}
-                  />
-                ) : islandPanelMode === "canon" ? (
-                  <CanonSearchIslandContent
-                    canonQuery={canonQuery}
-                    enabledCanonIds={enabledCanonIds}
-                    locale={locale}
-                    onCanonQueryChange={setCanonQuery}
-                    onToggleCanon={handleToggleCanon}
-                    timelineCanonIds={selectedTimeline?.availableCanonIds}
-                    workspace={workspace}
-                  />
-                ) : (
-                  <WarningIslandContent warnings={unresolvedVisibleWarnings} />
-                )}
-              </div>
-            ) : null}
-          </div>
-        </div>
-      </div>
+      <GraphSourceIsland locale={locale} />
 
       <div className={styles.canvasFrame}>
           <div

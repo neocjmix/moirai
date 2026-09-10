@@ -38,6 +38,82 @@ test("mobile graph shell navigates app screens without consuming graph query sta
   await expect(graph).toHaveAttribute("aria-current", "page");
 });
 
+test("mobile source island restores compatible Worlds, Canons, revisions, and previews Time System impact", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+
+  await expect(
+    page.getByRole("heading", { name: /시간 체계|Time System/ })
+  ).toBeVisible();
+  await expect(
+    page.getByLabel(/현실 세계 관측소|Reality Observatory/)
+  ).toBeChecked();
+  await expect(
+    page.getByLabel(/마블 시네마틱 월드|Marvel Cinematic World/)
+  ).toBeChecked();
+  await expect(
+    page.getByLabel(/삼국지연의 월드|Romance of the Three Kingdoms/)
+  ).toBeDisabled();
+  await expect(page.getByText("served Revision 7").first()).toBeVisible();
+  await expect(page.getByText("served Revision 42").first()).toBeVisible();
+  await expect(page.getByLabel(/기록된 역사|Recorded history/)).toBeChecked();
+  await expect(
+    page.getByLabel(/기록 보완|Archival observations/)
+  ).toBeChecked();
+  await expect(page.getByLabel(/Earth-199999/)).toBeChecked();
+
+  await expect
+    .poll(() => new URL(page.url()).searchParams.has("mq"))
+    .toBe(true);
+  const sharedUrl = page.url();
+  await page.goto(sharedUrl);
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await expect(
+    page.getByLabel(/현실 세계 관측소|Reality Observatory/)
+  ).toBeChecked();
+  await expect(
+    page.getByLabel(/마블 시네마틱 월드|Marvel Cinematic World/)
+  ).toBeChecked();
+  await expect(page.getByLabel(/Earth-199999/)).toBeChecked();
+
+  await page
+    .getByRole("button", {
+      name: /왕조 연호 · 서사 순서|Regnal era · narrative order/
+    })
+    .click();
+  await expect(
+    page.getByText(/시간 체계 변경 영향|Time System change impact/)
+  ).toBeVisible();
+  await expect(
+    page.getByText(/현재 source 2개|2 current sources/)
+  ).toBeVisible();
+  await expect(
+    page.getByText(/현실 세계 관측소|Reality Observatory/).last()
+  ).toBeVisible();
+  await expect(
+    page.getByText(/마블 시네마틱 월드|Marvel Cinematic World/).last()
+  ).toBeVisible();
+  await expect(
+    page.getByText(/삼국지연의 월드|Romance of the Three Kingdoms/).last()
+  ).toBeVisible();
+
+  await page.getByRole("button", { name: /취소|Cancel/ }).click();
+  await expect(
+    page.getByText(/시간 체계 변경 영향|Time System change impact/)
+  ).toHaveCount(0);
+  await expect(
+    page.getByLabel(/현실 세계 관측소|Reality Observatory/)
+  ).toBeChecked();
+});
+
 test("mobile reader traverses the single relational temporal model", async ({
   page
 }) => {

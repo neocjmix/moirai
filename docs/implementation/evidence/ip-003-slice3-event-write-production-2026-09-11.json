@@ -1,0 +1,108 @@
+{
+  "plan": "IP-003",
+  "slice": 3,
+  "status": "complete",
+  "baseline_main_sha": "8854da284631f836cb34692f36070b718dce3e2d",
+  "deployed_application_sha": "57628ea6bd2d1f6481e78a13fb2b9a3692d7d0fe",
+  "pull_request": 32,
+  "pull_request_ci_run": 34564009501,
+  "main_ci_run": 34564158019,
+  "post_deploy_smoke_run": 34564302767,
+  "production_deployments": {
+    "atropos": "7c81f655-4e8e-4c01-8153-b732c636cf81",
+    "clotho": "fcc6a751-6a76-4c94-a1ba-b0bb98ef6b50",
+    "worker": "d6084d00-5f58-419e-8042-227a1202dd8b"
+  },
+  "contract": {
+    "current_version": 3,
+    "event_ownership_field": "world_id",
+    "membership_operations": ["add", "remove"],
+    "event_lifecycle_operation": "withdraw",
+    "legacy_version": 2,
+    "legacy_adapter_boundary": "Clotho ingress",
+    "legacy_conversion": "explicit Event canon_id to exactly one membership; no inferred membership"
+  },
+  "database_invariant": {
+    "migration": "007_ip003_event_membership_invariant",
+    "status": "Success",
+    "events_world_id_not_null": true,
+    "enforcement": "deferrable initially deferred constraint triggers",
+    "active_event_minimum_memberships": 1,
+    "withdrawn_event_active_memberships": 0
+  },
+  "production_worlds": [
+    {
+      "world_id": "01995c2a-7b00-7000-8000-000000000101",
+      "current_revision": 2,
+      "publication_target_revision": 2,
+      "served_revision": 2
+    },
+    {
+      "world_id": "019f3b00-0000-7000-8000-000000000001",
+      "current_revision": 2,
+      "publication_target_revision": 2,
+      "served_revision": 2
+    },
+    {
+      "world_id": "019f3b00-0000-7000-8000-000000000401",
+      "current_revision": 1,
+      "publication_target_revision": 1,
+      "served_revision": 1
+    }
+  ],
+  "production_postflight": {
+    "worlds": 3,
+    "canons": 3,
+    "events": 26,
+    "active_events": 26,
+    "memberships": 26,
+    "active_memberships": 26,
+    "legacy_event_canon_cross_world": 0,
+    "events_without_world": 0,
+    "active_events_without_active_membership": 0,
+    "cross_world_memberships": 0,
+    "duplicate_active_memberships": 0,
+    "world_local_slug_collision_groups": 0
+  },
+  "acceptance_matrix": {
+    "environment": "GitHub Actions PostgreSQL 17 integration",
+    "canons": ["K1", "K2", "K3"],
+    "event_memberships": {
+      "A": ["K1", "K2"],
+      "B": ["K1", "K2", "K3"],
+      "C": ["K2"],
+      "D": ["K3"]
+    },
+    "event_rows": 4,
+    "distinct_event_ids": 4,
+    "active_memberships": 7,
+    "active_orphans": 0,
+    "duplicate_membership_rejected": true,
+    "last_membership_removal_rejected": true,
+    "withdrawal_with_all_membership_removals_accepted": true,
+    "direct_database_orphan_transition_rejected_at_commit": true
+  },
+  "compatibility": {
+    "legacy_events_canon_id_present": true,
+    "legacy_events_canon_id_authoritative": false,
+    "legacy_event_write_bridge_present": true,
+    "revision_read_adapter_selects_one_membership_for_old_public_shape": true,
+    "read_projection_publication_cutover_pending_slice": 4
+  },
+  "production_mutation": {
+    "canonical_world_revision_changed": false,
+    "event_identity_changed": false,
+    "rows_deleted": 0,
+    "membership_inference_performed": false,
+    "publication_regeneration_performed": false,
+    "new_acceptance_events_written_to_production": false
+  },
+  "rollback_and_repair": {
+    "migration_down": "remove deferred triggers and events.world_id NOT NULL while retaining additive Slice 2 data",
+    "forward_repair": "compare events.canon_id with active membership rows before any later cleanup",
+    "lossy_actions_performed": false
+  },
+  "relation_decision": "DP-001 open; current Canon-specific Relation semantics only validate endpoint memberships",
+  "m4_5_d_started": false,
+  "m5_started": false
+}

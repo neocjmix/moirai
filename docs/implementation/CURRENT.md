@@ -6,8 +6,8 @@
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
 | 실행 상태                  | `in_progress` — M4.5-C 기준선 위에서 IP-003 활성; M4.5-D 이후와 M5는 비활성                                                  |
-| 활성 milestone             | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md) Slice 3                                                    |
-| 현재 slice                 | Slice 3 — Clotho Event membership write·validate·commit; Relation DP-001 open, M4.5-D/M5 비활성                              |
+| 활성 milestone             | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md) Slice 4                                                    |
+| 현재 slice                 | Slice 4 — membership 기반 read·projection·publication·portability; Relation DP-001 open, M4.5-D/M5 비활성                   |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
@@ -21,6 +21,7 @@
 | IP-003 Slice 0 계획        | PR #28 merge `6eaa428d7e6e61ae3df574a091dcbc2f0a082d73`; CI `34558131634` success                                                    |
 | IP-003 Slice 1 규범        | PR #29 merge `5a5aeb20cf853353847a9ef3185ff8e682bacefb`; CI `34558845653` success                                                    |
 | IP-003 Slice 2 persistence | PR #30 merge·production `56b95a8b7b998326f6ab7adf302327288995f9b9`; CI `34561345766`, smoke `34561614061` success; [migration evidence](evidence/ip-003-slice2-production-migration-2026-09-11.json) |
+| IP-003 Slice 3 write path  | PR #32 merge·production `57628ea6bd2d1f6481e78a13fb2b9a3692d7d0fe`; PR CI `34564009501`, main CI `34564158019`, smoke `34564302767` success; [write/migration evidence](evidence/ip-003-slice3-event-write-production-2026-09-11.json) |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
 | M4.5 graph 기준 URL        | <https://moirai-production-8ed1.up.railway.app/graph>                                                                         |

@@ -372,44 +372,6 @@ export interface MoiraiGraphQueryResult {
   readonly budget: MoiraiGraphBudgetResult;
 }
 
-export type MoiraiGraphLegacyLossKind =
-  "omitted" | "approximated" | "unsupported";
-
-export interface MoiraiGraphLegacyLoss {
-  readonly kind: MoiraiGraphLegacyLossKind;
-  readonly semantic_kind:
-    | "event"
-    | "virtual_time_event"
-    | "relation"
-    | "subject"
-    | "composite"
-    | "state"
-    | "narrative"
-    | "evidence"
-    | "diagnostic";
-  readonly source_ids: readonly string[];
-  readonly reason_code: string;
-  readonly message: string;
-}
-
-export interface MoiraiGraphLegacyLossReport {
-  readonly source_contract_version: MoiraiGraphResultContractVersion;
-  readonly adapter_version: string;
-  readonly losses: readonly MoiraiGraphLegacyLoss[];
-  readonly lossless: boolean;
-}
-
-/**
- * Temporary one-way renderer boundary. TViewportModel is presentation-only and
- * must never flow back into MoiraiGraphQuery or MoiraiGraphQueryResult.
- */
-export type MoiraiLegacyViewportAdapter<TViewportModel> = (
-  result: MoiraiGraphQueryResult
-) => {
-  readonly viewport_model: TViewportModel;
-  readonly loss_report: MoiraiGraphLegacyLossReport;
-};
-
 const stringSchema = { type: "string", minLength: 1 } as const;
 const nonNegativeIntegerSchema = {
   type: "integer",
@@ -1254,55 +1216,5 @@ export const MOIRAI_GRAPH_URL_STATE_SCHEMA = {
     version: { const: MOIRAI_GRAPH_URL_STATE_VERSION },
     query: MOIRAI_GRAPH_QUERY_SCHEMA,
     focus: { anyOf: [entityReferenceSchema, { type: "null" }] }
-  }
-} as const;
-
-export const MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA = {
-  $id: "moirai.graph-legacy-loss-report.v1",
-  type: "object",
-  additionalProperties: false,
-  required: [
-    "source_contract_version",
-    "adapter_version",
-    "losses",
-    "lossless"
-  ],
-  properties: {
-    source_contract_version: { const: MOIRAI_GRAPH_RESULT_CONTRACT_VERSION },
-    adapter_version: stringSchema,
-    losses: {
-      type: "array",
-      items: {
-        type: "object",
-        additionalProperties: false,
-        required: [
-          "kind",
-          "semantic_kind",
-          "source_ids",
-          "reason_code",
-          "message"
-        ],
-        properties: {
-          kind: { enum: ["omitted", "approximated", "unsupported"] },
-          semantic_kind: {
-            enum: [
-              "event",
-              "virtual_time_event",
-              "relation",
-              "subject",
-              "composite",
-              "state",
-              "narrative",
-              "evidence",
-              "diagnostic"
-            ]
-          },
-          source_ids: { type: "array", minItems: 1, items: stringSchema },
-          reason_code: stringSchema,
-          message: stringSchema
-        }
-      }
-    },
-    lossless: { type: "boolean" }
   }
 } as const;

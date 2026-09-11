@@ -19,10 +19,20 @@ legacy shape를 production 입력으로 유지하면 virtual Time Event, derived
 
 ## 검증
 
-- unit 29 files / 149 tests, strict typecheck, ESLint, architecture boundary, production build
+- PR #45 merge `e6c3465eaca4e57250d3b8dd9103c34758726c25`; PR CI `34621836053`, main CI `34622070825` success
+- production에서 발견한 immutable v1/v2 temporal Relation ownership은 PR #46에서 read boundary adapter로 정규화했고 `/graph` 500을 복구했다.
+- PR #47은 기본 UI source와 명시적 R1 acceptance query를 smoke에서 분리했다. 최종 runtime `14d6d2cd7f1f8e61d96a676231ad46ecae640bd4`, main CI `34625338440`, post-deploy smoke `34625557923`가 success다.
+- unit 29 files / 150 tests, strict typecheck, ESLint, architecture boundary, PostgreSQL integration, production build
 - local Publication SSR에서 native viewport marker, Revision 2와 실제 Event 확인
 - CI mobile WebKit: native viewport → Entities search → selection sheet → World Event stable route, focused URL reload, Relations와 accessible fallback
 - post-deploy smoke: exact SHA readiness, production `/graph` native marker, 명시적 `/graph/query` Revision 4 A/B/shared R1 Relation identity 각각 1회
 - production Clotho read: World current/target/served Revision 4, A/B membership, shared influences와 K1 causes/K2 prevents 유지
+- Railway production deployment: Atropos `03de2924-90a6-459a-a61d-008ca1ad0003`, Clotho `867f674d-1750-4db8-b965-ae8cf95c267b`, worker `f4ba68b9-697a-4a08-b3e7-bb4cd4fc1412`, 모두 최종 runtime SHA에서 success
+
+Railway connector는 direct SQL을 제공하지 않아 이 closeout에서 production 전체 orphan aggregate를
+재실행하지는 못했다. H와 두 stabilization PR은 persistence write/migration을 포함하지 않는다.
+기존 migration acceptance의 orphan/cross-World/duplicate 0 증거를 보존하며, 최종 PostgreSQL CI와
+Clotho Revision 4 bounded read에서 Event 2·Relation 3의 membership, shared identity 단일 반환과
+warning/truncation 0을 재확인했다.
 
 M5 lifecycle, portability, governance/access 구현은 활성화하지 않는다.

@@ -13,10 +13,11 @@ export async function up(db: Kysely<unknown>): Promise<void> {
       event_withdrawn_revision integer;
       active_membership_count integer;
     begin
-      checked_event_id := case
-        when tg_table_name = 'events' then coalesce(new.id, old.id)
-        else coalesce(new.event_id, old.event_id)
-      end;
+      if tg_table_name = 'events' then
+        checked_event_id := coalesce(new.id, old.id);
+      else
+        checked_event_id := coalesce(new.event_id, old.event_id);
+      end if;
 
       select withdrawn_revision into event_withdrawn_revision
       from events

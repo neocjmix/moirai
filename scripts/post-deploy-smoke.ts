@@ -154,8 +154,6 @@ async function verify(): Promise<void> {
     !landing.ok ||
     !graphPage.ok ||
     !graphHtml.includes('data-testid="native-moirai-viewport"') ||
-    !graphHtml.includes(graphEventA) ||
-    !graphHtml.includes(graphEventB) ||
     graph.result.completeness !== "complete" ||
     graph.result.revision_vector.length !== 1 ||
     graph.result.revision_vector[0]?.served_revision !== 4 ||

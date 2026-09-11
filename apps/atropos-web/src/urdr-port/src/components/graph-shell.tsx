@@ -1,6 +1,3 @@
-Warning: truncated output (original token count: 36184)
-Total output lines: 3828
-
 // @ts-nocheck -- Next.js adapter: URDR was authored under its own TS config.
 "use client";
 
@@ -1850,7 +1847,520 @@ function renderMarkdownDocument(markdown: string) {
       continue;
     }
 
-    const headingMatch = /^(#{1,6})\s+(.*)$…6184 tokens truncated…() => {
+    const headingMatch = /^(#{1,6})\s+(.*)$/.exec(trimmed);
+    if (headingMatch) {
+      flushStandardBlocks();
+      const level = headingMatch[1].length;
+      const headingText = headingMatch[2] ?? "";
+      const key = `heading:${elements.length}`;
+      const content = renderMarkdownInline(headingText, key);
+      if (level === 1) {
+        elements.push(<h1 key={key}>{content}</h1>);
+      } else if (level === 2) {
+        elements.push(<h2 key={key}>{content}</h2>);
+      } else if (level === 3) {
+        elements.push(<h3 key={key}>{content}</h3>);
+      } else if (level === 4) {
+        elements.push(<h4 key={key}>{content}</h4>);
+      } else if (level === 5) {
+        elements.push(<h5 key={key}>{content}</h5>);
+      } else {
+        elements.push(<h6 key={key}>{content}</h6>);
+      }
+      continue;
+    }
+
+    const unorderedMatch = /^[-*]\s+(.*)$/.exec(trimmed);
+    if (unorderedMatch) {
+      flushParagraph();
+      flushOrderedItems();
+      flushQuotes();
+      unorderedItems.push(unorderedMatch[1] ?? "");
+      continue;
+    }
+
+    const orderedMatch = /^\d+\.\s+(.*)$/.exec(trimmed);
+    if (orderedMatch) {
+      flushParagraph();
+      flushUnorderedItems();
+      flushQuotes();
+      orderedItems.push(orderedMatch[1] ?? "");
+      continue;
+    }
+
+    const quoteMatch = /^>\s?(.*)$/.exec(trimmed);
+    if (quoteMatch) {
+      flushParagraph();
+      flushUnorderedItems();
+      flushOrderedItems();
+      quoteLines.push(quoteMatch[1] ?? "");
+      continue;
+    }
+
+    flushUnorderedItems();
+    flushOrderedItems();
+    flushQuotes();
+    paragraphLines.push(trimmed);
+  }
+
+  flushStandardBlocks();
+  if (inCodeBlock) {
+    flushCodeBlock();
+  }
+
+  return elements;
+}
+
+export const X_FORCE_CONTROLS: XForceControl[] = [
+  { key: "iterations", label: { ko: "정리 반복 횟수", en: "Iterations" }, description: { ko: "가로 배치를 몇 번 더 다듬을지", en: "How many cleanup passes to run." }, min: 0, max: 120, step: 1 },
+  { key: "repulsion", label: { ko: "겹침 피하기", en: "Repulsion" }, description: { ko: "가까운 사건끼리 좌우로 벌어지는 정도", en: "How much nearby events push apart." }, min: 0, max: 1.2, step: 0.01 },
+  { key: "causesAttraction", label: { ko: "인과 끌림", en: "Causal attraction" }, description: { ko: "CAUSES 링크가 양쪽 사건을 얼마나 강하게 당길지", en: "How strongly CAUSES edges pull linked events together." }, min: 0, max: 0.8, step: 0.01 },
+  { key: "temporalAttraction", label: { ko: "시간 끌림", en: "Temporal attraction" }, description: { ko: "전후 관계가 양쪽 사건을 얼마나 당길지", en: "How strongly temporal links pull related events together." }, min: 0, max: 0.5, step: 0.01 },
+  { key: "maxStep", label: { ko: "한 번에 움직이는 폭", en: "Max step" }, description: { ko: "각 반복에서 자리 바꿈이 얼마나 과감할지", en: "How far each iteration can move." }, min: 0.02, max: 1, step: 0.01 }
+];
+
+type UrdrGlobalNamespace = {
+  toggleHud?: () => boolean;
+  showHud?: () => boolean;
+  hideHud?: () => boolean;
+  isHudVisible?: () => boolean;
+};
+
+declare global {
+  interface Window {
+    _URDR_?: UrdrGlobalNamespace;
+  }
+}
+
+function getLocalViewportPoint(event: ReactPointerEvent<HTMLDivElement>) {
+  const bounds = event.currentTarget.getBoundingClientRect();
+
+  return {
+    x: event.clientX - bounds.left - bounds.width / 2,
+    y: event.clientY - bounds.top - bounds.height / 2
+  };
+}
+
+export function formatXForceValue(value: number, step: number) {
+  if (Number.isInteger(step)) {
+    return String(Math.round(value));
+  }
+
+  const decimals = step >= 0.1 ? 1 : step >= 0.01 ? 2 : 3;
+  return value.toFixed(decimals);
+}
+
+function EventDrawerContent({
+  copy,
+  eventLinkGraphFragment,
+  eventTab,
+  eventChronologySummary,
+  eventPlaceLabels,
+  eventPeopleLabels,
+  eventCauseLabels,
+  eventResultLabels,
+  loadState,
+  notes,
+  selectedEventTitle,
+  viewportRef,
+  onTabChange
+}: EventDrawerContentProps) {
+  const statusMessage = loadState === "error"
+    ? copy.eventLoadErrorLabel
+    : loadState === "loading"
+      ? copy.eventLoadingLabel
+      : "";
+  const statusToneClassName = loadState === "error" ? styles.eventDrawerStatusError : "";
+  const metadataRows = [
+    { label: copy.eventTimeLabel, value: eventChronologySummary ?? copy.eventEmptyValueLabel },
+    { label: copy.eventPlacesLabel, value: eventPlaceLabels.length > 0 ? eventPlaceLabels.join(", ") : copy.eventEmptyValueLabel },
+    { label: copy.eventPeopleLabel, value: eventPeopleLabels.length > 0 ? eventPeopleLabels.join(", ") : copy.eventEmptyValueLabel },
+    { label: copy.eventCausesLabel, value: eventCauseLabels.length > 0 ? eventCauseLabels.join(", ") : copy.eventEmptyValueLabel },
+    { label: copy.eventResultsLabel, value: eventResultLabels.length > 0 ? eventResultLabels.join(", ") : copy.eventEmptyValueLabel },
+  ];
+  const renderedNotes = notes.trim().length > 0 ? renderMarkdownDocument(notes) : null;
+  const hasEventLinks = eventLinkGraphFragment.hasContext;
+
+  return (
+    <div className={styles.eventDrawerSurface}>
+      <div className={styles.eventDrawerHandleRow}>
+        <div aria-hidden="true" className={styles.eventDrawerHandleTouchTarget} data-testid="event-drawer-handle">
+          <span className={styles.eventDrawerHandle} />
+        </div>
+      </div>
+      <div className={styles.eventDrawerHeader}>
+        <div className={styles.eventDrawerHeaderCopy}>
+          <div className={styles.eventDrawerTitle}>{selectedEventTitle}</div>
+        </div>
+      </div>
+
+      <div className={styles.eventDrawerBody}>
+        <div aria-label={copy.eventDrawerTabsLabel} className={styles.eventDrawerTabRow} role="tablist">
+          <button
+            aria-controls="event-drawer-notes-panel"
+            aria-selected={eventTab === "notes"}
+            className={`${styles.eventDrawerTab} ${eventTab === "notes" ? styles.eventDrawerTabActive : ""}`}
+            id="event-drawer-notes-tab"
+            onClick={() => onTabChange("notes")}
+            role="tab"
+            type="button"
+          >
+            <span className={styles.eventDrawerTabText}>{copy.eventNotesTabLabel}</span>
+          </button>
+          <button
+            aria-controls="event-drawer-links-panel"
+            aria-selected={eventTab === "links"}
+            className={`${styles.eventDrawerTab} ${eventTab === "links" ? styles.eventDrawerTabActive : ""}`}
+            id="event-drawer-links-tab"
+            onClick={() => onTabChange("links")}
+            role="tab"
+            type="button"
+          >
+            <span className={styles.eventDrawerTabText}>{copy.eventLinksTabLabel}</span>
+          </button>
+        </div>
+
+        <div
+          className={styles.eventDrawerViewport}
+          data-testid="event-drawer-viewport"
+          ref={viewportRef}
+        >
+          {eventTab === "notes" ? (
+            <div aria-labelledby="event-drawer-notes-tab" className={styles.eventDrawerPanel} id="event-drawer-notes-panel" role="tabpanel">
+              {statusMessage ? <div className={`${styles.eventDrawerStatus} ${statusToneClassName}`.trim()}>{statusMessage}</div> : null}
+              <section className={styles.eventDrawerNotesPanel}>
+                <table className={styles.eventMetadataTable}>
+                  <tbody>
+                    {metadataRows.map((row) => (
+                      <tr className={styles.eventMetadataRow} key={row.label}>
+                        <th className={styles.eventMetadataKey} scope="row">{row.label}</th>
+                        <td className={styles.eventMetadataValue}>{row.value}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+
+                {renderedNotes ? (
+                  <div className={styles.eventMarkdown}>{renderedNotes}</div>
+                ) : loadState === "ready" ? (
+                  <div className={styles.eventDrawerEmptyCopy}>{copy.eventNotesEmptyLabel}</div>
+                ) : null}
+              </section>
+            </div>
+          ) : (
+            <div aria-labelledby="event-drawer-links-tab" className={styles.eventDrawerPanel} id="event-drawer-links-panel" role="tabpanel">
+              <section className={styles.eventLinksPanel}>
+                {hasEventLinks ? (
+                  <div className={styles.eventLinksGraph}>
+                    <svg
+                      aria-hidden="true"
+                      className={styles.eventLinksGraphCanvas}
+                      data-event-link-graph="true"
+                      preserveAspectRatio="xMidYMid meet"
+                      viewBox={`0 0 ${eventLinkGraphFragment.width} ${eventLinkGraphFragment.height}`}
+                    >
+                      <defs>
+                        <marker id="event-link-relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
+                          <path d="M0,0 L6,3 L0,6 Z" fill="rgba(58, 74, 104, 0.52)" />
+                        </marker>
+                        <marker id="event-link-relation-arrow-cause" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
+                          <path d="M0,0 L6,3 L0,6 Z" fill="rgba(140, 58, 58, 0.78)" />
+                        </marker>
+                        <marker id="event-link-relation-arrow-soft" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
+                          <path d="M0,0 L6,3 L0,6 Z" fill="rgba(48, 105, 88, 0.62)" />
+                        </marker>
+                      </defs>
+
+                      {eventLinkGraphFragment.regions.map((region) => (
+                        <path
+                          className={`${styles.chartCompositeRegion} ${styles.eventLinksRegionPath} ${region.role === "parent" ? styles.eventLinksRegionParent : styles.eventLinksRegionChild}`}
+                          d={region.path}
+                          data-depth={region.depth}
+                          data-event-link-region-id={region.id}
+                          data-event-link-region-role={region.role}
+                          key={region.id}
+                          style={{
+                            opacity: 0.2 * region.opacity,
+                          }}
+                        />
+                      ))}
+
+                      {eventLinkGraphFragment.segments.map((segment) => {
+                        const relationStyle = getRelationStyle(segment.typeKey);
+                        return segment.typeKey === "causes" ? (
+                          <path
+                            className={`${styles.chartRelationSegment} ${styles.eventLinksConnection}`}
+                            d={buildCurvedRelationPath(segment.x1, segment.y1, segment.x2, segment.y2)}
+                            data-event-link-connection="true"
+                            data-event-link-segment-id={segment.id}
+                            data-event-link-segment-type={segment.typeKey}
+                            id={`event-link-${getRelationLabelPathId(segment.id)}`}
+                            key={segment.id}
+                            markerEnd={`url(#event-link-${relationStyle.markerId})`}
+                            style={{
+                              fill: "none",
+                              stroke: relationStyle.stroke,
+                              strokeDasharray: relationStyle.dasharray,
+                              strokeWidth: relationStyle.strokeWidth,
+                              opacity: segment.opacity,
+                            }}
+                          />
+                        ) : (
+                          <line
+                            className={`${styles.chartRelationSegment} ${styles.eventLinksConnection}`}
+                            data-event-link-connection="true"
+                            data-event-link-segment-id={segment.id}
+                            data-event-link-segment-type={segment.typeKey}
+                            key={segment.id}
+                            markerEnd={`url(#event-link-${relationStyle.markerId})`}
+                            style={{
+                              stroke: relationStyle.stroke,
+                              strokeDasharray: relationStyle.dasharray,
+                              strokeWidth: relationStyle.strokeWidth,
+                              opacity: segment.opacity,
+                            }}
+                            x1={segment.x1}
+                            x2={segment.x2}
+                            y1={segment.y1}
+                            y2={segment.y2}
+                          />
+                        );
+                      })}
+
+                      {eventLinkGraphFragment.nodes.map((node) => (
+                        <g data-event-link-node="true" data-event-link-node-id={node.id} data-event-link-current={node.isCurrent ? "true" : "false"} key={node.id}>
+                          <circle
+                            className={`${styles.chartInstantPoint} ${node.isCurrent ? styles.eventLinksCurrentPoint : ""}`}
+                            cx={node.x}
+                            cy={node.y}
+                            data-event-link-node-circle="true"
+                            data-event-link-node-id={node.id}
+                            data-event-link-current={node.isCurrent ? "true" : "false"}
+                            r={node.isCurrent ? 7 : 5.5}
+                            style={{ opacity: node.opacity }}
+                          />
+                          <text
+                            className={`${styles.chartInstantPointLabel} ${styles.eventLinksPointLabel} ${node.isCurrent ? styles.eventLinksCurrentLabel : ""}`}
+                            data-event-link-current-label={node.isCurrent ? "true" : "false"}
+                            data-event-link-node-label-id={node.id}
+                            style={{ opacity: node.opacity, textAnchor: node.labelAnchor }}
+                            x={node.labelX}
+                            y={node.labelY}
+                          >
+                            {node.label}
+                          </text>
+                        </g>
+                      ))}
+
+                      {eventLinkGraphFragment.regions.map((region) => (
+                        region.showLabel ? (
+                          <g key={`${region.id}:label-group`}>
+                            <line
+                              className={styles.chartCompositeRegionLabelGuide}
+                              data-event-link-region-label-guide-id={region.id}
+                              style={{ opacity: region.opacity }}
+                              x1={region.labelAttachX}
+                              x2={region.labelGuideX}
+                              y1={region.labelAttachY}
+                              y2={region.labelGuideY}
+                            />
+                            <text
+                              className={`${styles.chartCompositeRegionLabel} ${styles.eventLinksRegionLabel}`}
+                              data-depth={region.depth}
+                              data-event-link-region-label-anchor={region.labelAnchor}
+                              data-event-link-region-label-id={region.id}
+                              key={`${region.id}:label`}
+                              style={{ opacity: region.opacity }}
+                              textAnchor={region.labelAnchor}
+                              x={region.labelX}
+                              y={region.labelY}
+                            >
+                              {region.renderedLabel}
+                            </text>
+                          </g>
+                        ) : null
+                      ))}
+
+                      {eventLinkGraphFragment.segments.map((segment) => {
+                        const relationStyle = getRelationStyle(segment.typeKey);
+                        return segment.showLabel && relationStyle.label ? (
+                          segment.typeKey === "causes" ? (
+                            <text
+                              className={`${styles.chartRelationLabel} ${styles.eventLinksRelationLabel}`}
+                              data-event-link-relation-label={segment.id}
+                              key={`${segment.id}:label`}
+                              style={{ opacity: segment.opacity * relationStyle.labelOpacity, fontSize: relationStyle.labelFontSize, fontWeight: relationStyle.labelFontWeight }}
+                            >
+                              <textPath href={`#event-link-${getRelationLabelPathId(segment.id)}`} startOffset="2%">
+                                {relationStyle.label}
+                              </textPath>
+                            </text>
+                          ) : (
+                            <text
+                              className={`${styles.chartRelationLabel} ${styles.eventLinksRelationLabel}`}
+                              data-event-link-relation-label={segment.id}
+                              key={`${segment.id}:label`}
+                              transform={`translate(${segment.midX} ${segment.midY}) rotate(${segment.angle})`}
+                              style={{ opacity: segment.opacity * relationStyle.labelOpacity, fontSize: relationStyle.labelFontSize, fontWeight: relationStyle.labelFontWeight }}
+                              x={0}
+                              y={-4}
+                            >
+                              {relationStyle.label}
+                            </text>
+                          )
+                        ) : null;
+                      })}
+                    </svg>
+                  </div>
+                ) : (
+                  <div className={styles.eventDrawerEmptyState}>{copy.eventLinksEmptyLabel}</div>
+                )}
+              </section>
+            </div>
+          )}
+        </div>
+      </div>
+
+      {eventTab === "links" && statusMessage ? <div className={`${styles.eventDrawerStatus} ${statusToneClassName}`.trim()}>{statusMessage}</div> : null}
+    </div>
+  );
+}
+
+export function GraphShell({
+  initialWorkspace,
+  initialChartPlane,
+  loader = graphReadLoader,
+  locale,
+  compositeHullMode,
+  compositeSplineTuning,
+}: GraphShellProps) {
+  const copy = GRAPH_SHELL_COPY[locale];
+  const workspace = initialWorkspace;
+  const usesLoadingWorkspace = initialWorkspace.buildRevision === GRAPH_SHELL_LOADING_WORKSPACE_BUILD_REVISION;
+  const defaultShellSlice = useMemo(() => createDefaultShellSlice(workspace), [workspace]);
+  const [hasHydratedRestorableState, setHasHydratedRestorableState] = useState(false);
+  const [selectedTimelineId, setSelectedTimelineId] = useState(defaultShellSlice.selectedTimelineId);
+  const [enabledCanonIds, setEnabledCanonIds] = useState<ReadonlySet<string>>(() => new Set(defaultShellSlice.enabledCanonIds));
+  const [imageViewportState, setImageViewportState] = useState(() => createImageViewportState());
+  const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
+  const [visibleCompositeRegions, setVisibleCompositeRegions] = useState<CompositeFadePresence<CompositeRegion>[]>([]);
+  const [visibleCompositeColorAssignments, setVisibleCompositeColorAssignments] = useState<CompositeColorAssignment[]>([]);
+  const [selectedEventSelection, setSelectedEventSelection] = useState<EventDrawerSelection | null>(null);
+  const [renderedEventSelection, setRenderedEventSelection] = useState<EventDrawerSelection | null>(null);
+  const [isEventDrawerOpen, setIsEventDrawerOpen] = useState(false);
+  const [eventDrawerStage, setEventDrawerStage] = useState<EventDrawerStage>("peek");
+  const [isEventDrawerDragging, setIsEventDrawerDragging] = useState(false);
+  const [selectedEventRecord, setSelectedEventRecord] = useState<EventDetailResponse | null>(null);
+  const [selectedEventTab, setSelectedEventTab] = useState<EventDrawerTab>("notes");
+  const [selectedEventLoadState, setSelectedEventLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [runtimeViewportResponse, setRuntimeViewportResponse] = useState<ReturnType<typeof graphShellViewportResponseSchema.parse> | null>(null);
+  const [runtimeViewportLoadState, setRuntimeViewportLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
+
+  const chartViewportRef = useRef<HTMLDivElement | null>(null);
+  const eventDrawerRef = useRef<HTMLElement | null>(null);
+  const eventDrawerViewportRef = useRef<HTMLDivElement | null>(null);
+  const eventSelectionNonceRef = useRef(0);
+  const lastViewportCenterYRef = useRef<number | null>(null);
+  const pendingRestoredDrawerStageRef = useRef<EventDrawerStage | null>(null);
+  const selectedEventSelectionRef = useRef<EventDrawerSelection | null>(null);
+  const pendingEventTapRef = useRef<PendingEventTap | null>(null);
+  const eventDrawerDragRef = useRef<EventDrawerDragState | null>(null);
+  const bootstrapChartPlane = initialChartPlane ?? null;
+
+  const applyResolvedGraphShellState = useCallback((nextState: ReturnType<typeof resolveGraphShellRestorableState>) => {
+    setSelectedTimelineId(nextState.shell.selectedTimelineId);
+    setEnabledCanonIds(new Set(nextState.shell.enabledCanonIds));
+    setImageViewportState((current) => {
+      const nextView = createImageViewportViewFromRestorableSlice(nextState.viewport, viewportSize);
+      return nextView ? resetViewportView(current, nextView) : resetViewportView(current);
+    });
+    if (nextState.drawer) {
+      pendingRestoredDrawerStageRef.current = nextState.drawer.stage;
+      eventSelectionNonceRef.current += 1;
+      setSelectedEventTab("notes");
+      setSelectedEventSelection({
+        eventId: nextState.drawer.eventId,
+        label: resolveBootstrapEventLabel(bootstrapChartPlane, nextState.drawer.eventId),
+        requestKey: eventSelectionNonceRef.current,
+      });
+      return;
+    }
+
+    pendingRestoredDrawerStageRef.current = null;
+    setSelectedEventSelection(null);
+  }, [bootstrapChartPlane, viewportSize]);
+
+  const hydrateRestorableState = useCallback(() => {
+    if (typeof window === "undefined") {
+      return;
+    }
+
+    const { hadInvalidState, state: parsedLocalState } = readPersistedGraphShellLocalState(viewportSize);
+    if (hadInvalidState) {
+      clearPersistedGraphShellState();
+    }
+
+    const localState: GraphShellRestorableState | null = parsedLocalState
+      ? {
+          ...parsedLocalState,
+          shell: validateShellSliceForWorkspace(parsedLocalState.shell, workspace),
+        }
+      : null;
+    const parsedUrlState = parseGraphShellUrlState(window.location.search);
+    const urlState: GraphShellRestorableState = {
+      ...parsedUrlState,
+      shell: validateShellSliceForWorkspace(parsedUrlState.shell, workspace),
+    };
+
+    applyResolvedGraphShellState(resolveGraphShellRestorableState({
+      defaultState: { shell: defaultShellSlice },
+      localState,
+      urlState,
+    }));
+    setHasHydratedRestorableState(true);
+  }, [applyResolvedGraphShellState, defaultShellSlice, viewportSize, workspace]);
+
+  useEffect(() => {
+    if (viewportSize.width <= 0 || viewportSize.height <= 0) {
+      return;
+    }
+
+    if (usesLoadingWorkspace) {
+      setHasHydratedRestorableState(false);
+      return;
+    }
+
+    hydrateRestorableState();
+  }, [hydrateRestorableState, usesLoadingWorkspace, viewportSize.height, viewportSize.width]);
+
+  useEffect(() => {
+    if (typeof window === "undefined" || usesLoadingWorkspace || viewportSize.width <= 0 || viewportSize.height <= 0) {
+      return;
+    }
+
+    const handlePopState = () => {
+      hydrateRestorableState();
+    };
+
+    window.addEventListener("popstate", handlePopState);
+    return () => window.removeEventListener("popstate", handlePopState);
+  }, [hydrateRestorableState, usesLoadingWorkspace, viewportSize.height, viewportSize.width]);
+
+  const selectedTimeline = workspace.tabs.find((tab) => tab.id === selectedTimelineId) ?? workspace.tabs[0] ?? null;
+  const selectedTimelineCanonIds = selectedTimeline?.availableCanonIds ?? [];
+  const effectiveEnabledCanonIds = useMemo(() => {
+    const timelineSet = new Set(selectedTimelineCanonIds);
+    const intersected = new Set([...enabledCanonIds].filter((id) => timelineSet.has(id)));
+    if (intersected.size > 0) {
+      return intersected;
+    }
+    const fallbackId = selectedTimelineCanonIds[0] ?? workspace.canons[0]?.id;
+    return fallbackId ? new Set([fallbackId]) : new Set<string>();
+  }, [enabledCanonIds, selectedTimelineCanonIds, workspace.canons]);
+  // enabledCanonIds are intersected with timeline-available canons via effectiveEnabledCanonIds memo above.
+
+  const bootstrapVisibleChartPlaneEntities = useMemo(() => {
     if (!bootstrapChartPlane) {
       return [] as GraphShellChartPlaneEntity[];
     }

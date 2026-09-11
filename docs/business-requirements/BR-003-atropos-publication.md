@@ -28,11 +28,11 @@ owner: Atropos
 
 ## BR-003.5 복수 Canon
 
-독자는 현재 보고 있는 Canon을 분명히 알 수 있어야 하며, 서로 다른 Canon을 구분하고 필요한 경우 비교할 수 있어야 한다. 비교는 어느 Canon을 정본·기본·우위로 판정하지 않는다.
+독자는 현재 적용한 Canon scope를 분명히 알 수 있어야 하며, overlap하는 Canon을 함께 선택하고 필요한 경우 비교할 수 있어야 한다. 같은 Event가 여러 Canon에 참여할 때 stable Event identity는 하나로 보인다. 비교는 어느 Canon을 정본·기본·공식·우위로 판정하지 않는다.
 
 ## BR-003.6 범위별 서술과 근거
 
-독자는 현재 Canon에 속한 Canon·Process·Composite Event·단일 Event 단위의 Narrative를 읽을 수 있어야 한다. 독자에게 제공할 인용이나 출처 설명이 세계 내용으로 명시적으로 작성된 경우에는 관련 링크도 확인할 수 있어야 한다. 운영용 원자료와 작성 유래 자체는 공개 대상이 아니다.
+독자는 현재 Canon scope에 연결된 Canon·Process·Composite Event·단일 Event 단위의 authored Narrative를 읽을 수 있어야 한다. Canon과 Narrative는 서로 대체하지 않는다. 독자에게 제공할 인용이나 출처 설명이 세계 내용으로 명시적으로 작성된 경우에는 관련 링크도 확인할 수 있어야 한다. 운영용 원자료와 작성 유래 자체는 공개 대상이 아니다.
 
 ## BR-003.7 공유와 인용
 
@@ -55,5 +55,6 @@ owner: Atropos
 독자는 먼저 하나의 Time System 관점을 선택하고, 그 관점에서 좌표를 비교할 수 있는
 여러 World와 각 World의 여러 Canon을 한 탐색 화면에 함께 놓을 수 있어야 한다.
 Atropos는 호환되지 않는 World를 같은 시간축에 놓거나 호환성을 이름으로 추측하지
-않으며, 함께 표시한다는 이유로 World의 사실·Revision·접근 경계 또는 Canon의 진실을
-병합하지 않는다.
+않으며, 함께 표시한다는 이유로 World의 canonical content·Revision·접근 경계 또는
+Event identity를 병합하지 않는다. Canon 선택은 World partition이 아니라 interpretive
+scope filter다.

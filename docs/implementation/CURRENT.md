@@ -8,7 +8,7 @@ M5는 별도 승인 전까지 활성화하지 않는다.
 | 기준 계획                  | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
 | 실행 상태                  | `complete` — IP-003 Canon semantic realignment의 문서·schema·write/read·migration·production acceptance 완료              |
 | 활성 milestone             | M4.5 — 재설계된 D1→D2→E→F→G→H를 순서대로 실행                                                                               |
-| 현재 slice                 | M4.5-F inspector와 stable navigation; M5는 비활성                                                                            |
+| 현재 slice                 | M4.5-G legacy viewport bridge와 규모 검증; M5는 비활성                                                                        |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
@@ -21,7 +21,8 @@ M5는 별도 승인 전까지 활성화하지 않는다.
 | M4.5-D1 완료               | [PR #38](https://github.com/neocjmix/moirai/pull/38) merge·production `5157962a821eba7b021db494f59c14bce5d6104e`; CI `34613884767` success; identity dedup·membership match·URL/no-JS 검증 |
 | M4.5-D2 완료               | [PR #39](https://github.com/neocjmix/moirai/pull/39) merge·production `b3677cf0fad03d9643c0f09784ae5295a7b926eb`; CI `34615164602` success; R1 filter/evidence/diagnostics 검증 |
 | M4.5-E 완료                | [PR #40](https://github.com/neocjmix/moirai/pull/40) merge `bb490bfb83b6e504dd220dc7a595a61bd5acb2e1`; CI `34616417588` success; Revision-fixed Publication composition·digest·budget·production query smoke |
-| M4.5-F 구현 중             | mobile graph selection sheet, World Event canonical URL과 Canon context alias 왕복, structured attributes·derived evidence/completeness; [결정 기록](evidence/m45-f-inspector-stable-navigation-implementation-2026-09-11.md) |
+| M4.5-F 완료                | [PR #41](https://github.com/neocjmix/moirai/pull/41) merge `e2260aafdf3ffa9e51bdd7fd7b9f4df29f9ce6c7`; CI `34617357534` success; mobile sheet·stable route 왕복·structured attributes·derived metadata |
+| M4.5-G 구현 중             | v3→legacy 단방향 adapter, omission/approximation loss report, 2,500 visible-cell hard cap와 100k fixture; [결정 기록](evidence/m45-g-legacy-viewport-bridge-implementation-2026-09-11.md) |
 | IP-003 시작 기준선         | `main` `8854da284631f836cb34692f36070b718dce3e2d`; CI `34556657861`, post-deploy `34556777058` success; production `/__status`와 M4.5-C `/graph` 재확인 |
 | IP-003 Slice 0 계획        | PR #28 merge `6eaa428d7e6e61ae3df574a091dcbc2f0a082d73`; CI `34558131634` success                                                    |
 | IP-003 Slice 1 규범        | PR #29 merge `5a5aeb20cf853353847a9ef3185ff8e682bacefb`; CI `34558845653` success                                                    |

@@ -23,7 +23,7 @@ traces:
 ## TS-003.2 Change Set 범위
 
 - 하나의 Change Set은 정확히 하나의 World만 변경한다.
-- World 생성 Change Set은 World, 초기 Canon, Time System, Event, Relation과 Narrative를 함께 만들 수 있다.
+- World 생성 Change Set은 World, 초기 Canon, Time System, Event, Canon-Event membership, Relation과 Narrative를 함께 만들 수 있다.
 - 여러 World를 동시에 바꾸는 원자적 작업은 1차 구현에서 지원하지 않는다.
 - 하나의 이야기 단위는 여러 Operation을 가진 하나의 Change Set으로 제출한다.
 - Change Set 일부만 성공시키는 옵션은 제공하지 않는다.
@@ -60,6 +60,7 @@ restore는 별도 저수준 Operation이 아니다. 이전 상태와 현재 상�
 - JSON Merge Patch처럼 `null`과 누락의 의미가 불명확한 범용 patch를 외부 명령의 유일한 계약으로 사용하지 않는다.
 - entity type별 command schema가 수정 가능한 필드와 불변 필드를 제한한다.
 - 임시 client reference를 사용해 같은 Change Set에서 생성되는 레코드를 뒤의 Operation이 참조할 수 있다.
+- Canon-Event membership은 독립 lifecycle record로 create·withdraw할 수 있다. 이는 Event identity를 생성·복제하는 Operation이 아니다.
 
 ## TS-003.4 검증 단계
 
@@ -70,7 +71,7 @@ Change Set 검증은 다음 순서를 따른다.
 3. `expected_revision`과 현재 Revision을 비교한다.
 4. 임시 reference를 실제 ID 후보로 해석한다.
 5. Operation을 메모리의 후보 상태에 순서대로 적용한다.
-6. [TS-002](TS-002-canonical-data-model.md)의 참조·Canon·시간·관계 불변식과 [TS-010](TS-010-event-relational-time.md)의 시간 제약 모순을 검증한다.
+6. 모든 Operation을 적용한 최종 후보 상태에서 [TS-002](TS-002-canonical-data-model.md)의 World ownership, Event 1..N Canon membership, 참조·시간·관계 불변식과 [TS-010](TS-010-event-relational-time.md)의 시간 제약 모순을 검증한다.
 7. 철회와 수정이 관련 Relation, Narrative, correspondence와 공개 링크에 미치는 영향을 계산한다.
 8. 오류와 warning을 안정적인 code, 관련 ID와 수정 가능한 설명으로 반환한다.
 
@@ -104,11 +105,12 @@ Change Set 검증은 다음 순서를 따른다.
 1. 대상 World의 현재 Revision을 조건부 잠금한다.
 2. `expected_revision`을 다시 확인한다.
 3. 현재 정본 테이블에 모든 Operation을 적용한다.
-4. `change_sets`와 순서 있는 `change_operations`에 `before`, `after`, origin과 warning을 기록한다.
-5. 새 `world_revisions` 레코드를 만든다.
-6. `worlds.current_revision`과 `worlds.publication_target_revision`을 같은 새 Revision으로 변경한다.
-7. 같은 트랜잭션의 outbox에 Publication projection 작업을 기록한다.
-8. 트랜잭션을 commit한다.
+4. deferred transaction invariant로 모든 active Event의 same-World active membership이 하나 이상인지 다시 확인한다.
+5. `change_sets`와 순서 있는 `change_operations`에 `before`, `after`, origin과 warning을 기록한다.
+6. 새 `world_revisions` 레코드를 만든다.
+7. `worlds.current_revision`과 `worlds.publication_target_revision`을 같은 새 Revision으로 변경한다.
+8. 같은 트랜잭션의 outbox에 Publication projection 작업을 기록한다.
+9. 트랜잭션을 commit한다.
 
 어느 단계라도 실패하면 현재 상태, 이력, Revision, Publication target과 outbox가 모두 이전 상태로 돌아간다.
 
@@ -159,7 +161,8 @@ Change Set 검증은 다음 순서를 따른다.
 - 철회는 `withdrawn_revision`을 설정하고 현재 Publication의 정상 콘텐츠에서 제외한다.
 - 철회 이유 원문은 비공개 운영 정보다.
 - 안정적 공개 링크에 표시할 `public_withdrawal_notice`는 별도로 명시한다.
-- Event 철회 시 해당 Event를 endpoint 또는 scope로 사용하는 활성 Relation, Narrative, 시간 배치와 correspondence member를 같은 Change Set에서 처리해야 한다.
+- Event 철회 시 해당 Event의 active Canon membership과 해당 Event를 endpoint 또는 scope로 사용하는 활성 Relation, Narrative와 correspondence member를 같은 Change Set에서 처리해야 한다.
+- active Event의 마지막 Canon membership만 철회하는 Change Set은 `event_canon_membership_required`로 거절한다. Event 자체와 마지막 membership을 함께 철회하여 최종 상태가 valid한 전환은 허용한다.
 - virtual Time Event는 철회 대상이 아니다. 이를 참조하는 Canon Relation만 일반 Relation 생명주기로 수정·철회한다.
 - 기본 동작은 영향을 자동 삭제하는 것이 아니라 `dependent_content_active` 오류와 영향 목록을 반환하는 것이다.
 - 작성자는 의도에 따라 종속 항목을 함께 철회하거나 대상을 교체한다.

@@ -19,6 +19,7 @@ import {
   type GraphTemporalFrameOption
 } from "../lib/moirai-graph-source-query";
 import { useGraphQuery } from "./graph-query-context";
+import { GraphRelationPanel } from "./graph-relation-panel";
 import styles from "./graph-source-island.module.css";
 
 const COPY = {
@@ -29,6 +30,8 @@ const COPY = {
     sources: "Sources",
     entities: "Entities",
     search: "Search",
+    relations: "Relations",
+    diagnostics: "Diagnostics",
     summary: (worlds: number, canons: number) =>
       `World ${worlds} · Canon ${canons}`,
     mock: "MOCK SOURCE",
@@ -78,6 +81,8 @@ const COPY = {
     sources: "Sources",
     entities: "Entities",
     search: "Search",
+    relations: "Relations",
+    diagnostics: "Diagnostics",
     summary: (worlds: number, canons: number) =>
       `${worlds} Worlds · ${canons} Canons`,
     mock: "MOCK SOURCE",
@@ -150,9 +155,9 @@ function sourceFromWorld(world: GraphSourceWorldOption): MoiraiGraphSource {
 export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
   const copy = COPY[locale];
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"sources" | "entities" | "search">(
-    "sources"
-  );
+  const [activeTab, setActiveTab] = useState<
+    "sources" | "entities" | "search" | "relations" | "diagnostics"
+  >("sources");
   const [searchTerm, setSearchTerm] = useState("");
   const { state, setState } = useGraphQuery();
   const [draftFrameId, setDraftFrameId] = useState<string | null>(null);
@@ -270,7 +275,9 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
             role="tablist"
             aria-label={copy.tabs}
           >
-            <div className={inheritedStyles.statusIslandTabGroup}>
+            <div
+              className={`${inheritedStyles.statusIslandTabGroup} ${styles.queryTabs}`}
+            >
               <button
                 aria-selected={activeTab === "sources"}
                 className={`${inheritedStyles.statusIslandModeButton} ${activeTab === "sources" ? inheritedStyles.statusIslandModeButtonActive : ""}`}
@@ -302,6 +309,28 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
               >
                 <span className={inheritedStyles.statusIslandModeText}>
                   {copy.search}
+                </span>
+              </button>
+              <button
+                aria-selected={activeTab === "relations"}
+                className={`${inheritedStyles.statusIslandModeButton} ${activeTab === "relations" ? inheritedStyles.statusIslandModeButtonActive : ""}`}
+                onClick={() => setActiveTab("relations")}
+                role="tab"
+                type="button"
+              >
+                <span className={inheritedStyles.statusIslandModeText}>
+                  {copy.relations}
+                </span>
+              </button>
+              <button
+                aria-selected={activeTab === "diagnostics"}
+                className={`${inheritedStyles.statusIslandModeButton} ${activeTab === "diagnostics" ? inheritedStyles.statusIslandModeButtonActive : ""}`}
+                onClick={() => setActiveTab("diagnostics")}
+                role="tab"
+                type="button"
+              >
+                <span className={inheritedStyles.statusIslandModeText}>
+                  {copy.diagnostics}
                 </span>
               </button>
               <span className={styles.headerSummary}>
@@ -357,145 +386,156 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                 className={`${inheritedStyles.timelineDialogSurface} ${styles.surface}`}
               >
                 {activeTab !== "sources" ? (
-                  <section
-                    className={styles.entityPanel}
-                    aria-labelledby="graph-entities-title"
-                  >
-                    <div className={styles.sectionHeader}>
-                      <div>
-                        <h2 id="graph-entities-title">{copy.entityTitle}</h2>
-                        <p>{copy.entityHint}</p>
+                  activeTab === "relations" || activeTab === "diagnostics" ? (
+                    <GraphRelationPanel locale={locale} mode={activeTab} />
+                  ) : (
+                    <section
+                      className={styles.entityPanel}
+                      aria-labelledby="graph-entities-title"
+                    >
+                      <div className={styles.sectionHeader}>
+                        <div>
+                          <h2 id="graph-entities-title">{copy.entityTitle}</h2>
+                          <p>{copy.entityHint}</p>
+                        </div>
                       </div>
-                    </div>
-                    {activeTab === "search" ? (
-                      <input
-                        aria-label={copy.searchPlaceholder}
-                        autoFocus
-                        className={styles.searchInput}
-                        onChange={(event) => setSearchTerm(event.target.value)}
-                        placeholder={copy.searchPlaceholder}
-                        type="search"
-                        value={searchTerm}
-                      />
-                    ) : null}
-                    <div
-                      className={styles.filterRow}
-                      aria-label={copy.entities}
-                    >
-                      {(["atomic", "composite"] as const).map((kind) => {
-                        const selected =
-                          state.query.entity_filter.event_kinds.includes(kind);
-                        return (
-                          <button
-                            aria-pressed={selected}
-                            key={kind}
-                            onClick={() =>
-                              setState((current) =>
-                                replaceGraphEntityFilter(current, {
-                                  ...current.query.entity_filter,
-                                  event_kinds: selected
-                                    ? current.query.entity_filter.event_kinds.filter(
-                                        (value) => value !== kind
-                                      )
-                                    : [
-                                        ...current.query.entity_filter
-                                          .event_kinds,
-                                        kind
-                                      ]
-                                })
-                              )
-                            }
-                            type="button"
-                          >
-                            {kind === "atomic" ? copy.atomic : copy.composite}
-                          </button>
-                        );
-                      })}
-                      <button
-                        aria-pressed={state.query.entity_filter.include_states}
-                        onClick={() =>
-                          setState((current) =>
-                            replaceGraphEntityFilter(current, {
-                              ...current.query.entity_filter,
-                              include_states:
-                                !current.query.entity_filter.include_states
-                            })
-                          )
-                        }
-                        type="button"
+                      {activeTab === "search" ? (
+                        <input
+                          aria-label={copy.searchPlaceholder}
+                          autoFocus
+                          className={styles.searchInput}
+                          onChange={(event) =>
+                            setSearchTerm(event.target.value)
+                          }
+                          placeholder={copy.searchPlaceholder}
+                          type="search"
+                          value={searchTerm}
+                        />
+                      ) : null}
+                      <div
+                        className={styles.filterRow}
+                        aria-label={copy.entities}
                       >
-                        {copy.states}
-                      </button>
-                      <button
-                        aria-pressed={
-                          state.query.entity_filter.include_narratives
-                        }
-                        onClick={() =>
-                          setState((current) =>
-                            replaceGraphEntityFilter(current, {
-                              ...current.query.entity_filter,
-                              include_narratives:
-                                !current.query.entity_filter.include_narratives
-                            })
-                          )
-                        }
-                        type="button"
-                      >
-                        {copy.narratives}
-                      </button>
-                    </div>
-                    <div
-                      className={styles.entityResults}
-                      data-testid="identity-search-results"
-                    >
-                      {entityResults.map((entity) => (
-                        <article
-                          className={styles.entityCard}
-                          data-entity-id={entity.identity}
-                          key={`${entity.kind}:${entity.worldId}:${entity.identity}`}
-                        >
-                          <div className={styles.entityHeading}>
-                            <div>
-                              <span className={styles.entityKind}>
-                                {entity.kind} ·{" "}
-                                {entity.persisted
-                                  ? copy.persisted
-                                  : copy.derived}
-                              </span>
-                              <h3>{entity.title[locale]}</h3>
-                            </div>
+                        {(["atomic", "composite"] as const).map((kind) => {
+                          const selected =
+                            state.query.entity_filter.event_kinds.includes(
+                              kind
+                            );
+                          return (
                             <button
-                              aria-label={`${copy.focus}: ${entity.title[locale]}`}
+                              aria-pressed={selected}
+                              key={kind}
                               onClick={() =>
                                 setState((current) =>
-                                  focusGraphEntity(current, entity.reference)
+                                  replaceGraphEntityFilter(current, {
+                                    ...current.query.entity_filter,
+                                    event_kinds: selected
+                                      ? current.query.entity_filter.event_kinds.filter(
+                                          (value) => value !== kind
+                                        )
+                                      : [
+                                          ...current.query.entity_filter
+                                            .event_kinds,
+                                          kind
+                                        ]
+                                  })
                                 )
                               }
                               type="button"
                             >
-                              {copy.focus}
+                              {kind === "atomic" ? copy.atomic : copy.composite}
                             </button>
-                          </div>
-                          <p>{entity.description[locale]}</p>
-                          <dl>
-                            <div>
-                              <dt>{copy.matched}</dt>
-                              <dd>{entity.matchedCanonIds.join(", ")}</dd>
+                          );
+                        })}
+                        <button
+                          aria-pressed={
+                            state.query.entity_filter.include_states
+                          }
+                          onClick={() =>
+                            setState((current) =>
+                              replaceGraphEntityFilter(current, {
+                                ...current.query.entity_filter,
+                                include_states:
+                                  !current.query.entity_filter.include_states
+                              })
+                            )
+                          }
+                          type="button"
+                        >
+                          {copy.states}
+                        </button>
+                        <button
+                          aria-pressed={
+                            state.query.entity_filter.include_narratives
+                          }
+                          onClick={() =>
+                            setState((current) =>
+                              replaceGraphEntityFilter(current, {
+                                ...current.query.entity_filter,
+                                include_narratives:
+                                  !current.query.entity_filter
+                                    .include_narratives
+                              })
+                            )
+                          }
+                          type="button"
+                        >
+                          {copy.narratives}
+                        </button>
+                      </div>
+                      <div
+                        className={styles.entityResults}
+                        data-testid="identity-search-results"
+                      >
+                        {entityResults.map((entity) => (
+                          <article
+                            className={styles.entityCard}
+                            data-entity-id={entity.identity}
+                            key={`${entity.kind}:${entity.worldId}:${entity.identity}`}
+                          >
+                            <div className={styles.entityHeading}>
+                              <div>
+                                <span className={styles.entityKind}>
+                                  {entity.kind} ·{" "}
+                                  {entity.persisted
+                                    ? copy.persisted
+                                    : copy.derived}
+                                </span>
+                                <h3>{entity.title[locale]}</h3>
+                              </div>
+                              <button
+                                aria-label={`${copy.focus}: ${entity.title[locale]}`}
+                                onClick={() =>
+                                  setState((current) =>
+                                    focusGraphEntity(current, entity.reference)
+                                  )
+                                }
+                                type="button"
+                              >
+                                {copy.focus}
+                              </button>
                             </div>
-                            <div>
-                              <dt>{copy.memberships}</dt>
-                              <dd>{entity.canonMemberships.join(", ")}</dd>
-                            </div>
-                          </dl>
-                        </article>
-                      ))}
-                      {entityResults.length === 0 ? (
-                        <p className={styles.emptyResult} role="status">
-                          {copy.empty}
-                        </p>
-                      ) : null}
-                    </div>
-                  </section>
+                            <p>{entity.description[locale]}</p>
+                            <dl>
+                              <div>
+                                <dt>{copy.matched}</dt>
+                                <dd>{entity.matchedCanonIds.join(", ")}</dd>
+                              </div>
+                              <div>
+                                <dt>{copy.memberships}</dt>
+                                <dd>{entity.canonMemberships.join(", ")}</dd>
+                              </div>
+                            </dl>
+                          </article>
+                        ))}
+                        {entityResults.length === 0 ? (
+                          <p className={styles.emptyResult} role="status">
+                            {copy.empty}
+                          </p>
+                        ) : null}
+                      </div>
+                    </section>
+                  )
                 ) : null}
                 <div hidden={activeTab !== "sources"}>
                   <div className={styles.mockNotice}>

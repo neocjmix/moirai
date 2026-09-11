@@ -6,7 +6,7 @@
 |---|---|---|
 | CON-001 | [목적](CON-001-purpose.md) | accepted |
 | CON-002 | [세 시스템과 책임 경계](CON-002-system-boundaries.md) | accepted |
-| CON-003 | [Canon과 진실](CON-003-world-truth.md) | accepted |
+| CON-003 | [Canon과 해석적 지식 범위](CON-003-world-truth.md) | accepted |
 | CON-004 | [인간의 최종 권위](CON-004-human-authority.md) | accepted |
 | CON-005 | [운영 경계와 자동 출판](CON-005-publication-boundary.md) | accepted |
 | CON-006 | [URDR 요구사항 소싱 원칙](CON-006-urdr-requirement-sourcing.md) | accepted |

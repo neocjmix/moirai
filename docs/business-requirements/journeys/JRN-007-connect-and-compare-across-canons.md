@@ -9,9 +9,9 @@ layer: business-requirements
 
 ## JRN-007.1 목적
 
-서로 다른 Canon 안에서 각각 독립적으로 성립하는 인물·조직·장소·사물이 같은 대상을 각 Canon에서 표현한 것임을 연결하고, Canon의 사실을 병합하지 않은 채 비교할 수 있게 한다.
+하나의 Event identity가 여러 Canon에 직접 참여하는 경우와, 서로 다른 Event identity 또는 Canon-specific 파생 Subject를 작성자가 대응시키는 경우를 구분하고 비교할 수 있게 한다.
 
-예를 들어 정사 삼국지의 조조와 삼국지연의의 조조는 각 Canon 안에서 서로 다른 Event와 Relation을 가진다. 두 조조를 비교 가능한 동일 대상으로 연결하더라도 어느 한쪽의 생애와 성격이 다른 쪽의 사실이 되지는 않는다.
+예를 들어 두 Canon이 동일 Event를 공유한다면 correspondence 없이 같은 Event identity로 탐색한다. 서로 다른 Event 또는 파생 Subject를 비교 가능한 대상으로 연결하더라도 그 identity나 사건 이력을 자동 병합하지 않는다.
 
 ## JRN-007.2 행위자
 
@@ -23,25 +23,25 @@ layer: business-requirements
 ## JRN-007.3 시작 조건
 
 - 하나의 World 안에 둘 이상의 Canon이 존재한다.
-- 각 Canon의 Event와 Relation으로부터 인물·조직·장소·사물의 정체성을 읽을 수 있다.
-- 작성자는 서로 다른 Canon의 대상들이 비교 가능한 동일 대상을 표현한다고 판단할 근거 또는 창작 의도를 가지고 있다.
+- Canon membership과 Event/Relation으로부터 인물·조직·장소·사물의 파생 Subject를 읽을 수 있다.
+- 작성자는 distinct Event identity 또는 파생 Subject들이 비교 가능하다고 판단할 근거나 창작 의도를 가지고 있다.
 
 ## JRN-007.4 기본 흐름
 
 1. 작성자는 서로 다른 Canon의 대상들을 연결해 비교하고 싶다고 LLM에 요청한다.
-2. LLM은 각 Canon의 관련 Event, Relation, Narrative와 작성 유래를 탐색한다.
-3. LLM은 이름의 일치만이 아니라 역할, 관계와 맥락을 근거로 대응 후보와 차이를 작성자에게 제시한다.
+2. LLM은 각 Canon의 membership, 관련 Event, Relation, Narrative와 작성 유래를 탐색한다.
+3. LLM은 먼저 shared Event identity인지 확인한다. distinct identity라면 이름 일치만이 아니라 역할, 관계와 맥락을 근거로 대응 후보와 차이를 작성자에게 제시한다.
 4. 작성자는 대응이 의도에 맞는지 확인하고 연결하거나 다른 대상을 지정한다.
-5. Lachesis는 각 Canon의 Event, Relation과 파생 정체성을 병합하지 않은 채 대응을 보존한다.
+5. Lachesis는 shared Event membership에는 correspondence를 만들지 않고, distinct Event identity와 파생 Subject를 병합하지 않은 채 승인된 대응만 보존한다.
 6. 성공적으로 반영된 대응은 현재 Publication에 자동 반영된다.
 7. Atropos는 독자가 현재 보고 있는 Canon과 대상을 유지한 채 다른 Canon의 대응 대상을 열거나 나란히 비교할 수 있게 한다.
 8. 독자는 Canon별 Event, Relation, 시간과 Narrative의 공통점과 차이를 확인한다.
-9. 잘못된 대응이 발견되면 작성자는 기존 Canon의 사실을 수정하지 않고 대응만 분리하거나 다시 연결한다.
-10. World를 반출하고 복구할 때 Canon별 사실과 함께 대응의 의미도 보존된다.
+9. 잘못된 대응이 발견되면 작성자는 기존 Event·membership·Relation을 수정하지 않고 대응만 분리하거나 다시 연결한다.
+10. World를 반출하고 복구할 때 Event identity, Canon membership과 함께 대응의 의미도 보존된다.
 
 ## JRN-007.5 성공 결과
 
-- 각 Canon의 대상과 그에 관한 사실이 독립적으로 유지된다.
+- World-level Event identity와 Canon-specific 파생 context가 구분되어 유지된다.
 - 독자는 같은 대상을 다룬 여러 Canon을 발견하고 비교할 수 있다.
 - 비교 과정에서 어느 Canon도 정본·기본·우위로 취급되지 않는다.
 - 대응을 수정해도 각 Canon의 Event와 Relation은 영향을 받지 않는다.
@@ -49,15 +49,16 @@ layer: business-requirements
 
 ## JRN-007.6 비즈니스 규칙
 
-- Canon 내부의 정체성은 해당 Canon의 Event와 Relation으로부터 읽는다.
-- Canon을 가로지르는 대응은 어느 한 Canon 안에서 성립하는 세계의 사실이 아니라 작성·관리·탐색을 위한 연결이다.
-- 대응은 Canon별 대상을 하나의 정체성이나 하나의 사건 이력으로 병합하지 않는다.
+- Canon-specific Subject identity는 해당 Canon의 membership, Event와 Relation에서 파생한다.
+- shared Event identity는 Canon correspondence가 아니다.
+- correspondence는 distinct Event identity 또는 파생 Subject를 위한 작성·관리·탐색 연결이다.
+- 대응은 distinct 대상을 하나의 identity나 사건 이력으로 병합하지 않는다.
 - 동일한 이름만으로 대응을 자동 확정해서는 안 된다.
 - 대응은 인간이 확인하고 수정하거나 제거할 수 있어야 한다.
 - 하나의 대상이 다른 Canon의 여러 대상과 대응하거나 여러 대상이 하나의 대상으로 합성되는 경우를 미리 금지하지 않는다.
 - 성공적으로 반영된 대응은 별도의 출판 승인 없이 자동 공개된다.
-- 대응의 공개 여부는 각 Canon의 진실 지위를 바꾸지 않는다.
-- 독자에게 현재 Canon과 비교 중인 Canon의 경계가 명시적으로 보여야 한다.
+- 대응의 공개 여부는 Canon에 authority나 objective truth를 부여하지 않는다.
+- 독자에게 현재 scope, 비교 중인 Canon과 shared identity 여부가 명시적으로 보여야 한다.
 
 ## JRN-007.7 실패와 사용자 통지
 

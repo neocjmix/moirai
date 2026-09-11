@@ -15,6 +15,8 @@ traces:
 
 2026-09-05 사용자가 이 문서의 strictness, virtual reference와 Time System 계약을 승인했다. 이 문서는 accepted이며 [TS-002](TS-002-canonical-data-model.md), [TS-003](TS-003-change-revision-publication.md), [TS-004](TS-004-clotho-contract.md), [TS-005](TS-005-derived-models.md), [TS-006](TS-006-atropos-publication.md), [TS-007](TS-007-portability.md)의 시간 의미를 이 문서와 일치하도록 개정한다. 문서 승인은 runtime·schema migration·시험 World 쓰기를 자동 승인하지 않는다.
 
+2026-09-11 IP-003은 Event identity를 World-owned로, Canon participation을 1..N membership으로 재정렬했다. 이 변경은 이 문서의 strictness, virtual Time Event, lossless coordinate와 Time System capability 의미를 바꾸지 않는다. Relation의 World/Canon cardinality와 여러 Canon에서 공유하는 temporal assertion 규칙은 IP-003 DP-001의 사용자 승인 전 확정하지 않는다.
+
 목표는 시간 정밀도마다 타입과 계산 분기를 늘리는 대신, Event와 Relation 하나의 문법으로 다음을 모두 표현하는 것이다.
 
 - 연도만 아는 사건
@@ -28,9 +30,10 @@ traces:
 
 | 층         | 요소                                                | 지위                                         |
 | ---------- | --------------------------------------------------- | -------------------------------------------- |
-| Canon      | Atomic Event, Composite Event, Relation             | 저장되는 세계의 사실                         |
+| Canon context | active member Event와 적용 Relation              | 선택한 interpretive knowledge scope의 canonical input |
+| World      | Atomic Event, Composite Event                        | 저장되는 Event identity의 ownership          |
 | 동적 기준  | Time Event                                          | 좌표로부터 결정적으로 구해지며 저장하지 않음 |
-| 관리 정보  | provenance, confidence, assertion metadata          | 사실을 어떻게 아는지 설명                    |
+| 관리 정보  | provenance, confidence, assertion metadata          | canonical content의 유래와 확실성을 설명      |
 | Projection | temporal position, timeline geometry, duration view | 필요할 때 계산하는 편의 표현                 |
 
 사건의 지속, 알려진 범위, 기록의 확실성, 입력 해상도와 화면 모양은 서로 다른 축이다. 하나의 `kind` 또는 `precision` 필드로 합치지 않는다.
@@ -56,7 +59,7 @@ Atomic Event는 모델이 더 작은 구성 사건으로 설명하지 않는 사
 
 Time Event는 Time System 안의 정확한 수학적 좌표 하나를 나타내는 동적 Event다.
 
-- Canon 테이블에 저장하지 않는다.
+- Event 또는 Canon membership 테이블에 저장하지 않는다.
 - create·withdraw·revision 대상이 아니다.
 - 같은 Time System, 정의 버전과 좌표는 항상 같은 식별자를 만든다.
 - 관계 검증·질의·반출 과정에서 일반 Event처럼 참조할 수 있다.
@@ -154,7 +157,7 @@ Atropos가 복수 World를 하나의 시간 관점에 함께 놓을 때도 이 c
 일치 자체를 요구하지 않지만, accepted contract가 정한 동일한 adapter identity,
 comparison domain과 definition version을 사용하거나 target으로 가는 등록된 lossless
 conversion이 있어야 한다. title, slug, `kind` 또는 좌표 문자열 모양의 일치는
-호환성 근거가 아니다. 호환성은 World·Canon의 사실 병합이나 cross-World identity를
+호환성 근거가 아니다. 호환성은 World canonical content 병합이나 cross-World identity를
 만들지 않는다.
 
 예를 들어 스타워즈 같은 허구 세계의 달력은 출전이 정의한 custom coordinate를 그대로 보존하며, 정의되지 않은 Gregorian 환산을 만들지 않는다. 빅뱅 직후 사건은 기원 이후 경과량을 임의정밀도 scalar string으로 표현하고 해당 adapter가 제공하는 범위에서만 비교·차이를 계산한다. 칙술루브 충돌과 공룡 멸종은 각각 별도 Event 또는 Composite Event로 두고, 지질 연대의 알려진 범위와 둘 사이의 authored 관계를 함께 보존한다. 학설이 다른 경우에는 Canon 또는 provenance를 분리하며 하나의 exact Gregorian timestamp로 합치지 않는다.

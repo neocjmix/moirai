@@ -16,11 +16,11 @@
 
 | ID | 개념 | 상태 | 분류 | 정의 |
 |---|---|---|---|---|
-| ENT-001 | World | accepted | core | 함께 작성·관리·탐색할 여러 Canon을 묶는 최상위 범위 |
-| ENT-002 | Canon | accepted | core | 같은 World 안에서 독립적으로 참인 사실들이 성립하는 문맥 |
-| ENT-003 | Time System | accepted | core | Canon의 Event를 시간상에서 읽기 위한 좌표와 해석 규칙 |
-| ENT-004 | Event | accepted | core | 특정 Canon 안에서 발생하거나 성립하는 사실의 핵심 단위 |
-| ENT-005 | Relation | accepted | core | 특정 Canon 안에서 Event 사이에 성립하는 의미 있는 사실 관계 |
+| ENT-001 | World | accepted | core | canonical content의 transaction·Revision·export·access를 묶는 최상위 범위 |
+| ENT-002 | Canon | accepted | core | World 안의 persistent, named interpretive knowledge scope. authority·exclusivity·completeness·consistency·objective truth를 함의하지 않음 |
+| ENT-003 | Time System | accepted | core | Event를 시간상에서 읽기 위한 좌표와 해석 규칙. 현재 Canon과 N:M으로 연결됨 |
+| ENT-004 | Event | accepted | core | 정확히 한 World에 속하며 같은 World의 Canon 하나 이상에 참여하는 사건 identity의 핵심 단위 |
+| ENT-005 | Relation | accepted | core | Event 등 허용 endpoint 사이의 의미 있는 관계. World/Canon cardinality의 최종 형태는 IP-003 DP-001에서 결정 |
 | ENT-006 | Narrative | accepted | core | 단일 Event부터 Composite Event, Process와 Canon까지 선택된 범위를 사람이 읽을 수 있게 서술한 내용 |
 | ENT-013 | Publication | accepted | core | Atropos가 독자에게 제공하는 World의 현재 공개 표현 |
 
@@ -55,7 +55,7 @@ Process는 Composite Event로 표현하며 별도 핵심 엔티티로 저장하�
 
 | ID | 후보 | 상태 | 제외 이유 |
 |---|---|---|---|
-| ENT-008 | Claim | rejected | Canon 안의 사실과 원자료 사이에 일반화된 주장 계층은 필요하지 않다. |
+| ENT-008 | Claim | rejected | canonical content와 원자료 사이에 일반화된 주장 계층은 현재 필요하지 않다. |
 | ENT-011 | Contributor | rejected | 작성자, 출판자, LLM과 외부 주체가 수행하는 역할이다. |
 | ENT-012 | Review | rejected | 인간이 수행하는 검토 행위와 그 결과 상태이며 현재 독립 엔티티가 아니다. |
 | ENT-015 | Public Reference | rejected | 공개 대상에 요구되는 안정적인 주소와 식별 성질이다. |
@@ -66,9 +66,9 @@ Process는 Composite Event로 표현하며 별도 핵심 엔티티로 저장하�
 
 이 연결은 다음 원칙을 따른다.
 
-- 어느 Canon 안에서 참인 사실이 아니다.
+- Canon membership 또는 shared Event identity가 아니다.
 - Canon 내부의 ENT-005 Relation과 구분한다.
-- Canon별 Event와 파생 Subject를 병합하지 않는다.
+- 서로 다른 Event identity와 파생 Subject를 병합하지 않는다. 하나의 shared Event가 여러 Canon에 참여하는 경우에는 correspondence가 필요하지 않다.
 - 작성자가 승인·정정·제거할 수 있다.
 - Atropos의 Canon 비교와 탐색에 사용될 수 있다.
 - 반출과 복구 시 의미가 보존되어야 한다.

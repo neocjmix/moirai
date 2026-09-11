@@ -56,7 +56,7 @@ flowchart TD
 |---|---|---|
 | Clotho | Skill·CLI·HTTP·MCP, 외부 인증, 도구 계약과 작업 맥락 구성을 소유한다. | 정본 검증을 단독으로 결정하거나 persistence를 직접 호출하지 않는다. |
 | Lachesis application | 최종 World·행위 인가, 명령 검증, Change Set 적용, 일관된 정본 조회와 이력·복구를 소유한다. | 외부 HTTP·MCP·OIDC·CLI에 의존하거나 Projection을 정본으로 취급하지 않는다. |
-| Projection Worker | 정본 Revision으로부터 파생 모델과 Publication Snapshot을 결정적으로 생성한다. | Canon의 사실을 수정하거나 작성 명령을 승인하지 않는다. |
+| Projection Worker | 정본 Revision으로부터 파생 모델과 Publication Snapshot을 결정적으로 생성한다. | canonical Event·membership·Relation을 수정하거나 작성 명령을 승인하지 않는다. |
 | Atropos Web | 완성된 공개 Snapshot을 읽어 탐색·비교·공유 화면을 제공한다. | 정본 저장소와 비공개 운영 정보에 접근하거나 세계 내용을 수정하지 않는다. |
 | Canonical PostgreSQL | 현재 정본 상태, Change Set, Revision과 비공개 운영 정보를 보존한다. | UI 전용 배치·좌표·캐시를 정본 사실로 승격하지 않는다. |
 | Publication Store | Revision별 불변 공개 Snapshot과 현재 제공 포인터를 보존한다. | 작성 유래, 검증 로그, 자격 정보 등 비공개 운영 정보를 저장하지 않는다. |

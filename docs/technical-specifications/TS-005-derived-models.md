@@ -24,9 +24,9 @@ traces:
 
 ## TS-005.1 목적
 
-이 명세는 Event, Relation, Canon과 Time System으로부터 Subject를 계산하고 Canon 내부 사실을 합치지 않은 채 여러 Canon을 비교하는 공통 규칙을 정의한다. 시간 파생 의미는 TS-010의 단일 Event/Relation projection 계약을 따른다.
+이 명세는 World-owned Event, Canon membership, Relation과 Time System으로부터 Subject를 계산하고 shared Event identity와 context별 파생 결과를 구분하며 여러 Canon을 비교하는 공통 규칙을 정의한다. 시간 파생 의미는 TS-010의 단일 Event/Relation projection 계약을 따른다.
 
-파생 결과는 유용한 해석이지만 새로운 Canon의 사실이 아니다.
+파생 결과는 유용한 해석이지만 새로운 canonical entity가 아니다.
 
 ## TS-005.2 공통 Projection 계약
 
@@ -67,13 +67,13 @@ project({
 
 - 파생 결과를 직접 수정하는 write API는 제공하지 않는다.
 - 사용자가 결과를 고치려면 근거 Event·Relation·시간 배치 또는 Event의 해석 역할을 수정한다.
-- projection cache의 손실은 Canon의 사실 손실이 아니다.
+- projection cache의 손실은 Event, Canon membership 또는 Relation의 손실이 아니다.
 - algorithm version 변경으로 결과가 달라지면 source Revision 변경과 구분한다.
 - Atropos는 파생 결과와 저장된 Event·Relation을 시각적으로나 문구상 구분할 수 있어야 한다.
 
 ## TS-005.4 Subject Projection
 
-Subject는 하나의 Canon 안에서 동일한 인물·조직·장소·사물로 읽히는 Event 집합이다.
+Subject는 선택한 Canon의 active memberships와 그 context의 identity Relation에서 동일한 인물·조직·장소·사물로 읽히는 Event 집합이다. 같은 World-level Event는 여러 Canon-specific Subject projection의 evidence가 될 수 있지만 Event identity가 복제된 것은 아니다.
 
 ### 입력 graph
 
@@ -86,7 +86,7 @@ Subject는 하나의 Canon 안에서 동일한 인물·조직·장소·사물로
 
 ### 구성 규칙
 
-1. Canon별로 identity graph를 분리한다.
+1. Canon별로 active membership Event와 해당 Relation context를 선택해 identity graph를 계산한다.
 2. equivalence edge의 weakly connected component를 하나의 Subject 범위로 계산한다.
 3. lineage edge는 Subject component 사이의 분기·합류를 연결하지만 두 Subject를 하나로 합치지 않는다.
 4. 방향성은 Subject 안의 연속과 복수 instance, Subject 사이의 lineage를 설명하는 데 사용하며 이를 단일 선형 생애로 만들지 않는다.
@@ -232,27 +232,29 @@ Timeline은 선택한 Canon, Event 범위와 Time System에 따른 Event 배열 
 5. 순서를 결정할 근거가 없는 Event는 같은 unordered group 또는 `unplaced`로 반환한다.
 6. 순환 관계는 삭제하지 않고 strongly connected component로 묶어 loop 진단과 함께 표시한다.
 
-서로 다른 Time System에 놓인 일반 Event 사이의 authored ordering은 독립 사실로 보존한다. 이는 coordinate conversion이 아니며 공통 timeline 좌표나 cross-system Duration을 만들지 않는다. adapter가 없는 좌표 계산은 `time_system_incompatible` 또는 capability 진단과 함께 unresolved다.
+서로 다른 Time System에 놓인 일반 Event 사이의 authored ordering은 canonical Relation으로 보존한다. 이는 coordinate conversion이 아니며 공통 timeline 좌표나 cross-system Duration을 만들지 않는다. adapter가 없는 좌표 계산은 `time_system_incompatible` 또는 capability 진단과 함께 unresolved다.
 
 Timeline은 근거 없는 total order를 만들지 않는다. UI 배치를 위해 임시 좌표를 계산할 수 있지만 `placement_kind = inferred_layout`으로 표시하고 Canon의 시간 사실로 노출하지 않는다.
 
 ### 복수 Canon Timeline
 
-- Canon별 lane과 사실 graph를 유지한다.
+- Canon별 lane과 context graph를 유지한다.
 - 선택한 Time System 또는 명시적 변환으로 좌표가 비교 가능할 때만 같은 축을 사용한다.
 - 구조적 Relation은 Canon 경계를 넘겨 그리지 않는다.
-- 좌표 호환성은 Canon 간 정체성·사실 병합을 의미하지 않는다.
+- 좌표 호환성은 Event identity 또는 Canon context 병합을 의미하지 않는다.
 
 ## TS-005.10 Canon 간 대응 Projection
 
 Canon 비교는 [TS-002.10](TS-002-canonical-data-model.md#ts-00210-canon-간-대응)의 명시적 correspondence를 출발점으로 한다.
+
+동일한 World-level Event가 비교 중인 여러 Canon에 참여하면 correspondence 없이 shared identity로 정렬한다. correspondence는 distinct Event identity 또는 Canon-specific Subject handle을 작성자가 연결한 경우에만 사용한다.
 
 ### 후보와 확정의 구분
 
 - 문자열, 역할, 시간과 관계 유사성으로 대응 후보를 계산할 수 있다.
 - 후보는 score와 근거를 가진 운영 진단이며 자동으로 correspondence가 되지 않는다.
 - 작성자가 확정한 correspondence만 Publication과 안정적인 Canon 비교에 사용한다.
-- 낮은 score를 Canon의 진실성이나 우열로 해석하지 않는다.
+- 낮은 score를 Canon의 authority, objective truth나 우열로 해석하지 않는다.
 
 ### 비교 결과
 
@@ -263,7 +265,7 @@ Canon 비교는 [TS-002.10](TS-002-canonical-data-model.md#ts-00210-canon-간-�
 - Canon별로만 존재하는 차이
 - source Revision, algorithm version과 diagnostics
 
-비교 결과는 공통 Event record, 합쳐진 Subject 또는 통합 Timeline을 생성하지 않는다.
+비교 결과는 shared Event record를 복제하지 않으며 distinct Event를 공통 record로 병합하거나 합쳐진 Subject·통합 Timeline을 생성하지 않는다.
 
 ## TS-005.11 evidence와 설명 가능성
 
@@ -274,7 +276,7 @@ Canon 비교는 [TS-002.10](TS-002-canonical-data-model.md#ts-00210-canon-간-�
 - membership 해석 → 시작·종료 Event, Subject와 Relation
 - Duration → 사용한 virtual Time Event와 경계 Relation
 - 시간 위치 → exact, bounded, relative-only 또는 unresolved와 근거 Relation
-- Canon 비교 → correspondence member와 각 Canon의 독립 사실
+- Canon 비교 → shared Event membership, correspondence member와 각 Canon context
 
 Atropos가 근거를 축약해 보여도 public Snapshot에는 공개 가능한 evidence ID가 남아 있어야 한다.
 
@@ -291,7 +293,7 @@ Atropos가 근거를 축약해 보여도 public Snapshot에는 공개 가능한 
 - `correspondence_member_ambiguous`
 - `projection_input_withdrawn`
 
-진단은 정본 사실을 자동 수정하지 않는다. 오류 수준의 진단은 해당 projection 일부를 `unresolved`로 만들 수 있지만 다른 독립 범위의 결과까지 숨기지 않는다.
+진단은 canonical Event, membership 또는 Relation을 자동 수정하지 않는다. 오류 수준의 진단은 해당 projection 일부를 `unresolved`로 만들 수 있지만 다른 독립 범위의 결과까지 숨기지 않는다.
 
 ## TS-005.13 cache와 invalidation
 
@@ -325,3 +327,4 @@ Revision이 바뀌면 이전 cache를 수정하지 않고 새 결과를 만든�
 9. Canon 비교가 어느 Canon도 기본·정본으로 표시하지 않는다.
 10. 같은 Revision과 algorithm version의 전체 rebuild와 scoped rebuild가 같은 의미의 결과를 만든다.
 11. Gregorian과 호환되지 않는 Time System이 자기 canonical coordinate를 보존하며 지원하지 않는 cross-system 계산을 꾸며내지 않는다.
+12. 같은 Event가 여러 Canon에 참여해도 Event identity는 하나이며 각 Canon-specific projection이 membership context를 보존한다.

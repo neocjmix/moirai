@@ -58,7 +58,9 @@ erDiagram
     WORLD ||--o{ CANON : contains
     WORLD ||--o{ TIME_SYSTEM : defines
     CANON }o--o{ TIME_SYSTEM : uses
-    CANON ||--o{ EVENT : contains
+    WORLD ||--o{ EVENT : owns
+    CANON ||--o{ CANON_EVENT_MEMBERSHIP : includes
+    EVENT ||--|{ CANON_EVENT_MEMBERSHIP : participates
     EVENT ||--o{ RELATION : source
     EVENT ||--o{ RELATION : target
     CANON ||--o{ NARRATIVE : has
@@ -80,11 +82,11 @@ erDiagram
 | `current_revision`            | 성공한 최신 World Revision 번호      |
 | `publication_target_revision` | 자동 공개 대상인 최신 Revision 번호  |
 
-World는 Canon 사이의 진위를 판정하는 필드나 `default_canon_id`를 갖지 않는다.
+World는 Canon 사이의 진위를 판정하는 필드나 `default_canon_id`를 갖지 않는다. World는 Event의 명시적인 ownership과 모든 canonical change의 transaction, Revision, export, access와 publication isolation 경계다.
 
 ## TS-002.5 Canon
 
-`canons`는 Event와 Relation이 사실로 성립하는 범위다.
+`canons`는 World 안의 persistent, named interpretive knowledge scope다. Canon은 함께 고려하는 curated body of world knowledge를 식별하지만 authority, exclusivity, completeness, consistency 또는 objective truth를 함의하지 않는다.
 
 | 필드          | 제약                            |
 | ------------- | ------------------------------- |
@@ -97,8 +99,9 @@ World는 Canon 사이의 진위를 판정하는 필드나 `default_canon_id`를 
 금지되는 필드와 동작:
 
 - `is_default`, `is_official`, `priority`, `authority_rank`처럼 Canon의 우열을 만드는 필드
-- 다른 Canon의 Event 또는 Relation을 Canon 내부 사실처럼 직접 참조하는 동작
-- Canon을 이동시켜 기존 Event의 진실 범위를 암묵적으로 바꾸는 동작
+- Canon overlap 또는 shared Event를 오류로 취급하는 동작
+- membership 대신 Event를 Canon마다 복제하는 동작
+- Canon을 이동시켜 기존 membership scope를 암묵적으로 바꾸는 동작
 
 Canon을 다른 World로 이동하는 것은 1차 구현에서 지원하지 않는다.
 
@@ -138,7 +141,7 @@ virtual Time Event는 Event table, Change Operation의 entity lifecycle 또는 R
 
 ### 시간 정본
 
-Canon의 모든 시간 의미는 EventReference endpoint를 가진 Relation이 소유한다. `event_temporal_placements`, 숫자 좌표, Relation의 별도 Event ID endpoint는 Canon·API·DB·반출 형식에 존재하지 않는다. 저장 Event와 virtual Time Event는 같은 tagged endpoint 계약을 사용한다.
+canonical content의 모든 시간 의미는 EventReference endpoint를 가진 Relation이 소유한다. `event_temporal_placements`, 숫자 좌표, Relation의 별도 Event ID endpoint는 Canon·API·DB·반출 형식에 존재하지 않는다. 저장 Event와 virtual Time Event는 같은 tagged endpoint 계약을 사용한다.
 
 | 필드                             | 의미                                                  |
 | -------------------------------- | ----------------------------------------------------- |
@@ -162,18 +165,37 @@ Canon의 모든 시간 의미는 EventReference endpoint를 가진 Relation이 �
 
 ## TS-002.7 Event
 
-`events`는 특정 Canon 안에서 발생하거나 성립하는 사실의 핵심 단위다.
+`events`는 정확히 하나의 World에 속하는 사건 identity의 핵심 단위다.
 
 | 필드         | 제약                                       |
 | ------------ | ------------------------------------------ |
 | `id`         | primary key                                |
-| `canon_id`   | 필수 Canon 참조, 생성 후 변경 불가         |
-| `slug`       | Canon 안에서 선택적으로 unique             |
+| `world_id`   | 필수 World 참조, 생성 후 변경 불가         |
+| `slug`       | 선택적 공개 별칭. identity나 membership 아님 |
 | `kind`       | `atomic` 또는 `composite`                  |
 | `title`      | 필수 표시 이름                             |
 | `summary`    | 선택적 짧은 설명                           |
 | `roles`      | open vocabulary 문자열 배열                |
 | `attributes` | versioned JSON schema로 검증되는 확장 속성 |
+
+`canon_event_memberships`는 Canon과 Event의 N:M 참여 관계다.
+
+| 필드       | 제약 |
+| ---------- | ---- |
+| `id`       | lifecycle과 Revision 이력을 위한 opaque ID |
+| `world_id` | Event와 Canon이 공유하는 필수 World 참조 |
+| `canon_id` | 필수 Canon 참조 |
+| `event_id` | 필수 Event 참조 |
+
+불변식:
+
+- active persisted Event는 active membership을 하나 이상 가진다.
+- membership의 Canon과 Event는 `world_id`가 같아야 한다.
+- 같은 Canon/Event active pair는 하나뿐이다.
+- membership 추가·제거는 Event identity를 바꾸지 않는다.
+- Change Set 최종 상태에서 active Event의 마지막 membership만 제거하는 변경은 거절한다.
+- 같은 Change Set에서 Event를 철회하고 마지막 membership을 정리하는 명시적 전환은 허용한다.
+- `event.canon_id`를 ownership 또는 membership의 canonical source로 사용하지 않는다.
 
 ### Composite Event와 Process
 
@@ -186,12 +208,12 @@ Canon의 모든 시간 의미는 EventReference endpoint를 가진 Relation이 �
 
 ## TS-002.8 Relation
 
-`relations`는 같은 Canon의 Event 사이에 성립하는 사실이다.
+`relations`는 허용된 EventReference endpoint 사이의 assertion이다. Relation identity와 Canon cardinality의 최종 구조는 IP-003 DP-001의 사용자 승인 대상이며 이 절은 결정 전 호환 의미와 공통 무결성만 규정한다.
 
 | 필드         | 제약                                  |
 | ------------ | ------------------------------------- |
 | `id`         | primary key                           |
-| `canon_id`   | 양 endpoint와 동일한 Canon            |
+| `canon_id`   | DP-001 전 호환 단계의 단일 assertion context |
 | `type`       | versioned open vocabulary의 관계 type |
 | `source_ref` | 필수 tagged Event reference           |
 | `target_ref` | 필수 tagged Event reference           |
@@ -214,7 +236,7 @@ Canon의 모든 시간 의미는 EventReference endpoint를 가진 Relation이 �
 ### 무결성
 
 - persisted Event endpoint는 모두 존재하고 활성 또는 같은 Change Set에서 생성되어야 한다.
-- persisted Event endpoint와 Relation은 같은 Canon에 속해야 한다. virtual Time Event endpoint의 Time System은 같은 World에 속하고 해당 Canon이 사용해야 한다.
+- persisted Event endpoint는 Relation의 World에 속하고, 호환 단계에서는 둘 다 Relation의 `canon_id`에 active membership을 가져야 한다. virtual Time Event endpoint의 Time System은 같은 World에 속하고 해당 Canon이 사용해야 한다.
 - `contains`는 cycle을 만들 수 없다.
 - `precedes`와 strict·non-strict·equality 제약 결합은 모순을 만들 수 없다.
 - self relation은 type registry가 명시적으로 허용하지 않는 한 거부한다.
@@ -240,9 +262,11 @@ Composite Event와 Process Narrative도 Event를 대상으로 하므로 별도 s
 
 `public_references`는 Narrative에 포함된 값 객체이며 독립적인 핵심 엔티티가 아니다. 비공개 원자료 및 작성 유래와 자동으로 연결하거나 공개하지 않는다.
 
+Narrative는 authored prose 의미와 단일 `canon_id` context를 유지한다. Event scope Narrative의 `scope_id`는 World-level Event를 가리키며 그 Event가 Narrative의 Canon에 active membership을 가져야 한다. IP-003은 Narrative↔Canon을 N:M으로 바꾸거나 Narrative를 Canon의 대체물로 만들지 않는다.
+
 ## TS-002.10 Canon 간 대응
 
-Canon 간 대응은 Canon 내부의 사실이 아닌 World 범위의 관리·비교 관계다. 구현 레코드는 필요하지만 비즈니스 핵심 엔티티나 Relation으로 노출하지 않는다.
+Canon 간 대응은 shared Event identity나 Canon membership이 아닌 World 범위의 관리·비교 관계다. 구현 레코드는 필요하지만 비즈니스 핵심 엔티티나 Relation으로 노출하지 않는다.
 
 ### 레코드
 
@@ -255,8 +279,9 @@ Canon 간 대응은 Canon 내부의 사실이 아닌 World 범위의 관리·비
 - 하나의 correspondence는 둘 이상의 member를 가진다.
 - member의 Canon은 모두 correspondence와 같은 World에 속한다.
 - 같은 Canon의 여러 member와 다른 Canon의 하나의 member를 연결할 수 있다.
+- 같은 Event identity가 여러 Canon에 membership을 가진 경우에는 correspondence를 만들지 않는다.
 - correspondence는 member의 Event, Relation 또는 Subject 구성원을 변경하지 않는다.
-- correspondence 자체의 철회는 Canon 내부의 사실을 철회하지 않는다.
+- correspondence 자체의 철회는 Event, Relation 또는 Canon membership을 철회하지 않는다.
 
 ## TS-002.11 파생 Subject의 안정적 식별
 
@@ -273,12 +298,12 @@ Subject는 identity Relation으로 연결된 Event 집합에서 계산한다. �
 
 규칙:
 
-1. Subject projection은 같은 Canon의 identity Relation만 사용한다.
+1. Subject projection은 해당 Canon에 참여하는 Event와 그 Canon context의 identity Relation만 사용한다.
 2. handle은 Subject가 아니라 계산 결과를 다시 찾기 위한 안정적 주소다.
 3. identity 구조가 분리되면 anchor Event를 포함한 쪽이 기존 handle을 유지하고 나머지 구성요소는 새 handle을 받는다.
 4. identity 구조가 병합되면 하나의 handle을 대표로 유지하고 나머지는 대표 handle로 redirect한다.
 5. anchor가 철회되어 연속성을 결정할 수 없으면 임의 재지정하지 않고 `unresolved`로 표시해 운영 진단을 만든다.
-6. handle, redirect와 projection cache를 삭제해도 Canon의 Event와 Relation 사실은 손실되지 않는다.
+6. handle, redirect와 projection cache를 삭제해도 World-level Event, Canon membership과 Relation은 손실되지 않는다.
 
 정확한 Subject 계산과 handle reconciliation 알고리즘은 TS-005에서 정의한다.
 
@@ -299,7 +324,7 @@ Change Set과 Operation의 구체적인 구조는 TS-003에서 정의한다.
 
 | 분류               | 데이터                                                                                                      |
 | ------------------ | ----------------------------------------------------------------------------------------------------------- |
-| 현재 정본          | World, Canon, Time System, Canon-Time System 연결, Event, EventReference Relation, Narrative, Canon 간 대응 |
+| 현재 정본          | World, Canon, Time System, Canon-Time System 연결, World-owned Event, Canon-Event membership, EventReference Relation, Narrative, Canon 간 대응 |
 | 정본 운영 이력     | Change Set, Change Operation, World Revision, 작성 유래, 철회 기록                                          |
 | 운영 식별 표면     | Subject Handle, slug alias                                                                                  |
 | 재생성 가능한 파생 | Subject 구성, Process·State·Duration·Timeline, 검증 진단, 검색 문서                                         |
@@ -312,6 +337,7 @@ UI 좌표, 그래프 hull, lane, 색상, zoom level과 layout cache는 정본 �
 PostgreSQL table layout은 반출 형식이 아니다. 반출은 다음을 가진 versioned 논리 문서로 정의한다.
 
 - World와 모든 핵심 내용
+- Event의 World identity와 모든 Canon membership
 - Time System 정의와 virtual Time Event reference를 포함한 Relation
 - Canon 간 대응
 - 공개 상태와 철회 정보

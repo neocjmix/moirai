@@ -1,16 +1,17 @@
 # 핵심 비즈니스 개념 관계와 책임
 
-이 문서는 확정된 비즈니스 개념 사이의 의미와 책임 경계를 정의한다. 데이터 구조, API, 저장 방식과 구체적인 cardinality는 이후 기술 명세에서 결정한다.
+이 문서는 확정된 비즈니스 개념 사이의 의미와 책임 경계를 정의한다. 데이터 구조, API와 저장 방식은 기술 명세에서 결정한다. World/Event/Canon cardinality는 승인된 의미의 일부로 이 문서에서도 명시한다.
 
 ## 개념 관계
 
 ```mermaid
 flowchart TD
     W["ENT-001 World"] --> C["ENT-002 Canon"]
-    C --> T["ENT-003 Time System"]
-    C --> E["ENT-004 Event"]
-    C --> R["ENT-005 Relation"]
+    W --> T["ENT-003 Time System"]
+    W --> E["ENT-004 Event"]
+    W --> R["ENT-005 Relation"]
     C --> N["ENT-006 Narrative"]
+    C <-->|"N:M membership; Event side 1..N"| E
     E --> CE["Composite Event"]
     E --> N
     W --> P["ENT-013 Publication"]
@@ -19,15 +20,17 @@ flowchart TD
 
 ## BCR-001 World와 Canon
 
-ENT-001 World는 함께 작성·관리·탐색할 ENT-002 Canon을 묶는다. World 자체가 Canon 사이의 진위를 판정하지 않는다.
+ENT-001 World는 canonical content의 transaction, Revision, export, access와 publication isolation을 묶는 최상위 경계다. World 자체가 Canon 사이의 진위를 판정하지 않는다.
 
-## BCR-002 Canon의 진실 범위
+## BCR-002 Canon의 해석적 지식 범위와 Event membership
 
-ENT-004 Event와 ENT-005 Relation은 특정 ENT-002 Canon 안에서 사실로 성립한다. 서로 다른 Canon의 사실은 모순될 수 있으며 한쪽이 다른 쪽을 덮어쓰지 않는다.
+ENT-002 Canon은 World 안의 persistent, named interpretive knowledge scope다. 함께 고려하는 curated body of world knowledge를 식별하지만 authority, exclusivity, completeness, consistency 또는 objective truth를 뜻하지 않는다. Canon들은 overlap할 수 있다.
+
+ENT-004 Event는 정확히 하나의 World에 속하고 같은 World의 Canon 하나 이상에 참여한다. Event identity와 Canon membership은 분리하며 같은 Event를 Canon마다 복제하지 않는다. active Event가 마지막 membership을 잃는 상태와 cross-World membership은 허용하지 않는다.
 
 ## BCR-003 Canon과 Time System
 
-ENT-002 Canon은 ENT-003 Time System을 통해 Event의 시간을 읽을 수 있다. Time System은 Event의 의미를 시간축에 표현하기 위한 규칙이며 Canon의 우열을 만들지 않는다.
+ENT-002 Canon은 ENT-003 Time System을 통해 참여 Event의 시간을 읽을 수 있다. Time System은 Event의 의미를 시간축에 표현하기 위한 규칙이며 Canon의 우열을 만들지 않는다.
 
 하나의 Canon은 하나 이상의 Time System을 사용할 수 있고, 같은 Time System을 여러 Canon이 공유할 수 있다. 어느 Time System도 본질적으로 정본이나 기본 시간축이 아니며 사용 맥락에 따라 선택된다.
 
@@ -37,11 +40,11 @@ ENT-004 Event는 단일 사건일 수도 있고 다른 Event를 포함하는 Com
 
 ENT-017 Process는 과정으로 읽히는 Composite Event의 역할이다. 모든 Process는 하나의 Composite Event로 표현하지만 모든 Composite Event가 Process인 것은 아니다. Process를 위한 별도의 핵심 개념이나 사실 저장소를 만들지 않는다.
 
-## BCR-005 Canon 내부 Relation
+## BCR-005 Canon 맥락의 Relation
 
-ENT-005 Relation은 같은 Canon 안의 Event 사이에서 성립하는 사실 관계다. 포함, 순서, 인과, 조건, 영향, 방해와 정체성 연속 등을 표현할 수 있다.
+ENT-005 Relation은 포함, 순서, 인과, 조건, 영향, 방해와 정체성 연속 등을 표현한다. Event identity가 World-level로 바뀐 뒤에도 Canon마다 다른 assertion과 여러 Canon이 공유하는 assertion을 구분해 표현할 수 있어야 한다.
 
-Canon 내부 Relation과 작성·관리·비교를 위한 Canon 간 연결은 같은 의미로 취급하지 않는다.
+Relation identity를 World-level로 두고 Canon membership을 N:M으로 할지, Canon-specific assertion으로 유지할지는 IP-003 DP-001의 사용자 승인 대상이다. 승인 전에는 기존 Relation 의미를 보존하는 기계적 검증만 변경한다. Relation과 작성·관리·비교를 위한 Canon correspondence는 같은 의미로 취급하지 않는다.
 
 ## BCR-006 Narrative의 범위
 
@@ -56,17 +59,17 @@ ENT-006 Narrative는 다음 범위를 서술할 수 있다.
 
 ## BCR-007 파생 개념
 
-ENT-016 Subject, ENT-017 Process, ENT-018 State, ENT-019 Duration과 ENT-020 Timeline은 Event, Relation, Canon과 Time System에서 읽거나 계산한다.
+ENT-016 Subject, ENT-017 Process, ENT-018 State, ENT-019 Duration과 ENT-020 Timeline은 Event, Relation, 명시적 Canon membership과 Time System에서 읽거나 계산한다.
 
-파생 결과를 제공하기 위해 새로운 Canon의 사실을 만들거나 원본 의미를 변경하지 않는다.
+파생 결과를 제공하기 위해 새로운 canonical content를 만들거나 원본 의미를 변경하지 않는다.
 
 ## BCR-008 Canon 간 대응
 
-서로 다른 Canon의 Event 또는 파생 Subject가 서로 대응함을 작성자가 명시할 수 있다.
+서로 다른 Event identity 또는 Canon-specific 파생 Subject가 서로 대응함을 작성자가 명시할 수 있다. 하나의 Event identity가 여러 Canon에 직접 참여하는 경우에는 correspondence가 필요하지 않다.
 
 Canon 간 대응은 다음 성격을 가진다.
 
-- 어느 Canon의 사실도 아니다.
+- Canon membership 또는 Relation assertion이 아니다.
 - Canon 내부 Relation과 구분되는 관리·비교 관계다.
 - 연결된 Event나 Subject를 하나의 정체성 또는 사건 이력으로 병합하지 않는다.
 - 일대일 관계로 제한하지 않는다.
@@ -76,7 +79,7 @@ Canon 간 대응은 다음 성격을 가진다.
 
 ENT-013 Publication은 Atropos가 독자에게 제공하는 한 World의 현재 공개 표현이다.
 
-1차 구현에서는 Clotho를 통해 성공적으로 반영된 World, Canon, Event, Relation, Narrative와 Canon 간 대응에 별도로 관리되는 비공개 중간 상태가 없으며 현재 Publication의 내용이 된다. 이는 공개 제공 시간에 관한 SLA가 아니라 논리적 상태 모델이다. Publication에 포함되었다는 사실은 Canon의 진실 지위를 바꾸지 않는다.
+1차 구현에서는 Clotho를 통해 성공적으로 반영된 World, Canon, Event, Canon membership, Relation, Narrative와 Canon 간 대응에 별도로 관리되는 비공개 중간 상태가 없으며 현재 Publication의 내용이 된다. 이는 공개 제공 시간에 관한 SLA가 아니라 논리적 상태 모델이다. Publication에 포함되었다는 사실은 Canon에 authority나 objective truth를 부여하지 않는다.
 
 인간은 공개된 내용을 정정하거나 철회할 수 있다. draft, 선택적 출판과 과거 공개본의 독립적인 열람은 후속 확장으로 남긴다.
 

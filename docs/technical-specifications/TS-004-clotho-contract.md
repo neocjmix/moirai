@@ -27,7 +27,7 @@ Clotho는 완제품 작성 workflow를 강제하는 orchestration framework가 �
 
 Clotho는 다음 세 부분으로 구성한다.
 
-1. **Skill instructions**: 세계 의미, Canon 경계, 탐색 원칙, 자동 출판과 오류 회복 규칙을 설명한다.
+1. **Skill instructions**: World-owned Event identity, Canon membership, 탐색 원칙, 자동 출판과 오류 회복 규칙을 설명한다.
 2. **Adapters**: CLI client와 서버의 HTTP·MCP가 동일한 versioned Clotho 도구 계약을 제공한다.
 3. **Server-side application**: 인증된 요청의 도구 실행, 범위·응답 예산, 맥락 구성과 Lachesis 내부 명령 변환을 소유한다. 외부 인증은 서버 adapter가 수행한다.
 
@@ -77,7 +77,7 @@ Clotho는 첫 쓰기 전에 다음 사실을 사용자가 알 수 있게 해야 
 
 | 기능                 | 목적                                                 | 주요 입력                                          |
 | -------------------- | ---------------------------------------------------- | -------------------------------------------------- |
-| `event.search`       | 제목, Narrative, 공개·비공개 운영 색인에서 후보 검색 | canon ID, query, filters, cursor, limit            |
+| `event.search`       | 제목, Narrative, 공개·비공개 운영 색인에서 후보 검색 | world ID, optional canon IDs, query, filters, cursor, limit |
 | `event.get`          | Event의 전체 작성 맥락 확인                          | event ID, at_revision, include flags               |
 | `event.neighbors`    | 주변 Relation과 인접 Event 탐색                      | event ID, relation types, direction, depth, budget |
 | `event.ancestors`    | Composite Event 포함 경로 확인                       | event ID, max depth                                |
@@ -123,15 +123,16 @@ LLM이 World 전체를 매번 읽지 않도록 `context.slice` 기능을 제공�
 - 구조적 warning과 대응 가능한 다른 Canon
 
 Context Slice는 새로운 저장 개념이 아니라 여러 읽기 기능의 편의 projection이다. 잘림을 숨기거나 반환된 부분을 World 전체로 표현해서는 안 된다.
+`canon_ids`는 Event ownership partition이 아니라 interpretive scope filter다. 같은 Event가 여러 선택 Canon에 참여해도 Context Slice는 Event identity를 하나로 반환하고 matched membership을 명시한다.
 
 ## TS-004.7 탐색 행동 규칙
 
 LLM은 고정된 전체 호출 순서를 의무적으로 실행하지 않는다. 대신 다음 불변식을 지킨다.
 
-1. 쓰기 전에 대상 World와 Canon을 식별한다.
+1. 쓰기 전에 대상 World와 하나 이상의 Canon membership context를 식별한다.
 2. 기존 내용을 수정·확장할 때 대상과 가까운 Event 및 Relation을 읽는다.
 3. 중복 가능성이 있으면 검색과 neighborhood 탐색을 확장한다.
-4. 같은 대상에 다른 사실을 성립시키려면 기존 Canon을 바꾸기 전에 별도 Canon 필요성을 판단한다.
+4. 기존 Event identity가 있으면 다른 Canon 참여를 위해 Event를 복제하지 않고 membership 추가를 검토한다.
 5. 관련 Canon이 둘 이상이고 선택 근거가 부족하면 임의 선택하지 않고 사용자에게 차이를 설명한다.
 6. source Revision이 바뀌면 이전 Context Slice를 최신 상태로 간주하지 않는다.
 
@@ -140,6 +141,8 @@ LLM은 고정된 전체 호출 순서를 의무적으로 실행하지 않는다.
 ## TS-004.8 Change Plan
 
 Clotho의 쓰기 입력은 [TS-003](TS-003-change-revision-publication.md)의 Change Set과 동일한 versioned `ChangePlan`이다. Event endpoint는 persisted Event, 같은 plan의 client Event 또는 virtual Time Event를 구분하는 tagged reference다.
+
+Event create는 immutable `world_id`와 같은 Change Set의 하나 이상 Canon membership을 요구한다. membership create·withdraw는 별도 typed Operation이며 final candidate state에서 active Event의 membership이 0이면 validate와 commit이 같은 `event_canon_membership_required` 오류로 거절한다. Event withdrawal과 마지막 membership 정리를 같은 Change Set에서 수행하는 명시적 전환은 허용한다.
 
 ```json
 {
@@ -223,7 +226,10 @@ LLM이 위험하거나 큰 작업에서 `change.validate`를 먼저 사용하는
 | -------------------------------- | ----------------------------------------------------------------------------------------- |
 | `revision_conflict`              | 최신 관련 Context Slice를 읽고 의도를 재평가한다.                                         |
 | `duplicate_candidate`            | 후보 Event를 읽고 create 대신 update 또는 Relation 추가를 검토한다.                       |
-| `cross_canon_relation`           | 올바른 Canon을 다시 선택하거나 Canon 간 대응을 사용한다.                                  |
+| `cross_world_canon_membership`   | Event와 Canon의 World를 다시 확인하고 cross-World identity를 만들지 않는다.               |
+| `event_canon_membership_required` | Event create에 membership을 추가하거나 마지막 membership 제거와 Event 철회를 함께 계획한다. |
+| `duplicate_canon_membership`     | 기존 membership을 읽고 중복 create를 제거한다.                                             |
+| `relation_endpoint_out_of_scope` | DP-001 전 호환 Relation context에서 양 endpoint의 Canon membership을 확인한다.             |
 | `dependent_content_active`       | 영향 목록을 읽고 함께 수정·철회할 Operation을 계획한다.                                   |
 | `invalid_time_coordinate`        | Time System 정의와 원자료 정밀도를 다시 확인한다.                                         |
 | `temporal_constraint_conflict`   | affected Relation과 Event reference의 최소 충돌 경로를 읽고 사실을 다시 판단한다.         |
@@ -238,7 +244,7 @@ LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오�
 
 - 새 세션은 World ID와 필요한 범위만 알면 최신 맥락을 다시 읽을 수 있다.
 - Clotho는 세션별 hidden memory를 정본으로 사용하지 않는다.
-- 긴 작업의 진행 설명은 Change Set `intent`와 사용자 소유의 외부 작업 메모에 남길 수 있지만 세계 사실과 구분한다.
+- 긴 작업의 진행 설명은 Change Set `intent`와 사용자 소유의 외부 작업 메모에 남길 수 있지만 canonical world content와 구분한다.
 - 미commit Change Plan은 사용자가 파일로 저장할 수 있으나 Lachesis의 draft 콘텐츠 상태가 아니다.
 
 ## TS-004.13 보안과 prompt injection 경계
@@ -263,3 +269,5 @@ LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오�
 10. LLM이나 skill 없이도 Clotho CLI에서 동일한 JSON 계약을 실행하고 검증할 수 있다.
 11. CLI와 MCP는 같은 Clotho application을 호출하며 Lachesis가 외부 adapter 없이도 최종 인가와 정본 규칙을 보장한다.
 12. CLI와 MCP가 같은 virtual Time Event reference를 validate·resolve하며 같은 결정적 ID와 lossless coordinate를 반환한다.
+13. Event create와 membership add/remove가 validate·commit에서 같은 final-state invariant를 사용한다.
+14. Canon 없이 active Event를 만들거나 active Event의 마지막 membership만 제거하는 plan은 거절된다.

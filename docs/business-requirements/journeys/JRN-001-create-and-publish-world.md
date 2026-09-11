@@ -32,7 +32,7 @@ layer: business-requirements
 6. 성공적으로 반영된 내용은 별도의 draft나 출판 승인 없이 현재 [ENT-013](../entities/INDEX.md) Publication에 자동 반영된다.
 7. Atropos는 식별 가능한 현재 공개본을 독자에게 제공한다.
 8. 작성자는 공개된 결과를 확인하고 필요한 경우 LLM을 통해 정정하거나 철회한다.
-9. 독자는 공개 주소에서 World의 개요를 보고 특정 Canon의 Event, Relation과 Narrative를 탐색한다.
+9. 독자는 공개 주소에서 World의 개요를 보고 하나 이상의 Canon scope로 Event, Relation과 Narrative를 탐색한다.
 
 ## JRN-001.5 성공 결과
 
@@ -44,9 +44,10 @@ layer: business-requirements
 ## JRN-001.6 비즈니스 규칙
 
 - Clotho를 통해 성공적으로 반영된 세계 내용은 자동으로 공개된다.
-- 모든 Event와 Relation은 어느 Canon 안에서 사실인지 명확해야 한다.
-- 출판 여부는 Canon의 진실 지위를 만들거나 바꾸지 않는다.
-- LLM은 작성자의 지시 없이 서로 다른 Canon의 사실을 병합하거나 옮기지 않는다.
+- 모든 active persisted Event는 정확히 한 World에 속하고 같은 World의 Canon 하나 이상에 참여해야 한다.
+- 출판 여부와 Canon 수는 Canon에 authority나 objective truth를 부여하지 않는다.
+- LLM은 같은 Event가 여러 Canon에 참여한다는 이유로 Event identity를 복제하지 않는다.
+- Relation의 Canon cardinality는 IP-003 DP-001 승인 전 임의 확정하지 않는다.
 - 하나의 의미 있는 변경은 저장과 공개에서 모두 일관된 상태로 보여야 한다.
 - 인간은 공개 결과를 정정하거나 철회할 수 있어야 한다.
 - 독자는 내부 작성 도구나 관리 구조를 알 필요가 없다.

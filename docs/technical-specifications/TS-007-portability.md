@@ -56,6 +56,7 @@ content/canons.ndjson
 content/time-systems.ndjson
 content/canon-time-systems.ndjson
 content/events.ndjson
+content/canon-event-memberships.ndjson
 content/relations.ndjson
 content/narratives.ndjson
 content/correspondences.ndjson
@@ -100,7 +101,8 @@ manifest 자체의 digest는 package 밖에 별도 `.sha256` 파일로 제공할
 
 ### 반드시 보존
 
-- World, Canon과 동등성
+- World와 Canon identity; Canon에는 authority·default·priority 의미를 추가하지 않음
+- Event의 World identity와 모든 Canon membership
 - Time System 정의와 Canon의 다대다 사용 관계
 - Event Relation과 virtual Time Event 좌표의 실제 precision·uncertainty
 - Relation type, 방향과 persisted 또는 virtual EventReference endpoint
@@ -187,7 +189,7 @@ flowchart TD
 2. manifest와 모든 file digest를 확인한다.
 3. format과 section schema version을 확인한다.
 4. 필요한 순차 migration을 메모리 또는 임시 작업공간에서 수행한다.
-5. ID, Canon, Time System, Event, Relation과 철회 불변식을 검증한다.
+5. ID, World ownership, Event 1..N Canon membership, Time System, Relation과 철회 불변식을 검증한다.
 6. 대상 모드의 ID collision과 현재 World 차이를 계산한다.
 7. 사용자에게 생성·변경·철회·누락과 손실 가능성을 preview한다.
 8. 하나의 World Change Set 또는 복구 전용 원자적 bootstrap transaction으로 적용한다.
@@ -218,8 +220,9 @@ content, history, origin과 Publication format은 독립적으로 version한다.
 
 round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semantic fingerprint를 비교한다.
 
-- Canon별 활성·철회 Event 집합
-- Relation type, endpoint와 Canon 경계
+- World별 Event identity와 활성·철회 상태
+- Canon별 Event membership 집합과 active orphan 수
+- Relation type, endpoint와 DP-001에서 승인된 Canon context
 - Time System 정의·capability와 virtual Time Event reference precision
 - 포함 graph와 Process 역할
 - Narrative scope·locale·body digest
@@ -228,6 +231,8 @@ round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semant
 - Revision과 Change 순서
 
 ID remap이 있는 clone mode에서는 mapping을 적용한 뒤 비교한다.
+
+구 package의 Event `canon_id`는 해당 Canon의 World와 단일 membership으로 lossless 변환한다. 정보만으로 membership을 결정할 수 없는 package는 추론하지 않고 import를 중단한다.
 
 ## TS-007.13 backup과 export의 차이
 

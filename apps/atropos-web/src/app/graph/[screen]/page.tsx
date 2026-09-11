@@ -1,13 +1,13 @@
 import { notFound } from "next/navigation";
 
 import { AtroposGraphRoot } from "../../../components/atropos-graph-root";
+import { composeGraphPublicationQuery } from "../../../lib/graph-publication-composer";
+import { loadGraphPublicationSources } from "../../../lib/graph-publication-loader";
+import { graphPresentationFromResult } from "../../../lib/graph-query-presentation";
 import {
   createDefaultGraphUrlState,
   parseGraphUrlState
 } from "../../../lib/moirai-graph-source-query";
-import { loadGraphPublicationSources } from "../../../lib/graph-publication-loader";
-import { composeGraphPublicationQuery } from "../../../lib/graph-publication-composer";
-import { graphPresentationFromResult } from "../../../lib/graph-query-presentation";
 import {
   getAtroposScreen,
   type AtroposScreenId
@@ -40,9 +40,12 @@ export default async function GraphScreenPage({
     ? (parseGraphUrlState(`?mq=${encodeURIComponent(raw)}`, catalog) ??
       createDefaultGraphUrlState(catalog))
     : createDefaultGraphUrlState(catalog);
-  const presentation = graphPresentationFromResult(
-    composeGraphPublicationQuery(initialGraphQuery.query, snapshots, failures)
+  const result = composeGraphPublicationQuery(
+    initialGraphQuery.query,
+    snapshots,
+    failures
   );
+  const presentation = graphPresentationFromResult(result);
 
   return (
     <AtroposGraphRoot
@@ -50,6 +53,7 @@ export default async function GraphScreenPage({
       diagnostics={presentation.diagnostics}
       entities={presentation.entities}
       initialGraphQuery={initialGraphQuery}
+      initialGraphResult={result}
       initialScreen={definition.id}
       relations={presentation.relations}
     />

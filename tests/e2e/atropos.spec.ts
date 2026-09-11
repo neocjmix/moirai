@@ -112,9 +112,9 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
     .click();
   await page.getByRole("tab", { name: "Relations" }).click();
 
-  const shared = page.locator(
-    '[data-relation-id="019f3b00-0000-7000-8000-000000000201"]'
-  );
+  const shared = page
+    .getByTestId("moirai-source-island")
+    .locator('[data-relation-id="019f3b00-0000-7000-8000-000000000201"]');
   await expect(shared).toHaveCount(1);
   await expect(shared).toContainText(canonId);
   await expect(shared).toContainText(firstEventId);
@@ -131,6 +131,49 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
   const unplaced = page.locator('[data-diagnostic-code="unplaced"]').first();
   await expect(unplaced).toContainText(/valid knowledge state/);
   await expect(unplaced).toContainText(/no authored temporal placement/);
+});
+
+test("native viewport reads immutable v3 results and restores selection", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await expect(page.getByTestId("native-moirai-viewport")).toBeVisible();
+  await expect(page.getByText(/Revision 2/).first()).toBeVisible();
+
+  await page.getByRole("tab", { name: "Native node list" }).click();
+  const event = page
+    .getByRole("tabpanel")
+    .getByRole("button", { name: new RegExp(firstEventTitle) });
+  await expect(event).toBeVisible();
+  await event.click();
+  const inspector = page.getByTestId("native-graph-inspector");
+  await expect(inspector).toContainText(firstEventTitle);
+  await expect(
+    inspector.getByRole("link", {
+      name: /World Event 상세 열기|Open World Event detail/
+    })
+  ).toHaveAttribute("href", `/worlds/${worldId}/events/${firstEventId}`);
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("mq"))
+    .toContain(firstEventId);
+
+  const focusedUrl = page.url();
+  await page.reload();
+  await expect(page).toHaveURL(focusedUrl);
+  await expect(page.getByTestId("native-graph-inspector")).toContainText(
+    firstEventTitle
+  );
+
+  await page.getByRole("tab", { name: "Native edge list" }).click();
+  await expect(page.locator("[data-relation-result]").first()).toBeVisible();
+  await page
+    .getByRole("button", { name: "Close selected graph entity inspector" })
+    .click();
+  await expect(page.getByTestId("native-graph-inspector")).toHaveCount(0);
+  await page
+    .getByText(/접근 가능한 정본 결과 목록|Accessible canonical result list/)
+    .click();
+  await expect(page.locator("details ol li").first()).toBeVisible();
 });
 
 test("mobile reader traverses the single relational temporal model", async ({

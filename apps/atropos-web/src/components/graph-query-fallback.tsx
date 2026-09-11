@@ -1,16 +1,15 @@
-import type { MoiraiGraphUrlState } from "@moirai/contracts";
-
-import { searchGraphEntities } from "../lib/moirai-graph-source-query";
-import type { GraphSearchEntity } from "../lib/moirai-graph-source-query";
+import type {
+  MoiraiGraphQueryResult,
+  MoiraiGraphUrlState
+} from "@moirai/contracts";
 
 export function GraphQueryFallback({
   state,
-  entities
+  result
 }: Readonly<{
   state: MoiraiGraphUrlState;
-  entities: readonly GraphSearchEntity[];
+  result: MoiraiGraphQueryResult;
 }>) {
-  const results = searchGraphEntities(state, "", entities);
   return (
     <noscript>
       <main>
@@ -22,13 +21,25 @@ export function GraphQueryFallback({
             0
           )}
         </p>
+        <p>
+          Revision vector:{" "}
+          {result.revision_vector
+            .map((entry) => `${entry.world_id}@${entry.served_revision}`)
+            .join(", ")}
+        </p>
         <ul>
-          {results.map((entity) => (
-            <li key={`${entity.kind}:${entity.worldId}:${entity.identity}`}>
-              <strong>{entity.title.ko}</strong> ({entity.kind},{" "}
-              {entity.persisted ? "persisted" : "derived"}) — matched Canon:{" "}
-              {entity.matchedCanonIds.join(", ")}; all memberships:{" "}
-              {entity.canonMemberships.join(", ")}
+          {result.events.map((event) => (
+            <li key={`${event.world_id}:${event.id}`}>
+              <strong>{event.title}</strong> (Event, persisted) — matched Canon:{" "}
+              {event.matched_canon_ids.join(", ")}; all memberships:{" "}
+              {event.canon_memberships.join(", ")}
+            </li>
+          ))}
+          {result.relations.map((relation) => (
+            <li key={`${relation.world_id}:${relation.id}`}>
+              <strong>{relation.type}</strong> (Relation) — matched Canon:{" "}
+              {relation.matched_canon_ids.join(", ")}; all memberships:{" "}
+              {relation.canon_memberships.join(", ")}
             </li>
           ))}
         </ul>

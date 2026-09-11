@@ -1,9 +1,8 @@
 // @ts-nocheck -- Next.js adapter: URDR was authored under its own TS config.
 "use client";
 
-import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react";
+import { useCallback, useEffect, useState, type ReactNode } from "react";
 import { GearIcon, GlobeIcon, LockClosedIcon, MagnifyingGlassIcon, ChevronDownIcon } from "@radix-ui/react-icons";
-import { graphShellWorkspaceShellSchema, type GraphShellWorkspaceShell } from "@urdr/contracts";
 import {
   ATROPOS_PRIMARY_SCREENS,
   getAtroposScreen,
@@ -12,11 +11,8 @@ import {
 } from "../../lib/atropos-screen-registry";
 
 import appShellStyles from "./app-shell.module.css";
-import { GraphShell } from "./components/graph-shell";
 import { RuntimeErrorBoundary } from "./components/runtime-error-boundary";
 import shellStyles from "./components/graph-shell.module.css";
-import { DEFAULT_COMPOSITE_SPLINE_TUNING, type CompositeHullMode, type CompositeSplineTuning } from "./components/graph-shell-region-geometry";
-import { graphReadLoader, type GraphReadLoader } from "./graph-read-loader";
 import {
   readManualAppLocaleOverride,
   resolveBrowserLocale,
@@ -24,44 +20,12 @@ import {
   type AppLocale,
 } from "./locale";
 
-type AppProps = {
+export type AppProps = {
   initialScreen?: AtroposScreenId;
-  loader?: GraphReadLoader;
   renderGraphPage?: (args: {
-    workspace: GraphShellWorkspaceShell;
     locale: AppLocale;
-    compositeHullMode: CompositeHullMode;
-    compositeSplineTuning: CompositeSplineTuning;
   }) => ReactNode;
 };
-
-const LOADING_WORKSPACE_BUILD_REVISION = "__loading__";
-
-function createLoadingWorkspace(locale: AppLocale): GraphShellWorkspaceShell {
-  const isKorean = locale === "ko";
-
-  return {
-    menuItems: [{ id: "global", label: isKorean ? "전체" : "Global", active: true }],
-    tabs: [],
-    canons: [],
-    defaultTabId: "loading",
-    buildRevision: LOADING_WORKSPACE_BUILD_REVISION,
-    chronologyBoard: {
-      mode: "gregorian",
-      axis: {
-        scheme: "gregorian_utc",
-        timeSystemId: "time:gregorian-historical",
-        compatibilityKey: "gregorian-historical",
-        startYear: 1388,
-        endYear: 1598,
-        tickYears: [1388, 1392, 1498, 1506, 1592, 1598],
-      },
-      columns: [],
-      placements: [],
-      unplaced: [],
-    },
-  };
-}
 
 const SHELL_PAGE_COPY = {
   ko: {
@@ -105,9 +69,7 @@ const SCREEN_ICONS = {
   settings: GearIcon,
 } as const;
 
-export function App({ initialScreen = "graph", loader = graphReadLoader, renderGraphPage }: AppProps = {}) {
-  const compositeHullMode: CompositeHullMode = "concave";
-  const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
+export function App({ initialScreen = "graph", renderGraphPage }: AppProps = {}) {
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
   const [browserLocale, setBrowserLocale] = useState<AppLocale>("ko");
   const [localePreferenceLoaded, setLocalePreferenceLoaded] = useState(false);
@@ -115,21 +77,9 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
   const [tabBarCollapsed, setTabBarCollapsed] = useState(false);
   const locale = manualLocaleOverride ?? browserLocale;
   const copy = SHELL_PAGE_COPY[locale];
-  const loadingWorkspace = useMemo(() => createLoadingWorkspace(locale), [locale]);
-  const [workspace, setWorkspace] = useState<GraphShellWorkspaceShell | null>(null);
-  const [workspaceStatus, setWorkspaceStatus] = useState<"loading" | "ready" | "unavailable">("loading");
-  const graphWorkspace = workspace ?? (workspaceStatus === "loading" && !renderGraphPage ? loadingWorkspace : null);
   const GraphPageContent = () =>
-    graphWorkspace ? renderGraphPage ? (
-      <>{renderGraphPage({ workspace: graphWorkspace, locale, compositeHullMode, compositeSplineTuning })}</>
-    ) : (
-      <GraphShell
-        initialWorkspace={graphWorkspace}
-        compositeHullMode={compositeHullMode}
-        compositeSplineTuning={compositeSplineTuning}
-        loader={loader}
-        locale={locale}
-      />
+    renderGraphPage ? (
+      <>{renderGraphPage({ locale })}</>
     ) : null;
 
   useEffect(() => {
@@ -141,37 +91,6 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
     );
     setLocalePreferenceLoaded(true);
   }, []);
-
-  useEffect(() => {
-    setWorkspaceStatus("loading");
-    setWorkspace(null);
-
-    const abortController = new AbortController();
-    let active = true;
-
-    const loadWorkspace = async () => {
-      try {
-        const parsed = graphShellWorkspaceShellSchema.parse(await loader.loadWorkspace(locale));
-        if (active) {
-          setWorkspace(parsed);
-          setWorkspaceStatus("ready");
-        }
-      } catch (error) {
-        if (!active || abortController.signal.aborted) {
-          return;
-        }
-        setWorkspace(null);
-        setWorkspaceStatus("unavailable");
-      }
-    };
-
-    void loadWorkspace();
-
-    return () => {
-      active = false;
-      abortController.abort();
-    };
-  }, [loader, locale]);
 
   useEffect(() => {
     if (localePreferenceLoaded) {
@@ -202,7 +121,7 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
 
   const renderPage = () => {
     if (activePage === "graph") {
-      if (workspaceStatus === "unavailable") {
+      if (!renderGraphPage) {
         return (
           <div className={appShellStyles.shellPage}>
             <div className={appShellStyles.shellPageSurface}>
@@ -222,7 +141,7 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
           onError={(error) => {
             console.error("[graph-page:error]", error);
           }}
-          resetKeys={[activePage, locale, compositeHullMode]}
+          resetKeys={[activePage, locale]}
           fallback={({ error, reset }) => (
             <div className={appShellStyles.shellPage}>
               <div className={appShellStyles.shellPageSurface}>

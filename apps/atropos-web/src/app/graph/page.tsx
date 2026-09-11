@@ -1,12 +1,12 @@
 import { AtroposGraphRoot } from "../../components/atropos-graph-root";
 import { GraphQueryFallback } from "../../components/graph-query-fallback";
+import { composeGraphPublicationQuery } from "../../lib/graph-publication-composer";
+import { loadGraphPublicationSources } from "../../lib/graph-publication-loader";
+import { graphPresentationFromResult } from "../../lib/graph-query-presentation";
 import {
   createDefaultGraphUrlState,
   parseGraphUrlState
 } from "../../lib/moirai-graph-source-query";
-import { loadGraphPublicationSources } from "../../lib/graph-publication-loader";
-import { composeGraphPublicationQuery } from "../../lib/graph-publication-composer";
-import { graphPresentationFromResult } from "../../lib/graph-query-presentation";
 
 export default async function GraphPage({
   searchParams
@@ -31,15 +31,13 @@ export default async function GraphPage({
 
   return (
     <>
-      <GraphQueryFallback
-        entities={presentation.entities}
-        state={initialGraphQuery}
-      />
+      <GraphQueryFallback result={result} state={initialGraphQuery} />
       <AtroposGraphRoot
         catalog={catalog}
         diagnostics={presentation.diagnostics}
         entities={presentation.entities}
         initialGraphQuery={initialGraphQuery}
+        initialGraphResult={result}
         initialScreen="graph"
         relations={presentation.relations}
       />

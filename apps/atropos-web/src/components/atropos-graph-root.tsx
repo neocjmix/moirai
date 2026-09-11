@@ -2,21 +2,26 @@
 
 import { Theme } from "@radix-ui/themes";
 
-import type { MoiraiGraphUrlState } from "@moirai/contracts";
+import type {
+  MoiraiGraphQueryResult,
+  MoiraiGraphUrlState
+} from "@moirai/contracts";
 
 import type { AtroposScreenId } from "../lib/atropos-screen-registry";
-import { App } from "../urdr-port/src/App";
-import { GraphQueryProvider } from "./graph-query-context";
 import type {
   GraphDiagnostic,
   GraphRelationMatch,
   GraphSearchEntity,
   GraphSourceCatalog
 } from "../lib/moirai-graph-source-query";
+import { App, type AppProps } from "../urdr-port/src/App";
+import { GraphQueryProvider } from "./graph-query-context";
+import { NativeGraphViewport } from "./native-graph-viewport";
 
 export function AtroposGraphRoot({
   initialScreen,
   initialGraphQuery,
+  initialGraphResult,
   catalog,
   entities,
   relations,
@@ -24,11 +29,15 @@ export function AtroposGraphRoot({
 }: Readonly<{
   initialScreen: AtroposScreenId;
   initialGraphQuery: MoiraiGraphUrlState;
+  initialGraphResult: MoiraiGraphQueryResult;
   catalog: GraphSourceCatalog;
   entities: readonly GraphSearchEntity[];
   relations: readonly GraphRelationMatch[];
   diagnostics: readonly GraphDiagnostic[];
 }>) {
+  const renderGraphPage: AppProps["renderGraphPage"] = ({ locale }) => (
+    <NativeGraphViewport initialResult={initialGraphResult} locale={locale} />
+  );
   return (
     <GraphQueryProvider
       catalog={catalog}
@@ -44,7 +53,7 @@ export function AtroposGraphRoot({
         radius="large"
         scaling="100%"
       >
-        <App initialScreen={initialScreen} />
+        <App initialScreen={initialScreen} renderGraphPage={renderGraphPage} />
       </Theme>
     </GraphQueryProvider>
   );

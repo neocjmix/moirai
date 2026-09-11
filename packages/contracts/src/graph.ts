@@ -6,6 +6,8 @@ import type {
 
 /** First public contract for Moirai-native graph exploration. */
 export const MOIRAI_GRAPH_CONTRACT_VERSION = 1 as const;
+/** Result v2 separates World-owned Event identity from matched Canon context. */
+export const MOIRAI_GRAPH_RESULT_CONTRACT_VERSION = 2 as const;
 export const MOIRAI_GRAPH_URL_STATE_VERSION = 1 as const;
 export const MOIRAI_GRAPH_RELATION_TYPES = [
   "contains",
@@ -27,6 +29,8 @@ export const MOIRAI_GRAPH_RELATION_TYPES = [
 ] as const satisfies readonly RelationType[];
 
 export type MoiraiGraphContractVersion = typeof MOIRAI_GRAPH_CONTRACT_VERSION;
+export type MoiraiGraphResultContractVersion =
+  typeof MOIRAI_GRAPH_RESULT_CONTRACT_VERSION;
 export type MoiraiGraphUrlStateVersion = typeof MOIRAI_GRAPH_URL_STATE_VERSION;
 
 export interface MoiraiGraphTimeSystemIdentity {
@@ -218,7 +222,11 @@ export type MoiraiGraphTemporalPosition =
       readonly evidence_ids: readonly string[];
     };
 
-export interface MoiraiGraphEvent extends MoiraiGraphSourceAddress {
+export interface MoiraiGraphEvent {
+  readonly world_id: string;
+  readonly served_revision: number;
+  readonly canon_memberships: readonly string[];
+  readonly matched_canon_ids: readonly string[];
   readonly id: string;
   readonly slug: string | null;
   readonly event_kind: "atomic" | "composite";
@@ -339,7 +347,7 @@ export interface MoiraiGraphBudgetResult extends MoiraiGraphBudget {
 }
 
 export interface MoiraiGraphQueryResult {
-  readonly contract_version: MoiraiGraphContractVersion;
+  readonly contract_version: MoiraiGraphResultContractVersion;
   readonly query: MoiraiGraphQuery;
   /** Never replace this World-scoped vector with one synthetic revision. */
   readonly revision_vector: readonly MoiraiGraphRevision[];
@@ -381,7 +389,7 @@ export interface MoiraiGraphLegacyLoss {
 }
 
 export interface MoiraiGraphLegacyLossReport {
-  readonly source_contract_version: MoiraiGraphContractVersion;
+  readonly source_contract_version: MoiraiGraphResultContractVersion;
   readonly adapter_version: string;
   readonly losses: readonly MoiraiGraphLegacyLoss[];
   readonly lossless: boolean;
@@ -777,7 +785,7 @@ export const MOIRAI_GRAPH_QUERY_SCHEMA = {
 
 /** JSON Schema for the semantic result; renderer cells and coordinates are absent. */
 export const MOIRAI_GRAPH_QUERY_RESULT_SCHEMA = {
-  $id: "moirai.graph-query-result.v1",
+  $id: "moirai.graph-query-result.v2",
   type: "object",
   additionalProperties: false,
   required: [
@@ -801,7 +809,7 @@ export const MOIRAI_GRAPH_QUERY_RESULT_SCHEMA = {
     "budget"
   ],
   properties: {
-    contract_version: { const: MOIRAI_GRAPH_CONTRACT_VERSION },
+    contract_version: { const: MOIRAI_GRAPH_RESULT_CONTRACT_VERSION },
     query: MOIRAI_GRAPH_QUERY_SCHEMA,
     revision_vector: {
       type: "array",
@@ -887,7 +895,10 @@ export const MOIRAI_GRAPH_QUERY_RESULT_SCHEMA = {
         type: "object",
         additionalProperties: false,
         required: [
-          ...sourceAddressRequired,
+          "world_id",
+          "served_revision",
+          "canon_memberships",
+          "matched_canon_ids",
           "id",
           "slug",
           "event_kind",
@@ -900,7 +911,10 @@ export const MOIRAI_GRAPH_QUERY_RESULT_SCHEMA = {
           "evidence_ids"
         ],
         properties: {
-          ...sourceAddressProperties,
+          world_id: stringSchema,
+          served_revision: nonNegativeIntegerSchema,
+          canon_memberships: stringArraySchema,
+          matched_canon_ids: stringArraySchema,
           id: stringSchema,
           slug: { type: ["string", "null"] },
           event_kind: { enum: ["atomic", "composite"] },
@@ -1244,7 +1258,7 @@ export const MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA = {
     "lossless"
   ],
   properties: {
-    source_contract_version: { const: MOIRAI_GRAPH_CONTRACT_VERSION },
+    source_contract_version: { const: MOIRAI_GRAPH_RESULT_CONTRACT_VERSION },
     adapter_version: stringSchema,
     losses: {
       type: "array",

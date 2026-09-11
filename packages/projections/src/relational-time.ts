@@ -35,7 +35,7 @@ export function projectRelationalTime(
   subjects: readonly PublicSubjectProjection[] = []
 ): PublicRelationalTemporalProjection {
   const events = view.events
-    .filter((e) => e.canon_id === canonId)
+    .filter((event) => event.canon_memberships.includes(canonId))
     .sort((a, b) => a.id.localeCompare(b.id));
   const inputRelations = view.relations
     .filter((r) => r.canon_id === canonId)

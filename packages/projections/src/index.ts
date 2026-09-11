@@ -1,6 +1,7 @@
 import type {
   PublicCanon,
   PublicCanonTimeSystem,
+  CanonicalEventCanonMembership,
   PublicEvent,
   PublicNarrative,
   PublicRelation,
@@ -31,6 +32,7 @@ export interface CanonicalRevisionView {
   readonly canons: readonly PublicCanon[];
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly canonTimeSystems: readonly PublicCanonTimeSystem[];
+  readonly eventCanonMemberships: readonly CanonicalEventCanonMembership[];
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
@@ -144,7 +146,7 @@ export function projectSubjects(
   const projections: PublicSubjectProjection[] = [];
   for (const canon of sorted(view.canons)) {
     const events = sorted(
-      view.events.filter((event) => event.canon_id === canon.id)
+      view.events.filter((event) => event.canon_memberships.includes(canon.id))
     );
     const eventIds = new Set(events.map((event) => event.id));
     const identity = view.relations
@@ -340,10 +342,24 @@ function publicView(view: CanonicalRevisionView): CanonicalRevisionView {
         time_system_id
       })
     ),
+    eventCanonMemberships: view.eventCanonMemberships.map(
+      ({ event_id, canon_id }) => ({ event_id, canon_id })
+    ),
     events: view.events.map(
-      ({ id, canon_id, slug, kind, title, summary, roles, attributes }) => ({
+      ({
         id,
-        canon_id,
+        world_id,
+        canon_memberships,
+        slug,
+        kind,
+        title,
+        summary,
+        roles,
+        attributes
+      }) => ({
+        id,
+        world_id,
+        canon_memberships,
         slug,
         kind,
         title,
@@ -411,7 +427,7 @@ function searchEntries(
       target_type: "world",
       canonical_url: `/worlds/${view.world.id}`,
       world_id: view.world.id,
-      canon_id: null,
+      canon_ids: [],
       title: view.world.title,
       text: `${view.world.title} ${view.world.description ?? ""}`.trim(),
       served_revision: revision
@@ -423,7 +439,7 @@ function searchEntries(
       target_type: "canon",
       canonical_url: `/worlds/${view.world.id}/canons/${canon.id}`,
       world_id: view.world.id,
-      canon_id: canon.id,
+      canon_ids: [canon.id],
       title: canon.title,
       text: `${canon.title} ${canon.description ?? ""} ${narrativeText(view, "canon", canon.id)}`.trim(),
       served_revision: revision
@@ -432,9 +448,9 @@ function searchEntries(
     entries.push({
       target_id: event.id,
       target_type: "event",
-      canonical_url: `/worlds/${view.world.id}/canons/${event.canon_id}/events/${event.id}`,
+      canonical_url: `/worlds/${view.world.id}/events/${event.id}`,
       world_id: view.world.id,
-      canon_id: event.canon_id,
+      canon_ids: event.canon_memberships,
       title: event.title,
       text: `${event.title} ${event.summary ?? ""} ${narrativeText(view, "event", event.id)}`.trim(),
       served_revision: revision
@@ -445,7 +461,7 @@ function searchEntries(
       target_type: "subject",
       canonical_url: `/worlds/${view.world.id}/canons/${subject.canon_id}/subjects/${subject.subject_handle_id}`,
       world_id: view.world.id,
-      canon_id: subject.canon_id,
+      canon_ids: [subject.canon_id],
       title: subject.label,
       text: subject.label,
       served_revision: revision
@@ -515,7 +531,9 @@ export function projectPublicDocuments(
           narratives: narratives.filter(
             (item) => item.scope_type === "canon" && item.scope_id === canon.id
           ),
-          events: events.filter((event) => event.canon_id === canon.id),
+          events: events.filter((event) =>
+            event.canon_memberships.includes(canon.id)
+          ),
           time_systems: systems.filter((system) =>
             view.canonTimeSystems.some(
               (link) =>
@@ -569,13 +587,14 @@ export function projectPublicDocuments(
         narratives: narratives.filter(
           (item) => item.scope_type === "event" && item.scope_id === event.id
         ),
-        temporal_artifact: {
-          key: `${prefix}/graph/canons/${event.canon_id}/temporal.json`
-        },
+        temporal_artifacts: event.canon_memberships.map((canonId) => ({
+          canon_id: canonId,
+          key: `${prefix}/graph/canons/${canonId}/temporal.json`
+        })),
         time_systems: systems.filter((system) =>
           view.canonTimeSystems.some(
             (link) =>
-              link.canon_id === event.canon_id &&
+              event.canon_memberships.includes(link.canon_id) &&
               link.time_system_id === system.id
           )
         ),

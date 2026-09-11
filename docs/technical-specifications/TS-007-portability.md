@@ -234,6 +234,12 @@ ID remap이 있는 clone mode에서는 mapping을 적용한 뒤 비교한다.
 
 구 package의 Event `canon_id`는 해당 Canon의 World와 단일 membership으로 lossless 변환한다. 정보만으로 membership을 결정할 수 없는 package는 추론하지 않고 import를 중단한다.
 
+IP-003 content package `2.0`은 `world-event-canon-membership/1` schema와
+`event-canon-memberships.ndjson`을 사용한다. `1.0`/`event-relational-time/1` reader는 위의
+단일 membership adapter로만 유지한다. v2 export는 Event의 `world_id`, embedded membership
+목록과 association section의 정확한 일치를 검증하고 orphan, duplicate, dangling 또는
+cross-World membership을 거절한다.
+
 ## TS-007.13 backup과 export의 차이
 
 | 수단                   | 목적                                            |

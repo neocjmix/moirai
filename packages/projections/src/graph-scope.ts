@@ -49,7 +49,7 @@ export function projectCanonGraphScope(
   temporal: PublicRelationalTemporalProjection
 ): PublicGraphScopeArtifact {
   const sourceEvents = view.events
-    .filter((event) => event.canon_id === canonId)
+    .filter((event) => event.canon_memberships.includes(canonId))
     .sort((left, right) => left.id.localeCompare(right.id));
   const sourceRelations = view.relations
     .filter((relation) => relation.canon_id === canonId)

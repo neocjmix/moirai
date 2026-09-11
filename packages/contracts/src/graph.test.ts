@@ -2,6 +2,7 @@ import { describe, expect, expectTypeOf, it } from "vitest";
 
 import {
   MOIRAI_GRAPH_CONTRACT_VERSION,
+  MOIRAI_GRAPH_RESULT_CONTRACT_VERSION,
   MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA,
   MOIRAI_GRAPH_QUERY_RESULT_SCHEMA,
   MOIRAI_GRAPH_QUERY_SCHEMA,
@@ -80,7 +81,7 @@ const timeEvent = {
 } as const;
 
 const result: MoiraiGraphQueryResult = {
-  contract_version: MOIRAI_GRAPH_CONTRACT_VERSION,
+  contract_version: MOIRAI_GRAPH_RESULT_CONTRACT_VERSION,
   query,
   revision_vector: [
     { world_id: "world-a", served_revision: 7 },
@@ -108,8 +109,9 @@ const result: MoiraiGraphQueryResult = {
   events: [
     {
       world_id: "world-a",
-      canon_id: "canon-a",
       served_revision: 7,
+      canon_memberships: ["canon-a", "canon-a-alt"],
+      matched_canon_ids: ["canon-a"],
       id: "event-a",
       slug: null,
       event_kind: "atomic",
@@ -175,7 +177,7 @@ describe("M4.5-A Moirai-native graph contracts", () => {
   it("publishes versioned query, result, URL state and loss-report schemas", () => {
     expect(MOIRAI_GRAPH_QUERY_SCHEMA.$id).toBe("moirai.graph-query.v1");
     expect(MOIRAI_GRAPH_QUERY_RESULT_SCHEMA.$id).toBe(
-      "moirai.graph-query-result.v1"
+      "moirai.graph-query-result.v2"
     );
     expect(MOIRAI_GRAPH_URL_STATE_SCHEMA.$id).toBe("moirai.graph-url-state.v1");
     expect(MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA.$id).toBe(
@@ -205,6 +207,17 @@ describe("M4.5-A Moirai-native graph contracts", () => {
     expect(
       result.query.sources.map((source) => source.served_revision)
     ).toEqual([7, 42]);
+  });
+
+  it("represents a shared Event once with full and matched Canon context", () => {
+    expect(result.events).toHaveLength(1);
+    expect(result.events[0]).toMatchObject({
+      id: "event-a",
+      world_id: "world-a",
+      canon_memberships: ["canon-a", "canon-a-alt"],
+      matched_canon_ids: ["canon-a"]
+    });
+    expect(result.events[0]).not.toHaveProperty("canon_id");
   });
 
   it("does not infer compatibility from matching display metadata", () => {

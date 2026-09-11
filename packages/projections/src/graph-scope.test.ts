@@ -12,7 +12,8 @@ import {
 
 const event = (index: number): PublicEvent => ({
   id: `event-${String(index).padStart(3, "0")}`,
-  canon_id: "canon",
+  world_id: "world",
+  canon_memberships: ["canon"],
   slug: null,
   kind: index % 7 === 0 ? "composite" : "atomic",
   title: `Event ${index}`,
@@ -54,6 +55,10 @@ function view(
     ],
     timeSystems: [],
     canonTimeSystems: [],
+    eventCanonMemberships: events.map((item) => ({
+      event_id: item.id,
+      canon_id: "canon"
+    })),
     events,
     relations,
     narratives: []

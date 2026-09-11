@@ -59,7 +59,7 @@ export interface CanonicalState {
   readonly canons: readonly PublicCanon[];
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly canonTimeSystems: readonly PublicCanonTimeSystem[];
-  readonly eventCanonMemberships?: readonly CanonicalEventCanonMembership[];
+  readonly eventCanonMemberships: readonly CanonicalEventCanonMembership[];
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
@@ -833,14 +833,9 @@ export function validateCandidateChangeSet(
   const events = new Map(existing.events.map((item) => [item.id, item]));
   const eventCanonMemberships = new Map<string, Set<string>>();
   for (const event of existing.events) {
-    eventCanonMemberships.set(
-      event.id,
-      new Set(
-        existing.eventCanonMemberships === undefined ? [event.canon_id] : []
-      )
-    );
+    eventCanonMemberships.set(event.id, new Set(event.canon_memberships));
   }
-  for (const membership of existing.eventCanonMemberships ?? []) {
+  for (const membership of existing.eventCanonMemberships) {
     const memberships = eventCanonMemberships.get(membership.event_id);
     if (memberships) memberships.add(membership.canon_id);
   }
@@ -987,7 +982,8 @@ export function validateCandidateChangeSet(
         nonEmpty(value.title, `${path}.value.title`);
         events.set(operation.entity_id, {
           id: operation.entity_id,
-          canon_id: "",
+          world_id: value.world_id,
+          canon_memberships: [],
           slug: value.slug ?? null,
           kind: value.kind,
           title: value.title,

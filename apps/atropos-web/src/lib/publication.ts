@@ -1,6 +1,8 @@
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
+  LEGACY_PUBLICATION_FORMAT_VERSION,
+  PUBLICATION_FORMAT_VERSION,
   TEMPORAL_EXPRESSIVENESS_WORLD_ID,
   type PublicGraphScopeArtifact,
   type PublicRelationalTemporalProjection,
@@ -57,10 +59,7 @@ export async function readPublicationObject(key: string): Promise<ObjectRead> {
   if (!/^[a-z0-9/._-]+$/i.test(key) || key.includes(".."))
     throw new Error("invalid publication key");
   if (!hasPublicationStoreConfig()) {
-    if (
-      process.env.LOCAL_PUBLICATION_FIXTURE_DIR &&
-      key.startsWith(`worlds/${TEMPORAL_EXPRESSIVENESS_WORLD_ID}/`)
-    ) {
+    if (process.env.LOCAL_PUBLICATION_FIXTURE_DIR) {
       try {
         const body = await readFile(
           join(process.env.LOCAL_PUBLICATION_FIXTURE_DIR, key),
@@ -136,6 +135,10 @@ export async function selectPublication(
   if (
     manifest.world_id !== worldId ||
     manifest.served_revision !== pointer.served_revision ||
+    ![PUBLICATION_FORMAT_VERSION, LEGACY_PUBLICATION_FORMAT_VERSION].includes(
+      manifest.format_version
+    ) ||
+    pointer.format_version !== manifest.format_version ||
     manifest.completeness !== "complete"
   ) {
     throw new Error("Publication manifest mismatch");
@@ -144,6 +147,19 @@ export async function selectPublication(
 }
 
 export type SelectedPublication = Awaited<ReturnType<typeof selectPublication>>;
+
+type LegacyPublicEvent = Omit<PublicEvent, "world_id" | "canon_memberships"> & {
+  readonly canon_id: string;
+};
+
+function normalizePublicEvent(
+  event: PublicEvent | LegacyPublicEvent,
+  worldId: string
+): PublicEvent {
+  if ("world_id" in event && "canon_memberships" in event) return event;
+  const { canon_id: canonId, ...value } = event;
+  return { ...value, world_id: worldId, canon_memberships: [canonId] };
+}
 
 export async function readWorld(
   worldId: string,
@@ -187,7 +203,7 @@ export async function readCanon(
   const { pointer } = selected ?? (await selectPublication(worldId));
   const document = await readJson<{
     canon: PublicCanon;
-    events: readonly PublicEvent[];
+    events: readonly (PublicEvent | LegacyPublicEvent)[];
     narratives: readonly PublicNarrative[];
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
     temporal_artifact: { key: string; algorithm_version: string };
@@ -209,7 +225,9 @@ export async function readCanon(
   return {
     pointer,
     canon: document.canon,
-    events: document.events,
+    events: document.events.map((event) =>
+      normalizePublicEvent(event, worldId)
+    ),
     narratives: document.narratives,
     subjectArtifacts: document.subject_artifacts ?? [],
     temporalArtifact: document.temporal_artifact,
@@ -287,9 +305,8 @@ export async function readSubject(
   return { pointer, document };
 }
 
-export async function readEvent(
+async function readEventDocument(
   worldId: string,
-  canonId: string,
   eventId: string,
   selected?: SelectedPublication
 ): Promise<{
@@ -299,30 +316,61 @@ export async function readEvent(
   relations: readonly PublicRelation[];
   relatedEvents: readonly PublicEvent[];
 }> {
-  assertPublicId(canonId);
   assertPublicId(eventId);
   const publication = selected ?? (await selectPublication(worldId));
   const { pointer } = publication;
   const document = await readJson<{
-    event: PublicEvent;
+    event: PublicEvent | LegacyPublicEvent;
     narratives: readonly PublicNarrative[];
     relations: readonly PublicRelation[];
-    related_events: readonly PublicEvent[];
+    related_events: readonly (PublicEvent | LegacyPublicEvent)[];
     served_revision: number;
   }>(
     `worlds/${worldId}/revisions/${pointer.served_revision}/events/${eventId}.json`
   );
+  const event = normalizePublicEvent(document.event, worldId);
   if (
     document.served_revision !== pointer.served_revision ||
-    document.event.canon_id !== canonId
+    event.world_id !== worldId
   )
     throw new Error("mixed Publication revisions");
   return {
     pointer,
-    event: document.event,
+    event,
     narratives: document.narratives,
     relations: document.relations,
-    relatedEvents: document.related_events
+    relatedEvents: document.related_events.map((candidate) =>
+      normalizePublicEvent(candidate, worldId)
+    )
+  };
+}
+
+export async function readWorldEvent(
+  worldId: string,
+  eventId: string,
+  selected?: SelectedPublication
+) {
+  return readEventDocument(worldId, eventId, selected);
+}
+
+export async function readEvent(
+  worldId: string,
+  canonId: string,
+  eventId: string,
+  selected?: SelectedPublication
+) {
+  assertPublicId(canonId);
+  const document = await readEventDocument(worldId, eventId, selected);
+  if (!document.event.canon_memberships.includes(canonId))
+    throw new Error("event is outside the requested Canon scope");
+  return {
+    ...document,
+    narratives: document.narratives.filter(
+      (narrative) => narrative.canon_id === canonId
+    ),
+    relations: document.relations.filter(
+      (relation) => relation.canon_id === canonId
+    )
   };
 }
 
@@ -337,7 +385,12 @@ export async function searchWorld(
   const { pointer } = selected ?? (await selectPublication(worldId));
   const document = await readJson<{
     served_revision: number;
-    entries: readonly PublicSearchEntry[];
+    entries: readonly (
+      | PublicSearchEntry
+      | (Omit<PublicSearchEntry, "canon_ids"> & {
+          readonly canon_id: string | null;
+        })
+    )[];
   }>(`worlds/${worldId}/revisions/${pointer.served_revision}/search/en.json`);
   if (document.served_revision !== pointer.served_revision)
     throw new Error("mixed Publication revisions");
@@ -346,10 +399,15 @@ export async function searchWorld(
     .trim()
     .split(/\s+/)
     .filter(Boolean);
+  const normalizedEntries = document.entries.map((entry): PublicSearchEntry => {
+    if ("canon_ids" in entry) return entry;
+    const { canon_id: canonId, ...value } = entry;
+    return { ...value, canon_ids: canonId ? [canonId] : [] };
+  });
   const entries =
     terms.length === 0
-      ? document.entries
-      : document.entries.filter((entry) => {
+      ? normalizedEntries
+      : normalizedEntries.filter((entry) => {
           const haystack = `${entry.title} ${entry.text}`.toLocaleLowerCase(
             "en"
           );

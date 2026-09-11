@@ -1,5 +1,5 @@
 {
-  "fixture_version": 1,
+  "fixture_version": 2,
   "algorithm": "temporal-semantic-fingerprint-v1",
   "canonicalization": "Recursively sort object keys by Unicode code point, preserve array order after entity ID sorting, encode compact UTF-8 JSON, then SHA-256.",
   "source_revision": 2,
@@ -8,6 +8,9 @@
       "time_system.definition",
       "time_system.definition_version",
       "event.semantic_fields",
+      "event.world_id",
+      "event.canon_memberships",
+      "event_canon_membership",
       "relation.type",
       "relation.direction",
       "relation.normalized_endpoint_refs",
@@ -34,8 +37,9 @@
   },
   "category_digests": {
     "time_systems": "sha256:a441c6cf0a4f5f2228270a60e48693746b0661d3ebe752c0f6bfbc3ee1cc3ed2",
-    "events": "sha256:0c7309ef457810809893d4515259256e5a0bee93c203013c8423653e23efe1b2",
+    "events": "sha256:3e8ad42ecb6e32b321c435b0874d26a936f24cac2eb1c2826d4ab172144f37b7",
+    "event_canon_memberships": "sha256:ca5aa77bd655a1744f1ea547cd58566d9bb2bdd344c34c0dce04fbdc0ba9ac6f",
     "relations": "sha256:7c3297abcdbefcac65bcf6d85878f0ba5f2c926356e5e7b16dc124947330e18f"
   },
-  "expected_digest": "sha256:e5dd8fdb07743f963fd7823e18d2485222a64ce8274b264ef45f40dddbd4d9b8"
+  "expected_digest": "sha256:3209fad46613632ed6f8bbc77d94428fdd2467a95b4826a0433c01e2abe706e5"
 }

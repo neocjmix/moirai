@@ -32,7 +32,7 @@ owner: Cross-system
 
 ## BR-004.6 복수 Canon
 
-같은 World와 대상을 공유하면서 서로 다른 사실을 성립시키는 복수 Canon을 구분하여 표현할 수 있어야 한다. 각 Canon은 그 자체로 진실이며 어느 하나도 다른 Canon의 정본·기본·대체본으로 간주하지 않는다.
+같은 World의 해석적 지식 범위를 나타내는 복수 Canon을 구분하고 overlap시킬 수 있어야 한다. 동일 Event identity는 여러 Canon에 참여할 수 있으며 어느 Canon도 authority, objective truth, completeness, consistency, 정본·기본·공식·우위를 함의하지 않는다.
 
 ## BR-004.7 복잡한 시간 서사
 
@@ -44,7 +44,7 @@ owner: Cross-system
 
 ## BR-004.9 Canon 사이의 차이
 
-서로 다른 Canon이 같은 대상에 관해 모순되는 사건·관계·시간과 정체성을 각각 사실로 가질 수 있어야 한다. 이 차이를 하나의 사실로 병합하거나 진위 경쟁으로 바꾸어서는 안 된다.
+여러 Canon이 같은 Event를 공유하거나 서로 다른 Event·관계·시간·Narrative context를 가질 수 있어야 한다. Canon 사이 또는 한 Canon 안의 상충을 자동 병합하거나 진위 경쟁으로 바꾸어서는 안 된다. Relation identity와 Canon cardinality의 최종 형태는 IP-003 DP-001의 승인을 따른다.
 
 ## BR-004.10 범위별 서술
 

@@ -342,7 +342,7 @@ type LatentLayoutArtifact = {
 };
 ```
 
-`z`를 Canon의 사실, chronology, uncertainty 또는 importance로 해석해서는 안 된다.
+`z`를 Canon의 authority, canonical chronology, uncertainty 또는 importance로 해석해서는 안 된다.
 
 ## TS-009.14 결정성과 재현성
 

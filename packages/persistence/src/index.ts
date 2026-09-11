@@ -102,12 +102,21 @@ interface EventCanonMembershipTable extends RevisionFields {
 
 interface RelationTable extends RevisionFields {
   id: string;
-  canon_id: string;
+  world_id: string;
+  /** Frozen compatibility data for pre-IP-003 rows; never an ownership source. */
+  canon_id: string | null;
   type: PublicRelation["type"];
   source_ref: JSONColumnType<CanonicalEventReference, string, string>;
   target_ref: JSONColumnType<CanonicalEventReference, string, string>;
   direction: PublicRelation["direction"];
   attributes: JSONColumnType<PublicRelation["attributes"]>;
+}
+
+interface RelationCanonMembershipTable extends RevisionFields {
+  id: string;
+  world_id: string;
+  canon_id: string;
+  relation_id: string;
 }
 
 interface NarrativeTable extends RevisionFields {
@@ -205,6 +214,7 @@ export interface DatabaseSchema {
   events: EventTable;
   canon_event_memberships: EventCanonMembershipTable;
   relations: RelationTable;
+  canon_relation_memberships: RelationCanonMembershipTable;
   narratives: NarrativeTable;
   change_sets: ChangeSetTable;
   change_operations: ChangeOperationTable;
@@ -274,7 +284,7 @@ function publicRecord(
     return { ...operation.value };
   }
   if (operation.kind === "withdraw") {
-    return { event_id: operation.value.event_id };
+    return { ...operation.value };
   }
   switch (operation.entity_type) {
     case "world": {
@@ -324,7 +334,7 @@ function publicRecord(
       }
       return {
         id: operation.entity_id,
-        canon_id: value.canon_id,
+        world_id: value.world_id,
         type: value.type,
         source_ref: value.source_ref,
         target_ref: value.target_ref,
@@ -356,6 +366,20 @@ async function applyCreate(
   worldId: string
 ): Promise<void> {
   if (operation.kind === "add") {
+    if (operation.entity_type === "relation_canon_membership") {
+      await sql`
+        insert into canon_relation_memberships (
+          id, world_id, canon_id, relation_id,
+          created_revision, updated_revision, withdrawn_revision
+        ) values (
+          ${uuidV7()}, ${worldId}, ${operation.value.canon_id},
+          ${operation.value.relation_id}, ${revision}, ${revision}, null
+        )
+        on conflict (canon_id, relation_id) where withdrawn_revision is null
+        do nothing
+      `.execute(transaction);
+      return;
+    }
     await sql`
       insert into canon_event_memberships (
         id, world_id, canon_id, event_id,
@@ -370,6 +394,16 @@ async function applyCreate(
     return;
   }
   if (operation.kind === "remove") {
+    if (operation.entity_type === "relation_canon_membership") {
+      await transaction
+        .updateTable("canon_relation_memberships")
+        .set({ updated_revision: revision, withdrawn_revision: revision })
+        .where("relation_id", "=", operation.value.relation_id)
+        .where("canon_id", "=", operation.value.canon_id)
+        .where("withdrawn_revision", "is", null)
+        .execute();
+      return;
+    }
     await transaction
       .updateTable("canon_event_memberships")
       .set({ updated_revision: revision, withdrawn_revision: revision })
@@ -380,6 +414,15 @@ async function applyCreate(
     return;
   }
   if (operation.kind === "withdraw") {
+    if (operation.entity_type === "relation") {
+      await transaction
+        .updateTable("relations")
+        .set({ updated_revision: revision, withdrawn_revision: revision })
+        .where("id", "=", operation.value.relation_id)
+        .where("withdrawn_revision", "is", null)
+        .execute();
+      return;
+    }
     await transaction
       .updateTable("events")
       .set({ updated_revision: revision, withdrawn_revision: revision })
@@ -453,9 +496,13 @@ async function applyCreate(
       await transaction
         .insertInto("relations")
         .values({
-          ...item,
+          id: item.id,
+          world_id: item.world_id,
+          canon_id: null,
+          type: item.type,
           source_ref: JSON.stringify(item.source_ref),
           target_ref: JSON.stringify(item.target_ref),
+          direction: item.direction,
           attributes: JSON.stringify(item.attributes),
           ...revisionData
         })
@@ -532,7 +579,8 @@ function withoutRevision<T extends RevisionFields>(
 
 interface SelectedRelationRow extends RevisionFields {
   readonly id: string;
-  readonly canon_id: string;
+  readonly world_id: string;
+  readonly canon_id: string | null;
   readonly type: PublicRelation["type"];
   readonly source_ref: CanonicalEventReference;
   readonly target_ref: CanonicalEventReference;
@@ -540,10 +588,14 @@ interface SelectedRelationRow extends RevisionFields {
   readonly attributes: PublicRelation["attributes"];
 }
 
-function toPublicRelation(row: SelectedRelationRow): PublicRelation {
+function toPublicRelation(
+  row: SelectedRelationRow,
+  canonMemberships: readonly string[]
+): PublicRelation {
   return {
     id: row.id,
-    canon_id: row.canon_id,
+    world_id: row.world_id,
+    canon_memberships: [...canonMemberships].sort(),
     type: row.type,
     source_ref: row.source_ref,
     target_ref: row.target_ref,
@@ -605,7 +657,8 @@ function temporalPreview(
     ...createdTimeSystems
   ]);
   const preview = operations.map((operation) => {
-    if (operation.entity_type !== "relation") return operation;
+    if (operation.kind !== "create" || operation.entity_type !== "relation")
+      return operation;
     const endpoints = canonicalRelationEndpoints(
       operation.value as PublicRelation
     );
@@ -651,6 +704,7 @@ async function loadCurrentState(
       timeSystems: [],
       canonTimeSystems: [],
       eventCanonMemberships: [],
+      relationCanonMemberships: [],
       events: [],
       relations: [],
       narratives: []
@@ -676,46 +730,65 @@ async function loadCurrentState(
     .where("withdrawn_revision", "is", null)
     .execute();
   const eventIds = events.map((event) => event.id);
-  const [eventCanonMemberships, canonTimeSystems, relations, narratives] =
-    await Promise.all([
-      eventIds.length > 0
-        ? db
-            .selectFrom("canon_event_memberships")
-            .select(["event_id", "canon_id"])
-            .where("event_id", "in", eventIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : [],
-      canonIds.length > 0
-        ? db
-            .selectFrom("canon_time_systems")
-            .selectAll()
-            .where("canon_id", "in", canonIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : [],
-      canonIds.length > 0
-        ? db
-            .selectFrom("relations")
-            .selectAll()
-            .where("canon_id", "in", canonIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : [],
-      canonIds.length > 0
-        ? db
-            .selectFrom("narratives")
-            .selectAll()
-            .where("canon_id", "in", canonIds)
-            .where("withdrawn_revision", "is", null)
-            .execute()
-        : []
-    ]);
+  const [
+    eventCanonMemberships,
+    relationCanonMemberships,
+    canonTimeSystems,
+    relations,
+    narratives
+  ] = await Promise.all([
+    eventIds.length > 0
+      ? db
+          .selectFrom("canon_event_memberships")
+          .select(["event_id", "canon_id"])
+          .where("event_id", "in", eventIds)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : [],
+    canonIds.length > 0
+      ? db
+          .selectFrom("canon_relation_memberships")
+          .select(["relation_id", "canon_id"])
+          .where("world_id", "=", worldRow.id)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : [],
+    canonIds.length > 0
+      ? db
+          .selectFrom("canon_time_systems")
+          .selectAll()
+          .where("canon_id", "in", canonIds)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : [],
+    canonIds.length > 0
+      ? db
+          .selectFrom("relations")
+          .selectAll()
+          .where("world_id", "=", worldRow.id)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : [],
+    canonIds.length > 0
+      ? db
+          .selectFrom("narratives")
+          .selectAll()
+          .where("canon_id", "in", canonIds)
+          .where("withdrawn_revision", "is", null)
+          .execute()
+      : []
+  ]);
   const membershipsByEvent = new Map<string, string[]>();
   for (const membership of eventCanonMemberships) {
     const values = membershipsByEvent.get(membership.event_id) ?? [];
     values.push(membership.canon_id);
     membershipsByEvent.set(membership.event_id, values);
+  }
+  const membershipsByRelation = new Map<string, string[]>();
+  for (const membership of relationCanonMemberships) {
+    const values = membershipsByRelation.get(membership.relation_id) ?? [];
+    values.push(membership.canon_id);
+    membershipsByRelation.set(membership.relation_id, values);
   }
   return {
     world: toPublicWorld(worldRow),
@@ -727,10 +800,13 @@ async function loadCurrentState(
       (item) => withoutRevision(item) as PublicCanonTimeSystem
     ),
     eventCanonMemberships,
+    relationCanonMemberships,
     events: events.map((item) =>
       toPublicEvent(item, membershipsByEvent.get(item.id) ?? [])
     ),
-    relations: relations.map((item) => toPublicRelation(item)),
+    relations: relations.map((item) =>
+      toPublicRelation(item, membershipsByRelation.get(item.id) ?? [])
+    ),
     narratives: narratives.map(
       (item) => withoutRevision(item) as PublicNarrative
     )
@@ -976,7 +1052,9 @@ export async function readWorldAtRevision(
     .execute();
   const latest = new Map<string, (typeof operations)[number]>();
   const eventCanonMemberships = new Map<string, Set<string>>();
+  const relationCanonMemberships = new Map<string, Set<string>>();
   const withdrawnEventIds = new Set<string>();
+  const withdrawnRelationIds = new Set<string>();
   for (const operation of operations) {
     if (operation.entity_type === "event_canon_membership" && operation.after) {
       const value = operation.after as {
@@ -994,10 +1072,33 @@ export async function readWorldAtRevision(
       continue;
     }
     if (
+      operation.entity_type === "relation_canon_membership" &&
+      operation.after
+    ) {
+      const value = operation.after as {
+        relation_id: string;
+        canon_id: string;
+      };
+      const memberships =
+        relationCanonMemberships.get(value.relation_id) ?? new Set<string>();
+      if (operation.operation_kind === "add") memberships.add(value.canon_id);
+      else if (operation.operation_kind === "remove")
+        memberships.delete(value.canon_id);
+      relationCanonMemberships.set(value.relation_id, memberships);
+      continue;
+    }
+    if (
       operation.entity_type === "event" &&
       operation.operation_kind === "withdraw"
     ) {
       withdrawnEventIds.add(operation.entity_id);
+      continue;
+    }
+    if (
+      operation.entity_type === "relation" &&
+      operation.operation_kind === "withdraw"
+    ) {
+      withdrawnRelationIds.add(operation.entity_id);
       continue;
     }
     if (
@@ -1010,6 +1111,15 @@ export async function readWorldAtRevision(
         new Set([operation.after.canon_id])
       );
     }
+    if (
+      operation.entity_type === "relation" &&
+      operation.operation_kind === "create" &&
+      typeof operation.after?.canon_id === "string"
+    )
+      relationCanonMemberships.set(
+        operation.entity_id,
+        new Set([operation.after.canon_id])
+      );
     latest.set(`${operation.entity_type}:${operation.entity_id}`, operation);
   }
   const records = [...latest.values()].filter(
@@ -1063,10 +1173,39 @@ export async function readWorldAtRevision(
       ([event_id, canonIds]) =>
         [...canonIds].sort().map((canon_id) => ({ event_id, canon_id }))
     ),
-    events,
-    relations: (byType("relation") as unknown as PublicRelation[]).map(
-      (relation) => decorateVirtualRelation(relation, relationRegistry)
+    relationCanonMemberships: [...relationCanonMemberships.entries()].flatMap(
+      ([relation_id, canonIds]) =>
+        [...canonIds].sort().map((canon_id) => ({ relation_id, canon_id }))
     ),
+    events,
+    relations: byType("relation")
+      .filter((relation) => !withdrawnRelationIds.has(String(relation.id)))
+      .map((relation) => {
+        const canonMemberships = [
+          ...(relationCanonMemberships.get(String(relation.id)) ?? [])
+        ].sort();
+        if (canonMemberships.length === 0)
+          throw new Error("revision view has an active orphan Relation");
+        const legacyCanonId =
+          typeof relation.canon_id === "string" ? relation.canon_id : undefined;
+        const worldId =
+          typeof relation.world_id === "string"
+            ? relation.world_id
+            : legacyCanonId
+              ? canonWorlds.get(legacyCanonId)
+              : undefined;
+        if (!worldId) throw new Error("revision view Relation has no World");
+        const publicRelation = { ...relation };
+        delete publicRelation.canon_id;
+        return decorateVirtualRelation(
+          {
+            ...publicRelation,
+            world_id: worldId,
+            canon_memberships: canonMemberships
+          } as unknown as PublicRelation,
+          relationRegistry
+        );
+      }),
     narratives: byType("narrative") as unknown as PublicNarrative[],
     generatedAt: revisionRecord.committed_at.toISOString()
   };

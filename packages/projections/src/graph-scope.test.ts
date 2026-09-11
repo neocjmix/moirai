@@ -24,7 +24,8 @@ const event = (index: number): PublicEvent => ({
 
 const relation = (index: number): PublicRelation => ({
   id: `relation-${String(index).padStart(4, "0")}`,
-  canon_id: "canon",
+  world_id: "world",
+  canon_memberships: ["canon"],
   type: index % 2 === 0 ? "precedes" : "causes",
   source_ref: {
     kind: "event",
@@ -57,6 +58,10 @@ function view(
     canonTimeSystems: [],
     eventCanonMemberships: events.map((item) => ({
       event_id: item.id,
+      canon_id: "canon"
+    })),
+    relationCanonMemberships: relations.map((item) => ({
+      relation_id: item.id,
       canon_id: "canon"
     })),
     events,

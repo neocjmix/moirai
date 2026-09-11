@@ -44,7 +44,7 @@ ENT-017 Process는 과정으로 읽히는 Composite Event의 역할이다. 모�
 
 ENT-005 Relation은 포함, 순서, 인과, 조건, 영향, 방해와 정체성 연속 등을 표현한다. Event identity가 World-level로 바뀐 뒤에도 Canon마다 다른 assertion과 여러 Canon이 공유하는 assertion을 구분해 표현할 수 있어야 한다.
 
-Relation identity를 World-level로 두고 Canon membership을 N:M으로 할지, Canon-specific assertion으로 유지할지는 IP-003 DP-001의 사용자 승인 대상이다. 승인 전에는 기존 Relation 의미를 보존하는 기계적 검증만 변경한다. Relation과 작성·관리·비교를 위한 Canon correspondence는 같은 의미로 취급하지 않는다.
+2026-09-11 승인된 IP-003 R1에서 Relation identity는 World-level이고 Canon participation은 N:M이다. 모든 active Relation은 같은 World의 Canon 하나 이상에 참여한다. 같은 assertion은 여러 Canon이 하나의 Relation identity로 공유하고, Canon마다 다른 assertion은 별도 Relation identity와 membership으로 표현한다. Relation과 작성·관리·비교를 위한 Canon correspondence는 같은 의미로 취급하지 않는다.
 
 ## BCR-006 Narrative의 범위
 

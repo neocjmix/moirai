@@ -2,6 +2,7 @@ import type {
   PublicCanon,
   PublicCanonTimeSystem,
   CanonicalEventCanonMembership,
+  CanonicalRelationCanonMembership,
   PublicEvent,
   PublicNarrative,
   PublicRelation,
@@ -33,6 +34,7 @@ export interface CanonicalRevisionView {
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly canonTimeSystems: readonly PublicCanonTimeSystem[];
   readonly eventCanonMemberships: readonly CanonicalEventCanonMembership[];
+  readonly relationCanonMemberships: readonly CanonicalRelationCanonMembership[];
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
@@ -152,7 +154,7 @@ export function projectSubjects(
     const identity = view.relations
       .filter(
         (relation) =>
-          relation.canon_id === canon.id &&
+          relation.canon_memberships.includes(canon.id) &&
           (EQUIVALENCE.has(relation.type) || LINEAGE.has(relation.type))
       )
       .map(asEventRelation)
@@ -345,6 +347,9 @@ function publicView(view: CanonicalRevisionView): CanonicalRevisionView {
     eventCanonMemberships: view.eventCanonMemberships.map(
       ({ event_id, canon_id }) => ({ event_id, canon_id })
     ),
+    relationCanonMemberships: (view.relationCanonMemberships ?? []).map(
+      ({ relation_id, canon_id }) => ({ relation_id, canon_id })
+    ),
     events: view.events.map(
       ({
         id,
@@ -371,7 +376,8 @@ function publicView(view: CanonicalRevisionView): CanonicalRevisionView {
     relations: view.relations.map(
       ({
         id,
-        canon_id,
+        world_id,
+        canon_memberships,
         type,
         source_ref,
         target_ref,
@@ -379,7 +385,8 @@ function publicView(view: CanonicalRevisionView): CanonicalRevisionView {
         attributes
       }) => ({
         id,
-        canon_id,
+        world_id,
+        canon_memberships,
         type,
         source_ref,
         target_ref,

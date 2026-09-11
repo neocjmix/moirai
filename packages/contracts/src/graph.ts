@@ -6,8 +6,8 @@ import type {
 
 /** First public contract for Moirai-native graph exploration. */
 export const MOIRAI_GRAPH_CONTRACT_VERSION = 1 as const;
-/** Result v2 separates World-owned Event identity from matched Canon context. */
-export const MOIRAI_GRAPH_RESULT_CONTRACT_VERSION = 2 as const;
+/** Result v3 separates World-owned Event/Relation identity from matched Canon context. */
+export const MOIRAI_GRAPH_RESULT_CONTRACT_VERSION = 3 as const;
 export const MOIRAI_GRAPH_URL_STATE_VERSION = 1 as const;
 export const MOIRAI_GRAPH_RELATION_TYPES = [
   "contains",
@@ -246,7 +246,11 @@ export interface MoiraiGraphTimeEvent extends MoiraiGraphSourceAddress {
   readonly evidence_ids: readonly string[];
 }
 
-export interface MoiraiGraphRelation extends MoiraiGraphSourceAddress {
+export interface MoiraiGraphRelation {
+  readonly world_id: string;
+  readonly served_revision: number;
+  readonly canon_memberships: readonly string[];
+  readonly matched_canon_ids: readonly string[];
   readonly id: string;
   readonly type: RelationType;
   readonly direction: "directed" | "undirected";
@@ -954,7 +958,10 @@ export const MOIRAI_GRAPH_QUERY_RESULT_SCHEMA = {
       items: {
         type: "object",
         required: [
-          ...Object.keys(sourceAddressProperties),
+          "world_id",
+          "served_revision",
+          "canon_memberships",
+          "matched_canon_ids",
           "id",
           "type",
           "direction",
@@ -965,7 +972,10 @@ export const MOIRAI_GRAPH_QUERY_RESULT_SCHEMA = {
         ],
         additionalProperties: false,
         properties: {
-          ...sourceAddressProperties,
+          world_id: stringSchema,
+          served_revision: nonNegativeIntegerSchema,
+          canon_memberships: stringArraySchema,
+          matched_canon_ids: stringArraySchema,
           id: stringSchema,
           type: { enum: MOIRAI_GRAPH_RELATION_TYPES },
           direction: { enum: ["directed", "undirected"] },

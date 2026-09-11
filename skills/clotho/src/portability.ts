@@ -10,6 +10,7 @@ import type {
   PublicTimeSystem,
   PublicCanonTimeSystem,
   CanonicalEventCanonMembership,
+  CanonicalRelationCanonMembership,
   PublicEvent,
   PublicRelation,
   PublicNarrative
@@ -28,6 +29,7 @@ export interface PortableWorld {
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly canonTimeSystems: readonly PublicCanonTimeSystem[];
   readonly eventCanonMemberships: readonly CanonicalEventCanonMembership[];
+  readonly relationCanonMemberships: readonly CanonicalRelationCanonMembership[];
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
@@ -40,6 +42,7 @@ const sectionNames = {
   timeSystems: "time-systems",
   canonTimeSystems: "canon-time-systems",
   eventCanonMemberships: "event-canon-memberships",
+  relationCanonMemberships: "relation-canon-memberships",
   events: "events",
   relations: "relations",
   narratives: "narratives"
@@ -88,6 +91,15 @@ const sortedMemberships = (
       `${right.event_id}:${right.canon_id}`
     )
   );
+const sortedRelationMemberships = (
+  rows: readonly CanonicalRelationCanonMembership[]
+): CanonicalRelationCanonMembership[] =>
+  [...rows].sort((left, right) =>
+    compareKeys(
+      `${left.relation_id}:${left.canon_id}`,
+      `${right.relation_id}:${right.canon_id}`
+    )
+  );
 const cleanRef = (ref: CanonicalEventReference): CanonicalEventReference =>
   ref.kind === "event"
     ? { kind: "event", event_id: ref.event_id }
@@ -104,6 +116,7 @@ function validatePortableWorld(view: PortableWorld): void {
   if (
     view.canons.some((canon) => canon.world_id !== view.world.id) ||
     view.events.some((event) => event.world_id !== view.world.id) ||
+    view.relations.some((relation) => relation.world_id !== view.world.id) ||
     view.timeSystems.some((system) => system.world_id !== view.world.id)
   )
     fail("package_cross_world_reference");
@@ -134,6 +147,26 @@ function validatePortableWorld(view: PortableWorld): void {
     if (portableStringify(canonical) !== portableStringify(embedded))
       fail("package_membership_mismatch");
   }
+  const relationIds = new Set(view.relations.map((relation) => relation.id));
+  const relationMembershipKeys = view.relationCanonMemberships.map(
+    (membership) => `${membership.relation_id}:${membership.canon_id}`
+  );
+  if (new Set(relationMembershipKeys).size !== relationMembershipKeys.length)
+    fail("package_duplicate_membership");
+  if (
+    view.relationCanonMemberships.some(
+      (membership) =>
+        !relationIds.has(membership.relation_id) ||
+        !canonIds.has(membership.canon_id)
+    )
+  )
+    fail("package_dangling_reference");
+  const membershipsByRelation = new Map<string, string[]>();
+  for (const membership of view.relationCanonMemberships) {
+    const memberships = membershipsByRelation.get(membership.relation_id) ?? [];
+    memberships.push(membership.canon_id);
+    membershipsByRelation.set(membership.relation_id, memberships);
+  }
   if (
     view.canonTimeSystems.some(
       (link) =>
@@ -142,20 +175,35 @@ function validatePortableWorld(view: PortableWorld): void {
   )
     fail("package_dangling_reference");
   for (const relation of view.relations) {
-    if (!canonIds.has(relation.canon_id)) fail("package_dangling_reference");
+    const relationMemberships = [
+      ...(membershipsByRelation.get(relation.id) ?? [])
+    ].sort(compareKeys);
+    if (!relationMemberships.length) fail("package_orphan_relation");
+    if (
+      portableStringify(relationMemberships) !==
+      portableStringify([...relation.canon_memberships].sort(compareKeys))
+    )
+      fail("package_membership_mismatch");
     const endpoints = canonicalRelationEndpoints(relation);
     if (!endpoints) fail("package_relation_reference_invalid");
-    for (const endpoint of [endpoints.source, endpoints.target]) {
-      if (endpoint.kind === "event") {
-        if (
-          !eventIds.has(endpoint.event_id) ||
-          !membershipsByEvent
-            .get(endpoint.event_id)
-            ?.includes(relation.canon_id)
-        )
+    for (const canonId of relationMemberships) {
+      for (const endpoint of [endpoints.source, endpoints.target]) {
+        if (endpoint.kind === "event") {
+          if (
+            !eventIds.has(endpoint.event_id) ||
+            !membershipsByEvent.get(endpoint.event_id)?.includes(canonId)
+          )
+            fail("package_relation_scope_invalid");
+        } else if (
+          !timeSystemIds.has(endpoint.time_system_ref.time_system_id) ||
+          !view.canonTimeSystems.some(
+            (link) =>
+              link.canon_id === canonId &&
+              link.time_system_id === endpoint.time_system_ref.time_system_id
+          )
+        ) {
           fail("package_relation_scope_invalid");
-      } else if (!timeSystemIds.has(endpoint.time_system_ref.time_system_id)) {
-        fail("package_dangling_reference");
+        }
       }
     }
   }
@@ -184,7 +232,8 @@ export function canonicalPortableRelations(
       [source, target] = [target, source];
     return {
       id: row.id,
-      canon_id: row.canon_id,
+      world_id: row.world_id,
+      canon_memberships: [...row.canon_memberships].sort(compareKeys),
       type: row.type,
       source_ref: source,
       target_ref: target,
@@ -215,6 +264,9 @@ export function temporalSemanticFingerprintWithIdentityMap(
     event_canon_memberships: sortedMemberships(
       remap(view.eventCanonMemberships)
     ),
+    relation_canon_memberships: sortedRelationMemberships(
+      remap(view.relationCanonMemberships)
+    ),
     relations: canonicalPortableRelations(remap(view.relations))
   };
   return {
@@ -227,6 +279,41 @@ export function temporalSemanticFingerprintWithIdentityMap(
     ),
     digest: hash(portableStringify(sections))
   };
+}
+
+function legacyRelationSemanticFingerprint(decoded: Record<string, unknown>) {
+  const relations = sorted(
+    decoded.relations as Array<
+      Omit<PublicRelation, "world_id" | "canon_memberships"> & {
+        canon_id: string;
+      }
+    >
+  ).map((row) => {
+    const refs = canonicalRelationEndpoints(row);
+    if (!refs) return fail("package_relation_reference_invalid");
+    let source = cleanRef(refs.source);
+    let target = cleanRef(refs.target);
+    if (row.type === "coincides" && endpointKey(source) > endpointKey(target))
+      [source, target] = [target, source];
+    return {
+      id: row.id,
+      canon_id: row.canon_id,
+      type: row.type,
+      source_ref: source,
+      target_ref: target,
+      direction: row.direction,
+      attributes: row.attributes
+    };
+  });
+  const sections = {
+    time_systems: sorted(decoded.timeSystems as PublicTimeSystem[]),
+    events: sorted(decoded.events as PublicEvent[]),
+    event_canon_memberships: sortedMemberships(
+      decoded.eventCanonMemberships as CanonicalEventCanonMembership[]
+    ),
+    relations
+  };
+  return hash(portableStringify(sections));
 }
 export function operationUuid(): string {
   const bytes = randomBytes(16);
@@ -284,7 +371,9 @@ export async function exportWorldPackage(
         ? canonicalPortableRelations(view.relations)
         : key === "eventCanonMemberships"
           ? sortedMemberships(view.eventCanonMemberships)
-          : [...view[key]].sort((a, b) => compareKeys(a.id, b.id));
+          : key === "relationCanonMemberships"
+            ? sortedRelationMemberships(view.relationCanonMemberships)
+            : [...view[key]].sort((a, b) => compareKeys(a.id, b.id));
     files.set(
       `content/${name}.ndjson`,
       Buffer.from(
@@ -304,11 +393,11 @@ export async function exportWorldPackage(
   );
   const manifest: Manifest = {
     format: "moirai-world-package",
-    format_version: "2.0",
+    format_version: "3.0",
     export_id: operationUuid(),
     export_kind: "content",
     created_at: new Date().toISOString(),
-    generator_version: "clotho-temporal-portability/2",
+    generator_version: "clotho-temporal-portability/3",
     world_id: view.world.id,
     source_revision: revision,
     publication_revision: null,
@@ -333,7 +422,7 @@ export async function exportWorldPackage(
         reason: "No attachment support in this content schema"
       }
     ],
-    schema_versions: { content: "world-event-canon-membership/1" },
+    schema_versions: { content: "world-event-relation-canon-membership/1" },
     files: [...files].map(([path, bytes]) => ({
       path,
       media_type: path.endsWith(".ndjson")
@@ -455,19 +544,23 @@ export async function readWorldPackage(
   const currentV2 =
     manifest.format_version === "2.0" &&
     manifest.schema_versions?.content === "world-event-canon-membership/1";
+  const currentV3 =
+    manifest.format_version === "3.0" &&
+    manifest.schema_versions?.content ===
+      "world-event-relation-canon-membership/1";
   if (
     manifest.format !== "moirai-world-package" ||
-    (!legacyV1 && !currentV2) ||
+    (!legacyV1 && !currentV2 && !currentV3) ||
     manifest.export_kind !== "content" ||
     manifest.completeness !== "complete" ||
     !Array.isArray(manifest.files)
   )
     fail("package_format_unsupported");
-  const expectedSectionNames = currentV2
-    ? Object.values(sectionNames)
-    : Object.values(sectionNames).filter(
-        (name) => name !== "event-canon-memberships"
-      );
+  const expectedSectionNames = Object.values(sectionNames).filter((name) => {
+    if (name === "event-canon-memberships") return currentV2 || currentV3;
+    if (name === "relation-canon-memberships") return currentV3;
+    return true;
+  });
   const expectedPaths = [
     "content/world.json",
     ...expectedSectionNames.map((name) => `content/${name}.ndjson`),
@@ -507,7 +600,7 @@ export async function readWorldPackage(
     world: decode("content/world.json"),
     ...Object.fromEntries(
       Object.entries(sectionNames)
-        .filter(([, name]) => currentV2 || name !== "event-canon-memberships")
+        .filter(([, name]) => expectedSectionNames.includes(name))
         .map(([key, name]) => [key, rows(name)])
     )
   } as Record<string, unknown> & { world: PublicWorld };
@@ -536,12 +629,42 @@ export async function readWorldPackage(
       };
     });
   }
+  const legacyFingerprintDigest =
+    legacyV1 || currentV2 ? legacyRelationSemanticFingerprint(decoded) : null;
+  if (legacyV1 || currentV2) {
+    const canons = decoded.canons as PublicCanon[];
+    const canonWorld = new Map(
+      canons.map((canon) => [canon.id, canon.world_id])
+    );
+    const legacyRelations = decoded.relations as Array<
+      Omit<PublicRelation, "world_id" | "canon_memberships"> & {
+        canon_id: string;
+      }
+    >;
+    decoded.relationCanonMemberships = legacyRelations.map((relation) => ({
+      relation_id: relation.id,
+      canon_id: relation.canon_id
+    }));
+    decoded.relations = legacyRelations.map((relation) => {
+      const { canon_id: canonId, ...value } = relation;
+      const worldId = canonWorld.get(canonId);
+      if (!worldId) return fail("package_dangling_reference");
+      return {
+        ...value,
+        world_id: worldId,
+        canon_memberships: [canonId]
+      };
+    });
+  }
   const view = decoded as unknown as PortableWorld;
   if (view.world.id !== manifest.world_id) fail("package_world_mismatch");
   validatePortableWorld(view);
   const fingerprint = temporalSemanticFingerprint(view);
   const report = decode("reports/export-report.json");
-  if (report.fingerprint?.digest !== fingerprint.digest)
+  if (
+    report.fingerprint?.digest !== fingerprint.digest &&
+    report.fingerprint?.digest !== legacyFingerprintDigest
+  )
     fail("package_semantic_digest_mismatch");
   return { view, manifest };
 }
@@ -631,12 +754,27 @@ export function cloneWorldPlan(
       }
     });
   }
-  for (const row of canonicalPortableRelations(view.relations))
+  for (const row of canonicalPortableRelations(view.relations)) {
+    const relation = { ...row } as Record<string, unknown>;
+    delete relation.canon_memberships;
     add("relation", {
-      ...row,
-      canon_id: id(row.canon_id),
+      ...relation,
+      world_id: targetWorldId,
       source_ref: ref(row.source_ref!),
       target_ref: ref(row.target_ref!)
+    });
+  }
+  for (const membership of sortedRelationMemberships(
+    view.relationCanonMemberships
+  ))
+    operations.push({
+      kind: "add",
+      entity_type: "relation_canon_membership",
+      origin_refs: [{ field: "*", origin_index: 0 }],
+      value: {
+        relation_id: id(membership.relation_id),
+        canon_id: id(membership.canon_id)
+      }
     });
   for (const row of view.narratives)
     add("narrative", {
@@ -668,6 +806,7 @@ export function cloneWorldPlan(
     timeSystems: [],
     canonTimeSystems: [],
     eventCanonMemberships: [],
+    relationCanonMemberships: [],
     events: [],
     relations: [],
     narratives: []

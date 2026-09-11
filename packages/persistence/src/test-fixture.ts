@@ -147,7 +147,7 @@ export function createTestExpansionChangeSet(): CreateChangeSet {
         entity_type: "relation",
         entity_id: fixture.causalRelationId,
         value: {
-          canon_id: fixture.canonId,
+          world_id: fixture.worldId,
           type: "causes",
           source_ref: { kind: "event", event_id: fixture.eventId },
           target_ref: { kind: "event", client_ref: "second-event" },
@@ -156,16 +156,32 @@ export function createTestExpansionChangeSet(): CreateChangeSet {
         }
       },
       {
+        kind: "add",
+        entity_type: "relation_canon_membership",
+        value: {
+          relation_id: fixture.causalRelationId,
+          canon_id: fixture.canonId
+        }
+      },
+      {
         kind: "create",
         entity_type: "relation",
         entity_id: fixture.structuralRelationId,
         value: {
-          canon_id: fixture.canonId,
+          world_id: fixture.worldId,
           type: "precedes",
           source_ref: { kind: "event", client_ref: "second-event" },
           target_ref: { kind: "event", client_ref: "third-event" },
           direction: "directed",
           attributes: {}
+        }
+      },
+      {
+        kind: "add",
+        entity_type: "relation_canon_membership",
+        value: {
+          relation_id: fixture.structuralRelationId,
+          canon_id: fixture.canonId
         }
       },
       {

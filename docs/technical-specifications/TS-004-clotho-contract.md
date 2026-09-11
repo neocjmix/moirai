@@ -144,9 +144,11 @@ Clotho의 쓰기 입력은 [TS-003](TS-003-change-revision-publication.md)의 Ch
 
 Event create는 immutable `world_id`와 같은 Change Set의 하나 이상 Canon membership을 요구한다. membership `add`·`remove`는 별도 typed Operation이며 final candidate state에서 active Event의 membership이 0이면 validate와 commit이 같은 `event_canon_membership_required` 오류로 거절한다. Event `withdraw`와 마지막 membership 정리를 같은 Change Set에서 수행하는 명시적 전환은 허용한다.
 
+Relation create도 immutable `world_id`와 하나 이상 `relation_canon_membership`을 요구한다. 참여하는 모든 Canon에서 persisted endpoint Event membership과 virtual endpoint의 Canon-TimeSystem 사용을 검증한다. contract v2/v3의 명시된 `relation.canon_id`는 ingress에서 world ownership과 membership 하나로만 lossless 변환한다.
+
 ```json
 {
-  "contract_version": 3,
+  "contract_version": 4,
   "change_set_id": "019...",
   "world_id": "019...",
   "expected_revision": 12,
@@ -249,7 +251,8 @@ LLM이 위험하거나 큰 작업에서 `change.validate`를 먼저 사용하는
 | `cross_world_canon_membership`   | Event와 Canon의 World를 다시 확인하고 cross-World identity를 만들지 않는다.               |
 | `event_canon_membership_required` | Event create에 membership을 추가하거나 마지막 membership 제거와 Event 철회를 함께 계획한다. |
 | `duplicate_canon_membership`     | 기존 membership을 읽고 중복 create를 제거한다.                                             |
-| `relation_endpoint_out_of_scope` | DP-001 전 호환 Relation context에서 양 endpoint의 Canon membership을 확인한다.             |
+| `relation_canon_membership_required` | Relation create에 membership을 추가하거나 마지막 membership 제거와 Relation 철회를 함께 계획한다. |
+| `relation_endpoint_out_of_scope` | Relation이 참여하는 모든 Canon에서 양 endpoint의 membership을 확인한다.                    |
 | `dependent_content_active`       | 영향 목록을 읽고 함께 수정·철회할 Operation을 계획한다.                                   |
 | `invalid_time_coordinate`        | Time System 정의와 원자료 정밀도를 다시 확인한다.                                         |
 | `temporal_constraint_conflict`   | affected Relation과 Event reference의 최소 충돌 경로를 읽고 사실을 다시 판단한다.         |
@@ -291,3 +294,5 @@ LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오�
 12. CLI와 MCP가 같은 virtual Time Event reference를 validate·resolve하며 같은 결정적 ID와 lossless coordinate를 반환한다.
 13. Event create와 membership add/remove가 validate·commit에서 같은 final-state invariant를 사용한다.
 14. Canon 없이 active Event를 만들거나 active Event의 마지막 membership만 제거하는 plan은 거절된다.
+15. Canon 없이 active Relation을 만들거나 active Relation의 마지막 membership만 제거하는 plan은 거절된다.
+16. shared Relation은 identity 하나와 복수 membership으로 validate·commit·read된다.

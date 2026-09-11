@@ -39,10 +39,22 @@ function corpus(): CanonicalRevisionView {
       .filter((o) => o.kind === "create" && o.entity_type === type)
       .map((o) => ({ id: o.entity_id, ...o.value }));
   const eventCanonMemberships = operations.flatMap((operation) =>
-    operation.kind === "add"
+    operation.kind === "add" &&
+    operation.entity_type === "event_canon_membership"
       ? [
           {
             event_id: String(operation.value.event_id),
+            canon_id: String(operation.value.canon_id)
+          }
+        ]
+      : []
+  );
+  const relationCanonMemberships = operations.flatMap((operation) =>
+    operation.kind === "add" &&
+    operation.entity_type === "relation_canon_membership"
+      ? [
+          {
+            relation_id: String(operation.value.relation_id),
             canon_id: String(operation.value.canon_id)
           }
         ]
@@ -68,7 +80,13 @@ function corpus(): CanonicalRevisionView {
     canonTimeSystems: rows("canon_time_system"),
     eventCanonMemberships,
     events,
-    relations: rows("relation"),
+    relationCanonMemberships,
+    relations: rows("relation").map((relation) => ({
+      ...relation,
+      canon_memberships: relationCanonMemberships
+        .filter((membership) => membership.relation_id === relation.id)
+        .map((membership) => membership.canon_id)
+    })),
     narratives: rows("narrative")
   } as unknown as CanonicalRevisionView;
 }

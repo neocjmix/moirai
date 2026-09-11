@@ -19,6 +19,7 @@ const view: CanonicalRevisionView = {
   timeSystems: [],
   canonTimeSystems: [],
   eventCanonMemberships: [{ event_id: "event", canon_id: "canon" }],
+  relationCanonMemberships: [],
   events: [
     {
       id: "event",

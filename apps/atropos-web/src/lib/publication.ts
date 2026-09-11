@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
   LEGACY_PUBLICATION_FORMAT_VERSION,
+  EVENT_MEMBERSHIP_PUBLICATION_FORMAT_VERSION,
   PUBLICATION_FORMAT_VERSION,
   TEMPORAL_EXPRESSIVENESS_WORLD_ID,
   type PublicGraphScopeArtifact,
@@ -135,9 +136,11 @@ export async function selectPublication(
   if (
     manifest.world_id !== worldId ||
     manifest.served_revision !== pointer.served_revision ||
-    ![PUBLICATION_FORMAT_VERSION, LEGACY_PUBLICATION_FORMAT_VERSION].includes(
-      manifest.format_version
-    ) ||
+    ![
+      PUBLICATION_FORMAT_VERSION,
+      EVENT_MEMBERSHIP_PUBLICATION_FORMAT_VERSION,
+      LEGACY_PUBLICATION_FORMAT_VERSION
+    ].includes(manifest.format_version) ||
     pointer.format_version !== manifest.format_version ||
     manifest.completeness !== "complete"
   ) {
@@ -158,6 +161,21 @@ function normalizePublicEvent(
 ): PublicEvent {
   if ("world_id" in event && "canon_memberships" in event) return event;
   const { canon_id: canonId, ...value } = event;
+  return { ...value, world_id: worldId, canon_memberships: [canonId] };
+}
+
+type LegacyPublicRelation = Omit<
+  PublicRelation,
+  "world_id" | "canon_memberships"
+> & { readonly canon_id: string };
+
+function normalizePublicRelation(
+  relation: PublicRelation | LegacyPublicRelation,
+  worldId: string
+): PublicRelation {
+  if ("world_id" in relation && "canon_memberships" in relation)
+    return relation;
+  const { canon_id: canonId, ...value } = relation;
   return { ...value, world_id: worldId, canon_memberships: [canonId] };
 }
 
@@ -338,7 +356,9 @@ async function readEventDocument(
     pointer,
     event,
     narratives: document.narratives,
-    relations: document.relations,
+    relations: document.relations.map((relation) =>
+      normalizePublicRelation(relation, worldId)
+    ),
     relatedEvents: document.related_events.map((candidate) =>
       normalizePublicEvent(candidate, worldId)
     )
@@ -368,8 +388,8 @@ export async function readEvent(
     narratives: document.narratives.filter(
       (narrative) => narrative.canon_id === canonId
     ),
-    relations: document.relations.filter(
-      (relation) => relation.canon_id === canonId
+    relations: document.relations.filter((relation) =>
+      relation.canon_memberships.includes(canonId)
     )
   };
 }

@@ -47,7 +47,7 @@ layer: business-requirements
 - 모든 active persisted Event는 정확히 한 World에 속하고 같은 World의 Canon 하나 이상에 참여해야 한다.
 - 출판 여부와 Canon 수는 Canon에 authority나 objective truth를 부여하지 않는다.
 - LLM은 같은 Event가 여러 Canon에 참여한다는 이유로 Event identity를 복제하지 않는다.
-- Relation의 Canon cardinality는 IP-003 DP-001 승인 전 임의 확정하지 않는다.
+- 모든 active Relation은 정확히 한 World에 속하고 같은 World의 Canon 하나 이상에 참여해야 한다. 같은 assertion의 shared membership은 Relation identity를 복제하지 않는다.
 - 하나의 의미 있는 변경은 저장과 공개에서 모두 일관된 상태로 보여야 한다.
 - 인간은 공개 결과를 정정하거나 철회할 수 있어야 한다.
 - 독자는 내부 작성 도구나 관리 구조를 알 필요가 없다.

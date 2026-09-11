@@ -325,6 +325,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     const dangling: CreateChangeSet = {
       ...expansion,
       operations: expansion.operations.map((operation) =>
+        operation.kind === "create" &&
         operation.entity_type === "relation" &&
         operation.value.type === "causes"
           ? {
@@ -386,7 +387,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
           entity_type: "relation",
           entity_id: "01995c2a-7b00-7000-8000-000000000093",
           value: {
-            canon_id: TEST_FIXTURE.canonId,
+            world_id: TEST_FIXTURE.worldId,
             type: "causes",
             source_ref: {
               kind: "event",
@@ -395,6 +396,14 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
             target_ref: { kind: "event", client_ref: "other-event" },
             direction: "directed",
             attributes: {}
+          }
+        },
+        {
+          kind: "add",
+          entity_type: "relation_canon_membership",
+          value: {
+            relation_id: "01995c2a-7b00-7000-8000-000000000093",
+            canon_id: TEST_FIXTURE.canonId
           }
         }
       ]
@@ -481,7 +490,7 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
           entity_type: "relation",
           entity_id: TEST_FIXTURE.identityRelationId,
           value: {
-            canon_id: TEST_FIXTURE.canonId,
+            world_id: TEST_FIXTURE.worldId,
             type: "identity_continues",
             source_ref: {
               kind: "event",
@@ -493,6 +502,14 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
             },
             direction: "directed",
             attributes: {}
+          }
+        },
+        {
+          kind: "add",
+          entity_type: "relation_canon_membership",
+          value: {
+            relation_id: TEST_FIXTURE.identityRelationId,
+            canon_id: TEST_FIXTURE.canonId
           }
         }
       ],

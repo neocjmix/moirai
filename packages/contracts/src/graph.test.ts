@@ -141,7 +141,8 @@ const result: MoiraiGraphQueryResult = {
   ],
   relations: relationTypes.map((type, index) => ({
     world_id: index % 2 === 0 ? "world-a" : "world-b",
-    canon_id: index % 2 === 0 ? "canon-a" : "canon-b",
+    canon_memberships: [index % 2 === 0 ? "canon-a" : "canon-b"],
+    matched_canon_ids: [index % 2 === 0 ? "canon-a" : "canon-b"],
     served_revision: index % 2 === 0 ? 7 : 42,
     id: `relation-${type}`,
     type,

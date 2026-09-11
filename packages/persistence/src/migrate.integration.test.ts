@@ -36,11 +36,12 @@ describeWithDatabase("versioned migrations", () => {
         and table_name in ('worlds', 'change_sets', 'publication_outbox',
           'time_systems', 'relations', 'narratives',
         'subject_handles', 'subject_handle_members',
-        'canon_event_memberships')
+        'canon_event_memberships', 'canon_relation_memberships')
       order by table_name
     `.execute(db);
     expect(canonical.rows).toEqual([
       { table_name: "canon_event_memberships" },
+      { table_name: "canon_relation_memberships" },
       { table_name: "change_sets" },
       { table_name: "narratives" },
       { table_name: "publication_outbox" },
@@ -79,6 +80,7 @@ describeWithDatabase("versioned migrations", () => {
     const canonId = randomUUID();
     const eventId = randomUUID();
 
+    await migrateOneDown(databaseUrl ?? "");
     await migrateOneDown(databaseUrl ?? "");
     await migrateOneDown(databaseUrl ?? "");
     try {
@@ -161,6 +163,7 @@ describeWithDatabase("versioned migrations", () => {
     const duplicateMembershipId = randomUUID();
     const crossWorldMembershipId = randomUUID();
 
+    await migrateOneDown(databaseUrl ?? "");
     await migrateOneDown(databaseUrl ?? "");
     try {
       await sql`
@@ -271,5 +274,111 @@ describeWithDatabase("versioned migrations", () => {
     `.execute(db);
     expect(column.rows).toEqual([{ is_nullable: "YES" }]);
     expect(bridge.rows).toEqual([{ count: 0 }]);
+  });
+
+  it("losslessly backfills Relation World ownership and one Canon membership", async () => {
+    const worldId = randomUUID();
+    const canonId = randomUUID();
+    const firstEventId = randomUUID();
+    const secondEventId = randomUUID();
+    const relationId = randomUUID();
+    const otherWorldId = randomUUID();
+    const otherCanonId = randomUUID();
+
+    await migrateOneDown(databaseUrl ?? "");
+    try {
+      await sql`
+        insert into worlds (
+          id, slug, title, current_revision, publication_target_revision,
+          created_revision, updated_revision
+        ) values (
+          ${worldId}, ${`relation-backfill-${worldId}`}, 'Relation backfill',
+          2, 2, 1, 2
+        )
+      `.execute(db);
+      await sql`
+        insert into canons (
+          id, world_id, slug, title, created_revision, updated_revision
+        ) values (${canonId}, ${worldId}, 'relation-canon', 'Relation Canon', 1, 1)
+      `.execute(db);
+      await sql`
+        insert into worlds (
+          id, slug, title, current_revision, publication_target_revision,
+          created_revision, updated_revision
+        ) values (
+          ${otherWorldId}, ${`relation-backfill-other-${otherWorldId}`},
+          'Other Relation World', 1, 1, 1, 1
+        )
+      `.execute(db);
+      await sql`
+        insert into canons (
+          id, world_id, slug, title, created_revision, updated_revision
+        ) values (
+          ${otherCanonId}, ${otherWorldId}, 'other-relation-canon',
+          'Other Relation Canon', 1, 1
+        )
+      `.execute(db);
+      await sql`
+        insert into relations (
+          id, canon_id, type, source_ref, target_ref, direction, attributes,
+          created_revision, updated_revision
+        ) values (
+          ${relationId}, ${canonId}, 'causes',
+          ${JSON.stringify({ kind: "event", event_id: firstEventId })}::jsonb,
+          ${JSON.stringify({ kind: "event", event_id: secondEventId })}::jsonb,
+          'directed', '{}'::jsonb, 2, 2
+        )
+      `.execute(db);
+
+      await migrateToLatest(databaseUrl ?? "");
+      const result = await sql<{
+        relation_id: string;
+        world_id: string;
+        canon_id: string;
+      }>`
+        select relation.id as relation_id, relation.world_id, membership.canon_id
+        from relations as relation
+        join canon_relation_memberships as membership
+          on membership.relation_id = relation.id
+        where relation.id = ${relationId}
+      `.execute(db);
+      expect(result.rows).toEqual([
+        { relation_id: relationId, world_id: worldId, canon_id: canonId }
+      ]);
+      await expect(
+        sql`
+          insert into canon_relation_memberships (
+            id, world_id, canon_id, relation_id,
+            created_revision, updated_revision
+          ) values (
+            ${randomUUID()}, ${worldId}, ${canonId}, ${relationId}, 2, 2
+          )
+        `.execute(db)
+      ).rejects.toMatchObject({ code: "23505" });
+      await expect(
+        sql`
+          insert into canon_relation_memberships (
+            id, world_id, canon_id, relation_id,
+            created_revision, updated_revision
+          ) values (
+            ${randomUUID()}, ${otherWorldId}, ${otherCanonId}, ${relationId}, 2, 2
+          )
+        `.execute(db)
+      ).rejects.toMatchObject({ code: "23503" });
+    } finally {
+      await migrateToLatest(databaseUrl ?? "");
+      await db.transaction().execute(async (transaction) => {
+        await sql`delete from canon_relation_memberships where relation_id = ${relationId}`.execute(
+          transaction
+        );
+        await sql`delete from relations where id = ${relationId}`.execute(
+          transaction
+        );
+      });
+      await sql`delete from canons where id = ${canonId}`.execute(db);
+      await sql`delete from worlds where id = ${worldId}`.execute(db);
+      await sql`delete from canons where id = ${otherCanonId}`.execute(db);
+      await sql`delete from worlds where id = ${otherWorldId}`.execute(db);
+    }
   });
 });

@@ -178,13 +178,19 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
             client_ref: "link",
             origin_refs,
             value: {
-              canon_id: canonId,
+              world_id: worldId,
               type: "causes",
               direction: "directed",
               source_ref: { kind: "event", event_id: firstId },
               target_ref: { kind: "event", event_id: secondId },
               attributes: {}
             }
+          },
+          {
+            kind: "add",
+            entity_type: "relation_canon_membership",
+            origin_refs,
+            value: { relation_id: { client_ref: "link" }, canon_id: canonId }
           },
           {
             kind: "create",
@@ -271,7 +277,7 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
         .select("origin_refs")
         .where("change_set_id", "=", expansion.change_set_id)
         .execute();
-      expect(origins).toHaveLength(4);
+      expect(origins).toHaveLength(5);
       expect(origins.every((op) => op.origin_refs.length === 1)).toBe(true);
       expect(
         await db

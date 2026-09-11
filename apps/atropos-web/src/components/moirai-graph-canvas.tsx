@@ -529,6 +529,7 @@ export function MoiraiGraphCanvas({ locale }: Readonly<{ locale: AppLocale }>) {
                     if (event.key === "Enter" || event.key === " ")
                       selectNode(node);
                   }}
+                  onPointerDown={(event) => event.stopPropagation()}
                   role="button"
                   tabIndex={0}
                   transform={`translate(${node.x} ${node.y})`}

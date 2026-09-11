@@ -213,6 +213,35 @@ describe("M4.5-D1 identity-aware entity search", () => {
     expect(restored?.focus).toEqual(eventA.reference);
   });
 
+  it("round-trips bounded neighborhood scope and semantic detail without changing hard budgets", () => {
+    const initial = createDefaultGraphUrlState();
+    const eventA = searchGraphEntities(initial).find(
+      (entity) => entity.identity === "event:observatory-a"
+    )!;
+    const eventReference = eventA.reference;
+    if (eventReference.kind !== "event") throw new Error("expected Event");
+    const event = {
+      world_id: eventReference.world_id,
+      canon_id: eventReference.canon_id,
+      served_revision: eventReference.served_revision,
+      event_ref: eventReference.event_ref
+    };
+    const focused = {
+      ...initial,
+      query: {
+        ...initial.query,
+        scope: { kind: "neighborhood" as const, event, depth: 2 },
+        budget: { ...initial.query.budget, detail_level: "full" as const }
+      },
+      focus: eventReference
+    };
+    const restored = parseGraphUrlState(buildGraphUrlSearch("", focused));
+
+    expect(restored?.query.scope).toEqual(focused.query.scope);
+    expect(restored?.query.budget).toEqual(focused.query.budget);
+    expect(restored?.focus).toEqual(eventReference);
+  });
+
   it("fails closed on a malformed public focus reference", () => {
     const initial = createDefaultGraphUrlState();
     const malformed = {

@@ -315,6 +315,12 @@ M5를 활성화하지 않는다.
 
 ## IP-001.9 Milestone 5 — 생명주기·이동성·출시 품질
 
+> IP-003 replan: 이 절의 제품 범위는 유지하지만 기존 Canon 단일 ownership을 전제한 실행 계획은
+> 활성화하지 않는다. Event/Canon lifecycle, Revision diff, portability, governance/access와 operations로
+> 재구성한 slice와 종료조건은 [IP-003 §17](IP-003-canon-semantic-realignment.md#17-m5-재설계-범위)이
+> 소유한다. Relation 세부 계약은 DP-001 승인 뒤 대입하며 M4.5 종료와 별도 사용자 승인 전에는
+> M5 구현을 시작하지 않는다.
+
 ### 목표
 
 정정, 철회, 복구, 반출과 운영 실패를 포함해 첫 제품을 지속적으로 운용할 수 있게 한다.

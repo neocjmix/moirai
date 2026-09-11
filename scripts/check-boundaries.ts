@@ -112,6 +112,23 @@ for (const name of ["@moirai/clotho-application"]) {
     if (forbidden(`${path}/package.json`, target(`${path}/package.json`, dep)))
       failures.push(`${path}/package.json -> ${dep}`);
 }
+const productionGraphEntry = readFileSync(
+  "apps/atropos-web/src/urdr-port/src/App.tsx",
+  "utf8"
+);
+if (
+  /graph-read-loader|<GraphShell\b|from ["']@urdr\//.test(productionGraphEntry)
+)
+  failures.push(
+    "apps/atropos-web/src/urdr-port/src/App.tsx -> legacy URDR graph runtime"
+  );
+if (
+  productionGraphEntry.includes("moirai-legacy-adapter") ||
+  productionGraphEntry.includes("MOIRAI_LEGACY_ADAPTER")
+)
+  failures.push(
+    "apps/atropos-web/src/urdr-port/src/App.tsx -> temporary legacy adapter"
+  );
 if (failures.length)
   throw new Error(`Architecture boundary violations:\n${failures.join("\n")}`);
 process.stdout.write("Moirai architecture dependency boundaries passed\n");

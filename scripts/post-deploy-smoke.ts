@@ -129,13 +129,15 @@ async function fetchGraphQuery(): Promise<GraphQueryPayload> {
 }
 
 async function verify(): Promise<void> {
-  const [health, ready, status, landing, graph] = await Promise.all([
+  const [health, ready, status, landing, graphPage, graph] = await Promise.all([
     fetchJson<HealthPayload>("/health/live"),
     fetchJson<HealthPayload>("/health/ready"),
     fetchJson<StatusPayload>("/status-public"),
     fetch(new URL("/", baseUrl), { signal: AbortSignal.timeout(10_000) }),
+    fetch(new URL("/graph", baseUrl), { signal: AbortSignal.timeout(20_000) }),
     fetchGraphQuery()
   ]);
+  const graphHtml = await graphPage.text();
   const eventIds = graph.result.events.map((event) => event.id);
   const sharedRelations = graph.result.relations.filter(
     (relation) => relation.id === graphSharedRelation
@@ -150,6 +152,10 @@ async function verify(): Promise<void> {
     status.application.commit_sha !== expectedSha ||
     Object.values(status.surfaces).some((value) => value !== "ok") ||
     !landing.ok ||
+    !graphPage.ok ||
+    !graphHtml.includes('data-testid="native-moirai-viewport"') ||
+    !graphHtml.includes(graphEventA) ||
+    !graphHtml.includes(graphEventB) ||
     graph.result.completeness !== "complete" ||
     graph.result.revision_vector.length !== 1 ||
     graph.result.revision_vector[0]?.served_revision !== 4 ||

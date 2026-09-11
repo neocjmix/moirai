@@ -1,7 +1,7 @@
 ---
 id: IP-003
 title: Canon 의미 재정렬 구현 계획
-status: active
+status: blocked_on_decision
 depends_on:
   - CON-003
   - BR-001
@@ -344,6 +344,15 @@ route와 graph result v2다. Publication/package v1은 boundary adapter가 명�
 쓰지 않는다. K1/K2/K3·A/B/C/D 통합 fixture가 PostgreSQL commit, revision read, multi-Canon
 context query, Publication, Atropos World/Canon route와 export/import를 한 흐름으로 검증한다.
 
+완료 증거: PR #34를 `16cc9508abbb8d1a2452ecc21607e921d1c8788d`로 병합했고 main CI
+`34566941074`와 post-deploy smoke `34567083988`이 성공했다. migration 008은 기존 26 Event와
+26 membership을 보존한 채 legacy write bridge를 제거했고 changed/deleted row와 identity change는
+모두 0이었다. production Graph Scope Observatory Revision 3에 K1/K2/K3, A/B/C/D와 7 membership을
+실제 commit했다. Publication `2.0.0`과 Clotho/Atropos는 A와 B를 각각 한 identity로 반환하며 전체
+membership을 보존했다. post-fixture audit는 active Event 30, active membership 33, orphan,
+cross-World와 duplicate active membership 모두 0이다. 세부 ID, rejection과 route 결과는
+[machine-readable evidence](evidence/ip-003-slice4-shared-event-production-2026-09-11.json)에 고정한다.
+
 ### Gate DP-001 — Relation ontology
 
 R1/R2/R3 사용자 결정 전 Relation의 최종 cardinality, migration, shared assertion fixture와
@@ -403,9 +412,10 @@ portability, derived regression, acceptance fixture, CI, production과 후속 �
 복제, membership collapse, 미승인 Relation 선택, production 미검증 또는 stale CURRENT 상태는
 complete가 아니다.
 
-## 16. M4.5 잔여 계획 예상 재설계 범위
+## 16. M4.5 잔여 계획 재설계 범위
 
-최종 구현 결과 뒤 다음 초안을 실제 contract에 맞게 확정한다.
+Event/Canon cutover 결과로 다음 경계를 확정한다. Relation-specific 항목은 DP-001 결과를 대입한 뒤
+최종 승인받으며, 어느 후속 slice도 자동 시작하지 않는다.
 
 | 기존 slice | 예상 처리 | Canon realignment 영향 |
 | --- | --- | --- |
@@ -418,13 +428,23 @@ complete가 아니다.
 | G | 유지·adapter 수정 | legacy viewport bridge가 shared Event를 duplicate하지 않고 loss를 진단 |
 | H | 재설계 | multi-Canon shared node, Canon-specific Relation style, correspondence overlay, LOD/100k |
 
-새 dependency는 `IP-003 -> D1 Entities/Search -> DP-001 기반 D2 Relations/Diagnostics -> E -> F -> G -> H`를
-기본으로 한다. Entities filter는 identity와 membership match를 구분하고 Search는 Event 결과 하나에
-context를 제시한다. comparison은 shared identity, distinct authored correspondence와 유사성 후보를
-혼동하지 않는다. 정확한 slice acceptance criteria는 IP-003 결과 뒤 문서화하고 사용자 승인 전
-구현하지 않는다.
+새 dependency는 `IP-003 -> D1 -> D2 -> E -> F -> G -> H`다. D2 이후 Relation 표면은 DP-001의
+승인 모델에 의존한다.
 
-## 17. M5 예상 재설계 범위
+| 새 slice | 범위 | 종료조건 |
+| --- | --- | --- |
+| D1 Entities/Search | identity와 membership match를 분리한 filter/search | shared Event 결과가 하나이며 matched Canon과 전체 membership을 함께 표시; URL round-trip |
+| D2 Relations/Diagnostics | Relation filter, contradiction·completeness 진단 | DP-001 모델의 shared/Canon-specific assertion을 손실 없이 구분; contradiction을 structural error로 만들지 않음 |
+| E Publication composition | 실제 multi-World query를 revision별 artifact에 조합 | Event identity 중복 0, World별 served Revision vector·truncation·membership context 보존 |
+| F inspector/routes | World Event inspector와 Canon context alias | canonical URL 하나, context alias membership 검사, Narrative authored context와 evidence 보존 |
+| G legacy bridge | renderer 직전 v1 adapter와 loss diagnostics | shared Event 복제 0, collapse를 조용히 허용하지 않음, native v2 fixture loss 0 |
+| H graph viewport | shared node, Relation style, correspondence overlay, LOD/100k | multi-Canon shared Event 한 node, authored correspondence만 overlay, 100k 전체 browser 적재 없음, mobile interaction 통과 |
+
+A는 result v2로 contract revision됐고 B shell은 유지하며 C selector/Revision vector와 layout은 유지하되
+`canon_ids`를 interpretive scope filter로 읽는다. comparison은 shared identity, distinct authored
+correspondence와 similarity candidate를 혼동하지 않는다.
+
+## 17. M5 재설계 범위
 
 M5는 inactive다. 기존 lifecycle/portability/operational 범위를 유지하되 다음 의존성을 추가한다.
 
@@ -437,8 +457,16 @@ M5는 inactive다. 기존 lifecycle/portability/operational 범위를 유지하�
   identity를 만들지 않는다.
 - backup/restore와 Publication rebuild는 orphan 0과 shared Event membership을 검증한다.
 
-IP-003 Slice 7에서 M5를 구체 slice와 acceptance criteria로 다시 작성한다. 사용자 승인 전 M5
-구현을 시작하지 않는다.
+| 새 slice | 범위 | 종료조건 |
+| --- | --- | --- |
+| M5-A lifecycle | Event update/withdraw/restore와 membership lifecycle | 한 Revision final state에서 active orphan 0; identity와 context alias tombstone 보존 |
+| M5-B revision recovery | Event 본문과 membership diff, compensating restore | 두 변경 종류를 분리 표시하고 restore 뒤 membership·identity fingerprint 일치 |
+| M5-C portability | owner-full/content/public/scoped export, preserve-ID/clone | N:M membership round-trip, deterministic remap, cross-World identity 미생성 |
+| M5-D governance/access | publication·export isolation과 future private/multitenant 경계 | official/default/priority Canon 미도입, World boundary 밖 정보 누출 0 |
+| M5-E operations | backup/restore, Publication rebuild, SLO·migration gate | restore/rebuild 뒤 orphan 0, shared membership 보존, rollback drill과 full-story 검증 |
+
+Relation의 lifecycle·diff·portability 세부 종료조건은 DP-001 모델을 대입한 뒤 확정한다. M5는 계속
+inactive이며 M4.5 종료와 별도 사용자 승인 전 구현하지 않는다.
 
 ## 18. 종료 상태와 decision record
 
@@ -453,6 +481,10 @@ IP-003 Slice 7에서 M5를 구체 slice와 acceptance criteria로 다시 작성�
 | ID | 상태 | 결정 | 권장 | 재개 지점 |
 | --- | --- | --- | --- | --- |
 | DP-001 | open, user approval required | Relation identity/cardinality | R1 World-level Relation + Canon N:M membership | Slice 5 |
+
+현재 종료 상태는 `blocked_on_decision`이다. Slice 0~4와 Event/Canon production acceptance는
+완료했으나 Relation shared assertion fixture, Relation migration과 그 결과에 의존하는 최종 cleanup은
+DP-001 없이는 안전하게 확정할 수 없다. M4.5-D와 M5는 시작하지 않았다.
 
 Event 1..N, Canon 정의, Narrative authored prose, World boundary와 derived 지위는 이미 승인됐으므로
 decision register로 되돌리지 않는다.

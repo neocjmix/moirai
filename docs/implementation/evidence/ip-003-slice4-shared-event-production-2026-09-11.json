@@ -1,0 +1,106 @@
+{
+  "evidence_version": 1,
+  "recorded_at": "2026-09-11T06:12:16.398Z",
+  "status": "passed_event_canon_scope_blocked_on_relation_dp_001",
+  "baseline": {
+    "ip003_start_main_sha": "8854da284631f836cb34692f36070b718dce3e2d",
+    "deployed_main_sha": "16cc9508abbb8d1a2452ecc21607e921d1c8788d",
+    "pull_request": 34,
+    "main_ci_run": 34566941074,
+    "post_deploy_smoke_run": 34567083988
+  },
+  "deployments": {
+    "atropos": "9585a0dd-c0c1-49bb-84e9-7afa9f0c5178",
+    "clotho": "78aec571-b0b9-421c-9fbb-03159e20c39a",
+    "worker": "b2dd3b62-ebcf-491d-a012-43b37395b148",
+    "post_fixture_clotho_audit": "c7e8d103-7eff-4bf4-b315-7874c7ea2219",
+    "status": "success"
+  },
+  "migration_008": {
+    "result": "success",
+    "preflight": {
+      "events": 26,
+      "active_events": 26,
+      "memberships": 26,
+      "events_without_world": 0,
+      "orphan_active_events": 0,
+      "cross_world_memberships": 0,
+      "duplicate_active_memberships": 0
+    },
+    "mutation": {
+      "changed_rows": 0,
+      "deleted_rows": 0,
+      "event_identity_changes": 0
+    },
+    "rollback": "The down migration deterministically repairs nullable legacy canon_id from preserved membership history before restoring the v2 bridge."
+  },
+  "acceptance_change": {
+    "world_id": "01995c2a-7b00-7000-8000-000000000101",
+    "source_revision": 2,
+    "committed_revision": 3,
+    "change_set_id": "019f3b10-0000-7000-8000-000000000800",
+    "plan_digest": "e49477b8734eec2960110322c3985a3d717033cbb52c8a4fc503a21f8ebb9533",
+    "idempotent_replay": false,
+    "warnings": [],
+    "created": { "canons": 3, "events": 4, "memberships": 7 },
+    "canons": {
+      "K1": "019f3b10-0000-7000-8000-000000000811",
+      "K2": "019f3b10-0000-7000-8000-000000000812",
+      "K3": "019f3b10-0000-7000-8000-000000000813"
+    },
+    "events": {
+      "A": { "id": "019f3b10-0000-7000-8000-000000000821", "memberships": ["K1", "K2"] },
+      "B": { "id": "019f3b10-0000-7000-8000-000000000822", "memberships": ["K1", "K2", "K3"] },
+      "C": { "id": "019f3b10-0000-7000-8000-000000000823", "memberships": ["K2"] },
+      "D": { "id": "019f3b10-0000-7000-8000-000000000824", "memberships": ["K3"] }
+    }
+  },
+  "production_invariants_after_fixture": {
+    "worlds": 3,
+    "canons": 6,
+    "events": 30,
+    "active_events": 30,
+    "memberships": 33,
+    "active_memberships": 33,
+    "events_without_world": 0,
+    "active_events_without_active_membership": 0,
+    "cross_world_memberships": 0,
+    "duplicate_active_memberships": 0,
+    "legacy_event_canon_cross_world": 0
+  },
+  "rejections": {
+    "active_event_without_membership": "rejected",
+    "duplicate_membership": "duplicate_canon_membership",
+    "last_membership_removal": "event_canon_membership_required",
+    "foreign_world_canon_reference": "dangling_reference"
+  },
+  "round_trip": {
+    "clotho_source_revision": 3,
+    "shared_event_a_return_count": 1,
+    "shared_event_b_return_count": 1,
+    "publication_format": "2.0.0",
+    "publication_served_revision": 3,
+    "publication_projection_status": "ready",
+    "event_document_count_for_fixture": 4,
+    "world_event_route_http": 200,
+    "event_a_k1_context_http": 200,
+    "event_a_k2_context_http": 200,
+    "event_a_nonmember_k3_context_http": 404,
+    "local_postgres_publication_atropos_export_import_integration": "passed"
+  },
+  "compatibility": {
+    "publication_v1_read_adapter": "tested",
+    "portability_v1_read_adapter": "tested",
+    "legacy_event_canon_column": "preserved_frozen_noncanonical",
+    "new_event_legacy_canon_value": null,
+    "mcp_connector_descriptor_note": "The connected UI descriptor still displays legacy 0.3.0, but the production MCP accepted and returned native numeric contract_version 3."
+  },
+  "remaining_gate": {
+    "id": "DP-001",
+    "decision": "Relation identity and Canon cardinality",
+    "recommended": "R1 World-level Relation identity with Canon N:M membership",
+    "resume_at": "IP-003 Slice 5",
+    "m4_5_d_started": false,
+    "m5_started": false
+  }
+}

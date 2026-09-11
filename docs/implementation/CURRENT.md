@@ -5,9 +5,9 @@
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `incomplete` — DP-001 R1 승인; Relation World identity + Canon N:M Slice 5 구현 중                                         |
-| 활성 milestone             | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md) Slice 5                                                   |
-| 현재 slice                 | Slice 5 — 승인된 R1 Relation model; M4.5-D 이후와 M5는 비활성                                                              |
+| 실행 상태                  | `complete` — IP-003 Canon semantic realignment의 문서·schema·write/read·migration·production acceptance 완료              |
+| 활성 milestone             | 없음 — 재설계된 M4.5-D1 활성화에 대한 사용자 승인 대기                                                                      |
+| 현재 slice                 | IP-003 완료 checkpoint; M4.5-D1과 M5는 비활성                                                                               |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
@@ -23,6 +23,7 @@
 | IP-003 Slice 2 persistence | PR #30 merge·production `56b95a8b7b998326f6ab7adf302327288995f9b9`; CI `34561345766`, smoke `34561614061` success; [migration evidence](evidence/ip-003-slice2-production-migration-2026-09-11.json) |
 | IP-003 Slice 3 write path  | PR #32 merge·production `57628ea6bd2d1f6481e78a13fb2b9a3692d7d0fe`; PR CI `34564009501`, main CI `34564158019`, smoke `34564302767` success; [write/migration evidence](evidence/ip-003-slice3-event-write-production-2026-09-11.json) |
 | IP-003 Slice 4 read/public | PR #34 merge·production `16cc9508abbb8d1a2452ecc21607e921d1c8788d`; main CI `34566941074`, smoke `34567083988` success; production Revision 3 K1/K2/K3·A/B/C/D, orphan 0; [evidence](evidence/ip-003-slice4-shared-event-production-2026-09-11.json) |
+| IP-003 Slice 5–7 R1/종료   | PR #36 merge·production `1bd88854bb45f20edf95e8a0f4e3c89c99a033bb`; PR CI `34576628203`, main CI `34576831599`, smoke `34577001008` success; production Revision 4 shared/K1/K2 Relation, Event·Relation orphan 0; [evidence](evidence/ip-003-slice5-r1-production-2026-09-11.json) |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
 | M4.5 graph 기준 URL        | <https://moirai-production-8ed1.up.railway.app/graph>                                                                         |
@@ -83,7 +84,8 @@ preview와 apply/cancel을 unit·mobile WebKit E2E로 검증했다. 현재 데�
 composition이 아니라 화면 계약 검증용 `MOCK` fixture이며 이는 M4.5-E 범위다. Production
 `2c9002848e91c337876103d21e17804148d9f159`에서 Atropos·Clotho·worker Railway 배포,
 공개 `/__status` SHA와 post-deploy smoke 성공, `/graph`의 접힘·펼침·draft preview를
-확인했다. 다음 M4.5-D는 사용자 전환 지시 전까지 비활성이며 아직 시작하지 않는다.
+확인했다. IP-003 완료 후 기존 M4.5-D는 D1/D2로 분할됐으며, 재설계된 D1은 사용자 활성화
+승인 전까지 비활성이다.
 
 ## 시간 모델 재정렬 Slice 0
 

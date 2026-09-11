@@ -82,7 +82,7 @@ export async function down(db: Kysely<unknown>): Promise<void> {
     update events as event
     set canon_id = membership.canon_id
     from (
-      select event_id, min(canon_id) as canon_id
+      select event_id, min(canon_id::text)::uuid as canon_id
       from canon_event_memberships
       group by event_id
     ) as membership

@@ -37,23 +37,26 @@ const rows = (type: string) =>
   operations
     .filter((o) => o.kind === "create" && o.entity_type === type)
     .map((o) => ({ id: o.entity_id, ...o.value }));
-const membershipCanon = new Map(
-  operations.flatMap((operation) =>
-    operation.kind === "add"
-      ? [[operation.value.event_id, operation.value.canon_id] as const]
-      : []
-  )
+const eventCanonMemberships = operations.flatMap((operation) =>
+  operation.kind === "add"
+    ? [
+        {
+          event_id: String(operation.value.event_id),
+          canon_id: String(operation.value.canon_id)
+        }
+      ]
+    : []
 );
 const events = operations.flatMap((operation) => {
   if (operation.kind !== "create" || operation.entity_type !== "event")
     return [];
-  const value = { ...operation.value };
-  delete (value as { world_id?: unknown }).world_id;
   return [
     {
       id: operation.entity_id,
-      canon_id: membershipCanon.get(operation.entity_id),
-      ...value
+      ...operation.value,
+      canon_memberships: eventCanonMemberships
+        .filter((membership) => membership.event_id === operation.entity_id)
+        .map((membership) => membership.canon_id)
     }
   ];
 });
@@ -62,6 +65,7 @@ const view = {
   canons: rows("canon"),
   timeSystems: rows("time_system"),
   canonTimeSystems: rows("canon_time_system"),
+  eventCanonMemberships,
   events,
   relations: rows("relation"),
   narratives: rows("narrative")

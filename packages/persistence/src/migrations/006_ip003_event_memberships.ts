@@ -1,6 +1,96 @@
 import { sql, type Kysely } from "kysely";
 
 export async function up(db: Kysely<unknown>): Promise<void> {
+  const worlds = await sql<{
+    world_id: string;
+    current_revision: number;
+    publication_target_revision: number;
+    served_revision: number;
+  }>`
+    select
+      world.id as world_id,
+      world.current_revision,
+      world.publication_target_revision,
+      coalesce(publication.served_revision, 0) as served_revision
+    from worlds as world
+    left join world_publication_state as publication
+      on publication.world_id = world.id
+    order by world.id
+  `.execute(db);
+
+  const preflight = await sql<{
+    worlds: string;
+    active_worlds: string;
+    canons: string;
+    active_canons: string;
+    events: string;
+    active_events: string;
+    relations: string;
+    active_relations: string;
+    narratives: string;
+    active_narratives: string;
+    publication_states: string;
+    publication_outbox_rows: string;
+    events_without_resolvable_canon: string;
+    world_local_slug_collision_groups: string;
+  }>`
+    select
+      (select count(*) from worlds)::text as worlds,
+      (select count(*) from worlds where withdrawn_revision is null)::text as active_worlds,
+      (select count(*) from canons)::text as canons,
+      (select count(*) from canons where withdrawn_revision is null)::text as active_canons,
+      (select count(*) from events)::text as events,
+      (select count(*) from events where withdrawn_revision is null)::text as active_events,
+      (select count(*) from relations)::text as relations,
+      (select count(*) from relations where withdrawn_revision is null)::text as active_relations,
+      (select count(*) from narratives)::text as narratives,
+      (select count(*) from narratives where withdrawn_revision is null)::text as active_narratives,
+      (select count(*) from world_publication_state)::text as publication_states,
+      (select count(*) from publication_outbox)::text as publication_outbox_rows,
+      (
+        select count(*)
+        from events as event
+        left join canons as canon on canon.id = event.canon_id
+        where canon.id is null
+      )::text as events_without_resolvable_canon,
+      (
+        select count(*)
+        from (
+          select canon.world_id, event.slug
+          from events as event
+          join canons as canon on canon.id = event.canon_id
+          where event.slug is not null
+          group by canon.world_id, event.slug
+          having count(*) > 1
+        ) as collision
+      )::text as world_local_slug_collision_groups
+  `.execute(db);
+
+  const snapshot = preflight.rows[0];
+  if (!snapshot || snapshot.events_without_resolvable_canon !== "0") {
+    throw new Error(
+      `IP-003 pre-migration invariant failed: ${JSON.stringify(snapshot)}`
+    );
+  }
+  process.stdout.write(
+    `IP-003 pre-migration snapshot: ${JSON.stringify({
+      worlds: worlds.rows,
+      counts: snapshot,
+      expected: {
+        event_world_backfill_rows: Number(snapshot.events),
+        canon_event_membership_backfill_rows: Number(snapshot.events),
+        active_events_without_active_membership: 0,
+        cross_world_memberships: 0,
+        duplicate_active_memberships: 0,
+        event_identity_changes: 0,
+        deleted_rows: 0,
+        publication_regeneration_required_by_slice_2: false
+      },
+      rollback:
+        "transaction rollback before commit; migration down removes only additive IP-003 structures"
+    })}\n`
+  );
+
   await sql`
     alter table events add column world_id uuid;
 

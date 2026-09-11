@@ -128,11 +128,9 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
   await expect(shared).toBeVisible();
 
   await page.getByRole("tab", { name: "Diagnostics" }).click();
-  const unresolved = page.locator('[data-diagnostic-code="unresolved"]');
-  await expect(unresolved).toContainText(/valid knowledge state/);
-  await expect(unresolved).toContainText(
-    /does not expose complete State values/
-  );
+  const unplaced = page.locator('[data-diagnostic-code="unplaced"]').first();
+  await expect(unplaced).toContainText(/valid knowledge state/);
+  await expect(unplaced).toContainText(/no authored temporal placement/);
 });
 
 test("mobile reader traverses the single relational temporal model", async ({

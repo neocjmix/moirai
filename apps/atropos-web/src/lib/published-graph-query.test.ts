@@ -129,6 +129,7 @@ function reader(failWorld?: string): PublishedGraphQueryReader {
         },
         events: [event],
         narratives: [],
+        timeSystems: [],
         subjectArtifacts: [],
         temporalArtifact: {
           key: `worlds/${worldId}/temporal.json`,

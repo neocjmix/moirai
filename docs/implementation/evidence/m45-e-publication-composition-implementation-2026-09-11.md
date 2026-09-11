@@ -18,10 +18,9 @@ Status: implementation complete; PR, main CI and production evidence pending.
   `comparison_domain`, or the existing lossless `coordinate_codec` when both
   graph fields are absent. If none exist, both values fail closed to the Time
   System ID; title, slug and kind never imply compatibility.
-- Publication format 3 does not expose a complete State value artifact. The
-  composer returns no invented State and emits
-  `state_projection_unavailable` with partial completeness when State is
-  requested.
+- Membership State is composed only from the published temporal composite's
+  explicit `membership_state`, boundaries and evidence. No value or Subject
+  identity is inferred when that projection evidence is absent.
 - Fan-out is bounded to 8 Worlds and 32 Canons; each public artifact read has a
   3-second timeout. Query entity, Relation and evidence budgets are enforced
   deterministically with a next-scope hint.
@@ -33,7 +32,8 @@ Status: implementation complete; PR, main CI and production evidence pending.
 - Static typecheck: passed.
 - Composition and D1/D2 URL/search tests: 17 passed.
 - Local immutable Publication fixture: 1 World, 1 Canon snapshot, Revision 2,
-  11 Events and 23 Relations composed; State remained explicitly partial.
+  11 Events and 23 Relations composed with derived State limited to published
+  membership projection evidence.
 
 No canonical rows, World revisions, Publication objects or production state
 were mutated by these checks.

@@ -252,6 +252,7 @@ export function composeGraphPublicationQuery(
     string,
     MoiraiGraphQueryResult["composites"][number]
   >();
+  const stateMap = new Map<string, MoiraiGraphQueryResult["states"][number]>();
   const evidenceMap = new Map<string, MoiraiGraphEvidence>();
   const artifactDigests: Record<string, string> = {};
   const algorithms: Record<string, string> = {
@@ -416,6 +417,8 @@ export function composeGraphPublicationQuery(
       );
     }
     for (const composite of snapshot.temporal.composites) {
+      const stateSubjectHandleId =
+        composite.membership_state?.subject_handle_id ?? null;
       compositeMap.set(
         `${snapshot.worldId}:${snapshot.canon.id}:${composite.event_id}`,
         {
@@ -454,18 +457,41 @@ export function composeGraphPublicationQuery(
               : "unresolved"
         }
       );
+      if (query.entity_filter.include_states && stateSubjectHandleId) {
+        const membership = composite.membership_state!;
+        stateMap.set(
+          `${snapshot.worldId}:${snapshot.canon.id}:${composite.event_id}:membership`,
+          {
+            world_id: snapshot.worldId,
+            canon_id: snapshot.canon.id,
+            served_revision: snapshot.servedRevision,
+            composite_event_id: composite.event_id,
+            subject_handle_id: stateSubjectHandleId,
+            state_family: "membership",
+            status: membership.status,
+            value: null,
+            candidate_values: [],
+            open_ended: composite.end_ref === null,
+            start: {
+              earliest: composite.start_ref,
+              latest: composite.start_ref
+            },
+            end: {
+              earliest: composite.end_ref,
+              latest: composite.end_ref
+            },
+            algorithm_version: snapshot.temporal.algorithm_version,
+            evidence_ids: strings([
+              ...composite.duration.evidence,
+              ...composite.descendant_span.evidence
+            ]),
+            diagnostics: membership.reason ? [membership.reason] : [],
+            completeness:
+              membership.status === "resolved" ? "complete" : "unresolved"
+          }
+        );
+      }
     }
-  }
-
-  if (query.entity_filter.include_states) {
-    diagnostics.push({
-      code: "state_projection_unavailable",
-      severity: "info",
-      source: {},
-      affected_ids: [],
-      message:
-        "Publication v3 does not expose complete State values; none were inferred."
-    });
   }
   const causalClaims = new Map<string, Set<string>>();
   for (const relation of relationMap.values()) {
@@ -492,6 +518,20 @@ export function composeGraphPublicationQuery(
           "Selected Canon contexts contain distinct contradictory assertions; this is valid knowledge, not a structural error."
       });
   }
+  if (query.diagnostics_filter.include_unplaced)
+    for (const event of eventMap.values())
+      if (event.temporal_position.kind === "unplaced")
+        diagnostics.push({
+          code: "temporal_unplaced",
+          severity: "info",
+          source: {
+            world_id: event.world_id,
+            served_revision: event.served_revision
+          },
+          affected_ids: [event.id],
+          message:
+            "The Event has no authored temporal placement in this Canon context."
+        });
   const allEvents = [...eventMap.values()]
     .filter(
       (event) =>
@@ -583,16 +623,13 @@ export function composeGraphPublicationQuery(
     relations,
     subjects,
     composites,
-    states: [],
+    states: [...stateMap.values()],
     narratives,
     evidence,
     diagnostics,
     algorithm_versions: algorithms,
     source_artifact_digests: artifactDigests,
-    completeness:
-      failures.length > 0 || query.entity_filter.include_states || truncated
-        ? "partial"
-        : "complete",
+    completeness: failures.length > 0 || truncated ? "partial" : "complete",
     budget: {
       ...query.budget,
       returned_entities:

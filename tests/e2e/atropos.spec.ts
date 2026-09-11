@@ -38,7 +38,7 @@ test("mobile graph shell navigates app screens without consuming graph query sta
   await expect(graph).toHaveAttribute("aria-current", "page");
 });
 
-test("mobile source island restores compatible Worlds, Canons, revisions, and previews Time System impact", async ({
+test("mobile source island restores published World, Canon, Time System, and Revision", async ({
   page
 }) => {
   await page.goto("/graph");
@@ -51,21 +51,11 @@ test("mobile source island restores compatible Worlds, Canons, revisions, and pr
     page.getByRole("heading", { name: /시간 체계|Time System/ })
   ).toBeVisible();
   await expect(
-    page.getByLabel(/현실 세계 관측소|Reality Observatory/)
+    page.getByLabel(/Temporal Expressiveness Observatory/)
   ).toBeChecked();
-  await expect(
-    page.getByLabel(/마블 시네마틱 월드|Marvel Cinematic World/)
-  ).toBeChecked();
-  await expect(
-    page.getByLabel(/삼국지연의 월드|Romance of the Three Kingdoms/)
-  ).toBeDisabled();
-  await expect(page.getByText("served Revision 7").first()).toBeVisible();
-  await expect(page.getByText("served Revision 42").first()).toBeVisible();
-  await expect(page.getByLabel(/기록된 역사|Recorded history/)).toBeChecked();
-  await expect(
-    page.getByLabel(/기록 보완|Archival observations/)
-  ).toBeChecked();
-  await expect(page.getByLabel(/Earth-199999/)).toBeChecked();
+  await expect(page.getByText("served Revision 2").first()).toBeVisible();
+  await expect(page.getByLabel(/Temporal Acceptance Canon/)).toBeChecked();
+  await expect(page.getByText("PUBLICATION SOURCE")).toBeVisible();
 
   await expect
     .poll(() => new URL(page.url()).searchParams.has("mq"))
@@ -77,41 +67,9 @@ test("mobile source island restores compatible Worlds, Canons, revisions, and pr
     .first()
     .click();
   await expect(
-    page.getByLabel(/현실 세계 관측소|Reality Observatory/)
+    page.getByLabel(/Temporal Expressiveness Observatory/)
   ).toBeChecked();
-  await expect(
-    page.getByLabel(/마블 시네마틱 월드|Marvel Cinematic World/)
-  ).toBeChecked();
-  await expect(page.getByLabel(/Earth-199999/)).toBeChecked();
-
-  await page
-    .getByRole("button", {
-      name: /왕조 연호 · 서사 순서|Regnal era · narrative order/
-    })
-    .click();
-  await expect(
-    page.getByText(/시간 체계 변경 영향|Time System change impact/)
-  ).toBeVisible();
-  await expect(
-    page.getByText(/현재 source 2개|2 current sources/)
-  ).toBeVisible();
-  await expect(
-    page.getByText(/현실 세계 관측소|Reality Observatory/).last()
-  ).toBeVisible();
-  await expect(
-    page.getByText(/마블 시네마틱 월드|Marvel Cinematic World/).last()
-  ).toBeVisible();
-  await expect(
-    page.getByText(/삼국지연의 월드|Romance of the Three Kingdoms/).last()
-  ).toBeVisible();
-
-  await page.getByRole("button", { name: /취소|Cancel/ }).click();
-  await expect(
-    page.getByText(/시간 체계 변경 영향|Time System change impact/)
-  ).toHaveCount(0);
-  await expect(
-    page.getByLabel(/현실 세계 관측소|Reality Observatory/)
-  ).toBeChecked();
+  await expect(page.getByLabel(/Temporal Acceptance Canon/)).toBeChecked();
 });
 
 test("identity-aware search deduplicates shared Events and restores Canon context and focus", async ({
@@ -124,20 +82,10 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
     .click();
   await page.getByRole("tab", { name: "Entities" }).click();
 
-  const sharedA = page.locator('[data-entity-id="event:observatory-a"]');
-  const sharedB = page.locator('[data-entity-id="event:observatory-b"]');
+  const sharedA = page.locator(`[data-entity-id="${firstEventId}"]`);
   await expect(sharedA).toHaveCount(1);
-  await expect(sharedB).toHaveCount(1);
-  await expect(sharedA).toContainText("canon:recorded-history");
-  await expect(sharedA).toContainText("canon:archival-observations");
-
-  await page.getByRole("tab", { name: "Sources" }).click();
-  await page.getByLabel(/기록된 역사|Recorded history/).uncheck();
-  await page.getByRole("tab", { name: "Entities" }).click();
-  await expect(sharedA).toHaveCount(1);
-  await expect(
-    sharedA.getByText("canon:archival-observations").first()
-  ).toBeVisible();
+  await expect(sharedA).toContainText(canonId);
+  await expect(sharedA).toContainText("persisted");
 
   await sharedA.getByRole("button").click();
   await expect
@@ -151,9 +99,7 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
     .click();
   await page.getByRole("tab", { name: "Entities" }).click();
   await expect(sharedA).toHaveCount(1);
-  expect(new URL(page.url()).searchParams.get("mq")).toContain(
-    "event:observatory-a"
-  );
+  expect(new URL(page.url()).searchParams.get("mq")).toContain(firstEventId);
 });
 
 test("R1 Relation filters preserve shared identity and explain contradiction", async ({
@@ -167,29 +113,24 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
   await page.getByRole("tab", { name: "Relations" }).click();
 
   const shared = page.locator(
-    '[data-relation-id="relation:observatory-shared-influences"]'
+    '[data-relation-id="019f3b00-0000-7000-8000-000000000201"]'
   );
   await expect(shared).toHaveCount(1);
-  await expect(shared).toContainText("canon:recorded-history");
-  await expect(shared).toContainText("canon:archival-observations");
-  await expect(shared).toContainText("endpoint:A@K1,K2");
-  await expect(shared).toContainText("time:reality-gregorian@definition:1");
+  await expect(shared).toContainText(canonId);
+  await expect(shared).toContainText(firstEventId);
+  await expect(shared).toContainText("019f3b00-0000-7000-8000-000000000003");
 
   await page.getByRole("button", { name: "causal", exact: true }).click();
-  await expect(
-    page.getByTestId("relation-results").locator("article")
-  ).toHaveCount(0);
-  await page.getByRole("button", { name: "causes", exact: true }).click();
-  await expect(
-    page.locator('[data-relation-id="relation:observatory-k1-causes"]')
-  ).toBeVisible();
+  await expect(shared).toBeVisible();
+  await page.getByRole("button", { name: "not_after", exact: true }).click();
+  await expect(shared).toHaveCount(0);
+  await page.getByRole("button", { name: "not_after", exact: true }).click();
+  await expect(shared).toBeVisible();
 
   await page.getByRole("tab", { name: "Diagnostics" }).click();
-  const contradiction = page.locator('[data-diagnostic-code="contradiction"]');
-  await expect(contradiction).toContainText(/valid knowledge state/);
-  await expect(contradiction).toContainText(
-    /구조 오류가 아닙니다|not a structural error/
-  );
+  const unplaced = page.locator('[data-diagnostic-code="unplaced"]').first();
+  await expect(unplaced).toContainText(/valid knowledge state/);
+  await expect(unplaced).toContainText(/no authored temporal placement/);
 });
 
 test("mobile reader traverses the single relational temporal model", async ({

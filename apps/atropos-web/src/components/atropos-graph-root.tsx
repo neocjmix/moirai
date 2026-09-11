@@ -7,16 +7,36 @@ import type { MoiraiGraphUrlState } from "@moirai/contracts";
 import type { AtroposScreenId } from "../lib/atropos-screen-registry";
 import { App } from "../urdr-port/src/App";
 import { GraphQueryProvider } from "./graph-query-context";
+import type {
+  GraphDiagnostic,
+  GraphRelationMatch,
+  GraphSearchEntity,
+  GraphSourceCatalog
+} from "../lib/moirai-graph-source-query";
 
 export function AtroposGraphRoot({
   initialScreen,
-  initialGraphQuery
+  initialGraphQuery,
+  catalog,
+  entities,
+  relations,
+  diagnostics
 }: Readonly<{
   initialScreen: AtroposScreenId;
   initialGraphQuery: MoiraiGraphUrlState;
+  catalog: GraphSourceCatalog;
+  entities: readonly GraphSearchEntity[];
+  relations: readonly GraphRelationMatch[];
+  diagnostics: readonly GraphDiagnostic[];
 }>) {
   return (
-    <GraphQueryProvider initialState={initialGraphQuery}>
+    <GraphQueryProvider
+      catalog={catalog}
+      diagnostics={diagnostics}
+      entities={entities}
+      initialState={initialGraphQuery}
+      relations={relations}
+    >
       <Theme
         accentColor="gray"
         appearance="light"

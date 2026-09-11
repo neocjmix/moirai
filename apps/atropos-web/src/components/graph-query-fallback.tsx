@@ -1,11 +1,16 @@
 import type { MoiraiGraphUrlState } from "@moirai/contracts";
 
 import { searchGraphEntities } from "../lib/moirai-graph-source-query";
+import type { GraphSearchEntity } from "../lib/moirai-graph-source-query";
 
 export function GraphQueryFallback({
-  state
-}: Readonly<{ state: MoiraiGraphUrlState }>) {
-  const results = searchGraphEntities(state);
+  state,
+  entities
+}: Readonly<{
+  state: MoiraiGraphUrlState;
+  entities: readonly GraphSearchEntity[];
+}>) {
+  const results = searchGraphEntities(state, "", entities);
   return (
     <noscript>
       <main>

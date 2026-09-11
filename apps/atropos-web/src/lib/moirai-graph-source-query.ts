@@ -24,6 +24,7 @@ export type GraphSourceWorldOption = {
   readonly description: Readonly<Record<"ko" | "en", string>>;
   readonly servedRevision: number;
   readonly timeSystem: MoiraiGraphTimeSystemIdentity;
+  readonly timeSystems: readonly MoiraiGraphTimeSystemIdentity[];
   readonly canons: readonly GraphSourceCanonOption[];
 };
 
@@ -163,6 +164,14 @@ export const MOCK_GRAPH_SOURCE_CATALOG: GraphSourceCatalog = {
         adapter_identity: "proleptic-gregorian-utc",
         comparison_domain: "utc-instant"
       },
+      timeSystems: [
+        {
+          time_system_id: "time:reality-gregorian",
+          definition_version: "1",
+          adapter_identity: "proleptic-gregorian-utc",
+          comparison_domain: "utc-instant"
+        }
+      ],
       canons: [
         {
           id: "canon:recorded-history",
@@ -188,6 +197,14 @@ export const MOCK_GRAPH_SOURCE_CATALOG: GraphSourceCatalog = {
         adapter_identity: "proleptic-gregorian-utc",
         comparison_domain: "utc-instant"
       },
+      timeSystems: [
+        {
+          time_system_id: "time:marvel-earth-199999",
+          definition_version: "1",
+          adapter_identity: "proleptic-gregorian-utc",
+          comparison_domain: "utc-instant"
+        }
+      ],
       canons: [
         {
           id: "canon:earth-199999",
@@ -209,6 +226,14 @@ export const MOCK_GRAPH_SOURCE_CATALOG: GraphSourceCatalog = {
         adapter_identity: "regnal-era-order",
         comparison_domain: "narrative-era-order"
       },
+      timeSystems: [
+        {
+          time_system_id: "time:three-kingdoms-regnal",
+          definition_version: "1",
+          adapter_identity: "regnal-era-order",
+          comparison_domain: "narrative-era-order"
+        }
+      ],
       canons: [
         {
           id: "canon:romance-main",
@@ -480,9 +505,10 @@ export function createDefaultGraphUrlState(
   catalog: GraphSourceCatalog = MOCK_GRAPH_SOURCE_CATALOG
 ): MoiraiGraphUrlState {
   const frame = catalog.frames[0]!;
-  const compatibleWorlds = catalog.worlds.filter(
-    (world) =>
-      getGraphSourceCompatibility(world.timeSystem, frame.target).compatible
+  const compatibleWorlds = catalog.worlds.filter((world) =>
+    world.timeSystems.some(
+      (system) => getGraphSourceCompatibility(system, frame.target).compatible
+    )
   );
 
   return {
@@ -493,7 +519,10 @@ export function createDefaultGraphUrlState(
         world_id: world.id,
         served_revision: world.servedRevision,
         canon_ids: world.canons.map((canon) => canon.id),
-        time_systems: [world.timeSystem]
+        time_systems: world.timeSystems.filter(
+          (system) =>
+            getGraphSourceCompatibility(system, frame.target).compatible
+        )
       }))
     ),
     focus: null
@@ -636,32 +665,43 @@ function normalizeEntityReference(
       entry.canon_ids.includes(value.canon_id as string)
   );
   if (!source) return null;
-  const entity = MOCK_GRAPH_SEARCH_ENTITIES.find((candidate) => {
-    if (candidate.worldId !== value.world_id || candidate.kind !== value.kind)
-      return false;
-    if (value.kind === "event") {
-      return (
-        isRecord(value.event_ref) &&
-        value.event_ref.kind === "event" &&
-        value.event_ref.event_id === candidate.identity
-      );
-    }
-    if (value.kind === "subject")
-      return value.subject_handle_id === candidate.subjectHandleId;
-    if (value.kind === "state") {
-      return (
-        value.composite_event_id === candidate.compositeEventId &&
-        value.subject_handle_id === candidate.subjectHandleId &&
-        value.state_family === candidate.stateFamily
-      );
-    }
-    return (
-      value.kind === "narrative" && value.narrative_id === candidate.identity
-    );
-  });
-  return entity?.canonMemberships.includes(value.canon_id)
-    ? (value as unknown as MoiraiGraphEntityReference)
-    : null;
+  if (value.kind === "event") {
+    if (
+      !isRecord(value.event_ref) ||
+      (value.event_ref.kind !== "event" &&
+        value.event_ref.kind !== "time_event")
+    )
+      return null;
+    if (
+      value.event_ref.kind === "event" &&
+      typeof value.event_ref.event_id !== "string"
+    )
+      return null;
+    if (
+      value.event_ref.kind === "time_event" &&
+      (!isRecord(value.event_ref.time_system_ref) ||
+        typeof value.event_ref.time_system_ref.time_system_id !== "string" ||
+        typeof value.event_ref.definition_version !== "string" ||
+        typeof value.event_ref.coordinate !== "string")
+    )
+      return null;
+  } else if (
+    value.kind === "subject" &&
+    typeof value.subject_handle_id !== "string"
+  )
+    return null;
+  else if (
+    value.kind === "state" &&
+    (typeof value.composite_event_id !== "string" ||
+      typeof value.subject_handle_id !== "string" ||
+      typeof value.state_family !== "string")
+  )
+    return null;
+  else if (value.kind === "narrative" && typeof value.narrative_id !== "string")
+    return null;
+  else if (!["event", "subject", "state", "narrative"].includes(value.kind))
+    return null;
+  return value as unknown as MoiraiGraphEntityReference;
 }
 
 export function normalizeGraphUrlState(
@@ -722,7 +762,9 @@ export function normalizeGraphUrlState(
     if (
       !world ||
       candidate.served_revision !== world.servedRevision ||
-      !getGraphSourceCompatibility(world.timeSystem, frame.target).compatible ||
+      !world.timeSystems.some(
+        (system) => getGraphSourceCompatibility(system, frame.target).compatible
+      ) ||
       !Array.isArray(candidate.canon_ids)
     ) {
       return null;
@@ -742,7 +784,9 @@ export function normalizeGraphUrlState(
       world_id: world.id,
       served_revision: world.servedRevision,
       canon_ids: [...new Set(canonIds)],
-      time_systems: [world.timeSystem]
+      time_systems: world.timeSystems.filter(
+        (system) => getGraphSourceCompatibility(system, frame.target).compatible
+      )
     });
   }
 
@@ -857,9 +901,12 @@ export function replaceGraphRelationFilter(
 }
 
 export function searchGraphRelations(
-  state: MoiraiGraphUrlState
+  state: MoiraiGraphUrlState,
+  relations: readonly (
+    GraphRelationMatch | Omit<GraphRelationMatch, "matchedCanonIds">
+  )[] = MOCK_GRAPH_RELATIONS
 ): readonly GraphRelationMatch[] {
-  return MOCK_GRAPH_RELATIONS.flatMap((relation) => {
+  return relations.flatMap((relation) => {
     const source = state.query.sources.find(
       (entry) => entry.world_id === relation.worldId
     );
@@ -872,8 +919,11 @@ export function searchGraphRelations(
   });
 }
 
-export function graphDiagnostics(state: MoiraiGraphUrlState) {
-  return MOCK_GRAPH_DIAGNOSTICS.filter((diagnostic) => {
+export function graphDiagnostics(
+  state: MoiraiGraphUrlState,
+  diagnostics: readonly GraphDiagnostic[] = MOCK_GRAPH_DIAGNOSTICS
+) {
+  return diagnostics.filter((diagnostic) => {
     if (diagnostic.code === "unplaced")
       return state.query.diagnostics_filter.include_unplaced;
     if (diagnostic.code === "unresolved")
@@ -901,11 +951,12 @@ export function focusGraphEntity(
 
 export function searchGraphEntities(
   state: MoiraiGraphUrlState,
-  term = ""
+  term = "",
+  entities: readonly GraphSearchEntity[] = MOCK_GRAPH_SEARCH_ENTITIES
 ): readonly GraphSearchMatch[] {
   const normalizedTerm = term.trim().toLocaleLowerCase();
   const filter = state.query.entity_filter;
-  return MOCK_GRAPH_SEARCH_ENTITIES.flatMap((entity) => {
+  return entities.flatMap((entity) => {
     const source = state.query.sources.find(
       (entry) => entry.world_id === entity.worldId
     );

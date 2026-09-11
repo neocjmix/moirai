@@ -455,7 +455,10 @@ export async function readRelationalTime(
   )
     throw new Error("invalid temporal artifact key");
   const document = await readJson<
-    PublicRelationalTemporalProjection & { served_revision: number }
+    Omit<PublicRelationalTemporalProjection, "relations"> & {
+      readonly relations: readonly (PublicRelation | LegacyPublicRelation)[];
+      readonly served_revision: number;
+    }
   >(reference.key);
   if (
     document.world_id !== worldId ||
@@ -465,5 +468,10 @@ export async function readRelationalTime(
     document.algorithm_version !== reference.algorithm_version
   )
     throw new Error("mixed Publication revisions");
-  return document;
+  return {
+    ...document,
+    relations: document.relations.map((relation) =>
+      normalizePublicRelation(relation, worldId)
+    )
+  };
 }

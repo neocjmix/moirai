@@ -348,10 +348,14 @@ describeWithDatabase("versioned migrations", () => {
       ).rejects.toMatchObject({ code: "23503" });
     } finally {
       await migrateToLatest(databaseUrl ?? "");
-      await sql`delete from canon_relation_memberships where relation_id = ${relationId}`.execute(
-        db
-      );
-      await sql`delete from relations where id = ${relationId}`.execute(db);
+      await db.transaction().execute(async (transaction) => {
+        await sql`delete from canon_relation_memberships where relation_id = ${relationId}`.execute(
+          transaction
+        );
+        await sql`delete from relations where id = ${relationId}`.execute(
+          transaction
+        );
+      });
       await sql`delete from canons where id = ${canonId}`.execute(db);
       await sql`delete from worlds where id = ${worldId}`.execute(db);
     }

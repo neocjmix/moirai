@@ -195,7 +195,7 @@ describeWithDatabase("IP-003 canonical-to-public acceptance flow", () => {
         at_revision: 1,
         canon_ids: [...canonIds],
         seed_ids: [eventIds[1]],
-        depth: 0,
+        depth: 1,
         max_events: 20,
         max_relations: 20,
         max_narrative_chars: 1000
@@ -208,7 +208,9 @@ describeWithDatabase("IP-003 canonical-to-public acceptance flow", () => {
     expect(
       query.events.filter((event) => event.id === eventIds[1])
     ).toHaveLength(1);
-    expect(query.events[0]?.canon_memberships).toEqual([...canonIds]);
+    expect(
+      query.events.find((event) => event.id === eventIds[1])?.canon_memberships
+    ).toEqual([...canonIds]);
     expect(
       query.relations.filter((relation) => relation.id === relationIds[0])
     ).toHaveLength(1);

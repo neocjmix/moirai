@@ -277,7 +277,7 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
         .select("origin_refs")
         .where("change_set_id", "=", expansion.change_set_id)
         .execute();
-      expect(origins).toHaveLength(4);
+      expect(origins).toHaveLength(5);
       expect(origins.every((op) => op.origin_refs.length === 1)).toBe(true);
       expect(
         await db

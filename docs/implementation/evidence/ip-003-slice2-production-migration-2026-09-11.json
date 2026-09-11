@@ -1,0 +1,78 @@
+{
+  "plan": "IP-003",
+  "slice": 2,
+  "status": "complete",
+  "baseline_main_sha": "8854da284631f836cb34692f36070b718dce3e2d",
+  "deployed_application_sha": "56b95a8b7b998326f6ab7adf302327288995f9b9",
+  "pull_request": 30,
+  "ci_run": 34561345766,
+  "post_deploy_smoke_run": 34561614061,
+  "production_deployments": {
+    "atropos": "eb7397c7-2fa2-43ea-96d8-a02ec42712cb",
+    "clotho": "f8a39198-1613-443c-8c41-85dbe5fd3b2b",
+    "worker": "31fe8917-4a53-4967-9b7b-c35e5a0b5470"
+  },
+  "worlds": [
+    {
+      "world_id": "01995c2a-7b00-7000-8000-000000000101",
+      "current_revision": 2,
+      "publication_target_revision": 2,
+      "served_revision": 2
+    },
+    {
+      "world_id": "019f3b00-0000-7000-8000-000000000001",
+      "current_revision": 2,
+      "publication_target_revision": 2,
+      "served_revision": 2
+    },
+    {
+      "world_id": "019f3b00-0000-7000-8000-000000000401",
+      "current_revision": 1,
+      "publication_target_revision": 1,
+      "served_revision": 1
+    }
+  ],
+  "pre_migration_counts": {
+    "worlds": 3,
+    "active_worlds": 3,
+    "canons": 3,
+    "active_canons": 3,
+    "events": 26,
+    "active_events": 26,
+    "relations": 50,
+    "active_relations": 50,
+    "narratives": 1,
+    "active_narratives": 1,
+    "publication_states": 3,
+    "publication_outbox_rows": 5
+  },
+  "pre_migration_invariants": {
+    "events_without_resolvable_canon": 0,
+    "world_local_slug_collision_groups": 0
+  },
+  "migration_result": {
+    "migration": "006_ip003_event_memberships",
+    "status": "Success",
+    "event_world_backfill_rows": 26,
+    "canon_event_membership_backfill_rows": 26,
+    "active_events_without_active_membership": 0,
+    "cross_world_memberships": 0,
+    "duplicate_active_memberships": 0,
+    "event_identity_changes": 0,
+    "deleted_rows": 0,
+    "publication_regeneration_required": false
+  },
+  "compatibility": {
+    "legacy_event_write_bridge": true,
+    "explicit_world_ownership_persisted_in": "events.world_id",
+    "membership_persisted_in": "canon_event_memberships",
+    "application_read_write_cutover_pending": true,
+    "legacy_events_canon_id_cleanup_pending": true
+  },
+  "rollback_and_repair": {
+    "before_commit": "PostgreSQL migration transaction rollback",
+    "after_commit": "forward repair by deterministic events.canon_id to membership comparison; additive structures remain removable before cutover",
+    "lossy_actions_performed": false
+  },
+  "relation_decision": "DP-001 open; no Relation ontology migration performed"
+}

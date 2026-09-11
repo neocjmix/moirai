@@ -13,7 +13,10 @@ import {
 } from "react";
 import { useRouter } from "next/navigation";
 
-import type { MoiraiGraphUrlState } from "@moirai/contracts";
+import type {
+  MoiraiGraphQueryResult,
+  MoiraiGraphUrlState
+} from "@moirai/contracts";
 
 import {
   buildGraphUrlSearch,
@@ -33,6 +36,7 @@ type GraphQueryContextValue = {
   readonly entities: readonly GraphSearchEntity[];
   readonly relations: readonly GraphRelationMatch[];
   readonly diagnostics: readonly GraphDiagnostic[];
+  readonly result: MoiraiGraphQueryResult;
 };
 
 const GraphQueryContext = createContext<GraphQueryContextValue | null>(null);
@@ -43,7 +47,8 @@ export function GraphQueryProvider({
   catalog,
   entities,
   relations,
-  diagnostics
+  diagnostics,
+  result
 }: Readonly<{
   children: ReactNode;
   initialState: MoiraiGraphUrlState;
@@ -51,6 +56,7 @@ export function GraphQueryProvider({
   entities: readonly GraphSearchEntity[];
   relations: readonly GraphRelationMatch[];
   diagnostics: readonly GraphDiagnostic[];
+  result: MoiraiGraphQueryResult;
 }>) {
   const [state, setState] = useState(initialState);
   const router = useRouter();
@@ -102,9 +108,10 @@ export function GraphQueryProvider({
       catalog,
       entities,
       relations,
-      diagnostics
+      diagnostics,
+      result
     }),
-    [catalog, diagnostics, entities, relations, setSourceState, state]
+    [catalog, diagnostics, entities, relations, result, setSourceState, state]
   );
   return (
     <GraphQueryContext.Provider value={value}>

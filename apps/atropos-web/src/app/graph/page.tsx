@@ -42,6 +42,7 @@ export default async function GraphPage({
         initialGraphQuery={initialGraphQuery}
         initialScreen="graph"
         relations={presentation.relations}
+        result={result}
       />
     </>
   );

@@ -4,6 +4,7 @@ import {
   MOIRAI_GRAPH_URL_STATE_VERSION,
   type MoiraiGraphEntityReference,
   type MoiraiGraphEntityFilter,
+  type MoiraiGraphEventReference,
   type MoiraiGraphQuery,
   type MoiraiGraphRelationFilter,
   type MoiraiGraphSource,
@@ -704,6 +705,24 @@ function normalizeEntityReference(
   return value as unknown as MoiraiGraphEntityReference;
 }
 
+function normalizeEventReference(
+  value: unknown,
+  sources: readonly MoiraiGraphSource[]
+): MoiraiGraphEventReference | null {
+  if (!isRecord(value)) return null;
+  const normalized = normalizeEntityReference(
+    { ...value, kind: "event" },
+    sources
+  );
+  if (!normalized || normalized.kind !== "event") return null;
+  return {
+    world_id: normalized.world_id,
+    canon_id: normalized.canon_id,
+    served_revision: normalized.served_revision,
+    event_ref: normalized.event_ref
+  };
+}
+
 export function normalizeGraphUrlState(
   value: unknown,
   catalog: GraphSourceCatalog = MOCK_GRAPH_SOURCE_CATALOG
@@ -817,18 +836,57 @@ export function normalizeGraphUrlState(
       kind: "selection",
       references: references as MoiraiGraphEntityReference[]
     };
+  } else if (
+    isRecord(scopeCandidate) &&
+    scopeCandidate.kind === "neighborhood"
+  ) {
+    const event = normalizeEventReference(scopeCandidate.event, sources);
+    if (
+      !event ||
+      !Number.isSafeInteger(scopeCandidate.depth) ||
+      (scopeCandidate.depth as number) < 0 ||
+      (scopeCandidate.depth as number) > 8
+    )
+      return null;
+    scope = {
+      kind: "neighborhood",
+      event,
+      depth: scopeCandidate.depth as number
+    };
+  } else if (isRecord(scopeCandidate) && scopeCandidate.kind === "subject") {
+    const reference = normalizeEntityReference(scopeCandidate, sources);
+    if (!reference || reference.kind !== "subject") return null;
+    scope = reference;
+  } else if (isRecord(scopeCandidate) && scopeCandidate.kind === "composite") {
+    const event = normalizeEventReference(scopeCandidate.event, sources);
+    if (!event) return null;
+    scope = { kind: "composite", event };
+  } else if (isRecord(scopeCandidate) && scopeCandidate.kind === "state") {
+    const reference = normalizeEntityReference(scopeCandidate, sources);
+    if (!reference || reference.kind !== "state") return null;
+    scope = reference;
   } else if (!isRecord(scopeCandidate) || scopeCandidate.kind !== "overview") {
     return null;
   }
 
+  const detailLevel = isRecord(query.budget) ? query.budget.detail_level : null;
+  if (
+    detailLevel !== "overview" &&
+    detailLevel !== "standard" &&
+    detailLevel !== "full"
+  )
+    return null;
+  const baseQuery = createQuery(frame.target, sources);
+
   return {
     version: MOIRAI_GRAPH_URL_STATE_VERSION,
     query: {
-      ...createQuery(frame.target, sources),
+      ...baseQuery,
       scope,
       entity_filter: entityFilter,
       relation_filter: relationFilter,
-      diagnostics_filter: diagnosticsFilter
+      diagnostics_filter: diagnosticsFilter,
+      budget: { ...baseQuery.budget, detail_level: detailLevel }
     },
     focus
   };

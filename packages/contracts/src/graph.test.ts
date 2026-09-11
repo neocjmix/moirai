@@ -1,9 +1,8 @@
-import { describe, expect, expectTypeOf, it } from "vitest";
+import { describe, expect, it } from "vitest";
 
 import {
   MOIRAI_GRAPH_CONTRACT_VERSION,
   MOIRAI_GRAPH_RESULT_CONTRACT_VERSION,
-  MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA,
   MOIRAI_GRAPH_QUERY_RESULT_SCHEMA,
   MOIRAI_GRAPH_QUERY_SCHEMA,
   MOIRAI_GRAPH_RELATION_TYPES,
@@ -11,8 +10,7 @@ import {
   MOIRAI_GRAPH_URL_STATE_VERSION,
   type MoiraiGraphCompatibility,
   type MoiraiGraphQuery,
-  type MoiraiGraphQueryResult,
-  type MoiraiLegacyViewportAdapter
+  type MoiraiGraphQueryResult
 } from "./index.js";
 
 const relationTypes = MOIRAI_GRAPH_RELATION_TYPES;
@@ -175,15 +173,12 @@ const result: MoiraiGraphQueryResult = {
 };
 
 describe("M4.5-A Moirai-native graph contracts", () => {
-  it("publishes versioned query, result, URL state and loss-report schemas", () => {
+  it("publishes versioned query, result and URL state schemas", () => {
     expect(MOIRAI_GRAPH_QUERY_SCHEMA.$id).toBe("moirai.graph-query.v1");
     expect(MOIRAI_GRAPH_QUERY_RESULT_SCHEMA.$id).toBe(
       "moirai.graph-query-result.v3"
     );
     expect(MOIRAI_GRAPH_URL_STATE_SCHEMA.$id).toBe("moirai.graph-url-state.v1");
-    expect(MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA.$id).toBe(
-      "moirai.graph-legacy-loss-report.v1"
-    );
     expect(MOIRAI_GRAPH_URL_STATE_VERSION).toBe(1);
   });
 
@@ -241,35 +236,6 @@ describe("M4.5-A Moirai-native graph contracts", () => {
       false
     );
     expect("kind" in sameDisplayMetadataButDifferentAdapter.source).toBe(false);
-  });
-
-  it("keeps legacy presentation output behind a one-way loss-reporting adapter", () => {
-    type TemporaryViewport = { readonly cells: readonly string[] };
-    const adapt: MoiraiLegacyViewportAdapter<TemporaryViewport> = (input) => ({
-      viewport_model: { cells: input.events.map((event) => event.id) },
-      loss_report: {
-        source_contract_version: input.contract_version,
-        adapter_version: "test-only/1",
-        losses: [
-          {
-            kind: "omitted",
-            semantic_kind: "virtual_time_event",
-            source_ids: [input.virtual_time_events[0]!.id],
-            reason_code: "legacy_viewport_has_no_virtual_time_event",
-            message: "The temporary viewport cannot render virtual Time Events."
-          }
-        ],
-        lossless: false
-      }
-    });
-
-    const adapted = adapt(result);
-    expect(adapted.viewport_model.cells).toEqual(["event-a"]);
-    expect(adapted.loss_report.lossless).toBe(false);
-    expect(adapted.loss_report.losses[0]?.source_ids).toEqual([
-      result.virtual_time_events[0]?.id
-    ]);
-    expectTypeOf(adapt).parameter(0).toEqualTypeOf<MoiraiGraphQueryResult>();
   });
 
   it("keeps renderer geometry out of the semantic contract", () => {

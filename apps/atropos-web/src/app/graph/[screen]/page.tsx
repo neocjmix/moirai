@@ -40,9 +40,12 @@ export default async function GraphScreenPage({
     ? (parseGraphUrlState(`?mq=${encodeURIComponent(raw)}`, catalog) ??
       createDefaultGraphUrlState(catalog))
     : createDefaultGraphUrlState(catalog);
-  const presentation = graphPresentationFromResult(
-    composeGraphPublicationQuery(initialGraphQuery.query, snapshots, failures)
+  const result = composeGraphPublicationQuery(
+    initialGraphQuery.query,
+    snapshots,
+    failures
   );
+  const presentation = graphPresentationFromResult(result);
 
   return (
     <AtroposGraphRoot
@@ -52,6 +55,7 @@ export default async function GraphScreenPage({
       initialGraphQuery={initialGraphQuery}
       initialScreen={definition.id}
       relations={presentation.relations}
+      result={result}
     />
   );
 }

@@ -55,6 +55,7 @@ function forbidden(from: string, to: string): boolean {
   return false;
 }
 const failures: string[] = [];
+let graphSourceIslandRenderSites = 0;
 function scan(dir: string): void {
   for (const item of readdirSync(dir, { withFileTypes: true })) {
     const path = `${dir}/${item.name}`;
@@ -69,6 +70,10 @@ function scan(dir: string): void {
       ts.ScriptTarget.Latest,
       true
     );
+    if (/\.tsx$/.test(path))
+      graphSourceIslandRenderSites += (
+        source.getFullText().match(/<GraphSourceIsland\b/g) ?? []
+      ).length;
     function check(spec: string) {
       if (forbidden(path, target(path, spec)))
         failures.push(`${path} -> ${spec}`);
@@ -103,6 +108,16 @@ for (const dir of [
   "packages/lachesis/src"
 ])
   scan(dir);
+if (graphSourceIslandRenderSites !== 1)
+  failures.push(
+    `GraphSourceIsland must have exactly one render site; found ${graphSourceIslandRenderSites}`
+  );
+for (const retired of [
+  "MoiraiLegacyViewportAdapter",
+  "MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA"
+])
+  if (readFileSync("packages/contracts/src/graph.ts", "utf8").includes(retired))
+    failures.push(`retired graph adapter contract remains: ${retired}`);
 for (const name of ["@moirai/clotho-application"]) {
   const path = packages.get(name)!;
   const pkg = JSON.parse(readFileSync(`${path}/package.json`, "utf8")) as {

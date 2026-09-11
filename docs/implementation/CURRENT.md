@@ -7,7 +7,7 @@
 | 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
 | 실행 상태                  | `in_progress` — IP-001 M4.5 계획 활성; M4는 Slice A~F 증거를 보존하고 조기 종료                                               |
 | 활성 milestone             | [M4.5 — Atropos 탐색 UI와 Moirai-native graph query](M4.5-ATROPOS-EXPLORATION-UI.md)                                          |
-| 현재 slice                 | M4.5-C Sources query island; graph viewport 변경 금지, M5 비활성                                                             |
+| 현재 slice                 | 대기 — M4.5-C 완료; M4.5-D는 사용자 전환 지시 전 비활성, graph viewport 변경 금지, M5 비활성                                |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
@@ -15,6 +15,8 @@
 | M4.5-A 계약 checkpoint     | [PR #21](https://github.com/neocjmix/moirai/pull/21) merge `6e8feace3b5d39466b725f44980aede714406a96`; [CI 34390674821](https://github.com/neocjmix/moirai/actions/runs/34390674821) success |
 | M4.5-B App shell checkpoint | [PR #22](https://github.com/neocjmix/moirai/pull/22) merge `a012fad3b60df91f1a16819b82d243e5d1283801`; [CI 34392698639](https://github.com/neocjmix/moirai/actions/runs/34392698639) success |
 | M4.5-B locale 후속          | [PR #23](https://github.com/neocjmix/moirai/pull/23) merge·production `cf0f5a7f747acb9c110cbea0c7db4a3ae068c6ce`; [CI 34393637840](https://github.com/neocjmix/moirai/actions/runs/34393637840) success |
+| M4.5-C Sources checkpoint  | [PR #25](https://github.com/neocjmix/moirai/pull/25) merge·production `2c9002848e91c337876103d21e17804148d9f159`; [CI 34428583825](https://github.com/neocjmix/moirai/actions/runs/34428583825) success |
+| M4.5-C 배포 smoke          | [34428902256](https://github.com/neocjmix/moirai/actions/runs/34428902256) `success`; 공개 `/__status` SHA 일치, `/graph` Sources island 확인 |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
 | M4.5 graph 기준 URL        | <https://moirai-production-8ed1.up.railway.app/graph>                                                                         |
@@ -39,7 +41,7 @@
 | M4-F production 검증       | Graph Scope Observatory revision 2; [machine-readable evidence](evidence/m4-f-vertical-chronology-production-2026-09-09.json) |
 | 최근 bearer smoke          | [34293280937](https://github.com/neocjmix/moirai/actions/runs/34293280937) `failure`; readiness 성공 후 stale bearer MCP 실패 |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 마지막 runtime 검증 SHA·E2E | Atropos·Clotho `5abc536527afa61dd34a8b760060a83e3e99aab8`; [production E2E 34195243154](https://github.com/neocjmix/moirai/actions/runs/34195243154) `success` |
+| 마지막 runtime 검증 SHA·E2E | Atropos·Clotho·worker `2c9002848e91c337876103d21e17804148d9f159`; [M4.5-C smoke 34428902256](https://github.com/neocjmix/moirai/actions/runs/34428902256) `success` |
 | IP-002 구현 CI             | PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`; [CI 34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511) `success` |
 | 보호 기준선                | branch `baseline/m4d-2026-09-05`; M4-D SHA `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                      |
 
@@ -66,10 +68,16 @@ type의 JSON 왕복, World별 `7·42` Revision vector 보존, 명시적 adapter 
 M4.5-B는 app-level screen registry와 reload 가능한 `/graph/private`, `/graph/explore`,
 `/graph/settings` 경로를 추가하고 완료했다. Private·Explore는 명시적으로 unavailable이며
 향후 auth-gated Operations slot은 하단 navigation에 노출하지 않는다. dock 전환은 graph
-query string을 보존하고 `/graph/operations`는 `404`로 닫힌다. 다음 활성 slice는
-M4.5-C Sources query island다. Production `cf0f5a7f747acb9c110cbea0c7db4a3ae068c6ce`에서
-Atropos·Clotho·worker Railway 배포 성공, 공개 `/__status` SHA 일치와 네 화면 `200`을
-확인했다.
+query string을 보존하고 `/graph/operations`는 `404`로 닫힌다.
+
+M4.5-C는 Sources query island를 완료했다. Time System을 먼저 선택하고 native-compatible
+World만 복수 선택하며, World별 peer Canon과 served Revision vector를 보존한다. 두 World·세
+Canon 선택의 versioned URL 복원, 비호환 World 사유, Time System 변경 전 source 제거
+preview와 apply/cancel을 unit·mobile WebKit E2E로 검증했다. 현재 데이터는 실제 Publication
+composition이 아니라 화면 계약 검증용 `MOCK` fixture이며 이는 M4.5-E 범위다. Production
+`2c9002848e91c337876103d21e17804148d9f159`에서 Atropos·Clotho·worker Railway 배포,
+공개 `/__status` SHA와 post-deploy smoke 성공, `/graph`의 접힘·펼침·draft preview를
+확인했다. 다음 M4.5-D는 사용자 전환 지시 전까지 비활성이며 아직 시작하지 않는다.
 
 ## 시간 모델 재정렬 Slice 0
 

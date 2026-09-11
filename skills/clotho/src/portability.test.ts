@@ -153,7 +153,7 @@ describe("TS-007 temporal content package", () => {
       )
     );
     const clonedEvents = clonedRows("event").map((event) => {
-      const value = { ...event };
+      const value: Record<string, unknown> = { ...event };
       delete value.world_id;
       return {
         ...value,

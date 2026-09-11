@@ -172,7 +172,7 @@ test("health and immutable artifacts expose only the relational model", async ({
   expect(status.ok()).toBe(true);
   expect(await status.json()).toMatchObject({
     application: { service: "atropos-web" },
-    versions: { contract: "2", schema: "1.0.0", publication_format: "1.0.0" },
+    versions: { contract: "3", schema: "1.0.0", publication_format: "1.0.0" },
     surfaces: { atropos: "ok", health: "ok", status: "ok" }
   });
 

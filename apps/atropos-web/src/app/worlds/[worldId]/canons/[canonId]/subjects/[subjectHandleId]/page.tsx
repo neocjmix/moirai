@@ -64,6 +64,23 @@ export default async function SubjectPage({
             저장된 정체성 관계로 계산한 관점입니다. 이름이 같다는 이유만으로
             사건을 합치지 않습니다.
           </p>
+          <p>
+            <a
+              href={`/worlds/${worldId}/canons/${canonId}?view=graph&focus=${subject.anchor_event_id}`}
+            >
+              그래프로 돌아가기
+            </a>
+          </p>
+          <dl className="event-meta">
+            <div>
+              <dt>Algorithm</dt>
+              <dd>{subject.algorithm_version}</dd>
+            </div>
+            <div>
+              <dt>Completeness</dt>
+              <dd>{subject.completeness}</dd>
+            </div>
+          </dl>
         </section>
         <section className="card-dock" aria-labelledby="subject-events-title">
           <div className="timeline-heading">

@@ -17,6 +17,8 @@ interface EventSheetProps {
   readonly revision: number;
   readonly worldId: string;
   readonly eventId: string;
+  readonly canonId?: string;
+  readonly attributes: Readonly<Record<string, unknown>>;
   readonly narratives: readonly PublicNarrative[];
   readonly relations: readonly PublicRelation[];
   readonly relatedEvents: readonly PublicEvent[];
@@ -31,6 +33,8 @@ export function EventSheet({
   revision,
   worldId,
   eventId,
+  canonId,
+  attributes,
   narratives,
   relations,
   relatedEvents
@@ -56,6 +60,23 @@ export function EventSheet({
         <p className="event-summary">
           {summary ?? "이 사건에는 아직 요약이 없습니다."}
         </p>
+        <nav
+          className="event-detail-navigation"
+          aria-label="Stable event navigation"
+        >
+          {canonId ? (
+            <>
+              <a href={`/worlds/${worldId}/events/${eventId}`}>
+                World Event canonical URL
+              </a>
+              <a
+                href={`/worlds/${worldId}/canons/${canonId}?view=graph&focus=${eventId}`}
+              >
+                그래프로 돌아가기
+              </a>
+            </>
+          ) : null}
+        </nav>
         {scopeContent}
         {temporalContent}
         {narratives.map((narrative) => (
@@ -112,6 +133,28 @@ export function EventSheet({
             })}
           </section>
         ) : null}
+        <section
+          className="context-block"
+          aria-labelledby="event-attributes-heading"
+        >
+          <p className="eyebrow" id="event-attributes-heading">
+            STRUCTURED ATTRIBUTES
+          </p>
+          {Object.keys(attributes).length > 0 ? (
+            <dl className="structured-attributes">
+              {Object.entries(attributes).map(([key, value]) => (
+                <div key={key}>
+                  <dt>{key}</dt>
+                  <dd>
+                    <code>{JSON.stringify(value)}</code>
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p>No additional attributes.</p>
+          )}
+        </section>
         <dl className="event-meta">
           <div>
             <dt>Publication</dt>

@@ -161,6 +161,7 @@ describeWithDatabase("versioned migrations", () => {
     const duplicateMembershipId = randomUUID();
     const crossWorldMembershipId = randomUUID();
 
+    await migrateOneDown(databaseUrl ?? "");
     try {
       await sql`
         insert into worlds (
@@ -234,6 +235,7 @@ describeWithDatabase("versioned migrations", () => {
         duplicate_active_memberships: 0
       });
     } finally {
+      await migrateToLatest(databaseUrl ?? "");
       await db.transaction().execute(async (transaction) => {
         await sql`delete from canon_event_memberships where event_id = ${eventId}`.execute(
           transaction
@@ -249,5 +251,25 @@ describeWithDatabase("versioned migrations", () => {
         db
       );
     }
+  });
+
+  it("cuts contract v3 writes over without changing frozen legacy canon_id data", async () => {
+    const column = await sql<{ is_nullable: "YES" | "NO" }>`
+      select is_nullable
+      from information_schema.columns
+      where table_schema = 'public'
+        and table_name = 'events'
+        and column_name = 'canon_id'
+    `.execute(db);
+    const bridge = await sql<{ count: number }>`
+      select count(*)::int as count
+      from pg_trigger
+      where tgname in (
+        'ip003_legacy_event_world_bridge',
+        'ip003_legacy_event_membership_bridge'
+      ) and not tgisinternal
+    `.execute(db);
+    expect(column.rows).toEqual([{ is_nullable: "YES" }]);
+    expect(bridge.rows).toEqual([{ count: 0 }]);
   });
 });

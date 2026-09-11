@@ -281,7 +281,8 @@ export interface CanonicalEventCanonMembership {
 
 export interface PublicEvent {
   readonly id: string;
-  readonly canon_id: string;
+  readonly world_id: string;
+  readonly canon_memberships: readonly string[];
   readonly slug: string | null;
   readonly kind: "atomic" | "composite";
   readonly title: string;
@@ -317,7 +318,7 @@ export interface PublicSearchEntry {
   readonly target_type: "world" | "canon" | "event" | "subject";
   readonly canonical_url: string;
   readonly world_id: string;
-  readonly canon_id: string | null;
+  readonly canon_ids: readonly string[];
   readonly title: string;
   readonly text: string;
   readonly served_revision: number;

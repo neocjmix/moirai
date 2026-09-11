@@ -38,6 +38,7 @@ function bootstrapState(): CanonicalState {
     canons: [],
     timeSystems: [],
     canonTimeSystems: [],
+    eventCanonMemberships: [],
     events: [],
     relations: [],
     narratives: []
@@ -62,6 +63,7 @@ function bootstrapState(): CanonicalState {
       id: operation.entity_id,
       ...operation.value
     })),
+    eventCanonMemberships: [],
     events: [],
     relations: [],
     narratives: []

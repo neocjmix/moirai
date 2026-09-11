@@ -3,7 +3,15 @@
   "compilerOptions": {
     "module": "ESNext",
     "moduleResolution": "Bundler",
-    "noEmit": true
+    "noEmit": true,
+    "paths": {
+      "@moirai/contracts": ["./packages/contracts/src/index.ts"],
+      "@moirai/contracts/testing": ["./packages/contracts/src/testing.ts"],
+      "@moirai/domain": ["./packages/domain/src/index.ts"],
+      "@moirai/persistence": ["./packages/persistence/src/index.ts"],
+      "@moirai/projections": ["./packages/projections/src/index.ts"],
+      "@moirai/publication": ["./packages/publication/src/index.ts"]
+    }
   },
   "include": ["*.ts", "scripts/**/*.ts", "tests/**/*.ts", "types/**/*.d.ts"]
 }

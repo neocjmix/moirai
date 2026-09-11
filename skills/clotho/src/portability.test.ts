@@ -1,4 +1,5 @@
 import { readFileSync } from "node:fs";
+import { createHash } from "node:crypto";
 import { ZipFile } from "yazl";
 import { describe, expect, it } from "vitest";
 import {
@@ -10,6 +11,7 @@ import {
   cloneWorldPlan,
   exportWorldPackage,
   readWorldPackage,
+  portableStringify,
   temporalSemanticFingerprint,
   temporalSemanticFingerprintWithIdentityMap,
   type PortableWorld
@@ -40,23 +42,26 @@ function corpus(): PortableWorld {
     ops
       .filter((o) => o.kind === "create" && o.entity_type === type)
       .map((o) => ({ id: o.entity_id, ...o.value }));
-  const membershipCanon = new Map(
-    ops.flatMap((operation) =>
-      operation.kind === "add"
-        ? [[operation.value.event_id, operation.value.canon_id] as const]
-        : []
-    )
+  const eventCanonMemberships = ops.flatMap((operation) =>
+    operation.kind === "add"
+      ? [
+          {
+            event_id: String(operation.value.event_id),
+            canon_id: String(operation.value.canon_id)
+          }
+        ]
+      : []
   );
   const events = ops.flatMap((operation) => {
     if (operation.kind !== "create" || operation.entity_type !== "event")
       return [];
-    const value = { ...operation.value };
-    delete (value as { world_id?: unknown }).world_id;
     return [
       {
         id: operation.entity_id,
-        canon_id: membershipCanon.get(operation.entity_id),
-        ...value
+        ...operation.value,
+        canon_memberships: eventCanonMemberships
+          .filter((membership) => membership.event_id === operation.entity_id)
+          .map((membership) => membership.canon_id)
       }
     ];
   });
@@ -65,6 +70,7 @@ function corpus(): PortableWorld {
     canons: rows("canon"),
     timeSystems: rows("time_system"),
     canonTimeSystems: rows("canon_time_system"),
+    eventCanonMemberships,
     events,
     relations: rows("relation"),
     narratives: rows("narrative")
@@ -85,6 +91,61 @@ async function archive(options: {
     mode: options.symlink ? 0o120777 : 0o100644,
     compress: options.compress ?? false
   });
+  zip.end();
+  return done;
+}
+async function legacyPackage(source: PortableWorld): Promise<Buffer> {
+  const ndjson = (rows: readonly unknown[]) =>
+    Buffer.from(
+      rows.map(portableStringify).join("\n") + (rows.length ? "\n" : "")
+    );
+  const legacyEvents = source.events.map((event) => {
+    const value = { ...event } as Record<string, unknown>;
+    delete value.world_id;
+    delete value.canon_memberships;
+    value.canon_id = event.canon_memberships[0];
+    return value;
+  });
+  const files = new Map<string, Buffer>([
+    ["content/world.json", Buffer.from(portableStringify(source.world))],
+    ["content/canons.ndjson", ndjson(source.canons)],
+    ["content/time-systems.ndjson", ndjson(source.timeSystems)],
+    ["content/canon-time-systems.ndjson", ndjson(source.canonTimeSystems)],
+    ["content/events.ndjson", ndjson(legacyEvents)],
+    ["content/relations.ndjson", ndjson(source.relations)],
+    ["content/narratives.ndjson", ndjson(source.narratives)],
+    [
+      "reports/export-report.json",
+      Buffer.from(
+        portableStringify({ fingerprint: temporalSemanticFingerprint(source) })
+      )
+    ]
+  ]);
+  const digest = (bytes: Buffer) =>
+    `sha256:${createHash("sha256").update(bytes).digest("hex")}`;
+  const manifest = {
+    format: "moirai-world-package",
+    format_version: "1.0",
+    export_kind: "content",
+    completeness: "complete",
+    world_id: source.world.id,
+    schema_versions: { content: "event-relational-time/1" },
+    files: [...files].map(([path, bytes]) => ({
+      path,
+      size: bytes.length,
+      sha256: digest(bytes)
+    }))
+  };
+  files.set("manifest.json", Buffer.from(portableStringify(manifest)));
+  const zip = new ZipFile();
+  const chunks: Buffer[] = [];
+  const done = new Promise<Buffer>((resolve, reject) => {
+    zip.outputStream.on("data", (chunk: Buffer) => chunks.push(chunk));
+    zip.outputStream.on("end", () => resolve(Buffer.concat(chunks)));
+    zip.outputStream.on("error", reject);
+  });
+  for (const [path, bytes] of files)
+    zip.addBuffer(bytes, path, { mode: 0o100644, compress: false });
   zip.end();
   return done;
 }
@@ -145,19 +206,22 @@ describe("TS-007 temporal content package", () => {
             ]
           : []
       );
-    const clonedMembershipCanons = new Map(
-      preview.plan.operations.flatMap((operation) =>
-        operation.kind === "add"
-          ? [[operation.value.event_id, operation.value.canon_id] as const]
-          : []
-      )
+    const clonedMemberships = preview.plan.operations.flatMap((operation) =>
+      operation.kind === "add"
+        ? [
+            {
+              event_id: String(operation.value.event_id),
+              canon_id: String(operation.value.canon_id)
+            }
+          ]
+        : []
     );
     const clonedEvents = clonedRows("event").map((event) => {
-      const value: Record<string, unknown> = { ...event };
-      delete value.world_id;
       return {
-        ...value,
-        canon_id: clonedMembershipCanons.get(String(event.id))
+        ...event,
+        canon_memberships: clonedMemberships
+          .filter((membership) => membership.event_id === event.id)
+          .map((membership) => membership.canon_id)
       };
     });
     const clone = {
@@ -165,6 +229,7 @@ describe("TS-007 temporal content package", () => {
       canons: clonedRows("canon"),
       timeSystems: clonedRows("time_system"),
       canonTimeSystems: clonedRows("canon_time_system"),
+      eventCanonMemberships: clonedMemberships,
       events: clonedEvents,
       relations: clonedRows("relation"),
       narratives: clonedRows("narrative")
@@ -178,6 +243,21 @@ describe("TS-007 temporal content package", () => {
     expect(
       temporalSemanticFingerprintWithIdentityMap(clone, targetToSource)
     ).toEqual(temporalSemanticFingerprint(view));
+  });
+  it("losslessly adapts a v1 Event canon_id into one explicit membership", async () => {
+    const source = corpus();
+    const imported = await readWorldPackage(await legacyPackage(source));
+    expect(imported.manifest.format_version).toBe("1.0");
+    expect(imported.view.events[0]).toMatchObject({
+      world_id: source.world.id,
+      canon_memberships: [source.canons[0]!.id]
+    });
+    expect(imported.view.eventCanonMemberships).toHaveLength(
+      source.events.length
+    );
+    expect(temporalSemanticFingerprint(imported.view)).toEqual(
+      temporalSemanticFingerprint(source)
+    );
   });
   it("rejects symlinks and excessive compression before constructing a Change Plan", async () => {
     await expect(

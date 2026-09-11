@@ -63,7 +63,6 @@ export default async function EventPage({
           kind={event.kind}
           revision={pointer.served_revision}
           worldId={worldId}
-          canonId={canonId}
           eventId={eventId}
           narratives={narratives}
           relations={relations}

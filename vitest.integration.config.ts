@@ -19,6 +19,9 @@ export default defineConfig({
       "@moirai/projections": fileURLToPath(
         new URL("./packages/projections/src/index.ts", import.meta.url)
       ),
+      "@moirai/publication": fileURLToPath(
+        new URL("./packages/publication/src/index.ts", import.meta.url)
+      ),
       "@moirai/contracts/testing": fileURLToPath(
         new URL("./packages/contracts/src/testing.ts", import.meta.url)
       ),

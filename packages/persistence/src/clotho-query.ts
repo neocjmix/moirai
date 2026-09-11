@@ -104,7 +104,9 @@ function graph(
   const depth = Number(input.depth ?? 1);
   const types = input.relation_types as string[] | undefined;
   const direction = String(input.direction ?? "both");
-  const events = view.events.filter((event) => canons.includes(event.canon_id));
+  const events = view.events.filter((event) =>
+    event.canon_memberships.some((canonId) => canons.includes(canonId))
+  );
   for (const seed of seeds) find(events, seed, "seed_ids");
   const relations = view.relations.filter(
     (relation) =>
@@ -405,7 +407,9 @@ export async function queryClotho(
     const canon = find(view.canons, input.canon_id, "canon_id");
     return {
       canon,
-      event_count: view.events.filter((e) => e.canon_id === canon.id).length,
+      event_count: view.events.filter((event) =>
+        event.canon_memberships.includes(canon.id)
+      ).length,
       ...graph(view, [], [canon.id], input, cursor, true)
     };
   }
@@ -415,7 +419,7 @@ export async function queryClotho(
     const items = view.events
       .filter(
         (e) =>
-          e.canon_id === input.canon_id &&
+          e.canon_memberships.includes(String(input.canon_id)) &&
           [
             e.title,
             e.summary ?? "",
@@ -438,12 +442,12 @@ export async function queryClotho(
         ...graph(
           view,
           [event.id],
-          [event.canon_id],
+          event.canon_memberships,
           { ...input, depth: 0 },
           cursor
         )
       };
-    return graph(view, [event.id], [event.canon_id], input, cursor);
+    return graph(view, [event.id], event.canon_memberships, input, cursor);
   }
   if (method === "context.slice") {
     const canons = input.canon_ids as string[];

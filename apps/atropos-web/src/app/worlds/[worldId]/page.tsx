@@ -29,7 +29,7 @@ export default async function WorldPage({
         </section>
         <section className="card-dock" aria-labelledby="canons-title">
           <p className="eyebrow" id="canons-title">
-            CANONS · EQUAL TRUTH CONTEXTS
+            CANONS · INTERPRETIVE KNOWLEDGE SCOPES
           </p>
           <div className="card-list">
             {canons.map((canon) => (

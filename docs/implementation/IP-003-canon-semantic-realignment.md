@@ -249,7 +249,10 @@ physical name은 `canon_event_memberships`를 기본으로 한다.
 6. row counts, identity, World consistency, duplicate와 active orphan 0을 검증한다.
 7. write/read/projection/publication을 새 source로 cutover한다.
 8. `events.world_id NOT NULL`과 deferred transaction/domain invariant를 활성화한다.
-9. 호환 관찰 기간 뒤 `events.canon_id`, Canon-local unique와 관련 FK를 제거한다.
+9. contract v3 cutover에서 legacy bridge를 끄고 `events.canon_id`를 nullable frozen
+   compatibility data로 만든다. 신규 write/read는 이 값을 사용하지 않는다.
+10. frozen column과 기존 값을 실제 삭제하는 cleanup은 production 증거 뒤 별도 사용자 승인
+    대상으로 남긴다. 삭제 전에도 canonical ownership source는 `events.world_id`와 membership뿐이다.
 
 DB 하나의 FK로 1..N을 표현하기 어려우므로 candidate final-state validator와 commit transaction
 종료 시점의 deferred constraint를 함께 사용한다. current row와 historical operation log는 삭제하지
@@ -274,9 +277,10 @@ Event identity, Revision과 old operation log를 보존하며 Publication target
 않는다. 새 application과 migration이 준비된 뒤 target Revision을 같은 의미로 재생성한다.
 
 rollback은 schema/data rollback이 아니라 구 application 호환 read를 유지한 forward repair를
-기본으로 한다. cleanup 전에는 legacy `events.canon_id`와 deterministic membership backfill을
-대조하여 membership을 repair할 수 있다. cleanup migration은 production evidence와 repair drill 뒤
-별도 checkpoint에서만 실행한다. 삭제, 자동 merge/split, membership 추론, stable identity 변경,
+기본으로 한다. cutover migration down은 보존된 membership history의 정렬상 첫 Canon으로 nullable
+legacy column을 기계적으로 repair한 뒤 v2 bridge를 복원한다. 이 값은 rollback adapter용일 뿐
+새 canonical ownership이 아니다. physical cleanup은 production evidence와 repair drill 뒤
+별도 승인 checkpoint에서만 실행한다. 삭제, 자동 merge/split, membership 추론, stable identity 변경,
 Relation 의미 추론 또는 기존 Publication 재해석이 필요하면 중단한다.
 
 ## 14. 단계별 slices와 종료조건
@@ -334,6 +338,12 @@ revision view, Subject/Process/State/Duration/Timeline, Event/Canon artifacts, s
 export/import를 membership source로 전환한다. acceptance fixture를 canonical write부터 public
 read/round-trip까지 통과시킨다. M4.5-C layout과 URL state는 보존한다.
 
+이 slice의 cutover shape는 Publication `2.0.0`, portability package `2.0`, World-level Event
+route와 graph result v2다. Publication/package v1은 boundary adapter가 명시된 기존 단일
+`canon_id`만 변환한다. DB의 legacy column 값은 보존하지만 bridge를 제거하고 신규 Event에는
+쓰지 않는다. K1/K2/K3·A/B/C/D 통합 fixture가 PostgreSQL commit, revision read, multi-Canon
+context query, Publication, Atropos World/Canon route와 export/import를 한 흐름으로 검증한다.
+
 ### Gate DP-001 — Relation ontology
 
 R1/R2/R3 사용자 결정 전 Relation의 최종 cardinality, migration, shared assertion fixture와
@@ -355,7 +365,8 @@ smoke와 export/import를 실제 production에서 실행한다. deployed SHA, Wo
 
 ### Slice 7 — cleanup, CURRENT와 후속 계획 재설계
 
-legacy ownership column/adapter의 사용처가 0인지 machine-check하고 안전한 cleanup을 한다.
+legacy ownership column/adapter의 canonical 사용처가 0인지 machine-check한다. physical column/data
+삭제는 별도 승인 없이는 실행하지 않고 frozen compatibility 상태와 repair 절차를 문서화한다.
 CURRENT와 acceptance evidence를 실제 상태에 맞춘다. M4.5-D~H와 M5를 아래 원칙으로 재설계하되
 후속 구현은 시작하지 않는다.
 

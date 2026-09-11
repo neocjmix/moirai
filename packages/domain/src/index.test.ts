@@ -101,6 +101,7 @@ describe("create Change Set validation", () => {
       canons: [],
       timeSystems: [],
       canonTimeSystems: [],
+      eventCanonMemberships: [],
       events: [],
       relations: [],
       narratives: []
@@ -248,7 +249,8 @@ describe("create Change Set validation", () => {
       events: [
         {
           id: TEST_FIXTURE.eventId,
-          canon_id: TEST_FIXTURE.canonId,
+          world_id: TEST_FIXTURE.worldId,
+          canon_memberships: [TEST_FIXTURE.canonId],
           slug: "first-test-event",
           kind: "atomic" as const,
           title: TEST_FIXTURE.eventTitle,

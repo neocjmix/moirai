@@ -10,12 +10,12 @@ import Markdown from "react-markdown";
 
 interface EventSheetProps {
   readonly temporalContent?: ReactNode;
+  readonly scopeContent?: ReactNode;
   readonly title: string;
   readonly summary: string | null;
   readonly kind: string;
   readonly revision: number;
   readonly worldId: string;
-  readonly canonId: string;
   readonly eventId: string;
   readonly narratives: readonly PublicNarrative[];
   readonly relations: readonly PublicRelation[];
@@ -24,12 +24,12 @@ interface EventSheetProps {
 
 export function EventSheet({
   temporalContent,
+  scopeContent,
   title,
   summary,
   kind,
   revision,
   worldId,
-  canonId,
   eventId,
   narratives,
   relations,
@@ -56,6 +56,7 @@ export function EventSheet({
         <p className="event-summary">
           {summary ?? "이 사건에는 아직 요약이 없습니다."}
         </p>
+        {scopeContent}
         {temporalContent}
         {narratives.map((narrative) => (
           <section className="narrative-block" key={narrative.id}>
@@ -98,7 +99,7 @@ export function EventSheet({
               return related ? (
                 <a
                   className="relation-row"
-                  href={`/worlds/${worldId}/canons/${canonId}/events/${related.id}`}
+                  href={`/worlds/${worldId}/canons/${relation.canon_id}/events/${related.id}`}
                   key={relation.id}
                 >
                   <span>

@@ -9,6 +9,7 @@ import type {
   PublicCanon,
   PublicTimeSystem,
   PublicCanonTimeSystem,
+  CanonicalEventCanonMembership,
   PublicEvent,
   PublicRelation,
   PublicNarrative
@@ -26,6 +27,7 @@ export interface PortableWorld {
   readonly canons: readonly PublicCanon[];
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly canonTimeSystems: readonly PublicCanonTimeSystem[];
+  readonly eventCanonMemberships: readonly CanonicalEventCanonMembership[];
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
@@ -37,6 +39,7 @@ const sectionNames = {
   canons: "canons",
   timeSystems: "time-systems",
   canonTimeSystems: "canon-time-systems",
+  eventCanonMemberships: "event-canon-memberships",
   events: "events",
   relations: "relations",
   narratives: "narratives"
@@ -76,6 +79,15 @@ export function portableStringify(value: unknown): string {
 }
 const sorted = <T extends { id: string }>(rows: readonly T[]) =>
   [...rows].sort((a, b) => compareKeys(a.id, b.id));
+const sortedMemberships = (
+  rows: readonly CanonicalEventCanonMembership[]
+): CanonicalEventCanonMembership[] =>
+  [...rows].sort((left, right) =>
+    compareKeys(
+      `${left.event_id}:${left.canon_id}`,
+      `${right.event_id}:${right.canon_id}`
+    )
+  );
 const cleanRef = (ref: CanonicalEventReference): CanonicalEventReference =>
   ref.kind === "event"
     ? { kind: "event", event_id: ref.event_id }
@@ -85,6 +97,81 @@ const cleanRef = (ref: CanonicalEventReference): CanonicalEventReference =>
         definition_version: ref.definition_version,
         coordinate: ref.coordinate
       };
+function validatePortableWorld(view: PortableWorld): void {
+  const canonIds = new Set(view.canons.map((canon) => canon.id));
+  const eventIds = new Set(view.events.map((event) => event.id));
+  const timeSystemIds = new Set(view.timeSystems.map((system) => system.id));
+  if (
+    view.canons.some((canon) => canon.world_id !== view.world.id) ||
+    view.events.some((event) => event.world_id !== view.world.id) ||
+    view.timeSystems.some((system) => system.world_id !== view.world.id)
+  )
+    fail("package_cross_world_reference");
+  const membershipKeys = view.eventCanonMemberships.map(
+    (membership) => `${membership.event_id}:${membership.canon_id}`
+  );
+  if (new Set(membershipKeys).size !== membershipKeys.length)
+    fail("package_duplicate_membership");
+  if (
+    view.eventCanonMemberships.some(
+      (membership) =>
+        !eventIds.has(membership.event_id) || !canonIds.has(membership.canon_id)
+    )
+  )
+    fail("package_dangling_reference");
+  const membershipsByEvent = new Map<string, string[]>();
+  for (const membership of view.eventCanonMemberships) {
+    const memberships = membershipsByEvent.get(membership.event_id) ?? [];
+    memberships.push(membership.canon_id);
+    membershipsByEvent.set(membership.event_id, memberships);
+  }
+  for (const event of view.events) {
+    const canonical = [...(membershipsByEvent.get(event.id) ?? [])].sort(
+      compareKeys
+    );
+    const embedded = [...event.canon_memberships].sort(compareKeys);
+    if (!canonical.length) fail("package_orphan_event");
+    if (portableStringify(canonical) !== portableStringify(embedded))
+      fail("package_membership_mismatch");
+  }
+  if (
+    view.canonTimeSystems.some(
+      (link) =>
+        !canonIds.has(link.canon_id) || !timeSystemIds.has(link.time_system_id)
+    )
+  )
+    fail("package_dangling_reference");
+  for (const relation of view.relations) {
+    if (!canonIds.has(relation.canon_id)) fail("package_dangling_reference");
+    const endpoints = canonicalRelationEndpoints(relation);
+    if (!endpoints) fail("package_relation_reference_invalid");
+    for (const endpoint of [endpoints.source, endpoints.target]) {
+      if (endpoint.kind === "event") {
+        if (
+          !eventIds.has(endpoint.event_id) ||
+          !membershipsByEvent
+            .get(endpoint.event_id)
+            ?.includes(relation.canon_id)
+        )
+          fail("package_relation_scope_invalid");
+      } else if (!timeSystemIds.has(endpoint.time_system_ref.time_system_id)) {
+        fail("package_dangling_reference");
+      }
+    }
+  }
+  for (const narrative of view.narratives) {
+    if (!canonIds.has(narrative.canon_id)) fail("package_dangling_reference");
+    if (
+      narrative.scope_type === "canon"
+        ? narrative.scope_id !== narrative.canon_id
+        : !eventIds.has(narrative.scope_id) ||
+          !membershipsByEvent
+            .get(narrative.scope_id)
+            ?.includes(narrative.canon_id)
+    )
+      fail("package_narrative_scope_invalid");
+  }
+}
 export function canonicalPortableRelations(
   rows: readonly PublicRelation[]
 ): PublicRelation[] {
@@ -125,6 +212,9 @@ export function temporalSemanticFingerprintWithIdentityMap(
   const sections = {
     time_systems: sorted(remap(view.timeSystems)),
     events: sorted(remap(view.events)),
+    event_canon_memberships: sortedMemberships(
+      remap(view.eventCanonMemberships)
+    ),
     relations: canonicalPortableRelations(remap(view.relations))
   };
   return {
@@ -182,6 +272,7 @@ export async function exportWorldPackage(
     revision < 1
   )
     fail("package_source_invalid");
+  validatePortableWorld(view);
   const files = new Map<string, Buffer>();
   files.set("content/world.json", Buffer.from(portableStringify(view.world)));
   for (const [key, name] of Object.entries(sectionNames) as [
@@ -191,7 +282,9 @@ export async function exportWorldPackage(
     const rows =
       key === "relations"
         ? canonicalPortableRelations(view.relations)
-        : [...view[key]].sort((a, b) => compareKeys(a.id, b.id));
+        : key === "eventCanonMemberships"
+          ? sortedMemberships(view.eventCanonMemberships)
+          : [...view[key]].sort((a, b) => compareKeys(a.id, b.id));
     files.set(
       `content/${name}.ndjson`,
       Buffer.from(
@@ -211,11 +304,11 @@ export async function exportWorldPackage(
   );
   const manifest: Manifest = {
     format: "moirai-world-package",
-    format_version: "1.0",
+    format_version: "2.0",
     export_id: operationUuid(),
     export_kind: "content",
     created_at: new Date().toISOString(),
-    generator_version: "clotho-temporal-portability/1",
+    generator_version: "clotho-temporal-portability/2",
     world_id: view.world.id,
     source_revision: revision,
     publication_revision: null,
@@ -240,7 +333,7 @@ export async function exportWorldPackage(
         reason: "No attachment support in this content schema"
       }
     ],
-    schema_versions: { content: "event-relational-time/1" },
+    schema_versions: { content: "world-event-canon-membership/1" },
     files: [...files].map(([path, bytes]) => ({
       path,
       media_type: path.endsWith(".ndjson")
@@ -356,18 +449,28 @@ export async function readWorldPackage(
   } catch {
     return fail("package_manifest_invalid");
   }
+  const legacyV1 =
+    manifest.format_version === "1.0" &&
+    manifest.schema_versions?.content === "event-relational-time/1";
+  const currentV2 =
+    manifest.format_version === "2.0" &&
+    manifest.schema_versions?.content === "world-event-canon-membership/1";
   if (
     manifest.format !== "moirai-world-package" ||
-    manifest.format_version !== "1.0" ||
+    (!legacyV1 && !currentV2) ||
     manifest.export_kind !== "content" ||
-    manifest.schema_versions?.content !== "event-relational-time/1" ||
     manifest.completeness !== "complete" ||
     !Array.isArray(manifest.files)
   )
     fail("package_format_unsupported");
+  const expectedSectionNames = currentV2
+    ? Object.values(sectionNames)
+    : Object.values(sectionNames).filter(
+        (name) => name !== "event-canon-memberships"
+      );
   const expectedPaths = [
     "content/world.json",
-    ...Object.values(sectionNames).map((n) => `content/${n}.ndjson`),
+    ...expectedSectionNames.map((name) => `content/${name}.ndjson`),
     "reports/export-report.json"
   ].sort();
   if (
@@ -400,13 +503,42 @@ export async function readWorldPackage(
       return fail("package_json_invalid");
     }
   };
-  const view = {
+  const decoded = {
     world: decode("content/world.json"),
     ...Object.fromEntries(
-      Object.entries(sectionNames).map(([key, name]) => [key, rows(name)])
+      Object.entries(sectionNames)
+        .filter(([, name]) => currentV2 || name !== "event-canon-memberships")
+        .map(([key, name]) => [key, rows(name)])
     )
-  } as unknown as PortableWorld;
+  } as Record<string, unknown> & { world: PublicWorld };
+  if (legacyV1) {
+    const canons = decoded.canons as PublicCanon[];
+    const canonWorld = new Map(
+      canons.map((canon) => [canon.id, canon.world_id])
+    );
+    const legacyEvents = decoded.events as Array<
+      Omit<PublicEvent, "world_id" | "canon_memberships"> & {
+        canon_id: string;
+      }
+    >;
+    decoded.eventCanonMemberships = legacyEvents.map((event) => ({
+      event_id: event.id,
+      canon_id: event.canon_id
+    }));
+    decoded.events = legacyEvents.map((event) => {
+      const { canon_id: canonId, ...value } = event;
+      const worldId = canonWorld.get(canonId);
+      if (!worldId) return fail("package_dangling_reference");
+      return {
+        ...value,
+        world_id: worldId,
+        canon_memberships: [canonId]
+      };
+    });
+  }
+  const view = decoded as unknown as PortableWorld;
   if (view.world.id !== manifest.world_id) fail("package_world_mismatch");
+  validatePortableWorld(view);
   const fingerprint = temporalSemanticFingerprint(view);
   const report = decode("reports/export-report.json");
   if (report.fingerprint?.digest !== fingerprint.digest)
@@ -484,15 +616,18 @@ export function cloneWorldPlan(
       time_system_id: id(row.time_system_id)
     });
   for (const row of view.events) {
-    const { canon_id: sourceCanonId, ...event } = row;
+    const event = { ...row } as Record<string, unknown>;
+    delete event.canon_memberships;
     add("event", { ...event, world_id: targetWorldId });
+  }
+  for (const membership of sortedMemberships(view.eventCanonMemberships)) {
     operations.push({
       kind: "add",
       entity_type: "event_canon_membership",
       origin_refs: [{ field: "*", origin_index: 0 }],
       value: {
-        event_id: id(row.id),
-        canon_id: id(sourceCanonId)
+        event_id: id(membership.event_id),
+        canon_id: id(membership.canon_id)
       }
     });
   }
@@ -532,6 +667,7 @@ export function cloneWorldPlan(
     canons: [],
     timeSystems: [],
     canonTimeSystems: [],
+    eventCanonMemberships: [],
     events: [],
     relations: [],
     narratives: []

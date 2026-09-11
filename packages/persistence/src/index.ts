@@ -83,7 +83,8 @@ interface CanonTimeSystemTable extends RevisionFields {
 interface EventTable extends RevisionFields {
   id: string;
   world_id: string;
-  canon_id: string;
+  /** Frozen compatibility data for pre-IP-003 rows; never an ownership source. */
+  canon_id: string | null;
   slug: string | null;
   kind: PublicEvent["kind"];
   title: string;
@@ -352,8 +353,7 @@ async function applyCreate(
   transaction: MoiraiDatabase,
   operation: ResolvedCreateOperation,
   revision: number,
-  worldId: string,
-  legacyCanonIds: ReadonlyMap<string, string>
+  worldId: string
 ): Promise<void> {
   if (operation.kind === "add") {
     await sql`
@@ -431,16 +431,12 @@ async function applyCreate(
       break;
     case "event": {
       const item = operation.value;
-      const legacyCanonId = legacyCanonIds.get(operation.entity_id);
-      if (!legacyCanonId) {
-        throw new Error("Validated Event has no Canon membership");
-      }
       await transaction
         .insertInto("events")
         .values({
           id: operation.entity_id,
           world_id: item.world_id,
-          canon_id: legacyCanonId,
+          canon_id: null,
           slug: item.slug ?? null,
           kind: item.kind,
           title: item.title,
@@ -487,6 +483,35 @@ function toPublicWorld(row: WorldTable): PublicWorld {
     slug: row.slug,
     title: row.title,
     description: row.description
+  };
+}
+
+interface SelectedEventRow extends RevisionFields {
+  readonly id: string;
+  readonly world_id: string;
+  readonly canon_id: string | null;
+  readonly slug: string | null;
+  readonly kind: PublicEvent["kind"];
+  readonly title: string;
+  readonly summary: string | null;
+  readonly roles: PublicEvent["roles"];
+  readonly attributes: PublicEvent["attributes"];
+}
+
+function toPublicEvent(
+  row: SelectedEventRow,
+  canonMemberships: readonly string[]
+): PublicEvent {
+  return {
+    id: row.id,
+    world_id: row.world_id,
+    canon_memberships: [...canonMemberships].sort(),
+    slug: row.slug,
+    kind: row.kind,
+    title: row.title,
+    summary: row.summary,
+    roles: row.roles,
+    attributes: row.attributes
   };
 }
 
@@ -686,6 +711,12 @@ async function loadCurrentState(
             .execute()
         : []
     ]);
+  const membershipsByEvent = new Map<string, string[]>();
+  for (const membership of eventCanonMemberships) {
+    const values = membershipsByEvent.get(membership.event_id) ?? [];
+    values.push(membership.canon_id);
+    membershipsByEvent.set(membership.event_id, values);
+  }
   return {
     world: toPublicWorld(worldRow),
     canons: canons.map((item) => withoutRevision(item) as PublicCanon),
@@ -696,7 +727,9 @@ async function loadCurrentState(
       (item) => withoutRevision(item) as PublicCanonTimeSystem
     ),
     eventCanonMemberships,
-    events: events.map((item) => withoutRevision(item) as PublicEvent),
+    events: events.map((item) =>
+      toPublicEvent(item, membershipsByEvent.get(item.id) ?? [])
+    ),
     relations: relations.map((item) => toPublicRelation(item)),
     narratives: narratives.map(
       (item) => withoutRevision(item) as PublicNarrative
@@ -756,21 +789,12 @@ export async function commitCreateChangeSet(
     );
     const warnings = validateCandidateChangeSet(input, operations, existing);
     const revision = currentRevision + 1;
-    const legacyCanonIds = new Map<string, string>();
-    for (const operation of operations) {
-      if (operation.kind !== "add") continue;
-      const current = legacyCanonIds.get(operation.value.event_id);
-      if (!current || operation.value.canon_id.localeCompare(current) < 0) {
-        legacyCanonIds.set(operation.value.event_id, operation.value.canon_id);
-      }
-    }
     for (const operation of operations) {
       await applyCreate(
         transaction as unknown as MoiraiDatabase,
         operation,
         revision,
-        input.world_id,
-        legacyCanonIds
+        input.world_id
       );
     }
     if (currentWorld) {
@@ -997,23 +1021,40 @@ export async function readWorldAtRevision(
       .map((item) => item.after!);
   const world = byType("world")[0] as unknown as PublicWorld | undefined;
   if (!world) throw new Error("revision view has no World");
+  const canons = byType("canon") as unknown as PublicCanon[];
+  const canonWorlds = new Map(
+    canons.map((canon) => [canon.id, canon.world_id])
+  );
   const timeSystems = byType("time_system") as unknown as PublicTimeSystem[];
   const relationRegistry = temporalAdapterRegistry(timeSystems);
   const events = byType("event")
     .filter((event) => !withdrawnEventIds.has(String(event.id)))
     .map((event) => {
-      if (typeof event.canon_id === "string") return event;
-      const canonId = [...(eventCanonMemberships.get(String(event.id)) ?? [])]
-        .sort()
-        .at(0);
-      if (!canonId) throw new Error("revision view has an active orphan Event");
-      const legacyEvent = { ...event };
-      delete legacyEvent.world_id;
-      return { ...legacyEvent, canon_id: canonId };
+      const canonMemberships = [
+        ...(eventCanonMemberships.get(String(event.id)) ?? [])
+      ].sort();
+      if (canonMemberships.length === 0)
+        throw new Error("revision view has an active orphan Event");
+      const legacyCanonId =
+        typeof event.canon_id === "string" ? event.canon_id : undefined;
+      const worldId =
+        typeof event.world_id === "string"
+          ? event.world_id
+          : legacyCanonId
+            ? canonWorlds.get(legacyCanonId)
+            : undefined;
+      if (!worldId) throw new Error("revision view Event has no World");
+      const publicEvent = { ...event };
+      delete publicEvent.canon_id;
+      return {
+        ...publicEvent,
+        world_id: worldId,
+        canon_memberships: canonMemberships
+      };
     }) as unknown as PublicEvent[];
   return {
     world,
-    canons: byType("canon") as unknown as PublicCanon[],
+    canons,
     timeSystems,
     canonTimeSystems: byType(
       "canon_time_system"

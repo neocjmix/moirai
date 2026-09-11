@@ -22,6 +22,7 @@ describe("single Event/Relation publication format", () => {
         ],
         timeSystems: [],
         canonTimeSystems: [],
+        eventCanonMemberships: [],
         events: [],
         relations: [],
         narratives: []
@@ -30,6 +31,8 @@ describe("single Event/Relation publication format", () => {
       "2026-09-07T00:00:00Z"
     );
     const manifest = JSON.parse(artifacts.manifestBody);
+    expect(manifest.format_version).toBe("2.0.0");
+    expect(artifacts.pointer.format_version).toBe("2.0.0");
     expect(manifest.algorithms.relational_time).toBe(
       "event-relational-projection/1"
     );

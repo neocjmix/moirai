@@ -1,14 +1,14 @@
 # 현재 구현 상태
 
-세션과 에이전트 사이의 짧은 상태판이다. M4.5-D1~H는 2026-09-11 사용자 승인으로 활성화됐고
-M5는 별도 승인 전까지 활성화하지 않는다.
+세션과 에이전트 사이의 짧은 상태판이다. M4.5-D1~H와 종료 검증은 완료됐다.
+M5는 활성화하거나 구현하지 않은 채 전환 직전에서 멈췄다.
 
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
 | 실행 상태                  | `complete` — IP-003 Canon semantic realignment의 문서·schema·write/read·migration·production acceptance 완료              |
-| 활성 milestone             | M4.5 — 재설계된 D1→D2→E→F→G→H를 순서대로 실행                                                                               |
-| 현재 slice                 | M4.5-G legacy viewport bridge와 규모 검증; M5는 비활성                                                                        |
+| 활성 milestone             | 없음 — M4.5 종료; M5 비활성                                                                                                  |
+| 현재 slice                 | M4.5-H와 종료 검증 완료; M5 전환 직전에서 정지                                                                                |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
@@ -22,7 +22,10 @@ M5는 별도 승인 전까지 활성화하지 않는다.
 | M4.5-D2 완료               | [PR #39](https://github.com/neocjmix/moirai/pull/39) merge·production `b3677cf0fad03d9643c0f09784ae5295a7b926eb`; CI `34615164602` success; R1 filter/evidence/diagnostics 검증 |
 | M4.5-E 완료                | [PR #40](https://github.com/neocjmix/moirai/pull/40) merge `bb490bfb83b6e504dd220dc7a595a61bd5acb2e1`; CI `34616417588` success; Revision-fixed Publication composition·digest·budget·production query smoke |
 | M4.5-F 완료                | [PR #41](https://github.com/neocjmix/moirai/pull/41) merge `e2260aafdf3ffa9e51bdd7fd7b9f4df29f9ce6c7`; CI `34617357534` success; mobile sheet·stable route 왕복·structured attributes·derived metadata |
-| M4.5-G 구현 중             | v3→legacy 단방향 adapter, omission/approximation loss report, 2,500 visible-cell hard cap와 100k fixture; [결정 기록](evidence/m45-g-legacy-viewport-bridge-implementation-2026-09-11.md) |
+| M4.5-G 완료                | [PR #42](https://github.com/neocjmix/moirai/pull/42) merge `f414f571def404070a0ea7f4812d1809437b0860`; v3→legacy bridge, observable loss, 2,500 visible-cell hard cap와 100k fixture; [결정 기록](evidence/m45-g-legacy-viewport-bridge-implementation-2026-09-11.md) |
+| Publication→explorer 연결  | [PR #44](https://github.com/neocjmix/moirai/pull/44) merge·rollback 기준선 `0f5554926587bbd01193b57496d82e9c5f2743e3`; 이후 충돌 이력 #45–#48은 의도적으로 폐기 |
+| legacy Relation 호환성     | [PR #49](https://github.com/neocjmix/moirai/pull/49) merge·production `e81f4eafd91046346e239d8883a18ff6ad53c3c3`; immutable v1/v2 Relation을 Publication read boundary에서 normalization |
+| M4.5-H 완료                | [PR #50](https://github.com/neocjmix/moirai/pull/50) merge·production `8d1fa038dee1d595607edfd0cfc2d52b6b0ac8d3`; PR CI `34637230394`, main CI `34637461448`, smoke `34637694551` success; [종료 증거](evidence/m45-closeout-production-2026-09-12.md) |
 | IP-003 시작 기준선         | `main` `8854da284631f836cb34692f36070b718dce3e2d`; CI `34556657861`, post-deploy `34556777058` success; production `/__status`와 M4.5-C `/graph` 재확인 |
 | IP-003 Slice 0 계획        | PR #28 merge `6eaa428d7e6e61ae3df574a091dcbc2f0a082d73`; CI `34558131634` success                                                    |
 | IP-003 Slice 1 규범        | PR #29 merge `5a5aeb20cf853353847a9ef3185ff8e682bacefb`; CI `34558845653` success                                                    |
@@ -65,12 +68,12 @@ M5는 별도 승인 전까지 활성화하지 않는다.
 않는다. 남은 Canon 비교, 100k scope·LOD, subject lane, metro routing과 composite
 region은 [M4.5 상세 계획](M4.5-ATROPOS-EXPLORATION-UI.md)으로 이관했다.
 
-M4.5는 현재 `/graph`의 fullscreen viewport, top floating island, bottom app navigation과
-detail sheet 배치를 유지한다. URDR에서 계승하는 것은 이 UI 구성과 interaction 문법뿐이다.
-entity, query, Time System compatibility, multi-World source, Revision vector와 projection
-결과는 Moirai-native 계약으로 설계한다. legacy translation은 renderer 직전의 단방향
-반부패 계층에만 허용하며 새 계약을 URDR shape에 맞추지 않는다. graph viewport는
-M4.5-A~G 종료 뒤 마지막 M4.5-H에서만 전면 재구축한다.
+M4.5는 `/graph`의 fullscreen viewport, top floating island, bottom app navigation과
+detail sheet 배치를 유지하며 종료됐다. URDR에서 계승한 것은 이 UI 구성과 interaction
+문법뿐이다. entity, query, Time System compatibility, multi-World source, Revision vector와
+projection 결과는 Moirai-native 계약을 사용한다. 마지막 H에서 renderer가
+`MoiraiGraphQueryResult v3`를 직접 소비하도록 교체했고 temporary legacy adapter와 그
+복제 계약은 제거했다.
 
 M4.5-A는 versioned `MoiraiGraphQuery`, `MoiraiGraphQueryResult`, URL state와 legacy loss
 report를 `@moirai/contracts`에 고정하고 완료했다. 모든 canonical EventReference와 Relation
@@ -90,16 +93,23 @@ preview와 apply/cancel을 unit·mobile WebKit E2E로 검증했다. 현재 데�
 composition이 아니라 화면 계약 검증용 `MOCK` fixture이며 이는 M4.5-E 범위다. Production
 `2c9002848e91c337876103d21e17804148d9f159`에서 Atropos·Clotho·worker Railway 배포,
 공개 `/__status` SHA와 post-deploy smoke 성공, `/graph`의 접힘·펼침·draft preview를
-확인했다. IP-003 완료 후 기존 M4.5-D는 D1/D2로 분할됐으며, 재설계된 D1은 사용자 활성화
-승인 전까지 비활성이다.
+확인했다. IP-003 완료 후 기존 M4.5-D는 D1/D2로 분할됐고 두 slice를 완료한 뒤
+E→F→G→H와 production 종료 검증까지 순서대로 종료했다.
+
+2026-09-12 M4.5 종료 검증에서 Publication v1/v2 temporal Relation은 immutable artifact를
+바꾸지 않고 read boundary에서 정상화되며 기본 `/graph`와 R1 `/graph/query`가 production에서
+성공했다. H native viewport는 World-level Event/Relation identity, Canon N:M context,
+exact·bounded·relative-only·mixed·unplaced, virtual Time Event와 derived/evidence/diagnostic을
+직접 표시한다. 단일 Sources/Query island, fullscreen, bottom dock, mobile sheet와 stable URL
+문법을 유지하고 semantic neighborhood scope와 2,500 visible-node hard cap을 검증했다.
+M5는 시작하지 않았다.
 
 ## 시간 모델 재정렬 Slice 0
 
 [드리프트 분석](TEMPORAL-MODEL-DRIFT.md)을 바탕으로 2026-09-05 사용자가 [TS-010](../technical-specifications/TS-010-event-relational-time.md)의 strictness, virtual Time Event reference와 Time System 계약을 승인했다. [표현력 종단간 수용시험](TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)과 [IP-002](IP-002-temporal-model-realignment.md)를 accepted 방향으로 정렬하고 [machine-readable fixture](fixtures/temporal-expressiveness/)를 고정했다.
 
-Slice 0–7과 두 차례 production 종단간 검증을 완료했다. 이후 M4-E·F까지 수행했으며,
-남은 graph 작업은 현재 M4.5로 이관됐다. M4.5 종료와 사용자 승인 전에는 M5로
-넘어가지 않는다.
+Slice 0–7과 두 차례 production 종단간 검증을 완료했다. 이후 M4-E·F와 M4.5-D1~H 및
+production 종료 검증까지 수행했다. M5는 비활성이고 구현하지 않았다.
 
 Slice 1은 [M4-D 시간 동작 특성화 기준선](M4D-TEMPORAL-CHARACTERIZATION.md)과 contracts·domain·projections golden test로 완료했다. current numeric Placement, 피코초 collapse, relative-only order, validate에서 허용되는 `precedes` cycle, descendant-span Process Duration, during 비-membership과 membership State 계산을 교정 전 관찰값으로 고정했다. 이는 TS-010 표현력 합격이 아니다.
 

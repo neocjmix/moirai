@@ -2,6 +2,8 @@ import {
   MOIRAI_GRAPH_CONTRACT_VERSION,
   MOIRAI_GRAPH_RELATION_TYPES,
   MOIRAI_GRAPH_URL_STATE_VERSION,
+  type MoiraiGraphEntityReference,
+  type MoiraiGraphEntityFilter,
   type MoiraiGraphQuery,
   type MoiraiGraphSource,
   type MoiraiGraphTimeSystemIdentity,
@@ -40,6 +42,26 @@ export type GraphSourceCompatibility = {
   readonly compatible: boolean;
   readonly status: "native" | "incompatible" | "definition_version_mismatch";
   readonly reasonCode: string;
+};
+
+export type GraphSearchEntity = {
+  readonly identity: string;
+  readonly kind: "event" | "subject" | "state" | "narrative";
+  readonly worldId: string;
+  readonly title: Readonly<Record<"ko" | "en", string>>;
+  readonly description: Readonly<Record<"ko" | "en", string>>;
+  readonly canonMemberships: readonly string[];
+  readonly eventKind?: "atomic" | "composite";
+  readonly roles?: readonly string[];
+  readonly subjectHandleId?: string;
+  readonly compositeEventId?: string;
+  readonly stateFamily?: string;
+};
+
+export type GraphSearchMatch = GraphSearchEntity & {
+  readonly matchedCanonIds: readonly string[];
+  readonly persisted: boolean;
+  readonly reference: MoiraiGraphEntityReference;
 };
 
 // MOCK: synthetic public source discovery until Publication composition is
@@ -149,6 +171,84 @@ export const MOCK_GRAPH_SOURCE_CATALOG: GraphSourceCatalog = {
   ]
 };
 
+// MOCK: identity-aware D1 fixture. Shared Event rows intentionally carry more
+// than one Canon membership while remaining one candidate each.
+export const MOCK_GRAPH_SEARCH_ENTITIES: readonly GraphSearchEntity[] = [
+  {
+    identity: "event:observatory-a",
+    kind: "event",
+    worldId: "world:reality-observatory",
+    title: { ko: "관측 사건 A", en: "Observation event A" },
+    description: {
+      ko: "두 Canon이 공유하는 원자 Event",
+      en: "Atomic Event shared by two Canons"
+    },
+    canonMemberships: ["canon:recorded-history", "canon:archival-observations"],
+    eventKind: "atomic",
+    roles: ["observation"]
+  },
+  {
+    identity: "event:observatory-b",
+    kind: "event",
+    worldId: "world:reality-observatory",
+    title: { ko: "관측 사건 B", en: "Observation event B" },
+    description: {
+      ko: "두 Canon이 공유하는 복합 Event",
+      en: "Composite Event shared by two Canons"
+    },
+    canonMemberships: ["canon:recorded-history", "canon:archival-observations"],
+    eventKind: "composite",
+    roles: ["process"]
+  },
+  {
+    identity: "subject:observatory",
+    kind: "subject",
+    worldId: "world:reality-observatory",
+    title: { ko: "관측 대상", en: "Observed subject" },
+    description: {
+      ko: "Event에서 투영된 Subject",
+      en: "Subject projected from Events"
+    },
+    canonMemberships: ["canon:recorded-history", "canon:archival-observations"],
+    subjectHandleId: "subject:observatory"
+  },
+  {
+    identity: "state:observatory-b:phase",
+    kind: "state",
+    worldId: "world:reality-observatory",
+    title: { ko: "관측 단계", en: "Observation phase" },
+    description: {
+      ko: "복합 Event에서 유도된 State",
+      en: "State derived from a composite Event"
+    },
+    canonMemberships: ["canon:recorded-history"],
+    subjectHandleId: "subject:observatory",
+    compositeEventId: "event:observatory-b",
+    stateFamily: "phase"
+  },
+  {
+    identity: "narrative:observatory-note",
+    kind: "narrative",
+    worldId: "world:reality-observatory",
+    title: { ko: "관측 기록", en: "Observation account" },
+    description: { ko: "저작된 Narrative", en: "Authored Narrative" },
+    canonMemberships: ["canon:archival-observations"]
+  },
+  {
+    identity: "event:marvel-arrival",
+    kind: "event",
+    worldId: "world:marvel-cinematic",
+    title: { ko: "도착 사건", en: "Arrival event" },
+    description: {
+      ko: "별도 World의 원자 Event",
+      en: "Atomic Event in another World"
+    },
+    canonMemberships: ["canon:earth-199999"],
+    eventKind: "atomic",
+    roles: ["arrival"]
+  }
+];
+
 export function getGraphSourceCompatibility(
   source: MoiraiGraphTimeSystemIdentity,
   target: MoiraiGraphTimeSystemIdentity
@@ -254,6 +354,123 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
+function stringArray(value: unknown): string[] | null {
+  return Array.isArray(value) &&
+    value.every((entry) => typeof entry === "string")
+    ? [...new Set(value)]
+    : null;
+}
+
+function normalizeEntityFilter(value: unknown): MoiraiGraphEntityFilter | null {
+  if (!isRecord(value)) return null;
+  const eventKinds = stringArray(value.event_kinds);
+  const roles = stringArray(value.roles);
+  const subjectHandleIds = stringArray(value.subject_handle_ids);
+  if (
+    !eventKinds ||
+    eventKinds.some((kind) => kind !== "atomic" && kind !== "composite") ||
+    !roles ||
+    !subjectHandleIds ||
+    typeof value.include_states !== "boolean" ||
+    typeof value.include_narratives !== "boolean" ||
+    typeof value.include_virtual_time_events !== "boolean"
+  ) {
+    return null;
+  }
+  return {
+    event_kinds: eventKinds as ("atomic" | "composite")[],
+    roles,
+    subject_handle_ids: subjectHandleIds,
+    include_states: value.include_states,
+    include_narratives: value.include_narratives,
+    include_virtual_time_events: value.include_virtual_time_events
+  };
+}
+
+function referenceForEntity(
+  entity: GraphSearchEntity,
+  canonId: string,
+  servedRevision: number
+): MoiraiGraphEntityReference {
+  const address = {
+    world_id: entity.worldId,
+    canon_id: canonId,
+    served_revision: servedRevision
+  };
+  if (entity.kind === "event") {
+    return {
+      ...address,
+      kind: "event",
+      event_ref: { kind: "event", event_id: entity.identity }
+    };
+  }
+  if (entity.kind === "subject") {
+    return {
+      ...address,
+      kind: "subject",
+      subject_handle_id: entity.subjectHandleId!
+    };
+  }
+  if (entity.kind === "state") {
+    return {
+      ...address,
+      kind: "state",
+      composite_event_id: entity.compositeEventId!,
+      subject_handle_id: entity.subjectHandleId!,
+      state_family: entity.stateFamily!
+    };
+  }
+  return { ...address, kind: "narrative", narrative_id: entity.identity };
+}
+
+function normalizeEntityReference(
+  value: unknown,
+  sources: readonly MoiraiGraphSource[]
+): MoiraiGraphEntityReference | null {
+  if (
+    !isRecord(value) ||
+    typeof value.kind !== "string" ||
+    typeof value.world_id !== "string" ||
+    typeof value.canon_id !== "string" ||
+    typeof value.served_revision !== "number"
+  ) {
+    return null;
+  }
+  const source = sources.find(
+    (entry) =>
+      entry.world_id === value.world_id &&
+      entry.served_revision === value.served_revision &&
+      entry.canon_ids.includes(value.canon_id as string)
+  );
+  if (!source) return null;
+  const entity = MOCK_GRAPH_SEARCH_ENTITIES.find((candidate) => {
+    if (candidate.worldId !== value.world_id || candidate.kind !== value.kind)
+      return false;
+    if (value.kind === "event") {
+      return (
+        isRecord(value.event_ref) &&
+        value.event_ref.kind === "event" &&
+        value.event_ref.event_id === candidate.identity
+      );
+    }
+    if (value.kind === "subject")
+      return value.subject_handle_id === candidate.subjectHandleId;
+    if (value.kind === "state") {
+      return (
+        value.composite_event_id === candidate.compositeEventId &&
+        value.subject_handle_id === candidate.subjectHandleId &&
+        value.state_family === candidate.stateFamily
+      );
+    }
+    return (
+      value.kind === "narrative" && value.narrative_id === candidate.identity
+    );
+  });
+  return entity?.canonMemberships.includes(value.canon_id)
+    ? (value as unknown as MoiraiGraphEntityReference)
+    : null;
+}
+
 export function normalizeGraphUrlState(
   value: unknown,
   catalog: GraphSourceCatalog = MOCK_GRAPH_SOURCE_CATALOG
@@ -340,10 +557,37 @@ export function normalizeGraphUrlState(
     return null;
   }
 
+  const entityFilter = normalizeEntityFilter(query.entity_filter);
+  if (!entityFilter) return null;
+  const focus =
+    value.focus === null
+      ? null
+      : normalizeEntityReference(value.focus, sources);
+  if (value.focus !== null && !focus) return null;
+  const scopeCandidate = query.scope;
+  let scope: MoiraiGraphQuery["scope"] = { kind: "overview" };
+  if (isRecord(scopeCandidate) && scopeCandidate.kind === "selection") {
+    if (!Array.isArray(scopeCandidate.references)) return null;
+    const references = scopeCandidate.references.map((reference) =>
+      normalizeEntityReference(reference, sources)
+    );
+    if (references.some((reference) => !reference)) return null;
+    scope = {
+      kind: "selection",
+      references: references as MoiraiGraphEntityReference[]
+    };
+  } else if (!isRecord(scopeCandidate) || scopeCandidate.kind !== "overview") {
+    return null;
+  }
+
   return {
     version: MOIRAI_GRAPH_URL_STATE_VERSION,
-    query: createQuery(frame.target, sources),
-    focus: null
+    query: {
+      ...createQuery(frame.target, sources),
+      scope,
+      entity_filter: entityFilter
+    },
+    focus
   };
 }
 
@@ -383,7 +627,94 @@ export function replaceGraphSources(
 ): MoiraiGraphUrlState {
   return {
     version: MOIRAI_GRAPH_URL_STATE_VERSION,
-    query: createQuery(target, sources),
-    focus: state.focus
+    query: {
+      ...state.query,
+      temporal_frame: { target },
+      sources,
+      scope: { kind: "overview" }
+    },
+    focus: null
   };
+}
+
+export function replaceGraphEntityFilter(
+  state: MoiraiGraphUrlState,
+  entityFilter: MoiraiGraphEntityFilter
+): MoiraiGraphUrlState {
+  return {
+    ...state,
+    query: { ...state.query, entity_filter: entityFilter }
+  };
+}
+
+export function focusGraphEntity(
+  state: MoiraiGraphUrlState,
+  reference: MoiraiGraphEntityReference
+): MoiraiGraphUrlState {
+  return {
+    ...state,
+    query: {
+      ...state.query,
+      scope: { kind: "selection", references: [reference] }
+    },
+    focus: reference
+  };
+}
+
+export function searchGraphEntities(
+  state: MoiraiGraphUrlState,
+  term = ""
+): readonly GraphSearchMatch[] {
+  const normalizedTerm = term.trim().toLocaleLowerCase();
+  const filter = state.query.entity_filter;
+  return MOCK_GRAPH_SEARCH_ENTITIES.flatMap((entity) => {
+    const source = state.query.sources.find(
+      (entry) => entry.world_id === entity.worldId
+    );
+    if (!source) return [];
+    const matchedCanonIds = entity.canonMemberships.filter((id) =>
+      source.canon_ids.includes(id)
+    );
+    if (matchedCanonIds.length === 0) return [];
+    if (
+      entity.kind === "event" &&
+      !filter.event_kinds.includes(entity.eventKind!)
+    )
+      return [];
+    if (entity.kind === "state" && !filter.include_states) return [];
+    if (entity.kind === "narrative" && !filter.include_narratives) return [];
+    if (
+      filter.roles.length > 0 &&
+      entity.kind === "event" &&
+      !entity.roles?.some((role) => filter.roles.includes(role))
+    )
+      return [];
+    if (
+      filter.subject_handle_ids.length > 0 &&
+      !entity.subjectHandleId &&
+      entity.kind !== "event"
+    )
+      return [];
+    if (
+      filter.subject_handle_ids.length > 0 &&
+      entity.subjectHandleId &&
+      !filter.subject_handle_ids.includes(entity.subjectHandleId)
+    )
+      return [];
+    const searchable =
+      `${entity.identity} ${entity.title.ko} ${entity.title.en} ${entity.description.ko} ${entity.description.en}`.toLocaleLowerCase();
+    if (normalizedTerm && !searchable.includes(normalizedTerm)) return [];
+    return [
+      {
+        ...entity,
+        matchedCanonIds,
+        persisted: entity.kind === "event" || entity.kind === "narrative",
+        reference: referenceForEntity(
+          entity,
+          matchedCanonIds[0]!,
+          source.served_revision
+        )
+      }
+    ];
+  });
 }

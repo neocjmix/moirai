@@ -789,7 +789,7 @@ export const MOIRAI_GRAPH_QUERY_SCHEMA = {
 
 /** JSON Schema for the semantic result; renderer cells and coordinates are absent. */
 export const MOIRAI_GRAPH_QUERY_RESULT_SCHEMA = {
-  $id: "moirai.graph-query-result.v2",
+  $id: "moirai.graph-query-result.v3",
   type: "object",
   additionalProperties: false,
   required: [

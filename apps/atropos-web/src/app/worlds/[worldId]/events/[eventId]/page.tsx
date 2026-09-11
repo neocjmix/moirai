@@ -50,6 +50,7 @@ export default async function WorldEventPage({
           revision={pointer.served_revision}
           worldId={worldId}
           eventId={eventId}
+          attributes={event.attributes}
           narratives={narratives}
           relations={relations}
           relatedEvents={relatedEvents}

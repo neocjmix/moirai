@@ -219,6 +219,9 @@ test("mobile reader traverses the single relational temporal model", async ({
   await expect(
     page.getByRole("link", { name: "Event 상세 열기 →" })
   ).toBeVisible();
+  await expect(page.getByTestId("graph-inspector-sheet")).toContainText(
+    "Revision 2"
+  );
   await expect(page.getByText("DERIVED TIMELINE")).toHaveCount(0);
   await expect(page.getByText("DERIVED PROCESSES")).toHaveCount(0);
   await page
@@ -229,6 +232,16 @@ test("mobile reader traverses the single relational temporal model", async ({
     page.getByRole("heading", { name: firstEventTitle })
   ).toBeVisible();
   await expect(page.getByText("Revision 2", { exact: true })).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "World Event canonical URL" })
+  ).toHaveAttribute("href", `/worlds/${worldId}/events/${firstEventId}`);
+  await expect(
+    page.getByRole("link", { name: "그래프로 돌아가기" })
+  ).toHaveAttribute(
+    "href",
+    `/worlds/${worldId}/canons/${canonId}?view=graph&focus=${firstEventId}`
+  );
+  await expect(page.getByText("STRUCTURED ATTRIBUTES")).toBeVisible();
   await expect(
     page.getByRole("link", { name: "같은 Revision의 공개 시간 JSON" })
   ).toBeVisible();

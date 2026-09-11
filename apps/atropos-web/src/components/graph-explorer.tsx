@@ -233,7 +233,13 @@ export function GraphExplorer({
       <div className={styles.stage} data-testid="jointjs-graph-stage">
         <div aria-hidden="true" className={styles.paper} ref={hostRef} />
         {selected ? (
-          <aside className={styles.selection} aria-live="polite">
+          <aside
+            aria-label="Selected graph entity inspector"
+            aria-live="polite"
+            className={styles.selection}
+            data-testid="graph-inspector-sheet"
+            role="dialog"
+          >
             <span>
               {selected.kind === "composite" ? "Composite Event" : "Event"}
             </span>
@@ -241,6 +247,10 @@ export function GraphExplorer({
             <small>
               {chronologyLabel(selected.chronology.mode)} · band{" "}
               {selected.chronology.rank}
+            </small>
+            <small>
+              World {artifact.world_id} · Canon {artifact.canon_id} · Revision{" "}
+              {artifact.served_revision}
             </small>
             <a href={selected.canonical_url}>Event 상세 열기 →</a>
           </aside>

@@ -6,8 +6,8 @@
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
 | 실행 상태                  | `in_progress` — M4.5-C 기준선 위에서 IP-003 활성; M4.5-D 이후와 M5는 비활성                                                  |
-| 활성 milestone             | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md) Slice 1                                                    |
-| 현재 slice                 | Slice 1 — normative 문서 정렬; M4.5-D~H와 M5 비활성, Relation DP-001 open                                                    |
+| 활성 milestone             | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md) Slice 2                                                    |
+| 현재 slice                 | Slice 2 — additive Event persistence·migration rehearsal; production mutation 없음, Relation DP-001 open                    |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |

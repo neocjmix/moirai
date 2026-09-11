@@ -5,18 +5,21 @@ import { fileURLToPath } from "node:url";
 
 import { createDatabase } from "./index.js";
 
-export async function migrateToLatest(connectionString: string): Promise<void> {
-  const db = createDatabase(connectionString);
+function createMigrator(db: ReturnType<typeof createDatabase>): Migrator {
   const migrationFolder = path.join(
     path.dirname(fileURLToPath(import.meta.url)),
     "migrations"
   );
+  return new Migrator({
+    db,
+    provider: new FileMigrationProvider({ fs, path, migrationFolder })
+  });
+}
 
+export async function migrateToLatest(connectionString: string): Promise<void> {
+  const db = createDatabase(connectionString);
   try {
-    const migrator = new Migrator({
-      db,
-      provider: new FileMigrationProvider({ fs, path, migrationFolder })
-    });
+    const migrator = createMigrator(db);
     const { error, results } = await migrator.migrateToLatest();
 
     for (const result of results ?? []) {
@@ -28,6 +31,21 @@ export async function migrateToLatest(connectionString: string): Promise<void> {
     if (error) {
       throw error;
     }
+  } finally {
+    await db.destroy();
+  }
+}
+
+export async function migrateOneDown(connectionString: string): Promise<void> {
+  const db = createDatabase(connectionString);
+  try {
+    const { error, results } = await createMigrator(db).migrateDown();
+    for (const result of results ?? []) {
+      process.stdout.write(
+        `migration ${result.migrationName}: ${result.status}\n`
+      );
+    }
+    if (error) throw error;
   } finally {
     await db.destroy();
   }

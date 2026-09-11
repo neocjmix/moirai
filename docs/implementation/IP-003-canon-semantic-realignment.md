@@ -299,6 +299,11 @@ partition 또는 single Canon authority가 남지 않는다.
 검사를 구현한다. 빈 DB와 구 schema fixture에서 upgrade를 검증하고 production read-only preflight를
 만든다. 아직 old column을 삭제하거나 publication 의미를 바꾸지 않는다.
 
+배포 순서 호환을 위해 이 slice에는 `event.canon_id`만 보내는 구 application write를 같은
+Canon의 `world_id`와 단일 membership으로 변환하는 임시 persistence-boundary trigger를 둔다.
+이는 명시된 `canon_id`만 lossless하게 옮기며 membership을 추론하지 않는다. 신규 write
+cutover 뒤 제거 대상이고 canonical ownership source가 아니다.
+
 ### Slice 3 — Clotho write/validate/commit
 
 Event create + 1..N membership, membership add/remove, duplicate/cross-World/orphan rejection과

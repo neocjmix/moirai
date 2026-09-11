@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 
 import {
+  type CanonicalEventReference,
   MOIRAI_GRAPH_RESULT_CONTRACT_VERSION,
   type MoiraiGraphCompatibility,
   type MoiraiGraphDiagnostic,
@@ -64,6 +65,19 @@ export function graphQueryDigest(value: unknown): string {
 
 function strings(values: readonly string[]): string[] {
   return [...new Set(values)].sort();
+}
+
+function scopedReferenceKey(
+  worldId: string,
+  reference: CanonicalEventReference
+): string {
+  return reference.kind === "event"
+    ? `${worldId}:event:${reference.event_id}`
+    : `${worldId}:time_event:${reference.time_system_ref.time_system_id}:${reference.definition_version}:${reference.coordinate}`;
+}
+
+function scopedEventKey(worldId: string, eventId: string): string {
+  return scopedReferenceKey(worldId, { kind: "event", event_id: eventId });
 }
 
 /**
@@ -518,6 +532,89 @@ export function composeGraphPublicationQuery(
           "Selected Canon contexts contain distinct contradictory assertions; this is valid knowledge, not a structural error."
       });
   }
+  const scopeKeys = (() => {
+    const scope = query.scope;
+    if (scope.kind === "overview") return null;
+    const keys = new Set<string>();
+    const addEvent = (worldId: string, eventId: string) =>
+      keys.add(scopedEventKey(worldId, eventId));
+    if (scope.kind === "selection") {
+      for (const reference of scope.references) {
+        if (reference.kind === "event") {
+          keys.add(scopedReferenceKey(reference.world_id, reference.event_ref));
+        } else if (reference.kind === "subject") {
+          for (const subject of subjectMap.values())
+            if (
+              subject.world_id === reference.world_id &&
+              subject.canon_id === reference.canon_id &&
+              subject.served_revision === reference.served_revision &&
+              subject.subject_handle_id === reference.subject_handle_id
+            )
+              for (const eventId of subject.member_event_ids)
+                addEvent(subject.world_id, eventId);
+        } else if (reference.kind === "state") {
+          addEvent(reference.world_id, reference.composite_event_id);
+        } else {
+          for (const narrative of narrativeMap.values())
+            if (
+              narrative.world_id === reference.world_id &&
+              narrative.canon_id === reference.canon_id &&
+              narrative.id === reference.narrative_id &&
+              narrative.scope_type === "event"
+            )
+              addEvent(narrative.world_id, narrative.scope_id);
+        }
+      }
+      return keys;
+    }
+    if (scope.kind === "subject") {
+      for (const subject of subjectMap.values())
+        if (
+          subject.world_id === scope.world_id &&
+          subject.canon_id === scope.canon_id &&
+          subject.served_revision === scope.served_revision &&
+          subject.subject_handle_id === scope.subject_handle_id
+        )
+          for (const eventId of subject.member_event_ids)
+            addEvent(subject.world_id, eventId);
+      return keys;
+    }
+    if (scope.kind === "composite") {
+      keys.add(scopedReferenceKey(scope.event.world_id, scope.event.event_ref));
+      if (scope.event.event_ref.kind === "event")
+        for (const composite of compositeMap.values())
+          if (
+            composite.world_id === scope.event.world_id &&
+            composite.canon_id === scope.event.canon_id &&
+            composite.served_revision === scope.event.served_revision &&
+            composite.event_id === scope.event.event_ref.event_id
+          )
+            for (const eventId of composite.descendant_event_ids)
+              addEvent(composite.world_id, eventId);
+      return keys;
+    }
+    if (scope.kind === "state") {
+      addEvent(scope.world_id, scope.composite_event_id);
+      return keys;
+    }
+    keys.add(scopedReferenceKey(scope.event.world_id, scope.event.event_ref));
+    for (let distance = 0; distance < scope.depth; distance += 1) {
+      const frontier = new Set(keys);
+      for (const relation of relationMap.values()) {
+        const sourceKey = scopedReferenceKey(
+          relation.world_id,
+          relation.source_ref
+        );
+        const targetKey = scopedReferenceKey(
+          relation.world_id,
+          relation.target_ref
+        );
+        if (frontier.has(sourceKey)) keys.add(targetKey);
+        if (frontier.has(targetKey)) keys.add(sourceKey);
+      }
+    }
+    return keys;
+  })();
   if (query.diagnostics_filter.include_unplaced)
     for (const event of eventMap.values())
       if (event.temporal_position.kind === "unplaced")
@@ -535,6 +632,8 @@ export function composeGraphPublicationQuery(
   const allEvents = [...eventMap.values()]
     .filter(
       (event) =>
+        (scopeKeys === null ||
+          scopeKeys.has(scopedEventKey(event.world_id, event.id))) &&
         query.entity_filter.event_kinds.includes(event.event_kind) &&
         (query.entity_filter.roles.length === 0 ||
           query.entity_filter.roles.some((role) => event.roles.includes(role)))
@@ -544,8 +643,14 @@ export function composeGraphPublicationQuery(
     );
   const allSubjects = [...subjectMap.values()].filter(
     (subject) =>
-      query.entity_filter.subject_handle_ids.length === 0 ||
-      query.entity_filter.subject_handle_ids.includes(subject.subject_handle_id)
+      (scopeKeys === null ||
+        subject.member_event_ids.some((eventId) =>
+          scopeKeys.has(scopedEventKey(subject.world_id, eventId))
+        )) &&
+      (query.entity_filter.subject_handle_ids.length === 0 ||
+        query.entity_filter.subject_handle_ids.includes(
+          subject.subject_handle_id
+        ))
   );
   const visibleCompositeIds = new Set(
     allEvents
@@ -556,8 +661,20 @@ export function composeGraphPublicationQuery(
     visibleCompositeIds.has(composite.event_id)
   );
   const allNarratives = query.entity_filter.include_narratives
-    ? [...narrativeMap.values()]
+    ? [...narrativeMap.values()].filter(
+        (narrative) =>
+          scopeKeys === null ||
+          (narrative.scope_type === "event" &&
+            scopeKeys.has(
+              scopedEventKey(narrative.world_id, narrative.scope_id)
+            ))
+      )
     : [];
+  const allStates = [...stateMap.values()].filter(
+    (state) =>
+      scopeKeys === null ||
+      scopeKeys.has(scopedEventKey(state.world_id, state.composite_event_id))
+  );
   const maxEntities = query.budget.max_entities;
   const entityCount =
     allEvents.length +
@@ -574,17 +691,24 @@ export function composeGraphPublicationQuery(
   const subjects = take(allSubjects);
   const composites = take(allComposites);
   const narratives = take(allNarratives);
-  const relations = [...relationMap.values()].slice(
-    0,
-    query.budget.max_relations
+  const scopedRelations = [...relationMap.values()].filter(
+    (relation) =>
+      scopeKeys === null ||
+      (scopeKeys.has(
+        scopedReferenceKey(relation.world_id, relation.source_ref)
+      ) &&
+        scopeKeys.has(
+          scopedReferenceKey(relation.world_id, relation.target_ref)
+        ))
   );
+  const relations = scopedRelations.slice(0, query.budget.max_relations);
   const evidence = [...evidenceMap.values()].slice(
     0,
     query.budget.max_evidence
   );
   const truncated =
     entityCount > maxEntities ||
-    relationMap.size > relations.length ||
+    scopedRelations.length > relations.length ||
     evidenceMap.size > evidence.length;
   if (truncated)
     diagnostics.push({
@@ -618,12 +742,16 @@ export function composeGraphPublicationQuery(
     time_systems: [...timeSystemMap.values()],
     events,
     virtual_time_events: query.entity_filter.include_virtual_time_events
-      ? [...timeEventMap.values()]
+      ? [...timeEventMap.values()].filter(
+          (event) =>
+            scopeKeys === null ||
+            scopeKeys.has(scopedReferenceKey(event.world_id, event.reference))
+        )
       : [],
     relations,
     subjects,
     composites,
-    states: [...stateMap.values()],
+    states: allStates,
     narratives,
     evidence,
     diagnostics,

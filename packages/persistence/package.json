@@ -12,6 +12,7 @@
   "scripts": {
     "build": "tsc -p tsconfig.build.json",
     "migrate": "tsx src/migrate.ts",
+    "ip003:preflight": "tsx src/ip003-preflight.ts",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {

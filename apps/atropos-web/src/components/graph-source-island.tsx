@@ -167,7 +167,8 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     "sources" | "entities" | "search" | "relations" | "diagnostics"
   >("sources");
   const [searchTerm, setSearchTerm] = useState("");
-  const { state, setState, catalog, entities } = useGraphQuery();
+  const { state, setState, setSourceState, catalog, entities } =
+    useGraphQuery();
   const [draftFrameId, setDraftFrameId] = useState<string | null>(null);
   const activeFrame = useMemo(
     () => findFrame(state, catalog),
@@ -190,29 +191,38 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     [activeTab, entities, searchTerm, state]
   );
 
-  const toggleWorld = useCallback((world: GraphSourceWorldOption) => {
-    setState((current) => {
-      const existing = sourceForWorld(current, world.id);
-      if (existing) {
-        if (current.query.sources.length === 1) {
-          return current;
+  const toggleWorld = useCallback(
+    (world: GraphSourceWorldOption) => {
+      setSourceState((current) => {
+        const existing = sourceForWorld(current, world.id);
+        if (existing) {
+          if (current.query.sources.length === 1) {
+            return current;
+          }
+          return replaceGraphSources(
+            current,
+            current.query.temporal_frame.target,
+            current.query.sources.filter(
+              (source) => source.world_id !== world.id
+            )
+          );
         }
         return replaceGraphSources(
           current,
           current.query.temporal_frame.target,
-          current.query.sources.filter((source) => source.world_id !== world.id)
+          [
+            ...current.query.sources,
+            sourceFromWorld(world, current.query.temporal_frame.target)
+          ]
         );
-      }
-      return replaceGraphSources(current, current.query.temporal_frame.target, [
-        ...current.query.sources,
-        sourceFromWorld(world, current.query.temporal_frame.target)
-      ]);
-    });
-  }, []);
+      });
+    },
+    [setSourceState]
+  );
 
   const toggleCanon = useCallback(
     (world: GraphSourceWorldOption, canonId: string) => {
-      setState((current) => {
+      setSourceState((current) => {
         const selectedSource = sourceForWorld(current, world.id);
         if (!selectedSource) {
           return current;
@@ -236,7 +246,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
         );
       });
     },
-    []
+    [setSourceState]
   );
 
   const applyDraftFrame = useCallback(() => {
@@ -251,11 +261,11 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
         )
       )
       .map((world) => sourceFromWorld(world, draftFrame.target));
-    setState((current) =>
+    setSourceState((current) =>
       replaceGraphSources(current, draftFrame.target, compatibleSources)
     );
     setDraftFrameId(null);
-  }, [catalog, draftFrame]);
+  }, [catalog, draftFrame, setSourceState]);
 
   const removedSources = draftFrame
     ? state.query.sources.filter((source) => {

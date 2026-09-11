@@ -28,6 +28,7 @@ import {
 type GraphQueryContextValue = {
   readonly state: MoiraiGraphUrlState;
   readonly setState: Dispatch<SetStateAction<MoiraiGraphUrlState>>;
+  readonly setSourceState: Dispatch<SetStateAction<MoiraiGraphUrlState>>;
   readonly catalog: GraphSourceCatalog;
   readonly entities: readonly GraphSearchEntity[];
   readonly relations: readonly GraphRelationMatch[];
@@ -53,6 +54,20 @@ export function GraphQueryProvider({
 }>) {
   const [state, setState] = useState(initialState);
   const router = useRouter();
+  const setSourceState = useCallback<
+    Dispatch<SetStateAction<MoiraiGraphUrlState>>
+  >(
+    (update) => {
+      const next = typeof update === "function" ? update(state) : update;
+      setState(next);
+      const nextSearch = buildGraphUrlSearch(window.location.search, next);
+      router.replace(
+        `${window.location.pathname}${nextSearch}${window.location.hash}`,
+        { scroll: false }
+      );
+    },
+    [router, state]
+  );
 
   useEffect(() => setState(initialState), [initialState]);
 
@@ -71,16 +86,25 @@ export function GraphQueryProvider({
   useEffect(() => {
     const nextSearch = buildGraphUrlSearch(window.location.search, state);
     if (nextSearch !== window.location.search) {
-      router.replace(
-        `${window.location.pathname}${nextSearch}${window.location.hash}`,
-        { scroll: false }
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${nextSearch}${window.location.hash}`
       );
     }
-  }, [router, state]);
+  }, [state]);
 
   const value = useMemo(
-    () => ({ state, setState, catalog, entities, relations, diagnostics }),
-    [catalog, diagnostics, entities, relations, state]
+    () => ({
+      state,
+      setState,
+      setSourceState,
+      catalog,
+      entities,
+      relations,
+      diagnostics
+    }),
+    [catalog, diagnostics, entities, relations, setSourceState, state]
   );
   return (
     <GraphQueryContext.Provider value={value}>

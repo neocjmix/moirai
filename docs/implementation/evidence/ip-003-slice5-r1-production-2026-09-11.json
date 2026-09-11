@@ -1,0 +1,167 @@
+{
+  "evidence_version": 1,
+  "recorded_at": "2026-09-11T12:43:54Z",
+  "status": "passed_ip003_complete",
+  "baseline": {
+    "ip003_start_main_sha": "8854da284631f836cb34692f36070b718dce3e2d",
+    "m4_5_c_main_sha": "2c9002848e91c337876103d21e17804148d9f159",
+    "implementation_pull_request": 36,
+    "implementation_main_sha": "1bd88854bb45f20edf95e8a0f4e3c89c99a033bb",
+    "pr_ci_run": 34576628203,
+    "main_ci_run": 34576831599,
+    "post_deploy_smoke_run": 34577001008
+  },
+  "deployments": {
+    "atropos": "0a44bedb-6ca9-4dff-be88-62a2c665e037",
+    "clotho": "18312f5a-0202-49d9-9475-377a86543169",
+    "worker": "a7a2e35f-c7fc-42b3-b80c-68b3e0f4529c",
+    "application_sha": "1bd88854bb45f20edf95e8a0f4e3c89c99a033bb",
+    "status": "success"
+  },
+  "migration_009": {
+    "result": "success",
+    "preflight_counts": {
+      "worlds": 3,
+      "canons": 6,
+      "events": 30,
+      "active_events": 30,
+      "event_memberships": 33,
+      "active_event_memberships": 33,
+      "relations": 50,
+      "active_relations": 50,
+      "relation_memberships": 50,
+      "active_relation_memberships": 50
+    },
+    "preflight_invariants": {
+      "events_without_world": 0,
+      "active_events_without_active_membership": 0,
+      "cross_world_event_memberships": 0,
+      "duplicate_active_event_memberships": 0,
+      "relations_without_world": 0,
+      "active_relations_without_active_membership": 0,
+      "cross_world_relation_memberships": 0,
+      "duplicate_active_relation_memberships": 0,
+      "legacy_event_canon_cross_world": 0,
+      "legacy_relation_canon_cross_world": 0
+    },
+    "backfill": {
+      "relation_world_ids": 50,
+      "relation_memberships": 50,
+      "deleted_rows": 0,
+      "relation_identity_changes": 0,
+      "world_revision_changes": 0
+    },
+    "rollback_and_repair": "Before a shared Relation exists, down migration can repair the frozen legacy canon_id from the sole active membership. Once a Relation has multiple memberships, down migration fails closed; forward withdrawal or membership repair preserves identity and history."
+  },
+  "acceptance_change": {
+    "world_id": "01995c2a-7b00-7000-8000-000000000101",
+    "world_title": "Graph Scope Observatory",
+    "source_revision": 3,
+    "committed_revision": 4,
+    "change_set_id": "019f3b20-0000-7000-8000-000000000900",
+    "plan_digest": "38e24c9a4af8bb12f1b684160f7518ddf0a0317a76d9c4fedda59a626d3fb31e",
+    "idempotent_replay": false,
+    "warnings": [],
+    "created": {
+      "relations": 3,
+      "relation_memberships": 4,
+      "events": 0,
+      "deleted_rows": 0
+    },
+    "relations": {
+      "shared": {
+        "id": "019f3b20-0000-7000-8000-000000000911",
+        "type": "influences",
+        "memberships": ["K1", "K2"]
+      },
+      "k1_specific": {
+        "id": "019f3b20-0000-7000-8000-000000000912",
+        "type": "causes",
+        "memberships": ["K1"]
+      },
+      "k2_specific": {
+        "id": "019f3b20-0000-7000-8000-000000000913",
+        "type": "prevents",
+        "memberships": ["K2"]
+      }
+    }
+  },
+  "production_state_after_fixture": {
+    "events": 30,
+    "active_event_memberships": 33,
+    "relations": 53,
+    "active_relation_memberships": 54,
+    "active_events_without_active_membership": 0,
+    "active_relations_without_active_membership": 0,
+    "shared_relation_return_count_in_combined_query": 1,
+    "served_revision": 4,
+    "projection_status": "ready"
+  },
+  "production_validation": {
+    "active_relation_without_membership": "relation_canon_membership_required",
+    "duplicate_relation_membership": "duplicate_canon_membership",
+    "last_relation_membership_removal": "relation_canon_membership_required",
+    "last_membership_removal_with_relation_withdrawal": "valid",
+    "cross_world_relation_membership": "passed_in_postgresql_ci_fixture; production credential exposes one World only"
+  },
+  "round_trip": {
+    "canonical_write": "passed",
+    "postgresql_revision_read": "passed",
+    "clotho_combined_query": "shared Relation returned once with both memberships",
+    "clotho_k1_relations": ["influences(shared)", "causes(K1)"],
+    "clotho_k2_relations": ["influences(shared)", "prevents(K2)"],
+    "publication_format": "3.0.0",
+    "publication_served_revision": 4,
+    "event_document_relation_memberships": "preserved",
+    "world_event_route_http": 200,
+    "canon_context_event_route_http": 200,
+    "immutable_cache_header": "public, max-age=31536000, immutable",
+    "export_import": "passed in the PostgreSQL canonical-to-public integration fixture",
+    "event_identity_duplication": 0,
+    "relation_identity_duplication": 0
+  },
+  "publication_artifacts": {
+    "revision_4_immutable_documents": 22,
+    "revision_4_manifest": 1,
+    "mutable_current_pointer": 1,
+    "prior_revision_artifacts_changed_or_deleted": 0
+  },
+  "compatibility": {
+    "change_plan_v2_v3_ingress": "tested",
+    "publication_v1_v2_read_adapters": "tested",
+    "portability_v1_v2_read_adapters": "tested",
+    "legacy_relation_canon_column": "preserved_frozen_noncanonical",
+    "legacy_event_canon_column": "preserved_frozen_noncanonical",
+    "existing_publication_artifacts": "immutable and still readable",
+    "mcp_connector_descriptor_note": "The connected UI descriptor still displays legacy 0.3.0, while production accepted and returned native numeric contract_version 4."
+  },
+  "regression": {
+    "unit_tests": "26 files, 131 tests passed",
+    "postgresql_integration_tests": "25 tests passed",
+    "service_dependency_boundaries": "passed",
+    "strict_typecheck": "passed",
+    "production_build": "passed",
+    "mobile_webkit": "5 tests passed",
+    "dependency_audit": "passed",
+    "secret_scan": "passed",
+    "post_deploy_smoke": "passed, including authenticated authoring to public Atropos"
+  },
+  "semantic_impact": {
+    "narrative": "unchanged authored prose entity with existing canon_id scope",
+    "time_system": "Canon-TimeSystem N:M and TS-010 semantics unchanged",
+    "correspondence": "preserved for distinct identities; shared identity no longer requires inferred correspondence",
+    "derived_models": "remain projections and preserve Canon membership context",
+    "world_boundary": "unchanged transaction, Revision, export and access boundary"
+  },
+  "follow_up_plans": {
+    "m4_5": "redesigned as inactive D1 -> D2 -> E -> F -> G -> H; user approval required to activate D1",
+    "m5": "redesigned and inactive; M4.5 completion plus separate user approval required",
+    "m4_5_d_started": false,
+    "m5_started": false
+  },
+  "known_limitations": [
+    "Frozen legacy ownership columns remain only for boundary compatibility and guarded rollback; they are not canonical ownership sources.",
+    "The connected MCP tool descriptor has not refreshed its displayed contract literal, although the live response and server contract are version 4."
+  ],
+  "remaining_approval_decisions": []
+}

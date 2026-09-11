@@ -24,6 +24,11 @@ function target(from: string, spec: string): string {
   return spec;
 }
 function forbidden(from: string, to: string): boolean {
+  if (
+    from.startsWith("apps/atropos-web/src/") &&
+    !from.startsWith("apps/atropos-web/src/urdr-port/")
+  )
+    return to.startsWith("@urdr/");
   if (from.startsWith("packages/contracts/")) return to.includes("urdr-port");
   if (from.startsWith("packages/clotho-application/"))
     return (
@@ -92,6 +97,7 @@ function scan(dir: string): void {
 }
 for (const dir of [
   "apps/clotho-api/src",
+  "apps/atropos-web/src",
   "packages/contracts/src",
   "packages/clotho-application/src",
   "packages/lachesis/src"

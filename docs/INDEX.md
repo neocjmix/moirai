@@ -22,6 +22,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [시간 모델 드리프트 분석과 세션 인계](implementation/TEMPORAL-MODEL-DRIFT.md)
 - [시간 표현력 종단간 수용시험](implementation/TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)
 - [IP-002 — 시간 모델 재정렬 구현 계획](implementation/IP-002-temporal-model-realignment.md)
+- [IP-003 — Canon 의미 재정렬 구현 계획](implementation/IP-003-canon-semantic-realignment.md)
 - [현재 구현 상태](implementation/CURRENT.md)
 - [M3-R 책임 경계 재정렬](implementation/M3-BOUNDARY.md)
 - [M3-C Auth0·MCP 연결](implementation/M3-CONNECTION.md)

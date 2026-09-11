@@ -4,10 +4,10 @@
 
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 기준 계획                  | [IP-001 — 첫 제품 구현 계획](IP-001-first-product-plan.md)                                                                    |
-| 실행 상태                  | `in_progress` — IP-001 M4.5 계획 활성; M4는 Slice A~F 증거를 보존하고 조기 종료                                               |
-| 활성 milestone             | [M4.5 — Atropos 탐색 UI와 Moirai-native graph query](M4.5-ATROPOS-EXPLORATION-UI.md)                                          |
-| 현재 slice                 | 대기 — M4.5-C 완료; M4.5-D는 사용자 전환 지시 전 비활성, graph viewport 변경 금지, M5 비활성                                |
+| 기준 계획                  | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
+| 실행 상태                  | `in_progress` — M4.5-C 기준선 위에서 IP-003 활성; M4.5-D 이후와 M5는 비활성                                                  |
+| 활성 milestone             | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md) Slice 0                                                    |
+| 현재 slice                 | Slice 0 — baseline·semantic dependency map·계획 정렬; 코드 변경 전 checkpoint                                                |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
@@ -17,6 +17,7 @@
 | M4.5-B locale 후속          | [PR #23](https://github.com/neocjmix/moirai/pull/23) merge·production `cf0f5a7f747acb9c110cbea0c7db4a3ae068c6ce`; [CI 34393637840](https://github.com/neocjmix/moirai/actions/runs/34393637840) success |
 | M4.5-C Sources checkpoint  | [PR #25](https://github.com/neocjmix/moirai/pull/25) merge·production `2c9002848e91c337876103d21e17804148d9f159`; [CI 34428583825](https://github.com/neocjmix/moirai/actions/runs/34428583825) success |
 | M4.5-C 배포 smoke          | [34428902256](https://github.com/neocjmix/moirai/actions/runs/34428902256) `success`; 공개 `/__status` SHA 일치, `/graph` Sources island 확인 |
+| IP-003 시작 기준선         | `main` `8854da284631f836cb34692f36070b718dce3e2d`; CI `34556657861`, post-deploy `34556777058` success; production `/__status`와 M4.5-C `/graph` 재확인 |
 | M4-A 검증 application SHA  | `0bbabae947761b0cc380951a56677bd7e443db09`                                                                                    |
 | public integration URL     | <https://moirai-production-8ed1.up.railway.app/>                                                                              |
 | M4.5 graph 기준 URL        | <https://moirai-production-8ed1.up.railway.app/graph>                                                                         |

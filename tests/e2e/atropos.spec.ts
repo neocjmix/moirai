@@ -112,9 +112,11 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
     .click();
   await page.getByRole("tab", { name: "Relations" }).click();
 
-  const shared = page.locator(
-    '[data-relation-id="019f3b00-0000-7000-8000-000000000201"]'
-  );
+  const shared = page
+    .getByTestId("moirai-source-island")
+    .locator(
+      '[data-relation-id="019f3b00-0000-7000-8000-000000000201"]'
+    );
   await expect(shared).toHaveCount(1);
   await expect(shared).toContainText(canonId);
   await expect(shared).toContainText(firstEventId);

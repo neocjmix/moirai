@@ -41,7 +41,7 @@
 | M4-F production 검증       | Graph Scope Observatory revision 2; [machine-readable evidence](evidence/m4-f-vertical-chronology-production-2026-09-09.json) |
 | 최근 bearer smoke          | [34293280937](https://github.com/neocjmix/moirai/actions/runs/34293280937) `failure`; readiness 성공 후 stale bearer MCP 실패 |
 | 실제 OAuth 검증            | [M3-C 검증 기록](M3-C-VERIFICATION.md), [재현 가능한 synthetic plan](evidence/m3-c-oauth-recovery-plan.json)                  |
-| 마지막 runtime 검증 SHA·E2E | Atropos·Clotho·worker `2c9002848e91c337876103d21e17804148d9f159`; [M4.5-C smoke 34428902256](https://github.com/neocjmix/moirai/actions/runs/34428902256) `success` |
+| M4.5-C 구현 runtime 검증   | Atropos·Clotho·worker `2c9002848e91c337876103d21e17804148d9f159`; [M4.5-C smoke 34428902256](https://github.com/neocjmix/moirai/actions/runs/34428902256) `success` |
 | IP-002 구현 CI             | PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`; [CI 34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511) `success` |
 | 보호 기준선                | branch `baseline/m4d-2026-09-05`; M4-D SHA `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                      |
 

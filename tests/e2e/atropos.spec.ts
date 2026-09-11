@@ -38,7 +38,7 @@ test("mobile graph shell navigates app screens without consuming graph query sta
   await expect(graph).toHaveAttribute("aria-current", "page");
 });
 
-test.skip("legacy source island is retired by the native H viewport", async ({
+test("mobile source island restores published World, Canon, Time System, and Revision", async ({
   page
 }) => {
   await page.goto("/graph");
@@ -72,7 +72,7 @@ test.skip("legacy source island is retired by the native H viewport", async ({
   await expect(page.getByLabel(/Temporal Acceptance Canon/)).toBeChecked();
 });
 
-test.skip("legacy identity island is covered by native query results", async ({
+test("identity-aware search deduplicates shared Events and restores Canon context and focus", async ({
   page
 }) => {
   await page.goto("/graph");
@@ -102,7 +102,7 @@ test.skip("legacy identity island is covered by native query results", async ({
   expect(new URL(page.url()).searchParams.get("mq")).toContain(firstEventId);
 });
 
-test.skip("legacy Relation island is covered by native query results", async ({
+test("R1 Relation filters preserve shared identity and explain contradiction", async ({
   page
 }) => {
   await page.goto("/graph");

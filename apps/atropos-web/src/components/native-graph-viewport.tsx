@@ -13,6 +13,7 @@ import {
 } from "react";
 
 import type { AppLocale } from "../urdr-port/src/locale";
+import { GraphSourceIsland } from "./graph-source-island";
 import { useGraphQuery } from "./graph-query-context";
 import styles from "./native-graph-viewport.module.css";
 
@@ -62,6 +63,44 @@ function rank(event: MoiraiGraphEvent, fallback: number) {
     : fallback;
 }
 
+function temporalSystemIds(event: MoiraiGraphEvent): readonly string[] {
+  const position = event.temporal_position;
+  if (position.kind === "exact" && position.at.kind === "time_event")
+    return [position.at.time_system_ref.time_system_id];
+  if (position.kind === "bounded")
+    return [position.lower, position.upper].flatMap((reference) =>
+      reference?.kind === "time_event"
+        ? [reference.time_system_ref.time_system_id]
+        : []
+    );
+  if (position.kind === "mixed")
+    return position.bounds.flatMap((reference) =>
+      reference.kind === "time_event"
+        ? [reference.time_system_ref.time_system_id]
+        : []
+    );
+  return [];
+}
+
+function temporalLabel(event: MoiraiGraphEvent, incompatible: boolean) {
+  const prefix = incompatible ? "incompatible" : event.temporal_position.kind;
+  const position = event.temporal_position;
+  if (position.kind === "exact")
+    return `${prefix} · ${position.at.kind === "time_event" ? position.at.coordinate : position.at.event_id}`;
+  if (position.kind === "bounded") {
+    const coordinate = (value: typeof position.lower) =>
+      value?.kind === "time_event"
+        ? value.coordinate
+        : value?.kind === "event"
+          ? value.event_id
+          : "open";
+    return `${prefix} · ${coordinate(position.lower)} … ${coordinate(position.upper)}`;
+  }
+  if (position.kind === "relative_only" || position.kind === "mixed")
+    return `${prefix} · ${position.component_id} · rank ${position.rank}`;
+  return `${prefix} · ${position.reason_code}`;
+}
+
 export function NativeGraphViewport({
   initialResult,
   locale
@@ -78,6 +117,7 @@ export function NativeGraphViewport({
   const [activeTab, setActiveTab] = useState<Tab>("sources");
   const [query, setQuery] = useState("");
   const [view, setView] = useState({ x: 80, y: 170, scale: 1 });
+  const loadedQuery = useRef(JSON.stringify(initialResult.query));
   const drag = useRef<{
     x: number;
     y: number;
@@ -88,7 +128,8 @@ export function NativeGraphViewport({
   const pinchDistance = useRef<number | null>(null);
 
   useEffect(() => {
-    if (state.query === initialResult.query) return;
+    const queryKey = JSON.stringify(state.query);
+    if (queryKey === loadedQuery.current) return;
     const controller = new AbortController();
     setStatus("loading");
     void fetch("/graph/query", {
@@ -102,6 +143,7 @@ export function NativeGraphViewport({
         return (await response.json()) as { result: MoiraiGraphQueryResult };
       })
       .then((payload) => {
+        loadedQuery.current = JSON.stringify(payload.result.query);
         setResult(payload.result);
         setStatus("ready");
       })
@@ -112,6 +154,12 @@ export function NativeGraphViewport({
       });
     return () => controller.abort();
   }, [initialResult.query, state.query]);
+
+  useEffect(() => {
+    loadedQuery.current = JSON.stringify(initialResult.query);
+    setResult(initialResult);
+    setStatus("ready");
+  }, [initialResult]);
 
   useEffect(() => {
     const detail =
@@ -145,6 +193,15 @@ export function NativeGraphViewport({
     () => result.revision_vector.map((entry) => entry.world_id),
     [result.revision_vector]
   );
+  const incompatibleSystems = useMemo(
+    () =>
+      new Set(
+        result.compatibility
+          .filter((entry) => !entry.lossless)
+          .map((entry) => entry.source.time_system_id)
+      ),
+    [result.compatibility]
+  );
   const nodes = useMemo(
     () =>
       result.events.map((event, index) => {
@@ -156,19 +213,48 @@ export function NativeGraphViewport({
           "unplaced"
         ].indexOf(event.temporal_position.kind);
         const worldColumn = Math.max(0, worlds.indexOf(event.world_id));
+        const incompatible = temporalSystemIds(event).some((id) =>
+          incompatibleSystems.has(id)
+        );
         return {
           event,
           x: worldColumn * 1_080 + Math.max(0, temporalLane) * 210,
           y: rank(event, index) * 118,
-          key: eventKey(event)
+          key: eventKey(event),
+          incompatible
         };
       }),
-    [result.events, worlds]
+    [incompatibleSystems, result.events, worlds]
+  );
+  const virtualNodes = useMemo(
+    () =>
+      result.virtual_time_events.map((event, index) => ({
+        event,
+        x: Math.max(0, worlds.indexOf(event.world_id)) * 1_080 - 170,
+        y: (result.events.length + index) * 86,
+        key: `${event.world_id}:${event.id}`
+      })),
+    [result.events.length, result.virtual_time_events, worlds]
   );
   const nodeByKey = useMemo(
     () => new Map(nodes.map((node) => [node.key, node])),
     [nodes]
   );
+  const virtualNodeFor = (
+    worldId: string,
+    reference: Extract<
+      MoiraiGraphQueryResult["relations"][number]["source_ref"],
+      { kind: "time_event" }
+    >
+  ) =>
+    virtualNodes.find(
+      ({ event }) =>
+        event.world_id === worldId &&
+        event.reference.time_system_ref.time_system_id ===
+          reference.time_system_ref.time_system_id &&
+        event.reference.definition_version === reference.definition_version &&
+        event.reference.coordinate === reference.coordinate
+    );
   const selected = useMemo(() => {
     if (state.focus?.kind !== "event" || state.focus.event_ref.kind !== "event")
       return null;
@@ -289,29 +375,85 @@ export function NativeGraphViewport({
         viewBox="0 0 1200 900"
       >
         <g transform={`translate(${view.x} ${view.y}) scale(${view.scale})`}>
-          {result.relations.map((relation) => {
-            if (
-              relation.source_ref.kind !== "event" ||
-              relation.target_ref.kind !== "event"
-            )
-              return null;
-            const source = nodeByKey.get(
-              `${relation.world_id}:${relation.source_ref.event_id}`
-            );
-            const target = nodeByKey.get(
-              `${relation.world_id}:${relation.target_ref.event_id}`
-            );
-            if (!source || !target) return null;
+          {result.composites.map((composite) => {
+            const members = composite.descendant_event_ids
+              .map((id) => nodeByKey.get(`${composite.world_id}:${id}`))
+              .filter((node): node is NonNullable<typeof node> =>
+                Boolean(node)
+              );
+            if (members.length === 0) return null;
+            const minX = Math.min(...members.map((node) => node.x)) - 74;
+            const maxX = Math.max(...members.map((node) => node.x)) + 74;
+            const minY = Math.min(...members.map((node) => node.y)) - 62;
+            const maxY = Math.max(...members.map((node) => node.y)) + 62;
             return (
-              <g key={`${relation.world_id}:${relation.id}`}>
-                <line
+              <g
+                className={styles.compositeRegion}
+                data-composite-event={composite.event_id}
+                key={`${composite.world_id}:${composite.canon_id}:${composite.event_id}`}
+              >
+                <rect
+                  height={maxY - minY}
+                  rx="28"
+                  width={maxX - minX}
+                  x={minX}
+                  y={minY}
+                />
+                <text x={minX + 12} y={minY + 20}>
+                  Composite · {composite.event_id}
+                </text>
+              </g>
+            );
+          })}
+          {result.subjects.map((subject) => {
+            const members = subject.member_event_ids
+              .map((id) => nodeByKey.get(`${subject.world_id}:${id}`))
+              .filter((node): node is NonNullable<typeof node> => Boolean(node))
+              .sort((left, right) => left.y - right.y);
+            if (members.length < 2) return null;
+            return (
+              <g
+                className={styles.subjectLane}
+                data-subject={subject.subject_handle_id}
+                key={`${subject.world_id}:${subject.canon_id}:${subject.subject_handle_id}`}
+              >
+                <polyline
+                  points={members
+                    .map((node) => `${node.x},${node.y}`)
+                    .join(" ")}
+                />
+                <text x={members[0]!.x + 46} y={members[0]!.y - 28}>
+                  {subject.label} · identity / lineage
+                </text>
+              </g>
+            );
+          })}
+          {result.relations.map((relation) => {
+            const source =
+              relation.source_ref.kind === "event"
+                ? nodeByKey.get(
+                    `${relation.world_id}:${relation.source_ref.event_id}`
+                  )
+                : virtualNodeFor(relation.world_id, relation.source_ref);
+            const target =
+              relation.target_ref.kind === "event"
+                ? nodeByKey.get(
+                    `${relation.world_id}:${relation.target_ref.event_id}`
+                  )
+                : virtualNodeFor(relation.world_id, relation.target_ref);
+            if (!source || !target) return null;
+            const middle = (source.x + target.x) / 2;
+            const path = `M ${source.x} ${source.y} H ${middle} V ${target.y} H ${target.x}`;
+            return (
+              <g
+                data-shared={relation.canon_memberships.length > 1}
+                key={`${relation.world_id}:${relation.id}`}
+              >
+                <path
                   className={styles.edge}
+                  d={path}
                   data-relation-id={relation.id}
                   data-type={relation.type}
-                  x1={source.x}
-                  x2={target.x}
-                  y1={source.y}
-                  y2={target.y}
                 />
                 <text
                   x={(source.x + target.x) / 2 + 8}
@@ -322,10 +464,12 @@ export function NativeGraphViewport({
               </g>
             );
           })}
-          {nodes.map(({ event, x, y, key }) => (
+          {nodes.map(({ event, x, y, key, incompatible }) => (
             <g
               className={styles.node}
               data-graph-node
+              data-incompatible={incompatible}
+              data-temporal-kind={event.temporal_position.kind}
               data-selected={
                 selected?.id === event.id &&
                 selected.world_id === event.world_id
@@ -350,8 +494,23 @@ export function NativeGraphViewport({
                 {event.title.slice(0, 24)}
               </text>
               <text className={styles.membership} textAnchor="middle" y={15}>
-                {event.temporal_position.kind} ·{" "}
-                {event.canon_memberships.length} Canon
+                {temporalLabel(event, incompatible).slice(0, 34)}
+              </text>
+            </g>
+          ))}
+          {virtualNodes.map(({ event, x, y, key }) => (
+            <g
+              className={styles.virtualNode}
+              data-time-event={event.id}
+              key={key}
+              transform={`translate(${x} ${y})`}
+            >
+              <rect height="48" rx="12" width="150" x="-75" y="-24" />
+              <text textAnchor="middle" y="-2">
+                {event.reference.coordinate}
+              </text>
+              <text className={styles.membership} textAnchor="middle" y="14">
+                virtual · {event.reference.time_system_ref.time_system_id}
               </text>
             </g>
           ))}
@@ -629,17 +788,18 @@ export function NativeGraphViewport({
           data-testid="native-graph-inspector"
           role="dialog"
         >
-          <p>
-            {selected.event_kind === "composite" ? "Composite Event" : "Event"}{" "}
-            · persisted
-          </p>
           <button
             aria-label="Close selected graph entity inspector"
-            onClick={() => setSelectedKey(null)}
+            className={styles.sheetClose}
+            onClick={() => setState((current) => ({ ...current, focus: null }))}
             type="button"
           >
             ×
           </button>
+          <p>
+            {selected.event_kind === "composite" ? "Composite Event" : "Event"}{" "}
+            · persisted
+          </p>
           <h2>{selected.title}</h2>
           <p>{selected.summary ?? "No summary"}</p>
           <dl>
@@ -692,6 +852,7 @@ export function NativeGraphViewport({
           ))}
         </ol>
       </details>
+      <GraphSourceIsland locale={locale} />
     </main>
   );
 }

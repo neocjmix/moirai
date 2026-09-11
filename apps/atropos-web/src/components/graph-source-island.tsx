@@ -58,7 +58,7 @@ const COPY = {
     cancel: "취소",
     revisionVector: "Revision vector",
     legacyViewport:
-      "이 결과는 선택한 World의 immutable Publication과 같은 served Revision에서 합성됩니다. viewport는 M4.5-H에서 native renderer로 교체됩니다.",
+      "이 결과는 선택한 World의 immutable Publication과 같은 served Revision에서 합성되며 native viewport가 직접 렌더링합니다.",
     entityTitle: "Identity-aware 결과",
     entityHint:
       "공유 identity는 한 번만 표시하며 matched Canon과 전체 membership을 구분합니다.",
@@ -110,7 +110,7 @@ const COPY = {
     cancel: "Cancel",
     revisionVector: "Revision vector",
     legacyViewport:
-      "This result is composed from immutable Publication artifacts at each selected World's served Revision. The viewport becomes native in M4.5-H.",
+      "This result is composed from immutable Publication artifacts at each selected World's served Revision and rendered directly by the native viewport.",
     entityTitle: "Identity-aware results",
     entityHint:
       "Shared identities appear once, with matched Canons separate from all memberships.",

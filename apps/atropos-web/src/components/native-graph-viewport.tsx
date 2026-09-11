@@ -19,6 +19,14 @@ import styles from "./native-graph-viewport.module.css";
 
 type Tab = "sources" | "entities" | "derived" | "relations" | "diagnostics";
 
+const NATIVE_TAB_LABELS: Record<Tab, string> = {
+  sources: "Native source legend",
+  entities: "Native node list",
+  derived: "Native projection list",
+  relations: "Native edge list",
+  diagnostics: "Native diagnostic list"
+};
+
 const COPY = {
   ko: {
     title: "Moirai 공개 그래프",
@@ -542,6 +550,7 @@ export function NativeGraphViewport({
             ] as const
           ).map((tab) => (
             <button
+              aria-label={NATIVE_TAB_LABELS[tab]}
               aria-selected={activeTab === tab}
               key={tab}
               onClick={() => setActiveTab(tab)}

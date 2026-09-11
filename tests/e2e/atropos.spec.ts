@@ -140,7 +140,7 @@ test("native viewport reads immutable v3 results and restores selection", async 
   await expect(page.getByTestId("native-moirai-viewport")).toBeVisible();
   await expect(page.getByText(/Revision 2/).first()).toBeVisible();
 
-  await page.getByRole("tab", { name: "Entities" }).click();
+  await page.getByRole("tab", { name: "Native node list" }).click();
   const event = page
     .getByRole("tabpanel")
     .getByRole("button", { name: new RegExp(firstEventTitle) });
@@ -164,7 +164,7 @@ test("native viewport reads immutable v3 results and restores selection", async 
     firstEventTitle
   );
 
-  await page.getByRole("tab", { name: "Relations" }).click();
+  await page.getByRole("tab", { name: "Native edge list" }).click();
   await expect(page.locator("[data-relation-result]").first()).toBeVisible();
   await page
     .getByRole("button", { name: "Close selected graph entity inspector" })

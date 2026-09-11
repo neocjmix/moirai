@@ -440,7 +440,8 @@ complete가 아니다.
 
 ## 16. M4.5 잔여 계획 재설계 범위
 
-Event/Canon cutover와 승인된 R1 결과로 다음 경계를 확정한다. 어느 후속 slice도 자동 시작하지 않는다.
+Event/Canon cutover와 승인된 R1 결과로 다음 경계를 확정했다. 2026-09-11 후속 사용자 승인에
+따라 재설계된 D1→D2→E→F→G→H를 모두 완료했다.
 
 | 기존 slice | 예상 처리 | Canon realignment 영향 |
 | --- | --- | --- |
@@ -491,8 +492,8 @@ M5는 inactive다. 기존 lifecycle/portability/operational 범위를 유지하�
 | M5-E operations | backup/restore, Publication rebuild, SLO·migration gate | restore/rebuild 뒤 Event·Relation orphan 0, shared membership 보존, rollback drill과 full-story 검증 |
 
 Relation의 lifecycle·diff·portability 종료조건에는 R1 World identity, Canon N:M, active 최소 1,
-per-Canon endpoint membership과 withdrawal final-state rule을 그대로 적용한다. M5는 계속 inactive이며
-M4.5 종료와 별도 사용자 승인 전 구현하지 않는다.
+per-Canon endpoint membership과 withdrawal final-state rule을 그대로 적용한다. M5는 사용자가
+지정한 M5 직전 정지점에 따라 계속 inactive다.
 
 ## 18. 종료 상태와 decision record
 
@@ -510,7 +511,7 @@ M4.5 종료와 별도 사용자 승인 전 구현하지 않는다.
 
 현재 종료 상태는 `complete`다. Slice 0~7, Event/Canon과 R1 Relation의 production acceptance,
 문서 정렬 및 M4.5/M5 재설계를 완료했다. 추가 semantic approval 없이 IP-003 자체에 남은 구현은
-없다. 재설계된 M4.5-D1과 M5는 시작하지 않았으며 각각 사용자 활성화 승인을 기다린다.
+없다. 재설계된 M4.5-D1~H는 후속 승인과 검증을 거쳐 완료했고 M5는 시작하지 않았다.
 
 Event 1..N, Canon 정의, Narrative authored prose, World boundary와 derived 지위는 이미 승인됐으므로
 decision register로 되돌리지 않는다.

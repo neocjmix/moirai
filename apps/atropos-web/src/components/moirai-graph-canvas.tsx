@@ -325,6 +325,11 @@ export function MoiraiGraphCanvas({ locale }: Readonly<{ locale: AppLocale }>) {
   }, []);
   const pointerDown = useCallback(
     (event: ReactPointerEvent<HTMLDivElement>) => {
+      if (
+        event.target instanceof Element &&
+        event.target.closest("button, a, [role='button']")
+      )
+        return;
       event.currentTarget.setPointerCapture(event.pointerId);
       pointers.current.set(event.pointerId, {
         x: event.clientX,

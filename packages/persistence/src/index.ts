@@ -657,7 +657,8 @@ function temporalPreview(
     ...createdTimeSystems
   ]);
   const preview = operations.map((operation) => {
-    if (operation.entity_type !== "relation") return operation;
+    if (operation.kind !== "create" || operation.entity_type !== "relation")
+      return operation;
     const endpoints = canonicalRelationEndpoints(
       operation.value as PublicRelation
     );

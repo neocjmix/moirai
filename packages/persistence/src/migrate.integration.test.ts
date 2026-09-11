@@ -282,6 +282,8 @@ describeWithDatabase("versioned migrations", () => {
     const firstEventId = randomUUID();
     const secondEventId = randomUUID();
     const relationId = randomUUID();
+    const otherWorldId = randomUUID();
+    const otherCanonId = randomUUID();
 
     await migrateOneDown(databaseUrl ?? "");
     try {
@@ -298,6 +300,23 @@ describeWithDatabase("versioned migrations", () => {
         insert into canons (
           id, world_id, slug, title, created_revision, updated_revision
         ) values (${canonId}, ${worldId}, 'relation-canon', 'Relation Canon', 1, 1)
+      `.execute(db);
+      await sql`
+        insert into worlds (
+          id, slug, title, current_revision, publication_target_revision,
+          created_revision, updated_revision
+        ) values (
+          ${otherWorldId}, ${`relation-backfill-other-${otherWorldId}`},
+          'Other Relation World', 1, 1, 1, 1
+        )
+      `.execute(db);
+      await sql`
+        insert into canons (
+          id, world_id, slug, title, created_revision, updated_revision
+        ) values (
+          ${otherCanonId}, ${otherWorldId}, 'other-relation-canon',
+          'Other Relation Canon', 1, 1
+        )
       `.execute(db);
       await sql`
         insert into relations (
@@ -342,7 +361,7 @@ describeWithDatabase("versioned migrations", () => {
             id, world_id, canon_id, relation_id,
             created_revision, updated_revision
           ) values (
-            ${randomUUID()}, ${randomUUID()}, ${canonId}, ${relationId}, 2, 2
+            ${randomUUID()}, ${otherWorldId}, ${otherCanonId}, ${relationId}, 2, 2
           )
         `.execute(db)
       ).rejects.toMatchObject({ code: "23503" });
@@ -358,6 +377,8 @@ describeWithDatabase("versioned migrations", () => {
       });
       await sql`delete from canons where id = ${canonId}`.execute(db);
       await sql`delete from worlds where id = ${worldId}`.execute(db);
+      await sql`delete from canons where id = ${otherCanonId}`.execute(db);
+      await sql`delete from worlds where id = ${otherWorldId}`.execute(db);
     }
   });
 });

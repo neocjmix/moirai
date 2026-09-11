@@ -37,13 +37,21 @@ export function createTestChangeSet(): CreateChangeSet {
         entity_type: "event",
         entity_id: TEST_FIXTURE.eventId,
         value: {
-          canon_id: TEST_FIXTURE.canonId,
+          world_id: TEST_FIXTURE.worldId,
           slug: "first-test-event",
           kind: "atomic",
           title: TEST_FIXTURE.eventTitle,
           summary: "The first test observation.",
           roles: [],
           attributes: {}
+        }
+      },
+      {
+        kind: "add",
+        entity_type: "event_canon_membership",
+        value: {
+          event_id: TEST_FIXTURE.eventId,
+          canon_id: TEST_FIXTURE.canonId
         }
       }
     ]
@@ -94,7 +102,7 @@ export function createTestExpansionChangeSet(): CreateChangeSet {
         entity_id: fixture.secondEventId,
         client_ref: "second-event",
         value: {
-          canon_id: fixture.canonId,
+          world_id: fixture.worldId,
           slug: "second-test-event",
           kind: "atomic",
           title: fixture.secondEventTitle,
@@ -104,18 +112,34 @@ export function createTestExpansionChangeSet(): CreateChangeSet {
         }
       },
       {
+        kind: "add",
+        entity_type: "event_canon_membership",
+        value: {
+          event_id: { client_ref: "second-event" },
+          canon_id: fixture.canonId
+        }
+      },
+      {
         kind: "create",
         entity_type: "event",
         entity_id: fixture.thirdEventId,
         client_ref: "third-event",
         value: {
-          canon_id: fixture.canonId,
+          world_id: fixture.worldId,
           slug: "third-test-event",
           kind: "atomic",
           title: fixture.thirdEventTitle,
           summary: "The third test observation.",
           roles: [],
           attributes: {}
+        }
+      },
+      {
+        kind: "add",
+        entity_type: "event_canon_membership",
+        value: {
+          event_id: { client_ref: "third-event" },
+          canon_id: fixture.canonId
         }
       },
       {

@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
-import type { CreateChangeSet } from "@moirai/contracts";
+import {
+  normalizeLegacyChangePlan,
+  type CreateChangeSet
+} from "@moirai/contracts";
 import { projectPublicDocuments } from "@moirai/projections";
 import { sql } from "kysely";
 import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
@@ -22,7 +25,9 @@ const fixtureBase = new URL(
 
 function plan(path: string): CreateChangeSet {
   return {
-    ...JSON.parse(readFileSync(new URL(path, fixtureBase), "utf8")),
+    ...normalizeLegacyChangePlan(
+      JSON.parse(readFileSync(new URL(path, fixtureBase), "utf8"))
+    ),
     actor: "019f3b00-0000-7000-8000-000000000099"
   } as CreateChangeSet;
 }

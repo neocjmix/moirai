@@ -1,7 +1,54 @@
 import type { CreateChangeSet } from "./index.js";
-import { CONTRACT_VERSION } from "./versions.js";
+import { CONTRACT_VERSION, LEGACY_CONTRACT_VERSION } from "./versions.js";
 
 export type ChangePlan = Omit<CreateChangeSet, "actor">;
+
+export function normalizeLegacyChangePlan(plan: unknown): ChangePlan {
+  const legacy = plan as {
+    readonly contract_version?: unknown;
+    readonly world_id?: unknown;
+    readonly operations?: readonly Record<string, unknown>[];
+  };
+  if (legacy.contract_version !== LEGACY_CONTRACT_VERSION) {
+    return plan as ChangePlan;
+  }
+  const operations = (legacy.operations ?? []).flatMap((operation) => {
+    if (operation.kind !== "create" || operation.entity_type !== "event") {
+      return [operation];
+    }
+    const value = operation.value as Record<string, unknown>;
+    const { canon_id: canonId, ...eventValue } = value;
+    const eventReference = operation.client_ref
+      ? { client_ref: operation.client_ref }
+      : operation.entity_id;
+    const originRefs = Array.isArray(operation.origin_refs)
+      ? operation.origin_refs
+      : [];
+    return [
+      {
+        ...operation,
+        origin_refs: originRefs.filter(
+          (reference) => (reference as { field?: unknown }).field !== "canon_id"
+        ),
+        value: { ...eventValue, world_id: legacy.world_id }
+      },
+      {
+        kind: "add",
+        entity_type: "event_canon_membership",
+        origin_refs: originRefs.filter((reference) => {
+          const field = (reference as { field?: unknown }).field;
+          return field === "canon_id" || field === "*";
+        }),
+        value: { event_id: eventReference, canon_id: canonId }
+      }
+    ];
+  });
+  return {
+    ...(plan as ChangePlan),
+    contract_version: CONTRACT_VERSION,
+    operations
+  } as unknown as ChangePlan;
+}
 export const CLOTHO_METHODS = [
   "world.list",
   "world.get",
@@ -134,9 +181,49 @@ const operation = (
   ),
   anyOf: [{ required: ["entity_id"] }, { required: ["client_ref"] }]
 });
-function changePlanSchema(relation: JsonSchema): JsonSchema {
+const eventMembershipOperation = (kind: "add" | "remove"): JsonSchema =>
+  object(
+    {
+      kind: { const: kind },
+      entity_type: { const: "event_canon_membership" },
+      origin_refs: {
+        ...array(
+          object({
+            field: str(128),
+            origin_index: { type: "integer", minimum: 0, maximum: 99 }
+          })
+        ),
+        minItems: 1
+      },
+      value: object({ event_id: ref, canon_id: ref })
+    },
+    ["kind", "entity_type", "origin_refs", "value"]
+  );
+const withdrawEventOperation: JsonSchema = object(
+  {
+    kind: { const: "withdraw" },
+    entity_type: { const: "event" },
+    origin_refs: {
+      ...array(
+        object({
+          field: str(128),
+          origin_index: { type: "integer", minimum: 0, maximum: 99 }
+        })
+      ),
+      minItems: 1
+    },
+    value: object({ event_id: ref })
+  },
+  ["kind", "entity_type", "origin_refs", "value"]
+);
+function changePlanSchema(
+  relation: JsonSchema,
+  contractVersion: number,
+  event: JsonSchema,
+  membershipOperations: readonly JsonSchema[] = []
+): JsonSchema {
   return object({
-    contract_version: { const: CONTRACT_VERSION },
+    contract_version: { const: contractVersion },
     change_set_id: id,
     world_id: id,
     expected_revision: {
@@ -177,19 +264,7 @@ function changePlanSchema(relation: JsonSchema): JsonSchema {
               },
               ["world_id", "slug", "title"]
             ),
-            operation(
-              "event",
-              {
-                canon_id: ref,
-                slug: nullable(str(128)),
-                kind: choice("atomic", "composite"),
-                title: str(500),
-                summary: nullable(str(10000)),
-                roles: array(str(128)),
-                attributes: attrs
-              },
-              ["canon_id", "kind", "title", "roles", "attributes"]
-            ),
+            event,
             relation,
             operation(
               "narrative",
@@ -238,7 +313,8 @@ function changePlanSchema(relation: JsonSchema): JsonSchema {
               "canon_time_system",
               { canon_id: ref, time_system_id: ref },
               ["canon_id", "time_system_id"]
-            )
+            ),
+            ...membershipOperations
           ]
         },
         500
@@ -262,7 +338,43 @@ const temporalRelationOperation = operation(
 );
 
 export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
-  temporalRelationOperation
+  temporalRelationOperation,
+  CONTRACT_VERSION,
+  operation(
+    "event",
+    {
+      world_id: ref,
+      slug: nullable(str(128)),
+      kind: choice("atomic", "composite"),
+      title: str(500),
+      summary: nullable(str(10000)),
+      roles: array(str(128)),
+      attributes: attrs
+    },
+    ["world_id", "kind", "title", "roles", "attributes"]
+  ),
+  [
+    eventMembershipOperation("add"),
+    eventMembershipOperation("remove"),
+    withdrawEventOperation
+  ]
+);
+export const LEGACY_CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
+  temporalRelationOperation,
+  LEGACY_CONTRACT_VERSION,
+  operation(
+    "event",
+    {
+      canon_id: ref,
+      slug: nullable(str(128)),
+      kind: choice("atomic", "composite"),
+      title: str(500),
+      summary: nullable(str(10000)),
+      roles: array(str(128)),
+      attributes: attrs
+    },
+    ["canon_id", "kind", "title", "roles", "attributes"]
+  )
 );
 const page = {
   cursor: str(2000),
@@ -336,7 +448,7 @@ export function clothoInputSchema(method: ClothoMethod): JsonSchema {
     case "change.commit":
       return object(
         {
-          plan: CHANGE_PLAN_SCHEMA,
+          plan: { oneOf: [CHANGE_PLAN_SCHEMA, LEGACY_CHANGE_PLAN_SCHEMA] },
           plan_digest: { type: "string", pattern: "^[0-9a-f]{64}$" }
         },
         ["plan"]

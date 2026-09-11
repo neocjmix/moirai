@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
-import type { CreateChangeSet } from "@moirai/contracts";
+import {
+  normalizeLegacyChangePlan,
+  type CreateChangeSet
+} from "@moirai/contracts";
 import { resolveCreateOperations } from "@moirai/domain";
 import { describe, expect, it } from "vitest";
 import {
@@ -23,7 +26,7 @@ function corpus(): CanonicalRevisionView {
     (name) =>
       resolveCreateOperations(
         {
-          ...json(name),
+          ...normalizeLegacyChangePlan(json(name)),
           actor: "019f3b00-0000-7000-8000-000000000099"
         } as CreateChangeSet,
         () => {
@@ -33,17 +36,37 @@ function corpus(): CanonicalRevisionView {
   );
   const rows = (type: string) =>
     operations
-      .filter((o) => o.entity_type === type)
+      .filter((o) => o.kind === "create" && o.entity_type === type)
       .map((o) => ({ id: o.entity_id, ...o.value }));
+  const membershipCanon = new Map(
+    operations.flatMap((operation) =>
+      operation.kind === "add"
+        ? [[operation.value.event_id, operation.value.canon_id] as const]
+        : []
+    )
+  );
+  const events = operations.flatMap((operation) => {
+    if (operation.kind !== "create" || operation.entity_type !== "event")
+      return [];
+    const value = { ...operation.value };
+    delete (value as { world_id?: unknown }).world_id;
+    return [
+      {
+        id: operation.entity_id,
+        canon_id: membershipCanon.get(operation.entity_id),
+        ...value
+      }
+    ];
+  });
   return {
     world: rows("world")[0],
     canons: rows("canon"),
     timeSystems: rows("time_system"),
     canonTimeSystems: rows("canon_time_system"),
-    events: rows("event"),
+    events,
     relations: rows("relation"),
     narratives: rows("narrative")
-  } as CanonicalRevisionView;
+  } as unknown as CanonicalRevisionView;
 }
 const canonId = "019f3b00-0000-7000-8000-000000000002";
 const eventId = (suffix: string) =>

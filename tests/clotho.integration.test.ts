@@ -83,12 +83,18 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
           entity_id: firstId,
           origin_refs,
           value: {
-            canon_id: canonId,
+            world_id: worldId,
             kind: "atomic",
             title: "First light",
             roles: [],
             attributes: {}
           }
+        },
+        {
+          kind: "add",
+          entity_type: "event_canon_membership",
+          origin_refs,
+          value: { event_id: firstId, canon_id: canonId }
         }
       ]
     };
@@ -153,12 +159,18 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
             entity_id: secondId,
             origin_refs,
             value: {
-              canon_id: canonId,
+              world_id: worldId,
               kind: "atomic",
               title: "Second light",
               roles: [],
               attributes: {}
             }
+          },
+          {
+            kind: "add",
+            entity_type: "event_canon_membership",
+            origin_refs,
+            value: { event_id: secondId, canon_id: canonId }
           },
           {
             kind: "create",
@@ -197,12 +209,7 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
       );
       const invalid = {
         ...expansion,
-        operations: [
-          {
-            ...expansion.operations[0],
-            value: { ...expansion.operations[0]?.value, canon_id: uuidV7() }
-          }
-        ]
+        operations: [expansion.operations[0]!]
       };
       await expect(
         call("change.commit", { plan: invalid })
@@ -240,12 +247,18 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
             client_ref: "third",
             origin_refs,
             value: {
-              canon_id: canonId,
+              world_id: worldId,
               kind: "atomic",
               title: "Third light",
               roles: [],
               attributes: {}
             }
+          },
+          {
+            kind: "add",
+            entity_type: "event_canon_membership",
+            origin_refs,
+            value: { event_id: { client_ref: "third" }, canon_id: canonId }
           }
         ]
       };
@@ -258,7 +271,7 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
         .select("origin_refs")
         .where("change_set_id", "=", expansion.change_set_id)
         .execute();
-      expect(origins).toHaveLength(3);
+      expect(origins).toHaveLength(4);
       expect(origins.every((op) => op.origin_refs.length === 1)).toBe(true);
       expect(
         await db

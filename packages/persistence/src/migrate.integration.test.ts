@@ -80,6 +80,7 @@ describeWithDatabase("versioned migrations", () => {
     const eventId = randomUUID();
 
     await migrateOneDown(databaseUrl ?? "");
+    await migrateOneDown(databaseUrl ?? "");
     try {
       await sql`
         insert into worlds (
@@ -138,10 +139,14 @@ describeWithDatabase("versioned migrations", () => {
       ]);
     } finally {
       await migrateToLatest(databaseUrl ?? "");
-      await sql`delete from canon_event_memberships where event_id = ${eventId}`.execute(
-        db
-      );
-      await sql`delete from events where id = ${eventId}`.execute(db);
+      await db.transaction().execute(async (transaction) => {
+        await sql`delete from canon_event_memberships where event_id = ${eventId}`.execute(
+          transaction
+        );
+        await sql`delete from events where id = ${eventId}`.execute(
+          transaction
+        );
+      });
       await sql`delete from canons where id = ${canonId}`.execute(db);
       await sql`delete from worlds where id = ${worldId}`.execute(db);
     }
@@ -229,10 +234,14 @@ describeWithDatabase("versioned migrations", () => {
         duplicate_active_memberships: 0
       });
     } finally {
-      await sql`delete from canon_event_memberships where event_id = ${eventId}`.execute(
-        db
-      );
-      await sql`delete from events where id = ${eventId}`.execute(db);
+      await db.transaction().execute(async (transaction) => {
+        await sql`delete from canon_event_memberships where event_id = ${eventId}`.execute(
+          transaction
+        );
+        await sql`delete from events where id = ${eventId}`.execute(
+          transaction
+        );
+      });
       await sql`delete from canons where id in (${firstCanon}, ${secondCanon})`.execute(
         db
       );

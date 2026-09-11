@@ -142,16 +142,36 @@ LLM은 고정된 전체 호출 순서를 의무적으로 실행하지 않는다.
 
 Clotho의 쓰기 입력은 [TS-003](TS-003-change-revision-publication.md)의 Change Set과 동일한 versioned `ChangePlan`이다. Event endpoint는 persisted Event, 같은 plan의 client Event 또는 virtual Time Event를 구분하는 tagged reference다.
 
-Event create는 immutable `world_id`와 같은 Change Set의 하나 이상 Canon membership을 요구한다. membership create·withdraw는 별도 typed Operation이며 final candidate state에서 active Event의 membership이 0이면 validate와 commit이 같은 `event_canon_membership_required` 오류로 거절한다. Event withdrawal과 마지막 membership 정리를 같은 Change Set에서 수행하는 명시적 전환은 허용한다.
+Event create는 immutable `world_id`와 같은 Change Set의 하나 이상 Canon membership을 요구한다. membership `add`·`remove`는 별도 typed Operation이며 final candidate state에서 active Event의 membership이 0이면 validate와 commit이 같은 `event_canon_membership_required` 오류로 거절한다. Event `withdraw`와 마지막 membership 정리를 같은 Change Set에서 수행하는 명시적 전환은 허용한다.
 
 ```json
 {
-  "contract_version": 2,
+  "contract_version": 3,
   "change_set_id": "019...",
   "world_id": "019...",
   "expected_revision": 12,
   "intent": "새 자료를 기존 Canon의 전투 과정에 추가한다.",
-  "operations": [],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019...",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": {
+        "world_id": "019...",
+        "kind": "atomic",
+        "title": "전투",
+        "roles": [],
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "event_canon_membership",
+      "origin_refs": [{ "field": "*", "origin_index": 0 }],
+      "value": { "event_id": "019...", "canon_id": "019..." }
+    }
+  ],
   "origins": []
 }
 ```

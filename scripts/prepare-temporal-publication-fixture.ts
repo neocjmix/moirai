@@ -1,7 +1,10 @@
 /** CI-only publication fixture. This is not evidence of a live Clotho commit. */
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
-import type { CreateChangeSet } from "../packages/contracts/src/index.js";
+import {
+  normalizeLegacyChangePlan,
+  type CreateChangeSet
+} from "../packages/contracts/src/index.js";
 import {
   resolveCreateOperations,
   type ResolvedCreateOperation
@@ -19,7 +22,9 @@ const base = new URL(
 const operations: ResolvedCreateOperation[] = [];
 for (const name of ["bootstrap.change-plan.json", "success.change-plan.json"]) {
   const plan = {
-    ...JSON.parse(await readFile(new URL(name, base), "utf8")),
+    ...normalizeLegacyChangePlan(
+      JSON.parse(await readFile(new URL(name, base), "utf8"))
+    ),
     actor: "019f3b00-0000-7000-8000-000000000099"
   } as CreateChangeSet;
   operations.push(
@@ -30,17 +35,37 @@ for (const name of ["bootstrap.change-plan.json", "success.change-plan.json"]) {
 }
 const rows = (type: string) =>
   operations
-    .filter((o) => o.entity_type === type)
+    .filter((o) => o.kind === "create" && o.entity_type === type)
     .map((o) => ({ id: o.entity_id, ...o.value }));
+const membershipCanon = new Map(
+  operations.flatMap((operation) =>
+    operation.kind === "add"
+      ? [[operation.value.event_id, operation.value.canon_id] as const]
+      : []
+  )
+);
+const events = operations.flatMap((operation) => {
+  if (operation.kind !== "create" || operation.entity_type !== "event")
+    return [];
+  const value = { ...operation.value };
+  delete (value as { world_id?: unknown }).world_id;
+  return [
+    {
+      id: operation.entity_id,
+      canon_id: membershipCanon.get(operation.entity_id),
+      ...value
+    }
+  ];
+});
 const view = {
   world: rows("world")[0],
   canons: rows("canon"),
   timeSystems: rows("time_system"),
   canonTimeSystems: rows("canon_time_system"),
-  events: rows("event"),
+  events,
   relations: rows("relation"),
   narratives: rows("narrative")
-} as CanonicalRevisionView;
+} as unknown as CanonicalRevisionView;
 const artifacts = buildPublicationArtifacts(view, 2, "2026-09-06T00:00:00Z");
 const root = resolve(
   process.env.LOCAL_PUBLICATION_FIXTURE_DIR ??

@@ -1,7 +1,10 @@
 import { readFileSync } from "node:fs";
 import { ZipFile } from "yazl";
 import { describe, expect, it } from "vitest";
-import type { CreateChangeSet } from "@moirai/contracts";
+import {
+  normalizeLegacyChangePlan,
+  type CreateChangeSet
+} from "@moirai/contracts";
 import { resolveCreateOperations } from "@moirai/domain";
 import {
   cloneWorldPlan,
@@ -23,7 +26,9 @@ function corpus(): PortableWorld {
     (name) =>
       resolveCreateOperations(
         {
-          ...JSON.parse(readFileSync(new URL(name, base), "utf8")),
+          ...normalizeLegacyChangePlan({
+            ...JSON.parse(readFileSync(new URL(name, base), "utf8"))
+          }),
           actor: "019f3b00-0000-7000-8000-000000000099"
         } as CreateChangeSet,
         () => {
@@ -33,17 +38,37 @@ function corpus(): PortableWorld {
   );
   const rows = (type: string) =>
     ops
-      .filter((o) => o.entity_type === type)
+      .filter((o) => o.kind === "create" && o.entity_type === type)
       .map((o) => ({ id: o.entity_id, ...o.value }));
+  const membershipCanon = new Map(
+    ops.flatMap((operation) =>
+      operation.kind === "add"
+        ? [[operation.value.event_id, operation.value.canon_id] as const]
+        : []
+    )
+  );
+  const events = ops.flatMap((operation) => {
+    if (operation.kind !== "create" || operation.entity_type !== "event")
+      return [];
+    const value = { ...operation.value };
+    delete (value as { world_id?: unknown }).world_id;
+    return [
+      {
+        id: operation.entity_id,
+        canon_id: membershipCanon.get(operation.entity_id),
+        ...value
+      }
+    ];
+  });
   return {
     world: rows("world")[0],
     canons: rows("canon"),
     timeSystems: rows("time_system"),
     canonTimeSystems: rows("canon_time_system"),
-    events: rows("event"),
+    events,
     relations: rows("relation"),
     narratives: rows("narrative")
-  } as PortableWorld;
+  } as unknown as PortableWorld;
 }
 async function archive(options: {
   symlink?: boolean;
@@ -110,18 +135,37 @@ describe("TS-007 temporal content package", () => {
       "0220-01-01T00:00:00.000000000000Z"
     );
     const clonedRows = (entityType: string) =>
-      preview.plan.operations
-        .filter((operation) => operation.entity_type === entityType)
-        .map((operation) => ({
-          id: operation.entity_id,
-          ...(operation.value as Record<string, unknown>)
-        }));
+      preview.plan.operations.flatMap((operation) =>
+        operation.kind === "create" && operation.entity_type === entityType
+          ? [
+              {
+                id: operation.entity_id,
+                ...(operation.value as Record<string, unknown>)
+              }
+            ]
+          : []
+      );
+    const clonedMembershipCanons = new Map(
+      preview.plan.operations.flatMap((operation) =>
+        operation.kind === "add"
+          ? [[operation.value.event_id, operation.value.canon_id] as const]
+          : []
+      )
+    );
+    const clonedEvents = clonedRows("event").map((event) => {
+      const value = { ...event };
+      delete value.world_id;
+      return {
+        ...value,
+        canon_id: clonedMembershipCanons.get(String(event.id))
+      };
+    });
     const clone = {
       world: clonedRows("world")[0],
       canons: clonedRows("canon"),
       timeSystems: clonedRows("time_system"),
       canonTimeSystems: clonedRows("canon_time_system"),
-      events: clonedRows("event"),
+      events: clonedEvents,
       relations: clonedRows("relation"),
       narratives: clonedRows("narrative")
     } as unknown as PortableWorld;

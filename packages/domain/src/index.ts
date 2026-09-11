@@ -1,8 +1,9 @@
 import {
   CONTRACT_VERSION,
+  type CanonicalEventCanonMembership,
   type CanonicalEventReference,
+  type ChangeOperation,
   type CreateChangeSet,
-  type CreateOperation,
   type PublicCanon,
   type PublicCanonTimeSystem,
   type PublicEvent,
@@ -48,15 +49,17 @@ type ResolveReferences<T> = T extends {
           ? { readonly [Key in keyof T]: ResolveReferences<T[Key]> }
           : T;
 
-export type ResolvedCreateOperation = ResolveReferences<CreateOperation> & {
+export type ResolvedChangeOperation = ResolveReferences<ChangeOperation> & {
   readonly entity_id: string;
 };
+export type ResolvedCreateOperation = ResolvedChangeOperation;
 
 export interface CanonicalState {
   readonly world: PublicWorld | null;
   readonly canons: readonly PublicCanon[];
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly canonTimeSystems: readonly PublicCanonTimeSystem[];
+  readonly eventCanonMemberships?: readonly CanonicalEventCanonMembership[];
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
@@ -166,14 +169,18 @@ export function validateCreateChangeSet(input: CreateChangeSet): void {
         );
       }
     }
-    if (!operation.entity_id && !operation.client_ref) {
+    if (
+      operation.kind === "create" &&
+      !operation.entity_id &&
+      !operation.client_ref
+    ) {
       fail(
         "operation_target_required",
         path,
         "Create Operation requires entity_id or client_ref"
       );
     }
-    if (operation.entity_id) {
+    if (operation.kind === "create" && operation.entity_id) {
       if (
         !UUID_V7.test(operation.entity_id) ||
         targets.has(operation.entity_id)
@@ -186,7 +193,7 @@ export function validateCreateChangeSet(input: CreateChangeSet): void {
       }
       targets.add(operation.entity_id);
     }
-    if (operation.client_ref) {
+    if (operation.kind === "create" && operation.client_ref) {
       if (
         !CLIENT_REF.test(operation.client_ref) ||
         clientRefs.has(operation.client_ref)
@@ -199,7 +206,7 @@ export function validateCreateChangeSet(input: CreateChangeSet): void {
       }
       clientRefs.add(operation.client_ref);
     }
-    if (operation.entity_type === "relation") {
+    if (operation.kind === "create" && operation.entity_type === "relation") {
       const value = operation.value;
       if (!value.source_ref || !value.target_ref) {
         fail(
@@ -340,12 +347,24 @@ export function resolveCreateOperations(
   input: CreateChangeSet,
   generateId: () => string
 ): {
-  readonly operations: readonly ResolvedCreateOperation[];
+  readonly operations: readonly ResolvedChangeOperation[];
   readonly idMapping: Readonly<Record<string, string>>;
 } {
   validateCreateChangeSet(input);
   const mapping = new Map<string, string>();
   const operations = input.operations.map((operation, index) => {
+    if (operation.kind !== "create") {
+      const value = resolveValue(
+        operation.value,
+        mapping,
+        `operations.${index}.value`
+      ) as { readonly event_id: string };
+      return {
+        ...operation,
+        entity_id: value.event_id,
+        value
+      } as ResolvedChangeOperation;
+    }
     const entityId = operation.entity_id ?? generateId();
     if (!UUID_V7.test(entityId)) {
       fail(
@@ -366,7 +385,7 @@ export function resolveCreateOperations(
               `operations.${index}.value`
             )
           : resolveValue(operation.value, mapping, `operations.${index}.value`)
-    } as ResolvedCreateOperation;
+    } as ResolvedChangeOperation;
     if (operation.client_ref) mapping.set(operation.client_ref, entityId);
     return resolved;
   });
@@ -517,6 +536,7 @@ function validateRelationReference(
   reference: CanonicalEventReference,
   canonId: string,
   events: ReadonlyMap<string, PublicEvent>,
+  eventCanonMemberships: ReadonlyMap<string, ReadonlySet<string>>,
   timeSystems: ReadonlyMap<string, PublicTimeSystem>,
   canonTimeSystems: Iterable<PublicCanonTimeSystem>,
   path: string,
@@ -532,7 +552,7 @@ function validateRelationReference(
         [reference.event_id]
       );
     }
-    if (event.canon_id !== canonId) {
+    if (!eventCanonMemberships.get(event.id)?.has(canonId)) {
       fail(
         "cross_canon_relation",
         path,
@@ -811,6 +831,20 @@ export function validateCandidateChangeSet(
     existing.canonTimeSystems.map((item) => [item.id, item])
   );
   const events = new Map(existing.events.map((item) => [item.id, item]));
+  const eventCanonMemberships = new Map<string, Set<string>>();
+  for (const event of existing.events) {
+    eventCanonMemberships.set(
+      event.id,
+      new Set(
+        existing.eventCanonMemberships === undefined ? [event.canon_id] : []
+      )
+    );
+  }
+  for (const membership of existing.eventCanonMemberships ?? []) {
+    const memberships = eventCanonMemberships.get(membership.event_id);
+    if (memberships) memberships.add(membership.canon_id);
+  }
+  const withdrawnEventIds = new Set<string>();
   const relations = new Map(existing.relations.map((item) => [item.id, item]));
   const narratives = new Map(
     existing.narratives.map((item) => [item.id, item])
@@ -828,7 +862,7 @@ export function validateCandidateChangeSet(
 
   for (const [index, operation] of operations.entries()) {
     const path = `operations.${index}`;
-    if (ids.has(operation.entity_id)) {
+    if (operation.kind === "create" && ids.has(operation.entity_id)) {
       fail(
         "duplicate_entity_id",
         `${path}.entity_id`,
@@ -836,7 +870,7 @@ export function validateCandidateChangeSet(
         [operation.entity_id]
       );
     }
-    ids.add(operation.entity_id);
+    if (operation.kind === "create") ids.add(operation.entity_id);
     switch (operation.entity_type) {
       case "world": {
         const value = operation.value;
@@ -930,25 +964,30 @@ export function validateCandidateChangeSet(
         break;
       }
       case "event": {
+        if (operation.kind === "withdraw") {
+          const event = events.get(operation.value.event_id);
+          if (!event) {
+            fail(
+              "dangling_reference",
+              `${path}.value.event_id`,
+              "Event withdrawal target does not exist",
+              [operation.value.event_id]
+            );
+          }
+          withdrawnEventIds.add(event.id);
+          break;
+        }
         const value = operation.value;
-        const canon = canons.get(value.canon_id);
-        if (!canon)
-          fail(
-            "dangling_reference",
-            `${path}.value.canon_id`,
-            "Event Canon does not exist",
-            [value.canon_id]
-          );
-        if (canon.world_id !== input.world_id)
+        if (value.world_id !== input.world_id)
           fail(
             "world_scope_mismatch",
-            path,
+            `${path}.value.world_id`,
             "Event is outside the Change Set World"
           );
         nonEmpty(value.title, `${path}.value.title`);
         events.set(operation.entity_id, {
           id: operation.entity_id,
-          canon_id: value.canon_id,
+          canon_id: "",
           slug: value.slug ?? null,
           kind: value.kind,
           title: value.title,
@@ -956,6 +995,51 @@ export function validateCandidateChangeSet(
           roles: value.roles,
           attributes: value.attributes
         });
+        eventCanonMemberships.set(operation.entity_id, new Set());
+        break;
+      }
+      case "event_canon_membership": {
+        const value = operation.value;
+        const event = events.get(value.event_id);
+        const canon = canons.get(value.canon_id);
+        if (!event || !canon) {
+          fail(
+            "dangling_reference",
+            path,
+            "Event-Canon membership has a missing endpoint",
+            [value.event_id, value.canon_id]
+          );
+        }
+        if (canon.world_id !== input.world_id) {
+          fail(
+            "cross_world_canon_membership",
+            path,
+            "Event and Canon membership must belong to the Change Set World",
+            [value.event_id, value.canon_id]
+          );
+        }
+        const memberships = eventCanonMemberships.get(value.event_id)!;
+        if (operation.kind === "add") {
+          if (memberships.has(value.canon_id)) {
+            fail(
+              "duplicate_canon_membership",
+              path,
+              "Event already participates in this Canon",
+              [value.event_id, value.canon_id]
+            );
+          }
+          memberships.add(value.canon_id);
+        } else {
+          if (!memberships.has(value.canon_id)) {
+            fail(
+              "event_canon_membership_not_found",
+              path,
+              "Event does not participate in this Canon",
+              [value.event_id, value.canon_id]
+            );
+          }
+          memberships.delete(value.canon_id);
+        }
         break;
       }
       case "relation": {
@@ -965,6 +1049,7 @@ export function validateCandidateChangeSet(
           endpoints.source,
           value.canon_id,
           events,
+          eventCanonMemberships,
           timeSystems,
           canonTimeSystems.values(),
           `${path}.value.source_ref`,
@@ -974,6 +1059,7 @@ export function validateCandidateChangeSet(
           endpoints.target,
           value.canon_id,
           events,
+          eventCanonMemberships,
           timeSystems,
           canonTimeSystems.values(),
           `${path}.value.target_ref`,
@@ -1044,7 +1130,7 @@ export function validateCandidateChangeSet(
               "Narrative Event does not exist",
               [value.scope_id]
             );
-          if (event.canon_id !== value.canon_id)
+          if (!eventCanonMemberships.get(event.id)?.has(value.canon_id))
             fail(
               "cross_canon_narrative",
               path,
@@ -1105,11 +1191,70 @@ export function validateCandidateChangeSet(
     fail("world_missing", "world_id", "Change Set World does not exist", [
       input.world_id
     ]);
-  temporalGraphFailure(
-    [...relations.values()],
-    [...events.values()],
-    [...timeSystems.values()]
+  for (const [eventId, memberships] of eventCanonMemberships) {
+    if (withdrawnEventIds.has(eventId)) {
+      if (memberships.size > 0) {
+        fail(
+          "event_canon_membership_required",
+          "operations",
+          "Withdrawing an Event requires removing all Canon memberships in the same Change Set",
+          [eventId, ...memberships]
+        );
+      }
+    } else if (memberships.size === 0) {
+      fail(
+        "event_canon_membership_required",
+        "operations",
+        "Every active Event must participate in at least one Canon",
+        [eventId]
+      );
+    }
+  }
+  for (const relation of relations.values()) {
+    const endpoints = canonicalRelationEndpoints(relation);
+    if (!endpoints) continue;
+    validateRelationReference(
+      endpoints.source,
+      relation.canon_id,
+      events,
+      eventCanonMemberships,
+      timeSystems,
+      canonTimeSystems.values(),
+      `relations.${relation.id}.source_ref`,
+      relation.id
+    );
+    validateRelationReference(
+      endpoints.target,
+      relation.canon_id,
+      events,
+      eventCanonMemberships,
+      timeSystems,
+      canonTimeSystems.values(),
+      `relations.${relation.id}.target_ref`,
+      relation.id
+    );
+  }
+  for (const narrative of narratives.values()) {
+    if (narrative.scope_type !== "event") continue;
+    const event = events.get(narrative.scope_id);
+    if (
+      !event ||
+      !eventCanonMemberships.get(event.id)?.has(narrative.canon_id)
+    ) {
+      fail(
+        "cross_canon_narrative",
+        `narratives.${narrative.id}.scope_id`,
+        "Narrative Event scope must remain a member of its Canon",
+        [narrative.id, narrative.scope_id, narrative.canon_id]
+      );
+    }
+  }
+  const activeEvents = [...events.values()].filter(
+    (event) => !withdrawnEventIds.has(event.id)
   );
+  temporalGraphFailure([...relations.values()], activeEvents, [
+    ...timeSystems.values()
+  ]);
   return [];
 }
 

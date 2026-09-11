@@ -1,7 +1,7 @@
 import {
   CLOTHO_METHODS,
   clothoInputSchema,
-  type ChangePlan,
+  normalizeLegacyChangePlan,
   type ClothoMethod
 } from "@moirai/contracts";
 import { ChangeSetError } from "@moirai/domain";
@@ -24,6 +24,7 @@ const validators = new Map(
     ajv.compile(clothoInputSchema(method))
   ])
 );
+
 export function createClotho(lachesis: Lachesis): ClothoExecutor {
   return async (method, input, actor) => {
     if (!validators.get(method)?.(input))
@@ -35,7 +36,7 @@ export function createClotho(lachesis: Lachesis): ClothoExecutor {
     const result =
       method === "change.commit" || method === "change.validate"
         ? await lachesis[method === "change.commit" ? "commit" : "validate"](
-            input.plan as ChangePlan,
+            normalizeLegacyChangePlan(input.plan),
             actor,
             input.plan_digest as string | undefined
           )

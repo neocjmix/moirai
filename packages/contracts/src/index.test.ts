@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   CONTRACT_VERSION,
   HEALTH_RESPONSE_SCHEMA,
+  LEGACY_CONTRACT_VERSION,
+  normalizeLegacyChangePlan,
   type CreateChangeSet
 } from "./index.js";
 import { TEST_FIXTURE } from "./testing.js";
@@ -38,6 +40,51 @@ describe("Milestone 2 contracts", () => {
       origins: []
     };
     expect(changeSet.expected_revision).toBe(0);
+  });
+
+  it("losslessly adapts a legacy Event Canon reference into World ownership and one membership", () => {
+    const normalized = normalizeLegacyChangePlan({
+      contract_version: LEGACY_CONTRACT_VERSION,
+      change_set_id: TEST_FIXTURE.changeSetId,
+      world_id: TEST_FIXTURE.worldId,
+      expected_revision: 0,
+      intent: "Legacy ingress fixture",
+      origins: [{ kind: "human_instruction", summary: "Fixture" }],
+      operations: [
+        {
+          kind: "create",
+          entity_type: "event",
+          entity_id: TEST_FIXTURE.eventId,
+          origin_refs: [{ field: "canon_id", origin_index: 0 }],
+          value: {
+            canon_id: TEST_FIXTURE.canonId,
+            kind: "atomic",
+            title: TEST_FIXTURE.eventTitle,
+            roles: [],
+            attributes: {}
+          }
+        }
+      ]
+    });
+
+    expect(normalized.contract_version).toBe(CONTRACT_VERSION);
+    expect(normalized.operations).toEqual([
+      expect.objectContaining({
+        kind: "create",
+        entity_type: "event",
+        value: expect.objectContaining({ world_id: TEST_FIXTURE.worldId })
+      }),
+      {
+        kind: "add",
+        entity_type: "event_canon_membership",
+        origin_refs: [{ field: "canon_id", origin_index: 0 }],
+        value: {
+          event_id: TEST_FIXTURE.eventId,
+          canon_id: TEST_FIXTURE.canonId
+        }
+      }
+    ]);
+    expect(normalized.operations[0]?.value).not.toHaveProperty("canon_id");
   });
 });
 

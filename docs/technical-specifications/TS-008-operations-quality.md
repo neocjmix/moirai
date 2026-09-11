@@ -61,7 +61,7 @@ traces:
 - Lachesis 내부 계약은 인증된 actor, 허용 World, 행위 scope와 만료를 요구한다. 최종 인가는 adapter 밖에서도 실행하며 commit마다 재확인한다. 외부 요청의 actor·scope는 신뢰하지 않는다.
 - 같은 process에서는 신뢰된 bootstrap이 인증 adapter와 내부 application을 연결한다. 별도 process로 분리할 때는 검증된 서비스 간 신뢰 전달 계약을 먼저 정의한다.
 - 다중 역할, 승인 workflow와 공동 편집은 구현하지 않는다.
-- 인증 방식이 Canon의 진실 지위나 Publication 상태를 만들지 않는다.
+- 인증 방식이 Canon에 authority·objective truth 의미나 Publication 상태를 만들지 않는다.
 
 ## TS-008.4 주요 위협과 통제
 

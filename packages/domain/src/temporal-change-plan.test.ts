@@ -1,5 +1,8 @@
 import { readFileSync } from "node:fs";
-import type { CreateChangeSet } from "@moirai/contracts";
+import {
+  normalizeLegacyChangePlan,
+  type CreateChangeSet
+} from "@moirai/contracts";
 import { describe, expect, it } from "vitest";
 
 import {
@@ -18,7 +21,9 @@ const fixtureBase = new URL(
 
 function fixture(path: string): CreateChangeSet {
   return {
-    ...JSON.parse(readFileSync(new URL(path, fixtureBase), "utf8")),
+    ...normalizeLegacyChangePlan(
+      JSON.parse(readFileSync(new URL(path, fixtureBase), "utf8"))
+    ),
     actor: "019f3b00-0000-7000-8000-000000000099"
   } as CreateChangeSet;
 }
@@ -38,7 +43,10 @@ function bootstrapState(): CanonicalState {
     narratives: []
   });
   const pick = (type: string) =>
-    operations.filter((operation) => operation.entity_type === type);
+    operations.filter(
+      (operation) =>
+        operation.kind === "create" && operation.entity_type === type
+    );
   const world = pick("world")[0]!;
   return {
     world: { id: world.entity_id, ...world.value },
@@ -80,13 +88,14 @@ describe("TS-010 Change Plan validation", () => {
     ).not.toThrow();
   });
 
-  it("accepts the full v2 corpus without creating a Time Event row", () => {
+  it("accepts the full v2 corpus through the lossless ingress adapter", () => {
     const { plan, operations } = resolved("success.change-plan.json");
     expect(
       validateCandidateChangeSet(plan, operations, bootstrapState())
     ).toEqual([]);
     const eventOperations = operations.filter(
-      (operation) => operation.entity_type === "event"
+      (operation) =>
+        operation.kind === "create" && operation.entity_type === "event"
     );
     expect(eventOperations).toHaveLength(11);
     expect(
@@ -95,7 +104,10 @@ describe("TS-010 Change Plan validation", () => {
       )
     ).toBe(false);
     const references = operations
-      .filter((operation) => operation.entity_type === "relation")
+      .filter(
+        (operation) =>
+          operation.kind === "create" && operation.entity_type === "relation"
+      )
       .flatMap((operation) => {
         const value = operation.value as {
           source_ref: { kind: string; coordinate?: string };

@@ -9,6 +9,7 @@ export type EntityType =
   | "time_system"
   | "canon_time_system"
   | "event"
+  | "event_canon_membership"
   | "relation"
   | "narrative";
 export type ProjectionStatus = "ready" | "building" | "failed";
@@ -101,7 +102,7 @@ export interface CreateCanonTimeSystemOperation extends CreateOperationBase {
 export interface CreateEventOperation extends CreateOperationBase {
   readonly entity_type: "event";
   readonly value: {
-    readonly canon_id: EntityReference;
+    readonly world_id: EntityReference;
     readonly slug?: string | null;
     readonly kind: "atomic" | "composite";
     readonly title: string;
@@ -109,6 +110,36 @@ export interface CreateEventOperation extends CreateOperationBase {
     readonly roles: readonly string[];
     readonly attributes: Readonly<Record<string, unknown>>;
   };
+}
+
+interface EventCanonMembershipOperationBase {
+  readonly entity_type: "event_canon_membership";
+  readonly value: {
+    readonly event_id: EntityReference;
+    readonly canon_id: EntityReference;
+  };
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
+}
+
+export interface AddEventCanonMembershipOperation extends EventCanonMembershipOperationBase {
+  readonly kind: "add";
+}
+
+export interface RemoveEventCanonMembershipOperation extends EventCanonMembershipOperationBase {
+  readonly kind: "remove";
+}
+
+export interface WithdrawEventOperation {
+  readonly kind: "withdraw";
+  readonly entity_type: "event";
+  readonly value: { readonly event_id: EntityReference };
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
 }
 
 export type RelationType =
@@ -169,6 +200,12 @@ export type CreateOperation =
   | CreateRelationOperation
   | CreateNarrativeOperation;
 
+export type ChangeOperation =
+  | CreateOperation
+  | AddEventCanonMembershipOperation
+  | RemoveEventCanonMembershipOperation
+  | WithdrawEventOperation;
+
 export interface CreateChangeSet {
   readonly contract_version: ChangeSetContractVersion;
   readonly change_set_id: string;
@@ -176,7 +213,7 @@ export interface CreateChangeSet {
   readonly expected_revision: number;
   readonly actor: string;
   readonly intent: string;
-  readonly operations: readonly CreateOperation[];
+  readonly operations: readonly ChangeOperation[];
   readonly origins: readonly {
     readonly kind:
       | "source_explicit"
@@ -235,6 +272,11 @@ export interface PublicCanonTimeSystem {
   readonly id: string;
   readonly canon_id: string;
   readonly time_system_id: string;
+}
+
+export interface CanonicalEventCanonMembership {
+  readonly event_id: string;
+  readonly canon_id: string;
 }
 
 export interface PublicEvent {

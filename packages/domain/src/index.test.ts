@@ -41,7 +41,7 @@ function fixture(): CreateChangeSet {
         entity_type: "event",
         entity_id: TEST_FIXTURE.eventId,
         value: {
-          canon_id: TEST_FIXTURE.canonId,
+          world_id: TEST_FIXTURE.worldId,
           slug: "first-test-event",
           kind: "atomic",
           title: TEST_FIXTURE.eventTitle,
@@ -49,9 +49,33 @@ function fixture(): CreateChangeSet {
           roles: [],
           attributes: {}
         }
+      },
+      {
+        kind: "add",
+        entity_type: "event_canon_membership",
+        value: {
+          event_id: TEST_FIXTURE.eventId,
+          canon_id: TEST_FIXTURE.canonId
+        }
       }
     ]
   };
+}
+
+function validateAgainstEmpty(input: CreateChangeSet) {
+  const resolved = resolveCreateOperations(input, () => {
+    throw new Error("unexpected generated ID");
+  });
+  return validateCandidateChangeSet(input, resolved.operations, {
+    world: null,
+    canons: [],
+    timeSystems: [],
+    canonTimeSystems: [],
+    eventCanonMemberships: [],
+    events: [],
+    relations: [],
+    narratives: []
+  });
 }
 
 describe("create Change Set validation", () => {
@@ -63,7 +87,11 @@ describe("create Change Set validation", () => {
     const input = fixture();
     const invalid = {
       ...input,
-      operations: [input.operations[0]!, input.operations[2]!]
+      operations: [
+        input.operations[0]!,
+        input.operations[2]!,
+        input.operations[3]!
+      ]
     };
     const resolved = resolveCreateOperations(invalid, () => {
       throw new Error("unexpected generated ID");
@@ -85,7 +113,7 @@ describe("create Change Set validation", () => {
     } catch (error) {
       expect(error).toMatchObject({
         code: "dangling_reference",
-        path: "operations.1.value.canon_id",
+        path: "operations.2",
         retryable: false
       });
     }
@@ -98,7 +126,7 @@ describe("create Change Set validation", () => {
       operations: input.operations.map((operation, index) =>
         index === 1
           ? { ...operation, client_ref: "created-canon" }
-          : index === 2 && operation.entity_type === "event"
+          : index === 3 && operation.entity_type === "event_canon_membership"
             ? {
                 ...operation,
                 value: {
@@ -113,9 +141,153 @@ describe("create Change Set validation", () => {
       throw new Error("unexpected generated ID");
     });
     expect(resolved.idMapping["created-canon"]).toBe(TEST_FIXTURE.canonId);
-    expect(resolved.operations[2]?.value).toMatchObject({
+    expect(resolved.operations[3]?.value).toMatchObject({
       canon_id: TEST_FIXTURE.canonId
     });
+  });
+
+  it("accepts one Event participating in overlapping Canons without duplicating the Event", () => {
+    const input = fixture();
+    const secondCanonId = "01995c2a-7b00-7000-8000-000000000021";
+    const overlapping: CreateChangeSet = {
+      ...input,
+      operations: [
+        ...input.operations.slice(0, 2),
+        {
+          kind: "create",
+          entity_type: "canon",
+          entity_id: secondCanonId,
+          value: {
+            world_id: TEST_FIXTURE.worldId,
+            slug: "second-canon",
+            title: "Second Canon"
+          }
+        },
+        ...input.operations.slice(2),
+        {
+          kind: "add",
+          entity_type: "event_canon_membership",
+          value: {
+            event_id: TEST_FIXTURE.eventId,
+            canon_id: secondCanonId
+          }
+        }
+      ]
+    };
+
+    expect(() => validateAgainstEmpty(overlapping)).not.toThrow();
+    expect(
+      overlapping.operations.filter(
+        (operation) => operation.entity_type === "event"
+      )
+    ).toHaveLength(1);
+  });
+
+  it("rejects an active Event with no Canon membership", () => {
+    const input = fixture();
+    const orphan = {
+      ...input,
+      operations: input.operations.slice(0, -1)
+    } as CreateChangeSet;
+    expect(() => validateAgainstEmpty(orphan)).toThrowError(
+      expect.objectContaining({ code: "event_canon_membership_required" })
+    );
+  });
+
+  it("rejects duplicate membership and removing the last active membership", () => {
+    const input = fixture();
+    const duplicate = {
+      ...input,
+      operations: [...input.operations, input.operations.at(-1)!]
+    } as CreateChangeSet;
+    expect(() => validateAgainstEmpty(duplicate)).toThrowError(
+      expect.objectContaining({ code: "duplicate_canon_membership" })
+    );
+
+    const existing = validateAgainstEmpty(input);
+    expect(existing).toEqual([]);
+    const removal: CreateChangeSet = {
+      ...input,
+      change_set_id: "01995c2a-7b00-7000-8000-000000000022",
+      expected_revision: 1,
+      operations: [
+        {
+          kind: "remove",
+          entity_type: "event_canon_membership",
+          value: {
+            event_id: TEST_FIXTURE.eventId,
+            canon_id: TEST_FIXTURE.canonId
+          }
+        }
+      ]
+    };
+    const resolved = resolveCreateOperations(removal, () => {
+      throw new Error("unexpected generated ID");
+    });
+    const state = {
+      world: {
+        id: TEST_FIXTURE.worldId,
+        slug: "test-world",
+        title: TEST_FIXTURE.worldTitle,
+        description: null
+      },
+      canons: [
+        {
+          id: TEST_FIXTURE.canonId,
+          world_id: TEST_FIXTURE.worldId,
+          slug: "test-canon",
+          title: TEST_FIXTURE.canonTitle,
+          description: null
+        }
+      ],
+      timeSystems: [],
+      canonTimeSystems: [],
+      eventCanonMemberships: [
+        { event_id: TEST_FIXTURE.eventId, canon_id: TEST_FIXTURE.canonId }
+      ],
+      events: [
+        {
+          id: TEST_FIXTURE.eventId,
+          canon_id: TEST_FIXTURE.canonId,
+          slug: "first-test-event",
+          kind: "atomic" as const,
+          title: TEST_FIXTURE.eventTitle,
+          summary: null,
+          roles: [],
+          attributes: {}
+        }
+      ],
+      relations: [],
+      narratives: []
+    };
+    expect(() =>
+      validateCandidateChangeSet(removal, resolved.operations, state)
+    ).toThrowError(
+      expect.objectContaining({ code: "event_canon_membership_required" })
+    );
+
+    const withdrawal: CreateChangeSet = {
+      ...removal,
+      change_set_id: "01995c2a-7b00-7000-8000-000000000023",
+      operations: [
+        {
+          kind: "withdraw",
+          entity_type: "event",
+          value: { event_id: TEST_FIXTURE.eventId }
+        },
+        ...removal.operations
+      ]
+    };
+    const withdrawalResolved = resolveCreateOperations(withdrawal, () => {
+      throw new Error("unexpected generated ID");
+    });
+    expect(() =>
+      validateCandidateChangeSet(
+        withdrawal,
+        withdrawalResolved.operations,
+        state
+      )
+    ).not.toThrow();
   });
 
   it("canonicalizes object key order for idempotency digests", () => {

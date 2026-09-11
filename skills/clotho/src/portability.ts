@@ -2,8 +2,8 @@ import { createHash, randomBytes } from "node:crypto";
 import { ZipFile } from "yazl";
 import { fromBuffer, type Entry } from "yauzl";
 import type {
+  ChangeOperation,
   CreateChangeSet,
-  CreateOperation,
   CanonicalEventReference,
   PublicWorld,
   PublicCanon,
@@ -13,6 +13,7 @@ import type {
   PublicRelation,
   PublicNarrative
 } from "@moirai/contracts";
+import { CONTRACT_VERSION } from "@moirai/contracts";
 import {
   canonicalRelationEndpoints,
   endpointKey,
@@ -460,7 +461,7 @@ export function cloneWorldPlan(
           definition_version: source.definition_version,
           coordinate: source.coordinate
         };
-  const operations: CreateOperation[] = [];
+  const operations: ChangeOperation[] = [];
   const add = (entity_type: string, row: Record<string, unknown>) => {
     const { id: sourceId, ...value } = row;
     operations.push({
@@ -469,7 +470,7 @@ export function cloneWorldPlan(
       entity_id: id(String(sourceId)),
       origin_refs: [{ field: "*", origin_index: 0 }],
       value
-    } as unknown as CreateOperation);
+    } as unknown as ChangeOperation);
   };
   add("world", { ...view.world, slug: `${view.world.slug}-import` });
   for (const row of view.canons)
@@ -482,8 +483,19 @@ export function cloneWorldPlan(
       canon_id: id(row.canon_id),
       time_system_id: id(row.time_system_id)
     });
-  for (const row of view.events)
-    add("event", { ...row, canon_id: id(row.canon_id) });
+  for (const row of view.events) {
+    const { canon_id: sourceCanonId, ...event } = row;
+    add("event", { ...event, world_id: targetWorldId });
+    operations.push({
+      kind: "add",
+      entity_type: "event_canon_membership",
+      origin_refs: [{ field: "*", origin_index: 0 }],
+      value: {
+        event_id: id(row.id),
+        canon_id: id(sourceCanonId)
+      }
+    });
+  }
   for (const row of canonicalPortableRelations(view.relations))
     add("relation", {
       ...row,
@@ -497,8 +509,8 @@ export function cloneWorldPlan(
       canon_id: id(row.canon_id),
       scope_id: id(row.scope_id)
     });
-  const plan = {
-    contract_version: 2 as const,
+  const plan: Omit<CreateChangeSet, "actor"> = {
+    contract_version: CONTRACT_VERSION,
     change_set_id: nextId(),
     world_id: targetWorldId,
     expected_revision: 0,

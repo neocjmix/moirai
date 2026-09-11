@@ -32,11 +32,20 @@ const plan = {
       client_ref: "event",
       origin_refs: [{ field: "*", origin_index: 0 }],
       value: {
-        canon_id: TEST_FIXTURE.canonId,
+        world_id: TEST_FIXTURE.worldId,
         kind: "atomic",
         title: "Test",
         roles: [],
         attributes: {}
+      }
+    },
+    {
+      kind: "add",
+      entity_type: "event_canon_membership",
+      origin_refs: [{ field: "*", origin_index: 0 }],
+      value: {
+        event_id: { client_ref: "event" },
+        canon_id: TEST_FIXTURE.canonId
       }
     }
   ]

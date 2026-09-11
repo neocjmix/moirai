@@ -1,5 +1,7 @@
-/** The only accepted Change Plan contract: Event/Relation temporal semantics. */
-export const CONTRACT_VERSION = 2;
+/** Event identity is World-owned and Canon participation is an explicit relation. */
+export const CONTRACT_VERSION = 3;
+/** Accepted only by the Clotho ingress adapter for lossless single-Canon conversion. */
+export const LEGACY_CONTRACT_VERSION = 2;
 /** Stable fixture identifiers; these do not gate runtime behavior. */
 export const TEMPORAL_EXPRESSIVENESS_WORLD_ID =
   "019f3b00-0000-7000-8000-000000000001";

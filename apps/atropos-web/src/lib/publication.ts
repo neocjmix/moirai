@@ -14,6 +14,7 @@ import {
   type PublicSearchEntry,
   type PublicSubjectArtifactReference,
   type PublicSubjectHandleDocument,
+  type PublicTimeSystem,
   type PublicationManifest,
   type PublicationPointer,
   type PublicWorld
@@ -208,6 +209,7 @@ export async function readCanon(
   canon: PublicCanon;
   events: readonly PublicEvent[];
   narratives: readonly PublicNarrative[];
+  timeSystems: readonly PublicTimeSystem[];
   subjectArtifacts: readonly PublicSubjectArtifactReference[];
   temporalArtifact: { key: string; algorithm_version: string };
   graphScopeArtifact: {
@@ -223,6 +225,7 @@ export async function readCanon(
     canon: PublicCanon;
     events: readonly (PublicEvent | LegacyPublicEvent)[];
     narratives: readonly PublicNarrative[];
+    time_systems?: readonly PublicTimeSystem[];
     subject_artifacts?: readonly PublicSubjectArtifactReference[];
     temporal_artifact: { key: string; algorithm_version: string };
     graph_scope_artifact?: {
@@ -247,6 +250,7 @@ export async function readCanon(
       normalizePublicEvent(event, worldId)
     ),
     narratives: document.narratives,
+    timeSystems: document.time_systems ?? [],
     subjectArtifacts: document.subject_artifacts ?? [],
     temporalArtifact: document.temporal_artifact,
     graphScopeArtifact: document.graph_scope_artifact ?? null

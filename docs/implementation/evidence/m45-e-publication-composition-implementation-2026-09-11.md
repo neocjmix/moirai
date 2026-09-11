@@ -31,3 +31,23 @@ Date: 2026-09-11 UTC
 
 The endpoint is a public Publication projection boundary, not an unscoped canonical repository API.
 M5 access/audience policy remains inactive.
+
+- Static typecheck: passed.
+- Composition and D1/D2 URL/search tests: 17 passed.
+- Local immutable Publication fixture: 1 World, 1 Canon snapshot, Revision 2,
+  11 Events and 23 Relations composed with derived State limited to published
+  membership projection evidence.
+
+## Explorer connection follow-up
+
+- `/graph` now discovers its World, peer Canon and Time System options from
+  immutable Publication documents and server-composes the selected query.
+- Identity-aware Entities, R1 Relations and Diagnostics receive the actual
+  composed result; mocks are no longer on the production query path.
+- Time System compatibility uses explicit graph adapter/domain metadata, or the
+  existing lossless coordinate codec. Title, slug and kind never imply
+  compatibility; missing metadata fails closed to the Time System identity.
+- Public reads are bounded to 8 Worlds, 32 Canons and a three-second artifact
+  timeout. Query entity, Relation and evidence budgets remain deterministic.
+- Membership State is emitted only from published temporal composite evidence;
+  no value or Subject identity is inferred.

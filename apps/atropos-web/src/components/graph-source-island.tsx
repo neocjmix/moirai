@@ -8,13 +8,13 @@ import type { MoiraiGraphSource, MoiraiGraphUrlState } from "@moirai/contracts";
 import type { AppLocale } from "../urdr-port/src/locale";
 import inheritedStyles from "../urdr-port/src/components/graph-shell.module.css";
 import {
-  MOCK_GRAPH_SOURCE_CATALOG,
   focusGraphEntity,
   getGraphSourceCompatibility,
   isSameGraphTimeSystemIdentity,
   replaceGraphEntityFilter,
   replaceGraphSources,
   searchGraphEntities,
+  type GraphSourceCatalog,
   type GraphSourceWorldOption,
   type GraphTemporalFrameOption
 } from "../lib/moirai-graph-source-query";
@@ -34,7 +34,7 @@ const COPY = {
     diagnostics: "Diagnostics",
     summary: (worlds: number, canons: number) =>
       `World ${worlds} · Canon ${canons}`,
-    mock: "MOCK SOURCE",
+    mock: "PUBLICATION SOURCE",
     frameTitle: "시간 체계",
     frameHint: "World를 함께 비교할 운영 시간 프레임을 먼저 선택합니다.",
     worldsTitle: "World",
@@ -58,7 +58,7 @@ const COPY = {
     cancel: "취소",
     revisionVector: "Revision vector",
     legacyViewport:
-      "현재 viewport는 M4.5-H 전까지 기존 데모 데이터를 유지합니다. 이 소스 쿼리는 Moirai 계약과 URL 상태를 먼저 확정합니다.",
+      "이 결과는 선택한 World의 immutable Publication과 같은 served Revision에서 합성됩니다. viewport는 M4.5-H에서 native renderer로 교체됩니다.",
     entityTitle: "Identity-aware 결과",
     entityHint:
       "공유 identity는 한 번만 표시하며 matched Canon과 전체 membership을 구분합니다.",
@@ -85,7 +85,7 @@ const COPY = {
     diagnostics: "Diagnostics",
     summary: (worlds: number, canons: number) =>
       `${worlds} Worlds · ${canons} Canons`,
-    mock: "MOCK SOURCE",
+    mock: "PUBLICATION SOURCE",
     frameTitle: "Time System",
     frameHint:
       "Choose the operational time frame used to compare Worlds first.",
@@ -110,7 +110,7 @@ const COPY = {
     cancel: "Cancel",
     revisionVector: "Revision vector",
     legacyViewport:
-      "The viewport keeps its existing demo data until M4.5-H. This slice first establishes the Moirai query and URL state.",
+      "This result is composed from immutable Publication artifacts at each selected World's served Revision. The viewport becomes native in M4.5-H.",
     entityTitle: "Identity-aware results",
     entityHint:
       "Shared identities appear once, with matched Canons separate from all memberships.",
@@ -128,14 +128,17 @@ const COPY = {
   }
 } as const;
 
-function findFrame(state: MoiraiGraphUrlState): GraphTemporalFrameOption {
+function findFrame(
+  state: MoiraiGraphUrlState,
+  catalog: GraphSourceCatalog
+): GraphTemporalFrameOption {
   return (
-    MOCK_GRAPH_SOURCE_CATALOG.frames.find((frame) =>
+    catalog.frames.find((frame) =>
       isSameGraphTimeSystemIdentity(
         frame.target,
         state.query.temporal_frame.target
       )
-    ) ?? MOCK_GRAPH_SOURCE_CATALOG.frames[0]!
+    ) ?? catalog.frames[0]!
   );
 }
 
@@ -143,12 +146,17 @@ function sourceForWorld(state: MoiraiGraphUrlState, worldId: string) {
   return state.query.sources.find((source) => source.world_id === worldId);
 }
 
-function sourceFromWorld(world: GraphSourceWorldOption): MoiraiGraphSource {
+function sourceFromWorld(
+  world: GraphSourceWorldOption,
+  target: GraphTemporalFrameOption["target"]
+): MoiraiGraphSource {
   return {
     world_id: world.id,
     served_revision: world.servedRevision,
     canon_ids: world.canons.map((canon) => canon.id),
-    time_systems: [world.timeSystem]
+    time_systems: world.timeSystems.filter(
+      (system) => getGraphSourceCompatibility(system, target).compatible
+    )
   };
 }
 
@@ -159,46 +167,62 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     "sources" | "entities" | "search" | "relations" | "diagnostics"
   >("sources");
   const [searchTerm, setSearchTerm] = useState("");
-  const { state, setState } = useGraphQuery();
+  const { state, setState, setSourceState, catalog, entities } =
+    useGraphQuery();
   const [draftFrameId, setDraftFrameId] = useState<string | null>(null);
-  const activeFrame = useMemo(() => findFrame(state), [state]);
+  const activeFrame = useMemo(
+    () => findFrame(state, catalog),
+    [catalog, state]
+  );
   const draftFrame = draftFrameId
-    ? (MOCK_GRAPH_SOURCE_CATALOG.frames.find(
-        (frame) => frame.id === draftFrameId
-      ) ?? null)
+    ? (catalog.frames.find((frame) => frame.id === draftFrameId) ?? null)
     : null;
   const canonCount = state.query.sources.reduce(
     (total, source) => total + source.canon_ids.length,
     0
   );
   const entityResults = useMemo(
-    () => searchGraphEntities(state, activeTab === "search" ? searchTerm : ""),
-    [activeTab, searchTerm, state]
+    () =>
+      searchGraphEntities(
+        state,
+        activeTab === "search" ? searchTerm : "",
+        entities
+      ),
+    [activeTab, entities, searchTerm, state]
   );
 
-  const toggleWorld = useCallback((world: GraphSourceWorldOption) => {
-    setState((current) => {
-      const existing = sourceForWorld(current, world.id);
-      if (existing) {
-        if (current.query.sources.length === 1) {
-          return current;
+  const toggleWorld = useCallback(
+    (world: GraphSourceWorldOption) => {
+      setSourceState((current) => {
+        const existing = sourceForWorld(current, world.id);
+        if (existing) {
+          if (current.query.sources.length === 1) {
+            return current;
+          }
+          return replaceGraphSources(
+            current,
+            current.query.temporal_frame.target,
+            current.query.sources.filter(
+              (source) => source.world_id !== world.id
+            )
+          );
         }
         return replaceGraphSources(
           current,
           current.query.temporal_frame.target,
-          current.query.sources.filter((source) => source.world_id !== world.id)
+          [
+            ...current.query.sources,
+            sourceFromWorld(world, current.query.temporal_frame.target)
+          ]
         );
-      }
-      return replaceGraphSources(current, current.query.temporal_frame.target, [
-        ...current.query.sources,
-        sourceFromWorld(world)
-      ]);
-    });
-  }, []);
+      });
+    },
+    [setSourceState]
+  );
 
   const toggleCanon = useCallback(
     (world: GraphSourceWorldOption, canonId: string) => {
-      setState((current) => {
+      setSourceState((current) => {
         const selectedSource = sourceForWorld(current, world.id);
         if (!selectedSource) {
           return current;
@@ -222,42 +246,48 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
         );
       });
     },
-    []
+    [setSourceState]
   );
 
   const applyDraftFrame = useCallback(() => {
     if (!draftFrame) {
       return;
     }
-    const compatibleSources = MOCK_GRAPH_SOURCE_CATALOG.worlds
-      .filter(
-        (world) =>
-          getGraphSourceCompatibility(world.timeSystem, draftFrame.target)
-            .compatible
+    const compatibleSources = catalog.worlds
+      .filter((world) =>
+        world.timeSystems.some(
+          (system) =>
+            getGraphSourceCompatibility(system, draftFrame.target).compatible
+        )
       )
-      .map(sourceFromWorld);
-    setState((current) =>
+      .map((world) => sourceFromWorld(world, draftFrame.target));
+    setSourceState((current) =>
       replaceGraphSources(current, draftFrame.target, compatibleSources)
     );
     setDraftFrameId(null);
-  }, [draftFrame]);
+  }, [catalog, draftFrame, setSourceState]);
 
   const removedSources = draftFrame
     ? state.query.sources.filter((source) => {
-        const world = MOCK_GRAPH_SOURCE_CATALOG.worlds.find(
+        const world = catalog.worlds.find(
           (candidate) => candidate.id === source.world_id
         );
         return world
-          ? !getGraphSourceCompatibility(world.timeSystem, draftFrame.target)
-              .compatible
+          ? !world.timeSystems.some(
+              (system) =>
+                getGraphSourceCompatibility(system, draftFrame.target)
+                  .compatible
+            )
           : true;
       })
     : [];
   const addedWorlds = draftFrame
-    ? MOCK_GRAPH_SOURCE_CATALOG.worlds.filter(
+    ? catalog.worlds.filter(
         (world) =>
-          getGraphSourceCompatibility(world.timeSystem, draftFrame.target)
-            .compatible &&
+          world.timeSystems.some(
+            (system) =>
+              getGraphSourceCompatibility(system, draftFrame.target).compatible
+          ) &&
           !state.query.sources.some((source) => source.world_id === world.id)
       )
     : [];
@@ -555,7 +585,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                       <span className={styles.step}>01</span>
                     </div>
                     <div className={styles.optionList}>
-                      {MOCK_GRAPH_SOURCE_CATALOG.frames.map((frame) => {
+                      {catalog.frames.map((frame) => {
                         const selected =
                           (draftFrame ?? activeFrame).id === frame.id;
                         return (
@@ -598,7 +628,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                               className={styles.impactItem}
                               key={source.world_id}
                             >
-                              {MOCK_GRAPH_SOURCE_CATALOG.worlds.find(
+                              {catalog.worlds.find(
                                 (world) => world.id === source.world_id
                               )?.label[locale] ?? source.world_id}
                             </span>
@@ -646,22 +676,25 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                           <span className={styles.step}>02</span>
                         </div>
                         <div className={styles.optionList}>
-                          {MOCK_GRAPH_SOURCE_CATALOG.worlds.map((world) => {
-                            const compatibility = getGraphSourceCompatibility(
-                              world.timeSystem,
-                              activeFrame.target
+                          {catalog.worlds.map((world) => {
+                            const compatibility = world.timeSystems.some(
+                              (system) =>
+                                getGraphSourceCompatibility(
+                                  system,
+                                  activeFrame.target
+                                ).compatible
                             );
                             const source = sourceForWorld(state, world.id);
                             return (
                               <label
-                                className={`${inheritedStyles.canonOptionCard} ${source ? inheritedStyles.canonOptionCardActive : inheritedStyles.canonOptionCardInactive} ${!compatibility.compatible ? styles.disabledCard : ""}`}
+                                className={`${inheritedStyles.canonOptionCard} ${source ? inheritedStyles.canonOptionCardActive : inheritedStyles.canonOptionCardInactive} ${!compatibility ? styles.disabledCard : ""}`}
                                 data-testid={`world-option-${world.id}`}
                                 key={world.id}
                               >
                                 <input
                                   checked={Boolean(source)}
                                   className={inheritedStyles.canonOptionInput}
-                                  disabled={!compatibility.compatible}
+                                  disabled={!compatibility}
                                   onChange={() => toggleWorld(world)}
                                   type="checkbox"
                                 />
@@ -695,7 +728,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                                   >
                                     {world.description[locale]}
                                   </span>
-                                  {!compatibility.compatible ? (
+                                  {!compatibility ? (
                                     <span className={styles.incompatibleReason}>
                                       {copy.incompatibleReason}
                                     </span>
@@ -704,7 +737,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                                 <span
                                   className={inheritedStyles.canonOptionState}
                                 >
-                                  {!compatibility.compatible
+                                  {!compatibility
                                     ? copy.incompatible
                                     : source
                                       ? copy.selected
@@ -729,7 +762,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                         </div>
                         <div className={styles.canonGroups}>
                           {state.query.sources.map((source) => {
-                            const world = MOCK_GRAPH_SOURCE_CATALOG.worlds.find(
+                            const world = catalog.worlds.find(
                               (candidate) => candidate.id === source.world_id
                             )!;
                             return (

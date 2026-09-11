@@ -52,10 +52,21 @@ export function GraphRelationPanel({
   locale,
   mode
 }: Readonly<{ locale: AppLocale; mode: "relations" | "diagnostics" }>) {
-  const { state, setState } = useGraphQuery();
+  const {
+    state,
+    setState,
+    relations: sourceRelations,
+    diagnostics: sourceDiagnostics
+  } = useGraphQuery();
   const copy = COPY[locale];
-  const relations = useMemo(() => searchGraphRelations(state), [state]);
-  const diagnostics = useMemo(() => graphDiagnostics(state), [state]);
+  const relations = useMemo(
+    () => searchGraphRelations(state, sourceRelations),
+    [sourceRelations, state]
+  );
+  const diagnostics = useMemo(
+    () => graphDiagnostics(state, sourceDiagnostics),
+    [sourceDiagnostics, state]
+  );
 
   if (mode === "diagnostics") {
     return (

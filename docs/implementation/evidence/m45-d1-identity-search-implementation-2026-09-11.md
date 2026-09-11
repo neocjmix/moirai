@@ -39,3 +39,14 @@ Publication composition remains explicitly assigned to M4.5-E.
 
 The local container could download the pinned WebKit browser but could not install its system libraries
 because apt privilege transitions are blocked. GitHub CI remains the authoritative mobile WebKit gate.
+
+## GitHub and production checkpoint
+
+- PR: #38
+- PR CI: `34613884767` success, including mobile WebKit and PostgreSQL integration
+- main merge SHA: `5157962a821eba7b021db494f59c14bce5d6104e`
+- Railway deployments: Atropos `fb53ba75-6c18-4113-8703-1d97b342182c`, Clotho
+  `c8927c6c-f639-445b-9c97-c24c3c4402a3`, worker `ce4702ca-657e-4972-a19f-cc6a07cc608b`; all success
+- Clotho production read after deployment: Graph Scope Observatory remained current/target/served
+  Revision 4 and `ready`; shared Relation returned once with K1/K2 memberships alongside K1 `causes`
+  and K2 `prevents`

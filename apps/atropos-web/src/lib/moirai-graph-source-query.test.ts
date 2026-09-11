@@ -1,14 +1,19 @@
 import { describe, expect, it } from "vitest";
 
+import { MOIRAI_GRAPH_RELATION_TYPES } from "@moirai/contracts";
+
 import {
   MOCK_GRAPH_SOURCE_CATALOG,
+  GRAPH_RELATION_FAMILIES,
   buildGraphUrlSearch,
   createDefaultGraphUrlState,
   focusGraphEntity,
   getGraphSourceCompatibility,
+  graphDiagnostics,
   parseGraphUrlState,
   replaceGraphSources,
-  searchGraphEntities
+  searchGraphEntities,
+  searchGraphRelations
 } from "./moirai-graph-source-query.js";
 
 describe("M4.5-C Moirai graph source query", () => {
@@ -82,6 +87,76 @@ describe("M4.5-C Moirai graph source query", () => {
       nextWorld.id
     ]);
     expect(next.query.sources[0]!.served_revision).toBe(19);
+  });
+});
+
+describe("M4.5-D2 R1 Relation and diagnostics query", () => {
+  it("returns a shared Relation once with matched and complete memberships", () => {
+    const relations = searchGraphRelations(createDefaultGraphUrlState());
+    const shared = relations.filter(
+      (relation) => relation.id === "relation:observatory-shared-influences"
+    );
+    expect(shared).toHaveLength(1);
+    expect(shared[0]!.matchedCanonIds).toEqual([
+      "canon:recorded-history",
+      "canon:archival-observations"
+    ]);
+    expect(shared[0]!.canonMemberships).toEqual(shared[0]!.matchedCanonIds);
+  });
+
+  it("selects distinct K1 causes and K2 prevents assertions by membership", () => {
+    const initial = createDefaultGraphUrlState();
+    const selectCanon = (canonId: string) =>
+      replaceGraphSources(
+        initial,
+        initial.query.temporal_frame.target,
+        initial.query.sources.map((source) =>
+          source.world_id === "world:reality-observatory"
+            ? { ...source, canon_ids: [canonId] }
+            : source
+        )
+      );
+
+    expect(
+      searchGraphRelations(selectCanon("canon:recorded-history")).map(
+        (relation) => relation.type
+      )
+    ).toContain("causes");
+    expect(
+      searchGraphRelations(selectCanon("canon:recorded-history")).map(
+        (relation) => relation.type
+      )
+    ).not.toContain("prevents");
+    expect(
+      searchGraphRelations(selectCanon("canon:archival-observations")).map(
+        (relation) => relation.type
+      )
+    ).toContain("prevents");
+  });
+
+  it("addresses every Relation type through exactly one family", () => {
+    const familyTypes = Object.values(GRAPH_RELATION_FAMILIES).flat();
+    expect(new Set(familyTypes)).toEqual(new Set(MOIRAI_GRAPH_RELATION_TYPES));
+    expect(familyTypes).toHaveLength(MOIRAI_GRAPH_RELATION_TYPES.length);
+  });
+
+  it("keeps endpoint and Time System evidence and treats contradiction as valid knowledge", () => {
+    const state = createDefaultGraphUrlState();
+    expect(
+      searchGraphRelations(state).every(
+        (relation) =>
+          relation.endpointEvidence.length > 0 &&
+          relation.timeSystemEvidence.length > 0
+      )
+    ).toBe(true);
+    expect(
+      graphDiagnostics(state).find(
+        (diagnostic) => diagnostic.code === "contradiction"
+      )
+    ).toMatchObject({
+      severity: "knowledge",
+      invalid: false
+    });
   });
 });
 

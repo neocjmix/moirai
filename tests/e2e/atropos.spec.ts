@@ -156,6 +156,42 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
   );
 });
 
+test("R1 Relation filters preserve shared identity and explain contradiction", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: "Relations" }).click();
+
+  const shared = page.locator(
+    '[data-relation-id="relation:observatory-shared-influences"]'
+  );
+  await expect(shared).toHaveCount(1);
+  await expect(shared).toContainText("canon:recorded-history");
+  await expect(shared).toContainText("canon:archival-observations");
+  await expect(shared).toContainText("endpoint:A@K1,K2");
+  await expect(shared).toContainText("time:reality-gregorian@definition:1");
+
+  await page.getByRole("button", { name: "causal", exact: true }).click();
+  await expect(
+    page.getByTestId("relation-results").locator("article")
+  ).toHaveCount(0);
+  await page.getByRole("button", { name: "causes", exact: true }).click();
+  await expect(
+    page.locator('[data-relation-id="relation:observatory-k1-causes"]')
+  ).toBeVisible();
+
+  await page.getByRole("tab", { name: "Diagnostics" }).click();
+  const contradiction = page.locator('[data-diagnostic-code="contradiction"]');
+  await expect(contradiction).toContainText(/valid knowledge state/);
+  await expect(contradiction).toContainText(
+    /구조 오류가 아닙니다|not a structural error/
+  );
+});
+
 test("mobile reader traverses the single relational temporal model", async ({
   page
 }) => {

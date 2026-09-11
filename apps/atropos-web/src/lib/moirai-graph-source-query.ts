@@ -5,6 +5,7 @@ import {
   type MoiraiGraphEntityReference,
   type MoiraiGraphEntityFilter,
   type MoiraiGraphQuery,
+  type MoiraiGraphRelationFilter,
   type MoiraiGraphSource,
   type MoiraiGraphTimeSystemIdentity,
   type MoiraiGraphUrlState
@@ -62,6 +63,53 @@ export type GraphSearchMatch = GraphSearchEntity & {
   readonly matchedCanonIds: readonly string[];
   readonly persisted: boolean;
   readonly reference: MoiraiGraphEntityReference;
+};
+
+export type GraphRelationFamily =
+  "structural" | "temporal" | "causal" | "identity" | "provenance";
+
+export const GRAPH_RELATION_FAMILIES: Readonly<
+  Record<
+    GraphRelationFamily,
+    readonly (typeof MOIRAI_GRAPH_RELATION_TYPES)[number][]
+  >
+> = {
+  structural: ["contains"],
+  temporal: ["precedes", "not_after", "coincides", "starts", "ends"],
+  causal: ["causes", "enables", "prevents", "influences"],
+  identity: [
+    "identity_continues",
+    "identity_instance_of",
+    "identity_splits",
+    "identity_merges"
+  ],
+  provenance: ["derives_from", "transfers"]
+};
+
+export type GraphRelationMatch = {
+  readonly id: string;
+  readonly worldId: string;
+  readonly type: (typeof MOIRAI_GRAPH_RELATION_TYPES)[number];
+  readonly sourceIdentity: string;
+  readonly targetIdentity: string;
+  readonly canonMemberships: readonly string[];
+  readonly matchedCanonIds: readonly string[];
+  readonly endpointEvidence: readonly string[];
+  readonly timeSystemEvidence: readonly string[];
+};
+
+export type GraphDiagnostic = {
+  readonly code:
+    | "contradiction"
+    | "unplaced"
+    | "unresolved"
+    | "cycle"
+    | "incompatibility"
+    | "truncation"
+    | "renderer_loss";
+  readonly severity: "knowledge" | "informational" | "warning";
+  readonly invalid: false;
+  readonly message: Readonly<Record<"ko" | "en", string>>;
 };
 
 // MOCK: synthetic public source discovery until Publication composition is
@@ -249,6 +297,108 @@ export const MOCK_GRAPH_SEARCH_ENTITIES: readonly GraphSearchEntity[] = [
   }
 ];
 
+const MOCK_GRAPH_RELATIONS: readonly Omit<
+  GraphRelationMatch,
+  "matchedCanonIds"
+>[] = [
+  {
+    id: "relation:observatory-shared-influences",
+    worldId: "world:reality-observatory",
+    type: "influences",
+    sourceIdentity: "event:observatory-a",
+    targetIdentity: "event:observatory-b",
+    canonMemberships: ["canon:recorded-history", "canon:archival-observations"],
+    endpointEvidence: ["endpoint:A@K1,K2", "endpoint:B@K1,K2"],
+    timeSystemEvidence: ["time:reality-gregorian@definition:1"]
+  },
+  {
+    id: "relation:observatory-k1-causes",
+    worldId: "world:reality-observatory",
+    type: "causes",
+    sourceIdentity: "event:observatory-a",
+    targetIdentity: "event:observatory-b",
+    canonMemberships: ["canon:recorded-history"],
+    endpointEvidence: ["endpoint:A@K1", "endpoint:B@K1"],
+    timeSystemEvidence: ["time:reality-gregorian@definition:1"]
+  },
+  {
+    id: "relation:observatory-k2-prevents",
+    worldId: "world:reality-observatory",
+    type: "prevents",
+    sourceIdentity: "event:observatory-a",
+    targetIdentity: "event:observatory-b",
+    canonMemberships: ["canon:archival-observations"],
+    endpointEvidence: ["endpoint:A@K2", "endpoint:B@K2"],
+    timeSystemEvidence: ["time:reality-gregorian@definition:1"]
+  }
+];
+
+export const MOCK_GRAPH_DIAGNOSTICS: readonly GraphDiagnostic[] = [
+  {
+    code: "contradiction",
+    severity: "knowledge",
+    invalid: false,
+    message: {
+      ko: "K1 causes와 K2 prevents는 서로 다른 유효 assertion이며 구조 오류가 아닙니다.",
+      en: "K1 causes and K2 prevents are distinct valid assertions, not a structural error."
+    }
+  },
+  {
+    code: "unplaced",
+    severity: "informational",
+    invalid: false,
+    message: {
+      ko: "배치되지 않은 시간 항목을 숨기지 않습니다.",
+      en: "Unplaced temporal items remain visible."
+    }
+  },
+  {
+    code: "unresolved",
+    severity: "warning",
+    invalid: false,
+    message: {
+      ko: "해결되지 않은 endpoint를 명시합니다.",
+      en: "Unresolved endpoints are reported."
+    }
+  },
+  {
+    code: "cycle",
+    severity: "warning",
+    invalid: false,
+    message: {
+      ko: "시간 제약 cycle을 진단합니다.",
+      en: "Temporal constraint cycles are diagnosed."
+    }
+  },
+  {
+    code: "incompatibility",
+    severity: "warning",
+    invalid: false,
+    message: {
+      ko: "Time System 비호환을 명시합니다.",
+      en: "Time System incompatibility is explicit."
+    }
+  },
+  {
+    code: "truncation",
+    severity: "informational",
+    invalid: false,
+    message: {
+      ko: "Query budget 절단을 명시합니다.",
+      en: "Query budget truncation is explicit."
+    }
+  },
+  {
+    code: "renderer_loss",
+    severity: "informational",
+    invalid: false,
+    message: {
+      ko: "Renderer 표현 손실을 추적합니다.",
+      en: "Renderer representation loss is tracked."
+    }
+  }
+];
+
 export function getGraphSourceCompatibility(
   source: MoiraiGraphTimeSystemIdentity,
   target: MoiraiGraphTimeSystemIdentity
@@ -384,6 +534,49 @@ function normalizeEntityFilter(value: unknown): MoiraiGraphEntityFilter | null {
     include_states: value.include_states,
     include_narratives: value.include_narratives,
     include_virtual_time_events: value.include_virtual_time_events
+  };
+}
+
+function normalizeRelationFilter(
+  value: unknown
+): MoiraiGraphRelationFilter | null {
+  if (!isRecord(value)) return null;
+  const types = stringArray(value.types);
+  const directions = stringArray(value.directions);
+  if (
+    !types ||
+    types.some(
+      (type) => !MOIRAI_GRAPH_RELATION_TYPES.includes(type as never)
+    ) ||
+    !directions ||
+    directions.some(
+      (direction) => direction !== "directed" && direction !== "undirected"
+    )
+  ) {
+    return null;
+  }
+  return {
+    types: types as MoiraiGraphRelationFilter["types"],
+    directions: directions as MoiraiGraphRelationFilter["directions"]
+  };
+}
+
+function normalizeDiagnosticsFilter(
+  value: unknown
+): MoiraiGraphQuery["diagnostics_filter"] | null {
+  if (!isRecord(value)) return null;
+  const includeCodes = stringArray(value.include_codes);
+  if (
+    !includeCodes ||
+    typeof value.include_unplaced !== "boolean" ||
+    typeof value.include_unresolved !== "boolean"
+  ) {
+    return null;
+  }
+  return {
+    include_codes: includeCodes,
+    include_unplaced: value.include_unplaced,
+    include_unresolved: value.include_unresolved
   };
 }
 
@@ -558,7 +751,11 @@ export function normalizeGraphUrlState(
   }
 
   const entityFilter = normalizeEntityFilter(query.entity_filter);
-  if (!entityFilter) return null;
+  const relationFilter = normalizeRelationFilter(query.relation_filter);
+  const diagnosticsFilter = normalizeDiagnosticsFilter(
+    query.diagnostics_filter
+  );
+  if (!entityFilter || !relationFilter || !diagnosticsFilter) return null;
   const focus =
     value.focus === null
       ? null
@@ -585,7 +782,9 @@ export function normalizeGraphUrlState(
     query: {
       ...createQuery(frame.target, sources),
       scope,
-      entity_filter: entityFilter
+      entity_filter: entityFilter,
+      relation_filter: relationFilter,
+      diagnostics_filter: diagnosticsFilter
     },
     focus
   };
@@ -645,6 +844,45 @@ export function replaceGraphEntityFilter(
     ...state,
     query: { ...state.query, entity_filter: entityFilter }
   };
+}
+
+export function replaceGraphRelationFilter(
+  state: MoiraiGraphUrlState,
+  relationFilter: MoiraiGraphRelationFilter
+): MoiraiGraphUrlState {
+  return {
+    ...state,
+    query: { ...state.query, relation_filter: relationFilter }
+  };
+}
+
+export function searchGraphRelations(
+  state: MoiraiGraphUrlState
+): readonly GraphRelationMatch[] {
+  return MOCK_GRAPH_RELATIONS.flatMap((relation) => {
+    const source = state.query.sources.find(
+      (entry) => entry.world_id === relation.worldId
+    );
+    if (!source || !state.query.relation_filter.types.includes(relation.type))
+      return [];
+    const matchedCanonIds = relation.canonMemberships.filter((id) =>
+      source.canon_ids.includes(id)
+    );
+    return matchedCanonIds.length > 0 ? [{ ...relation, matchedCanonIds }] : [];
+  });
+}
+
+export function graphDiagnostics(state: MoiraiGraphUrlState) {
+  return MOCK_GRAPH_DIAGNOSTICS.filter((diagnostic) => {
+    if (diagnostic.code === "unplaced")
+      return state.query.diagnostics_filter.include_unplaced;
+    if (diagnostic.code === "unresolved")
+      return state.query.diagnostics_filter.include_unresolved;
+    return (
+      state.query.diagnostics_filter.include_codes.length === 0 ||
+      state.query.diagnostics_filter.include_codes.includes(diagnostic.code)
+    );
+  });
 }
 
 export function focusGraphEntity(

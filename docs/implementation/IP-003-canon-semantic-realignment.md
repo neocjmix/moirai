@@ -304,6 +304,14 @@ Canon의 `world_id`와 단일 membership으로 변환하는 임시 persistence-b
 이는 명시된 `canon_id`만 lossless하게 옮기며 membership을 추론하지 않는다. 신규 write
 cutover 뒤 제거 대상이고 canonical ownership source가 아니다.
 
+완료 증거: PR #30을 `56b95a8b7b998326f6ab7adf302327288995f9b9`로 병합했고 CI
+`34561345766`과 production smoke `34561614061`이 성공했다. production preflight는 World 3,
+Canon 3, active Event 26, Relation 50, Narrative 1, unresolved legacy Canon 0, World-local slug
+collision group 0을 기록했다. migration은 Event identity나 Revision을 바꾸지 않고 26개
+`world_id`와 26개 membership을 backfill했으며 orphan/cross-World 0 검증 뒤 성공했다. 자세한
+수치는 [machine-readable evidence](evidence/ip-003-slice2-production-migration-2026-09-11.json)에
+고정한다.
+
 ### Slice 3 — Clotho write/validate/commit
 
 Event create + 1..N membership, membership add/remove, duplicate/cross-World/orphan rejection과

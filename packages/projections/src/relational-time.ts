@@ -38,7 +38,7 @@ export function projectRelationalTime(
     .filter((event) => event.canon_memberships.includes(canonId))
     .sort((a, b) => a.id.localeCompare(b.id));
   const inputRelations = view.relations
-    .filter((r) => r.canon_id === canonId)
+    .filter((r) => r.canon_memberships?.includes(canonId))
     .sort((a, b) => a.id.localeCompare(b.id));
   const systems = view.timeSystems
     .filter((s) =>
@@ -65,7 +65,8 @@ export function projectRelationalTime(
       throw new Error(`temporal_projection_missing_endpoints:${relation.id}`);
     return {
       id: relation.id,
-      canon_id: relation.canon_id,
+      world_id: relation.world_id,
+      canon_memberships: relation.canon_memberships,
       type: relation.type,
       direction: relation.direction,
       attributes: relation.attributes,

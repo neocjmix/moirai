@@ -189,7 +189,7 @@ flowchart TD
 2. manifest와 모든 file digest를 확인한다.
 3. format과 section schema version을 확인한다.
 4. 필요한 순차 migration을 메모리 또는 임시 작업공간에서 수행한다.
-5. ID, World ownership, Event 1..N Canon membership, Time System, Relation과 철회 불변식을 검증한다.
+5. ID, World ownership, Event·Relation 1..N Canon membership, Time System과 철회 불변식을 검증한다.
 6. 대상 모드의 ID collision과 현재 World 차이를 계산한다.
 7. 사용자에게 생성·변경·철회·누락과 손실 가능성을 preview한다.
 8. 하나의 World Change Set 또는 복구 전용 원자적 bootstrap transaction으로 적용한다.
@@ -222,7 +222,7 @@ round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semant
 
 - World별 Event identity와 활성·철회 상태
 - Canon별 Event membership 집합과 active orphan 수
-- Relation type, endpoint와 DP-001에서 승인된 Canon context
+- Relation World identity, type, endpoint와 모든 Canon membership
 - Time System 정의·capability와 virtual Time Event reference precision
 - 포함 graph와 Process 역할
 - Narrative scope·locale·body digest
@@ -233,6 +233,7 @@ round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semant
 ID remap이 있는 clone mode에서는 mapping을 적용한 뒤 비교한다.
 
 구 package의 Event `canon_id`는 해당 Canon의 World와 단일 membership으로 lossless 변환한다. 정보만으로 membership을 결정할 수 없는 package는 추론하지 않고 import를 중단한다.
+구 package의 Relation `canon_id`도 같은 방식으로 World ownership과 단일 membership으로 lossless 변환한다. 새 package는 Relation membership section을 독립적으로 왕복한다.
 
 IP-003 content package `2.0`은 `world-event-canon-membership/1` schema와
 `event-canon-memberships.ndjson`을 사용한다. `1.0`/`event-relational-time/1` reader는 위의

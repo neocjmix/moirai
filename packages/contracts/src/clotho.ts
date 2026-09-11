@@ -1,5 +1,9 @@
 import type { CreateChangeSet } from "./index.js";
-import { CONTRACT_VERSION, LEGACY_CONTRACT_VERSION } from "./versions.js";
+import {
+  CONTRACT_VERSION,
+  EVENT_MEMBERSHIP_CONTRACT_VERSION,
+  LEGACY_CONTRACT_VERSION
+} from "./versions.js";
 
 export type ChangePlan = Omit<CreateChangeSet, "actor">;
 
@@ -9,16 +13,25 @@ export function normalizeLegacyChangePlan(plan: unknown): ChangePlan {
     readonly world_id?: unknown;
     readonly operations?: readonly Record<string, unknown>[];
   };
-  if (legacy.contract_version !== LEGACY_CONTRACT_VERSION) {
+  if (
+    legacy.contract_version !== LEGACY_CONTRACT_VERSION &&
+    legacy.contract_version !== EVENT_MEMBERSHIP_CONTRACT_VERSION
+  ) {
     return plan as ChangePlan;
   }
   const operations = (legacy.operations ?? []).flatMap((operation) => {
-    if (operation.kind !== "create" || operation.entity_type !== "event") {
+    if (operation.kind !== "create") {
       return [operation];
     }
+    if (
+      operation.entity_type !== "event" &&
+      operation.entity_type !== "relation"
+    )
+      return [operation];
     const value = operation.value as Record<string, unknown>;
     const { canon_id: canonId, ...eventValue } = value;
-    const eventReference = operation.client_ref
+    if (canonId === undefined) return [operation];
+    const entityReference = operation.client_ref
       ? { client_ref: operation.client_ref }
       : operation.entity_id;
     const originRefs = Array.isArray(operation.origin_refs)
@@ -34,12 +47,15 @@ export function normalizeLegacyChangePlan(plan: unknown): ChangePlan {
       },
       {
         kind: "add",
-        entity_type: "event_canon_membership",
+        entity_type: `${operation.entity_type}_canon_membership`,
         origin_refs: originRefs.filter((reference) => {
           const field = (reference as { field?: unknown }).field;
           return field === "canon_id" || field === "*";
         }),
-        value: { event_id: eventReference, canon_id: canonId }
+        value: {
+          [`${operation.entity_type}_id`]: entityReference,
+          canon_id: canonId
+        }
       }
     ];
   });
@@ -199,6 +215,24 @@ const eventMembershipOperation = (kind: "add" | "remove"): JsonSchema =>
     },
     ["kind", "entity_type", "origin_refs", "value"]
   );
+const relationMembershipOperation = (kind: "add" | "remove"): JsonSchema =>
+  object(
+    {
+      kind: { const: kind },
+      entity_type: { const: "relation_canon_membership" },
+      origin_refs: {
+        ...array(
+          object({
+            field: str(128),
+            origin_index: { type: "integer", minimum: 0, maximum: 99 }
+          })
+        ),
+        minItems: 1
+      },
+      value: object({ relation_id: ref, canon_id: ref })
+    },
+    ["kind", "entity_type", "origin_refs", "value"]
+  );
 const withdrawEventOperation: JsonSchema = object(
   {
     kind: { const: "withdraw" },
@@ -213,6 +247,23 @@ const withdrawEventOperation: JsonSchema = object(
       minItems: 1
     },
     value: object({ event_id: ref })
+  },
+  ["kind", "entity_type", "origin_refs", "value"]
+);
+const withdrawRelationOperation: JsonSchema = object(
+  {
+    kind: { const: "withdraw" },
+    entity_type: { const: "relation" },
+    origin_refs: {
+      ...array(
+        object({
+          field: str(128),
+          origin_index: { type: "integer", minimum: 0, maximum: 99 }
+        })
+      ),
+      minItems: 1
+    },
+    value: object({ relation_id: ref })
   },
   ["kind", "entity_type", "origin_refs", "value"]
 );
@@ -324,22 +375,48 @@ function changePlanSchema(
   });
 }
 
-const temporalRelationOperation = operation(
-  "relation",
-  {
-    canon_id: ref,
-    type: choice(...relationTypes),
-    source_ref: eventReference,
-    target_ref: eventReference,
-    direction: choice("directed", "undirected"),
-    attributes: attrs
-  },
-  ["canon_id", "type", "source_ref", "target_ref", "direction", "attributes"]
-);
+const relationOperation = (ownerField: "canon_id" | "world_id") =>
+  operation(
+    "relation",
+    {
+      [ownerField]: ref,
+      type: choice(...relationTypes),
+      source_ref: eventReference,
+      target_ref: eventReference,
+      direction: choice("directed", "undirected"),
+      attributes: attrs
+    },
+    [ownerField, "type", "source_ref", "target_ref", "direction", "attributes"]
+  );
 
 export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
-  temporalRelationOperation,
+  relationOperation("world_id"),
   CONTRACT_VERSION,
+  operation(
+    "event",
+    {
+      world_id: ref,
+      slug: nullable(str(128)),
+      kind: choice("atomic", "composite"),
+      title: str(500),
+      summary: nullable(str(10000)),
+      roles: array(str(128)),
+      attributes: attrs
+    },
+    ["world_id", "kind", "title", "roles", "attributes"]
+  ),
+  [
+    eventMembershipOperation("add"),
+    eventMembershipOperation("remove"),
+    withdrawEventOperation,
+    relationMembershipOperation("add"),
+    relationMembershipOperation("remove"),
+    withdrawRelationOperation
+  ]
+);
+export const EVENT_MEMBERSHIP_CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
+  relationOperation("canon_id"),
+  EVENT_MEMBERSHIP_CONTRACT_VERSION,
   operation(
     "event",
     {
@@ -360,7 +437,7 @@ export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
   ]
 );
 export const LEGACY_CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
-  temporalRelationOperation,
+  relationOperation("canon_id"),
   LEGACY_CONTRACT_VERSION,
   operation(
     "event",
@@ -448,7 +525,13 @@ export function clothoInputSchema(method: ClothoMethod): JsonSchema {
     case "change.commit":
       return object(
         {
-          plan: { oneOf: [CHANGE_PLAN_SCHEMA, LEGACY_CHANGE_PLAN_SCHEMA] },
+          plan: {
+            oneOf: [
+              CHANGE_PLAN_SCHEMA,
+              EVENT_MEMBERSHIP_CHANGE_PLAN_SCHEMA,
+              LEGACY_CHANGE_PLAN_SCHEMA
+            ]
+          },
           plan_digest: { type: "string", pattern: "^[0-9a-f]{64}$" }
         },
         ["plan"]

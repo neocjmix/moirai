@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 
 import {
   CONTRACT_VERSION,
+  EVENT_MEMBERSHIP_CONTRACT_VERSION,
   HEALTH_RESPONSE_SCHEMA,
   LEGACY_CONTRACT_VERSION,
   normalizeLegacyChangePlan,
@@ -84,6 +85,54 @@ describe("Milestone 2 contracts", () => {
         }
       }
     ]);
+    expect(normalized.operations[0]?.value).not.toHaveProperty("canon_id");
+  });
+
+  it("losslessly adapts a v3 Relation Canon reference into World ownership and one membership", () => {
+    const normalized = normalizeLegacyChangePlan({
+      contract_version: EVENT_MEMBERSHIP_CONTRACT_VERSION,
+      change_set_id: TEST_FIXTURE.changeSetId,
+      world_id: TEST_FIXTURE.worldId,
+      expected_revision: 1,
+      intent: "Relation compatibility fixture",
+      origins: [{ kind: "human_instruction", summary: "Fixture" }],
+      operations: [
+        {
+          kind: "create",
+          entity_type: "relation",
+          entity_id: TEST_FIXTURE.causalRelationId,
+          origin_refs: [{ field: "canon_id", origin_index: 0 }],
+          value: {
+            canon_id: TEST_FIXTURE.canonId,
+            type: "causes",
+            source_ref: { kind: "event", event_id: TEST_FIXTURE.eventId },
+            target_ref: {
+              kind: "event",
+              event_id: TEST_FIXTURE.secondEventId
+            },
+            direction: "directed",
+            attributes: {}
+          }
+        }
+      ]
+    });
+    expect(normalized).toMatchObject({
+      contract_version: CONTRACT_VERSION,
+      operations: [
+        {
+          entity_type: "relation",
+          value: { world_id: TEST_FIXTURE.worldId }
+        },
+        {
+          kind: "add",
+          entity_type: "relation_canon_membership",
+          value: {
+            relation_id: TEST_FIXTURE.causalRelationId,
+            canon_id: TEST_FIXTURE.canonId
+          }
+        }
+      ]
+    });
     expect(normalized.operations[0]?.value).not.toHaveProperty("canon_id");
   });
 });

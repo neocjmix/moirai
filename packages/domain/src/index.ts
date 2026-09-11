@@ -2,6 +2,7 @@ import {
   CONTRACT_VERSION,
   type CanonicalEventCanonMembership,
   type CanonicalEventReference,
+  type CanonicalRelationCanonMembership,
   type ChangeOperation,
   type CreateChangeSet,
   type PublicCanon,
@@ -60,6 +61,7 @@ export interface CanonicalState {
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly canonTimeSystems: readonly PublicCanonTimeSystem[];
   readonly eventCanonMemberships: readonly CanonicalEventCanonMembership[];
+  readonly relationCanonMemberships: readonly CanonicalRelationCanonMembership[];
   readonly events: readonly PublicEvent[];
   readonly relations: readonly PublicRelation[];
   readonly narratives: readonly PublicNarrative[];
@@ -337,7 +339,7 @@ function resolveRelationValue(
   }
   return {
     ...value,
-    canon_id: resolveReferenceId(value.canon_id, mapping, `${path}.canon_id`),
+    world_id: resolveReferenceId(value.world_id, mapping, `${path}.world_id`),
     source_ref: source,
     target_ref: target
   };
@@ -358,10 +360,10 @@ export function resolveCreateOperations(
         operation.value,
         mapping,
         `operations.${index}.value`
-      ) as { readonly event_id: string };
+      ) as { readonly event_id?: string; readonly relation_id?: string };
       return {
         ...operation,
-        entity_id: value.event_id,
+        entity_id: value.event_id ?? value.relation_id!,
         value
       } as ResolvedChangeOperation;
     }
@@ -652,6 +654,56 @@ function validateRelationEndpointKinds(
   }
 }
 
+function relationEndpointEventInWorld(
+  reference: CanonicalEventReference,
+  worldId: string,
+  events: ReadonlyMap<string, PublicEvent>,
+  timeSystems: ReadonlyMap<string, PublicTimeSystem>,
+  path: string
+): PublicEvent | null {
+  if (reference.kind === "event") {
+    const event = events.get(reference.event_id);
+    if (!event)
+      fail(
+        "dangling_reference",
+        path,
+        "Relation Event endpoint does not exist",
+        [reference.event_id]
+      );
+    if (event.world_id !== worldId)
+      fail(
+        "world_scope_mismatch",
+        path,
+        "Relation endpoint is outside its World",
+        [event.id]
+      );
+    return event;
+  }
+  const timeSystem = timeSystems.get(reference.time_system_ref.time_system_id);
+  if (!timeSystem)
+    fail(
+      "dangling_reference",
+      path,
+      "Time Event references an unknown Time System",
+      [reference.time_system_ref.time_system_id]
+    );
+  if (timeSystem.world_id !== worldId)
+    fail(
+      "world_scope_mismatch",
+      path,
+      "Time Event is outside the Relation World",
+      [timeSystem.id]
+    );
+  if (timeSystem.definition_version !== reference.definition_version)
+    fail(
+      "time_system_version_mismatch",
+      path,
+      "Time Event definition version does not match the linked Time System",
+      [timeSystem.id]
+    );
+  return null;
+}
+
 function temporalGraphFailure(
   relations: readonly PublicRelation[],
   events: readonly PublicEvent[],
@@ -841,6 +893,17 @@ export function validateCandidateChangeSet(
   }
   const withdrawnEventIds = new Set<string>();
   const relations = new Map(existing.relations.map((item) => [item.id, item]));
+  const relationCanonMemberships = new Map<string, Set<string>>();
+  for (const relation of existing.relations)
+    relationCanonMemberships.set(
+      relation.id,
+      new Set(relation.canon_memberships ?? [])
+    );
+  for (const membership of existing.relationCanonMemberships ?? [])
+    relationCanonMemberships
+      .get(membership.relation_id)
+      ?.add(membership.canon_id);
+  const withdrawnRelationIds = new Set<string>();
   const narratives = new Map(
     existing.narratives.map((item) => [item.id, item])
   );
@@ -1039,27 +1102,39 @@ export function validateCandidateChangeSet(
         break;
       }
       case "relation": {
+        if (operation.kind === "withdraw") {
+          const relation = relations.get(operation.value.relation_id);
+          if (!relation)
+            fail(
+              "dangling_reference",
+              `${path}.value.relation_id`,
+              "Relation withdrawal target does not exist",
+              [operation.value.relation_id]
+            );
+          withdrawnRelationIds.add(relation.id);
+          break;
+        }
         const value = operation.value;
+        if (value.world_id !== input.world_id)
+          fail(
+            "world_scope_mismatch",
+            `${path}.value.world_id`,
+            "Relation is outside the Change Set World"
+          );
         const endpoints = requireRelationEndpoints(value, path);
-        const source = validateRelationReference(
+        const source = relationEndpointEventInWorld(
           endpoints.source,
-          value.canon_id,
+          value.world_id,
           events,
-          eventCanonMemberships,
           timeSystems,
-          canonTimeSystems.values(),
-          `${path}.value.source_ref`,
-          operation.entity_id
+          `${path}.value.source_ref`
         );
-        const target = validateRelationReference(
+        const target = relationEndpointEventInWorld(
           endpoints.target,
-          value.canon_id,
+          value.world_id,
           events,
-          eventCanonMemberships,
           timeSystems,
-          canonTimeSystems.values(),
-          `${path}.value.target_ref`,
-          operation.entity_id
+          `${path}.value.target_ref`
         );
         validateRelationEndpointKinds(value.type, source, target, path);
         if (endpointKey(endpoints.source) === endpointKey(endpoints.target))
@@ -1076,28 +1151,60 @@ export function validateCandidateChangeSet(
             "Relation direction does not match the registry"
           );
         }
-        if (
-          value.type === "contains" &&
-          source &&
-          target &&
-          wouldCreateContainmentCycle(relations.values(), source.id, target.id)
-        ) {
-          fail(
-            "containment_cycle",
-            path,
-            "contains Relation would create a cycle",
-            [source.id, target.id]
-          );
-        }
         relations.set(operation.entity_id, {
           id: operation.entity_id,
-          canon_id: value.canon_id,
+          world_id: value.world_id,
+          canon_memberships: [],
           type: value.type,
           source_ref: endpoints.source,
           target_ref: endpoints.target,
           direction: value.direction,
           attributes: value.attributes
         });
+        relationCanonMemberships.set(operation.entity_id, new Set());
+        break;
+      }
+      case "relation_canon_membership": {
+        const value = operation.value;
+        const relation = relations.get(value.relation_id);
+        const canon = canons.get(value.canon_id);
+        if (!relation || !canon)
+          fail(
+            "dangling_reference",
+            path,
+            "Relation-Canon membership has a missing endpoint",
+            [value.relation_id, value.canon_id]
+          );
+        if (
+          relation.world_id !== input.world_id ||
+          canon.world_id !== input.world_id
+        )
+          fail(
+            "cross_world_canon_membership",
+            path,
+            "Relation and Canon membership must belong to the Change Set World",
+            [value.relation_id, value.canon_id]
+          );
+        const memberships = relationCanonMemberships.get(value.relation_id)!;
+        if (operation.kind === "add") {
+          if (memberships.has(value.canon_id))
+            fail(
+              "duplicate_canon_membership",
+              path,
+              "Relation already participates in this Canon",
+              [value.relation_id, value.canon_id]
+            );
+          memberships.add(value.canon_id);
+        } else {
+          if (!memberships.has(value.canon_id))
+            fail(
+              "relation_canon_membership_not_found",
+              path,
+              "Relation does not participate in this Canon",
+              [value.relation_id, value.canon_id]
+            );
+          memberships.delete(value.canon_id);
+        }
         break;
       }
       case "narrative": {
@@ -1209,26 +1316,77 @@ export function validateCandidateChangeSet(
   for (const relation of relations.values()) {
     const endpoints = canonicalRelationEndpoints(relation);
     if (!endpoints) continue;
-    validateRelationReference(
-      endpoints.source,
-      relation.canon_id,
-      events,
-      eventCanonMemberships,
-      timeSystems,
-      canonTimeSystems.values(),
-      `relations.${relation.id}.source_ref`,
-      relation.id
-    );
-    validateRelationReference(
-      endpoints.target,
-      relation.canon_id,
-      events,
-      eventCanonMemberships,
-      timeSystems,
-      canonTimeSystems.values(),
-      `relations.${relation.id}.target_ref`,
-      relation.id
-    );
+    const memberships = relationCanonMemberships.get(relation.id) ?? new Set();
+    if (withdrawnRelationIds.has(relation.id)) {
+      if (memberships.size > 0)
+        fail(
+          "relation_canon_membership_required",
+          "operations",
+          "Withdrawing a Relation requires removing all Canon memberships in the same Change Set",
+          [relation.id, ...memberships]
+        );
+      continue;
+    }
+    if (memberships.size === 0)
+      fail(
+        "relation_canon_membership_required",
+        "operations",
+        "Every active Relation must participate in at least one Canon",
+        [relation.id]
+      );
+    for (const reference of [endpoints.source, endpoints.target])
+      if (
+        reference.kind === "event" &&
+        withdrawnEventIds.has(reference.event_id)
+      )
+        fail(
+          "dependent_content_active",
+          `relations.${relation.id}`,
+          "Active Relation cannot retain a withdrawn Event endpoint",
+          [relation.id, reference.event_id]
+        );
+    for (const canonId of memberships) {
+      const source = validateRelationReference(
+        endpoints.source,
+        canonId,
+        events,
+        eventCanonMemberships,
+        timeSystems,
+        canonTimeSystems.values(),
+        `relations.${relation.id}.source_ref`,
+        relation.id
+      );
+      const target = validateRelationReference(
+        endpoints.target,
+        canonId,
+        events,
+        eventCanonMemberships,
+        timeSystems,
+        canonTimeSystems.values(),
+        `relations.${relation.id}.target_ref`,
+        relation.id
+      );
+      if (
+        relation.type === "contains" &&
+        source &&
+        target &&
+        wouldCreateContainmentCycle(
+          [...relations.values()].filter(
+            (candidate) =>
+              candidate.id !== relation.id &&
+              relationCanonMemberships.get(candidate.id)?.has(canonId)
+          ),
+          source.id,
+          target.id
+        )
+      )
+        fail(
+          "containment_cycle",
+          `relations.${relation.id}`,
+          "contains Relation would create a cycle",
+          [source.id, target.id]
+        );
+    }
   }
   for (const narrative of narratives.values()) {
     if (narrative.scope_type !== "event") continue;
@@ -1248,9 +1406,18 @@ export function validateCandidateChangeSet(
   const activeEvents = [...events.values()].filter(
     (event) => !withdrawnEventIds.has(event.id)
   );
-  temporalGraphFailure([...relations.values()], activeEvents, [
-    ...timeSystems.values()
-  ]);
+  for (const canon of canons.values())
+    temporalGraphFailure(
+      [...relations.values()].filter(
+        (relation) =>
+          !withdrawnRelationIds.has(relation.id) &&
+          relationCanonMemberships.get(relation.id)?.has(canon.id)
+      ),
+      activeEvents.filter((event) =>
+        eventCanonMemberships.get(event.id)?.has(canon.id)
+      ),
+      [...timeSystems.values()]
+    );
   return [];
 }
 

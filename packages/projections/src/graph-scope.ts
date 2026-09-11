@@ -52,7 +52,7 @@ export function projectCanonGraphScope(
     .filter((event) => event.canon_memberships.includes(canonId))
     .sort((left, right) => left.id.localeCompare(right.id));
   const sourceRelations = view.relations
-    .filter((relation) => relation.canon_id === canonId)
+    .filter((relation) => relation.canon_memberships?.includes(canonId))
     .flatMap((relation) => {
       const source = endpointEventId(relation.source_ref);
       const target = endpointEventId(relation.target_ref);

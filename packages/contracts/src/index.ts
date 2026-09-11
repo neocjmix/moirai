@@ -11,6 +11,7 @@ export type EntityType =
   | "event"
   | "event_canon_membership"
   | "relation"
+  | "relation_canon_membership"
   | "narrative";
 export type ProjectionStatus = "ready" | "building" | "failed";
 export type SmokeResult = "passed" | "failed" | "running" | "unknown";
@@ -163,13 +164,43 @@ export type RelationType =
 export interface CreateRelationOperation extends CreateOperationBase {
   readonly entity_type: "relation";
   readonly value: {
-    readonly canon_id: EntityReference;
+    readonly world_id: EntityReference;
     readonly type: RelationType;
     readonly source_ref: ChangePlanEventReference;
     readonly target_ref: ChangePlanEventReference;
     readonly direction: "directed" | "undirected";
     readonly attributes: Readonly<Record<string, unknown>>;
   };
+}
+
+interface RelationCanonMembershipOperationBase {
+  readonly entity_type: "relation_canon_membership";
+  readonly value: {
+    readonly relation_id: EntityReference;
+    readonly canon_id: EntityReference;
+  };
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
+}
+
+export interface AddRelationCanonMembershipOperation extends RelationCanonMembershipOperationBase {
+  readonly kind: "add";
+}
+
+export interface RemoveRelationCanonMembershipOperation extends RelationCanonMembershipOperationBase {
+  readonly kind: "remove";
+}
+
+export interface WithdrawRelationOperation {
+  readonly kind: "withdraw";
+  readonly entity_type: "relation";
+  readonly value: { readonly relation_id: EntityReference };
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
 }
 
 export interface PublicReference {
@@ -204,7 +235,10 @@ export type ChangeOperation =
   | CreateOperation
   | AddEventCanonMembershipOperation
   | RemoveEventCanonMembershipOperation
-  | WithdrawEventOperation;
+  | WithdrawEventOperation
+  | AddRelationCanonMembershipOperation
+  | RemoveRelationCanonMembershipOperation
+  | WithdrawRelationOperation;
 
 export interface CreateChangeSet {
   readonly contract_version: ChangeSetContractVersion;
@@ -279,6 +313,11 @@ export interface CanonicalEventCanonMembership {
   readonly canon_id: string;
 }
 
+export interface CanonicalRelationCanonMembership {
+  readonly relation_id: string;
+  readonly canon_id: string;
+}
+
 export interface PublicEvent {
   readonly id: string;
   readonly world_id: string;
@@ -293,7 +332,8 @@ export interface PublicEvent {
 
 export interface PublicRelation {
   readonly id: string;
-  readonly canon_id: string;
+  readonly world_id: string;
+  readonly canon_memberships: readonly string[];
   readonly type: RelationType;
   readonly source_ref: CanonicalEventReference;
   readonly target_ref: CanonicalEventReference;

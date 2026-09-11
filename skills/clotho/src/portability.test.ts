@@ -43,10 +43,22 @@ function corpus(): PortableWorld {
       .filter((o) => o.kind === "create" && o.entity_type === type)
       .map((o) => ({ id: o.entity_id, ...o.value }));
   const eventCanonMemberships = ops.flatMap((operation) =>
-    operation.kind === "add"
+    operation.kind === "add" &&
+    operation.entity_type === "event_canon_membership"
       ? [
           {
             event_id: String(operation.value.event_id),
+            canon_id: String(operation.value.canon_id)
+          }
+        ]
+      : []
+  );
+  const relationCanonMemberships = ops.flatMap((operation) =>
+    operation.kind === "add" &&
+    operation.entity_type === "relation_canon_membership"
+      ? [
+          {
+            relation_id: String(operation.value.relation_id),
             canon_id: String(operation.value.canon_id)
           }
         ]
@@ -72,7 +84,13 @@ function corpus(): PortableWorld {
     canonTimeSystems: rows("canon_time_system"),
     eventCanonMemberships,
     events,
-    relations: rows("relation"),
+    relationCanonMemberships,
+    relations: rows("relation").map((relation) => ({
+      ...relation,
+      canon_memberships: relationCanonMemberships
+        .filter((membership) => membership.relation_id === relation.id)
+        .map((membership) => membership.canon_id)
+    })),
     narratives: rows("narrative")
   } as unknown as PortableWorld;
 }
@@ -106,13 +124,20 @@ async function legacyPackage(source: PortableWorld): Promise<Buffer> {
     value.canon_id = event.canon_memberships[0];
     return value;
   });
+  const legacyRelations = source.relations.map((relation) => {
+    const value = { ...relation } as Record<string, unknown>;
+    delete value.world_id;
+    delete value.canon_memberships;
+    value.canon_id = relation.canon_memberships[0];
+    return value;
+  });
   const files = new Map<string, Buffer>([
     ["content/world.json", Buffer.from(portableStringify(source.world))],
     ["content/canons.ndjson", ndjson(source.canons)],
     ["content/time-systems.ndjson", ndjson(source.timeSystems)],
     ["content/canon-time-systems.ndjson", ndjson(source.canonTimeSystems)],
     ["content/events.ndjson", ndjson(legacyEvents)],
-    ["content/relations.ndjson", ndjson(source.relations)],
+    ["content/relations.ndjson", ndjson(legacyRelations)],
     ["content/narratives.ndjson", ndjson(source.narratives)],
     [
       "reports/export-report.json",
@@ -207,7 +232,8 @@ describe("TS-007 temporal content package", () => {
           : []
       );
     const clonedMemberships = preview.plan.operations.flatMap((operation) =>
-      operation.kind === "add"
+      operation.kind === "add" &&
+      operation.entity_type === "event_canon_membership"
         ? [
             {
               event_id: String(operation.value.event_id),
@@ -215,6 +241,18 @@ describe("TS-007 temporal content package", () => {
             }
           ]
         : []
+    );
+    const clonedRelationMemberships = preview.plan.operations.flatMap(
+      (operation) =>
+        operation.kind === "add" &&
+        operation.entity_type === "relation_canon_membership"
+          ? [
+              {
+                relation_id: String(operation.value.relation_id),
+                canon_id: String(operation.value.canon_id)
+              }
+            ]
+          : []
     );
     const clonedEvents = clonedRows("event").map((event) => {
       return {
@@ -230,8 +268,14 @@ describe("TS-007 temporal content package", () => {
       timeSystems: clonedRows("time_system"),
       canonTimeSystems: clonedRows("canon_time_system"),
       eventCanonMemberships: clonedMemberships,
+      relationCanonMemberships: clonedRelationMemberships,
       events: clonedEvents,
-      relations: clonedRows("relation"),
+      relations: clonedRows("relation").map((relation) => ({
+        ...relation,
+        canon_memberships: clonedRelationMemberships
+          .filter((membership) => membership.relation_id === relation.id)
+          .map((membership) => membership.canon_id)
+      })),
       narratives: clonedRows("narrative")
     } as unknown as PortableWorld;
     const targetToSource = Object.fromEntries(

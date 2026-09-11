@@ -38,7 +38,7 @@ const rows = (type: string) =>
     .filter((o) => o.kind === "create" && o.entity_type === type)
     .map((o) => ({ id: o.entity_id, ...o.value }));
 const eventCanonMemberships = operations.flatMap((operation) =>
-  operation.kind === "add"
+  operation.kind === "add" && operation.entity_type === "event_canon_membership"
     ? [
         {
           event_id: String(operation.value.event_id),
@@ -60,14 +60,31 @@ const events = operations.flatMap((operation) => {
     }
   ];
 });
+const relationCanonMemberships = operations.flatMap((operation) =>
+  operation.kind === "add" &&
+  operation.entity_type === "relation_canon_membership"
+    ? [
+        {
+          relation_id: String(operation.value.relation_id),
+          canon_id: String(operation.value.canon_id)
+        }
+      ]
+    : []
+);
 const view = {
   world: rows("world")[0],
   canons: rows("canon"),
   timeSystems: rows("time_system"),
   canonTimeSystems: rows("canon_time_system"),
   eventCanonMemberships,
+  relationCanonMemberships,
   events,
-  relations: rows("relation"),
+  relations: rows("relation").map((relation) => ({
+    ...relation,
+    canon_memberships: relationCanonMemberships
+      .filter((membership) => membership.relation_id === relation.id)
+      .map((membership) => membership.canon_id)
+  })),
   narratives: rows("narrative")
 } as unknown as CanonicalRevisionView;
 const artifacts = buildPublicationArtifacts(view, 2, "2026-09-06T00:00:00Z");

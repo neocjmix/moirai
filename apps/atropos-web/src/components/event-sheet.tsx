@@ -99,7 +99,7 @@ export function EventSheet({
               return related ? (
                 <a
                   className="relation-row"
-                  href={`/worlds/${worldId}/canons/${relation.canon_id}/events/${related.id}`}
+                  href={`/worlds/${worldId}/events/${related.id}`}
                   key={relation.id}
                 >
                   <span>

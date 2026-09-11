@@ -1,7 +1,7 @@
 ---
 id: IP-003
 title: Canon 의미 재정렬 구현 계획
-status: blocked_on_decision
+status: active
 depends_on:
   - CON-003
   - BR-001
@@ -110,7 +110,7 @@ World ownership은 `events.world_id`로 명시하고 `event.canon_id`를 semanti
 | TS-003 | World-scoped Change Set, create/update/withdraw 규범 | membership lifecycle과 Event withdrawal 원자성 명시 |
 | TS-004/Clotho | create Event에 `canon_id`; query slice `canon_ids` | World ownership + membership operations; scope filter 의미 교정 |
 | persistence | `events.canon_id`, `(canon_id,slug)`, revision payload | migration, membership table, old payload read adapter |
-| Relation | `relation.canon_id`, same-owner endpoint 검사 | endpoint membership 검사로 기계적 교정; 최종 ontology는 DP-001 |
+| Relation | `relation.canon_id`, same-owner endpoint 검사 | 승인된 R1: World ownership + Canon N:M membership |
 | Narrative | `narrative.canon_id`, same-Canon Event scope | 단일 authored scope 보존; Event membership으로 참조 검증 |
 | derived projection | Canon별 `event.canon_id` filtering | membership join으로 입력 선택; context별 handle은 유지 |
 | publication | Event 문서 하나에 `canon_id`; Canon artifact filtering | Event에 `world_id`, `canon_memberships`; Canon view는 membership filter |
@@ -124,12 +124,10 @@ World ownership은 `events.world_id`로 명시하고 `event.canon_id`를 semanti
 | Time System | Canon-TimeSystem N:M, Relation validation | TS-010 유지; Relation decision 전 ownership 변경 없음 |
 | production fixtures | 각 Event가 한 Canon | lossless backfill 후 overlap acceptance fixture 별도 추가 |
 
-## 6. Relation semantics — DP-001 승인 gate
+## 6. Relation semantics — DP-001 R1 승인
 
-Relation은 IP-003의 미확정 ontology다. Event 전환만으로 최종 Relation 모델을 선택하지 않는다.
-현재 Relation 의미를 안전하게 보존하는 동안에는 Relation이 하나의 Canon에 속하는 assertion이고,
-양 Event endpoint가 그 Canon의 member인지 검사한다. 이 호환 단계는 `event.canon_id`를 제거하기
-위한 기계적 변경이며 Relation cardinality의 최종 결정이 아니다.
+2026-09-11 사용자는 R1을 승인했다. Relation은 World-level assertion identity이며 Canon
+participation은 N:M이다. 아래 R2/R3는 decision record를 위한 검토 이력이고 활성 대안이 아니다.
 
 ### 권장안 R1 — World-level Relation identity + Canon N:M membership
 
@@ -151,9 +149,8 @@ assertion으로 표현한다. 기존 `relation.canon_id`는 lossless하게 membe
 | R2 Canon-specific Relation 유지 | migration과 기존 TS-010 영향 최소 | shared assertion identity를 표현하지 못하고 Canon별 duplicate Relation 필요 |
 | R3 shared Relation + Canon-specific interpretation entity | assertion/interpretation을 가장 세밀히 분리 | 새 핵심 entity와 더 큰 authoring·migration·governance 결정 필요 |
 
-R1/R2/R3 선택은 사용자 승인 대상이다. Slice 4 이후 Relation cutover, shared Relation fixture와
-IP-003 complete 판정은 DP-001 결정 전 진행하지 않는다. R3는 새로운 핵심 entity 승인이 추가로
-필요하다.
+R1 승인으로 Slice 5를 시작한다. R2/R3로 되돌리거나 Interpretation 같은 새 핵심 entity를
+도입하려면 새로운 사용자 승인이 필요하다.
 
 ## 7. Narrative 영향
 
@@ -178,8 +175,8 @@ IP-003에서는 Canon-TimeSystem N:M을 제거하거나 ownership을 바꾸지 �
 
 - Canon별 temporal projection은 membership으로 Event 입력을 고른다.
 - Relation 호환 단계에서는 해당 Relation Canon에 연결된 Time System 검사를 유지한다.
-- DP-001이 R1이면 Relation이 참여하는 모든 Canon의 Time System capability 검증 규칙을 함께
-  승인·명세해야 한다. Relation의 authored virtual Time Event reference 자체는 보존한다.
+- Relation이 참여하는 모든 Canon이 virtual Time Event의 Time System을 사용해야 한다. 검증과
+  temporal solving은 Canon별 membership context에서 수행하고 authored reference는 보존한다.
 - Event-TimeSystem membership이나 Canon-owned Time System을 새로 만들지 않는다.
 
 ## 9. derived projection과 correspondence
@@ -210,7 +207,8 @@ Publication의 immutable revision path와 served Revision 원자성을 유지한
 - graph query의 `canon_ids`는 ownership partition이 아니라 interpretive scope filter다.
 - graph result의 Event node는 한 identity와 matched/all Canon membership을 구분해 표현한다.
 - 여러 선택 Canon에서 같은 Event가 match돼도 node를 무조건 복제하지 않는다.
-- Canon-specific Relation rendering은 DP-001 결과를 따른다.
+- shared Relation은 stable identity 하나를 유지하고 선택 Canon context에서 렌더링한다. Canon별
+  다른 assertion은 서로 다른 Relation ID로 구분한다.
 - M4.5-C의 World/Canon selector, Revision vector, URL state와 mobile layout은 보존하고 truth
   branch 표현만 제거한다.
 
@@ -253,6 +251,14 @@ physical name은 `canon_event_memberships`를 기본으로 한다.
    compatibility data로 만든다. 신규 write/read는 이 값을 사용하지 않는다.
 10. frozen column과 기존 값을 실제 삭제하는 cleanup은 production 증거 뒤 별도 사용자 승인
     대상으로 남긴다. 삭제 전에도 canonical ownership source는 `events.world_id`와 membership뿐이다.
+
+R1 Relation cutover는 같은 순서를 `relations.world_id`와 `canon_relation_memberships`에 적용한다.
+기존 각 `relation.canon_id`는 deterministic membership 하나로 backfill하고 ID·Revision·endpoint를
+바꾸지 않는다. contract v4는 Relation create의 `world_id`, membership add/remove와 Relation
+withdraw를 분리한다. deferred constraint는 active Relation 1..N과 withdrawn Relation 0 membership을
+transaction final state에서 강제한다. frozen `relation.canon_id`는 v2/v3 rolling deploy adapter만
+사용하며 신규 canonical write/read의 source가 아니다. multi-membership이 생긴 뒤 legacy schema로
+내리는 down migration은 의미 손실을 막기 위해 fail-closed한다.
 
 DB 하나의 FK로 1..N을 표현하기 어려우므로 candidate final-state validator와 commit transaction
 종료 시점의 deferred constraint를 함께 사용한다. current row와 historical operation log는 삭제하지
@@ -353,18 +359,20 @@ membership을 보존했다. post-fixture audit는 active Event 30, active member
 cross-World와 duplicate active membership 모두 0이다. 세부 ID, rejection과 route 결과는
 [machine-readable evidence](evidence/ip-003-slice4-shared-event-production-2026-09-11.json)에 고정한다.
 
-### Gate DP-001 — Relation ontology
+### Gate DP-001 — Relation ontology (resolved)
 
-R1/R2/R3 사용자 결정 전 Relation의 최종 cardinality, migration, shared assertion fixture와
-Canon-specific rendering을 확정하지 않는다. Slice 2~4에서 기존 Relation 의미를 보존하기 위해
-필요한 endpoint membership validation만 허용한다.
+2026-09-11 사용자가 R1 World-level Relation + Canon N:M membership을 승인했다. Gate를 닫고
+Slice 5를 활성화했다.
 
 ### Slice 5 — 승인된 Relation model
 
-DP-001 결과를 contracts, schema, migration, temporal validation, publication, graph, portability와
-fixture에 구현한다. R1이면 `relation.canon_id`를 World ownership + memberships로 lossless 전환한다.
-R2이면 shared assertion 미지원이 제품 요구와 양립하는지 명시적으로 accepted한다. R3이면 별도
-entity 승인 범위를 따른다.
+R1을 contracts, schema, migration, temporal validation, publication, graph, portability와
+fixture에 구현한다. `relation.canon_id`는 World ownership + memberships로 lossless 전환한다.
+
+구현 shape는 contract v4, Publication `3.0.0`, portability package `3.0`과 graph result v3다.
+v2/v3 Change Plan, Publication v1/v2와 package v1/v2는 boundary adapter가 명시된 단일
+`relation.canon_id`만 lossless 변환한다. shared Relation은 query/result에서 ID당 한 번 반환하며
+전체 membership과 현재 matched context를 분리한다.
 
 ### Slice 6 — production migration과 종단간 증거
 
@@ -400,7 +408,7 @@ World W, Canon K1/K2/K3와 Event A/B/C/D를 실제 write한다.
 - Canon 없이 active Event create 거절, 마지막 membership remove 거절, cross-World와 duplicate 거절.
 - Event withdrawal과 마지막 membership 정리를 같은 Change Set에서 수행한 valid final state는 허용.
 - Canon overlap, single Canon, Canon 내부 contradiction은 structural error가 아니다.
-- Relation은 DP-001 승인 모델에 따라 shared assertion, Canon별 다른 assertion과 구조적으로 유효한
+- Relation은 R1에 따라 shared assertion, Canon별 다른 assertion과 구조적으로 유효한
   상충 해석을 검증한다.
 - World/Canon/Event/Relation/Narrative read, temporal/Subject/Process/State/Duration projection,
   Publication, stable routes, M4.5-C query state/URL restore/Revision vector와 auth/public boundary가
@@ -414,15 +422,14 @@ complete가 아니다.
 
 ## 16. M4.5 잔여 계획 재설계 범위
 
-Event/Canon cutover 결과로 다음 경계를 확정한다. Relation-specific 항목은 DP-001 결과를 대입한 뒤
-최종 승인받으며, 어느 후속 slice도 자동 시작하지 않는다.
+Event/Canon cutover와 승인된 R1 결과로 다음 경계를 확정한다. 어느 후속 slice도 자동 시작하지 않는다.
 
 | 기존 slice | 예상 처리 | Canon realignment 영향 |
 | --- | --- | --- |
 | A | 유지·contract revision | source address의 단일 `canon_id`를 membership context로 교체 |
 | B | 유지 | shell/navigation 변화 없음; 용어만 검증 |
 | C | 유지·의미 교정 | `canon_ids`는 partition이 아닌 interpretive filter; shared Event count grammar 추가 |
-| D | 분할 | Entities/Search와 Relations/Diagnostics를 DP-001 전후로 분리 |
+| D | 분할 | Entities/Search와 Relations/Diagnostics를 identity/membership-aware 단계로 분리 |
 | E | 재작성 | Publication composition이 Event identity 하나와 membership context를 보존 |
 | F | 재작성 | World-level Event route, Canon context alias와 inspector membership 표시 |
 | G | 유지·adapter 수정 | legacy viewport bridge가 shared Event를 duplicate하지 않고 loss를 진단 |
@@ -480,11 +487,11 @@ inactive이며 M4.5 종료와 별도 사용자 승인 전 구현하지 않는다
 
 | ID | 상태 | 결정 | 권장 | 재개 지점 |
 | --- | --- | --- | --- | --- |
-| DP-001 | open, user approval required | Relation identity/cardinality | R1 World-level Relation + Canon N:M membership | Slice 5 |
+| DP-001 | approved: R1 (2026-09-11) | World-level Relation identity + Canon N:M membership | R1 | Slice 5 active |
 
-현재 종료 상태는 `blocked_on_decision`이다. Slice 0~4와 Event/Canon production acceptance는
-완료했으나 Relation shared assertion fixture, Relation migration과 그 결과에 의존하는 최종 cleanup은
-DP-001 없이는 안전하게 확정할 수 없다. M4.5-D와 M5는 시작하지 않았다.
+현재 종료 상태는 `incomplete`다. Slice 0~4와 Event/Canon production acceptance는 완료했고,
+R1 승인에 따라 Slice 5의 Relation migration·write/read/publication/portability 구현과 검증을
+진행 중이다. M4.5-D와 M5는 시작하지 않았다.
 
 Event 1..N, Canon 정의, Narrative authored prose, World boundary와 derived 지위는 이미 승인됐으므로
 decision register로 되돌리지 않는다.

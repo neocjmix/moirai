@@ -110,7 +110,7 @@ function graph(
   for (const seed of seeds) find(events, seed, "seed_ids");
   const relations = view.relations.filter(
     (relation) =>
-      canons.includes(relation.canon_id) &&
+      relation.canon_memberships.some((canonId) => canons.includes(canonId)) &&
       (!types || types.includes(relation.type))
   );
   const reached = new Set(wholeCanon ? events.map((event) => event.id) : seeds);

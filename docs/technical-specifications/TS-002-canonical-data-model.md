@@ -208,12 +208,13 @@ canonical content의 모든 시간 의미는 EventReference endpoint를 가진 R
 
 ## TS-002.8 Relation
 
-`relations`는 허용된 EventReference endpoint 사이의 assertion이다. Relation identity와 Canon cardinality의 최종 구조는 IP-003 DP-001의 사용자 승인 대상이며 이 절은 결정 전 호환 의미와 공통 무결성만 규정한다.
+`relations`는 허용된 EventReference endpoint 사이의 World-level assertion identity다. Canon participation은 별도 N:M membership이며 모든 active Relation은 같은 World의 Canon 하나 이상에 참여한다. 같은 assertion을 여러 Canon이 공유할 수 있고 Canon마다 다른 assertion은 별도 Relation ID를 가진다.
 
 | 필드         | 제약                                  |
 | ------------ | ------------------------------------- |
 | `id`         | primary key                           |
-| `canon_id`   | DP-001 전 호환 단계의 단일 assertion context |
+| `world_id`   | 정확히 하나의 World ownership               |
+| `canon_memberships` | 같은 World Canon 1..N; 별도 lifecycle record |
 | `type`       | versioned open vocabulary의 관계 type |
 | `source_ref` | 필수 tagged Event reference           |
 | `target_ref` | 필수 tagged Event reference           |
@@ -236,7 +237,8 @@ canonical content의 모든 시간 의미는 EventReference endpoint를 가진 R
 ### 무결성
 
 - persisted Event endpoint는 모두 존재하고 활성 또는 같은 Change Set에서 생성되어야 한다.
-- persisted Event endpoint는 Relation의 World에 속하고, 호환 단계에서는 둘 다 Relation의 `canon_id`에 active membership을 가져야 한다. virtual Time Event endpoint의 Time System은 같은 World에 속하고 해당 Canon이 사용해야 한다.
+- persisted Event endpoint는 Relation의 World에 속하고 Relation이 참여하는 모든 Canon에 active membership을 가져야 한다. virtual Time Event endpoint의 Time System은 같은 World에 속하고 Relation이 참여하는 모든 Canon이 사용해야 한다.
+- active Relation의 마지막 membership 제거는 거부한다. Relation 철회와 모든 membership 제거를 같은 Change Set에서 수행하는 valid final state는 허용한다.
 - `contains`는 cycle을 만들 수 없다.
 - `precedes`와 strict·non-strict·equality 제약 결합은 모순을 만들 수 없다.
 - self relation은 type registry가 명시적으로 허용하지 않는 한 거부한다.

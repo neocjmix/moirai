@@ -20,7 +20,7 @@
 | ENT-002 | Canon | accepted | core | World 안의 persistent, named interpretive knowledge scope. authority·exclusivity·completeness·consistency·objective truth를 함의하지 않음 |
 | ENT-003 | Time System | accepted | core | Event를 시간상에서 읽기 위한 좌표와 해석 규칙. 현재 Canon과 N:M으로 연결됨 |
 | ENT-004 | Event | accepted | core | 정확히 한 World에 속하며 같은 World의 Canon 하나 이상에 참여하는 사건 identity의 핵심 단위 |
-| ENT-005 | Relation | accepted | core | Event 등 허용 endpoint 사이의 의미 있는 관계. World/Canon cardinality의 최종 형태는 IP-003 DP-001에서 결정 |
+| ENT-005 | Relation | accepted | core | World-level assertion identity. 같은 World의 Canon 1..N에 참여하며 shared 또는 Canon별 assertion을 구분 |
 | ENT-006 | Narrative | accepted | core | 단일 Event부터 Composite Event, Process와 Canon까지 선택된 범위를 사람이 읽을 수 있게 서술한 내용 |
 | ENT-013 | Publication | accepted | core | Atropos가 독자에게 제공하는 World의 현재 공개 표현 |
 

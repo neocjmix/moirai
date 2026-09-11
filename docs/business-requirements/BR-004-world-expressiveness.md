@@ -44,7 +44,7 @@ owner: Cross-system
 
 ## BR-004.9 Canon 사이의 차이
 
-여러 Canon이 같은 Event를 공유하거나 서로 다른 Event·관계·시간·Narrative context를 가질 수 있어야 한다. Canon 사이 또는 한 Canon 안의 상충을 자동 병합하거나 진위 경쟁으로 바꾸어서는 안 된다. Relation identity와 Canon cardinality의 최종 형태는 IP-003 DP-001의 승인을 따른다.
+여러 Canon이 같은 Event와 Relation assertion을 공유하거나 서로 다른 Event·관계·시간·Narrative context를 가질 수 있어야 한다. Relation identity는 World-level이고 active Relation은 같은 World의 Canon 1개 이상에 참여한다. Canon 사이 또는 한 Canon 안의 상충을 자동 병합하거나 진위 경쟁으로 바꾸어서는 안 된다.
 
 ## BR-004.10 범위별 서술
 

@@ -72,6 +72,7 @@ function validateAgainstEmpty(input: CreateChangeSet) {
     timeSystems: [],
     canonTimeSystems: [],
     eventCanonMemberships: [],
+    relationCanonMemberships: [],
     events: [],
     relations: [],
     narratives: []
@@ -102,6 +103,7 @@ describe("create Change Set validation", () => {
       timeSystems: [],
       canonTimeSystems: [],
       eventCanonMemberships: [],
+      relationCanonMemberships: [],
       events: [],
       relations: [],
       narratives: []
@@ -246,6 +248,7 @@ describe("create Change Set validation", () => {
       eventCanonMemberships: [
         { event_id: TEST_FIXTURE.eventId, canon_id: TEST_FIXTURE.canonId }
       ],
+      relationCanonMemberships: [],
       events: [
         {
           id: TEST_FIXTURE.eventId,

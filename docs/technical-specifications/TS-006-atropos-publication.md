@@ -230,7 +230,7 @@ JointJS cell은 Publication projection을 그리는 표현 객체이며 정본 �
 | point node        | 하나의 atomic Event identity 또는 현재 LOD의 대표 Event |
 | composite region  | Composite Event와 포함 범위                       |
 | process region    | `process` 역할의 Composite Event                  |
-| relation link     | DP-001에서 승인된 Canon-specific 또는 shared Relation context |
+| relation link     | 하나의 World-level Relation identity를 현재 Canon membership context에서 표시 |
 | subject lane      | 파생 Subject의 Event lineage를 읽는 관점          |
 | comparison bridge | Canon 간 correspondence를 나타내는 별도 시각 표면 |
 

@@ -15,7 +15,7 @@ traces:
 
 2026-09-05 사용자가 이 문서의 strictness, virtual reference와 Time System 계약을 승인했다. 이 문서는 accepted이며 [TS-002](TS-002-canonical-data-model.md), [TS-003](TS-003-change-revision-publication.md), [TS-004](TS-004-clotho-contract.md), [TS-005](TS-005-derived-models.md), [TS-006](TS-006-atropos-publication.md), [TS-007](TS-007-portability.md)의 시간 의미를 이 문서와 일치하도록 개정한다. 문서 승인은 runtime·schema migration·시험 World 쓰기를 자동 승인하지 않는다.
 
-2026-09-11 IP-003은 Event identity를 World-owned로, Canon participation을 1..N membership으로 재정렬했다. 이 변경은 이 문서의 strictness, virtual Time Event, lossless coordinate와 Time System capability 의미를 바꾸지 않는다. Relation의 World/Canon cardinality와 여러 Canon에서 공유하는 temporal assertion 규칙은 IP-003 DP-001의 사용자 승인 전 확정하지 않는다.
+2026-09-11 IP-003은 Event와 Relation identity를 World-owned로, Canon participation을 각각 1..N membership으로 재정렬했다. 같은 temporal assertion은 여러 Canon이 공유할 수 있지만 constraint solving과 endpoint/Time System 검증은 Canon별 membership context에서 독립 수행한다. 이 변경은 strictness, virtual Time Event, lossless coordinate와 Time System capability 의미를 바꾸지 않는다.
 
 목표는 시간 정밀도마다 타입과 계산 분기를 늘리는 대신, Event와 Relation 하나의 문법으로 다음을 모두 표현하는 것이다.
 

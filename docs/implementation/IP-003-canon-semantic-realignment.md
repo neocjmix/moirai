@@ -1,7 +1,7 @@
 ---
 id: IP-003
 title: Canon 의미 재정렬 구현 계획
-status: active
+status: accepted
 depends_on:
   - CON-003
   - BR-001

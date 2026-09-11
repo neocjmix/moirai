@@ -75,10 +75,10 @@ Publication Store는 S3-compatible object storage에 Revision별 artifact를 기
 
 Event document는 `world_id`와 모든 active `canon_memberships`를 보존하며 Event ID당 하나다. Canon document와 Canon-specific graph/temporal artifact는 membership으로 Event를 선택하고 같은 Event ID를 참조한다.
 
-IP-003 이후 생성하는 Publication format은 `2.0.0`이다. Atropos는 immutable `1.0.0`
-artifact를 read boundary에서 Event의 기존 `canon_id`와 그 Canon의 World를 명시적인
-`world_id` + 단일 membership으로만 변환한다. 새 v2 membership을 하나로 축소하거나 구
-artifact를 덮어쓰지 않는다.
+IP-003 이후 생성하는 Publication format은 `3.0.0`이다. Atropos는 immutable `1.0.0`과
+`2.0.0` artifact를 read boundary에서 Event·Relation의 기존 `canon_id`와 그 Canon의 World를
+명시적인 `world_id` + 단일 membership으로만 변환한다. 새 v3 membership을 하나로 축소하거나
+구 artifact를 덮어쓰지 않는다.
 
 ## TS-006.4 Revision 고정 읽기
 

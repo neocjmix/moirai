@@ -178,7 +178,7 @@ describe("M4.5-A Moirai-native graph contracts", () => {
   it("publishes versioned query, result, URL state and loss-report schemas", () => {
     expect(MOIRAI_GRAPH_QUERY_SCHEMA.$id).toBe("moirai.graph-query.v1");
     expect(MOIRAI_GRAPH_QUERY_RESULT_SCHEMA.$id).toBe(
-      "moirai.graph-query-result.v2"
+      "moirai.graph-query-result.v3"
     );
     expect(MOIRAI_GRAPH_URL_STATE_SCHEMA.$id).toBe("moirai.graph-url-state.v1");
     expect(MOIRAI_GRAPH_LEGACY_LOSS_REPORT_SCHEMA.$id).toBe(

@@ -1,7 +1,7 @@
 "use client";
 
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 
 import type { MoiraiGraphSource, MoiraiGraphUrlState } from "@moirai/contracts";
 
@@ -9,15 +9,16 @@ import type { AppLocale } from "../urdr-port/src/locale";
 import inheritedStyles from "../urdr-port/src/components/graph-shell.module.css";
 import {
   MOCK_GRAPH_SOURCE_CATALOG,
-  buildGraphUrlSearch,
-  createDefaultGraphUrlState,
+  focusGraphEntity,
   getGraphSourceCompatibility,
   isSameGraphTimeSystemIdentity,
-  parseGraphUrlState,
+  replaceGraphEntityFilter,
   replaceGraphSources,
+  searchGraphEntities,
   type GraphSourceWorldOption,
   type GraphTemporalFrameOption
 } from "../lib/moirai-graph-source-query";
+import { useGraphQuery } from "./graph-query-context";
 import styles from "./graph-source-island.module.css";
 
 const COPY = {
@@ -26,6 +27,8 @@ const COPY = {
     close: "소스 쿼리 접기",
     tabs: "그래프 쿼리 영역",
     sources: "Sources",
+    entities: "Entities",
+    search: "Search",
     summary: (worlds: number, canons: number) =>
       `World ${worlds} · Canon ${canons}`,
     mock: "MOCK SOURCE",
@@ -52,13 +55,29 @@ const COPY = {
     cancel: "취소",
     revisionVector: "Revision vector",
     legacyViewport:
-      "현재 viewport는 M4.5-H 전까지 기존 데모 데이터를 유지합니다. 이 소스 쿼리는 Moirai 계약과 URL 상태를 먼저 확정합니다."
+      "현재 viewport는 M4.5-H 전까지 기존 데모 데이터를 유지합니다. 이 소스 쿼리는 Moirai 계약과 URL 상태를 먼저 확정합니다.",
+    entityTitle: "Identity-aware 결과",
+    entityHint:
+      "공유 identity는 한 번만 표시하며 matched Canon과 전체 membership을 구분합니다.",
+    searchPlaceholder: "현재 source 안에서 검색",
+    persisted: "persisted",
+    derived: "derived",
+    matched: "matched Canon",
+    memberships: "all memberships",
+    focus: "선택하고 URL에 고정",
+    atomic: "Atomic Event",
+    composite: "Composite / Process",
+    states: "State 포함",
+    narratives: "Narrative 포함",
+    empty: "현재 source와 filter에 맞는 결과가 없습니다."
   },
   en: {
     open: "Open source query",
     close: "Collapse source query",
     tabs: "Graph query areas",
     sources: "Sources",
+    entities: "Entities",
+    search: "Search",
     summary: (worlds: number, canons: number) =>
       `${worlds} Worlds · ${canons} Canons`,
     mock: "MOCK SOURCE",
@@ -86,7 +105,21 @@ const COPY = {
     cancel: "Cancel",
     revisionVector: "Revision vector",
     legacyViewport:
-      "The viewport keeps its existing demo data until M4.5-H. This slice first establishes the Moirai query and URL state."
+      "The viewport keeps its existing demo data until M4.5-H. This slice first establishes the Moirai query and URL state.",
+    entityTitle: "Identity-aware results",
+    entityHint:
+      "Shared identities appear once, with matched Canons separate from all memberships.",
+    searchPlaceholder: "Search within current sources",
+    persisted: "persisted",
+    derived: "derived",
+    matched: "matched Canons",
+    memberships: "all memberships",
+    focus: "Select and pin in URL",
+    atomic: "Atomic Event",
+    composite: "Composite / Process",
+    states: "Include States",
+    narratives: "Include Narratives",
+    empty: "No result matches the current sources and filters."
   }
 } as const;
 
@@ -117,10 +150,11 @@ function sourceFromWorld(world: GraphSourceWorldOption): MoiraiGraphSource {
 export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
   const copy = COPY[locale];
   const [open, setOpen] = useState(false);
-  const [state, setState] = useState<MoiraiGraphUrlState>(() =>
-    createDefaultGraphUrlState()
+  const [activeTab, setActiveTab] = useState<"sources" | "entities" | "search">(
+    "sources"
   );
-  const [hydrated, setHydrated] = useState(false);
+  const [searchTerm, setSearchTerm] = useState("");
+  const { state, setState } = useGraphQuery();
   const [draftFrameId, setDraftFrameId] = useState<string | null>(null);
   const activeFrame = useMemo(() => findFrame(state), [state]);
   const draftFrame = draftFrameId
@@ -132,36 +166,10 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     (total, source) => total + source.canon_ids.length,
     0
   );
-
-  const restoreFromLocation = useCallback(() => {
-    const restored = parseGraphUrlState(window.location.search);
-    setState(restored ?? createDefaultGraphUrlState());
-    setDraftFrameId(null);
-  }, []);
-
-  useEffect(() => {
-    restoreFromLocation();
-    setHydrated(true);
-  }, [restoreFromLocation]);
-
-  useEffect(() => {
-    window.addEventListener("popstate", restoreFromLocation);
-    return () => window.removeEventListener("popstate", restoreFromLocation);
-  }, [restoreFromLocation]);
-
-  useEffect(() => {
-    if (!hydrated) {
-      return;
-    }
-    const nextSearch = buildGraphUrlSearch(window.location.search, state);
-    if (nextSearch !== window.location.search) {
-      window.history.replaceState(
-        window.history.state,
-        "",
-        `${window.location.pathname}${nextSearch}${window.location.hash}`
-      );
-    }
-  }, [hydrated, state]);
+  const entityResults = useMemo(
+    () => searchGraphEntities(state, activeTab === "search" ? searchTerm : ""),
+    [activeTab, searchTerm, state]
+  );
 
   const toggleWorld = useCallback((world: GraphSourceWorldOption) => {
     setState((current) => {
@@ -264,13 +272,36 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
           >
             <div className={inheritedStyles.statusIslandTabGroup}>
               <button
-                aria-selected="true"
-                className={`${inheritedStyles.statusIslandModeButton} ${inheritedStyles.statusIslandModeButtonActive}`}
+                aria-selected={activeTab === "sources"}
+                className={`${inheritedStyles.statusIslandModeButton} ${activeTab === "sources" ? inheritedStyles.statusIslandModeButtonActive : ""}`}
+                onClick={() => setActiveTab("sources")}
                 role="tab"
                 type="button"
               >
                 <span className={inheritedStyles.statusIslandModeText}>
                   {copy.sources}
+                </span>
+              </button>
+              <button
+                aria-selected={activeTab === "entities"}
+                className={`${inheritedStyles.statusIslandModeButton} ${activeTab === "entities" ? inheritedStyles.statusIslandModeButtonActive : ""}`}
+                onClick={() => setActiveTab("entities")}
+                role="tab"
+                type="button"
+              >
+                <span className={inheritedStyles.statusIslandModeText}>
+                  {copy.entities}
+                </span>
+              </button>
+              <button
+                aria-selected={activeTab === "search"}
+                className={`${inheritedStyles.statusIslandModeButton} ${activeTab === "search" ? inheritedStyles.statusIslandModeButtonActive : ""}`}
+                onClick={() => setActiveTab("search")}
+                role="tab"
+                type="button"
+              >
+                <span className={inheritedStyles.statusIslandModeText}>
+                  {copy.search}
                 </span>
               </button>
               <span className={styles.headerSummary}>
@@ -325,256 +356,401 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
               <div
                 className={`${inheritedStyles.timelineDialogSurface} ${styles.surface}`}
               >
-                <div className={styles.mockNotice}>
-                  <span>{copy.mock}</span>
-                  <p>{copy.legacyViewport}</p>
-                </div>
-
-                <section
-                  className={styles.section}
-                  aria-labelledby="source-time-system-title"
-                >
-                  <div className={styles.sectionHeader}>
-                    <div>
-                      <h2 id="source-time-system-title">{copy.frameTitle}</h2>
-                      <p>{copy.frameHint}</p>
-                    </div>
-                    <span className={styles.step}>01</span>
-                  </div>
-                  <div className={styles.optionList}>
-                    {MOCK_GRAPH_SOURCE_CATALOG.frames.map((frame) => {
-                      const selected =
-                        (draftFrame ?? activeFrame).id === frame.id;
-                      return (
-                        <button
-                          aria-pressed={selected}
-                          className={`${inheritedStyles.timelineOptionButton} ${selected ? inheritedStyles.timelineOptionButtonActive : ""} ${styles.frameOption}`}
-                          key={frame.id}
-                          onClick={() =>
-                            frame.id === activeFrame.id
-                              ? setDraftFrameId(null)
-                              : setDraftFrameId(frame.id)
-                          }
-                          type="button"
-                        >
-                          <span className={styles.optionMain}>
-                            {frame.label[locale]}
-                          </span>
-                          <span className={styles.optionDescription}>
-                            {frame.description[locale]}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </section>
-
-                {draftFrame ? (
-                  <section className={styles.impactPanel} aria-live="polite">
-                    <div className={styles.impactTitle}>
-                      {copy.previewTitle}
-                    </div>
-                    <p>{copy.previewBody(removedSources.length)}</p>
-                    <div className={styles.impactColumns}>
+                {activeTab !== "sources" ? (
+                  <section
+                    className={styles.entityPanel}
+                    aria-labelledby="graph-entities-title"
+                  >
+                    <div className={styles.sectionHeader}>
                       <div>
-                        <span className={styles.impactLabel}>
-                          {copy.removed}
-                        </span>
-                        {removedSources.map((source) => (
-                          <span
-                            className={styles.impactItem}
-                            key={source.world_id}
+                        <h2 id="graph-entities-title">{copy.entityTitle}</h2>
+                        <p>{copy.entityHint}</p>
+                      </div>
+                    </div>
+                    {activeTab === "search" ? (
+                      <input
+                        aria-label={copy.searchPlaceholder}
+                        autoFocus
+                        className={styles.searchInput}
+                        onChange={(event) => setSearchTerm(event.target.value)}
+                        placeholder={copy.searchPlaceholder}
+                        type="search"
+                        value={searchTerm}
+                      />
+                    ) : null}
+                    <div
+                      className={styles.filterRow}
+                      aria-label={copy.entities}
+                    >
+                      {(["atomic", "composite"] as const).map((kind) => {
+                        const selected =
+                          state.query.entity_filter.event_kinds.includes(kind);
+                        return (
+                          <button
+                            aria-pressed={selected}
+                            key={kind}
+                            onClick={() =>
+                              setState((current) =>
+                                replaceGraphEntityFilter(current, {
+                                  ...current.query.entity_filter,
+                                  event_kinds: selected
+                                    ? current.query.entity_filter.event_kinds.filter(
+                                        (value) => value !== kind
+                                      )
+                                    : [
+                                        ...current.query.entity_filter
+                                          .event_kinds,
+                                        kind
+                                      ]
+                                })
+                              )
+                            }
+                            type="button"
                           >
-                            {MOCK_GRAPH_SOURCE_CATALOG.worlds.find(
-                              (world) => world.id === source.world_id
-                            )?.label[locale] ?? source.world_id}
-                          </span>
-                        ))}
-                      </div>
-                      <div>
-                        <span className={styles.impactLabel}>{copy.added}</span>
-                        {addedWorlds.map((world) => (
-                          <span className={styles.impactItem} key={world.id}>
-                            {world.label[locale]}
-                          </span>
-                        ))}
-                      </div>
+                            {kind === "atomic" ? copy.atomic : copy.composite}
+                          </button>
+                        );
+                      })}
+                      <button
+                        aria-pressed={state.query.entity_filter.include_states}
+                        onClick={() =>
+                          setState((current) =>
+                            replaceGraphEntityFilter(current, {
+                              ...current.query.entity_filter,
+                              include_states:
+                                !current.query.entity_filter.include_states
+                            })
+                          )
+                        }
+                        type="button"
+                      >
+                        {copy.states}
+                      </button>
+                      <button
+                        aria-pressed={
+                          state.query.entity_filter.include_narratives
+                        }
+                        onClick={() =>
+                          setState((current) =>
+                            replaceGraphEntityFilter(current, {
+                              ...current.query.entity_filter,
+                              include_narratives:
+                                !current.query.entity_filter.include_narratives
+                            })
+                          )
+                        }
+                        type="button"
+                      >
+                        {copy.narratives}
+                      </button>
                     </div>
-                    <div className={styles.impactActions}>
-                      <button
-                        className={styles.secondaryAction}
-                        onClick={() => setDraftFrameId(null)}
-                        type="button"
-                      >
-                        {copy.cancel}
-                      </button>
-                      <button
-                        className={styles.primaryAction}
-                        onClick={applyDraftFrame}
-                        type="button"
-                      >
-                        {copy.apply}
-                      </button>
+                    <div
+                      className={styles.entityResults}
+                      data-testid="identity-search-results"
+                    >
+                      {entityResults.map((entity) => (
+                        <article
+                          className={styles.entityCard}
+                          data-entity-id={entity.identity}
+                          key={`${entity.kind}:${entity.worldId}:${entity.identity}`}
+                        >
+                          <div className={styles.entityHeading}>
+                            <div>
+                              <span className={styles.entityKind}>
+                                {entity.kind} ·{" "}
+                                {entity.persisted
+                                  ? copy.persisted
+                                  : copy.derived}
+                              </span>
+                              <h3>{entity.title[locale]}</h3>
+                            </div>
+                            <button
+                              aria-label={`${copy.focus}: ${entity.title[locale]}`}
+                              onClick={() =>
+                                setState((current) =>
+                                  focusGraphEntity(current, entity.reference)
+                                )
+                              }
+                              type="button"
+                            >
+                              {copy.focus}
+                            </button>
+                          </div>
+                          <p>{entity.description[locale]}</p>
+                          <dl>
+                            <div>
+                              <dt>{copy.matched}</dt>
+                              <dd>{entity.matchedCanonIds.join(", ")}</dd>
+                            </div>
+                            <div>
+                              <dt>{copy.memberships}</dt>
+                              <dd>{entity.canonMemberships.join(", ")}</dd>
+                            </div>
+                          </dl>
+                        </article>
+                      ))}
+                      {entityResults.length === 0 ? (
+                        <p className={styles.emptyResult} role="status">
+                          {copy.empty}
+                        </p>
+                      ) : null}
                     </div>
                   </section>
-                ) : (
-                  <>
-                    <section
-                      className={styles.section}
-                      aria-labelledby="source-worlds-title"
-                    >
-                      <div className={styles.sectionHeader}>
-                        <div>
-                          <h2 id="source-worlds-title">{copy.worldsTitle}</h2>
-                          <p>{copy.worldsHint}</p>
-                        </div>
-                        <span className={styles.step}>02</span>
+                ) : null}
+                <div hidden={activeTab !== "sources"}>
+                  <div className={styles.mockNotice}>
+                    <span>{copy.mock}</span>
+                    <p>{copy.legacyViewport}</p>
+                  </div>
+
+                  <section
+                    className={styles.section}
+                    aria-labelledby="source-time-system-title"
+                  >
+                    <div className={styles.sectionHeader}>
+                      <div>
+                        <h2 id="source-time-system-title">{copy.frameTitle}</h2>
+                        <p>{copy.frameHint}</p>
                       </div>
-                      <div className={styles.optionList}>
-                        {MOCK_GRAPH_SOURCE_CATALOG.worlds.map((world) => {
-                          const compatibility = getGraphSourceCompatibility(
-                            world.timeSystem,
-                            activeFrame.target
-                          );
-                          const source = sourceForWorld(state, world.id);
-                          return (
-                            <label
-                              className={`${inheritedStyles.canonOptionCard} ${source ? inheritedStyles.canonOptionCardActive : inheritedStyles.canonOptionCardInactive} ${!compatibility.compatible ? styles.disabledCard : ""}`}
-                              data-testid={`world-option-${world.id}`}
-                              key={world.id}
+                      <span className={styles.step}>01</span>
+                    </div>
+                    <div className={styles.optionList}>
+                      {MOCK_GRAPH_SOURCE_CATALOG.frames.map((frame) => {
+                        const selected =
+                          (draftFrame ?? activeFrame).id === frame.id;
+                        return (
+                          <button
+                            aria-pressed={selected}
+                            className={`${inheritedStyles.timelineOptionButton} ${selected ? inheritedStyles.timelineOptionButtonActive : ""} ${styles.frameOption}`}
+                            key={frame.id}
+                            onClick={() =>
+                              frame.id === activeFrame.id
+                                ? setDraftFrameId(null)
+                                : setDraftFrameId(frame.id)
+                            }
+                            type="button"
+                          >
+                            <span className={styles.optionMain}>
+                              {frame.label[locale]}
+                            </span>
+                            <span className={styles.optionDescription}>
+                              {frame.description[locale]}
+                            </span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </section>
+
+                  {draftFrame ? (
+                    <section className={styles.impactPanel} aria-live="polite">
+                      <div className={styles.impactTitle}>
+                        {copy.previewTitle}
+                      </div>
+                      <p>{copy.previewBody(removedSources.length)}</p>
+                      <div className={styles.impactColumns}>
+                        <div>
+                          <span className={styles.impactLabel}>
+                            {copy.removed}
+                          </span>
+                          {removedSources.map((source) => (
+                            <span
+                              className={styles.impactItem}
+                              key={source.world_id}
                             >
-                              <input
-                                checked={Boolean(source)}
-                                className={inheritedStyles.canonOptionInput}
-                                disabled={!compatibility.compatible}
-                                onChange={() => toggleWorld(world)}
-                                type="checkbox"
-                              />
-                              <span
-                                aria-hidden="true"
-                                className={inheritedStyles.canonOptionCheck}
+                              {MOCK_GRAPH_SOURCE_CATALOG.worlds.find(
+                                (world) => world.id === source.world_id
+                              )?.label[locale] ?? source.world_id}
+                            </span>
+                          ))}
+                        </div>
+                        <div>
+                          <span className={styles.impactLabel}>
+                            {copy.added}
+                          </span>
+                          {addedWorlds.map((world) => (
+                            <span className={styles.impactItem} key={world.id}>
+                              {world.label[locale]}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                      <div className={styles.impactActions}>
+                        <button
+                          className={styles.secondaryAction}
+                          onClick={() => setDraftFrameId(null)}
+                          type="button"
+                        >
+                          {copy.cancel}
+                        </button>
+                        <button
+                          className={styles.primaryAction}
+                          onClick={applyDraftFrame}
+                          type="button"
+                        >
+                          {copy.apply}
+                        </button>
+                      </div>
+                    </section>
+                  ) : (
+                    <>
+                      <section
+                        className={styles.section}
+                        aria-labelledby="source-worlds-title"
+                      >
+                        <div className={styles.sectionHeader}>
+                          <div>
+                            <h2 id="source-worlds-title">{copy.worldsTitle}</h2>
+                            <p>{copy.worldsHint}</p>
+                          </div>
+                          <span className={styles.step}>02</span>
+                        </div>
+                        <div className={styles.optionList}>
+                          {MOCK_GRAPH_SOURCE_CATALOG.worlds.map((world) => {
+                            const compatibility = getGraphSourceCompatibility(
+                              world.timeSystem,
+                              activeFrame.target
+                            );
+                            const source = sourceForWorld(state, world.id);
+                            return (
+                              <label
+                                className={`${inheritedStyles.canonOptionCard} ${source ? inheritedStyles.canonOptionCardActive : inheritedStyles.canonOptionCardInactive} ${!compatibility.compatible ? styles.disabledCard : ""}`}
+                                data-testid={`world-option-${world.id}`}
+                                key={world.id}
                               >
-                                {source ? "✓" : ""}
-                              </span>
-                              <span
-                                className={inheritedStyles.canonOptionContent}
-                              >
+                                <input
+                                  checked={Boolean(source)}
+                                  className={inheritedStyles.canonOptionInput}
+                                  disabled={!compatibility.compatible}
+                                  onChange={() => toggleWorld(world)}
+                                  type="checkbox"
+                                />
                                 <span
-                                  className={
-                                    inheritedStyles.canonOptionTitleRow
-                                  }
+                                  aria-hidden="true"
+                                  className={inheritedStyles.canonOptionCheck}
+                                >
+                                  {source ? "✓" : ""}
+                                </span>
+                                <span
+                                  className={inheritedStyles.canonOptionContent}
                                 >
                                   <span
                                     className={
-                                      inheritedStyles.timelineOptionLabel
+                                      inheritedStyles.canonOptionTitleRow
                                     }
                                   >
-                                    {world.label[locale]}
+                                    <span
+                                      className={
+                                        inheritedStyles.timelineOptionLabel
+                                      }
+                                    >
+                                      {world.label[locale]}
+                                    </span>
+                                    <span className={styles.revisionBadge}>
+                                      {copy.revision(world.servedRevision)}
+                                    </span>
                                   </span>
-                                  <span className={styles.revisionBadge}>
-                                    {copy.revision(world.servedRevision)}
+                                  <span
+                                    className={inheritedStyles.canonOptionMeta}
+                                  >
+                                    {world.description[locale]}
                                   </span>
+                                  {!compatibility.compatible ? (
+                                    <span className={styles.incompatibleReason}>
+                                      {copy.incompatibleReason}
+                                    </span>
+                                  ) : null}
                                 </span>
                                 <span
-                                  className={inheritedStyles.canonOptionMeta}
+                                  className={inheritedStyles.canonOptionState}
                                 >
-                                  {world.description[locale]}
+                                  {!compatibility.compatible
+                                    ? copy.incompatible
+                                    : source
+                                      ? copy.selected
+                                      : copy.notSelected}
                                 </span>
-                                {!compatibility.compatible ? (
-                                  <span className={styles.incompatibleReason}>
-                                    {copy.incompatibleReason}
-                                  </span>
-                                ) : null}
-                              </span>
-                              <span
-                                className={inheritedStyles.canonOptionState}
-                              >
-                                {!compatibility.compatible
-                                  ? copy.incompatible
-                                  : source
-                                    ? copy.selected
-                                    : copy.notSelected}
-                              </span>
-                            </label>
-                          );
-                        })}
-                      </div>
-                    </section>
-
-                    <section
-                      className={styles.section}
-                      aria-labelledby="source-canons-title"
-                    >
-                      <div className={styles.sectionHeader}>
-                        <div>
-                          <h2 id="source-canons-title">{copy.canonsTitle}</h2>
-                          <p>{copy.canonsHint}</p>
+                              </label>
+                            );
+                          })}
                         </div>
-                        <span className={styles.step}>03</span>
-                      </div>
-                      <div className={styles.canonGroups}>
-                        {state.query.sources.map((source) => {
-                          const world = MOCK_GRAPH_SOURCE_CATALOG.worlds.find(
-                            (candidate) => candidate.id === source.world_id
-                          )!;
-                          return (
-                            <fieldset
-                              className={styles.canonGroup}
-                              key={world.id}
-                            >
-                              <legend>
-                                <span>{world.label[locale]}</span>
-                                <span>
-                                  {copy.revision(world.servedRevision)}
-                                </span>
-                              </legend>
-                              {world.canons.map((canon) => {
-                                const selected = source.canon_ids.includes(
-                                  canon.id
-                                );
-                                return (
-                                  <label
-                                    className={styles.canonRow}
-                                    key={canon.id}
-                                  >
-                                    <input
-                                      checked={selected}
-                                      onChange={() =>
-                                        toggleCanon(world, canon.id)
-                                      }
-                                      type="checkbox"
-                                    />
-                                    <span
-                                      aria-hidden="true"
-                                      className={styles.compactCheck}
-                                    >
-                                      {selected ? "✓" : ""}
-                                    </span>
-                                    <span>{canon.label[locale]}</span>
-                                  </label>
-                                );
-                              })}
-                            </fieldset>
-                          );
-                        })}
-                      </div>
-                    </section>
+                      </section>
 
-                    <section
-                      className={styles.revisionVector}
-                      aria-label={copy.revisionVector}
-                    >
-                      <span>{copy.revisionVector}</span>
-                      <div>
-                        {state.query.sources.map((source) => (
-                          <code key={source.world_id}>
-                            {source.world_id} @ {source.served_revision}
-                          </code>
-                        ))}
-                      </div>
-                    </section>
-                  </>
-                )}
+                      <section
+                        className={styles.section}
+                        aria-labelledby="source-canons-title"
+                      >
+                        <div className={styles.sectionHeader}>
+                          <div>
+                            <h2 id="source-canons-title">{copy.canonsTitle}</h2>
+                            <p>{copy.canonsHint}</p>
+                          </div>
+                          <span className={styles.step}>03</span>
+                        </div>
+                        <div className={styles.canonGroups}>
+                          {state.query.sources.map((source) => {
+                            const world = MOCK_GRAPH_SOURCE_CATALOG.worlds.find(
+                              (candidate) => candidate.id === source.world_id
+                            )!;
+                            return (
+                              <fieldset
+                                className={styles.canonGroup}
+                                key={world.id}
+                              >
+                                <legend>
+                                  <span>{world.label[locale]}</span>
+                                  <span>
+                                    {copy.revision(world.servedRevision)}
+                                  </span>
+                                </legend>
+                                {world.canons.map((canon) => {
+                                  const selected = source.canon_ids.includes(
+                                    canon.id
+                                  );
+                                  return (
+                                    <label
+                                      className={styles.canonRow}
+                                      key={canon.id}
+                                    >
+                                      <input
+                                        checked={selected}
+                                        onChange={() =>
+                                          toggleCanon(world, canon.id)
+                                        }
+                                        type="checkbox"
+                                      />
+                                      <span
+                                        aria-hidden="true"
+                                        className={styles.compactCheck}
+                                      >
+                                        {selected ? "✓" : ""}
+                                      </span>
+                                      <span>{canon.label[locale]}</span>
+                                    </label>
+                                  );
+                                })}
+                              </fieldset>
+                            );
+                          })}
+                        </div>
+                      </section>
+
+                      <section
+                        className={styles.revisionVector}
+                        aria-label={copy.revisionVector}
+                      >
+                        <span>{copy.revisionVector}</span>
+                        <div>
+                          {state.query.sources.map((source) => (
+                            <code key={source.world_id}>
+                              {source.world_id} @ {source.served_revision}
+                            </code>
+                          ))}
+                        </div>
+                      </section>
+                    </>
+                  )}
+                </div>
               </div>
             </div>
           ) : null}

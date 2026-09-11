@@ -114,6 +114,48 @@ test("mobile source island restores compatible Worlds, Canons, revisions, and pr
   ).toBeChecked();
 });
 
+test("identity-aware search deduplicates shared Events and restores Canon context and focus", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: "Entities" }).click();
+
+  const sharedA = page.locator('[data-entity-id="event:observatory-a"]');
+  const sharedB = page.locator('[data-entity-id="event:observatory-b"]');
+  await expect(sharedA).toHaveCount(1);
+  await expect(sharedB).toHaveCount(1);
+  await expect(sharedA).toContainText("canon:recorded-history");
+  await expect(sharedA).toContainText("canon:archival-observations");
+
+  await page.getByRole("tab", { name: "Sources" }).click();
+  await page.getByLabel(/기록된 역사|Recorded history/).uncheck();
+  await page.getByRole("tab", { name: "Entities" }).click();
+  await expect(sharedA).toHaveCount(1);
+  await expect(
+    sharedA.getByText("canon:archival-observations").first()
+  ).toBeVisible();
+
+  await sharedA.getByRole("button").click();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("mq"))
+    .toContain("selection");
+  const focusedUrl = page.url();
+  await page.goto(focusedUrl);
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: "Entities" }).click();
+  await expect(sharedA).toHaveCount(1);
+  expect(new URL(page.url()).searchParams.get("mq")).toContain(
+    "event:observatory-a"
+  );
+});
+
 test("mobile reader traverses the single relational temporal model", async ({
   page
 }) => {

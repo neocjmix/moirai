@@ -189,4 +189,81 @@ describe("M4.5-E Publication query composition", () => {
       comparison_domain: "time:one"
     });
   });
+
+  it("replaces overview data with bounded selection and neighborhood scope artifacts", () => {
+    const base = snapshot(K1);
+    const neighbor = {
+      ...base.events[0]!,
+      id: "event:neighbor",
+      slug: "neighbor",
+      title: "Neighbor"
+    };
+    const isolated = {
+      ...base.events[0]!,
+      id: "event:isolated",
+      slug: "isolated",
+      title: "Isolated"
+    };
+    const scopedSnapshot: GraphPublicationCanonSnapshot = {
+      ...base,
+      events: [...base.events, neighbor, isolated],
+      temporal: {
+        ...base.temporal,
+        positions: [
+          ...base.temporal.positions,
+          ...[neighbor, isolated].map((event) => ({
+            event_id: event.id,
+            kind: "unresolved" as const,
+            reason: "No authored position",
+            source_constraint_ids: [],
+            algorithm_version: "solver/1",
+            display_label: "unplaced",
+            knowledge_span: null
+          }))
+        ],
+        relations: [
+          {
+            ...base.temporal.relations[0]!,
+            target_ref: { kind: "event", event_id: neighbor.id }
+          }
+        ]
+      }
+    };
+    const overview = createDefaultGraphUrlState(
+      MOCK_GRAPH_SOURCE_CATALOG
+    ).query;
+    const address = {
+      world_id: WORLD,
+      canon_id: K1,
+      served_revision: 7,
+      event_ref: { kind: "event" as const, event_id: EVENT }
+    };
+    const selection = composeGraphPublicationQuery(
+      {
+        ...overview,
+        scope: {
+          kind: "selection",
+          references: [{ ...address, kind: "event" }]
+        }
+      },
+      [scopedSnapshot]
+    );
+    const neighborhood = composeGraphPublicationQuery(
+      {
+        ...overview,
+        scope: { kind: "neighborhood", event: address, depth: 1 }
+      },
+      [scopedSnapshot]
+    );
+
+    expect(selection.events.map((event) => event.id)).toEqual([EVENT]);
+    expect(selection.relations).toHaveLength(0);
+    expect(neighborhood.events.map((event) => event.id).sort()).toEqual(
+      [EVENT, neighbor.id].sort()
+    );
+    expect(neighborhood.relations).toHaveLength(1);
+    expect(neighborhood.events.map((event) => event.id)).not.toContain(
+      isolated.id
+    );
+  });
 });

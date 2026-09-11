@@ -633,6 +633,13 @@ export function NativeGraphViewport({
             {selected.event_kind === "composite" ? "Composite Event" : "Event"}{" "}
             · persisted
           </p>
+          <button
+            aria-label="Close selected graph entity inspector"
+            onClick={() => setSelectedKey(null)}
+            type="button"
+          >
+            ×
+          </button>
           <h2>{selected.title}</h2>
           <p>{selected.summary ?? "No summary"}</p>
           <dl>

@@ -167,6 +167,10 @@ test("native viewport reads immutable v3 results and restores selection", async 
   await page.getByRole("tab", { name: "Relations" }).click();
   await expect(page.locator("[data-relation-result]").first()).toBeVisible();
   await page
+    .getByRole("button", { name: "Close selected graph entity inspector" })
+    .click();
+  await expect(page.getByTestId("native-graph-inspector")).toHaveCount(0);
+  await page
     .getByText(/접근 가능한 정본 결과 목록|Accessible canonical result list/)
     .click();
   await expect(page.locator("details ol li").first()).toBeVisible();

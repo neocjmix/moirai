@@ -42,6 +42,10 @@ test("mobile source island restores published World, Canon, Time System, and Rev
   page
 }) => {
   await page.goto("/graph");
+  await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
+  await expect(page.getByTestId("moirai-native-graph-stage")).toBeVisible();
+  await expect(page.getByTestId("graph-source-legend")).toContainText("Canons");
+  await expect(page.getByTestId("graph-stage")).toHaveCount(0);
   await page
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
@@ -70,6 +74,49 @@ test("mobile source island restores published World, Canon, Time System, and Rev
     page.getByLabel(/Temporal Expressiveness Observatory/)
   ).toBeChecked();
   await expect(page.getByLabel(/Temporal Acceptance Canon/)).toBeChecked();
+});
+
+test("native viewport preserves a single island, bottom dock, selection URL and mobile inspector", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
+  await expect(page.getByTestId("moirai-native-graph-stage")).toBeVisible();
+  await expect(
+    page.getByRole("navigation", { name: /주요 섹션|Primary sections/ })
+  ).toBeVisible();
+
+  const node = page.locator('[data-node-kind="event"]').first();
+  await expect(node).toBeVisible();
+  await node.click();
+  await expect(page.getByTestId("graph-inspector-sheet")).toBeVisible();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("mq"))
+    .toContain('"focus"');
+  const zoomIn = page.getByRole("button", { name: /확대|Zoom in/ });
+  await zoomIn.click();
+  await zoomIn.click();
+  await zoomIn.click();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("mq"))
+    .toContain("neighborhood");
+  await page.reload();
+  await expect(page.getByTestId("graph-inspector-sheet")).toBeVisible();
+});
+
+test("native viewport renders shared World identities and Relations once", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await expect(page.locator(`[data-event-id="${firstEventId}"]`)).toHaveCount(
+    1
+  );
+  await expect(
+    page.locator('[data-relation-id="019f3b00-0000-7000-8000-000000000201"]')
+  ).toHaveCount(1);
+  await expect(
+    page.locator(`[data-event-id="${firstEventId}"]`)
+  ).toHaveAttribute("data-canon-memberships", new RegExp(canonId));
 });
 
 test("identity-aware search deduplicates shared Events and restores Canon context and focus", async ({

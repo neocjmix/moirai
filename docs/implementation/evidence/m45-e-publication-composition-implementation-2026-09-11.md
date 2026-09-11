@@ -1,33 +1,39 @@
-# M4.5-E Publication query composition implementation evidence
+# M4.5-E Publication composition implementation evidence
 
-Date: 2026-09-11 UTC
+Date: 2026-09-11
 
-## Decisions and rationale
+Status: implementation complete; PR, main CI and production evidence pending.
 
-- `/graph/query` composes only immutable Publication documents at each requested World Revision. A
-  current pointer mismatch fails that source instead of silently upgrading it.
-- Results deduplicate by `(world_id, entity_id)`. Equal strings in different Worlds never imply identity
-  or correspondence.
-- Each source is composed independently. One unavailable World produces a scoped diagnostic and partial
-  result without changing successful World revision entries.
-- Event, Relation, Narrative, temporal, Subject, Composite/Process, State and graph-scope completeness
-  artifacts are read under one selected Publication per World.
-- Relation endpoints outside the selected public scope are omitted with an explicit diagnostic; hidden
-  endpoint information is not delivered to the browser.
-- Query source/Canon counts, response budgets and request body size have hard public limits. Oversized
-  input fails before Publication reads.
-- Semantic digest includes the normalized query, World revision vector, immutable artifact digests and
-  composed semantic content. It excludes renderer geometry and execution order.
+## Decisions
 
-## Verification design
+- Atropos composes `MoiraiGraphQueryResult` on the server from immutable public
+  Publication documents. It does not issue cross-World database queries.
+- A result keeps one Revision entry per World. A source timeout or unavailable
+  Canon produces a bounded diagnostic and `partial` completeness without
+  changing successful World revisions.
+- Event and Relation identity is keyed by `world_id + id`; selected Canon
+  context is unioned into `matched_canon_ids`, while complete published
+  membership remains in `canon_memberships`.
+- Time System compatibility uses explicit `graph_adapter_identity` and
+  `comparison_domain`, or the existing lossless `coordinate_codec` when both
+  graph fields are absent. If none exist, both values fail closed to the Time
+  System ID; title, slug and kind never imply compatibility.
+- Publication format 3 does not expose a complete State value artifact. The
+  composer returns no invented State and emits
+  `state_projection_unavailable` with partial completeness when State is
+  requested.
+- Fan-out is bounded to 8 Worlds and 32 Canons; each public artifact read has a
+  3-second timeout. Query entity, Relation and evidence budgets are enforced
+  deterministically with a next-scope hint.
+- The deterministic query digest covers the normalized query, World Revision
+  vector, algorithm versions and immutable artifact digests.
 
-- same Event ID in two Canons becomes one World result; the same string in another World remains distinct
-- shared Relation is returned once with matched/all Canon memberships
-- partial source failure preserves the successful Revision vector
-- repeated composition produces the same semantic digest
-- resource exhaustion is rejected before storage reads
-- production post-deploy smoke now POSTs the Revision 4 K1/K2 acceptance query and requires A/B and the
-  shared R1 Relation exactly once
+## Local verification
 
-The endpoint is a public Publication projection boundary, not an unscoped canonical repository API.
-M5 access/audience policy remains inactive.
+- Static typecheck: passed.
+- Composition and D1/D2 URL/search tests: 17 passed.
+- Local immutable Publication fixture: 1 World, 1 Canon snapshot, Revision 2,
+  11 Events and 23 Relations composed; State remained explicitly partial.
+
+No canonical rows, World revisions, Publication objects or production state
+were mutated by these checks.

@@ -5,6 +5,9 @@ import {
   createDefaultGraphUrlState,
   parseGraphUrlState
 } from "../../../lib/moirai-graph-source-query";
+import { loadGraphPublicationSources } from "../../../lib/graph-publication-loader";
+import { composeGraphPublicationQuery } from "../../../lib/graph-publication-composer";
+import { graphPresentationFromResult } from "../../../lib/graph-query-presentation";
 import {
   getAtroposScreen,
   type AtroposScreenId
@@ -25,6 +28,8 @@ export default async function GraphScreenPage({
 }>) {
   const { screen } = await params;
   const queryParams = await searchParams;
+  const { catalog, snapshots, failures } = await loadGraphPublicationSources();
+  if (catalog.frames.length === 0 || catalog.worlds.length === 0) notFound();
   if (!RELOADABLE_SCREENS.has(screen as AtroposScreenId)) notFound();
 
   const definition = getAtroposScreen(screen as AtroposScreenId);
@@ -32,14 +37,21 @@ export default async function GraphScreenPage({
 
   const raw = typeof queryParams.mq === "string" ? queryParams.mq : null;
   const initialGraphQuery = raw
-    ? (parseGraphUrlState(`?mq=${encodeURIComponent(raw)}`) ??
-      createDefaultGraphUrlState())
-    : createDefaultGraphUrlState();
+    ? (parseGraphUrlState(`?mq=${encodeURIComponent(raw)}`, catalog) ??
+      createDefaultGraphUrlState(catalog))
+    : createDefaultGraphUrlState(catalog);
+  const presentation = graphPresentationFromResult(
+    composeGraphPublicationQuery(initialGraphQuery.query, snapshots, failures)
+  );
 
   return (
     <AtroposGraphRoot
+      catalog={catalog}
+      diagnostics={presentation.diagnostics}
+      entities={presentation.entities}
       initialGraphQuery={initialGraphQuery}
       initialScreen={definition.id}
+      relations={presentation.relations}
     />
   );
 }

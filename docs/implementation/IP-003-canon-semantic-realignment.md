@@ -318,6 +318,16 @@ Event create + 1..N membership, membership add/remove, duplicate/cross-World/orp
 Event withdrawal의 final-state rule을 한 validator와 transaction에서 구현한다. validate와 commit의
 판정 corpus가 동일해야 한다. historical payload와 legacy ingress adapter를 경계에 둔다.
 
+완료 증거: PR #32를 `57628ea6bd2d1f6481e78a13fb2b9a3692d7d0fe`로 병합했고 PR CI
+`34564009501`, main CI `34564158019`, production smoke `34564302767`이 성공했다. contract v3는
+Event `world_id`, membership `add`·`remove`, Event `withdraw`를 분리하고 v2는 Clotho ingress에서
+명시된 단일 `canon_id`만 lossless 변환한다. PostgreSQL 17 integration에서 K1/K2/K3와 A/B/C/D
+overlap matrix, orphan·duplicate·last-membership rejection 및 withdrawal final state를 검증했다.
+production migration 007은 deferred invariant와 `events.world_id NOT NULL`을 적용했고 기존
+26 active Event/26 active membership, orphan/cross-World/duplicate 0과 World Revision 불변을
+확인했다. [machine-readable evidence](evidence/ip-003-slice3-event-write-production-2026-09-11.json)에
+수치와 rollback 범위를 고정한다.
+
 ### Slice 4 — read, projection, publication와 portability
 
 revision view, Subject/Process/State/Duration/Timeline, Event/Canon artifacts, search, Atropos read와

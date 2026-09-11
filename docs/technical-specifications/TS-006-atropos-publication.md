@@ -73,6 +73,8 @@ Publication Store는 S3-compatible object storage에 Revision별 artifact를 기
 - content digest와 completeness
 - 이전 Revision과의 public change summary
 
+Event document는 `world_id`와 모든 active `canon_memberships`를 보존하며 Event ID당 하나다. Canon document와 Canon-specific graph/temporal artifact는 membership으로 Event를 선택하고 같은 Event ID를 참조한다.
+
 ## TS-006.4 Revision 고정 읽기
 
 1. Atropos는 World 진입 시 `current.json`을 한 번 읽는다.
@@ -95,14 +97,15 @@ Atropos server component와 client component가 각각 `current.json`을 읽어 
 | ------------------- | --------------------------------------------------------------- |
 | World               | `/worlds/{worldId}`                                             |
 | Canon               | `/worlds/{worldId}/canons/{canonId}`                            |
-| Event               | `/worlds/{worldId}/canons/{canonId}/events/{eventId}`           |
+| Event               | `/worlds/{worldId}/events/{eventId}`                             |
 | Subject             | `/worlds/{worldId}/canons/{canonId}/subjects/{subjectHandleId}` |
 | Correspondence 비교 | `/worlds/{worldId}/compare/{correspondenceId}`                  |
 
 - immutable ID가 URL 정체성을 결정한다.
 - slug는 ID 뒤에 사람이 읽는 optional segment 또는 별칭 route로 제공할 수 있다.
 - slug 변경 후 이전 별칭은 canonical ID route로 redirect한다.
-- Event와 Subject route에는 Canon ID를 포함해 현재 진실 범위를 명확히 한다.
+- 기존 `/worlds/{worldId}/canons/{canonId}/events/{eventId}`는 membership을 검증하는 context alias로 유지하고 World-level Event canonical route로 연결한다.
+- Subject route에는 Canon ID를 포함해 파생 context를 명확히 한다.
 - 어떤 Canon도 생략 가능한 default Canon으로 취급하지 않는다.
 
 ### 관점 URL
@@ -120,6 +123,7 @@ Atropos server component와 client component가 각각 `current.json`을 읽어 
 - `zoom`, `x`, `y`: 그래프 viewport를 공유할 때의 정규화된 값
 
 UI 내부의 일시적 panel open 상태와 hover 상태는 URL에 넣지 않는다. 공유 URL을 생성할 때 parameter 순서와 기본값을 정규화한다.
+Canon query parameter와 source set은 ownership partition이 아니라 interpretive scope filter다.
 
 ## TS-006.6 World와 Canon 진입
 
@@ -127,6 +131,7 @@ UI 내부의 일시적 panel open 상태와 hover 상태는 URL에 넣지 않는
 
 - World Narrative 또는 설명
 - 모든 활성 Canon을 동등한 수준으로 나열
+- Canon overlap과 shared Event 수를 partition처럼 합산하지 않고 설명
 - Canon별 범위와 최근 공개 변경 요약
 - 명시적인 Canon 간 correspondence가 있을 때 비교 진입점
 - 검색과 전체 구조 탐색 진입점
@@ -136,6 +141,7 @@ World page는 첫 Canon을 자동 선택하거나 `primary`, `official`, `altern
 ### Canon page
 
 - 현재 Canon임을 지속적으로 보여주는 header와 breadcrumb
+- 이것이 authority나 exclusive truth branch가 아니라 선택한 interpretive scope임을 일관되게 표현
 - Canon Narrative
 - 주요 Process·Composite Event와 Event 탐색
 - 선택 가능한 Time System과 Timeline
@@ -203,12 +209,12 @@ private source, origin, 내부 validation과 철회된 본문은 색인하지 �
 ### 검색 결과
 
 - 대상 ID와 canonical URL
-- World와 Canon 범위
+- World와 matched/all Canon membership context
 - 대상 종류
 - title과 안전한 snippet
 - 결과를 만든 served Revision
 
-relevance는 텍스트 검색 결과의 순위일 뿐 Canon의 진실성이나 우열이 아니다. 결과가 여러 Canon에 걸치면 Canon별로 분리해 표시한다.
+relevance는 텍스트 검색 결과의 순위일 뿐 Canon의 authority나 우열이 아니다. Event가 여러 Canon에 걸치면 검색 결과 identity는 하나로 유지하고 matched membership context를 함께 표시한다.
 
 ## TS-006.11 그래프의 의미 단위
 
@@ -216,10 +222,10 @@ JointJS cell은 Publication projection을 그리는 표현 객체이며 정본 �
 
 | 표현              | 의미                                              |
 | ----------------- | ------------------------------------------------- |
-| point node        | atomic Event 또는 현재 LOD의 대표 Event           |
+| point node        | 하나의 atomic Event identity 또는 현재 LOD의 대표 Event |
 | composite region  | Composite Event와 포함 범위                       |
 | process region    | `process` 역할의 Composite Event                  |
-| relation link     | Canon 내부 Relation                               |
+| relation link     | DP-001에서 승인된 Canon-specific 또는 shared Relation context |
 | subject lane      | 파생 Subject의 Event lineage를 읽는 관점          |
 | comparison bridge | Canon 간 correspondence를 나타내는 별도 시각 표면 |
 
@@ -322,6 +328,7 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 - 어느 Canon도 왼쪽, 위쪽 또는 강조색을 이유로 기본·정본처럼 보이지 않게 한다.
 - ordering이 필요하면 사용자가 선택한 순서 또는 안정적인 중립 정렬을 사용한다.
 - 공통점은 correspondence 기준으로 정렬하고 차이는 Canon별 column 또는 lane에 남긴다.
+- 같은 Event identity의 direct membership은 correspondence 없이 shared node/row로 정렬한다.
 - Event·Relation·시간·Narrative 차이를 하나의 합쳐진 값으로 만들지 않는다.
 - 비교 URL은 correspondence와 Canon ID를 명시한다.
 
@@ -361,6 +368,8 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 14. 복수 World graph와 text fallback이 같은 World별 Revision vector를 읽는다.
 15. 같은 화면의 World·Canon이 사실, Relation, Subject 또는 Revision 하나로 병합되지 않는다.
 16. 이름·slug·calendar kind가 같다는 이유만으로 Time System compatibility를 만들지 않는다.
+17. 동일 Event가 여러 선택 Canon에 참여해도 stable identity와 graph node를 무조건 복제하지 않는다.
+18. Event artifact와 export/import가 모든 Canon membership을 보존한다.
 
 ## TS-006.21 복수 World graph query composition
 
@@ -370,10 +379,10 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 2. Atropos는 accepted adapter 계약으로 target과 비교 가능한 source Time System을 찾는다.
 3. 호환 Time System을 사용하는 World를 복수 선택하고 각 World의 Canon을 복수 선택한다.
 4. source별 `current.json`에서 선택한 served Revision을 고정한 뒤 immutable artifact만 읽는다.
-5. 결과는 World·Canon·Revision source identity를 모든 Event, Relation, 파생 결과와
-   diagnostic에 보존한다.
+5. 결과는 World·Revision, Event identity와 matched/all Canon membership context를 모든 Event,
+   Relation, 파생 결과와 diagnostic에 보존한다.
 6. cross-World Event identity, Relation 또는 Canon correspondence는 별도 명시적 근거
-   없이 만들지 않는다.
+   없이 만들지 않는다. 같은 World 안의 shared Event membership은 cross-World identity가 아니다.
 
 Time System 호환성과 Event 배치 가능성은 구분한다. World가 선택한 target과
 호환되더라도 시간 근거가 없는 Event는 제거하거나 가짜 좌표를 부여하지 않고

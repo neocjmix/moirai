@@ -40,8 +40,8 @@ describeWithDatabase("versioned migrations", () => {
       order by table_name
     `.execute(db);
     expect(canonical.rows).toEqual([
-      { table_name: "change_sets" },
       { table_name: "canon_event_memberships" },
+      { table_name: "change_sets" },
       { table_name: "narratives" },
       { table_name: "publication_outbox" },
       { table_name: "relations" },
@@ -88,17 +88,21 @@ describeWithDatabase("versioned migrations", () => {
         ) values (
           ${worldId}, ${`ip003-backfill-world-${worldId}`}, 'Backfill world',
           3, 3, 1, 3
-        );
+        )
+      `.execute(db);
+      await sql`
         insert into canons (
           id, world_id, slug, title, created_revision, updated_revision
-        ) values (${canonId}, ${worldId}, 'backfill-canon', 'Backfill Canon', 1, 1);
+        ) values (${canonId}, ${worldId}, 'backfill-canon', 'Backfill Canon', 1, 1)
+      `.execute(db);
+      await sql`
         insert into events (
           id, canon_id, slug, kind, title, roles, attributes,
           created_revision, updated_revision
         ) values (
           ${eventId}, ${canonId}, 'backfill-event', 'atomic', 'Backfill Event',
           '[]'::jsonb, '{}'::jsonb, 2, 3
-        );
+        )
       `.execute(db);
 
       await migrateToLatest(databaseUrl ?? "");
@@ -134,12 +138,12 @@ describeWithDatabase("versioned migrations", () => {
       ]);
     } finally {
       await migrateToLatest(databaseUrl ?? "");
-      await sql`
-        delete from canon_event_memberships where event_id = ${eventId};
-        delete from events where id = ${eventId};
-        delete from canons where id = ${canonId};
-        delete from worlds where id = ${worldId};
-      `.execute(db);
+      await sql`delete from canon_event_memberships where event_id = ${eventId}`.execute(
+        db
+      );
+      await sql`delete from events where id = ${eventId}`.execute(db);
+      await sql`delete from canons where id = ${canonId}`.execute(db);
+      await sql`delete from worlds where id = ${worldId}`.execute(db);
     }
   });
 
@@ -159,21 +163,23 @@ describeWithDatabase("versioned migrations", () => {
           created_revision, updated_revision
         ) values
           (${firstWorld}, ${`ip003-world-${firstWorld}`}, 'IP-003 world A', 1, 1, 1, 1),
-          (${secondWorld}, ${`ip003-world-${secondWorld}`}, 'IP-003 world B', 1, 1, 1, 1);
-
+          (${secondWorld}, ${`ip003-world-${secondWorld}`}, 'IP-003 world B', 1, 1, 1, 1)
+      `.execute(db);
+      await sql`
         insert into canons (
           id, world_id, slug, title, created_revision, updated_revision
         ) values
           (${firstCanon}, ${firstWorld}, 'canon-a', 'Canon A', 1, 1),
-          (${secondCanon}, ${secondWorld}, 'canon-b', 'Canon B', 1, 1);
-
+          (${secondCanon}, ${secondWorld}, 'canon-b', 'Canon B', 1, 1)
+      `.execute(db);
+      await sql`
         insert into events (
           id, canon_id, slug, kind, title, roles, attributes,
           created_revision, updated_revision
         ) values (
           ${eventId}, ${firstCanon}, 'legacy-event', 'atomic', 'Legacy Event',
           '[]'::jsonb, '{}'::jsonb, 1, 1
-        );
+        )
       `.execute(db);
 
       const event = await sql<{ world_id: string }>`
@@ -223,12 +229,16 @@ describeWithDatabase("versioned migrations", () => {
         duplicate_active_memberships: 0
       });
     } finally {
-      await sql`
-        delete from canon_event_memberships where event_id = ${eventId};
-        delete from events where id = ${eventId};
-        delete from canons where id in (${firstCanon}, ${secondCanon});
-        delete from worlds where id in (${firstWorld}, ${secondWorld});
-      `.execute(db);
+      await sql`delete from canon_event_memberships where event_id = ${eventId}`.execute(
+        db
+      );
+      await sql`delete from events where id = ${eventId}`.execute(db);
+      await sql`delete from canons where id in (${firstCanon}, ${secondCanon})`.execute(
+        db
+      );
+      await sql`delete from worlds where id in (${firstWorld}, ${secondWorld})`.execute(
+        db
+      );
     }
   });
 });

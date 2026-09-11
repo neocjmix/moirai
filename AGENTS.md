@@ -25,6 +25,13 @@
 - Do not claim success from a build alone. Verify the deployed commit through the public surface and synthetic smoke test.
 - Keep `docs/implementation/CURRENT.md` short and current when implementation status, deployed URLs or the active milestone changes. Do not turn it into an execution log.
 
+## Connected tools
+
+- When a requested integration such as Moirai Clotho, GitHub or Railway is available in the current conversation, begin with the requested operation. Do not make a separate harmless call merely to confirm that the integration is connected.
+- Treat the requested operation itself as the connection check. Request reconnection only after an actual call returns an authentication, authorization or connection error.
+- This does not replace task-relevant state verification. Check repository, CI, deployment and production state when the task requires current evidence.
+- Follow any platform rule that explicitly requires a preflight call.
+
 ## Mobile-first evidence
 
 For a runtime change, hand off:

@@ -13,7 +13,7 @@ Clotho는 사용자와 에이전트가 기존 세계를 이해하고 새로운 �
 
 ## CON-002.2 Lachesis
 
-Lachesis는 각 Canon 안에서 성립하는 세계의 사실과 운영 정보를 보존·검증·관리하고 Clotho와 Atropos에 신뢰할 수 있는 기능을 제공하는 비공개 관리 시스템이다. 정본 조회와 변경의 최종 인가, 세계 불변식, 원자적 변경과 이력의 권위는 Lachesis에 있다. 사용자와 에이전트의 운영상 접근은 Clotho를 통한다.
+Lachesis는 World에 속한 canonical content와 Canon membership, 운영 정보를 보존·검증·관리하고 Clotho와 Atropos에 신뢰할 수 있는 기능을 제공하는 비공개 관리 시스템이다. 정본 조회와 변경의 최종 인가, 세계 불변식, 원자적 변경과 이력의 권위는 Lachesis에 있다. 사용자와 에이전트의 운영상 접근은 Clotho를 통한다.
 
 ## CON-002.3 Atropos
 

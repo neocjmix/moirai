@@ -17,7 +17,7 @@ import {
   type GraphShellChartPlaneEntity,
   type GraphShellViewportQuery,
   type GraphShellViewportResponse
-} from "../shared/contracts";
+} from "../shared/contracts/index";
 import {
   filterStaticViewportEntities,
   getBandRange,

@@ -27,8 +27,9 @@ input and runs the production spatial reader. The browser receives bounded
 responses through its ordinary loader, pans using native pointer input and
 zooms using the original two-pointer pinch path,
 and must encounter new points without downloading the entity index or semantic
-sidecar. Assertions limit each response to 500 cells and 1 MiB. Response counts,
-bytes, object reads and a mobile screenshot are attached to the CI result.
+sidecar. Assertions limit each response to 500 cells and 1 MiB. The CI result
+records assertion success and retains the mobile screenshot. The GitHub reporter
+does not persist the in-memory JSON attachment in its uploaded screenshot ZIP.
 
 This verifies artifact reading and browser loading, not quadratic force-layout
 generation at 100k or real canonical membership for those synthetic points.
@@ -71,5 +72,29 @@ the current port. Earlier descriptions of wheel zoom were incorrect. The scale
 test preserves wheel no-op behavior and exercises actual zoom via pinch; no
 wheel feature is added in M4.6. A future wheel interaction is backlog work.
 
-Final F CI, deployed SHA and smoke are pending.
-M5 remains inactive.
+## Final runtime checkpoint
+
+Runtime SHA: `f2aa9f123e61d817ba95ae2dbba23756c983e379` (PR #65).
+CI [34701770563](https://github.com/neocjmix/moirai/actions/runs/34701770563)
+passed all jobs, including all 13 WebKit flows and the 100k scale assertions.
+Railway Atropos, Clotho and worker each report SUCCESS at this exact SHA.
+Screenshots were downloaded and inspected from
+[artifact 10300174115](https://github.com/neocjmix/moirai/actions/runs/34701770563/artifacts/10300174115).
+They retain the original floating island, bottom dock, point rendering and sheet.
+
+Post-deploy smoke
+[34701897131](https://github.com/neocjmix/moirai/actions/runs/34701897131)
+passed on the exact runtime SHA. M4.6 is complete; M5 remains inactive.
+
+| Exit condition | Evidence |
+| --- | --- |
+| Original renderer/layout/spatial behavior | A characterization, C parity/determinism, D retention and all original WebKit baseline assertions retained |
+| Real Publication in `/graph` | E PR #60, production Signal Event at Revision 4, no production mock fallback |
+| Model/presentation ownership | Architecture and strict type checks pass; canonical/query packages do not import URDR shapes |
+| Identity/membership/revision/time/diagnostics | B projection tests, E pinned-query/detail tests, actual production sheet and Clotho read-back |
+| 100k bounded loading | F WebKit pan/pinch, new point reads, ≤500 cells/≤1 MiB per response, no full index/sidecar download; D distant viewport test |
+| Mobile and stable navigation | 13 WebKit flows pass, original active-pointer pinch and actual link-click round trip; direct production round trip |
+| Deployment and smoke | Three Railway services at f2aa9f1, public SHA checks and smoke 34701897131 |
+
+The declared acceptance applies to automated WebKit coverage, not physical-device
+certification, and to 100k artifact reading, not 100k force-layout production.

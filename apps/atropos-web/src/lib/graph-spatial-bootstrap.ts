@@ -89,6 +89,31 @@ export async function graphSpatialBootstrap(
   }
   center = focusedCenter ?? center;
   const workspace: GraphShellWorkspaceShell = {
+    // The Moirai producer uses elapsed mean Gregorian years from year zero.
+    // Structural/custom frames must never receive Gregorian calendar labels.
+    ...(state.query.temporal_frame.target.adapter_identity ===
+      "yyyy-iso-fields-fraction12-z-v1" &&
+    state.query.temporal_frame.target.comparison_domain ===
+      "yyyy-iso-fields-fraction12-z-v1"
+      ? {
+          chronologyBoard: {
+            mode: "gregorian" as const,
+            axis: {
+              scheme: "gregorian_utc" as const,
+              coordinateScale: "elapsed-gregorian" as const,
+              timeSystemId: state.query.temporal_frame.target.time_system_id,
+              compatibilityKey:
+                state.query.temporal_frame.target.comparison_domain,
+              startYear: 0,
+              endYear: 0,
+              tickYears: []
+            },
+            columns: [],
+            placements: [],
+            unplaced: []
+          }
+        }
+      : {}),
     menuItems: [
       { id: "publication", label: "Moirai Publication", active: true }
     ],

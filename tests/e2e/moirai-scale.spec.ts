@@ -128,8 +128,7 @@ test("100k artifacts stay bounded while the original browser viewport pans and z
   await expect
     .poll(() => observed.some((r) => Math.abs(r.minY - first.minY) > 100))
     .toBe(true);
-  // Mobile WebKit does not expose a native automation wheel command.
-  // Dispatch a wheel input through the original DOM listener instead.
+  // Pinned URDR graph-shell has no wheel handler: retain that no-op baseline.
   const beforeZoom = new URL(page.url()).searchParams
     .get("gsViewport")!
     .split(",")
@@ -142,6 +141,31 @@ test("100k artifacts stay bounded while the original browser viewport pans and z
     bubbles: true,
     cancelable: true
   });
+  expect(
+    Number(new URL(page.url()).searchParams.get("gsViewport")!.split(",")[3])
+  ).toBe(beforeZoom[3]);
+  // Use the original two-pointer pinch path for actual zoom (same protocol as
+  // urdr-pinch.spec.ts), bringing the active pointers closer to zoom out.
+  await page.evaluate(() => {
+    document.addEventListener("pointerdown", (event) => {
+      if (event.pointerType !== "touch") return;
+      (event.target as Element).dispatchEvent(
+        new PointerEvent("pointermove", {
+          bubbles: true,
+          pointerId: event.pointerId,
+          pointerType: "touch",
+          clientX: event.clientX - 70,
+          clientY: event.clientY - 70,
+          buttons: 1,
+          isPrimary: event.isPrimary
+        })
+      );
+    });
+  });
+  await page.mouse.move(25, 350);
+  await page.mouse.down();
+  await page.touchscreen.tap(290, 550);
+  await page.mouse.up();
   await expect
     .poll(() =>
       Number(new URL(page.url()).searchParams.get("gsViewport")!.split(",")[3])

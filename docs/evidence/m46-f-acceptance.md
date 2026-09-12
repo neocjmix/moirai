@@ -25,8 +25,7 @@ The original viewport gesture and layout algorithms are unchanged.
 spatial artifact format. Its network harness replaces only the artifact storage
 input and runs the production spatial reader. The browser receives bounded
 responses through its ordinary loader, pans using native pointer input and
-wheel-zooms through the original DOM wheel listener (mobile WebKit has no native
-automation wheel command),
+zooms using the original two-pointer pinch path,
 and must encounter new points without downloading the entity index or semantic
 sidecar. Assertions limit each response to 500 cells and 1 MiB. Response counts,
 bytes, object reads and a mobile screenshot are attached to the CI result.
@@ -65,6 +64,12 @@ the copied mock baseline and actual link-click round trip. The remaining scale
 test started at y=650, inside the bottom dock of its actual 390x664 viewport;
 the trace confirmed no canvas pan. PR #63 moves that input to empty canvas and
 keeps the bounded-loading assertions intact.
+
+The pinned URDR `urdr/apps/web/src/components/graph-shell.tsx` at
+`0267c8fd081ca9a3cd556f8f7319c600248c3760` contains no wheel handler, matching
+the current port. Earlier descriptions of wheel zoom were incorrect. The scale
+test preserves wheel no-op behavior and exercises actual zoom via pinch; no
+wheel feature is added in M4.6. A future wheel interaction is backlog work.
 
 Final F CI, deployed SHA and smoke are pending.
 M5 remains inactive.

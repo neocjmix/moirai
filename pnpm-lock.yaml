@@ -41,6 +41,9 @@ importers:
 
   apps/atropos-web:
     dependencies:
+      '@moirai/graph-presentation':
+        specifier: workspace:*
+        version: link:../../packages/graph-presentation
       '@moirai/graph-query':
         specifier: workspace:*
         version: link:../../packages/graph-query

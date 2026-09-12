@@ -11,7 +11,15 @@ import type {
 function getScopeCompositionMeta(
   scopeKey: string,
   timeLevel: string,
-  levelMeta: StaticViewportLevelMeta,
+  levelMeta: {
+    canons: Record<
+      string,
+      Pick<
+        StaticViewportLevelMeta["canons"][string],
+        "widthHint" | "preferredGap"
+      >
+    >;
+  },
   projectionScopeMetaByKey: ReadonlyMap<string, StaticProjectionScopeMeta>
 ) {
   const projectionLevelMeta =
@@ -37,7 +45,15 @@ function getScopeCompositionMeta(
 export function composeCanonOffsets(
   canonIds: string[],
   timeLevel: string,
-  levelMeta: StaticViewportLevelMeta,
+  levelMeta: {
+    canons: Record<
+      string,
+      Pick<
+        StaticViewportLevelMeta["canons"][string],
+        "widthHint" | "preferredGap"
+      >
+    >;
+  },
   projectionScopeMetaByKey: ReadonlyMap<string, StaticProjectionScopeMeta>
 ) {
   const offsets = new Map<string, number>();

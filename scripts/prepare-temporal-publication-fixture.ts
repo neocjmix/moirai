@@ -1,3 +1,5 @@
+import { buildSpatialArtifacts } from "../packages/graph-presentation/src/artifacts.js";
+import { queryFromPublicationDocuments } from "../packages/graph-query/src/index.js";
 /** CI-only publication fixture. This is not evidence of a live Clotho commit. */
 import { readFile, mkdir, writeFile } from "node:fs/promises";
 import { resolve } from "node:path";
@@ -92,7 +94,13 @@ const root = resolve(
   process.env.LOCAL_PUBLICATION_FIXTURE_DIR ??
     "/tmp/moirai-temporal-publication-fixture"
 );
+const spatial = buildSpatialArtifacts(
+  queryFromPublicationDocuments(artifacts.manifestBody, artifacts.documents)!,
+  artifacts.manifestBody
+);
 for (const item of [
+  ...spatial.documents,
+  { key: spatial.manifestKey, body: spatial.manifestBody },
   ...artifacts.documents,
   { key: artifacts.manifestKey, body: artifacts.manifestBody },
   { key: currentKey(view.world.id), body: JSON.stringify(artifacts.pointer) }

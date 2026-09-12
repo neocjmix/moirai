@@ -1,5 +1,5 @@
 import { presentationScopeKey } from "@moirai/graph-presentation";
-import type { MoiraiGraphSource } from "@moirai/contracts";
+import type { MoiraiGraphSource, MoiraiGraphUrlState } from "@moirai/contracts";
 import {
   graphShellViewportResponseSchema,
   type GraphShellWorkspaceShell
@@ -8,6 +8,7 @@ import type { GraphReadLoader } from "./graph-read-loader";
 /** Browser seam: geometry comes only from the bounded revision-pinned reader. */
 export function createMoiraiGraphReadLoader(input: {
   sources: readonly MoiraiGraphSource[];
+  state?: MoiraiGraphUrlState;
   workspace: GraphShellWorkspaceShell;
   loadEventDetail: GraphReadLoader["loadEventDetail"];
   maxEntities?: number;
@@ -23,6 +24,7 @@ export function createMoiraiGraphReadLoader(input: {
         headers: { "content-type": "application/json" },
         body: JSON.stringify({
           sources: input.sources,
+          state: input.state,
           viewport,
           maxEntities: input.maxEntities ?? 1000
         })

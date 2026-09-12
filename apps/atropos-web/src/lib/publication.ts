@@ -156,6 +156,41 @@ export async function selectPublication(
   return { pointer, manifest };
 }
 
+/** Historical stable detail selection keeps current status metadata distinct from served content. */
+export async function selectPublicationRevision(
+  worldId: string,
+  revision: number
+) {
+  assertPublicId(worldId);
+  if (!Number.isSafeInteger(revision) || revision < 1)
+    throw Error("invalid_publication_revision");
+  const current = await selectPublication(worldId);
+  if (current.pointer.served_revision === revision) return current;
+  const key = `worlds/${worldId}/revisions/${revision}/manifest.json`;
+  const manifest = await readJson<PublicationManifest>(key);
+  if (
+    manifest.world_id !== worldId ||
+    manifest.served_revision !== revision ||
+    manifest.completeness !== "complete" ||
+    ![
+      PUBLICATION_FORMAT_VERSION,
+      EVENT_MEMBERSHIP_PUBLICATION_FORMAT_VERSION,
+      LEGACY_PUBLICATION_FORMAT_VERSION
+    ].includes(manifest.format_version)
+  )
+    throw Error("historical_publication_mismatch");
+  return {
+    manifest,
+    pointer: {
+      ...current.pointer,
+      served_revision: revision,
+      manifest_key: key,
+      format_version: manifest.format_version,
+      generated_at: manifest.generated_at
+    }
+  };
+}
+
 export type SelectedPublication = Awaited<ReturnType<typeof selectPublication>>;
 
 export async function readWorld(

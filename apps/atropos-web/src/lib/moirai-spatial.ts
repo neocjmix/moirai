@@ -28,7 +28,8 @@ export const spatialRequestSchema = z
       viewportWidth: z.number().positive().finite(),
       viewportHeight: z.number().positive().finite()
     }),
-    maxEntities: z.number().int().positive().max(2500).optional()
+    maxEntities: z.number().int().positive().max(2500).optional(),
+    state: z.unknown().optional()
   })
   .superRefine((value, ctx) => {
     if (

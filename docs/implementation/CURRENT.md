@@ -7,9 +7,9 @@ read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한�
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [M4.6 — URDR graph pipeline 위의 Moirai data](M4.6-URDR-GRAPH-MOIRAI-DATA.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `active` — M4.6-A/B 병합; 사용자 결정으로 기존 결함은 backlog #57로 이관하고 C 재개 |
+| 실행 상태                  | `active` — M4.6-A~D 완료; 기존 결함은 backlog #57로 유지하고 E 진행 |
 | 활성 milestone             | M4.6 — URDR graph pipeline 위의 Moirai data; M5 비활성                                                                          |
-| 현재 slice                 | M4.6-D — revision 고정 spatial reader 구현 중. C 대상 World 발행·동일 SHA 배포·CI·smoke 완료; 구버전 입력 보완 PR #58. runtime loader는 아직 MOCK |
+| 현재 slice                 | M4.6-E — 실제 Publication viewport·query·상세·fallback 연결 및 검증 중. D merge `1cf4974`, CI `34694228978`, smoke `34694342963` 및 Railway 세 서비스 동일 SHA 확인 |
 | M4.6-B checkpoint          | PR #55 merge `ad00da4ee10d55f8b948ba5fe3a2b737a15a570a`; PR/main CI `34683566545`/`34683671696`, smoke `34683794046` success; stable identity·Canon별 instance·lossless sidecar |
 | M4.6-A checkpoint          | PR #54 merge `2427b9b14c448abd0c889e576d05c353eb462b14`; CI `34683157095`, smoke `34683255320` success; spatial/gesture 16개 및 WebKit screenshot 검증 |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |

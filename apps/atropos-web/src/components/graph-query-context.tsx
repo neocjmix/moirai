@@ -58,15 +58,30 @@ export function GraphQueryProvider({
   diagnostics: readonly GraphDiagnostic[];
   result: MoiraiGraphQueryResult;
 }>) {
-  const [state, setState] = useState(initialState);
+  const [state, setLocalState] = useState(initialState);
   const router = useRouter();
   const setSourceState = useCallback<
     Dispatch<SetStateAction<MoiraiGraphUrlState>>
   >(
     (update) => {
       const next = typeof update === "function" ? update(state) : update;
-      setState(next);
-      const nextSearch = buildGraphUrlSearch(window.location.search, next);
+      setLocalState(next);
+      if (JSON.stringify(next.query) === JSON.stringify(state.query)) return;
+      const base = new URLSearchParams(window.location.search);
+      if (
+        JSON.stringify(next.query.sources) !==
+        JSON.stringify(state.query.sources)
+      ) {
+        for (const name of [
+          "gsViewport",
+          "gsEvent",
+          "gsStage",
+          "gsCanons",
+          "gsTimeline"
+        ])
+          base.delete(name);
+      }
+      const nextSearch = buildGraphUrlSearch(base.toString(), next);
       router.replace(
         `${window.location.pathname}${nextSearch}${window.location.hash}`,
         { scroll: false }
@@ -75,10 +90,11 @@ export function GraphQueryProvider({
     [router, state]
   );
 
-  useEffect(() => setState(initialState), [initialState]);
+  const setState = setSourceState;
+  useEffect(() => setLocalState(initialState), [initialState]);
 
   const restoreFromLocation = useCallback(() => {
-    setState(
+    setLocalState(
       parseGraphUrlState(window.location.search, catalog) ??
         createDefaultGraphUrlState(catalog)
     );

@@ -28,3 +28,17 @@ baseline fixture until query, inspector and fallback are switched together in E.
 No original renderer, gesture or force-layout algorithm is changed in this slice.
 
 Validation and deployment IDs are recorded after CI and production verification.
+
+## Verified checkpoint
+
+PR #59 head `901b013f79c6393e3e3bfde02137bbe45518a2e4` passed CI
+`34694094581`, including PostgreSQL, production build, audit and mobile WebKit.
+Merge `1cf4974a952d27b0482d7ac315e80a792ca97c92` is successful on all three
+Railway services and matches public `/__status`.
+
+Public POST for Graph Scope Observatory revision 4 returns HTTP 200, an exact
+one-World revision vector, one spatial object (8,863 response bytes), and the real
+`Signal detected` point. The repeated request records a cache hit. Three unplaced
+Events and original non-drawable Composite diagnostics are explicit. E must keep
+these Events and their Relations reachable as lossless semantic detail; this check
+does not assert that absent geometry is absent knowledge.

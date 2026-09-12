@@ -128,8 +128,25 @@ test("100k artifacts stay bounded while the original browser viewport pans and z
   await expect
     .poll(() => observed.some((r) => Math.abs(r.minY - first.minY) > 100))
     .toBe(true);
-  await page.mouse.move(195, 450);
-  await page.mouse.wheel(0, 1200);
+  // Mobile WebKit does not expose a native automation wheel command.
+  // Dispatch a wheel input through the original DOM listener instead.
+  const beforeZoom = new URL(page.url()).searchParams
+    .get("gsViewport")!
+    .split(",")
+    .map(Number);
+  await page.getByTestId("graph-stage").dispatchEvent("wheel", {
+    clientX: 195,
+    clientY: 450,
+    deltaY: 1200,
+    deltaMode: 0,
+    bubbles: true,
+    cancelable: true
+  });
+  await expect
+    .poll(() =>
+      Number(new URL(page.url()).searchParams.get("gsViewport")!.split(",")[3])
+    )
+    .toBeGreaterThan(beforeZoom[3]!);
   await expect.poll(() => observed.length).toBeGreaterThan(2);
   expect(observed.every((r) => r.count <= 500 && r.bytes <= 1024 * 1024)).toBe(
     true

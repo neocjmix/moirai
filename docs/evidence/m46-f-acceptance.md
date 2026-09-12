@@ -24,7 +24,9 @@ The original viewport gesture and layout algorithms are unchanged.
 `moirai-scale.spec.ts` bakes 100,000 synthetic precomputed points into the original
 spatial artifact format. Its network harness replaces only the artifact storage
 input and runs the production spatial reader. The browser receives bounded
-responses through its ordinary loader, pans and wheel-zooms using native inputs,
+responses through its ordinary loader, pans using native pointer input and
+wheel-zooms through the original DOM wheel listener (mobile WebKit has no native
+automation wheel command),
 and must encounter new points without downloading the entity index or semantic
 sidecar. Assertions limit each response to 500 cells and 1 MiB. Response counts,
 bytes, object reads and a mobile screenshot are attached to the CI result.
@@ -57,6 +59,12 @@ The first F CI stopped before browser execution because the ESM test runner
 could not resolve a directory import in the production reader. PR #62 makes
 that import an explicit index path. Local test discovery and all six reader
 tests, including the distant 100k viewport, pass.
+
+CI `34701104182` passed 12 of 13 WebKit checks, including active-pointer pinch,
+the copied mock baseline and actual link-click round trip. The remaining scale
+test started at y=650, inside the bottom dock of its actual 390x664 viewport;
+the trace confirmed no canvas pan. PR #63 moves that input to empty canvas and
+keeps the bounded-loading assertions intact.
 
 Final F CI, deployed SHA and smoke are pending.
 M5 remains inactive.

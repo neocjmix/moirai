@@ -1708,7 +1708,7 @@ function renderMarkdownInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (linkLabel && linkHref) {
       nodes.push(
-        <a href={linkHref} key={tokenKey} rel="noreferrer" target={linkHref.startsWith("/worlds/") ? "_self" : "_blank"}>
+        <a href={linkHref} key={tokenKey} rel="noreferrer" target={linkHref.startsWith("/worlds/") ? "_self" : "_blank"} onPointerDown={linkHref.startsWith("/worlds/") ? (event) => event.stopPropagation() : undefined}>
           {linkLabel}
         </a>,
       );

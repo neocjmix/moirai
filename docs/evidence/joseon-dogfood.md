@@ -19,6 +19,11 @@
 입력 원본: `docs/implementation/fixtures/joseon-dogfood.change-plan.json`.
 자동 seed 또는 startup hook이 아니며 실행 자체는 파일 생성과 로컬 검증만 한다.
 
+`scripts/post-deploy-smoke.ts`의 production 읽기 검증도 새 Canon revision 1과
+Gregorian frame으로 전환한다. Event 40·Relation 124, Canon membership, 황산대첩과
+건국 사건 및 연도 하한 Relation을 확인한다. 이전 겹치는 Canon 사례는 격리된 CI
+테스트에 유지하며 삭제된 production 샘플을 다시 만들지 않는다.
+
 ## 삭제 대상
 
 | World | ID | 이전 revision | 발행 object 수 |

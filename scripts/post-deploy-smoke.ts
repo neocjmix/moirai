@@ -27,6 +27,7 @@ interface GraphQueryPayload {
     }[];
     readonly relations: readonly {
       id: string;
+      type: string;
       matched_canon_ids: readonly string[];
     }[];
     readonly completeness: string;
@@ -35,11 +36,18 @@ interface GraphQueryPayload {
 }
 
 const graphWorldId = "01995c2a-7b00-7000-8000-000000000101";
-const graphK1 = "019f3b10-0000-7000-8000-000000000811";
-const graphK2 = "019f3b10-0000-7000-8000-000000000812";
-const graphEventA = "019f3b10-0000-7000-8000-000000000821";
-const graphEventB = "019f3b10-0000-7000-8000-000000000822";
-const graphSharedRelation = "019f3b20-0000-7000-8000-000000000911";
+// Current public dogfood corpus. Overlapping-Canon acceptance stays in isolated CI.
+const graphCanon = "019f5b00-0000-7000-8000-000000000002";
+const graphTimeSystem = "019f5b00-0000-7000-8000-000000000003";
+const graphEventA = "019f5b00-0000-7000-8000-000000000100";
+const graphEventB = "019f5b00-0000-7000-8000-000000000104";
+const graphTimeBound = "019f5b00-0000-7000-8000-000000001001";
+const gregorianFrame = {
+  time_system_id: graphTimeSystem,
+  definition_version: "1",
+  adapter_identity: "yyyy-iso-fields-fraction12-z-v1",
+  comparison_domain: "yyyy-iso-fields-fraction12-z-v1"
+};
 
 const baseUrl = process.env.PUBLIC_INTEGRATION_URL;
 const expectedSha = process.env.EXPECTED_COMMIT_SHA;
@@ -65,19 +73,14 @@ async function fetchGraphQuery(): Promise<GraphQueryPayload> {
     body: JSON.stringify({
       contract_version: 1,
       temporal_frame: {
-        target: {
-          time_system_id: "frame:publication-native",
-          definition_version: "1",
-          adapter_identity: "publication-native",
-          comparison_domain: "publication-artifact"
-        }
+        target: gregorianFrame
       },
       sources: [
         {
           world_id: graphWorldId,
-          served_revision: 4,
-          canon_ids: [graphK1, graphK2],
-          time_systems: []
+          served_revision: 1,
+          canon_ids: [graphCanon],
+          time_systems: [gregorianFrame]
         }
       ],
       scope: { kind: "overview" },
@@ -137,8 +140,8 @@ async function verify(): Promise<void> {
     fetchGraphQuery()
   ]);
   const eventIds = graph.result.events.map((event) => event.id);
-  const sharedRelations = graph.result.relations.filter(
-    (relation) => relation.id === graphSharedRelation
+  const timeBounds = graph.result.relations.filter(
+    (relation) => relation.id === graphTimeBound
   );
   if (
     health.status !== "ok" ||
@@ -152,12 +155,20 @@ async function verify(): Promise<void> {
     !landing.ok ||
     graph.result.completeness !== "complete" ||
     graph.result.revision_vector.length !== 1 ||
-    graph.result.revision_vector[0]?.served_revision !== 4 ||
+    graph.result.revision_vector[0]?.world_id !== graphWorldId ||
+    graph.result.revision_vector[0]?.served_revision !== 1 ||
+    eventIds.length !== 40 ||
+    graph.result.relations.length !== 124 ||
+    graph.result.events.some(
+      (event) => event.matched_canon_ids.join(",") !== graphCanon
+    ) ||
+    graph.result.relations.some(
+      (relation) => relation.matched_canon_ids.join(",") !== graphCanon
+    ) ||
     eventIds.filter((id) => id === graphEventA).length !== 1 ||
     eventIds.filter((id) => id === graphEventB).length !== 1 ||
-    sharedRelations.length !== 1 ||
-    sharedRelations[0]?.matched_canon_ids.join(",") !==
-      [graphK1, graphK2].join(",") ||
+    timeBounds.length !== 1 ||
+    timeBounds[0]?.type !== "not_after" ||
     !/^[0-9a-f]{64}$/.test(graph.semantic_digest)
   ) {
     throw new Error("Atropos deployment does not match the expected build");

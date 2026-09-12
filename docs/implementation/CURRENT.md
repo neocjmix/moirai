@@ -7,9 +7,10 @@ read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한�
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [M4.6 — URDR graph pipeline 위의 Moirai data](M4.6-URDR-GRAPH-MOIRAI-DATA.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `active` — M4.6 계획 승인; runtime 구현 전 기준선·규범 정렬                                                                    |
+| 실행 상태                  | `active` — M4.6-A 기준선 완료; B presentation 입력 구현·검증 중 |
 | 활성 milestone             | M4.6 — URDR graph pipeline 위의 Moirai data; M5 비활성                                                                          |
-| 현재 slice                 | M4.6-A — 규범 정렬·spatial/gesture characterization 16개 구현; mobile CI 검증 중, runtime 미변경 |
+| 현재 slice                 | M4.6-B — stable identity·Canon별 instance·semantic sidecar; runtime loader는 아직 MOCK |
+| M4.6-A checkpoint          | PR #54 merge `2427b9b14c448abd0c889e576d05c353eb462b14`; CI `34683157095`, smoke `34683255320` success; spatial/gesture 16개 및 WebKit screenshot 검증 |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
 | M4.6 runtime 기준선        | `dcad5305aadc8d0181e2b6ff33701385310ebb70`; Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 renderer·layout·interaction·spatial read 계승 |
@@ -106,7 +107,8 @@ Publication entity는 query island와 server-rendered fallback에서 계속 관�
 이후 사용자는 남은 M4.5 계획 전체를 폐기하고 M4.6을 승인했다. M4.6은 고정 URDR commit의
 renderer뿐 아니라 temporal-Y/free-X force layout, Composite geometry, viewport bbox와
 y-band spatial read까지 보존하고 그 입력만 Moirai Publication으로 교체한다. 현재 M4.6-A는
-문서·characterization 단계이며 runtime은 아직 목 fixture 기준선이다. M5는 시작하지 않았다.
+문서·characterization은 A에서 완료했다. B의 presentation 입력을 구현 중이며 runtime은
+아직 목 fixture 기준선이다. M5는 시작하지 않았다.
 
 ## 시간 모델 재정렬 Slice 0
 

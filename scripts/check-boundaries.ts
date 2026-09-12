@@ -24,12 +24,17 @@ function target(from: string, spec: string): string {
   return spec;
 }
 function forbidden(from: string, to: string): boolean {
+  if (/^packages\/(contracts|domain|projections|publication)\//.test(from))
+    return (
+      to.includes("urdr-port") ||
+      to.startsWith("@urdr/") ||
+      to.startsWith("packages/graph-presentation/")
+    );
   if (
     from.startsWith("apps/atropos-web/src/") &&
     !from.startsWith("apps/atropos-web/src/urdr-port/")
   )
     return to.startsWith("@urdr/");
-  if (from.startsWith("packages/contracts/")) return to.includes("urdr-port");
   if (from.startsWith("packages/clotho-application/"))
     return (
       /^(packages\/(persistence|publication)|apps\/|skills\/|fastify|jose|@modelcontextprotocol|pg(?:\/|$)|kysely)/.test(
@@ -104,6 +109,9 @@ for (const dir of [
   "apps/clotho-api/src",
   "apps/atropos-web/src",
   "packages/contracts/src",
+  "packages/domain/src",
+  "packages/projections/src",
+  "packages/publication/src",
   "packages/clotho-application/src",
   "packages/lachesis/src"
 ])

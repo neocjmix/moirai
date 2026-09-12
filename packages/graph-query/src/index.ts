@@ -778,3 +778,10 @@ export {
   fullPublicationQuery,
   queryFromPublicationDocuments
 } from "./publication-input.js";
+
+export {
+  normalizePublicEvent,
+  normalizePublicRelation,
+  type LegacyPublicEvent,
+  type LegacyPublicRelation
+} from "./legacy-publication.js";

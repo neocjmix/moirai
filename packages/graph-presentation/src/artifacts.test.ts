@@ -200,6 +200,39 @@ describe("M4.6-C Publication spatial producer", () => {
       at.coordinate
     );
   });
+  it("backfills legacy Publication memberships through the same read normalization as Atropos", () => {
+    const { artifacts, result } = fixture();
+    const legacy = (row: Record<string, unknown>) => {
+      const value: Record<string, unknown> = {
+        ...row,
+        canon_id: (row.canon_memberships as string[])[0]
+      };
+      delete value.world_id;
+      delete value.canon_memberships;
+      return value;
+    };
+    const documents = artifacts.documents.map((document) => {
+      const value = JSON.parse(document.body);
+      if (document.key.includes("/canons/") && value.events) {
+        value.events = value.events.map(legacy);
+        delete value.subject_artifacts;
+      }
+      if (document.key.endsWith("/temporal.json"))
+        value.relations = value.relations.map(legacy);
+      return { ...document, body: JSON.stringify(value) };
+    });
+    const before = JSON.stringify(documents);
+    const normalized = queryFromPublicationDocuments(
+      artifacts.manifestBody,
+      documents
+    )!;
+    expect(normalized.events).toEqual(result.events);
+    expect(normalized.relations).toEqual(result.relations);
+    expect(JSON.stringify(documents)).toBe(before);
+    expect(() =>
+      buildSpatialArtifacts(normalized, artifacts.manifestBody)
+    ).not.toThrow();
+  });
   it("creates byte-stable versioned docs without mutating the Publication or lossless sidecar", () => {
     const { artifacts, result } = fixture();
     const before = JSON.stringify({ artifacts, result });

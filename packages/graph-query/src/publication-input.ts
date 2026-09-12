@@ -1,3 +1,7 @@
+import {
+  normalizePublicEvent,
+  normalizePublicRelation
+} from "./legacy-publication.js";
 import type {
   PublicCanon,
   PublicEvent,
@@ -59,14 +63,24 @@ export function publicationSnapshots(
         worldId: manifest.world_id,
         servedRevision: manifest.served_revision,
         canon: doc.canon,
-        events: doc.events,
-        narratives: doc.narratives,
-        timeSystems: doc.time_systems,
-        temporal: read<PublicRelationalTemporalProjection>(
-          doc.temporal_artifact.key
+        events: doc.events.map((event) =>
+          normalizePublicEvent(event, manifest.world_id)
         ),
+        narratives: doc.narratives,
+        timeSystems: doc.time_systems ?? [],
+        temporal: (() => {
+          const temporal = read<PublicRelationalTemporalProjection>(
+            doc.temporal_artifact.key
+          );
+          return {
+            ...temporal,
+            relations: temporal.relations.map((relation) =>
+              normalizePublicRelation(relation, manifest.world_id)
+            )
+          };
+        })(),
         graphScope: null,
-        subjects: doc.subject_artifacts.map((s) =>
+        subjects: (doc.subject_artifacts ?? []).map((s) =>
           read<PublicSubjectHandleDocument>(s.key)
         ),
         manifest

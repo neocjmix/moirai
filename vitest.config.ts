@@ -7,6 +7,12 @@ export default defineConfig({
       "@moirai/graph-query": fileURLToPath(
         new URL("./packages/graph-query/src/index.ts", import.meta.url)
       ),
+      "@moirai/graph-presentation/server": fileURLToPath(
+        new URL(
+          "./packages/graph-presentation/src/artifacts.ts",
+          import.meta.url
+        )
+      ),
       "@moirai/graph-presentation": fileURLToPath(
         new URL("./packages/graph-presentation/src/index.ts", import.meta.url)
       ),

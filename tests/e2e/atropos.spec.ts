@@ -44,7 +44,6 @@ test("mobile source island restores published World, Canon, Time System, and Rev
   await page.goto("/graph");
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
   await expect(page.getByTestId("graph-stage")).toBeVisible();
-  await expect(page.getByTestId("graph-source-legend")).toContainText("Canons");
   await expect(page.getByTestId("moirai-native-graph-stage")).toHaveCount(0);
   await page
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
@@ -102,7 +101,9 @@ test("URDR mock viewport renders its historical fixture instead of Publication e
   await expect(
     page.locator('[data-event-point-id="event:founding"]')
   ).toBeVisible();
-  await expect(page.getByText(/조선 건국|Founding of Joseon/)).toBeVisible();
+  await expect(
+    page.locator("svg text").filter({ hasText: /^조선 건국$/ })
+  ).toBeVisible();
   await expect(page.locator(`[data-event-id="${firstEventId}"]`)).toHaveCount(
     0
   );

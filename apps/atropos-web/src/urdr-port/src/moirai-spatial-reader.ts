@@ -173,6 +173,42 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
       throw Error("spatial_path_mismatch");
     return meta;
   }
+  async function initialPoint(
+    source: SpatialSource
+  ): Promise<{ x: number; y: number } | null> {
+    const meta = await scope(source);
+    const ref = meta.objects.find(
+      (o) => o.artifactClass === "point" && o.count > 0
+    );
+    if (!ref) return null;
+    const doc = await json<{
+      scopeKey: string;
+      revisionId: string;
+      timeLevel: string;
+      yBand: string;
+      artifactClass: string;
+      artifacts: { payload: unknown }[];
+    }>(ref.key, ref.sha256);
+    if (
+      doc.scopeKey !== meta.scopeId ||
+      doc.revisionId !== String(source.served_revision) ||
+      doc.timeLevel !== "full" ||
+      doc.artifactClass !== "point" ||
+      doc.yBand !== ref.yBand
+    )
+      throw Error("spatial_object_mismatch");
+    const payloads = doc.artifacts.map((a) =>
+      graphShellChartPlaneEntitySchema.parse(a.payload)
+    );
+    const point =
+      payloads.find(
+        (e) => e.geometryKind === "point" && e.id.startsWith("m_event_")
+      ) ?? payloads.find((e) => e.geometryKind === "point");
+    if (!point || point.geometryKind !== "point") return null;
+    if (point.canonId !== meta.scopeId)
+      throw Error("spatial_entity_scope_mismatch");
+    return point.position;
+  }
   async function sidecar(
     source: SpatialSource
   ): Promise<MoiraiGraphQueryResult> {
@@ -495,6 +531,7 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
   }
   return {
     scope,
+    initialPoint,
     sidecar,
     viewport,
     reset() {

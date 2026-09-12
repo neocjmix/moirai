@@ -2647,11 +2647,11 @@ export function GraphShell({
   }, [view, viewportSize]);
 
   const chartAnchors = useMemo(() => {
-    if (!workspace.chronologyBoard || viewportSize.width <= 0 || viewportSize.height <= 0) {
+    if (viewportSize.width <= 0 || viewportSize.height <= 0) {
       return [] as AnchorLine[];
     }
 
-    const centerYear = (workspace.chronologyBoard.axis.startYear + workspace.chronologyBoard.axis.endYear) / 2;
+    const centerYear = workspace.chronologyBoard ? (workspace.chronologyBoard.axis.startYear + workspace.chronologyBoard.axis.endYear) / 2 : null;
     const anchorStep = pickGregorianAxisStep(view.scaleY);
 
     return visibleChartPlaneEntities
@@ -2663,7 +2663,7 @@ export function GraphShell({
       .filter((entity): entity is Extract<GraphShellChartPlaneEntity, { geometryKind: "point" }> => entity.geometryKind === "point")
       .map((entity) => ({
         id: entity.id,
-        label: formatAnchorLabel(worldYToGregorianDate(centerYear, entity.position.y), anchorStep),
+        label: centerYear === null ? entity.label : formatAnchorLabel(worldYToGregorianDate(centerYear, entity.position.y), anchorStep),
         y: viewportSize.height / 2 + view.y + entity.position.y * view.scaleY
       }))
       .filter((anchor) => anchor.y >= -24 && anchor.y <= viewportSize.height + 24)

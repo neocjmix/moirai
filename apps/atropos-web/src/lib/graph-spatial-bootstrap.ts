@@ -31,12 +31,14 @@ export async function graphSpatialBootstrap(
   );
   let offset = 0;
   let center: GraphSpatialBootstrap["center"] = null;
-  for (const meta of metas) {
-    if (!center && meta?.bounds && meta.entityCount)
-      center = {
-        x: offset + (meta.bounds.minX + meta.bounds.maxX) / 2,
-        y: (meta.bounds.minY + meta.bounds.maxY) / 2
-      };
+  for (let i = 0; i < metas.length; i++) {
+    const meta = metas[i];
+    if (!center && meta?.entityCount) {
+      const point = await moiraiSpatialReader
+        .initialPoint(sources[i]!)
+        .catch(() => null);
+      if (point) center = { x: offset + point.x, y: point.y };
+    }
     offset += (meta?.widthHint ?? 1800) + 240;
   }
   const workspace: GraphShellWorkspaceShell = {

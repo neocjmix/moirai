@@ -26,6 +26,7 @@ import {
 import { createDefaultGraphUrlState } from "./moirai-graph-source-query";
 import { graphSpatialQueryContext } from "./graph-spatial-query";
 import { graphSpatialDetail } from "./graph-spatial-detail";
+import { moiraiSpatialReader } from "./moirai-spatial";
 import { graphSpatialBootstrap } from "./graph-spatial-bootstrap";
 const k2 = "01995c2a-7b00-7000-8000-000000000020";
 const view: CanonicalRevisionView = {
@@ -147,6 +148,25 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
     const boot = await graphSpatialBootstrap(state, loaded.catalog);
     expect(boot.workspace.canons).toHaveLength(2);
     expect(boot.center).not.toBeNull();
+    const visible = await moiraiSpatialReader.viewport({
+      sources: state.query.sources,
+      viewport: {
+        canonIds: boot.workspace.canons.map((c) => c.id),
+        bbox: {
+          minX: boot.center!.x - 1,
+          maxX: boot.center!.x + 1,
+          minY: boot.center!.y - 1,
+          maxY: boot.center!.y + 1
+        },
+        scale: 1,
+        viewportWidth: 390,
+        viewportHeight: 844,
+        includeNeighbors: false
+      }
+    });
+    expect(
+      visible.viewport.entities.some((e) => e.id.startsWith("m_event_"))
+    ).toBe(true);
   });
   it("applies semantic filters without capping spatial exploration to the initial query budget", async () => {
     const loaded = await loadGraphPublicationSources([

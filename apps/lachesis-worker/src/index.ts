@@ -13,6 +13,10 @@ import {
   S3ObjectStore
 } from "@moirai/publication";
 import { createServer } from "node:http";
+import {
+  publishPresentation,
+  backfillPresentation
+} from "./spatial-publication.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required");
@@ -48,6 +52,11 @@ async function processNextJob(): Promise<boolean> {
       subjects
     );
     const servedRevision = await publishArtifacts(publicationStore, artifacts);
+    await publishPresentation(
+      publicationStore,
+      artifacts.manifestBody,
+      artifacts.documents
+    );
     await completePublicationJob(database, job, servedRevision);
     process.stdout.write(
       JSON.stringify({
@@ -84,6 +93,18 @@ async function processNextJob(): Promise<boolean> {
 }
 
 async function workerLoop(): Promise<void> {
+  try {
+    await backfillPresentation(publicationStore);
+  } catch {
+    process.stderr.write(
+      JSON.stringify({
+        level: "error",
+        service: "lachesis-worker",
+        operation: "spatial_backfill",
+        result_code: "backfill_failed"
+      }) + "\n"
+    );
+  }
   while (!stopping) {
     const processed = await processNextJob();
     if (!processed) await new Promise((resolve) => setTimeout(resolve, 1_000));

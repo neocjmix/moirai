@@ -4,6 +4,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@moirai/graph-query": fileURLToPath(
+        new URL("./packages/graph-query/src/index.ts", import.meta.url)
+      ),
+      "@moirai/graph-presentation": fileURLToPath(
+        new URL("./packages/graph-presentation/src/index.ts", import.meta.url)
+      ),
       "@moirai/lachesis/database": fileURLToPath(
         new URL("./packages/lachesis/src/database.ts", import.meta.url)
       ),

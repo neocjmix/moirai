@@ -11,7 +11,9 @@
   "dependencies": {
     "@moirai/contracts": "workspace:*",
     "@moirai/persistence": "workspace:*",
-    "@moirai/publication": "workspace:*"
+    "@moirai/publication": "workspace:*",
+    "@moirai/graph-query": "workspace:*",
+    "@moirai/graph-presentation": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.0"

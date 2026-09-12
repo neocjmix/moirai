@@ -7,9 +7,10 @@ read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한�
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [M4.6 — URDR graph pipeline 위의 Moirai data](M4.6-URDR-GRAPH-MOIRAI-DATA.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `active` — M4.6-A 기준선 완료; B presentation 입력 구현·검증 중 |
+| 실행 상태                  | `active` — M4.6-A/B 병합; 사용자 결정으로 기존 결함은 backlog #57로 이관하고 C 재개 |
 | 활성 milestone             | M4.6 — URDR graph pipeline 위의 Moirai data; M5 비활성                                                                          |
-| 현재 slice                 | M4.6-B — stable identity·Canon별 instance·semantic sidecar; runtime loader는 아직 MOCK |
+| 현재 slice                 | M4.6-C — [원본 producer·immutable artifact 구현](evidence/m46-c-producer.md), CI·배포 검증 중. 결함은 backlog #57. runtime loader는 아직 MOCK |
+| M4.6-B checkpoint          | PR #55 merge `ad00da4ee10d55f8b948ba5fe3a2b737a15a570a`; PR/main CI `34683566545`/`34683671696`, smoke `34683794046` success; stable identity·Canon별 instance·lossless sidecar |
 | M4.6-A checkpoint          | PR #54 merge `2427b9b14c448abd0c889e576d05c353eb462b14`; CI `34683157095`, smoke `34683255320` success; spatial/gesture 16개 및 WebKit screenshot 검증 |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |

@@ -109,6 +109,97 @@ describe("M4.6-C Publication spatial producer", () => {
       );
     }
   });
+  it("converts the Gregorian adapter's picoseconds to finite display years", () => {
+    const { result } = fixture();
+    const identity = {
+      time_system_id: "t",
+      definition_version: "1",
+      adapter_identity: "gregorian",
+      comparison_domain: "gregorian"
+    };
+    const at = {
+      kind: "time_event" as const,
+      time_system_ref: { time_system_id: "t" },
+      definition_version: "1",
+      coordinate: "2004-01-01T00:00:00.000000000000Z"
+    };
+    const dated = {
+      ...result,
+      query: {
+        ...result.query,
+        temporal_frame: { target: identity },
+        sources: result.query.sources.map((source) => ({
+          ...source,
+          time_systems: [identity]
+        }))
+      },
+      time_systems: [
+        {
+          world_id: "w",
+          served_revision: 4,
+          identity,
+          definition: {
+            coordinate_codec: "yyyy-iso-fields-fraction12-z-v1",
+            calendar: "proleptic-gregorian",
+            timezone: "UTC",
+            fractional_digits: 12,
+            leap_second_policy: "reject",
+            interval_policy: "half-open",
+            capabilities: [
+              "canonicalize",
+              "equality",
+              "compare",
+              "boundary",
+              "difference"
+            ]
+          },
+          capabilities: []
+        }
+      ],
+      virtual_time_events: [
+        {
+          world_id: "w",
+          served_revision: 4,
+          canon_id: "k",
+          id: "anchor",
+          persisted: false as const,
+          reference: at,
+          evidence_ids: ["dated"]
+        }
+      ],
+      relations: [
+        ...result.relations,
+        {
+          world_id: "w",
+          served_revision: 4,
+          canon_memberships: ["k"],
+          matched_canon_ids: ["k"],
+          id: "dated",
+          type: "coincides" as const,
+          direction: "undirected" as const,
+          source_ref: { kind: "event" as const, event_id: "a" },
+          target_ref: at,
+          attributes: {},
+          evidence_ids: ["dated"]
+        }
+      ]
+    };
+    const input = projectPresentationInput(dated);
+    const scope = input.scopes[0]!;
+    const layout = layoutPresentationScope(input, scope);
+    const id = scope.nodes.find(
+      (n) => n.reference.kind === "event" && n.reference.event_id === "a"
+    )!.id;
+    const point = layout.chartPlane.entities.find((e) => e.id === id);
+    expect(point?.geometryKind).toBe("point");
+    if (point?.geometryKind === "point") {
+      expect(point.position.y).toBeGreaterThan(2003 * 140);
+      expect(point.position.y).toBeLessThan(2005 * 140);
+    }
+    expect(input.sidecar.virtual_time_events[0]!.reference.coordinate).toBe(
+      at.coordinate
+    );
+  });
   it("creates byte-stable versioned docs without mutating the Publication or lossless sidecar", () => {
     const { artifacts, result } = fixture();
     const before = JSON.stringify({ artifacts, result });

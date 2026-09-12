@@ -80,7 +80,9 @@ function numericReference(
   const origin = gregorian ? "0000-01-01T00:00:00.000000000000Z" : "0";
   try {
     const difference = adapter.difference(origin, ref.coordinate);
-    const value = Number(difference.value) / (gregorian ? 31_556_952 : 1);
+    if (gregorian && difference.unit !== "picosecond") return null;
+    const value =
+      Number(difference.value) / (gregorian ? 31_556_952 * 1e12 : 1);
     return Number.isFinite(value) ? value : null;
   } catch {
     return null;

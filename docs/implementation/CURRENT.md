@@ -6,7 +6,8 @@
 주요 사건 32개·Composite 8개·Relation 124개다. M5는 계속 비활성이다.
 사용자 승인으로 도그푸딩 backlog를 수정했다: Gregorian 축·사건 설명 복구(PR #69)와
 시간 cluster의 개별 범위·순서 준수(#57). [검증 기록](../evidence/dogfood-backlog.md).
-시간 배치 v2 배포·모바일 검증을 진행 중이며 M5는 활성화하지 않는다.
+완료 runtime `91f2230` — CI `34726121209`, smoke `34726218992` success,
+Railway 세 서비스 배포 및 mobile WebKit 통과. M5는 비활성이다.
 
 세션과 에이전트 사이의 짧은 상태판이다. M4.5-A~G의 데이터·query 작업은 유지한다.
 M4.5-H와 남은 M4.5 계획은 폐기했다. M4.6은 현재 URDR renderer·layout·interaction·spatial

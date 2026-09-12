@@ -70,11 +70,14 @@ transaction으로 진행한다. 스키마·migration·인증 설정은 유지한
 API commit이 차단됐다. 이후 사용자가 대시보드에서 삭제 완료를 확인했다. 다른 자원
 삭제나 인증 변경으로 우회하지 않았다.
 
-## 도그푸딩에서 남은 UI 결함
+## 데이터 교체 당시의 UI 결함 (후속 수정 완료)
+
+후속 [도그푸딩 백로그 수정](dogfood-backlog.md)에서 아래 두 결함을 수정하고 배포했다.
 
 좌측 축이 비어 있는 원인은 Moirai workspace bootstrap에서 `chronologyBoard`를
 전달하지 않는 것이다. Gregorian-compatible 데이터를 넣는 것만으로 해결되지 않는다.
 이번 데이터 교체는 이 renderer 연결 결함을 수정한 것으로 보고하지 않는다.
 
 한국어 Narrative는 정본에 32개 존재하지만 graph inspector의 황산대첩 응답에서
-`narratives=[]`가 관찰됐다. locale 선택/발행 read 연결을 도그푸딩 backlog로 남긴다.
+`narratives=[]`가 관찰됐다. 발행 read 연결을 도그푸딩 backlog로 남겼다. 후속 조사에서 locale 문제가 아니라
+Canon 문서에서 Event Narrative를 찾던 조회 경로 문제로 확인하여 수정했다.

@@ -40,3 +40,18 @@ equality를 함께 검증하고 해결 불가능하면 진단해야 한다. inde
   이전 v1 문서와 정본/Publication revision은 덮어쓰지 않는다.
 - PR #69 (`855367b`) production: 좌측 1377~1383 눈금, 황산대첩의 한국어 본문과
   우리역사넷 링크를 실제 브라우저에서 확인했다.
+
+
+## 완료 증거
+
+- Runtime PR #70: `91f223015224eddc8d512f0ee5678376756a78d8`.
+- [CI 34726121209](https://github.com/neocjmix/moirai/actions/runs/34726121209):
+  typecheck/unit/PostgreSQL/build/audit, secret scan, mobile WebKit 모두 success.
+- [Post-deploy smoke 34726218992](https://github.com/neocjmix/moirai/actions/runs/34726218992): success.
+- Railway Atropos/Clotho/worker가 같은 runtime을 배포했다.
+  worker deployment `4fe67ffb-0270-46cb-9169-95ee91cfd593`에서
+  조선사 World revision 1의 `spatial_backfill: served`를 확인했다.
+- 공개 `/__status` SHA가 위 runtime과 일치한다. 새 v2 graph에서 축, 황산대첩 선택,
+  한국어 본문·출처 및 Revision 1 유지 확인.
+- 세 backlog 완료. M5는 활성화하지 않았다. 임시 삭제 service는 사용자 삭제 완료.
+- Rollback은 이전 application commit으로 가능하며 v1 표시 파일은 보존돼 있다.

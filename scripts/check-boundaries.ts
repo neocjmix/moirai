@@ -24,7 +24,11 @@ function target(from: string, spec: string): string {
   return spec;
 }
 function forbidden(from: string, to: string): boolean {
-  if (/^packages\/(contracts|domain|projections|publication)\//.test(from))
+  if (
+    /^packages\/(contracts|domain|projections|publication|graph-query)\//.test(
+      from
+    )
+  )
     return (
       to.includes("urdr-port") ||
       to.startsWith("@urdr/") ||

@@ -41,6 +41,9 @@ importers:
 
   apps/atropos-web:
     dependencies:
+      '@moirai/graph-query':
+        specifier: workspace:*
+        version: link:../../packages/graph-query
       '@joint/core':
         specifier: ^4.3.3
         version: 4.3.3
@@ -133,6 +136,12 @@ importers:
 
   apps/lachesis-worker:
     dependencies:
+      '@moirai/graph-query':
+        specifier: workspace:*
+        version: link:../../packages/graph-query
+      '@moirai/graph-presentation':
+        specifier: workspace:*
+        version: link:../../packages/graph-presentation
       '@moirai/contracts':
         specifier: workspace:*
         version: link:../../packages/contracts
@@ -182,8 +191,21 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
+  packages/graph-query:
+    dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/graph-presentation:
     dependencies:
+      '@moirai/graph-query':
+        specifier: workspace:*
+        version: link:../graph-query
       '@moirai/contracts':
         specifier: workspace:*
         version: link:../contracts
@@ -191,6 +213,12 @@ importers:
         specifier: workspace:*
         version: link:../domain
     devDependencies:
+      '@moirai/publication':
+        specifier: workspace:*
+        version: link:../publication
+      '@moirai/projections':
+        specifier: workspace:*
+        version: link:../projections
       typescript:
         specifier: ^5.9.0
         version: 5.9.3

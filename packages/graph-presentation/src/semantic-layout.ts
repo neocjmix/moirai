@@ -288,8 +288,8 @@ export function layoutPresentationScope(
     explicitExtents: extents,
     temporalConstraints: layoutConstraints
   });
-  // Fail closed on an unsafe legacy placement, rather than silently rewriting
-  // preserved layout rules. M4.6-C acceptance requires these failures resolved.
+  // User decision: preserve the original placement; track its bounds defect
+  // in backlog #57 and expose it without changing canonical time evidence.
   const unsafe = chartPlane.entities.filter((e) => {
     if (e.geometryKind !== "point") return false;
     const bounds = extents.get(e.eventId);
@@ -301,8 +301,10 @@ export function layoutPresentationScope(
     );
   });
   if (unsafe.length)
-    throw new Error(
-      "m46_layout_outside_semantic_bounds:" + unsafe.map((e) => e.id).join(",")
+    report(
+      "m46_legacy_layout_outside_semantic_bounds",
+      unsafe.map((e) => e.id),
+      "Known URDR display defect (backlog #57): cluster redistribution exceeded an individual temporal interval. Geometry is approximate; canonical bounds remain unchanged in the inspector."
     );
   const drawableIds = new Set(chartPlane.entities.map((e) => e.eventId));
   const unplaced = scope.nodes

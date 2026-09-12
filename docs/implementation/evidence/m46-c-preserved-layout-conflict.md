@@ -1,3 +1,5 @@
+> 2026-09-12 사용자 결정: 기존 결함은 [백로그 #57](https://github.com/neocjmix/moirai/issues/57)로 이관한다. 원본 알고리즘은 유지하고 M4.6을 계속한다. 아래의 중단/별도 결정 요구는 해소됐다. 범위 이탈은 `m46_legacy_layout_outside_semantic_bounds` 진단으로 표시하며 canonical 시간 근거는 보존한다.
+
 # M4.6-C preserved layout conflict
 
 Status: reproduced; C is not accepted or wired into production.

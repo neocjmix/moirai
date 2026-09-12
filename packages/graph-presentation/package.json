@@ -7,6 +7,10 @@
     ".": {
       "types": "./src/index.ts",
       "import": "./dist/index.js"
+    },
+    "./server": {
+      "types": "./src/artifacts.ts",
+      "import": "./dist/artifacts.js"
     }
   },
   "scripts": {
@@ -15,9 +19,12 @@
   },
   "dependencies": {
     "@moirai/contracts": "workspace:*",
-    "@moirai/domain": "workspace:*"
+    "@moirai/domain": "workspace:*",
+    "@moirai/graph-query": "workspace:*"
   },
   "devDependencies": {
-    "typescript": "^5.9.0"
+    "typescript": "^5.9.0",
+    "@moirai/publication": "workspace:*",
+    "@moirai/projections": "workspace:*"
   }
 }

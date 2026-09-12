@@ -79,7 +79,19 @@ const view: CanonicalRevisionView = {
     relation_id: ids.causalRelationId,
     canon_id
   })),
-  narratives: []
+  narratives: [ids.canonId, k2].map((canon_id, i) => ({
+    id: `01995c2a-7b00-7000-8000-00000000003${i}`,
+    canon_id,
+    scope_type: "event" as const,
+    scope_id: ids.eventId,
+    locale: "ko",
+    kind: "primary" as const,
+    title: "사건 설명",
+    body: i === 0 ? "선택한 Canon의 한국어 설명" : "다른 Canon의 설명",
+    public_references: [
+      { label: "역사 자료", url: "https://example.org/history" }
+    ]
+  }))
 };
 beforeAll(() => {
   for (const rev of [4, 5]) {
@@ -120,6 +132,42 @@ beforeAll(() => {
   }
 });
 describe("M4.6-E one revision across query, spatial and detail", () => {
+  it("reads Korean Event narratives and sources from the selected immutable Canon scope", async () => {
+    const loaded = await loadGraphPublicationSources([
+      { world_id: ids.worldId, served_revision: 4 }
+    ]);
+    const state = createDefaultGraphUrlState(loaded.catalog);
+    const detail = await graphSpatialDetail(
+      state,
+      presentationNodeId(
+        { world_id: ids.worldId, served_revision: 4, canon_id: ids.canonId },
+        { kind: "event", event_id: ids.eventId }
+      )
+    );
+    expect(detail.notes).toContain("선택한 Canon의 한국어 설명");
+    expect(detail.notes).toContain("[역사 자료](https://example.org/history)");
+    expect(detail.notes).not.toContain("다른 Canon의 설명");
+  });
+  it("connects a Gregorian axis only for the registered display codec", async () => {
+    const loaded = await loadGraphPublicationSources([
+      { world_id: ids.worldId, served_revision: 4 }
+    ]);
+    const state = createDefaultGraphUrlState(loaded.catalog);
+    const target = {
+      ...state.query.temporal_frame.target,
+      adapter_identity: "yyyy-iso-fields-fraction12-z-v1",
+      comparison_domain: "yyyy-iso-fields-fraction12-z-v1"
+    };
+    const boot = await graphSpatialBootstrap(
+      { ...state, query: { ...state.query, temporal_frame: { target } } },
+      loaded.catalog
+    );
+    expect(boot.workspace.chronologyBoard?.axis).toMatchObject({
+      startYear: 0,
+      endYear: 0,
+      coordinateScale: "elapsed-gregorian"
+    });
+  });
   it("loads URL-pinned revision 4 after current advances to 5, keeping structural frame display-only", async () => {
     const loaded = await loadGraphPublicationSources([
       { world_id: ids.worldId, served_revision: 4 }
@@ -147,6 +195,7 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
     ).toEqual([{ world_id: ids.worldId, served_revision: 4 }]);
     const boot = await graphSpatialBootstrap(state, loaded.catalog);
     expect(boot.workspace.canons).toHaveLength(2);
+    expect(boot.workspace.chronologyBoard).toBeUndefined();
     expect(boot.center).not.toBeNull();
     const visible = await moiraiSpatialReader.viewport({
       sources: state.query.sources,

@@ -7,6 +7,7 @@ import { chartPlaneDiagnosticSchema, eventDetailResponseSchema, graphShellChartP
 import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
 import type { GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
+import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gregorian-axis-coordinate";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 
 import {
@@ -415,7 +416,8 @@ function createUtcDate(year: number, month = 0, day = 1, hour = 0, minute = 0, s
   return date;
 }
 
-function worldYToGregorianDate(centerYear: number, worldY: number) {
+function worldYToGregorianDate(centerYear: number, worldY: number, coordinateScale?: string) {
+  if (coordinateScale === "elapsed-gregorian") return elapsedWorldYToGregorianDate(worldY);
   const fractionalYear = centerYear + worldY / WORLD_UNITS_PER_YEAR;
   const wholeYear = Math.floor(fractionalYear);
   const yearProgress = fractionalYear - wholeYear;
@@ -424,7 +426,8 @@ function worldYToGregorianDate(centerYear: number, worldY: number) {
   return new Date(startOfYear.getTime() + (startOfNextYear.getTime() - startOfYear.getTime()) * yearProgress);
 }
 
-function gregorianDateToWorldY(centerYear: number, date: Date) {
+function gregorianDateToWorldY(centerYear: number, date: Date, coordinateScale?: string) {
+  if (coordinateScale === "elapsed-gregorian") return elapsedGregorianDateToWorldY(date);
   const year = date.getUTCFullYear();
   const startOfYear = createUtcDate(year, 0, 1);
   const startOfNextYear = createUtcDate(year + 1, 0, 1);
@@ -521,10 +524,11 @@ function buildGregorianAxisTicks(
   viewportHeight: number,
   viewY: number,
   scaleY: number,
-  labelFormatter: (date: Date, step: GregorianAxisStep) => string
+  labelFormatter: (date: Date, step: GregorianAxisStep) => string,
+  coordinateScale?: string
 ) {
-  const minDate = worldYToGregorianDate(centerYear, minWorldY);
-  const maxDate = worldYToGregorianDate(centerYear, maxWorldY);
+  const minDate = worldYToGregorianDate(centerYear, minWorldY, coordinateScale);
+  const maxDate = worldYToGregorianDate(centerYear, maxWorldY, coordinateScale);
   const ticks: GregorianAxisTick[] = [];
 
   for (
@@ -532,7 +536,7 @@ function buildGregorianAxisTicks(
     cursor.getTime() <= maxDate.getTime() && index < 200;
     cursor = addGregorianStep(cursor, step), index += 1
   ) {
-    const worldY = gregorianDateToWorldY(centerYear, cursor);
+    const worldY = gregorianDateToWorldY(centerYear, cursor, coordinateScale);
     const top = viewportHeight / 2 + viewY + worldY * scaleY;
     if (top < -24 || top > viewportHeight + 24) {
       continue;
@@ -2663,7 +2667,7 @@ export function GraphShell({
       .filter((entity): entity is Extract<GraphShellChartPlaneEntity, { geometryKind: "point" }> => entity.geometryKind === "point")
       .map((entity) => ({
         id: entity.id,
-        label: centerYear === null ? entity.label : formatAnchorLabel(worldYToGregorianDate(centerYear, entity.position.y), anchorStep),
+        label: centerYear === null ? entity.label : formatAnchorLabel(worldYToGregorianDate(centerYear, entity.position.y, workspace.chronologyBoard?.axis.coordinateScale), anchorStep),
         y: viewportSize.height / 2 + view.y + entity.position.y * view.scaleY
       }))
       .filter((anchor) => anchor.y >= -24 && anchor.y <= viewportSize.height + 24)
@@ -3300,7 +3304,8 @@ export function GraphShell({
         viewportSize.height,
         view.y,
         view.scaleY,
-        formatGregorianAxisLabel
+        formatGregorianAxisLabel,
+        workspace.chronologyBoard.axis.coordinateScale
       );
     const minorTicks = majorStep.unit === minorStep.unit && majorStep.count === minorStep.count
         ? []
@@ -3312,7 +3317,8 @@ export function GraphShell({
             viewportSize.height,
             view.y,
             view.scaleY,
-            formatGregorianAxisMinorLabel
+            formatGregorianAxisMinorLabel,
+            workspace.chronologyBoard.axis.coordinateScale
           );
 
     return applyAxisLabelVisibility(majorTicks, minorTicks);

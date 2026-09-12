@@ -1206,6 +1206,7 @@ export const graphShellCanonSchema = z.object({
 export type GraphShellCanon = z.infer<typeof graphShellCanonSchema>;
 
 export const graphShellChronologyAxisSchema = z.object({
+  coordinateScale: z.enum(["fractional-year", "elapsed-gregorian"]).optional(),
   scheme: z.literal("gregorian_utc"),
   timeSystemId: z.string(),
   compatibilityKey: z.string(),

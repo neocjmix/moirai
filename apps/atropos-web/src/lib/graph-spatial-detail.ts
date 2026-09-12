@@ -1,6 +1,9 @@
 import type { EventDetailResponse } from "../urdr-port/shared/contracts";
 import { graphSpatialQueryContext } from "./graph-spatial-query";
-import { readGraphRevision } from "./graph-revision-source";
+import {
+  readGraphEventNarratives,
+  readGraphRevision
+} from "./graph-revision-source";
 import { buildGraphUrlSearch } from "./moirai-graph-source-query";
 import { moiraiSpatialReader } from "./moirai-spatial";
 export async function graphSpatialDetail(
@@ -25,6 +28,13 @@ export async function graphSpatialDetail(
   const eventId =
     node?.reference.kind === "event" ? node.reference.event_id : null;
   const event = eventId ? snapshot.events.find((e) => e.id === eventId) : null;
+  const narratives = eventId
+    ? await readGraphEventNarratives(
+        revision.manifest,
+        source.canon_id,
+        eventId
+      )
+    : [];
   const relations = eventId
     ? snapshot.temporal.relations.filter(
         (r) =>
@@ -64,11 +74,7 @@ export async function graphSpatialDetail(
       ? (snapshot.temporal.composites.find((c) => c.event_id === eventId) ??
         null)
       : null,
-    narratives: eventId
-      ? snapshot.narratives.filter(
-          (n) => n.scope_type === "event" && n.scope_id === eventId
-        )
-      : [],
+    narratives,
     subjects: eventId
       ? snapshot.subjects.filter((s) =>
           s.subject?.member_event_ids.includes(eventId)
@@ -89,6 +95,11 @@ export async function graphSpatialDetail(
     meta?.unplaced.includes(id)
       ? "No supported geometry is available. The Event and its evidence remain available below."
       : "",
+    ...narratives.flatMap((n) => [
+      n.title,
+      n.body,
+      ...n.public_references.map((ref) => `[${ref.label}](${ref.url})`)
+    ]),
     "```json",
     JSON.stringify(detail, null, 2),
     "```"

@@ -1,5 +1,9 @@
 import { createHash } from "node:crypto";
-import type { PublicationManifest, PublicWorld } from "@moirai/contracts";
+import type {
+  PublicationManifest,
+  PublicWorld,
+  PublicNarrative
+} from "@moirai/contracts";
 import { publicationSnapshots } from "@moirai/graph-query";
 import { assertPublicId, readPublicationObject } from "./publication";
 const cache = new Map<string, Promise<GraphRevision>>();
@@ -88,4 +92,35 @@ export async function readGraphRevision(
     if (cache.get(prefix) === promise) cache.delete(prefix);
     throw error;
   }
+}
+
+/** Selected Event detail is loaded on demand, not the entire World's Event documents. */
+export async function readGraphEventNarratives(
+  manifest: PublicationManifest,
+  canonId: string,
+  eventId: string
+): Promise<readonly PublicNarrative[]> {
+  assertPublicId(eventId);
+  const key = `worlds/${manifest.world_id}/revisions/${manifest.served_revision}/events/${eventId}.json`;
+  const ref = manifest.documents.find((r) => r.key === key);
+  if (!ref) throw Error("graph_event_document_missing");
+  const read = await readPublicationObject(key);
+  if (
+    read.status !== 200 ||
+    !read.body ||
+    createHash("sha256").update(read.body).digest("hex") !== ref.sha256
+  )
+    throw Error("graph_event_digest_mismatch");
+  const doc = JSON.parse(read.body);
+  if (
+    doc.served_revision !== manifest.served_revision ||
+    doc.event.id !== eventId
+  )
+    throw Error("graph_event_revision_mismatch");
+  return (doc.narratives as PublicNarrative[]).filter(
+    (n) =>
+      n.canon_id === canonId &&
+      n.scope_type === "event" &&
+      n.scope_id === eventId
+  );
 }

@@ -67,8 +67,8 @@ transaction으로 진행한다. 스키마·migration·인증 설정은 유지한
 이전 reset 코드는 새 World slug/revision이 존재하면 inventory guard에서 거절한다.
 
 임시 service 삭제를 별도 patch로 stage했으나 Railway가 dashboard 2FA를 요구하여
-API commit이 차단됐다. 이 삭제는 대시보드 적용 대기다. 다른 자원 삭제나 인증
-변경으로 우회하지 않았다.
+API commit이 차단됐다. 이후 사용자가 대시보드에서 삭제 완료를 확인했다. 다른 자원
+삭제나 인증 변경으로 우회하지 않았다.
 
 ## 도그푸딩에서 남은 UI 결함
 

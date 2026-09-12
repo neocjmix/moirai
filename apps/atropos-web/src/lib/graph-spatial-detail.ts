@@ -45,7 +45,7 @@ export async function graphSpatialDetail(
     : null;
   const returnSearch = buildGraphUrlSearch("", { ...validated, focus });
   const stable = eventId
-    ? `/worlds/${source.world_id}/events/${eventId}?revision=${source.served_revision}&mq=${new URLSearchParams(returnSearch).get("mq") ? encodeURIComponent(new URLSearchParams(returnSearch).get("mq")!) : ""}`
+    ? `/worlds/${source.world_id}/events/${eventId}?${new URLSearchParams({ revision: String(source.served_revision), mq: new URLSearchParams(returnSearch).get("mq")! })}`
     : null;
   const detail = {
     source,

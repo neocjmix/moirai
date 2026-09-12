@@ -1690,7 +1690,7 @@ function summarizeWorldAnchorForPanel(anchor: WorldAnchor): string {
 
 function renderMarkdownInline(text: string, keyPrefix: string): ReactNode[] {
   const nodes: ReactNode[] = [];
-  const pattern = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*)/g;
+  const pattern = /(\[([^\]]+)\]\(((?:https?:\/\/|\/worlds\/)[^\s)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*)/g;
   let cursor = 0;
 
   while (true) {
@@ -1708,7 +1708,7 @@ function renderMarkdownInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (linkLabel && linkHref) {
       nodes.push(
-        <a href={linkHref} key={tokenKey} rel="noreferrer" target="_blank">
+        <a href={linkHref} key={tokenKey} rel="noreferrer" target={linkHref.startsWith("/worlds/") ? "_self" : "_blank"}>
           {linkLabel}
         </a>,
       );

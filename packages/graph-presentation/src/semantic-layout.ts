@@ -288,6 +288,9 @@ export function layoutPresentationScope(
     explicitExtents: extents,
     temporalConstraints: layoutConstraints
   });
+  for (const diagnostic of chartPlane.diagnostics) {
+    report("m46_urdr_" + diagnostic.code, [], diagnostic.message);
+  }
   // User decision: preserve the original placement; track its bounds defect
   // in backlog #57 and expose it without changing canonical time evidence.
   const unsafe = chartPlane.entities.filter((e) => {

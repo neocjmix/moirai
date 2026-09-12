@@ -1,3 +1,4 @@
+export const dynamic = "force-dynamic";
 import { notFound } from "next/navigation";
 import { AtroposGraphRoot } from "../../../components/atropos-graph-root";
 import { loadGraphPublicationSources } from "../../../lib/graph-publication-loader";

@@ -25,7 +25,7 @@ export function createMoiraiGraphReadLoader(input: {
         body: JSON.stringify({
           sources: input.sources,
           state: input.state,
-          viewport,
+          viewport: { ...viewport, currentTimeLevel: "full" },
           maxEntities: input.maxEntities ?? 1000
         })
       });

@@ -71,13 +71,15 @@ describe("bounded public spatial boundary", () => {
       },
       fetcher
     });
-    expect(await loader.loadViewport("en", viewport)).toEqual(empty);
+    expect(
+      await loader.loadViewport("en", { ...viewport, currentTimeLevel: "year" })
+    ).toEqual(empty);
     const request = JSON.parse(
       (fetcher.mock.calls[0] as unknown as [string, RequestInit])[1]
         .body as string
     );
     expect(request.sources).toEqual([source]);
-    expect(request.viewport).toEqual(viewport);
+    expect(request.viewport).toEqual({ ...viewport, currentTimeLevel: "full" });
     expect(request).not.toHaveProperty("events");
     fetcher.mockImplementation(async () =>
       Response.json({

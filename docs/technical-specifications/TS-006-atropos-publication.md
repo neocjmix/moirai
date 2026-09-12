@@ -27,7 +27,7 @@ Atropos는 유일한 공개 사용자 서비스다. 공개 화면은 정본 저�
 ## TS-006.2 기술 기준선
 
 - web application: TypeScript + React + Next.js App Router
-- graph interaction/rendering: JointJS 4.x
+- graph interaction/rendering: 복사된 React/SVG graph shell과 pointer interaction
 - text content: server-rendered HTML과 progressive enhancement
 - graph surface: client component로 hydration
 - styling: CSS Modules와 design token
@@ -223,7 +223,9 @@ relevance는 텍스트 검색 결과의 순위일 뿐 Canon의 authority나 우�
 
 ## TS-006.11 그래프의 의미 단위
 
-JointJS cell은 Publication projection을 그리는 표현 객체이며 정본 데이터가 아니다.
+SVG point·segment·region은 Publication projection을 그리는 표현 객체이며 정본 데이터가 아니다.
+Canon-specific layout이 다른 경우 표시 instance를 구분하되, World-level Event·Relation
+identity와 모든 membership은 query·inspector·stable URL에서 하나로 유지한다.
 
 | 표현              | 의미                                              |
 | ----------------- | ------------------------------------------------- |
@@ -241,7 +243,7 @@ comparison bridge를 Canon 내부 Relation과 같은 선 모양·색·layer로 �
 기본 Timeline graph는 다음 좌표 의미를 가진다.
 
 - 세로축: 선택한 Time System의 chronology 또는 structural order
-- 가로축: Subject lane과 충돌 회피를 위한 파생 배치
+- 가로축: 고정된 반복 횟수의 deterministic force가 만드는 자유로운 파생 배치
 - 정확한 authored coordinate가 없는 Event: structural constraint 안의 inferred layout
 
 inferred layout 좌표는 Event의 시간 사실로 표시하거나 export하지 않는다. Event detail은 authored 시간 Relation, virtual Time Event와 layout inference를 구분한다. exact, bounded, relative-only, unresolved, Event Duration과 knowledge range를 서로 다른 의미로 제공한다.
@@ -251,17 +253,23 @@ inferred layout 좌표는 Event의 시간 사실로 표시하거나 export하지
 1. Publication projection이 Event, Relation, 포함 구조와 시간 제약을 준비한다.
 2. strict·non-strict·equality 시간 Relation, virtual Time Event와 structural order로 가능한 세로 범위를 계산한다.
 3. 근거가 부족한 Event를 `unplaced` 또는 제약 범위 안의 inferred position으로 분류한다.
-4. Subject·관계 밀도를 고려해 가로 lane을 계산한다.
-5. atomic Event를 배치한다.
+4. seed와 전파된 point를 세로 허용 범위에 놓고 같은 span의 point cluster를 분산한다.
+5. 세로 위치를 고정한 채 repulsion과 causal·temporal attraction으로 가로 위치를 계산한다.
 6. 가장 깊은 Composite Event부터 parent 방향으로 region을 계산한다.
 7. Relation endpoint와 route를 계산한다.
 8. label priority와 semantic zoom artifact를 생성한다.
 
 같은 입력 Revision과 algorithm version에서 layout은 결정적이어야 한다.
 
+M4.6 presentation 기준은 chronology spacing `140`, seed lane spacing `110`, force
+`32`회, repulsion `0.03`, causal attraction `0.22`, temporal attraction `0.12`,
+maximum step `0.22`다. 원본 Gregorian numeric helper를 Moirai 시간 의미로 사용하지
+않는다. lossless 시간 제약을 먼저 해석하고 presentation 수치로 변환한 경우 evidence와
+approximation을 보존한다. 근거 없는 Event에는 가짜 날짜를 만들지 않는다.
+
 ## TS-006.13 Composite region geometry
 
-Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사용하지 않는다. Convex hull은 멀리 떨어진 child 사이의 큰 빈 공간과 관련 없는 Event까지 하나의 영역처럼 보이게 할 수 있다.
+Composite Event의 경계는 convex hull을 기본으로 사용하지 않는다. Convex hull은 멀리 떨어진 child 사이의 큰 빈 공간과 관련 없는 Event까지 하나의 영역처럼 보이게 할 수 있다.
 
 기본 region 알고리즘은 다음과 같다.
 
@@ -274,21 +282,20 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 
 이 방식은 child 포함을 보장하면서 세로 구조를 따라 오목한 경계를 허용한다. region은 UI 장식이므로 Event 포함 사실을 결정하지 않는다.
 
-## TS-006.14 JointJS 구성
+## TS-006.14 SVG graph surface 구성
 
-- `dia.Graph`: 현재 viewport/LOD의 표현 cell만 보유
-- `dia.Paper`: async rendering을 사용
-- `paper.async = true`: 대량 cell과 region·link view의 단계적 mount를 허용
-- node connection point: model center가 아니라 실제 rendered boundary
-- 기본 Relation routing: metro router
-- Composite region과 label: custom element/view 및 SVG path
-- graph mutation: 새 Snapshot 또는 LOD 적용 시 batch 안에서 수행
+- graph shell은 현재 viewport와 retention에 필요한 point·segment·region만 보유한다.
+- world→screen 변환은 `size / 2 + translation + world * scale`이며 X/Y scale을 독립 적용한다.
+- 화면 모서리를 역변환하고 min/max를 정규화해 world bbox를 계산한다.
+- point, Relation segment와 Composite polygon을 기존 SVG layer·label policy로 그린다.
+- core viewport 응답 뒤 full 응답과 idle prefetch를 적용하되 오래된 query 응답이 새 결과를 덮지 않는다.
+- renderer는 Moirai 정본을 수정하지 않으며 presentation shape와 의미 sidecar를 분리한다.
 
 ### 포함 region 갱신
 
 - child layout이 확정된 뒤 deepest-first 순서로 region을 갱신한다.
 - parent region은 이미 계산된 child region polygon을 입력으로 사용할 수 있다.
-- `fitToChildren`과 같은 단순 사각 bounds는 fallback 또는 hit area로만 사용한다.
+- 단순 사각 bounds는 fallback 또는 hit area로만 사용한다.
 - region 갱신이 child 위치를 다시 바꾸는 feedback loop를 만들지 않는다.
 
 ### link
@@ -296,11 +303,26 @@ Composite Event의 경계는 JointJS의 built-in convex hull을 기본으로 사
 - endpoint는 Event ID에 대응한다.
 - target marker, direction과 relation type을 접근 가능한 범례로 설명한다.
 - routing 결과가 region 내부를 불필요하게 가로지르면 obstacle와 padding을 적용한다.
-- Canon 간 correspondence는 별도 overlay paper layer 또는 comparison view에서 렌더링한다.
+- Canon 간 correspondence는 별도 overlay layer 또는 comparison view에서 렌더링한다.
 
 ## TS-006.15 Semantic zoom과 대규모 graph
 
 브라우저에 World 전체 cell을 넣고 CSS로 숨기지 않는다. Publication Snapshot은 범위와 LOD별 artifact를 제공한다.
+
+### Spatial artifact 읽기
+
+요청 bbox는 가로·세로 span의 `1.5`배를 각각 양쪽에 더한다. 기본 y-band 크기는
+`4096`이며 `floor(minY / bandSize) - 1`부터 `floor(maxY / bandSize) + 2`까지
+읽는다. region은 뒤 overscan `3`과 band `0`을 유지한다. point는 한 band,
+segment·region은 교차하는 모든 band에 색인한다. band가 비어 있음과 누락됨을 구분한다.
+
+선택 entity는 bbox 밖에서도 유지하고 요청 시 직접 neighbor와 parent/child region
+closure를 읽는다. 이 탐색은 선택한 World·Canon·Revision 범위를 벗어나지 않는다.
+Canon은 사용자가 선택한 순서대로 local X에 누적 `widthHint + preferredGap`을 더해
+합성한다. presentation ID로 중복을 제거하며 budget 초과와 partial missing을
+diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전량 적재의
+우회로가 되어서는 안 된다. cache는 Revision과 scope에 고정하고 실패한 promise를
+제거해 같은 Revision에서 재시도한다. 다른 Revision으로 조용히 fallback하지 않는다.
 
 ### LOD 원칙
 

@@ -8,7 +8,7 @@ import type {
 } from "@moirai/contracts";
 
 import type { AtroposScreenId } from "../lib/atropos-screen-registry";
-import { AtroposAppShell } from "./atropos-app-shell";
+import { App } from "../urdr-port/src/App";
 import { GraphQueryProvider } from "./graph-query-context";
 import type {
   GraphDiagnostic,
@@ -50,7 +50,7 @@ export function AtroposGraphRoot({
         radius="large"
         scaling="100%"
       >
-        <AtroposAppShell initialScreen={initialScreen} />
+        <App initialScreen={initialScreen} />
       </Theme>
     </GraphQueryProvider>
   );

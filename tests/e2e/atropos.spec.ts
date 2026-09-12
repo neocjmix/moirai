@@ -43,9 +43,9 @@ test("mobile source island restores published World, Canon, Time System, and Rev
 }) => {
   await page.goto("/graph");
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
-  await expect(page.getByTestId("moirai-native-graph-stage")).toBeVisible();
+  await expect(page.getByTestId("graph-stage")).toBeVisible();
   await expect(page.getByTestId("graph-source-legend")).toContainText("Canons");
-  await expect(page.getByTestId("graph-stage")).toHaveCount(0);
+  await expect(page.getByTestId("moirai-native-graph-stage")).toHaveCount(0);
   await page
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
@@ -76,47 +76,36 @@ test("mobile source island restores published World, Canon, Time System, and Rev
   await expect(page.getByLabel(/Temporal Acceptance Canon/)).toBeChecked();
 });
 
-test("native viewport preserves a single island, bottom dock, selection URL and mobile inspector", async ({
+test("URDR mock viewport preserves a single island, bottom dock, selection and mobile detail sheet", async ({
   page
 }) => {
   await page.goto("/graph");
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
-  await expect(page.getByTestId("moirai-native-graph-stage")).toBeVisible();
+  await expect(page.getByTestId("graph-stage")).toBeVisible();
   await expect(
     page.getByRole("navigation", { name: /주요 섹션|Primary sections/ })
   ).toBeVisible();
 
-  const node = page.locator('[data-node-kind="event"]').first();
+  const node = page.locator('[data-event-point-id="event:founding"]');
   await expect(node).toBeVisible();
   await node.click();
-  await expect(page.getByTestId("graph-inspector-sheet")).toBeVisible();
-  await expect
-    .poll(() => new URL(page.url()).searchParams.get("mq"))
-    .toContain('"focus"');
-  const zoomIn = page.getByRole("button", { name: /확대|Zoom in/ });
-  await zoomIn.click();
-  await zoomIn.click();
-  await zoomIn.click();
-  await expect
-    .poll(() => new URL(page.url()).searchParams.get("mq"))
-    .toContain("neighborhood");
-  await page.reload();
-  await expect(page.getByTestId("graph-inspector-sheet")).toBeVisible();
+  await expect(page.getByTestId("event-drawer-sheet")).toBeVisible();
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(
+    /조선 건국|Founding of Joseon/
+  );
 });
 
-test("native viewport renders shared World identities and Relations once", async ({
+test("URDR mock viewport renders its historical fixture instead of Publication entities", async ({
   page
 }) => {
   await page.goto("/graph");
+  await expect(
+    page.locator('[data-event-point-id="event:founding"]')
+  ).toBeVisible();
+  await expect(page.getByText(/조선 건국|Founding of Joseon/)).toBeVisible();
   await expect(page.locator(`[data-event-id="${firstEventId}"]`)).toHaveCount(
-    1
+    0
   );
-  await expect(
-    page.locator('[data-relation-id="019f3b00-0000-7000-8000-000000000201"]')
-  ).toHaveCount(1);
-  await expect(
-    page.locator(`[data-event-id="${firstEventId}"]`)
-  ).toHaveAttribute("data-canon-memberships", new RegExp(canonId));
 });
 
 test("identity-aware search deduplicates shared Events and restores Canon context and focus", async ({

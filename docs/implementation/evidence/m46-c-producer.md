@@ -15,3 +15,23 @@ Status: implementation ready for CI/deployment verification; not overall M4.6 co
 Unit acceptance covers source golden parity, original force constants, band/object assignment, relative order without a Time System, causal-only unplaced nodes, nested regions, deterministic bytes, untouched lossless sidecar, immutable conflict and revision mismatch.
 
 Runtime loader remains MOCK until D/E. C does not claim real data is already visible.
+
+## Production checkpoint and compatibility follow-up
+
+PR #56 merged as `4d54fbe5b9e2301e0a20e1e0a0033cffcf45bd74`. PR CI
+[34692484942](https://github.com/neocjmix/moirai/actions/runs/34692484942), main CI
+[34692594900](https://github.com/neocjmix/moirai/actions/runs/34692594900) and post-deploy
+[34692701308](https://github.com/neocjmix/moirai/actions/runs/34692701308) passed.
+All three Railway services report SUCCESS on that SHA; public Atropos status agrees.
+Worker structured logs show `spatial_backfill` / `served` for Graph Scope Observatory
+revision 4. Clotho read-back still reports current/target/served 4, ready.
+
+A subsequent older World failed backfill. The worker had bypassed Atropos's existing
+legacy Event/Relation membership normalization and optional artifact defaults.
+The follow-up shares these existing read normalizers and adds a legacy backfill
+regression; this does not modify the old immutable Publication or canonical data.
+
+The real TS-010 CI corpus (11 Events, 23 Relations) exposed a new seam unit bug:
+Gregorian `difference` returns picoseconds. Conversion now divides by picoseconds
+per display year, with a regression test. Its corrected output is 42 geometry
+entities in 12 spatial documents, while retaining lossless coordinate strings.

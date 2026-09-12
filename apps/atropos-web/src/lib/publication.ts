@@ -1,3 +1,9 @@
+import {
+  normalizePublicEvent,
+  normalizePublicRelation,
+  type LegacyPublicEvent,
+  type LegacyPublicRelation
+} from "@moirai/graph-query";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import {
@@ -151,34 +157,6 @@ export async function selectPublication(
 }
 
 export type SelectedPublication = Awaited<ReturnType<typeof selectPublication>>;
-
-type LegacyPublicEvent = Omit<PublicEvent, "world_id" | "canon_memberships"> & {
-  readonly canon_id: string;
-};
-
-function normalizePublicEvent(
-  event: PublicEvent | LegacyPublicEvent,
-  worldId: string
-): PublicEvent {
-  if ("world_id" in event && "canon_memberships" in event) return event;
-  const { canon_id: canonId, ...value } = event;
-  return { ...value, world_id: worldId, canon_memberships: [canonId] };
-}
-
-type LegacyPublicRelation = Omit<
-  PublicRelation,
-  "world_id" | "canon_memberships"
-> & { readonly canon_id: string };
-
-function normalizePublicRelation(
-  relation: PublicRelation | LegacyPublicRelation,
-  worldId: string
-): PublicRelation {
-  if ("world_id" in relation && "canon_memberships" in relation)
-    return relation;
-  const { canon_id: canonId, ...value } = relation;
-  return { ...value, world_id: worldId, canon_memberships: [canonId] };
-}
 
 export async function readWorld(
   worldId: string,

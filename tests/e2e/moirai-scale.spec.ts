@@ -117,10 +117,14 @@ test("100k artifacts stay bounded while the original browser viewport pans and z
   const points = page.locator('[data-event-point-id^="scale-"]');
   await expect.poll(() => points.count()).toBeGreaterThan(0);
   const first = observed[0]!;
-  await page.mouse.move(25, 650);
-  await page.mouse.down();
-  await page.mouse.move(25, 200, { steps: 12 });
-  await page.mouse.up();
+  // Start on empty canvas above the mobile bottom dock (650px hits the dock
+  // in the actual 390x664 WebKit viewport). Cross multiple spatial bands.
+  for (let i = 0; i < 6; i++) {
+    await page.mouse.move(25, 450);
+    await page.mouse.down();
+    await page.mouse.move(25, 200, { steps: 12 });
+    await page.mouse.up();
+  }
   await expect
     .poll(() => observed.some((r) => Math.abs(r.minY - first.minY) > 100))
     .toBe(true);

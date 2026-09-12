@@ -47,5 +47,16 @@ automated two-pointer integration coverage, not a physical iPhone test.
 - Existing shared composer direction/Subject filter limitations remain deferred,
   as recorded in the E evidence. All surfaces continue to use the shared query.
 
-Final F CI, deployed SHA, smoke and direct stable-link round trip are pending.
+On `412cf409ed48c77550cd33a570cc2b362f3bfd2e`, direct production browser
+clicks completed Event selection → stable Event page → Return to graph. The
+restored sheet retained the same ID, Canon and Revision 4. A public spatial POST
+returned HTTP 200, 8,863 bytes, one object and the real Signal point; repeating
+the request reused the immutable cache. Three unplaced Events remained explicit.
+
+The first F CI stopped before browser execution because the ESM test runner
+could not resolve a directory import in the production reader. PR #62 makes
+that import an explicit index path. Local test discovery and all six reader
+tests, including the distant 100k viewport, pass.
+
+Final F CI, deployed SHA and smoke are pending.
 M5 remains inactive.

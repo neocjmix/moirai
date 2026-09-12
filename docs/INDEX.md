@@ -18,7 +18,8 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 - [IS-001 — 에이전트·모바일 중심 구현 전략](implementation/IS-001-agent-mobile-strategy.md)
 - [IP-001 — 첫 제품 구현 계획](implementation/IP-001-first-product-plan.md)
-- [IP-001 M4.5 — Atropos 탐색 UI와 Moirai-native graph query](implementation/M4.5-ATROPOS-EXPLORATION-UI.md)
+- [IP-001 M4.5 — Atropos 탐색 UI와 Moirai-native graph query (superseded)](implementation/M4.5-ATROPOS-EXPLORATION-UI.md)
+- [IP-001 M4.6 — URDR graph pipeline 위의 Moirai data](implementation/M4.6-URDR-GRAPH-MOIRAI-DATA.md)
 - [시간 모델 드리프트 분석과 세션 인계](implementation/TEMPORAL-MODEL-DRIFT.md)
 - [시간 표현력 종단간 수용시험](implementation/TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)
 - [IP-002 — 시간 모델 재정렬 구현 계획](implementation/IP-002-temporal-model-realignment.md)

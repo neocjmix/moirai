@@ -1,18 +1,18 @@
 # 현재 구현 상태
 
-세션과 에이전트 사이의 짧은 상태판이다. M4.5-D1~G의 데이터·query 작업은 유지한다.
-M4.5-H native viewport는 사용자 결정으로 철회하고 URDR 목데이터 viewport 기준선으로
-복구했다. 대체 viewport 작업과 M5는 활성화하지 않았다.
+세션과 에이전트 사이의 짧은 상태판이다. M4.5-A~G의 데이터·query 작업은 유지한다.
+M4.5-H와 남은 M4.5 계획은 폐기했다. M4.6은 현재 URDR renderer·layout·interaction·spatial
+read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한다. M5는 비활성이다.
 
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| 기준 계획                  | [IP-003 — Canon 의미 재정렬](IP-003-canon-semantic-realignment.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `complete` — IP-003 Canon semantic realignment의 문서·schema·write/read·migration·production acceptance 완료              |
-| 활성 milestone             | 없음 — M4.5 viewport 재설계 대기; M5 비활성                                                                                   |
-| 현재 slice                 | M4.5-H 철회·URDR 목데이터 viewport 복구; 후속 renderer 작업 미활성                                                            |
+| 기준 계획                  | [M4.6 — URDR graph pipeline 위의 Moirai data](M4.6-URDR-GRAPH-MOIRAI-DATA.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
+| 실행 상태                  | `active` — M4.6 계획 승인; runtime 구현 전 기준선·규범 정렬                                                                    |
+| 활성 milestone             | M4.6 — URDR graph pipeline 위의 Moirai data; M5 비활성                                                                          |
+| 현재 slice                 | M4.6-A — source provenance, spatial invariant와 TS-006 정렬; runtime 미변경                                                      |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |
 | 완료 milestone             | M0 전달·관측·보안 기반; M1 최초 vertical slice; M2 세계 확장; M3 Clotho 최소 작성; M3-R 책임 분리·배포; M3-C 실제 연결        |
-| M4.5 UI 기준선             | Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 UI 구성과 interaction만 계승                              |
+| M4.6 runtime 기준선        | `dcad5305aadc8d0181e2b6ff33701385310ebb70`; Atropos `/graph`; URDR `0267c8fd081ca9a3cd556f8f7319c600248c3760`의 renderer·layout·interaction·spatial read 계승 |
 | `/graph` 기준 application  | PR #19 merge `458cca0183a8b995b6a4edafa12fc104a0659574`; production route 렌더·interaction 확인                              |
 | M4.5-A 계약 checkpoint     | [PR #21](https://github.com/neocjmix/moirai/pull/21) merge `6e8feace3b5d39466b725f44980aede714406a96`; [CI 34390674821](https://github.com/neocjmix/moirai/actions/runs/34390674821) success |
 | M4.5-B App shell checkpoint | [PR #22](https://github.com/neocjmix/moirai/pull/22) merge `a012fad3b60df91f1a16819b82d243e5d1283801`; [CI 34392698639](https://github.com/neocjmix/moirai/actions/runs/34392698639) success |
@@ -27,6 +27,7 @@ M4.5-H native viewport는 사용자 결정으로 철회하고 URDR 목데이터 
 | Publication→explorer 연결  | [PR #44](https://github.com/neocjmix/moirai/pull/44) merge·rollback 기준선 `0f5554926587bbd01193b57496d82e9c5f2743e3`; 이후 충돌 이력 #45–#48은 의도적으로 폐기 |
 | legacy Relation 호환성     | [PR #49](https://github.com/neocjmix/moirai/pull/49) merge·production `e81f4eafd91046346e239d8883a18ff6ad53c3c3`; immutable v1/v2 Relation을 Publication read boundary에서 normalization |
 | M4.5-H 철회                | [PR #50](https://github.com/neocjmix/moirai/pull/50)의 native viewport는 검증 이력만 보존하고 2026-09-12 사용자 결정으로 runtime 기준에서 철회; Publication query·검색은 유지하고 URDR 목데이터 viewport 복구 |
+| M4.6 전환 결정             | M4.5의 남은 계획을 폐기; URDR graph pipeline을 보존하고 Moirai Publication을 presentation input으로 연결                     |
 | IP-003 시작 기준선         | `main` `8854da284631f836cb34692f36070b718dce3e2d`; CI `34556657861`, post-deploy `34556777058` success; production `/__status`와 M4.5-C `/graph` 재확인 |
 | IP-003 Slice 0 계획        | PR #28 merge `6eaa428d7e6e61ae3df574a091dcbc2f0a082d73`; CI `34558131634` success                                                    |
 | IP-003 Slice 1 규범        | PR #29 merge `5a5aeb20cf853353847a9ef3185ff8e682bacefb`; CI `34558845653` success                                                    |
@@ -62,7 +63,7 @@ M4.5-H native viewport는 사용자 결정으로 철회하고 URDR 목데이터 
 | IP-002 구현 CI             | PR #9 merge `e4265a627b121ef9d4274b693db094362146924c`; [CI 34125253511](https://github.com/neocjmix/moirai/actions/runs/34125253511) `success` |
 | 보호 기준선                | branch `baseline/m4d-2026-09-05`; M4-D SHA `350920bbdb3928f34e406940b9d9f0d95f7e8c65`                                      |
 
-## M4 종료와 M4.5 활성화
+## M4 종료, M4.5 폐기와 M4.6 활성화
 
 2026-09-09 KST 사용자 결정으로 M4의 추가 구현을 즉시 중단하고 조기 종료했다. M4-A~F의
 구현·CI·production 증거는 보존하지만 원래 M4 종료조건을 모두 만족한 완료로 보고하지
@@ -102,7 +103,10 @@ R1 `/graph/query` 결과는 유지한다. 같은 날 H native viewport의 시각
 URDR 기준선보다 부적합하다는 사용자 판단에 따라 renderer와 layout만 철회했다. 현재
 그래프는 URDR 조선사 목 fixture로 pan·zoom·selection·detail sheet를 검증하며 실제
 Publication entity는 query island와 server-rendered fallback에서 계속 관찰할 수 있다.
-M5는 시작하지 않았다.
+이후 사용자는 남은 M4.5 계획 전체를 폐기하고 M4.6을 승인했다. M4.6은 고정 URDR commit의
+renderer뿐 아니라 temporal-Y/free-X force layout, Composite geometry, viewport bbox와
+y-band spatial read까지 보존하고 그 입력만 Moirai Publication으로 교체한다. 현재 M4.6-A는
+문서·characterization 단계이며 runtime은 아직 목 fixture 기준선이다. M5는 시작하지 않았다.
 
 ## 시간 모델 재정렬 Slice 0
 

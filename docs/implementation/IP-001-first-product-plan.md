@@ -280,8 +280,9 @@ scope·LOD, subject lane, metro routing과 composite region은
 6. Canon 비교가 명시적 correspondence 밖의 동일성을 추론하지 않는다.
 
 기존에는 milestone의 종료조건을 유지한 채 파생 모델, graph 기본 탐색과 Canon 비교로
-분할할 계획이었다. 이 분할 규칙은 2026-09-09 M4 조기 종료 결정으로 후속 실행에
-대해서는 대체됐으며, 남은 범위는 아래 M4.5의 새 경계와 종료조건을 따른다.
+분할할 계획이었다. 이 분할 규칙은 2026-09-09 M4 조기 종료 결정으로 대체됐고,
+M4.5-A~G의 완료 결과만 보존한다. 2026-09-12 이후 graph 후속 실행은 M4.6의 경계와
+종료조건을 따른다.
 
 ## IP-001.8A Milestone 4.5 — Atropos 탐색 UI와 Moirai-native graph query
 
@@ -307,18 +308,45 @@ detail sheet라는 기본 UI 구성을 유지하면서 각 영역의 내용과 �
 - Time System compatibility는 이름이나 `kind`로 추론하지 않고 accepted adapter 계약만
   사용한다.
 
+### 상태와 후속 계획
+
+M4.5-A~G의 observable outcome과 검증 이력은
+[M4.5 상세 계획](M4.5-ATROPOS-EXPLORATION-UI.md)에 보존한다. H와 남은 M4.5 계획은
+철회됐다. 실제 graph 후속 작업은
+[M4.6 계획](M4.6-URDR-GRAPH-MOIRAI-DATA.md)이 소유하며, URDR renderer·layout·spatial
+read pipeline을 유지하고 Moirai Publication data를 연결한다. M4.6 전체 종료와 별도 사용자
+승인 전에는 M5를 활성화하지 않는다.
+
+## IP-001.8B Milestone 4.6 — URDR graph pipeline 위의 Moirai data
+
+### 목표
+
+현재 Atropos에 복사된 URDR renderer, temporal-Y/free-X layout, Composite geometry,
+viewport interaction과 spatial artifact query를 보존하고 그 입력을 실제 Moirai
+Publication data로 교체한다.
+
+### 핵심 경계
+
+- URDR graph pipeline은 M4.6의 동작·회귀 기준이다. 누락된 producer·loader 코드는 고정
+  URDR commit `0267c8fd081ca9a3cd556f8f7319c600248c3760`에서 확인한다.
+- Moirai canonical model과 graph query는 계속 renderer와 독립적이다.
+- URDR shape는 Publication 뒤의 재생성 가능한 presentation projection이며 Moirai의
+  identity, Canon membership, Revision과 evidence를 축소하지 않는다.
+- M4.5-H native renderer를 복구하거나 다른 graph renderer를 새로 설계하지 않는다.
+
 ### 실행 계획과 종료조건
 
-Slice A~H의 observable outcome, 검증 fixture, 제외 범위와 전체 종료조건은
-[M4.5 상세 계획](M4.5-ATROPOS-EXPLORATION-UI.md)이 소유한다. M4.5 전체 종료 전에는
-M5를 활성화하지 않는다.
+Source provenance와 규범 정렬부터 presentation projection, artifact producer, spatial
+loader, 실제 data 연결과 100k production acceptance까지의 slice는
+[M4.6 상세 계획](M4.6-URDR-GRAPH-MOIRAI-DATA.md)이 소유한다. M4.6 전체 종료와 별도 사용자
+승인 전에는 M5를 활성화하지 않는다.
 
 ## IP-001.9 Milestone 5 — 생명주기·이동성·출시 품질
 
 > IP-003 replan: IP-003은 완료됐다. 이 절의 제품 범위는 유지하지만 기존 Canon 단일 ownership을 전제한 실행 계획은
 > 활성화하지 않는다. Event/Canon lifecycle, Revision diff, portability, governance/access와 operations로
 > 재구성한 slice와 종료조건은 [IP-003 §17](IP-003-canon-semantic-realignment.md#17-m5-재설계-범위)이
-> 소유한다. Relation은 승인된 R1 World identity + Canon N:M 계약을 따르며 M4.5 종료와 별도 사용자 승인 전에는
+> 소유한다. Relation은 승인된 R1 World identity + Canon N:M 계약을 따르며 M4.6 종료와 별도 사용자 승인 전에는
 > M5 구현을 시작하지 않는다.
 
 ### 목표

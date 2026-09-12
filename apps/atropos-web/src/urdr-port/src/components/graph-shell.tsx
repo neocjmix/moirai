@@ -7,6 +7,7 @@ import { chartPlaneDiagnosticSchema, eventDetailResponseSchema, graphShellChartP
 import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
 import { graphReadLoader, type GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
+import { GraphSourceIsland } from "../../../components/graph-source-island";
 
 import {
   createChartPlaneSnapshot,
@@ -3539,6 +3540,8 @@ export function GraphShell({
 
   return (
     <>
+      <GraphSourceIsland locale={locale} />
+
       <div className={styles.canvasFrame}>
           <div
             className={styles.chartPlaneStage}

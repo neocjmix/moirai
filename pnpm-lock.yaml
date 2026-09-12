@@ -182,6 +182,16 @@ importers:
         specifier: ^5.9.0
         version: 5.9.3
 
+  packages/graph-presentation:
+    dependencies:
+      '@moirai/contracts':
+        specifier: workspace:*
+        version: link:../contracts
+    devDependencies:
+      typescript:
+        specifier: ^5.9.0
+        version: 5.9.3
+
   packages/lachesis:
     dependencies:
       '@moirai/contracts':

@@ -32,6 +32,9 @@ test("Moirai Publication uses the copied viewport, bounded reads and same-revisi
   await expect
     .poll(() => page.locator('[data-event-point-id^="m_event_"]').count())
     .toBeGreaterThan(0);
+  await expect(
+    page.locator('[class*="canvasProbeAxisTickLabel"]').first()
+  ).toBeVisible();
   expect(
     responses.every((r) => r.bytes <= 1024 * 1024 && r.count <= 2500)
   ).toBe(true);

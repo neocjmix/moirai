@@ -77,7 +77,7 @@ describe("pinned original URDR producer parity", () => {
       buildGraphShellChartPlane(dataset, board)
     );
   });
-  it("reproduces the pinned producer moving a bounded Event outside its own interval", () => {
+  it("keeps the original #57 reproduction inside individual bounds after repair", () => {
     const bounded: Dataset = {
       timeSystems: dataset.timeSystems,
       canons: dataset.canons,
@@ -120,10 +120,12 @@ describe("pinned original URDR producer parity", () => {
     );
     expect(a?.geometryKind).toBe("point");
     if (a?.geometryKind !== "point") throw new Error("Missing point A");
-    // Characterization, not a desired acceptance result. No Moirai options are
-    // passed: the pinned producer itself violates A's [2004, 2006] interval.
+    // Original pinned output was 2000.8. The same fixture must now satisfy both bounds and order.
     const displayedYear = a.position.y / 140 + 2005;
-    expect(displayedYear).toBeLessThan(2004);
-    expect(displayedYear).toBeCloseTo(2000.8);
+    expect(displayedYear).toBeGreaterThanOrEqual(2004);
+    expect(displayedYear).toBeLessThanOrEqual(2006);
+    const b = result.entities.find((e) => e.eventId === "b");
+    if (b?.geometryKind !== "point") throw Error("Missing B");
+    expect(b.position.y).toBeGreaterThan(a.position.y);
   });
 });

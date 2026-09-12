@@ -1,206 +1,183 @@
 import type { MoiraiGraphTimeSystemIdentity } from "@moirai/contracts";
-
 import {
-  readCanon,
-  readGraphScope,
-  readPublishedWorlds,
-  readRelationalTime,
-  readSubject,
-  selectPublication
-} from "./publication";
-import {
+  structuralFrame,
   publicTimeSystemIdentity,
   type GraphPublicationCanonSnapshot,
   type GraphPublicationFailure
-} from "./graph-publication-composer";
+} from "@moirai/graph-query";
+import { z } from "zod";
+import { readPublishedWorlds } from "./publication";
+import { readGraphRevision } from "./graph-revision-source";
 import type {
   GraphSourceCatalog,
   GraphSourceWorldOption
 } from "./moirai-graph-source-query";
-
-const MAX_WORLDS = 8;
-const MAX_CANONS = 32;
-const SOURCE_TIMEOUT_MS = 3_000;
-
-function withTimeout<T>(promise: Promise<T>): Promise<T> {
-  return Promise.race([
-    promise,
-    new Promise<T>((_resolve, reject) => {
-      const timer = setTimeout(
-        () => reject(new Error("graph_publication_source_timeout")),
-        SOURCE_TIMEOUT_MS
-      );
-      timer.unref?.();
+const pinSchema = z
+  .array(
+    z.object({
+      world_id: z.string().uuid(),
+      served_revision: z.number().int().positive().safe(),
+      canon_ids: z.array(z.string().uuid()).max(32).optional(),
+      time_systems: z
+        .array(
+          z.object({
+            time_system_id: z.string().max(256),
+            definition_version: z.string().max(256),
+            adapter_identity: z.string().max(256),
+            comparison_domain: z.string().max(256)
+          })
+        )
+        .max(32)
+        .optional()
     })
-  ]);
-}
-
-function identityKey(identity: MoiraiGraphTimeSystemIdentity): string {
-  return [
-    identity.time_system_id,
-    identity.definition_version,
-    identity.adapter_identity,
-    identity.comparison_domain
-  ].join(":");
-}
-
-export async function loadGraphPublicationSources(): Promise<{
-  readonly catalog: GraphSourceCatalog;
-  readonly snapshots: readonly GraphPublicationCanonSnapshot[];
-  readonly failures: readonly GraphPublicationFailure[];
-}> {
-  const observations = await withTimeout(readPublishedWorlds());
-  const failures: GraphPublicationFailure[] = observations
-    .filter((item) => item.availability === "unavailable")
-    .map((item) => ({ worldId: item.worldId, code: "source_unavailable" }));
-  const ready = observations
-    .filter((item) => item.availability === "ready")
-    .slice(0, MAX_WORLDS);
-  if (
-    observations.filter((item) => item.availability === "ready").length >
-    MAX_WORLDS
   )
+  .max(8);
+export type GraphRevisionPin = z.infer<typeof pinSchema>[number];
+/** Read just a bounded revision vector first; the complete URL is validated against its catalog. */
+export function graphRevisionPins(raw: string | null): GraphRevisionPin[] {
+  if (!raw || raw.length > 64 * 1024) return [];
+  try {
+    const parsed = pinSchema.safeParse(JSON.parse(raw).query?.sources);
+    return parsed.success ? parsed.data : [];
+  } catch {
+    return [];
+  }
+}
+const identityKey = (i: MoiraiGraphTimeSystemIdentity) =>
+  [
+    i.time_system_id,
+    i.definition_version,
+    i.adapter_identity,
+    i.comparison_domain
+  ].join(":");
+export async function loadGraphPublicationSources(
+  pins: readonly GraphRevisionPin[] = [],
+  options: { onlyPinned?: boolean } = {}
+): Promise<{
+  catalog: GraphSourceCatalog;
+  snapshots: readonly GraphPublicationCanonSnapshot[];
+  failures: readonly GraphPublicationFailure[];
+}> {
+  const observations = options.onlyPinned ? [] : await readPublishedWorlds();
+  const candidates = new Map(
+    observations.flatMap((o) =>
+      o.availability === "ready"
+        ? [[o.worldId, o.pointer.served_revision] as const]
+        : []
+    )
+  );
+  for (const pin of pins) candidates.set(pin.world_id, pin.served_revision);
+  const failures: GraphPublicationFailure[] = observations
+    .filter(
+      (o) =>
+        o.availability === "unavailable" &&
+        !pins.some((p) => p.world_id === o.worldId)
+    )
+    .map((o) => ({ worldId: o.worldId, code: "source_unavailable" }));
+  const requested = [...candidates]
+    .sort(
+      ([a], [b]) =>
+        Number(pins.some((p) => p.world_id === b)) -
+          Number(pins.some((p) => p.world_id === a)) || a.localeCompare(b)
+    )
+    .slice(0, 8);
+  if (candidates.size > 8)
     failures.push({
       worldId: "bounded-world-list",
       code: "source_budget_exceeded"
     });
-
+  const results = await Promise.allSettled(
+    requested.map(([world, revision]) => readGraphRevision(world, revision))
+  );
   const snapshots: GraphPublicationCanonSnapshot[] = [];
-  let canonBudget = MAX_CANONS;
-  for (const observation of ready) {
-    let selected;
-    try {
-      selected = await withTimeout(selectPublication(observation.worldId));
-    } catch (error) {
+  const worlds: GraphSourceWorldOption[] = [];
+  let remaining = 32;
+  results.forEach((value, index) => {
+    const [worldId, revision] = requested[index]!;
+    if (value.status === "rejected") {
       failures.push({
-        worldId: observation.worldId,
-        servedRevision: observation.pointer.served_revision,
-        code:
-          error instanceof Error && error.message.includes("timeout")
-            ? "source_timeout"
-            : "source_unavailable"
+        worldId,
+        servedRevision: revision,
+        code: "source_unavailable"
       });
-      continue;
+      const pin = pins.find(
+        (p) => p.world_id === worldId && p.served_revision === revision
+      );
+      // Retain the requested selector during partial failure; this creates no data or coordinates.
+      if (pin?.canon_ids?.length && pin.time_systems?.length) {
+        worlds.push({
+          id: worldId,
+          label: { ko: worldId, en: worldId },
+          description: {
+            ko: "선택한 Revision을 읽을 수 없습니다",
+            en: "Selected revision unavailable"
+          },
+          servedRevision: revision,
+          timeSystem: pin.time_systems[0]!,
+          timeSystems: pin.time_systems,
+          canons: pin.canon_ids.map((id) => ({ id, label: { ko: id, en: id } }))
+        });
+      }
+      return;
     }
-    const canons = observation.canons.slice(0, Math.max(0, canonBudget));
-    canonBudget -= canons.length;
-    if (canons.length < observation.canons.length)
+    const data = value.value;
+    const selected = data.snapshots.slice(0, remaining);
+    remaining -= selected.length;
+    if (selected.length < data.snapshots.length)
       failures.push({
-        worldId: observation.worldId,
-        servedRevision: observation.pointer.served_revision,
+        worldId,
+        servedRevision: revision,
         code: "source_budget_exceeded"
       });
-    const results = await Promise.allSettled(
-      canons.map(async (canon): Promise<GraphPublicationCanonSnapshot> => {
-        const document = await withTimeout(
-          readCanon(observation.worldId, canon.id, selected)
-        );
-        const [temporal, graphScope, subjects] = await Promise.all([
-          withTimeout(
-            readRelationalTime(
-              observation.worldId,
-              canon.id,
-              document.temporalArtifact,
-              selected
-            )
-          ),
-          document.graphScopeArtifact
-            ? withTimeout(
-                readGraphScope(
-                  observation.worldId,
-                  canon.id,
-                  document.graphScopeArtifact,
-                  selected
-                )
-              )
-            : Promise.resolve(null),
-          Promise.all(
-            document.subjectArtifacts.map((subject) =>
-              withTimeout(
-                readSubject(
-                  observation.worldId,
-                  canon.id,
-                  subject.subject_handle_id,
-                  selected
-                )
-              ).then((value) => value.document)
-            )
-          )
-        ]);
-        return {
-          worldId: observation.worldId,
-          servedRevision: observation.pointer.served_revision,
-          canon: document.canon,
-          events: document.events,
-          narratives: document.narratives,
-          timeSystems: document.timeSystems,
-          temporal,
-          graphScope,
-          subjects,
-          manifest: selected.manifest
-        };
-      })
-    );
-    results.forEach((result, index) => {
-      if (result.status === "fulfilled") snapshots.push(result.value);
-      else
-        failures.push({
-          worldId: observation.worldId,
-          servedRevision: observation.pointer.served_revision,
-          ...(canons[index]?.id ? { canonId: canons[index]!.id } : {}),
-          code:
-            result.reason instanceof Error &&
-            result.reason.message.includes("timeout")
-              ? "source_timeout"
-              : "source_unavailable"
-        });
-    });
-  }
-
-  const worlds: GraphSourceWorldOption[] = ready.flatMap((observation) => {
-    const worldSnapshots = snapshots.filter(
-      (snapshot) => snapshot.worldId === observation.worldId
-    );
+    if (!selected.length) return;
+    snapshots.push(...selected);
     const systems = new Map<string, MoiraiGraphTimeSystemIdentity>();
-    for (const snapshot of worldSnapshots)
-      for (const system of snapshot.timeSystems) {
-        const identity = publicTimeSystemIdentity(system);
+    for (const s of selected)
+      for (const t of s.timeSystems) {
+        const identity = publicTimeSystemIdentity(t);
         systems.set(identityKey(identity), identity);
       }
-    const timeSystems = [...systems.values()].toSorted((left, right) =>
-      identityKey(left).localeCompare(identityKey(right))
-    );
-    if (timeSystems.length === 0) return [];
-    return [
-      {
-        id: observation.worldId,
-        label: { ko: observation.world.title, en: observation.world.title },
-        description: {
-          ko: observation.world.description ?? "",
-          en: observation.world.description ?? ""
-        },
-        servedRevision: observation.pointer.served_revision,
-        timeSystem: timeSystems[0]!,
-        timeSystems,
-        canons: worldSnapshots.map((snapshot) => ({
-          id: snapshot.canon.id,
-          label: { ko: snapshot.canon.title, en: snapshot.canon.title }
-        }))
-      }
-    ];
+    // This selector labels relative layout; it is never appended to persisted Time Systems.
+    const timeSystems = systems.size
+      ? [...systems.values()].sort((a, b) =>
+          identityKey(a).localeCompare(identityKey(b))
+        )
+      : [structuralFrame(worldId)];
+    worlds.push({
+      id: worldId,
+      label: { ko: data.world.title, en: data.world.title },
+      description: {
+        ko: data.world.description ?? "",
+        en: data.world.description ?? ""
+      },
+      servedRevision: revision,
+      timeSystem: timeSystems[0]!,
+      timeSystems,
+      canons: selected.map((s) => ({
+        id: s.canon.id,
+        label: { ko: s.canon.title, en: s.canon.title }
+      }))
+    });
   });
-  const frameMap = new Map<string, MoiraiGraphTimeSystemIdentity>();
-  for (const world of worlds)
-    for (const identity of world.timeSystems)
-      frameMap.set(identityKey(identity), identity);
-  const frames = [...frameMap.values()].map((target) => ({
-    id: identityKey(target),
-    label: { ko: target.time_system_id, en: target.time_system_id },
-    description: {
-      ko: `${target.adapter_identity} · ${target.comparison_domain}`,
-      en: `${target.adapter_identity} · ${target.comparison_domain}`
+  const identities = new Map(
+    worlds.flatMap((w) =>
+      w.timeSystems.map((i) => [identityKey(i), i] as const)
+    )
+  );
+  const frames = [...identities].map(([id, target]) => ({
+    id,
+    target,
+    label: {
+      ko:
+        target.adapter_identity === "structural-order-display/1"
+          ? "관계 기반 순서"
+          : target.time_system_id,
+      en:
+        target.adapter_identity === "structural-order-display/1"
+          ? "Relative order"
+          : target.time_system_id
     },
-    target
+    description: { ko: target.comparison_domain, en: target.comparison_domain }
   }));
-  return { catalog: { frames, worlds }, snapshots, failures };
+  return { catalog: { worlds, frames }, snapshots, failures };
 }

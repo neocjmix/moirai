@@ -5,7 +5,7 @@ import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, 
 
 import { chartPlaneDiagnosticSchema, eventDetailResponseSchema, graphShellChartPlaneEntitySchema, graphShellChartPlaneRegionEntitySchema, graphShellViewportResponseSchema, type EventDetailResponse, type EventRecord, type GraphShellChartPlane, type GraphShellChartPlaneEntity, type GraphShellChartPlaneRegionEntity, type GraphShellWorkspaceShell, type WorldAnchor } from "@urdr/contracts";
 import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
-import { graphReadLoader, type GraphReadLoader } from "../graph-read-loader";
+import type { GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 
@@ -850,7 +850,10 @@ function getCompositeSurfaceOpacityScale(points: ViewportCoordinate[], viewportS
 type GraphShellProps = {
   initialWorkspace: GraphShellBootstrapWorkspace;
   initialChartPlane?: GraphShellChartPlane;
-  loader?: GraphReadLoader;
+  loader: GraphReadLoader;
+  initialViewportCenter?: {x:number;y:number}|null;
+  externalFocus?: {id:string;label:string}|null;
+  onSelection?: (id:string|null)=>void;
   locale: AppLocale;
   compositeHullMode: CompositeHullMode;
   compositeSplineTuning: CompositeSplineTuning;
@@ -1687,7 +1690,7 @@ function summarizeWorldAnchorForPanel(anchor: WorldAnchor): string {
 
 function renderMarkdownInline(text: string, keyPrefix: string): ReactNode[] {
   const nodes: ReactNode[] = [];
-  const pattern = /(\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*)/g;
+  const pattern = /(\[([^\]]+)\]\(((?:https?:\/\/|\/worlds\/)[^\s)]+)\)|`([^`]+)`|\*\*([^*]+)\*\*|\*([^*]+)\*)/g;
   let cursor = 0;
 
   while (true) {
@@ -1705,7 +1708,7 @@ function renderMarkdownInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (linkLabel && linkHref) {
       nodes.push(
-        <a href={linkHref} key={tokenKey} rel="noreferrer" target="_blank">
+        <a href={linkHref} key={tokenKey} rel="noreferrer" target={linkHref.startsWith("/worlds/") ? "_self" : "_blank"}>
           {linkLabel}
         </a>,
       );
@@ -2230,7 +2233,10 @@ function EventDrawerContent({
 export function GraphShell({
   initialWorkspace,
   initialChartPlane,
-  loader = graphReadLoader,
+  loader,
+  initialViewportCenter,
+  externalFocus,
+  onSelection,
   locale,
   compositeHullMode,
   compositeSplineTuning,
@@ -2268,6 +2274,15 @@ export function GraphShell({
   const pendingEventTapRef = useRef<PendingEventTap | null>(null);
   const eventDrawerDragRef = useRef<EventDrawerDragState | null>(null);
   const bootstrapChartPlane = initialChartPlane ?? null;
+  useEffect(()=>{setRuntimeViewportResponse(null);},[loader]);
+  // Moirai identity is an input/output seam; original selection and gestures stay intact.
+  const onSelectionRef=useRef(onSelection);onSelectionRef.current=onSelection;
+  useEffect(()=>{if(hasHydratedRestorableState && (selectedEventSelection || !externalFocus))onSelectionRef.current?.(selectedEventSelection?.eventId??null);},[selectedEventSelection?.eventId,hasHydratedRestorableState]);
+  useEffect(()=>{
+    if(!hasHydratedRestorableState||!externalFocus?.id)return;
+    setSelectedEventSelection(current=>{if(current?.eventId===externalFocus.id)return current;eventSelectionNonceRef.current+=1;pendingRestoredDrawerStageRef.current="peek";return {eventId:externalFocus.id,label:externalFocus.label,requestKey:eventSelectionNonceRef.current};});
+  },[externalFocus?.id,hasHydratedRestorableState]);
+
 
   const applyResolvedGraphShellState = useCallback((nextState: ReturnType<typeof resolveGraphShellRestorableState>) => {
     setSelectedTimelineId(nextState.shell.selectedTimelineId);
@@ -2302,7 +2317,7 @@ export function GraphShell({
       clearPersistedGraphShellState();
     }
 
-    const localState: GraphShellRestorableState | null = parsedLocalState
+    const localState: GraphShellRestorableState | null = parsedLocalState && parsedLocalState.shell?.enabledCanonIds.some(id=>workspace.canons.some(c=>c.id===id))
       ? {
           ...parsedLocalState,
           shell: validateShellSliceForWorkspace(parsedLocalState.shell, workspace),
@@ -2315,12 +2330,12 @@ export function GraphShell({
     };
 
     applyResolvedGraphShellState(resolveGraphShellRestorableState({
-      defaultState: { shell: defaultShellSlice },
+      defaultState: { shell: defaultShellSlice, ...(initialViewportCenter?{viewport:{centerX:initialViewportCenter.x,centerY:initialViewportCenter.y,spanX:viewportSize.width,spanY:viewportSize.height}}:{}) },
       localState,
       urlState,
     }));
     setHasHydratedRestorableState(true);
-  }, [applyResolvedGraphShellState, defaultShellSlice, viewportSize, workspace]);
+  }, [applyResolvedGraphShellState, defaultShellSlice, viewportSize, workspace, initialViewportCenter]);
 
   useEffect(() => {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) {
@@ -2632,11 +2647,11 @@ export function GraphShell({
   }, [view, viewportSize]);
 
   const chartAnchors = useMemo(() => {
-    if (!workspace.chronologyBoard || viewportSize.width <= 0 || viewportSize.height <= 0) {
+    if (viewportSize.width <= 0 || viewportSize.height <= 0) {
       return [] as AnchorLine[];
     }
 
-    const centerYear = (workspace.chronologyBoard.axis.startYear + workspace.chronologyBoard.axis.endYear) / 2;
+    const centerYear = workspace.chronologyBoard ? (workspace.chronologyBoard.axis.startYear + workspace.chronologyBoard.axis.endYear) / 2 : null;
     const anchorStep = pickGregorianAxisStep(view.scaleY);
 
     return visibleChartPlaneEntities
@@ -2648,7 +2663,7 @@ export function GraphShell({
       .filter((entity): entity is Extract<GraphShellChartPlaneEntity, { geometryKind: "point" }> => entity.geometryKind === "point")
       .map((entity) => ({
         id: entity.id,
-        label: formatAnchorLabel(worldYToGregorianDate(centerYear, entity.position.y), anchorStep),
+        label: centerYear === null ? entity.label : formatAnchorLabel(worldYToGregorianDate(centerYear, entity.position.y), anchorStep),
         y: viewportSize.height / 2 + view.y + entity.position.y * view.scaleY
       }))
       .filter((anchor) => anchor.y >= -24 && anchor.y <= viewportSize.height + 24)

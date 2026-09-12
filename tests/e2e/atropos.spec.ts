@@ -78,7 +78,7 @@ test("mobile source island restores published World, Canon, Time System, and Rev
 test("URDR mock viewport preserves a single island, bottom dock, selection and mobile detail sheet", async ({
   page
 }) => {
-  await page.goto("/graph");
+  await page.goto("/graph/demo");
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
   await expect(page.getByTestId("graph-stage")).toBeVisible();
   await expect(
@@ -97,7 +97,7 @@ test("URDR mock viewport preserves a single island, bottom dock, selection and m
 test("URDR mock viewport renders its historical fixture instead of Publication entities", async ({
   page
 }) => {
-  await page.goto("/graph");
+  await page.goto("/graph/demo");
   await expect(
     page.locator('[data-event-point-id="event:founding"]')
   ).toBeVisible();

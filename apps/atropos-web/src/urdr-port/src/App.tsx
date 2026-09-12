@@ -16,7 +16,7 @@ import { GraphShell } from "./components/graph-shell";
 import { RuntimeErrorBoundary } from "./components/runtime-error-boundary";
 import shellStyles from "./components/graph-shell.module.css";
 import { DEFAULT_COMPOSITE_SPLINE_TUNING, type CompositeHullMode, type CompositeSplineTuning } from "./components/graph-shell-region-geometry";
-import { graphReadLoader, type GraphReadLoader } from "./graph-read-loader";
+import type { GraphReadLoader } from "./graph-read-loader";
 import {
   readManualAppLocaleOverride,
   resolveBrowserLocale,
@@ -26,7 +26,10 @@ import {
 
 type AppProps = {
   initialScreen?: AtroposScreenId;
-  loader?: GraphReadLoader;
+  loader: GraphReadLoader;
+  initialViewportCenter?: {x:number;y:number}|null;
+  externalFocus?: {id:string;label:string}|null;
+  onSelection?: (id:string|null)=>void;
   renderGraphPage?: (args: {
     workspace: GraphShellWorkspaceShell;
     locale: AppLocale;
@@ -105,7 +108,7 @@ const SCREEN_ICONS = {
   settings: GearIcon,
 } as const;
 
-export function App({ initialScreen = "graph", loader = graphReadLoader, renderGraphPage }: AppProps = {}) {
+export function App({ initialScreen = "graph", loader, renderGraphPage, initialViewportCenter, externalFocus, onSelection }: AppProps) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
@@ -128,6 +131,9 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
         compositeHullMode={compositeHullMode}
         compositeSplineTuning={compositeSplineTuning}
         loader={loader}
+        initialViewportCenter={initialViewportCenter}
+        externalFocus={externalFocus}
+        onSelection={onSelection}
         locale={locale}
       />
     ) : null;
@@ -240,7 +246,7 @@ export function App({ initialScreen = "graph", loader = graphReadLoader, renderG
             </div>
           )}
         >
-          <GraphPageContent />
+          {GraphPageContent()}
         </RuntimeErrorBoundary>
       );
     }

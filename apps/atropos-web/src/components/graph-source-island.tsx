@@ -58,7 +58,7 @@ const COPY = {
     cancel: "취소",
     revisionVector: "Revision vector",
     mockViewport:
-      "Publication 쿼리와 검색 결과는 현재 served Revision을 사용합니다. 그래프 viewport는 재구축 전 기준선인 URDR 목데이터를 렌더링합니다.",
+      "그래프와 검색은 선택한 Publication Revision을 사용합니다. 배치 근거가 부족한 항목도 검색과 상세에서 확인할 수 있습니다.",
     entityTitle: "Identity-aware 결과",
     entityHint:
       "공유 identity는 한 번만 표시하며 matched Canon과 전체 membership을 구분합니다.",
@@ -110,7 +110,7 @@ const COPY = {
     cancel: "Cancel",
     revisionVector: "Revision vector",
     mockViewport:
-      "Publication queries and search results use the current served Revision. The graph viewport renders the URDR mock-data baseline while its integration is redesigned.",
+      "The graph and search use the selected Publication revisions. Items without supported geometry remain available in search and detail.",
     entityTitle: "Identity-aware results",
     entityHint:
       "Shared identities appear once, with matched Canons separate from all memberships.",

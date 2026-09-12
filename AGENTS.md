@@ -80,7 +80,9 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 ## Deployment and infrastructure
 
 - Prefer the public cloud integration environment for user verification; local execution remains an agent diagnostic tool.
-- Deploy small meaningful checkpoints frequently, with CI gating and a readiness healthcheck.
+- Until the production environment is explicitly declared a public service, treat it as the primary development observation surface. Deploy small checkpoints as often as practical so the user can see the current implementation state.
+- During that period, a failing check, incomplete slice or unmet exit condition does not by itself block deployment. Keep each deployment attributable to a commit and report its known failures and incomplete behavior plainly; continue fixing forward from the deployed checkpoint.
+- Preserve readiness healthchecks and run the relevant CI, smoke and security checks, but use their results as visible implementation evidence rather than a prerequisite for exposing the current work. Never describe a failing or partial deployment as complete.
 - Keep Atropos public. Expose only Clotho HTTP/MCP for authenticated operational clients; keep Lachesis application internal. Do not give the worker or PostgreSQL a public application route.
 - Reuse the dedicated URDR Railway resources where safe, but do not copy URDR's application architecture or data model.
 - For Atropos visual and interaction work, inspect and copy the corresponding URDR UI implementation by default. Preserve its visual identity and behavior unless accepted Moirai documents, an explicit user direction or a documented defect requires a change.

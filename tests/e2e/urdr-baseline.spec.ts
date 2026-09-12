@@ -5,7 +5,7 @@ import { expect, test } from "@playwright/test";
 test("URDR baseline keeps mobile and desktop geometry, pan and selection", async ({
   page
 }, testInfo) => {
-  await page.goto("/graph");
+  await page.goto("/graph/demo");
   const point = page.locator('[data-event-point-id="event:founding"]');
   await expect(point).toBeVisible();
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
@@ -35,7 +35,7 @@ test("URDR baseline keeps mobile and desktop geometry, pan and selection", async
   });
 
   await page.setViewportSize({ width: 1365, height: 900 });
-  await page.goto("/graph");
+  await page.goto("/graph/demo");
   await expect(point).toBeVisible();
   await expect(
     page.locator('[data-region-id="region:early-joseon"]').first()

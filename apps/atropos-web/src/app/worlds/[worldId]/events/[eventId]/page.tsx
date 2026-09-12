@@ -4,19 +4,30 @@ import { StatusIsland } from "../../../../../components/status-island";
 import {
   readWorld,
   readWorldEvent,
-  selectPublication
+  selectPublication,
+  selectPublicationRevision
 } from "../../../../../lib/publication";
 
 export const dynamic = "force-dynamic";
 
 export default async function WorldEventPage({
-  params
+  params,
+  searchParams
 }: {
   readonly params: Promise<{ worldId: string; eventId: string }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { worldId, eventId } = await params;
   try {
-    const selected = await selectPublication(worldId);
+    const query = await searchParams;
+    const raw =
+      typeof query.mq === "string" && query.mq.length <= 65536
+        ? query.mq
+        : null;
+    const selected =
+      typeof query.revision === "string"
+        ? await selectPublicationRevision(worldId, Number(query.revision))
+        : await selectPublication(worldId);
     const [worldDocument, eventDocument] = await Promise.all([
       readWorld(worldId, selected),
       readWorldEvent(worldId, eventId, selected)
@@ -30,6 +41,14 @@ export default async function WorldEventPage({
     if (membershipCanons.length !== event.canon_memberships.length) notFound();
     return (
       <main className="event-canvas">
+        {raw ? (
+          <a
+            data-testid="return-to-graph"
+            href={`/graph?mq=${encodeURIComponent(raw)}`}
+          >
+            Return to graph
+          </a>
+        ) : null}
         <StatusIsland
           worldId={worldId}
           worldTitle={world.title}

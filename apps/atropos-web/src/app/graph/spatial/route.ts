@@ -1,3 +1,4 @@
+import { graphSpatialQueryContext } from "../../../lib/graph-spatial-query";
 import {
   moiraiSpatialReader,
   spatialRequestSchema
@@ -31,7 +32,33 @@ export async function POST(request: Request) {
         { error: "invalid_spatial_request" },
         { status: 400 }
       );
-    const result = await moiraiSpatialReader.viewport(parsed.data);
+    const context = parsed.data.state
+      ? await graphSpatialQueryContext(parsed.data.state)
+      : null;
+    if (
+      context &&
+      JSON.stringify(
+        context.state.query.sources.map((s) => [
+          s.world_id,
+          s.served_revision,
+          s.canon_ids
+        ])
+      ) !==
+        JSON.stringify(
+          parsed.data.sources.map((s) => [
+            s.world_id,
+            s.served_revision,
+            s.canon_ids
+          ])
+        )
+    )
+      throw Error("spatial_query_source_mismatch");
+    const result = await moiraiSpatialReader.viewport({
+      ...parsed.data,
+      ...(context
+        ? { accept: (entity: { id: string }) => context.ids.has(entity.id) }
+        : {})
+    });
     return Response.json(result, { headers: { "cache-control": "no-store" } });
   } catch {
     return Response.json(

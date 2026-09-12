@@ -167,6 +167,35 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
     expect(
       visible.viewport.entities.some((e) => e.id.startsWith("m_event_"))
     ).toBe(true);
+    const focus = {
+      kind: "event" as const,
+      world_id: ids.worldId,
+      served_revision: 4,
+      canon_id: ids.canonId,
+      event_ref: { kind: "event" as const, event_id: ids.secondEventId }
+    };
+    const focused = await graphSpatialBootstrap(
+      { ...state, focus },
+      loaded.catalog
+    );
+    const focusedId = presentationNodeId(focus, focus.event_ref);
+    const framed = await moiraiSpatialReader.viewport({
+      sources: state.query.sources,
+      viewport: {
+        canonIds: focused.workspace.canons.map((c) => c.id),
+        bbox: {
+          minX: focused.center!.x - 1,
+          maxX: focused.center!.x + 1,
+          minY: focused.center!.y - 1,
+          maxY: focused.center!.y + 1
+        },
+        scale: 1,
+        viewportWidth: 390,
+        viewportHeight: 844,
+        includeNeighbors: false
+      }
+    });
+    expect(framed.viewport.entities.some((e) => e.id === focusedId)).toBe(true);
   });
   it("applies semantic filters without capping spatial exploration to the initial query budget", async () => {
     const loaded = await loadGraphPublicationSources([

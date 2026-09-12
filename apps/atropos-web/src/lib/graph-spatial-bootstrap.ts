@@ -1,5 +1,8 @@
 import type { MoiraiGraphUrlState } from "@moirai/contracts";
-import { presentationScopeKey } from "@moirai/graph-presentation";
+import {
+  presentationScopeKey,
+  presentationNodeId
+} from "@moirai/graph-presentation";
 import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import type { GraphSourceCatalog } from "./moirai-graph-source-query";
 import { moiraiSpatialReader } from "./moirai-spatial";
@@ -31,8 +34,51 @@ export async function graphSpatialBootstrap(
   );
   let offset = 0;
   let center: GraphSpatialBootstrap["center"] = null;
+  let focusedCenter: GraphSpatialBootstrap["center"] = null;
   for (let i = 0; i < metas.length; i++) {
     const meta = metas[i];
+    const focus = state.focus;
+    if (
+      meta?.entityCount &&
+      focus?.kind === "event" &&
+      presentationScopeKey(focus) === meta.scopeId
+    ) {
+      const id = presentationNodeId(focus, focus.event_ref);
+      const selected = await moiraiSpatialReader
+        .viewport({
+          sources: [
+            {
+              world_id: focus.world_id,
+              served_revision: focus.served_revision,
+              canon_ids: [focus.canon_id],
+              time_systems: []
+            }
+          ],
+          viewport: {
+            canonIds: [meta.scopeId],
+            bbox: { minX: 0, maxX: 0, minY: 0, maxY: 0 },
+            scale: 1,
+            viewportWidth: 390,
+            viewportHeight: 844,
+            selectedEntityId: id,
+            includeNeighbors: false
+          },
+          maxEntities: 1
+        })
+        .catch(() => null);
+      const entity = selected
+        ? [...selected.viewport.entities, ...selected.viewport.regions].find(
+            (e) => e.id === id
+          )
+        : null;
+      if (entity?.geometryKind === "point")
+        focusedCenter = { x: offset + entity.position.x, y: entity.position.y };
+      if (entity?.geometryKind === "region")
+        focusedCenter = {
+          x: offset + (entity.worldBounds.minX + entity.worldBounds.maxX) / 2,
+          y: (entity.worldBounds.minY + entity.worldBounds.maxY) / 2
+        };
+    }
     if (!center && meta?.entityCount) {
       const point = await moiraiSpatialReader
         .initialPoint(sources[i]!)
@@ -41,6 +87,7 @@ export async function graphSpatialBootstrap(
     }
     offset += (meta?.widthHint ?? 1800) + 240;
   }
+  center = focusedCenter ?? center;
   const workspace: GraphShellWorkspaceShell = {
     menuItems: [
       { id: "publication", label: "Moirai Publication", active: true }

@@ -243,7 +243,7 @@ describe("M4.6-C Publication spatial producer", () => {
     expect(JSON.stringify({ artifacts, result })).toBe(before);
     expect(
       first.documents.every((d) =>
-        d.key.includes("/revisions/4/presentation/urdr-0267c8f-moirai-v1/")
+        d.key.includes("/revisions/4/presentation/urdr-0267c8f-moirai-v2/")
       )
     ).toBe(true);
     expect(

@@ -1,5 +1,7 @@
 // Source: neocjmix/urdr@0267c8fd081ca9a3cd556f8f7319c600248c3760
-// shared/domain/src/chart-plane-projection.ts. Local type/anchor imports only.
+// shared/domain/src/chart-plane-projection.ts. Local type/anchor imports and
+// post-placement temporal repair for documented defect #57.
+import { solveBoundedPlacement } from "./bounded-placement.js";
 import type {
   ChartPlaneDiagnostic,
   GraphEntityEditorial,
@@ -1911,6 +1913,44 @@ function finalizeChartPlane(
   };
 }
 
+/** Preserve original cluster spacing as a preference, then enforce all individual bounds and orders. */
+function repairPointTemporalPlacement(
+  context: ProjectionPreparedContext,
+  board: GraphShellChronologyBoard,
+  state: ProjectionMutableState
+) {
+  const points = [...state.placedYearByEventId].map(([id, preferred]) => ({
+    id,
+    preferred,
+    lower: context.explicitExtentByEventId.get(id)?.minYear ?? -Infinity,
+    upper: context.explicitExtentByEventId.get(id)?.maxYear ?? Infinity
+  }));
+  const result = solveBoundedPlacement(
+    points,
+    [...context.constraintsByBeforeId.values()].flat()
+  );
+  for (const [id, year] of result.placed) {
+    const geometry = state.geometryByEventId.get(id);
+    if (geometry?.geometryKind !== "point") continue;
+    state.placedYearByEventId.set(id, year);
+    state.geometryByEventId.set(id, {
+      ...geometry,
+      position: { ...geometry.position, y: chronologyYearToWorldY(board, year) }
+    });
+  }
+  for (const id of result.unplaced) {
+    state.geometryByEventId.delete(id);
+    state.placedYearByEventId.delete(id);
+    const diagnostic: ChartPlaneDiagnostic = {
+      code: "temporal-placement-infeasible",
+      severity: "error",
+      message: `Event ${id} has no joint display placement within its temporal bounds and ordering constraints.`
+    };
+    state.diagnostics.push(diagnostic);
+    appendEventDiagnostic(state.eventDiagnosticsById, id, diagnostic);
+  }
+}
+
 export function buildGraphShellChartPlane(
   dataset: Dataset,
   chronologyBoard: GraphShellChronologyBoard,
@@ -1930,6 +1970,7 @@ export function buildGraphShellChartPlane(
   placeSeedEvents(context, chronologyBoard, state);
   placePropagatedInstantEvents(context, chronologyBoard, state);
   redistributePlacedPointClusters(context, chronologyBoard, state);
+  repairPointTemporalPlacement(context, chronologyBoard, state);
   optimizePointXPositions(context, state, xForceLayout);
   deriveCompositeRegions(context, state);
   normalizeContainedByAssignments(context, state);

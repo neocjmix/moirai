@@ -18,7 +18,7 @@ import {
 } from "./urdr-chart-plane.js";
 import type { Dataset, GraphShellChartPlane } from "./urdr-layout-types.js";
 
-export const PRESENTATION_LAYOUT_VERSION = "urdr-0267c8f-moirai/1";
+export const PRESENTATION_LAYOUT_VERSION = "urdr-0267c8f-moirai/2";
 export interface ScopeLayout {
   readonly scope: PresentationScope;
   readonly chartPlane: GraphShellChartPlane;
@@ -293,8 +293,7 @@ export function layoutPresentationScope(
   for (const diagnostic of chartPlane.diagnostics) {
     report("m46_urdr_" + diagnostic.code, [], diagnostic.message);
   }
-  // User decision: preserve the original placement; track its bounds defect
-  // in backlog #57 and expose it without changing canonical time evidence.
+  // Defense-in-depth: a display repair must never overwrite canonical evidence.
   const unsafe = chartPlane.entities.filter((e) => {
     if (e.geometryKind !== "point") return false;
     const bounds = extents.get(e.eventId);
@@ -309,7 +308,7 @@ export function layoutPresentationScope(
     report(
       "m46_legacy_layout_outside_semantic_bounds",
       unsafe.map((e) => e.id),
-      "Known URDR display defect (backlog #57): cluster redistribution exceeded an individual temporal interval. Geometry is approximate; canonical bounds remain unchanged in the inspector."
+      "Display placement exceeded an individual temporal interval. Canonical bounds remain unchanged in the inspector."
     );
   const drawableIds = new Set(chartPlane.entities.map((e) => e.eventId));
   const unplaced = scope.nodes

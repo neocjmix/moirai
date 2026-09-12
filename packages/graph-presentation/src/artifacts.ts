@@ -15,7 +15,7 @@ import type {
 } from "./urdr-layout-types.js";
 
 export const SPATIAL_FORMAT_VERSION = 1;
-export const SPATIAL_PATH_VERSION = "urdr-0267c8f-moirai-v1";
+export const SPATIAL_PATH_VERSION = "urdr-0267c8f-moirai-v2";
 export const SPATIAL_BAND_SIZE = 4096;
 export const spatialDigest = (value: string) =>
   createHash("sha256").update(value).digest("hex");

@@ -21,3 +21,22 @@
 앞선 사용자 응답의 '복합 사건 형상'이라는 설명을 정정한다. 실제 이슈는 cluster를
 균등 분산하면서 개별 시간 범위를 무시하는 결함이다. 개별 bounds와 strict/non-strict/
 equality를 함께 검증하고 해결 불가능하면 진단해야 한다. independent clamp는 사용하지 않는다.
+
+
+수정 결과: 원본 cluster 분산은 선호 좌표로 유지하고 X force/region 계산 직전에
+모든 point의 bounds와 시간 관계를 함께 해결한다. zero-gap cycle을 같은 좌표로
+묶고 successor upper bound를 먼저 역전파한 뒤 정방향으로 좌표를 선택한다.
+불가능한 connected group만 unplaced로 남기고 다른 group은 보존한다.
+고정 display gap을 표현할 공간이 부족한 경우에도 날짜를 발명하지 않고 진단한다.
+이는 canonical solver의 유효성 판정이나 시간 정밀도를 변경하지 않는다.
+
+- 기존 정상 URDR golden snapshot, force 상수, spatial 100k 검사 통과.
+- #57 재현은 [2004,2006] 범위와 A PRECEDES B를 모두 만족한다.
+- nested/overlap/disjoint/one-sided interval, strict/non-strict/equality,
+  infeasible isolation, 입력 순서 결정성 및 10k chain 검증 통과.
+- 조선사 입력 원본으로 재생성한 40 Event가 모두 배치되고 시간 관계를 만족한다.
+- algorithm `/2`, immutable presentation path `urdr-0267c8f-moirai-v2`로 올렸다.
+  worker의 기존 backfill이 현재 served revision을 새 경로에 재생성한다.
+  이전 v1 문서와 정본/Publication revision은 덮어쓰지 않는다.
+- PR #69 (`855367b`) production: 좌측 1377~1383 눈금, 황산대첩의 한국어 본문과
+  우리역사넷 링크를 실제 브라우저에서 확인했다.

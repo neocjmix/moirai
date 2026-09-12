@@ -1,5 +1,11 @@
 # 현재 구현 상태
 
+2026-09-12 사용자 승인으로 기존 production 샘플 3개를 모두 삭제하고
+[조선 전기 도그푸딩 데이터](../evidence/joseon-dogfood.md)로 교체했다.
+현재 World는 `조선 전기 — 건국에서 세조까지` 하나이며 revision 1 ready,
+주요 사건 32개·Composite 8개·Relation 124개다. M5는 계속 비활성이다.
+좌측 축 누락 및 한국어 Narrative의 graph inspector 미노출은 도그푸딩 backlog다.
+
 세션과 에이전트 사이의 짧은 상태판이다. M4.5-A~G의 데이터·query 작업은 유지한다.
 M4.5-H와 남은 M4.5 계획은 폐기했다. M4.6은 현재 URDR renderer·layout·interaction·spatial
 read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한다. M5는 비활성이다.

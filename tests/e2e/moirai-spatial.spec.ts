@@ -89,12 +89,11 @@ test("Moirai Publication uses the copied viewport, bounded reads and same-revisi
   });
   const link = sheet.getByRole("link", { name: "Open stable Event" });
   await expect(link).toHaveAttribute("href", /revision=2&mq=/);
-  const href = await link.getAttribute("href");
   const shared = page.url();
   const mq = new URL(shared).searchParams.get("mq")!;
   const state = JSON.parse(mq);
   expect(state.focus.kind).toBe("event");
-  await page.goto(href!);
+  await link.click();
   await expect(page.getByTestId("return-to-graph")).toBeVisible();
   await expect(page.locator("main")).toContainText("2");
   await page.getByTestId("return-to-graph").click();

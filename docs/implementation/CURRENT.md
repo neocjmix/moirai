@@ -3,7 +3,7 @@
 IP-004 — [M5 진입 전 Production Readiness Gate](IP-004-production-readiness-gate.md) 활성.
 사용자 승인 범위: Atropos Island/Event product surface 안정화, Clotho 자연어 작성의 semantic E2E·점진적 refinement 검증, 실제 query path의 scale/latency/cache 검증. Graph view는 현재 안정된 regression baseline으로 유지하며 재설계하지 않는다. M5는 계속 비활성이다.
 
-Work 시작 지점은 IP-004 PR-0이다. 먼저 remote `main` HEAD, open PR/CI, public Atropos `/__status`, Graph/Island/Event public behavior, Clotho read/validate/commit availability, synthetic World/served Revision, 기존 100k fixture와 graph budget/query contract를 확인해 evidence로 고정한다. 그 뒤 PR-A/PR-B를 진행하고, 실제 UI/query shape와 semantic fixture를 바탕으로 PR-C를 수행한다.
+PR-0 baseline은 [evidence/ip-004-pr0-baseline-2026-09-13.md](../evidence/ip-004-pr0-baseline-2026-09-13.md)에 고정했다. 현재 다음 slice는 PR-A1 — Island product surface다. Graph renderer/layout/interaction은 M4.7 regression baseline으로 유지한다. PR-B의 shared production write는 시작하지 않았고, PR-C는 PR-A/PR-B의 실제 query shape를 사용한다.
 
 후속 도그푸딩 수정: Composite 레이블 후보 전환에 화면 기준 히스테리시스 적용.
 이전 변을 유지하면서 좌표는 계속 갱신하고, 충분한 개선·화면 이탈 시 전환한다.

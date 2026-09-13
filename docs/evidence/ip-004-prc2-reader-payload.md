@@ -3,6 +3,12 @@
 Status: local implementation verified; three-scale browser CI and production
 verification pending. IP-004 active, M5 inactive.
 
+PR #90 deployed as `236dbc04d5dfdbdc75987b6c76a9e54b4735def2`; final PR CI
+`34780504340`, main CI `34780771685` succeeded. All three Railway services were
+SUCCESS at this SHA and the public health/status identified it. Reloaded public
+Graph retained the baseline chart and interaction controls. Its post-deploy
+smoke is tracked as `34780889158`.
+
 The 1k/10k measurements exposed megabytes of initial data and up to 1,000
 reader cards rendered at once. Inspection found that the client consumed only
 `result.completeness` from the full query result; the Graph renderer uses its
@@ -25,6 +31,14 @@ existing reader lists remain measured follow-ups; this does not claim Scale YES.
 The opt-in workload can retain generated immutable artifacts and reuse them in
 a separate read-only process. Reused directories are never deleted by the test.
 This avoids rebuilding the same large fixture for each query/browser experiment.
+The first browser workflow passed at 100 and 1k. At 10k, canonical generation
+took 61.4 seconds on CI and starved Vitest's RPC despite yielding between phases.
+The test reached readback but exited nonzero; it is not accepted evidence.
+`ip004-build-scale-artifacts.ts` now builds in a separate process so the runner
+remains responsive without ignoring errors or extending an assertion timeout.
+Builder and Atropos-read peak RSS are reported independently, matching their
+separate production service roles. Browser measurements are also printed in CI
+logs for review, in addition to downloadable JSON evidence.
 
 `playwright.ip004.config.ts` reuses the existing production-build/mobile WebKit
 setup with the generated synthetic World. The dedicated workflow runs 100,

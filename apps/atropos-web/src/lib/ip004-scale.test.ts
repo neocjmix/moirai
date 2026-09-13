@@ -1,11 +1,9 @@
-import { mkdtemp, mkdir, writeFile, rm } from "node:fs/promises";
+import { mkdtemp, rm } from "node:fs/promises";
+import { spawn } from "node:child_process";
 import { tmpdir } from "node:os";
-import { dirname, join } from "node:path";
+import { join } from "node:path";
 import { expect, it } from "vitest";
-import { buildPublicationArtifacts } from "@moirai/publication";
-import { buildSpatialArtifacts } from "@moirai/graph-presentation/server";
 import { presentationNodeId } from "@moirai/graph-presentation";
-import { queryFromPublicationDocuments } from "@moirai/graph-query";
 import { ip004ScaleFixture } from "../../../../scripts/ip004-scale-fixture";
 import { loadGraphPublicationSources } from "./graph-publication-loader";
 import { composeGraphPublicationQuery } from "./graph-publication-composer";
@@ -41,79 +39,25 @@ it.skipIf(!process.env.IP004_SCALE)(
     const samples: Record<string, unknown>[] = [];
     try {
       if (!reuse) {
-        process.stdout.write(
-          JSON.stringify({
-            scale: count,
-            phase: "canonical_publication_start",
-            started_at: new Date().toISOString()
-          }) + "\n"
-        );
-        let start = performance.now();
-        const publication = buildPublicationArtifacts(
-          fixture,
-          5,
-          "2026-09-13T00:00:00Z"
-        );
-        const publicationMs = performance.now() - start;
-        process.stdout.write(
-          JSON.stringify({
-            scale: count,
-            phase: "canonical_publication",
-            ms: publicationMs,
-            bytes: publication.documents.reduce(
-              (n, d) => n + Buffer.byteLength(d.body),
-              0
-            ),
-            objects: publication.documents.length,
-            peak_rss_kib: process.resourceUsage().maxRSS
-          }) + "\n"
-        );
-        // Let the runner deliver phase/RPC messages between long synchronous
-        // builds. This does not change either phase's measured CPU wall time.
-        await new Promise<void>((resolve) => setImmediate(resolve));
-        start = performance.now();
-        const graphInput = queryFromPublicationDocuments(
-          publication.manifestBody,
-          publication.documents
-        )!;
-        const graphInputMs = performance.now() - start;
-        start = performance.now();
-        const baked = buildSpatialArtifacts(
-          graphInput,
-          publication.manifestBody
-        );
-        process.stdout.write(
-          JSON.stringify({
-            scale: count,
-            phase: "spatial_publication",
-            graph_input_ms: graphInputMs,
-            ms: performance.now() - start,
-            bytes: baked.documents.reduce(
-              (n, d) => n + Buffer.byteLength(d.body),
-              0
-            ),
-            objects: baked.documents.length,
-            peak_rss_kib: process.resourceUsage().maxRSS
-          }) + "\n"
-        );
-        const documents = [
-          ...publication.documents,
-          ...baked.documents,
-          { key: publication.manifestKey, body: publication.manifestBody },
-          { key: baked.manifestKey, body: baked.manifestBody },
-          {
-            key: `worlds/${fixture.world.id}/current.json`,
-            body: JSON.stringify(publication.pointer)
-          }
-        ];
-        for (let i = 0; i < documents.length; i += 32)
-          await Promise.all(
-            documents.slice(i, i + 32).map(async (d) => {
-              const path = join(root, d.key);
-              await mkdir(dirname(path), { recursive: true });
-              await writeFile(path, d.body);
-            })
+        await new Promise<void>((resolve, reject) => {
+          const child = spawn(
+            process.execPath,
+            [
+              "--import",
+              "tsx",
+              "scripts/ip004-build-scale-artifacts.ts",
+              String(count),
+              root
+            ],
+            { stdio: ["ignore", "pipe", "pipe"] }
           );
+          child.stdout.on("data", (chunk) => process.stdout.write(chunk));
+          child.stderr.on("data", (chunk) => process.stderr.write(chunk));
+          child.once("error", reject);
+          child.once("close", (code) =>
+            code === 0 ? resolve() : reject(Error(`scale_build_exit_${code}`))
+          );
+        });
       }
       if (process.env.IP004_SCALE_KEEP === "1")
         process.stdout.write(
@@ -235,6 +179,7 @@ it.skipIf(!process.env.IP004_SCALE)(
             narratives: fixture.narratives.length
           },
           storage: "local filesystem; no network latency",
+          process_role: "atropos_read; separate builder reports its own peak RSS",
           rounds,
           paths: [...new Set(samples.map((s) => String(s.path)))].map(
             (path) => {

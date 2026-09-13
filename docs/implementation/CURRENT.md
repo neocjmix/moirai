@@ -9,8 +9,8 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 | 항목 | 상태 |
 | --- | --- |
 | 현재 slice | PR-C2c — 불필요한 client query data 제거·20개 reader paging·100/1k/10k 실제 Next/WebKit 검증; 전체 query·메모리 잔여 |
-| 마지막 배포 검증 | PR #89, `b2e2845324ca427ca417f949de7f90a266ac85a9`; Railway Atropos·Clotho·worker SUCCESS |
-| 검증 | PR CI `34780018113`, main CI `34780163568`, smoke `34780301572` success; 실제 R5 semantic readback 5개 통과 |
+| 마지막 배포 검증 | PR #90, `236dbc04d5dfdbdc75987b6c76a9e54b4735def2`; Railway Atropos·Clotho·worker SUCCESS |
+| 검증 | PR CI `34780504340`, main CI `34780771685` success; public health/status SHA와 Graph 렌더 확인; smoke `34780889158` 추적 |
 | 실제 World | 조선 전기 — 건국에서 세조까지; `01995c2a-7b00-7000-8000-000000000101` |
 | 실제 데이터 | current/target/served Revision 5 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133 |
 | Graph regression 경계 | M4.7 renderer/layout/interaction 유지, 후속 label hysteresis PR #77 포함; 재설계 금지 |

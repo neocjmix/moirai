@@ -55,19 +55,17 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
     page.getByRole("link", { name: "그래프로 돌아가기 / Return to graph" })
   ).toBeVisible();
   expect(errors).toEqual([]);
+  const measurement = {
+    scale: Number(process.env.IP004_BROWSER_SCALE),
+    graphReadyMs,
+    htmlBytes,
+    drawerMs,
+    navigation,
+    pageErrors: errors
+  };
+  console.info(JSON.stringify({ ip004_browser: measurement }));
   await testInfo.attach("ip004-reader-scale.json", {
     contentType: "application/json",
-    body: JSON.stringify(
-      {
-        scale: Number(process.env.IP004_BROWSER_SCALE),
-        graphReadyMs,
-        htmlBytes,
-        drawerMs,
-        navigation,
-        pageErrors: errors
-      },
-      null,
-      2
-    )
+    body: JSON.stringify(measurement, null, 2)
   });
 });

@@ -38,15 +38,28 @@ it("reuses padded coverage and in-flight requests but separates selection and Ca
   await load({ ...query(), canonIds: ["other"] });
   expect(read).toHaveBeenCalledTimes(4);
 });
-it("never treats truncated coverage as complete and bounds LRU retention", async () => {
-  const read = vi.fn(async () => response(true));
+it("bounds LRU retention", async () => {
+  const read = vi.fn(async () => response());
   const load = createViewportCache(read);
   await load(query());
-  await load(query(1));
+  await load(query(500));
   expect(read).toHaveBeenCalledTimes(2);
   for (let i = 1; i <= 8; i++) await load(query(i * 1000));
   await load(query());
   expect(read).toHaveBeenCalledTimes(11);
+});
+it("retries incomplete and stale responses even at the same viewport", async () => {
+  const read = vi
+    .fn()
+    .mockResolvedValueOnce(response(true))
+    .mockResolvedValueOnce({ ...response(), cache: { stale: true } })
+    .mockResolvedValue(response());
+  const load = createViewportCache(read);
+  await load(query());
+  await load(query());
+  await load(query());
+  await load(query(1));
+  expect(read).toHaveBeenCalledTimes(3);
 });
 it("cancels the oldest of three active reads and does not cache failure", async () => {
   const signals: AbortSignal[] = [];

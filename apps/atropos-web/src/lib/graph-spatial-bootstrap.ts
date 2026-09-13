@@ -89,6 +89,12 @@ export async function graphSpatialBootstrap(
   }
   center = focusedCenter ?? center;
   const workspace: GraphShellWorkspaceShell = {
+    navigationScopes: sources.map((source, i) => ({
+      canonId: presentationScopeKey(source),
+      widthHint: metas[i]?.widthHint ?? 1800,
+      bounds: metas[i]?.bounds ?? null,
+      ready: metas[i] !== null
+    })),
     // The Moirai producer uses elapsed mean Gregorian years from year zero.
     // Structural/custom frames must never receive Gregorian calendar labels.
     ...(state.query.temporal_frame.target.adapter_identity ===

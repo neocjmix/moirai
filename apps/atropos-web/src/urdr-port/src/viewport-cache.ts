@@ -71,7 +71,7 @@ export function createViewportCache(
         if (controller.signal.aborted)
           throw new DOMException("Superseded viewport", "AbortError");
         const size = new TextEncoder().encode(JSON.stringify(value)).byteLength;
-        if (size <= MAX_BYTES) {
+        if (!value.truncated && !value.cache.stale && size <= MAX_BYTES) {
           entries.push({ key, query, value, bytes: size });
           bytes += size;
           while (entries.length > 8 || bytes > MAX_BYTES)

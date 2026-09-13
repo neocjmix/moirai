@@ -1370,6 +1370,7 @@ export const graphShellViewportResponseSchema = z.object({
 export type GraphShellViewportResponse = z.infer<typeof graphShellViewportResponseSchema>;
 
 export const graphShellWorkspaceShellSchema = z.object({
+  navigationScopes: z.array(z.object({canonId: z.string(), widthHint: z.number(), bounds: chartPlaneWorldBoundsSchema.nullable(), ready: z.boolean()})).optional(),
   menuItems: z.array(
     z.object({
       id: z.string(),

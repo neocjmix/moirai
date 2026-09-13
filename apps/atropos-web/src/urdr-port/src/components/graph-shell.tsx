@@ -8,6 +8,7 @@ import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
 import type { GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
 import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gregorian-axis-coordinate";
+import { composeNavigationBounds, constrainNavigation, restoreNavigation } from "./viewport-navigation";
 import { reconcileViewport } from "../viewport-cache";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 
@@ -2248,6 +2249,8 @@ export function GraphShell({
   const copy = GRAPH_SHELL_COPY[locale];
   const workspace = initialWorkspace;
   const usesLoadingWorkspace = initialWorkspace.buildRevision === GRAPH_SHELL_LOADING_WORKSPACE_BUILD_REVISION;
+  const externalFocusRef = useRef(externalFocus); externalFocusRef.current = externalFocus;
+  const navigationAnimationRef = useRef<number | null>(null);
   const defaultShellSlice = useMemo(() => createDefaultShellSlice(workspace), [workspace]);
   const [hasHydratedRestorableState, setHasHydratedRestorableState] = useState(false);
   const [selectedTimelineId, setSelectedTimelineId] = useState(defaultShellSlice.selectedTimelineId);
@@ -2293,7 +2296,9 @@ export function GraphShell({
     setEnabledCanonIds(new Set(nextState.shell.enabledCanonIds));
     setImageViewportState((current) => {
       const nextView = createImageViewportViewFromRestorableSlice(nextState.viewport, viewportSize);
-      return nextView ? resetViewportView(current, nextView) : resetViewportView(current);
+      const bounds = composeNavigationBounds(workspace.navigationScopes ?? [], nextState.shell.enabledCanonIds);
+      const resolvedView = nextView ? restoreNavigation(nextView, viewportSize, bounds, externalFocusRef.current ? initialViewportCenter : null) : undefined;
+      return resolvedView ? resetViewportView(current, resolvedView) : resetViewportView(current);
     });
     if (nextState.drawer) {
       pendingRestoredDrawerStageRef.current = nextState.drawer.stage;
@@ -2309,7 +2314,7 @@ export function GraphShell({
 
     pendingRestoredDrawerStageRef.current = null;
     setSelectedEventSelection(null);
-  }, [bootstrapChartPlane, viewportSize]);
+  }, [bootstrapChartPlane, viewportSize, workspace, initialViewportCenter]);
 
   const hydrateRestorableState = useCallback(() => {
     if (typeof window === "undefined") {
@@ -2392,7 +2397,9 @@ export function GraphShell({
     return bootstrapChartPlane.entities.filter((entity) => effectiveEnabledCanonIds.has(entity.canonId));
   }, [bootstrapChartPlane, effectiveEnabledCanonIds]);
 
+  const navigationBounds = useMemo(() => composeNavigationBounds(workspace.navigationScopes ?? [], [...effectiveEnabledCanonIds]), [workspace, effectiveEnabledCanonIds]);
   const { view, activePointers } = imageViewportState;
+  useEffect(() => () => { if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current); }, [loader]);
   void activePointers;
 
   useEffect(() => {
@@ -3317,6 +3324,7 @@ export function GraphShell({
       event.currentTarget.setPointerCapture(event.pointerId);
     }
 
+    if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
     setImageViewportState((current) => addViewportPointer(current, event.pointerId, point));
   }, []);
 
@@ -3332,8 +3340,13 @@ export function GraphShell({
     }
 
     const point = getLocalViewportPoint(event);
-    setImageViewportState((current) => moveViewportPointer(current, event.pointerId, point));
-  }, []);
+    setImageViewportState((current) => {
+      const next = moveViewportPointer(current, event.pointerId, point);
+      const pointers = Object.values(next.activePointers);
+      const pivot = pointers.length > 1 ? {x:(pointers[0].x+pointers[1].x)/2, y:(pointers[0].y+pointers[1].y)/2} : {x:0,y:0};
+      return {...next, view:constrainNavigation(next.view, viewportSize, navigationBounds, true, pivot)};
+    });
+  }, [viewportSize, navigationBounds]);
 
   const handleViewportPointerEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -3364,8 +3377,24 @@ export function GraphShell({
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
-    setImageViewportState((current) => removeViewportPointer(current, event.pointerId));
-  }, [imageViewportState.activePointers]);
+    const next = removeViewportPointer(imageViewportState, event.pointerId);
+    setImageViewportState(next);
+    if(Object.keys(next.activePointers).length === 0 && navigationBounds) {
+      const target = constrainNavigation(next.view, viewportSize, navigationBounds);
+      if(Object.keys(target).every(key => target[key] === next.view[key])) return;
+      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+      if(reduced) { setImageViewportState(resetViewportView(next,target)); return; }
+      if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
+      const started = performance.now();
+      const animate = (now) => {
+        const progress = Math.min(1,(now-started)/180), t=1-Math.pow(1-progress,3);
+        const view = Object.fromEntries(Object.keys(target).map(key => [key,next.view[key]+(target[key]-next.view[key])*t]));
+        setImageViewportState(current => Object.keys(current.activePointers).length ? current : resetViewportView(current,view));
+        navigationAnimationRef.current = progress < 1 ? requestAnimationFrame(animate) : null;
+      };
+      navigationAnimationRef.current = requestAnimationFrame(animate);
+    }
+  }, [imageViewportState, viewportSize, navigationBounds]);
 
   const handleCloseSelectedEvent = useCallback(() => {
     pendingRestoredDrawerStageRef.current = null;

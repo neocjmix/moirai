@@ -15,6 +15,108 @@
   padding-bottom: calc(28px + env(safe-area-inset-bottom)) !important;
 }
 
+.readerTitle {
+  max-width: min(55vw, 320px);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.readStatus {
+  min-height: 18px;
+  color: var(--gray-11);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.readerOverview {
+  display: grid;
+  gap: 20px;
+  padding: 4px 0 20px;
+}
+
+.readerOverview article {
+  display: grid;
+  gap: 10px;
+}
+
+.readerOverview h2,
+.readerOverview p {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+
+.readerOverview h2 {
+  color: var(--gray-12);
+  font-size: 22px;
+  line-height: 1.35;
+  letter-spacing: -0.025em;
+}
+
+.readerOverview p,
+.secondaryDetails > p {
+  color: var(--gray-11);
+  font-size: 13px;
+  line-height: 1.65;
+}
+
+.readerOverview .readingCanons {
+  color: var(--gray-10);
+  font-size: 12px;
+}
+
+.readerOverview a,
+.readerActions button {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: var(--gray-12);
+  font-size: 13px;
+}
+
+.readerActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.readerActions button {
+  padding: 0 16px;
+  border: 1px solid var(--gray-7);
+  border-radius: 999px;
+  background: var(--gray-2);
+  cursor: pointer;
+}
+
+.readerActions button:first-child {
+  background: #18202c;
+  color: #fff8ee;
+}
+
+.secondaryDetails {
+  border-top: 1px solid var(--gray-6);
+}
+
+.secondaryDetails > summary,
+.recordDetails > summary {
+  min-height: 44px;
+  padding: 13px 0;
+  color: var(--gray-11);
+  font-size: 12px;
+  font-weight: 650;
+  cursor: pointer;
+}
+
+.secondaryDetails[open] > summary {
+  margin-bottom: 10px;
+}
+
+.recordDetails {
+  color: var(--gray-10);
+  font-size: 11px;
+  overflow-wrap: anywhere;
+}
+
 .entityPanel {
   display: grid;
   gap: 14px;
@@ -33,6 +135,7 @@
 .queryTabs > button {
   flex: 0 0 auto;
   min-width: max-content;
+  min-height: 44px;
 }
 
 .queryTabs .headerSummary {
@@ -69,7 +172,7 @@
 
 .filterRow button,
 .entityHeading button {
-  min-height: 36px;
+  min-height: 44px;
   padding: 0 11px;
   border: 1px solid var(--gray-7);
   border-radius: 999px;

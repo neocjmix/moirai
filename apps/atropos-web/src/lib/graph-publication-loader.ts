@@ -171,11 +171,19 @@ export async function loadGraphPublicationSources(
       ko:
         target.adapter_identity === "structural-order-display/1"
           ? "관계 기반 순서"
-          : target.time_system_id,
+          : (snapshots
+              .flatMap((snapshot) => snapshot.timeSystems)
+              .find(
+                (system) => identityKey(publicTimeSystemIdentity(system)) === id
+              )?.title ?? target.time_system_id),
       en:
         target.adapter_identity === "structural-order-display/1"
           ? "Relative order"
-          : target.time_system_id
+          : (snapshots
+              .flatMap((snapshot) => snapshot.timeSystems)
+              .find(
+                (system) => identityKey(publicTimeSystemIdentity(system)) === id
+              )?.title ?? target.time_system_id)
     },
     description: { ko: target.comparison_domain, en: target.comparison_domain }
   }));

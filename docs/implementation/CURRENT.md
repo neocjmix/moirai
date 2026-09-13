@@ -35,9 +35,9 @@ read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한�
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-004 — Production Readiness Gate](IP-004-production-readiness-gate.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `active` — IP-004 PR-0부터 실행 |
+| 실행 상태                  | `active` — PR-0 실제 browser/HTTP/Clotho validation baseline 보강; PR-A1 검증 중 |
 | 활성 milestone             | IP-004 Production Readiness Gate — M5 entry blocker |
-| 현재 slice                 | PR-0 baseline freeze / acceptance harness |
+| 현재 slice                 | PR-A1 Island product surface — World 소개·사건 탐색 우선, 설정/관측 정보 secondary disclosure |
 | M5 상태                    | 비활성 — IP-004 전체 종료 + 별도 사용자 활성화 필요 |
 | Graph 기준                 | M4.7 완료 상태를 regression baseline으로 유지; 재설계 금지 |
 | M4.6-B checkpoint          | PR #55 merge `ad00da4ee10d55f8b948ba5fe3a2b737a15a570a`; PR/main CI `34683566545`/`34683671696`, smoke `34683794046` success; stable identity·Canon별 instance·lossless sidecar |

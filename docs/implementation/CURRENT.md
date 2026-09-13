@@ -8,9 +8,9 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 
 | 항목 | 상태 |
 | --- | --- |
-| 현재 slice | PR-C2a — 측정된 temporal projection 반복 탐색 개선; 10k spatial·초기 payload·전체 query 읽기 수는 후속 잔여 |
-| 마지막 배포 검증 | PR #88, `9351bd0580027ee0172e239090bd39d26dec7dc4`; Railway Atropos·Clotho·worker SUCCESS |
-| 검증 | PR CI `34779293709`, main CI `34779467101`, smoke `34779578358` success; 실제 R5 요청의 Server-Timing 및 Island→Graph Event drawer 확인 |
+| 현재 slice | PR-C2b — Graph 좌표를 보존하는 spatial 생성 비용 개선; 초기 payload·전체 query·메모리·큰 fixture browser 검증 잔여 |
+| 마지막 배포 검증 | PR #89, `b2e2845324ca427ca417f949de7f90a266ac85a9`; Railway Atropos·Clotho·worker SUCCESS |
+| 검증 | PR CI `34780018113`, main CI `34780163568`, smoke `34780301572` success; 실제 R5 semantic readback 5개 통과 |
 | 실제 World | 조선 전기 — 건국에서 세조까지; `01995c2a-7b00-7000-8000-000000000101` |
 | 실제 데이터 | current/target/served Revision 5 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133 |
 | Graph regression 경계 | M4.7 renderer/layout/interaction 유지, 후속 label hysteresis PR #77 포함; 재설계 금지 |
@@ -32,8 +32,9 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
   Narrative Canon/source 누락은 PR #87 배포 후 실제 연결에서 수정 검증됐다.
 - PR-B 잔여: 독립 LLM 세션의 World ID 기반 재탐색→후속 refinement, 전체 reader acceptance.
 - PR-C: [기준선](../evidence/ip-004-prc1-scale-baseline.md), [실제 timing·temporal 개선](../evidence/ip-004-prc2-temporal-projection.md).
-  1k 전체 read workload를 측정했고 10k canonical Publication은 53.6초·약 1.68GiB peak RSS였다.
-  10k spatial/read 완료, 초기 payload·query 읽기 수·resource 한계와 browser 검증은 잔여다.
+  [10k 전체 workload](../evidence/ip-004-prc2-spatial.md)를 측정했다: canonical 56.3초,
+  spatial 35.7초, 전체 build/query peak RSS 약 2.49GiB. 아직 Scale 통과가 아니다.
+  초기 payload·query 읽기 수·resource 한계와 큰 fixture browser 검증은 잔여다.
   기존 100k bounded spatial 회귀 검증은 유지하며 Redis 등 새 infrastructure는 추가하지 않았다.
 
 ## 용어와 진입점

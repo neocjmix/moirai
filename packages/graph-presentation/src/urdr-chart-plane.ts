@@ -1,6 +1,7 @@
 // Source: neocjmix/urdr@0267c8fd081ca9a3cd556f8f7319c600248c3760
 // shared/domain/src/chart-plane-projection.ts. Local type/anchor imports and
-// post-placement temporal repair for documented defect #57.
+// post-placement temporal repair for documented defect #57; IP-004 indexes
+// force edges and lexical tie ranks without changing force order or geometry.
 import { solveBoundedPlacement } from "./bounded-placement.js";
 import type {
   ChartPlaneDiagnostic,
@@ -918,6 +919,7 @@ type ForceLayoutPointNode = {
   eventId: string;
   x: number;
   fixed: boolean;
+  tieRank: number;
 };
 
 type ForceLayoutEdge = {
@@ -1209,7 +1211,8 @@ function optimizePointXPositions(
       return {
         eventId: event.id,
         x: kind === "anchor" ? 0 : geometry.position.x / LANE_SPACING,
-        fixed: kind === "anchor"
+        fixed: kind === "anchor",
+        tieRank: 0
       } satisfies ForceLayoutPointNode;
     })
     .filter((node): node is ForceLayoutPointNode => Boolean(node));
@@ -1220,6 +1223,34 @@ function optimizePointXPositions(
 
   const nodeById = new Map(nodes.map((node) => [node.eventId, node]));
   const edges = buildXForceEdges(context, nodeById, options);
+  // localeCompare is invariant across iterations and positions. Equal collation
+  // classes retain equal ranks, matching the original strict-less tie rule.
+  const lexical = [...nodes].sort((a, b) => a.eventId.localeCompare(b.eventId));
+  let rank = 0;
+  lexical.forEach((node, index) => {
+    if (
+      index > 0 &&
+      lexical[index - 1]!.eventId.localeCompare(node.eventId) !== 0
+    )
+      rank++;
+    node.tieRank = rank;
+  });
+  const incident = new Map<
+    ForceLayoutPointNode,
+    Array<{ other: ForceLayoutPointNode; weight: number }>
+  >();
+  for (const edge of edges) {
+    const left = nodeById.get(edge.leftId),
+      right = nodeById.get(edge.rightId);
+    if (!left || !right) continue;
+    const add = (node: ForceLayoutPointNode, other: ForceLayoutPointNode) => {
+      const values = incident.get(node) ?? [];
+      values.push({ other, weight: edge.weight });
+      incident.set(node, values);
+    };
+    add(left, right);
+    if (left !== right) add(right, left);
+  }
 
   const movableNodes = nodes.filter((node) => !node.fixed);
   if (movableNodes.length === 0) {
@@ -1238,7 +1269,7 @@ function optimizePointXPositions(
 
       let force = 0;
       for (const other of nodes) {
-        if (other.eventId === node.eventId || other.fixed) {
+        if (other === node || other.fixed) {
           continue;
         }
 
@@ -1246,26 +1277,15 @@ function optimizePointXPositions(
         const absoluteGap = Math.max(Math.abs(deltaX), 0.08);
         const direction =
           Math.abs(deltaX) < 0.0001
-            ? node.eventId.localeCompare(other.eventId) < 0
+            ? node.tieRank < other.tieRank
               ? -1
               : 1
             : deltaX / Math.abs(deltaX);
         force += direction * (options.repulsion / (absoluteGap * absoluteGap));
       }
 
-      for (const edge of edges) {
-        if (edge.leftId !== node.eventId && edge.rightId !== node.eventId) {
-          continue;
-        }
-
-        const otherId =
-          edge.leftId === node.eventId ? edge.rightId : edge.leftId;
-        const other = nodeById.get(otherId);
-        if (!other) {
-          continue;
-        }
-
-        force += (other.x - node.x) * edge.weight;
+      for (const edge of incident.get(node) ?? []) {
+        force += (edge.other.x - node.x) * edge.weight;
       }
 
       const step = Math.max(

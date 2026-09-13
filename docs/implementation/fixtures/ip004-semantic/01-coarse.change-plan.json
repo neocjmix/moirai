@@ -1,0 +1,169 @@
+{
+  "contract_version": 4,
+  "change_set_id": "019f60ab-0000-7000-8000-000000000001",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 1,
+  "intent": "훈민정음이 만들어지고 해설서가 완성되는 흐름을 하나의 과정으로 정리해 줘. 조선 전기 연표의 기존 훈민정음 기록은 새로 만들지 말고 이어서 읽게 해 줘.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "IP-004 authorizes agent-authored public-history semantic acceptance: start with one coarse process and refine it incrementally; reuse existing identities."
+    },
+    {
+      "kind": "source_explicit",
+      "summary": "National Institute of Korean Language distinguishes letter creation from completion of the Hunminjeongeum explanatory book: https://www.korean.go.kr/hangeul/origin/001.html"
+    },
+    {
+      "kind": "llm_inference",
+      "summary": "Group the related cultural process under the existing Sejong period and reuse the existing 1446 record. This editorial abstraction does not assert an exact beginning or a formal promulgation ceremony."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f60ab-0000-7000-8000-000000000101",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "kind": "composite",
+        "slug": "hunminjeongeum-creation-and-explanation",
+        "title": "훈민정음 창제와 해설서 완성",
+        "summary": "문자의 창제와 해설서 완성 기록을 함께 읽는 과정. 세부 사건은 기존 기록을 재사용하며 점진적으로 보완한다.",
+        "roles": [
+          "process"
+        ],
+        "attributes": {
+          "curation": "관련 사건을 함께 읽기 위한 편집상 과정; 세부 시작 시점과 정확한 날짜는 아직 정하지 않음"
+        }
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "event_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "event_id": "019f60ab-0000-7000-8000-000000000101",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000201",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "contains",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000101"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "019f5b00-0000-7000-8000-000000000112"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000201",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000202",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "contains",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "019f5b00-0000-7000-8000-000000000204"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000101"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000202",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f60ab-0000-7000-8000-000000000301",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        },
+        {
+          "field": "scope_id",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_type": "event",
+        "scope_id": "019f60ab-0000-7000-8000-000000000101",
+        "locale": "ko",
+        "kind": "summary",
+        "title": "창제에서 해설서까지",
+        "body": "문자 창제와 해설서 완성을 같은 순간으로 보지 않고 이어지는 과정으로 읽는다. 기존 연표의 ‘훈민정음 반포’ 사건은 그 과정에 속한 기록으로 재사용한다. 이 묶음 자체는 정확한 날짜나 공식 반포 행사를 주장하지 않는다.",
+        "public_references": [
+          {
+            "label": "국립국어원 — 훈민정음 기록과 한글날",
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html"
+          }
+        ]
+      }
+    }
+  ]
+}

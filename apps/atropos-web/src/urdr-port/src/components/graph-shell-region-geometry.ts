@@ -24,6 +24,8 @@ export type CompositeSplineTuning = {
 export type CompositeLabelAnchor = "start" | "middle" | "end";
 
 export type CompositeEdgeLabelPlacement = {
+  edgeIndex?: number;
+  pointCount?: number;
   attachX: number;
   attachY: number;
   guideX: number;
@@ -794,13 +796,13 @@ function getDistanceToPolyline(point: ViewportCoordinate, polyline: ViewportCoor
   return bestDistance;
 }
 
-function getCandidateDensityScore(bounds: { minX: number; maxX: number; minY: number; maxY: number }, pathPoints: ViewportCoordinate[], nearbyPoints: ViewportCoordinate[], labelHeight: number) {
+function getCandidateDensityScore(bounds: { minX: number; maxX: number; minY: number; maxY: number }, pathPoints: ViewportCoordinate[], nearbyPoints: ViewportCoordinate[], labelHeight: number, inset = 0) {
   let score = 0;
   const expanded = {
-    minX: bounds.minX - labelHeight * 0.8,
-    maxX: bounds.maxX + labelHeight * 0.8,
-    minY: bounds.minY - labelHeight * 0.8,
-    maxY: bounds.maxY + labelHeight * 0.8,
+    minX: bounds.minX - labelHeight * 0.8 + inset,
+    maxX: bounds.maxX + labelHeight * 0.8 - inset,
+    minY: bounds.minY - labelHeight * 0.8 + inset,
+    maxY: bounds.maxY + labelHeight * 0.8 - inset,
   };
 
   for (const point of nearbyPoints) {
@@ -809,7 +811,7 @@ function getCandidateDensityScore(bounds: { minX: number; maxX: number; minY: nu
       score += 1;
       continue;
     }
-    if (getDistanceToPolyline(point, pathPoints) <= labelHeight) {
+    if (getDistanceToPolyline(point, pathPoints) <= Math.max(0, labelHeight - inset)) {
       score += 0.35;
     }
   }
@@ -871,6 +873,7 @@ export function resolveCompositeEdgeLabelPlacement(
   guideLength = 10,
   labelGap = 6,
   nearbyPoints: ViewportCoordinate[] = [],
+  previous?: CompositeEdgeLabelPlacement,
 ): CompositeEdgeLabelPlacement {
   const normalizedPoints = dedupeOrderedPoints(points);
   const centroid = getPolygonCentroid(normalizedPoints);
@@ -1005,7 +1008,7 @@ export function resolveCompositeEdgeLabelPlacement(
   const candidatePool = zeroOverflowCandidates.length > 0 ? zeroOverflowCandidates : fitCandidates;
   const prioritizedSides = getCompositeSidePriority(centroid, viewport);
 
-  const selected = [...candidatePool].sort((left, right) => {
+  let selected = [...candidatePool].sort((left, right) => {
     const leftSidePriority = prioritizedSides.indexOf(left.side);
     const rightSidePriority = prioritizedSides.indexOf(right.side);
     return (
@@ -1020,7 +1023,25 @@ export function resolveCompositeEdgeLabelPlacement(
     );
   })[0]!;
 
+  // Keep the committed edge through a small screen-space dead band. Its path
+  // and coordinates are still recomputed, so the label follows pan and pinch.
+  const incumbent = previous?.pointCount === normalizedPoints.length
+    ? candidates.find(candidate => candidate.edgeIndex === previous.edgeIndex)
+    : undefined;
+  if (incumbent && incumbent !== selected) {
+    const density = getCandidateDensityScore(getCompositeLabelBounds(incumbent, labelWidth, labelHeight), incumbent.pathPoints, nearbyPoints, labelHeight, 8);
+    if (incumbent.visibleSpan >= labelWidth * 0.72 - 16 &&
+        incumbent.overflow <= 16 &&
+        density <= selected.densityScore &&
+        selected.visibleSpan - incumbent.visibleSpan <= 24 &&
+        selected.breathingRoom - incumbent.breathingRoom <= 24) {
+      selected = incumbent;
+    }
+  }
+
   return {
+    edgeIndex: selected.edgeIndex,
+    pointCount: normalizedPoints.length,
     attachX: selected.attachX,
     attachY: selected.attachY,
     guideX: selected.guideX,

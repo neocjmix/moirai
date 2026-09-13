@@ -650,6 +650,38 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                         className={styles.entityResults}
                         data-testid="identity-search-results"
                       >
+                        {entityResults.length > 20 ? (
+                          <nav
+                            aria-label={copy.entityTitle}
+                            className={styles.readerPaging}
+                          >
+                            <p role="status">
+                              {copy.pageRange(
+                                page * 20 + 1,
+                                page * 20 + visibleResults.length,
+                                entityResults.length
+                              )}
+                            </p>
+                            <button
+                              type="button"
+                              disabled={page === 0}
+                              onClick={() =>
+                                setReaderPage({ key: pageKey, page: page - 1 })
+                              }
+                            >
+                              {copy.previousPage}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={(page + 1) * 20 >= entityResults.length}
+                              onClick={() =>
+                                setReaderPage({ key: pageKey, page: page + 1 })
+                              }
+                            >
+                              {copy.nextPage}
+                            </button>
+                          </nav>
+                        ) : null}
                         {visibleResults.map((entity) => (
                           <article
                             className={styles.entityCard}
@@ -721,35 +753,6 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                             </details>
                           </article>
                         ))}
-                        {entityResults.length > 20 ? (
-                          <nav aria-label={copy.entityTitle}>
-                            <p role="status">
-                              {copy.pageRange(
-                                page * 20 + 1,
-                                page * 20 + visibleResults.length,
-                                entityResults.length
-                              )}
-                            </p>
-                            <button
-                              type="button"
-                              disabled={page === 0}
-                              onClick={() =>
-                                setReaderPage({ key: pageKey, page: page - 1 })
-                              }
-                            >
-                              {copy.previousPage}
-                            </button>
-                            <button
-                              type="button"
-                              disabled={(page + 1) * 20 >= entityResults.length}
-                              onClick={() =>
-                                setReaderPage({ key: pageKey, page: page + 1 })
-                              }
-                            >
-                              {copy.nextPage}
-                            </button>
-                          </nav>
-                        ) : null}
                         {narrativeSearch.pending ? (
                           <p role="status">{copy.searching}</p>
                         ) : null}

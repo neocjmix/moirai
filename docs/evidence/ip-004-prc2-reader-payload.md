@@ -1,7 +1,8 @@
 # IP-004 PR-C2c — reader payload and large-World browser gate
 
-Status: local implementation verified; three-scale browser CI and production
-verification pending. IP-004 active, M5 inactive.
+Status: PR #91 merged and deployed as `4cc5e54ebd8ef1e47d811ab6f4d5c495c1d021e8`.
+All three Railway services SUCCESS. PR CI `34782393469`, three-scale WebKit
+workflow `34782393447` and main CI `34782620473` passed. IP-004 active, M5 inactive.
 
 PR #90 deployed as `236dbc04d5dfdbdc75987b6c76a9e54b4735def2`; final PR CI
 `34780504340`, main CI `34780771685` succeeded. All three Railway services were
@@ -55,7 +56,36 @@ actions; records retain stable identity keys; previous/next controls have clear
 labels and disabled boundaries. Existing source/pan/zoom/selection behavior and
 mobile regression checks remain required.
 
-Remaining: verify three-scale browser evidence and deployed reader; reduce the
-measured full-query Event-document reads and bound retained cache memory. The
-genuine new LLM-session refinement remains open. No new provider or cache
-infrastructure was introduced.
+## Stable checkpoint and browser measurements
+
+The initial traced 10k runs failed the 120-second whole-test limit. Phase logging
+showed Graph ready in 4.0 seconds, but subsequent browser commands took tens of
+seconds. Moving paging controls above the list improved their reachability but
+did not by itself make the traced run pass. Separating per-action DOM/screenshot
+trace capture from the scale timing run removed that delay. Functional assertions
+remain intact; failure screenshots/context and phase timings remain enabled.
+The normal mobile regression suite continues to retain traces.
+
+Final same-head WebKit evidence (one sample per scale, not p95):
+
+| Events | Graph ready | Drawer | Encoded HTML bytes | Decoded HTML bytes |
+| --- | ---: | ---: | ---: | ---: |
+| 100 | 1,951 ms | 433 ms | 34,274 | 1,056,902 |
+| 1,000 | 2,336 ms | 472 ms | 162,749 | 8,557,744 |
+| 10,000 | 3,748 ms | 2,163 ms | 167,567 | 9,437,265 |
+
+All scales passed visible paging controls, 20-card pages, next-page identity
+change, Narrative-only search, Canon-aware drawer, stable reading page and no
+page errors. Compression reduces transferred bytes but not decoded HTML work;
+these columns deliberately remain separate. The 10k flow reached next-page
+content at 8.3 seconds and completed its entire reader journey in about 14 seconds.
+
+Public Revision 5 verification on the deployed SHA: Graph baseline rendered;
+Island showed loaded records 1–20 then 21–40 with changed Event identities;
+`사료비판` found the existing 훈민정음 반포 Event in the second Canon; its drawer
+preserved the 1446 range, qualified narrative and public source link. The same
+Event reading page remains linked. No canonical write was made for this check.
+
+Full-query read volume and cache resource accounting continue in PR-C2d/PR-C3;
+the genuine independent-session semantic refinement remains open. This slice
+introduced no new provider or cache infrastructure.

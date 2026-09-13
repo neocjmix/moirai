@@ -171,6 +171,8 @@ desktop에서는 같은 status island와 detail sheet를 더 넓은 floating pan
 
 ## TS-006.8 Event와 Narrative page
 
+용어: §7의 graph 선택 시 열리는 bottom sheet는 **Graph Event drawer**, 이 절의 stable route는 **Event reading page**로 구분한다. 둘의 총칭은 **Event detail surface**다. 기존 문서의 `Event drawer`/`detail sheet`/selection inspector는 전자에, `stable Event page`는 후자에 대응한다. 표시 형태인 drawer/sheet와 dialog의 모달 동작은 별개이며 이 명명은 기존 접근성·route 계약을 변경하지 않는다.
+
 Event page는 다음 정보를 구분해 보여준다.
 
 - 저장된 Event title·summary·역할

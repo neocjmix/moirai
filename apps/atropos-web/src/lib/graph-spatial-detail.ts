@@ -7,6 +7,7 @@ import {
 import { buildGraphUrlSearch } from "./moirai-graph-source-query";
 import { moiraiSpatialReader } from "./moirai-spatial";
 import { eventReadingSearch } from "./event-reading-navigation";
+import { eventTimeSummary } from "./event-time-summary";
 export async function graphSpatialDetail(
   state: unknown,
   id: string
@@ -57,9 +58,6 @@ export async function graphSpatialDetail(
   const returnSearch = buildGraphUrlSearch("", { ...validated, focus });
   const stable = eventId
     ? `/worlds/${source.world_id}/events/${eventId}${eventReadingSearch(source.served_revision, returnSearch)}`
-    : null;
-  const position = eventId
-    ? snapshot.temporal.positions.find((p) => p.event_id === eventId)
     : null;
   const detail = {
     source,
@@ -120,11 +118,11 @@ export async function graphSpatialDetail(
     participantEventIds: [],
     figureHandleIds: [],
     contextEventIds: [],
-    chronologySummary:
-      position?.display_label ??
-      (node?.reference.kind === "time_event"
+    chronologySummary: eventId
+      ? eventTimeSummary(snapshot.temporal, snapshot.events, eventId)
+      : node?.reference.kind === "time_event"
         ? node.reference.coordinate
-        : "시점은 아직 정해지지 않았습니다 / Time unresolved"),
+        : "시점은 아직 정해지지 않았습니다 / Time unresolved",
     placeEvents: [],
     people: [],
     causeEvents: relations.flatMap((relation) => {

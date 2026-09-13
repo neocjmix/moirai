@@ -3,6 +3,7 @@ import type {
   PublicRelationalTemporalProjection
 } from "@moirai/contracts";
 import { RelationalTime } from "./relational-time";
+import { eventTimeSummary } from "../lib/event-time-summary";
 
 /** Keep each Canon's temporal interpretation separate, including unresolved knowledge. */
 export function EventTimeContext({
@@ -18,18 +19,10 @@ export function EventTimeContext({
   readonly eventId: string;
   readonly graphSearch?: string;
 }) {
-  const position = projection.positions.find(
-    (value) => value.event_id === eventId
-  );
   return (
     <section className="context-block" data-testid="event-time-context">
       <h2>시간 · {canonTitle}</h2>
-      <p>
-        {position?.kind === "unresolved"
-          ? "아직 하나의 시점으로 정해지지 않았습니다."
-          : (position?.display_label ??
-            "이 Canon에는 아직 시간 근거가 없습니다.")}
-      </p>
+      <p>{eventTimeSummary(projection, events, eventId)}</p>
       <details>
         <summary>시간 범위·구성 사건·계산 근거</summary>
         <RelationalTime

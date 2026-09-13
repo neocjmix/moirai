@@ -1,6 +1,11 @@
 import { readFileSync } from "node:fs";
+import { eventTimeSummary } from "../apps/atropos-web/src/lib/event-time-summary";
 import { expect, it } from "vitest";
-import type { ChangePlan, CreateChangeSet } from "@moirai/contracts";
+import type {
+  ChangePlan,
+  CreateChangeSet,
+  PublicRelationalTemporalProjection
+} from "@moirai/contracts";
 import {
   resolveCreateOperations,
   validateCandidateChangeSet,
@@ -18,6 +23,10 @@ const root = new URL("../docs/implementation/fixtures/", import.meta.url);
 const read = (name: string): ChangePlan =>
   JSON.parse(readFileSync(new URL(name, root), "utf8")) as ChangePlan;
 const actor = "019f60ab-0000-7000-8000-000000000099";
+const refinementFiles = [
+  "01-coarse.change-plan.json",
+  "02-time-detail.change-plan.json"
+];
 
 /** Additive fixture replay only; production authoring must use actual Clotho. */
 function replay(plans: readonly ChangePlan[]): CanonicalRevisionView {
@@ -112,8 +121,9 @@ it.skipIf(!publicUrl)(
   "reads the authored semantics from actual public Publication and graph query",
   async () => {
     const revision = Number(process.env.IP004_PUBLIC_READBACK_REVISION ?? 2);
-    const files = ["01-coarse.change-plan.json"];
-    expect(revision).toBe(2);
+    expect(revision).toBeGreaterThanOrEqual(2);
+    expect(revision).toBeLessThanOrEqual(refinementFiles.length + 1);
+    const files = refinementFiles.slice(0, revision - 1);
     const plans = [
       read("joseon-dogfood.change-plan.json"),
       ...files.map((f) => read(`ip004-semantic/${f}`))
@@ -279,3 +289,78 @@ it.skipIf(!publicUrl)(
   },
   180_000
 );
+
+it("refines the same process with one distinct creation Event and honest temporal bounds", () => {
+  const plans = [
+    read("joseon-dogfood.change-plan.json"),
+    ...refinementFiles.map((f) => read(`ip004-semantic/${f}`))
+  ];
+  const input = { ...plans.at(-1)!, actor };
+  const resolved = resolveCreateOperations(input, () => "").operations;
+  expect(() =>
+    validateCandidateChangeSet(
+      input,
+      resolved,
+      replay(plans.slice(0, -1)) as CanonicalState
+    )
+  ).not.toThrow();
+  const view = replay(plans);
+  expect(view.canons).toHaveLength(1);
+  expect(view.events).toHaveLength(42);
+  expect(view.relations).toHaveLength(132);
+  const processId = "019f60ab-0000-7000-8000-000000000101";
+  const creationId = "019f60ab-0000-7000-8000-000000000102";
+  expect(view.events.filter((e) => e.id === processId)).toHaveLength(1);
+  expect(view.events.find((e) => e.id === creationId)).toMatchObject({
+    kind: "atomic",
+    attributes: { date_precision: "uncertain_year_range" }
+  });
+  const endpoints = view.relations.filter(
+    (r) =>
+      ["starts", "ends"].includes(r.type) &&
+      r.target_ref.kind === "event" &&
+      r.target_ref.event_id === processId
+  );
+  expect(endpoints.map((r) => r.type).sort()).toEqual(["ends", "starts"]);
+  const artifacts = buildPublicationArtifacts(view, 3, "2026-09-13T00:00:00Z");
+  const temporal = JSON.parse(
+    artifacts.documents.find((d) => d.key.endsWith("/temporal.json"))!.body
+  ) as PublicRelationalTemporalProjection;
+  expect(
+    temporal.positions.find((p) => p.event_id === creationId)
+  ).toMatchObject({
+    kind: "bounded",
+    lower: {
+      inclusive: true,
+      time_event: { coordinate: "1443-01-01T00:00:00.000000000000Z" }
+    },
+    upper: {
+      inclusive: false,
+      time_event: { coordinate: "1445-01-01T00:00:00.000000000000Z" }
+    }
+  });
+  expect(
+    temporal.composites.find((c) => c.event_id === processId)
+  ).toMatchObject({
+    start_ref: { kind: "event", event_id: creationId },
+    end_ref: {
+      kind: "event",
+      event_id: "019f5b00-0000-7000-8000-000000000112"
+    },
+    duration: { kind: "unresolved" },
+    descendant_event_ids: expect.arrayContaining([
+      creationId,
+      "019f5b00-0000-7000-8000-000000000112"
+    ])
+  });
+  expect(eventTimeSummary(temporal, view.events, processId)).toBe(
+    "시작: 훈민정음 문자 창제 · 종료: 훈민정음 반포 · 정확한 지속시간은 미정입니다."
+  );
+  expect(eventTimeSummary(temporal, view.events, creationId)).toBe(
+    temporal.positions.find((p) => p.event_id === creationId)!.display_label
+  );
+  expect(eventTimeSummary(temporal, [], processId)).not.toContain(creationId);
+  expect(
+    eventTimeSummary({ positions: [], composites: [] }, view.events, processId)
+  ).toBe("이 Canon에는 아직 시간 근거가 없습니다.");
+});

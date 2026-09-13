@@ -1,0 +1,337 @@
+{
+  "contract_version": 4,
+  "change_set_id": "019f60ab-0000-7000-8000-000000000002",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 2,
+  "intent": "같은 훈민정음 과정에 세종 25년 음력 12월의 문자 창제 기록을 추가해 줘. 1446년 해설서 완성과 구분하고 먼저 일어난 사건으로 연결해 줘. 이 두 사건을 과정의 시작과 끝으로 읽되, 음력 날짜를 정확한 그레고리력 날짜로 바꾸어 단정하지 마.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "IP-004 scripted refinement 1: add a distinct earlier creation event and temporal context to the existing process without replacing its identity."
+    },
+    {
+      "kind": "source_explicit",
+      "summary": "National Institute of Korean Language records letter creation under Sejong 25 lunar month 12 and explanatory-book completion under Sejong 28 lunar month 9; neither record specifies an exact day. https://www.korean.go.kr/hangeul/origin/001.html"
+    },
+    {
+      "kind": "llm_inference",
+      "summary": "Use a conservative Gregorian 1443≤t<1445 envelope without lunar conversion. The editorial process is bounded by letter creation and the reused book-completion record; preserve both earlier identities and existing containment."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "event",
+      "entity_id": "019f60ab-0000-7000-8000-000000000102",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "kind": "atomic",
+        "slug": "hunminjeongeum-letter-creation",
+        "title": "훈민정음 문자 창제",
+        "summary": "세종 25년 음력 12월의 문자 창제 기록. 정확한 서력 월일은 정하지 않는다.",
+        "roles": [],
+        "attributes": {
+          "date_precision": "uncertain_year_range",
+          "source_calendar": "조선왕조실록의 음력 기년",
+          "recorded_year": 1443,
+          "recorded_month": 12,
+          "gregorian_conversion": "미확정; 1443년 이상 1445년 미만의 넓은 범위",
+          "source_references": [
+            {
+              "label": "국립국어원 — 훈민정음 기록과 한글날",
+              "url": "https://www.korean.go.kr/hangeul/origin/001.html"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "event_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "event_id": "019f60ab-0000-7000-8000-000000000102",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000203",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "contains",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000101"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000102"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000203",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000204",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000102"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "019f5b00-0000-7000-8000-000000000112"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000204",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000205",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1443-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000102"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000205",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000206",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000102"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1445-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000206",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000207",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "starts",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000102"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000101"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000207",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "019f60ab-0000-7000-8000-000000000208",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "ends",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "019f5b00-0000-7000-8000-000000000112"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "019f60ab-0000-7000-8000-000000000101"
+        },
+        "direction": "directed",
+        "attributes": {}
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000208",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f60ab-0000-7000-8000-000000000302",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ],
+      "value": {
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_type": "event",
+        "scope_id": "019f60ab-0000-7000-8000-000000000102",
+        "locale": "ko",
+        "kind": "primary",
+        "title": "문자 창제와 날짜의 정밀도",
+        "body": "실록의 세종 25년 음력 12월 기록은 문자 28자의 창제를 전한다. 이는 기존 1446년 해설서 완성 기록보다 앞선 별개의 사건이다. 음력 월일을 서력 날짜로 단정하지 않아 그래프에는 넓은 연도 범위만 둔다.",
+        "public_references": [
+          {
+            "label": "국립국어원 — 훈민정음 기록과 한글날",
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html"
+          }
+        ]
+      }
+    }
+  ]
+}

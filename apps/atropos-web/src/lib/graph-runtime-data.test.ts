@@ -291,10 +291,17 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
     );
     const detail = await graphSpatialDetail(state, id);
     expect(detail.title).toBe("revision 4 event 2");
-    expect(detail.notes).toContain("12345678901234567890");
-    expect(detail.notes).toContain(k2);
-    expect(detail.notes).toContain('"geometry_status": "unplaced"');
-    expect(detail.notes).toContain(`events/${ids.thirdEventId}?revision=4&mq=`);
+    expect(detail.readingContext?.observation).toContain(
+      "12345678901234567890"
+    );
+    expect(detail.readingContext?.observation).toContain(k2);
+    expect(detail.readingContext?.observation).toContain(
+      '"geometry_status": "unplaced"'
+    );
+    expect(detail.readingContext?.stableEventHref).toContain(
+      `events/${ids.thirdEventId}?revision=4&mq=`
+    );
+    expect(detail.notes).toContain("No supported geometry is available");
     await expect(graphSpatialDetail(state, "unscoped")).rejects.toThrow(
       "graph_identity_outside_query"
     );

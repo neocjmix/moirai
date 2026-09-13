@@ -606,6 +606,12 @@ export const eventRelatedItemSchema = z.object({
 export type EventRelatedItem = z.infer<typeof eventRelatedItemSchema>;
 
 export const eventDetailResponseSchema = eventSchema.extend({
+  // Moirai reader presentation only; never an authored URDR/Moirai entity model.
+  readingContext: z.object({
+    scopeLabel: z.string(),
+    stableEventHref: z.string().nullable(),
+    observation: z.string()
+  }).optional(),
   chronologySummary: z.string().optional(),
   placeEvents: z.array(eventRelatedItemSchema).default([]),
   people: z.array(eventRelatedItemSchema).default([]),

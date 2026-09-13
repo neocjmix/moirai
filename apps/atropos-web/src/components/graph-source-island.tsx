@@ -1,7 +1,7 @@
 "use client";
 
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { MoiraiGraphSource, MoiraiGraphUrlState } from "@moirai/contracts";
 
@@ -190,6 +190,36 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     "sources" | "entities" | "search" | "relations"
   >("sources");
   const [searchTerm, setSearchTerm] = useState("");
+  const [readerRestored, setReaderRestored] = useState(false);
+  useEffect(() => {
+    const query = new URLSearchParams(window.location.search);
+    const tab = query.get("readerTab");
+    if (
+      tab === "sources" ||
+      tab === "entities" ||
+      tab === "search" ||
+      tab === "relations"
+    )
+      setActiveTab(tab);
+    const search = query.get("readerFind");
+    if (search && search.length <= 512) setSearchTerm(search);
+    setReaderRestored(true);
+  }, []);
+  useEffect(() => {
+    if (!readerRestored) return;
+    const query = new URLSearchParams(window.location.search);
+    if (activeTab === "sources") query.delete("readerTab");
+    else query.set("readerTab", activeTab);
+    if (searchTerm) query.set("readerFind", searchTerm);
+    else query.delete("readerFind");
+    const search = query.size ? `?${query}` : "";
+    if (search !== window.location.search)
+      window.history.replaceState(
+        window.history.state,
+        "",
+        `${window.location.pathname}${search}${window.location.hash}`
+      );
+  }, [activeTab, readerRestored, searchTerm]);
   const {
     state,
     setState,
@@ -478,6 +508,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                           }
                           placeholder={copy.searchPlaceholder}
                           type="search"
+                          maxLength={512}
                           value={searchTerm}
                         />
                       ) : null}
@@ -577,11 +608,12 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                               </div>
                               <button
                                 aria-label={`${copy.focus}: ${entity.title[locale]}`}
-                                onClick={() =>
+                                onClick={() => {
                                   setState((current) =>
                                     focusGraphEntity(current, entity.reference)
-                                  )
-                                }
+                                  );
+                                  setOpen(false);
+                                }}
                                 type="button"
                               >
                                 {copy.focus}

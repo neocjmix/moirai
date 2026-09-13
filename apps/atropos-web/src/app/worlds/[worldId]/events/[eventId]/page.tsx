@@ -1,9 +1,17 @@
 import { notFound } from "next/navigation";
 import { EventSheet } from "../../../../../components/event-sheet";
+import { EventTimeContext } from "../../../../../components/event-time-context";
+import {
+  eventReadingSearch,
+  graphReturnHref,
+  readerSearchFromQuery
+} from "../../../../../lib/event-reading-navigation";
 import { StatusIsland } from "../../../../../components/status-island";
 import {
   readWorld,
   readWorldEvent,
+  readCanon,
+  readRelationalTime,
   selectPublication,
   selectPublicationRevision
 } from "../../../../../lib/publication";
@@ -20,10 +28,8 @@ export default async function WorldEventPage({
   const { worldId, eventId } = await params;
   try {
     const query = await searchParams;
-    const raw =
-      typeof query.mq === "string" && query.mq.length <= 65536
-        ? query.mq
-        : null;
+    const graphSearch = readerSearchFromQuery(query);
+    const returnHref = graphReturnHref(graphSearch);
     const selected =
       typeof query.revision === "string"
         ? await selectPublicationRevision(worldId, Number(query.revision))
@@ -39,14 +45,27 @@ export default async function WorldEventPage({
       event.canon_memberships.includes(canon.id)
     );
     if (membershipCanons.length !== event.canon_memberships.length) notFound();
+    const temporalContexts = await Promise.all(
+      membershipCanons.map(async (canon) => {
+        const document = await readCanon(worldId, canon.id, selected);
+        const projection = await readRelationalTime(
+          worldId,
+          canon.id,
+          document.temporalArtifact,
+          selected
+        );
+        return { canon, document, projection };
+      })
+    );
+    const readingSearch = eventReadingSearch(
+      pointer.served_revision,
+      graphSearch
+    );
     return (
       <main className="event-canvas">
-        {raw ? (
-          <a
-            data-testid="return-to-graph"
-            href={`/graph?mq=${encodeURIComponent(raw)}`}
-          >
-            Return to graph
+        {returnHref ? (
+          <a data-testid="return-to-graph" href={returnHref}>
+            그래프로 돌아가기 / Return to graph
           </a>
         ) : null}
         <StatusIsland
@@ -57,7 +76,7 @@ export default async function WorldEventPage({
         <nav className="breadcrumb event-breadcrumb">
           <a href={`/worlds/${worldId}`}>{world.title}</a>
           <span>/</span>
-          <span>Shared Event</span>
+          <span>여러 Canon에서 읽는 사건</span>
         </nav>
         <div className="temporal-orbit" aria-hidden="true">
           <span />
@@ -69,22 +88,38 @@ export default async function WorldEventPage({
           revision={pointer.served_revision}
           worldId={worldId}
           eventId={eventId}
+          graphSearch={graphSearch}
+          canonLabels={Object.fromEntries(
+            membershipCanons.map((canon) => [canon.id, canon.title])
+          )}
           attributes={event.attributes}
           narratives={narratives}
           relations={relations}
           relatedEvents={relatedEvents}
+          temporalContent={temporalContexts.map(
+            ({ canon, document, projection }) => (
+              <EventTimeContext
+                key={canon.id}
+                canonTitle={canon.title}
+                projection={projection}
+                events={document.events}
+                eventId={eventId}
+                graphSearch={graphSearch}
+              />
+            )
+          )}
           scopeContent={
             <section className="context-block" aria-labelledby="canon-scopes">
               <p className="eyebrow" id="canon-scopes">
-                INTERPRETIVE KNOWLEDGE SCOPES
+                이 사건을 읽는 Canon
               </p>
               {membershipCanons.map((canon) => (
                 <a
                   className="relation-row"
-                  href={`/worlds/${worldId}/canons/${canon.id}/events/${eventId}`}
+                  href={`/worlds/${worldId}/canons/${canon.id}/events/${eventId}${readingSearch}`}
                   key={canon.id}
                 >
-                  <span>Canon context</span>
+                  <span>이 Canon에서 읽기</span>
                   <b>{canon.title}</b>
                   <i aria-hidden="true">→</i>
                 </a>

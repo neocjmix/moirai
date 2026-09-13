@@ -11,6 +11,7 @@ import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gr
 import { composeNavigationBounds, constrainNavigation, restoreNavigation } from "./viewport-navigation";
 import { reconcileViewport } from "../viewport-cache";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
+import { withGraphReturnContext } from "../../../lib/event-reading-navigation";
 
 import {
   createChartPlaneSnapshot,
@@ -1068,6 +1069,8 @@ const GRAPH_SHELL_COPY: Record<AppLocale, GraphShellCopy> = {
 };
 
 type EventDrawerContentProps = {
+  locale: AppLocale;
+  readingContext?: EventDetailResponse["readingContext"];
   copy: GraphShellCopy;
   eventLinkGraphFragment: EventLinkGraphFragment;
   eventTab: EventDrawerTab;
@@ -1081,6 +1084,7 @@ type EventDrawerContentProps = {
   selectedEventTitle: string;
   viewportRef: React.RefObject<HTMLDivElement | null>;
   onTabChange: (tab: EventDrawerTab) => void;
+  onRetry: () => void;
 };
 
 type EventDrawerTab = "notes" | "links";
@@ -1960,6 +1964,8 @@ export function formatXForceValue(value: number, step: number) {
 }
 
 function EventDrawerContent({
+  locale,
+  readingContext,
   copy,
   eventLinkGraphFragment,
   eventTab,
@@ -1972,7 +1978,8 @@ function EventDrawerContent({
   notes,
   selectedEventTitle,
   viewportRef,
-  onTabChange
+  onTabChange,
+  onRetry
 }: EventDrawerContentProps) {
   const statusMessage = loadState === "error"
     ? copy.eventLoadErrorLabel
@@ -1986,7 +1993,12 @@ function EventDrawerContent({
     { label: copy.eventPeopleLabel, value: eventPeopleLabels.length > 0 ? eventPeopleLabels.join(", ") : copy.eventEmptyValueLabel },
     { label: copy.eventCausesLabel, value: eventCauseLabels.length > 0 ? eventCauseLabels.join(", ") : copy.eventEmptyValueLabel },
     { label: copy.eventResultsLabel, value: eventResultLabels.length > 0 ? eventResultLabels.join(", ") : copy.eventEmptyValueLabel },
-  ];
+  ].filter(row => !readingContext || row.label === copy.eventTimeLabel || row.value !== copy.eventEmptyValueLabel);
+  const stableEventHref = readingContext?.stableEventHref
+    ? withGraphReturnContext(readingContext.stableEventHref, typeof window === "undefined" ? "" : window.location.search)
+    : null;
+  const readEventLabel = locale === "ko" ? "사건 상세 읽기" : "Read event detail";
+  const observationLabel = locale === "ko" ? "기록과 계산 근거" : "Record and calculation details";
   const renderedNotes = notes.trim().length > 0 ? renderMarkdownDocument(notes) : null;
   const hasEventLinks = eventLinkGraphFragment.hasContext;
 
@@ -2036,8 +2048,9 @@ function EventDrawerContent({
         >
           {eventTab === "notes" ? (
             <div aria-labelledby="event-drawer-notes-tab" className={styles.eventDrawerPanel} id="event-drawer-notes-panel" role="tabpanel">
-              {statusMessage ? <div className={`${styles.eventDrawerStatus} ${statusToneClassName}`.trim()}>{statusMessage}</div> : null}
+              {statusMessage ? <div role={loadState === "error" ? "alert" : "status"} className={`${styles.eventDrawerStatus} ${statusToneClassName}`.trim()}>{statusMessage}{loadState === "error" ? <button type="button" onClick={onRetry}>{locale === "ko" ? "다시 불러오기" : "Retry loading"}</button> : null}</div> : null}
               <section className={styles.eventDrawerNotesPanel}>
+                {readingContext ? <p>{readingContext.scopeLabel}</p> : null}
                 <table className={styles.eventMetadataTable}>
                   <tbody>
                     {metadataRows.map((row) => (
@@ -2054,6 +2067,8 @@ function EventDrawerContent({
                 ) : loadState === "ready" ? (
                   <div className={styles.eventDrawerEmptyCopy}>{copy.eventNotesEmptyLabel}</div>
                 ) : null}
+                {stableEventHref ? <p><a data-testid="read-stable-event" href={stableEventHref}>{readEventLabel} →</a></p> : null}
+                {readingContext ? <details><summary>{observationLabel}</summary><pre data-testid="event-observation" style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{readingContext.observation}</pre></details> : null}
               </section>
             </div>
           ) : (
@@ -3419,6 +3434,7 @@ export function GraphShell({
   const handleCloseSelectedEvent = useCallback(() => {
     pendingRestoredDrawerStageRef.current = null;
     setSelectedEventSelection(null);
+    onSelectionRef.current?.(null);
   }, []);
 
   const resetEventDrawerGesture = useCallback(() => {
@@ -3862,7 +3878,10 @@ export function GraphShell({
               eventResultLabels={selectedEventResultLabels}
               loadState={selectedEventLoadState}
               notes={selectedEventNotes}
+              readingContext={selectedEventRecord?.readingContext}
+              locale={locale}
               onTabChange={setSelectedEventTab}
+              onRetry={() => setSelectedEventSelection(current => current ? {...current, requestKey: ++eventSelectionNonceRef.current} : current)}
               selectedEventTitle={selectedEventTitle}
               viewportRef={eventDrawerViewportRef}
             />

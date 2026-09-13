@@ -130,7 +130,11 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
     .click();
-  await page.getByRole("tab", { name: /사건|Events/, exact: true }).click();
+  await page.getByRole("tab", { name: /찾기|Find/, exact: true }).click();
+  await page.getByRole("searchbox").fill(firstEventTitle);
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("readerFind"))
+    .toBe(firstEventTitle);
 
   const sharedA = page.locator(`[data-entity-id="${firstEventId}"]`);
   await expect(sharedA).toHaveCount(1);
@@ -143,6 +147,10 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
   await expect(sharedA).toContainText("persisted");
 
   await sharedA.getByRole("button").click();
+  await expect(page.getByTestId("moirai-source-island")).toHaveAttribute(
+    "data-open",
+    "false"
+  );
   await expect
     .poll(() => new URL(page.url()).searchParams.get("mq"))
     .toContain("selection");
@@ -152,7 +160,10 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
     .click();
-  await page.getByRole("tab", { name: /사건|Events/, exact: true }).click();
+  await expect(
+    page.getByRole("tab", { name: /찾기|Find/, exact: true })
+  ).toHaveAttribute("aria-selected", "true");
+  await expect(page.getByRole("searchbox")).toHaveValue(firstEventTitle);
   await expect(sharedA).toHaveCount(1);
   expect(new URL(page.url()).searchParams.get("mq")).toContain(firstEventId);
 });
@@ -177,6 +188,87 @@ test("reader island keeps observation details outside its primary exploration ta
     .click();
   await expect(island.getByTestId("graph-diagnostics")).toBeVisible();
   await expect(island.getByTestId("reader-world-overview")).toBeVisible();
+});
+
+test("reader distinguishes an empty search from partial query coverage", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: /찾기|Find/, exact: true }).click();
+  await page.getByRole("searchbox").fill("IP004-no-such-event-fixture");
+  await expect(page.getByTestId("identity-search-results")).toContainText(
+    /선택한 범위에서 찾지 못했습니다|No matches in this scope/
+  );
+  await expect(
+    page.getByTestId("identity-search-results").locator("article")
+  ).toHaveCount(0);
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("mq"))
+    .not.toBeNull();
+  const state = JSON.parse(new URL(page.url()).searchParams.get("mq")!);
+  state.query.budget.max_entities = 1;
+  await page.goto(`/graph?mq=${encodeURIComponent(JSON.stringify(state))}`);
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await expect(page.getByTestId("moirai-source-island")).toContainText(
+    /일부 기록만 표시|Only part of the records/
+  );
+  await expect(page.getByTestId("reader-world-overview")).toBeVisible();
+});
+
+test("Event detail failure can be retried without presenting stale knowledge", async ({
+  page
+}) => {
+  let failed = false;
+  await page.route("**/graph/detail", async (route) => {
+    if (!failed) {
+      failed = true;
+      await route.abort();
+    } else await route.continue();
+  });
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: /사건|Events/, exact: true }).click();
+  await page
+    .locator(`[data-entity-id="${firstEventId}"]`)
+    .getByRole("button")
+    .click();
+  const sheet = page.getByTestId("event-drawer-sheet");
+  await expect(sheet.getByRole("alert")).toContainText(
+    /불러오지 못했습니다|Unable to load event notes/
+  );
+  await expect(sheet.getByTestId("read-stable-event")).toHaveCount(0);
+  await sheet
+    .getByRole("button", { name: /다시 불러오기|Retry loading/ })
+    .click();
+  await expect(sheet.getByTestId("read-stable-event")).toBeVisible();
+  await expect(sheet.getByRole("alert")).toHaveCount(0);
+  await expect(sheet.getByTestId("event-observation")).not.toBeVisible();
+});
+
+test("an unavailable selected revision offers recovery without silently reading current", async ({
+  page
+}) => {
+  const requested = {
+    query: { sources: [{ world_id: worldId, served_revision: 999999 }] }
+  };
+  await page.goto(`/graph?mq=${encodeURIComponent(JSON.stringify(requested))}`);
+  await expect(
+    page.getByRole("heading", { name: "선택한 World를 불러오지 못했습니다." })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("link", { name: "공개 World 둘러보기" })
+  ).toHaveAttribute("href", "/");
+  await expect(page.getByTestId("moirai-source-island")).toHaveCount(0);
 });
 
 test("R1 Relation filters preserve shared identity and explain contradiction", async ({
@@ -254,17 +346,27 @@ test("mobile reader traverses the single relational temporal model", async ({
   await expect(
     page.getByRole("heading", { name: firstEventTitle })
   ).toBeVisible();
+  await expect(page.getByTestId("event-raw-attributes")).not.toBeVisible();
+  await page
+    .getByText("기록 정보 · 속성과 Publication", { exact: true })
+    .click();
   await expect(page.getByText("Revision 2", { exact: true })).toBeVisible();
   await expect(
-    page.getByRole("link", { name: "World Event canonical URL" })
-  ).toHaveAttribute("href", `/worlds/${worldId}/events/${firstEventId}`);
+    page.getByRole("link", { name: "이 사건의 모든 Canon 읽기" })
+  ).toHaveAttribute(
+    "href",
+    `/worlds/${worldId}/events/${firstEventId}?revision=2`
+  );
   await expect(
     page.getByRole("link", { name: "그래프로 돌아가기" })
   ).toHaveAttribute(
     "href",
-    `/worlds/${worldId}/canons/${canonId}?view=graph&focus=${firstEventId}`
+    `/worlds/${worldId}/canons/${canonId}?revision=2&view=graph&focus=${firstEventId}`
   );
   await expect(page.getByText("STRUCTURED ATTRIBUTES")).toBeVisible();
+  await page
+    .getByText("시간 범위·구성 사건·계산 근거", { exact: true })
+    .click();
   await expect(
     page.getByRole("link", { name: "같은 Revision의 공개 시간 JSON" })
   ).toBeVisible();

@@ -6,6 +6,7 @@ import {
 } from "./graph-revision-source";
 import { buildGraphUrlSearch } from "./moirai-graph-source-query";
 import { moiraiSpatialReader } from "./moirai-spatial";
+import { eventReadingSearch } from "./event-reading-navigation";
 export async function graphSpatialDetail(
   state: unknown,
   id: string
@@ -55,7 +56,10 @@ export async function graphSpatialDetail(
     : null;
   const returnSearch = buildGraphUrlSearch("", { ...validated, focus });
   const stable = eventId
-    ? `/worlds/${source.world_id}/events/${eventId}?${new URLSearchParams({ revision: String(source.served_revision), mq: new URLSearchParams(returnSearch).get("mq")! })}`
+    ? `/worlds/${source.world_id}/events/${eventId}${eventReadingSearch(source.served_revision, returnSearch)}`
+    : null;
+  const position = eventId
+    ? snapshot.temporal.positions.find((p) => p.event_id === eventId)
     : null;
   const detail = {
     source,
@@ -90,19 +94,15 @@ export async function graphSpatialDetail(
   };
   const title = event?.title ?? node?.label ?? link?.relation.type ?? id;
   const notes = [
-    stable ? `[${"Open stable Event"}](${stable})` : "",
-    `World: ${source.world_id}\n\nRevision: ${source.served_revision}\n\nCanon: ${source.canon_id}`,
+    narratives.length ? "" : event?.summary,
     meta?.unplaced.includes(id)
       ? "No supported geometry is available. The Event and its evidence remain available below."
       : "",
     ...narratives.flatMap((n) => [
-      n.title,
+      n.title ? `## ${n.title}` : "",
       n.body,
       ...n.public_references.map((ref) => `[${ref.label}](${ref.url})`)
-    ]),
-    "```json",
-    JSON.stringify(detail, null, 2),
-    "```"
+    ])
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -112,13 +112,54 @@ export async function graphSpatialDetail(
     type: event?.kind === "composite" ? "historical-event" : "historical-event",
     title,
     notes,
+    readingContext: {
+      scopeLabel: `${revision.world.title} · ${snapshot.canon.title}`,
+      stableEventHref: stable,
+      observation: `World: ${source.world_id}\nRevision ${source.served_revision}\nCanon: ${source.canon_id}\n\n${JSON.stringify(detail, null, 2)}`
+    },
     participantEventIds: [],
     figureHandleIds: [],
     contextEventIds: [],
-    chronologySummary: `Revision ${source.served_revision} · ${source.canon_id}`,
+    chronologySummary:
+      position?.display_label ??
+      (node?.reference.kind === "time_event"
+        ? node.reference.coordinate
+        : "시점은 아직 정해지지 않았습니다 / Time unresolved"),
     placeEvents: [],
     people: [],
-    causeEvents: [],
-    resultEvents: []
+    causeEvents: relations.flatMap((relation) => {
+      if (
+        relation.type !== "causes" ||
+        relation.source_ref.kind !== "event" ||
+        relation.target_ref.kind !== "event" ||
+        relation.target_ref.event_id !== eventId
+      )
+        return [];
+      const cause = snapshot.events.find(
+        (candidate) =>
+          candidate.id ===
+          (relation.source_ref.kind === "event"
+            ? relation.source_ref.event_id
+            : null)
+      );
+      return cause ? [{ id: cause.id, label: cause.title }] : [];
+    }),
+    resultEvents: relations.flatMap((relation) => {
+      if (
+        relation.type !== "causes" ||
+        relation.source_ref.kind !== "event" ||
+        relation.target_ref.kind !== "event" ||
+        relation.source_ref.event_id !== eventId
+      )
+        return [];
+      const effect = snapshot.events.find(
+        (candidate) =>
+          candidate.id ===
+          (relation.target_ref.kind === "event"
+            ? relation.target_ref.event_id
+            : null)
+      );
+      return effect ? [{ id: effect.id, label: effect.title }] : [];
+    })
   };
 }

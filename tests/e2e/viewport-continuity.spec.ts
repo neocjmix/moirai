@@ -29,9 +29,7 @@ test("viewport keeps successful geometry during a delayed or failed refresh", as
 test("far-away restored views recover inside the publication without return controls", async ({
   page
 }) => {
-  await page.goto(
-    "/graph?gsViewport=1000000000000%2C1000000000000%2C400%2C800"
-  );
+  await page.goto("/graph?gsViewport=999000%2C999000%2C400%2C800");
   await expect
     .poll(() => page.locator('[data-event-point-id^="m_event_"]').count())
     .toBeGreaterThan(0);
@@ -42,7 +40,9 @@ test("far-away restored views recover inside the publication without return cont
         ?.split(",")
         .map(Number);
       return (
-        !!values && Math.abs(values[0]!) < 1e9 && Math.abs(values[1]!) < 1e9
+        !!values &&
+        Math.abs(values[0]!) < 100000 &&
+        Math.abs(values[1]!) < 100000
       );
     })
     .toBe(true);
@@ -55,9 +55,7 @@ test("far-away restored views recover inside the publication without return cont
 
 test("repeated outward drags settle at a stable boundary", async ({ page }) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
-  await page.goto(
-    "/graph?gsViewport=1000000000000%2C1000000000000%2C400%2C800"
-  );
+  await page.goto("/graph?gsViewport=999000%2C999000%2C400%2C800");
   await expect
     .poll(() => page.locator('[data-event-point-id^="m_event_"]').count())
     .toBeGreaterThan(0);

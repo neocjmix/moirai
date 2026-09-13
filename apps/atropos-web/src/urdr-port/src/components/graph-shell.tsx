@@ -2251,6 +2251,7 @@ export function GraphShell({
   const usesLoadingWorkspace = initialWorkspace.buildRevision === GRAPH_SHELL_LOADING_WORKSPACE_BUILD_REVISION;
   const externalFocusRef = useRef(externalFocus); externalFocusRef.current = externalFocus;
   const navigationAnimationRef = useRef<number | null>(null);
+  const previousNavigationPointerCountRef = useRef(0);
   const defaultShellSlice = useMemo(() => createDefaultShellSlice(workspace), [workspace]);
   const [hasHydratedRestorableState, setHasHydratedRestorableState] = useState(false);
   const [selectedTimelineId, setSelectedTimelineId] = useState(defaultShellSlice.selectedTimelineId);
@@ -2400,7 +2401,33 @@ export function GraphShell({
   const navigationBounds = useMemo(() => composeNavigationBounds(workspace.navigationScopes ?? [], [...effectiveEnabledCanonIds]), [workspace, effectiveEnabledCanonIds]);
   const { view, activePointers } = imageViewportState;
   useEffect(() => () => { if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current); }, [loader]);
-  void activePointers;
+  const navigationPointerCount = Object.keys(activePointers).length;
+  // Settle from the committed final pointer state. A pointerup can share a React
+  // batch with the last pinch move; reading the handler closure loses that move.
+  useEffect(() => {
+    const previousPointerCount = previousNavigationPointerCountRef.current;
+    previousNavigationPointerCountRef.current = navigationPointerCount;
+    if (previousPointerCount === 0 || navigationPointerCount > 0 || !navigationBounds) return;
+    const startView = imageViewportState.view;
+    const target = constrainNavigation(startView, viewportSize, navigationBounds);
+    if (Object.keys(target).every(key => target[key] === startView[key])) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      setImageViewportState(current => resetViewportView(current, target));
+      return;
+    }
+    const started = performance.now();
+    const animate = (now) => {
+      const progress = Math.min(1, (now - started) / 180), t = 1 - Math.pow(1 - progress, 3);
+      const nextView = Object.fromEntries(Object.keys(target).map(key => [key, startView[key] + (target[key] - startView[key]) * t]));
+      setImageViewportState(current => Object.keys(current.activePointers).length ? current : resetViewportView(current, nextView));
+      navigationAnimationRef.current = progress < 1 ? requestAnimationFrame(animate) : null;
+    };
+    navigationAnimationRef.current = requestAnimationFrame(animate);
+    return () => {
+      if (navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
+      navigationAnimationRef.current = null;
+    };
+  }, [navigationPointerCount, navigationBounds, viewportSize]);
 
   useEffect(() => {
     if (!usesLoadingWorkspace && !hasHydratedRestorableState) {
@@ -2472,7 +2499,7 @@ export function GraphShell({
       }
     };
 
-    const isGestureActive = Object.keys(activePointers).length > 0;
+    const isGestureActive = Object.keys(activePointers).length > 0 || navigationAnimationRef.current !== null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     if (isGestureActive) {
       timeoutId = setTimeout(() => {
@@ -3324,7 +3351,7 @@ export function GraphShell({
       event.currentTarget.setPointerCapture(event.pointerId);
     }
 
-    if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
+    if(navigationAnimationRef.current !== null) { cancelAnimationFrame(navigationAnimationRef.current); navigationAnimationRef.current = null; }
     setImageViewportState((current) => addViewportPointer(current, event.pointerId, point));
   }, []);
 
@@ -3377,24 +3404,8 @@ export function GraphShell({
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
-    const next = removeViewportPointer(imageViewportState, event.pointerId);
-    setImageViewportState(next);
-    if(Object.keys(next.activePointers).length === 0 && navigationBounds) {
-      const target = constrainNavigation(next.view, viewportSize, navigationBounds);
-      if(Object.keys(target).every(key => target[key] === next.view[key])) return;
-      const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-      if(reduced) { setImageViewportState(resetViewportView(next,target)); return; }
-      if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
-      const started = performance.now();
-      const animate = (now) => {
-        const progress = Math.min(1,(now-started)/180), t=1-Math.pow(1-progress,3);
-        const view = Object.fromEntries(Object.keys(target).map(key => [key,next.view[key]+(target[key]-next.view[key])*t]));
-        setImageViewportState(current => Object.keys(current.activePointers).length ? current : resetViewportView(current,view));
-        navigationAnimationRef.current = progress < 1 ? requestAnimationFrame(animate) : null;
-      };
-      navigationAnimationRef.current = requestAnimationFrame(animate);
-    }
-  }, [imageViewportState, viewportSize, navigationBounds]);
+    setImageViewportState(current => removeViewportPointer(current, event.pointerId));
+  }, [imageViewportState.activePointers]);
 
   const handleCloseSelectedEvent = useCallback(() => {
     pendingRestoredDrawerStageRef.current = null;

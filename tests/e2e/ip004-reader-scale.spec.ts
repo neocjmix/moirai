@@ -39,6 +39,9 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
   await expect(cards).toHaveCount(20);
   phase("first_page");
   const first = await cards.first().getAttribute("data-entity-id");
+  await expect(
+    page.getByRole("button", { name: "다음 기록", exact: true })
+  ).toBeInViewport();
   await page.getByRole("button", { name: "다음 기록", exact: true }).click();
   phase("next_clicked");
   await expect(cards).toHaveCount(20);

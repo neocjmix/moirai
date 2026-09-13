@@ -212,7 +212,8 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     else query.set("readerTab", activeTab);
     if (searchTerm) query.set("readerFind", searchTerm);
     else query.delete("readerFind");
-    const search = query.size ? `?${query}` : "";
+    const serialized = query.toString();
+    const search = serialized ? `?${serialized}` : "";
     if (search !== window.location.search)
       window.history.replaceState(
         null,

@@ -2352,6 +2352,7 @@ export function GraphShell({
     const urlState: GraphShellRestorableState = {
       ...parsedUrlState,
       shell: validateShellSliceForWorkspace(parsedUrlState.shell, workspace),
+      ...(externalFocusRef.current ? { drawer: { eventId: externalFocusRef.current.id, stage: parsedUrlState.drawer?.stage ?? "peek" } } : {}),
     };
 
     applyResolvedGraphShellState(resolveGraphShellRestorableState({

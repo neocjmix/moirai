@@ -125,6 +125,8 @@ test("URDR mock viewport renders its historical fixture instead of Publication e
 test("identity-aware search deduplicates shared Events and restores Canon context and focus", async ({
   page
 }) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
   await page.goto("/graph");
   await page
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
@@ -166,6 +168,7 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
   await expect(page.getByRole("searchbox")).toHaveValue(firstEventTitle);
   await expect(sharedA).toHaveCount(1);
   expect(new URL(page.url()).searchParams.get("mq")).toContain(firstEventId);
+  expect(errors).toEqual([]);
 });
 
 test("reader island keeps observation details outside its primary exploration tabs", async ({

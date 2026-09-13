@@ -877,6 +877,24 @@ export function normalizeGraphUrlState(
   )
     return null;
   const baseQuery = createQuery(frame.target, sources);
+  const budget = {
+    ...baseQuery.budget,
+    detail_level: detailLevel
+  } satisfies MoiraiGraphQuery["budget"];
+  for (const key of [
+    "max_entities",
+    "max_relations",
+    "max_evidence"
+  ] as const) {
+    const value = (query.budget as Record<string, unknown>)[key];
+    if (
+      !Number.isSafeInteger(value) ||
+      (value as number) < 0 ||
+      (value as number) > baseQuery.budget[key]
+    )
+      return null;
+    budget[key] = value as number;
+  }
 
   return {
     version: MOIRAI_GRAPH_URL_STATE_VERSION,
@@ -886,7 +904,7 @@ export function normalizeGraphUrlState(
       entity_filter: entityFilter,
       relation_filter: relationFilter,
       diagnostics_filter: diagnosticsFilter,
-      budget: { ...baseQuery.budget, detail_level: detailLevel }
+      budget
     },
     focus
   };

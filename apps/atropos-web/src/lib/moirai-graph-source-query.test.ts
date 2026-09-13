@@ -53,6 +53,35 @@ describe("M4.5-C Moirai graph source query", () => {
     expect(new URLSearchParams(search).get("screen")).toBe("graph");
   });
 
+  it("preserves smaller reader budgets and rejects invalid or unbounded URL budgets", () => {
+    const initial = createDefaultGraphUrlState();
+    const state = {
+      ...initial,
+      query: {
+        ...initial.query,
+        budget: {
+          ...initial.query.budget,
+          max_entities: 1,
+          max_relations: 0,
+          max_evidence: 2
+        }
+      }
+    };
+    expect(
+      parseGraphUrlState(buildGraphUrlSearch("", state))?.query.budget
+    ).toEqual(state.query.budget);
+    for (const max_entities of [-1, 1.5, 1001]) {
+      const invalid = {
+        ...state,
+        query: {
+          ...state.query,
+          budget: { ...state.query.budget, max_entities }
+        }
+      };
+      expect(parseGraphUrlState(buildGraphUrlSearch("", invalid))).toBeNull();
+    }
+  });
+
   it("rejects stale served revisions instead of silently upgrading them", () => {
     const state = createDefaultGraphUrlState();
     const stale = {

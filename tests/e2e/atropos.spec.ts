@@ -225,12 +225,10 @@ test("reader distinguishes an empty search from partial query coverage", async (
 test("Event detail failure can be retried without presenting stale knowledge", async ({
   page
 }) => {
-  let failed = false;
+  let allowDetail = false;
   await page.route("**/graph/detail", async (route) => {
-    if (!failed) {
-      failed = true;
-      await route.abort();
-    } else await route.continue();
+    if (!allowDetail) await route.abort();
+    else await route.continue();
   });
   await page.goto("/graph");
   await page
@@ -247,6 +245,7 @@ test("Event detail failure can be retried without presenting stale knowledge", a
     /불러오지 못했습니다|Unable to load event notes/
   );
   await expect(sheet.getByTestId("read-stable-event")).toHaveCount(0);
+  allowDetail = true;
   await sheet
     .getByRole("button", { name: /다시 불러오기|Retry loading/ })
     .click();

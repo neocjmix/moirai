@@ -215,7 +215,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     const search = query.size ? `?${query}` : "";
     if (search !== window.location.search)
       window.history.replaceState(
-        window.history.state,
+        null,
         "",
         `${window.location.pathname}${search}${window.location.hash}`
       );

@@ -2048,7 +2048,7 @@ function EventDrawerContent({
         >
           {eventTab === "notes" ? (
             <div aria-labelledby="event-drawer-notes-tab" className={styles.eventDrawerPanel} id="event-drawer-notes-panel" role="tabpanel">
-              {statusMessage ? <div role={loadState === "error" ? "alert" : "status"} className={`${styles.eventDrawerStatus} ${statusToneClassName}`.trim()}>{statusMessage}{loadState === "error" ? <button type="button" onClick={onRetry}>{locale === "ko" ? "다시 불러오기" : "Retry loading"}</button> : null}</div> : null}
+              {statusMessage ? <div role={loadState === "error" ? "alert" : "status"} className={`${styles.eventDrawerStatus} ${statusToneClassName}`.trim()}>{statusMessage}{loadState === "error" ? <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={onRetry}>{locale === "ko" ? "다시 불러오기" : "Retry loading"}</button> : null}</div> : null}
               <section className={styles.eventDrawerNotesPanel}>
                 {readingContext ? <p>{readingContext.scopeLabel}</p> : null}
                 <table className={styles.eventMetadataTable}>
@@ -2067,7 +2067,7 @@ function EventDrawerContent({
                 ) : loadState === "ready" ? (
                   <div className={styles.eventDrawerEmptyCopy}>{copy.eventNotesEmptyLabel}</div>
                 ) : null}
-                {stableEventHref ? <p><a data-testid="read-stable-event" href={stableEventHref}>{readEventLabel} →</a></p> : null}
+                {stableEventHref ? <p><a data-testid="read-stable-event" href={stableEventHref} onPointerDown={(event) => event.stopPropagation()}>{readEventLabel} →</a></p> : null}
                 {readingContext ? <details><summary>{observationLabel}</summary><pre data-testid="event-observation" style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{readingContext.observation}</pre></details> : null}
               </section>
             </div>

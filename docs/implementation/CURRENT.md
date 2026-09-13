@@ -1,7 +1,9 @@
 # 현재 구현 상태
 
-M4.7 활성 — [viewport 연속성과 탐색 경계](M4.7-VIEWPORT-CONTINUITY.md).
-사용자 승인: 복귀 버튼 제외. A 배포(PR #72), B 구현 완료·C 검증 중. M5 비활성.
+M4.7 완료 — [viewport 연속성과 탐색 경계](M4.7-VIEWPORT-CONTINUITY.md).
+사용자 승인: 복귀 버튼 제외. A~C 완료, M5 비활성.
+검증 checkpoint `7f1da7c`, CI `34733627018`·smoke `34733714577` success.
+[완료 증거](../evidence/m47-viewport-continuity.md).
 
 2026-09-12 사용자 승인으로 기존 production 샘플 3개를 모두 삭제하고
 [조선 전기 도그푸딩 데이터](../evidence/joseon-dogfood.md)로 교체했다.
@@ -19,9 +21,9 @@ read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한�
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [M4.7 — viewport 연속성과 탐색 경계](M4.7-VIEWPORT-CONTINUITY.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `in_progress` — M4.7 B/C. M4.6 및 dogfood backlog 완료 이력 보존 |
-| 활성 milestone             | M4.7 — viewport 연속성/경계, M5 비활성                                                                          |
-| 현재 slice                 | B 경계·축소 제한 구현, C mobile/production 검증 중. A `3db19cb` 배포; 신규 e2e 오류 문구 예상값 수정 후 재검사 |
+| 실행 상태                  | `completed` — M4.7 A~C. 사용자 도그푸딩 대기 |
+| 활성 milestone             | 없음 — M4.7 완료, M5 비활성                                                                          |
+| 현재 slice                 | 없음. `7f1da7c` 검증 완료; unit 219/integration 25/mobile 17, CI·smoke success |
 | M4.6-B checkpoint          | PR #55 merge `ad00da4ee10d55f8b948ba5fe3a2b737a15a570a`; PR/main CI `34683566545`/`34683671696`, smoke `34683794046` success; stable identity·Canon별 instance·lossless sidecar |
 | M4.6-A checkpoint          | PR #54 merge `2427b9b14c448abd0c889e576d05c353eb462b14`; CI `34683157095`, smoke `34683255320` success; spatial/gesture 16개 및 WebKit screenshot 검증 |
 | 업로드·배포 승인           | 2026-09-02 KST 사용자가 공개 `neocjmix/moirai` main 업로드·기존 Railway 배포를 명시 승인; 현재 synthetic World 검증 범위 유지 |

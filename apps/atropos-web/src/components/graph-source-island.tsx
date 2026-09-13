@@ -20,6 +20,7 @@ import {
 } from "../lib/moirai-graph-source-query";
 import { useGraphQuery } from "./graph-query-context";
 import { GraphRelationPanel } from "./graph-relation-panel";
+import { useGraphReaderSearch } from "../lib/use-graph-reader-search";
 import styles from "./graph-source-island.module.css";
 
 const COPY = {
@@ -84,6 +85,12 @@ const COPY = {
     partial:
       "일부 기록만 표시하고 있습니다. 탐색 범위를 좁히거나 관측 정보에서 누락된 범위를 확인하세요.",
     loading: "선택한 범위를 불러오는 중…",
+    searching: "이야기 본문에서도 찾는 중…",
+    searchFailed:
+      "이야기 검색을 완료하지 못했습니다. 현재 결과는 일부일 수 있습니다.",
+    moreSearch: "다음 이야기 검색 결과",
+    previousSearch: "이전 이야기 검색 결과",
+    retrySearch: "이야기 검색 다시 시도",
     worldsLabel: (count: number) => `${count}개의 World 탐색`
   },
   en: {
@@ -147,6 +154,12 @@ const COPY = {
     partial:
       "Only part of the records is shown. Narrow your reading scope or check Observation for missing coverage.",
     loading: "Loading the selected scope…",
+    searching: "Searching story text…",
+    searchFailed:
+      "Story search could not finish. These results may be incomplete.",
+    moreSearch: "Next story search results",
+    previousSearch: "Previous story search results",
+    retrySearch: "Retry story search",
     worldsLabel: (count: number) => `Explore ${count} Worlds`
   }
 } as const;
@@ -264,7 +277,14 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     catalog.worlds
       .find((world) => world.id === worldId)
       ?.canons.find((canon) => canon.id === canonId)?.label[locale] ?? canonId;
-  const entityResults = useMemo(
+  const narrativeSearch = useGraphReaderSearch(
+    state,
+    searchTerm,
+    open &&
+      activeTab === "search" &&
+      state.query.entity_filter.include_narratives
+  );
+  const localResults = useMemo(
     () =>
       searchGraphEntities(
         state,
@@ -273,6 +293,14 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
       ),
     [activeTab, entities, searchTerm, state]
   );
+  const entityResults = [
+    ...new Map(
+      [...localResults, ...narrativeSearch.matches].map((match) => [
+        `${match.worldId}:${match.kind}:${match.identity}`,
+        match
+      ])
+    ).values()
+  ];
 
   const toggleWorld = useCallback(
     (world: GraphSourceWorldOption) => {
@@ -670,7 +698,42 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                             </details>
                           </article>
                         ))}
-                        {entityResults.length === 0 ? (
+                        {narrativeSearch.pending ? (
+                          <p role="status">{copy.searching}</p>
+                        ) : null}
+                        {narrativeSearch.failed ? (
+                          <div role="status">
+                            <p>{copy.searchFailed}</p>
+                            <button
+                              type="button"
+                              onClick={narrativeSearch.retry}
+                            >
+                              {copy.retrySearch}
+                            </button>
+                          </div>
+                        ) : null}
+                        {narrativeSearch.hasPrevious ? (
+                          <button
+                            type="button"
+                            disabled={narrativeSearch.pending}
+                            onClick={narrativeSearch.previous}
+                          >
+                            {copy.previousSearch}
+                          </button>
+                        ) : null}
+                        {narrativeSearch.nextCursor !== null ? (
+                          <button
+                            type="button"
+                            disabled={narrativeSearch.pending}
+                            onClick={narrativeSearch.more}
+                          >
+                            {copy.moreSearch}
+                          </button>
+                        ) : null}
+                        {entityResults.length === 0 &&
+                        !narrativeSearch.pending &&
+                        !narrativeSearch.failed &&
+                        narrativeSearch.nextCursor === null ? (
                           <p className={styles.emptyResult} role="status">
                             {copy.empty}
                           </p>

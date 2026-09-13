@@ -44,6 +44,14 @@ process's start/end Events. Lunar month precision is not converted into an exact
 Gregorian date or duration. Run the same live command below with revision `3`.
 See [actual Revision 3 evidence](../../../evidence/ip-004-prb2-time.md).
 
+Stage 3 (`03-motivation.change-plan.json`) is the second progressive refinement:
+expected revision 3 → revision 4. It adds a source-linked motivation Narrative to
+the existing process and a qualified editorial `enables` Relation from creation
+to the existing book record. No Event or Canon is created. Historical purpose
+and editorial causal interpretation remain explicitly distinct. Live readback
+with revision `4` passed; [Revision 4 evidence](../../../evidence/ip-004-prb2-motivation.md)
+also records the real Island Narrative-search defect discovered by this stage.
+
 Read/validate/commit uses the repository Clotho skill and actual contract 4.
 Connected tool metadata still advertises legacy `"0.3.0"`; deployed Clotho accepts
 numeric `4`. Do not change canonical semantics or auth policy to fit stale metadata.

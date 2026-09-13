@@ -5,6 +5,68 @@ const canonId = "019f3b00-0000-7000-8000-000000000002";
 const firstEventId = "019f3b00-0000-7000-8000-000000000101";
 const firstEventTitle = "220년에 기록된 사건";
 
+test("story-only search finds the same Event and respects the Narrative toggle", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: /찾기|Find/, exact: true }).click();
+  const response = page.waitForResponse(
+    (r) => r.url().endsWith("/graph/search") && r.status() === 200
+  );
+  await page.getByRole("searchbox").fill("이야기본문전용표식");
+  await response;
+  const record = page.locator(`[data-entity-id="${firstEventId}"]`);
+  await expect(record).toHaveCount(1);
+  await expect(record).toContainText(firstEventTitle);
+  const toggle = page.getByRole("button", {
+    name: /이야기 포함|Include Narratives/,
+    exact: true
+  });
+  await toggle.click();
+  await expect(record).toHaveCount(0);
+  await expect(page.getByTestId("identity-search-results")).toContainText(
+    /선택한 범위에서 찾지 못했습니다|No matches in this scope/
+  );
+  await toggle.click();
+  await expect(record).toHaveCount(1);
+  await record.getByRole("button").click();
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(
+    "이야기본문전용표식"
+  );
+});
+
+test("failed story search is visible and can be retried", async ({ page }) => {
+  let fail = true;
+  await page.route("**/graph/search", (route) =>
+    fail ? route.fulfill({ status: 503, body: "{}" }) : route.continue()
+  );
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await page.getByRole("tab", { name: /찾기|Find/, exact: true }).click();
+  await page.getByRole("searchbox").fill("이야기본문전용표식");
+  const results = page.getByTestId("identity-search-results");
+  await expect(results).toContainText(
+    /이야기 검색을 완료하지 못했습니다|Story search could not finish/
+  );
+  await expect(results).not.toContainText(
+    /선택한 범위에서 찾지 못했습니다|No matches in this scope/
+  );
+  fail = false;
+  await page
+    .getByRole("button", { name: /이야기 검색 다시 시도|Retry story search/ })
+    .click();
+  await expect(page.locator(`[data-entity-id="${firstEventId}"]`)).toHaveCount(
+    1
+  );
+});
+
 test("mobile graph shell navigates app screens without consuming graph query state", async ({
   page
 }) => {

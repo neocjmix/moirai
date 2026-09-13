@@ -25,7 +25,8 @@ const read = (name: string): ChangePlan =>
 const actor = "019f60ab-0000-7000-8000-000000000099";
 const refinementFiles = [
   "01-coarse.change-plan.json",
-  "02-time-detail.change-plan.json"
+  "02-time-detail.change-plan.json",
+  "03-motivation.change-plan.json"
 ];
 
 /** Additive fixture replay only; production authoring must use actual Clotho. */
@@ -293,7 +294,7 @@ it.skipIf(!publicUrl)(
 it("refines the same process with one distinct creation Event and honest temporal bounds", () => {
   const plans = [
     read("joseon-dogfood.change-plan.json"),
-    ...refinementFiles.map((f) => read(`ip004-semantic/${f}`))
+    ...refinementFiles.slice(0, 2).map((f) => read(`ip004-semantic/${f}`))
   ];
   const input = { ...plans.at(-1)!, actor };
   const resolved = resolveCreateOperations(input, () => "").operations;
@@ -363,4 +364,35 @@ it("refines the same process with one distinct creation Event and honest tempora
   expect(
     eventTimeSummary({ positions: [], composites: [] }, view.events, processId)
   ).toBe("이 Canon에는 아직 시간 근거가 없습니다.");
+});
+
+it("adds motivation to the existing process without duplicate Events or direct-cause overclaim", () => {
+  const plans = [
+    read("joseon-dogfood.change-plan.json"),
+    ...refinementFiles.slice(0, 3).map((f) => read(`ip004-semantic/${f}`))
+  ];
+  const before = replay(plans.slice(0, -1));
+  const input = { ...plans.at(-1)!, actor };
+  expect(() =>
+    validateCandidateChangeSet(
+      input,
+      resolveCreateOperations(input, () => "").operations,
+      before as CanonicalState
+    )
+  ).not.toThrow();
+  const after = replay(plans);
+  expect(after.events).toEqual(before.events);
+  expect(after.canons).toEqual(before.canons);
+  expect(after.relations).toHaveLength(133);
+  expect(after.relations.at(-1)).toMatchObject({
+    type: "enables",
+    source_ref: { event_id: "019f60ab-0000-7000-8000-000000000102" },
+    target_ref: { event_id: "019f5b00-0000-7000-8000-000000000112" }
+  });
+  expect(after.narratives.at(-1)).toMatchObject({
+    canon_id: "019f5b00-0000-7000-8000-000000000002",
+    scope_id: "019f60ab-0000-7000-8000-000000000101",
+    kind: "annotation",
+    title: "왜 문자를 만들었나"
+  });
 });

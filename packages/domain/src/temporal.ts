@@ -837,14 +837,16 @@ export function solveTemporalConstraints(
   }
 
   const edges: Edge[] = [];
+  const equalityIds = new Map<string, string[]>();
+  for (const item of normalized) {
+    if (item.type !== "coincides") continue;
+    const root = equality.find(eventReferenceKey(item.source));
+    const ids = equalityIds.get(root) ?? [];
+    ids.push(item.id);
+    equalityIds.set(root, ids);
+  }
   const equalityEvidence = (root: string): string[] =>
-    normalized
-      .filter(
-        (item) =>
-          item.type === "coincides" &&
-          equality.find(eventReferenceKey(item.source)) === root
-      )
-      .map((item) => item.id);
+    equalityIds.get(root) ?? [];
   for (const constraint of normalized) {
     if (constraint.type === "coincides") continue;
     edges.push({
@@ -881,22 +883,28 @@ export function solveTemporalConstraints(
     });
   }
   for (const middle of roots) {
+    // A missing right edge can never contribute. This preserves lexical visit
+    // order; processing middle itself cannot add targets absent from its row.
+    const targets = [...reach.get(middle)!.keys()].sort();
+    if (targets.length === 0) continue;
     for (const from of roots) {
       const left = reach.get(from)?.get(middle);
       if (!left) continue;
-      for (const to of roots) {
+      for (const to of targets) {
         const right = reach.get(middle)?.get(to);
         if (!right) continue;
         const existing = reach.get(from)?.get(to);
+        const strict = left.strict || right.strict;
+        // Preserve traversal and witness selection, but do not construct a
+        // witness union for a candidate that cannot replace the existing edge.
+        if (existing && (!strict || existing.strict)) continue;
         const candidate: Edge = {
           from,
           to,
-          strict: left.strict || right.strict,
+          strict,
           constraintIds: unique([...left.constraintIds, ...right.constraintIds])
         };
-        if (!existing || (candidate.strict && !existing.strict)) {
-          reach.get(from)?.set(to, candidate);
-        }
+        reach.get(from)?.set(to, candidate);
       }
     }
   }
@@ -922,13 +930,7 @@ export function solveTemporalConstraints(
       (reference): reference is TimeEventReferenceInput =>
         reference.kind === "time_event"
     );
-    const equalityConstraintIds = normalized
-      .filter(
-        (constraint) =>
-          constraint.type === "coincides" &&
-          equality.find(eventReferenceKey(constraint.source)) === root
-      )
-      .map((constraint) => constraint.id);
+    const equalityConstraintIds = equalityEvidence(root);
     for (let leftIndex = 0; leftIndex < timeReferences.length; leftIndex += 1) {
       for (
         let rightIndex = leftIndex + 1;
@@ -1097,18 +1099,21 @@ export function solveTemporalConstraints(
         .map((reference) => reference.event_id)
     )
   );
-  const relationIdsForEvent = (eventId: string): string[] =>
-    unique(
-      normalized
-        .filter(
-          (constraint) =>
-            (constraint.source.kind === "event" &&
-              constraint.source.event_id === eventId) ||
-            (constraint.target.kind === "event" &&
-              constraint.target.event_id === eventId)
-        )
-        .map((constraint) => constraint.id)
+  const constraintsByEvent = new Map<string, TemporalConstraint[]>();
+  for (const constraint of normalized) {
+    const ids = new Set(
+      [constraint.source, constraint.target].flatMap((ref) =>
+        ref.kind === "event" ? [ref.event_id] : []
+      )
     );
+    for (const id of ids) {
+      const entries = constraintsByEvent.get(id) ?? [];
+      entries.push(constraint);
+      constraintsByEvent.set(id, entries);
+    }
+  }
+  const relationIdsForEvent = (eventId: string): string[] =>
+    unique((constraintsByEvent.get(eventId) ?? []).map((item) => item.id));
 
   for (const eventId of eventIds) {
     const eventRoot = equality.find(`event:${eventId}`);
@@ -1131,7 +1136,7 @@ export function solveTemporalConstraints(
       });
       continue;
     }
-    const hasUnknownTimeSystem = normalized.some(
+    const hasUnknownTimeSystem = (constraintsByEvent.get(eventId) ?? []).some(
       (constraint) =>
         ((constraint.source.kind === "event" &&
           constraint.source.event_id === eventId) ||

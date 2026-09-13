@@ -21,6 +21,7 @@ import {
 } from "@moirai/domain";
 import { createHash } from "node:crypto";
 import type { CanonicalRevisionView } from "./index.js";
+import { temporalProofIndex } from "./temporal-proof.js";
 
 export const RELATIONAL_TIME_ALGORITHM_VERSION =
   "event-relational-projection/1";
@@ -235,40 +236,7 @@ export function projectRelationalTime(
     };
   };
   // Reachability is a proof of authored inequality, never a fabricated date.
-  const proof = (
-    source: CanonicalEventReference,
-    target: CanonicalEventReference,
-    strict: boolean
-  ): string[] | null => {
-    const queue = [
-      { key: endpointKey(source), strict: false, ids: [] as string[] }
-    ];
-    const seen = new Set<string>();
-    for (let i = 0; i < queue.length; i++) {
-      const current = queue[i]!;
-      if (current.key === endpointKey(target) && (!strict || current.strict))
-        return current.ids;
-      const visitKey = `${current.key}:${current.strict}`;
-      if (seen.has(visitKey)) continue;
-      seen.add(visitKey);
-      for (const edge of constraints) {
-        const next =
-          endpointKey(edge.source) === current.key
-            ? edge.target
-            : edge.type === "coincides" &&
-                endpointKey(edge.target) === current.key
-              ? edge.source
-              : null;
-        if (next)
-          queue.push({
-            key: endpointKey(next),
-            strict: current.strict || edge.type === "precedes",
-            ids: [...current.ids, edge.id]
-          });
-      }
-    }
-    return null;
-  };
+  const proofs = temporalProofIndex(constraints);
   const compositeItems: PublicTemporalComposite[] = composites.map((event) => {
     const boundaries = structural.filter(
       (r) => r.target.kind === "event" && r.target.event_id === event.id
@@ -349,14 +317,16 @@ export function projectRelationalTime(
             spanEvidence
           )
         : extent("descendant_span", null, null, spanEvidence);
+    const lowerProof = start ? proofs.from(endpointKey(start)) : null;
+    const upperProof = end ? proofs.toStrict(endpointKey(end)) : null;
     const during =
       start && end
         ? events.flatMap((candidate) => {
             if (candidate.id === event.id || descendants.has(candidate.id))
               return [];
             const ref = { kind: "event" as const, event_id: candidate.id };
-            const lower = proof(start, ref, false),
-              upper = proof(ref, end, true);
+            const lower = lowerProof!(endpointKey(ref));
+            const upper = lower ? upperProof!(endpointKey(ref)) : null;
             return lower && upper
               ? [
                   {

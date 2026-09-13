@@ -146,7 +146,7 @@ it("shares the same Events and Relations in a distinct interpretation Canon with
     expect(after.events.find((e) => e.id === old.id)).toMatchObject(fields);
     expect(
       after.events.find((e) => e.id === old.id)!.canon_memberships
-    ).toEqual(expect.arrayContaining(_memberships));
+    ).toEqual(expect.arrayContaining([..._memberships]));
   }
   expect(
     after.events.filter((e) => e.canon_memberships.includes(canon))

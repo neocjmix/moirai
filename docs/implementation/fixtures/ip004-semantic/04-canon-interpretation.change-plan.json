@@ -1,0 +1,284 @@
+{
+  "contract_version": 4,
+  "change_set_id": "019f60ab-0000-7000-8000-000000000005",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 4,
+  "intent": "기존 훈민정음 과정과 문자 창제, 1446년 기록을 그대로 재사용하면서 기록과 해석을 구분해 읽는 Canon을 보태 줘. 기존 연표를 지우거나 사건을 복제하지 마. ‘훈민정음 반포’라는 제목만으로 공식 반포 행사나 정확한 날짜가 증명되는 것은 아니라는 설명을 출처와 함께 붙이고, 같은 사건을 두 Canon에서 비교해서 읽게 해 줘.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "IP-004 authorized scripted refinement 3: preserve the existing chronicle and share the same Events in a distinct source-critical reading Canon; retain uncertainty rather than duplicate Events."
+    },
+    {
+      "kind": "source_explicit",
+      "summary": "National Institute of Korean Language distinguishes the 1443 letter-creation record from the 1446 explanatory-book completion record, notes missing exact dates and rejects treating the latter as proof of an official promulgation ceremony. https://www.korean.go.kr/hangeul/origin/001.html"
+    },
+    {
+      "kind": "llm_inference",
+      "summary": "A distinct Canon supports a source-critical reading without changing the existing chronicle or World Event identities. Adopt the same bounded time/order/process Relations; their enabling link remains qualified editorial interpretation."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "canon",
+      "entity_id": "019f60ab-0000-7000-8000-000000000401",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "slug": "hunminjeongeum-record-and-interpretation",
+        "title": "훈민정음 — 기록과 해석",
+        "description": "창제와 해설서 완성 기록을 구분하고 날짜·반포 해석의 불확실성을 읽는 Canon. 기존 연표와 같은 사건을 공유한다."
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "canon_time_system",
+      "entity_id": "019f60ab-0000-7000-8000-000000000402",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "event_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "event_id": "019f60ab-0000-7000-8000-000000000101",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "event_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "event_id": "019f60ab-0000-7000-8000-000000000102",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "event_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "event_id": "019f5b00-0000-7000-8000-000000000112",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f5b00-0000-7000-8000-000000001037",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f5b00-0000-7000-8000-000000001038",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000201",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000203",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000204",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000205",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000206",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000207",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000208",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "relation_id": "019f60ab-0000-7000-8000-000000000209",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401"
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f60ab-0000-7000-8000-000000000304",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 2
+        }
+      ],
+      "value": {
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_type": "canon",
+        "scope_id": "019f60ab-0000-7000-8000-000000000401",
+        "locale": "ko",
+        "kind": "primary",
+        "title": "같은 사건, 기록에 가까운 읽기",
+        "body": "이 Canon은 기존 연표의 사건을 새로 만들지 않고 공유한다. 문자의 창제, 해설서 완성 기록, 이 둘을 함께 읽는 과정을 구분한다. 연도 범위와 선후·시작·종료 관계를 채택하지만 정확한 날짜와 지속시간을 추가로 확정하지 않는다. 문자 체계가 해설서의 설명 대상을 제공한다는 enables 연결은 편집상 해석이다. 이 Canon이 다른 Canon보다 공식적이거나 우월하다는 뜻은 아니다.",
+        "public_references": []
+      }
+    },
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f60ab-0000-7000-8000-000000000305",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ],
+      "value": {
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_type": "event",
+        "scope_id": "019f5b00-0000-7000-8000-000000000112",
+        "locale": "ko",
+        "kind": "annotation",
+        "title": "반포라는 이름과 기록이 말하는 범위",
+        "body": "사료비판의 관점에서는 이 사건을 1446년 음력 9월의 훈민정음 해설서 완성 기록으로 읽는다. 국립국어원 해설은 이를 문자 자체의 창제와 구별하고, 공식 반포 행사를 입증하는 기록으로 보지 않는다. 기존 사건의 제목 ‘훈민정음 반포’를 유지하되 그 이름만으로 행사나 정확한 월일을 확정하지 않는다. 오늘날의 한글날 10월 9일을 이 사건의 서력 날짜로 대입하지 않는다.",
+        "public_references": [
+          {
+            "label": "국립국어원 — 훈민정음 기록과 한글날",
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html"
+          }
+        ]
+      }
+    }
+  ]
+}

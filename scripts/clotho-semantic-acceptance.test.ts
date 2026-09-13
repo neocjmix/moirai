@@ -26,7 +26,8 @@ const actor = "019f60ab-0000-7000-8000-000000000099";
 const refinementFiles = [
   "01-coarse.change-plan.json",
   "02-time-detail.change-plan.json",
-  "03-motivation.change-plan.json"
+  "03-motivation.change-plan.json",
+  "04-canon-interpretation.change-plan.json"
 ];
 
 /** Additive fixture replay only; production authoring must use actual Clotho. */
@@ -114,6 +115,65 @@ it("coarse natural-language input reuses the existing 1446 Event and Canon", () 
   );
   expect(event).toBeDefined();
   expect(JSON.stringify(event)).toContain("훈민정음 창제와 해설서 완성");
+});
+
+it("shares the same Events and Relations in a distinct interpretation Canon without rewriting the chronicle", () => {
+  const plans = [
+    read("joseon-dogfood.change-plan.json"),
+    ...refinementFiles.slice(0, 3).map((f) => read(`ip004-semantic/${f}`))
+  ];
+  const before = replay(plans);
+  const plan = read("ip004-semantic/04-canon-interpretation.change-plan.json");
+  const input: CreateChangeSet = { ...plan, actor };
+  expect(() =>
+    validateCandidateChangeSet(
+      input,
+      resolveCreateOperations(input, () => "").operations,
+      before
+    )
+  ).not.toThrow();
+  const after = replay([...plans, plan]);
+  const canon = "019f60ab-0000-7000-8000-000000000401";
+  expect(after.events).toHaveLength(42);
+  expect(after.relations).toHaveLength(133);
+  expect(after.canons).toHaveLength(2);
+  expect(after.events.map((e) => e.id)).toEqual(before.events.map((e) => e.id));
+  expect(after.relations.map((r) => r.id)).toEqual(
+    before.relations.map((r) => r.id)
+  );
+  for (const old of before.events) {
+    const { canon_memberships: _memberships, ...fields } = old;
+    expect(after.events.find((e) => e.id === old.id)).toMatchObject(fields);
+    expect(
+      after.events.find((e) => e.id === old.id)!.canon_memberships
+    ).toEqual(expect.arrayContaining(_memberships));
+  }
+  expect(
+    after.events.filter((e) => e.canon_memberships.includes(canon))
+  ).toHaveLength(3);
+  expect(
+    after.events
+      .filter((e) => e.canon_memberships.includes(canon))
+      .every((e) => e.canon_memberships.length === 2)
+  ).toBe(true);
+  expect(
+    after.relations.filter((r) => r.canon_memberships.includes(canon))
+  ).toHaveLength(10);
+  expect(after.narratives.filter((n) => n.canon_id !== canon)).toEqual(
+    before.narratives
+  );
+  const book = after.narratives.find(
+    (n) => n.canon_id === canon && n.scope_type === "event"
+  )!;
+  expect(book.scope_id).toBe("019f5b00-0000-7000-8000-000000000112");
+  expect(book.body).toContain("공식 반포");
+  expect(book.body).toContain("서력 날짜로 대입하지 않는다");
+  const built = buildPublicationArtifacts(after, 5, "2026-09-13T00:00:00Z");
+  const document = JSON.parse(
+    built.documents.find((d) => d.key.endsWith(`/canons/${canon}.json`))!.body
+  );
+  expect(document.events).toHaveLength(3);
+  expect(document.narratives).toHaveLength(1);
 });
 
 // Explicit opt-in: CI's default unit run never contacts or writes production.
@@ -219,6 +279,11 @@ it.skipIf(!publicUrl)(
         r.canon_memberships.includes(canon.id)
       );
       expect(document).toMatchObject({ canon, served_revision: revision });
+      expect(document.narratives).toEqual(
+        view.narratives.filter(
+          (n) => n.canon_id === canon.id && n.scope_type === "canon"
+        )
+      );
       const publicEvents = document.events as typeof events;
       assertSameIdentitySet("Events", publicEvents, events);
       for (const expected of events)

@@ -52,6 +52,18 @@ and editorial causal interpretation remain explicitly distinct. Live readback
 with revision `4` passed; [Revision 4 evidence](../../../evidence/ip-004-prb2-motivation.md)
 also records the real Island Narrative-search defect discovered by this stage.
 
+Stage 4 (`04-canon-interpretation.change-plan.json`) is the third refinement:
+Revision 4 → 5. The existing process, creation and book Events gain membership in
+훈민정음 — 기록과 해석; ten existing Relations are adopted, not recreated. A
+Canon Narrative explains this reading and a book-scoped Narrative distinguishes
+the record from a claimed official promulgation ceremony or exact date. The
+original chronicle, its Narratives and all World Event/Relation identities remain.
+The recovery acceptance first submitted the same intended operations with stale
+expected Revision 3 and Change Set `...000004`; actual Clotho rejected it with
+`revision_conflict`, current Revision 4 and `refresh_context`. After refreshing
+World/affected context, the revised plan uses Change Set `...000005` and Revision 4.
+See [Revision 5 evidence](../../../evidence/ip-004-prb2-canon.md).
+
 Read/validate/commit uses the repository Clotho skill and actual contract 4.
 Connected tool metadata still advertises legacy `"0.3.0"`; deployed Clotho accepts
 numeric `4`. Do not change canonical semantics or auth policy to fit stale metadata.

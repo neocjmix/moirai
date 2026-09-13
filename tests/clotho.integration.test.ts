@@ -310,6 +310,12 @@ const uuidV7 = () => randomUUID().replace(/^(.{14})./, "$17");
       });
       expect(part.next_cursor).toBeTruthy();
       expect(part.narratives[0]?.body).toHaveLength(8);
+      expect(part.narratives[0]).toMatchObject({
+        canon_id: canonId,
+        kind: "primary",
+        title: null,
+        public_references: []
+      });
       expect(
         await call("event.get", {
           world_id: worldId,

@@ -90,6 +90,10 @@ const COPY = {
       "이야기 검색을 완료하지 못했습니다. 현재 결과는 일부일 수 있습니다.",
     moreSearch: "다음 이야기 검색 결과",
     previousSearch: "이전 이야기 검색 결과",
+    previousPage: "이전 기록",
+    nextPage: "다음 기록",
+    pageRange: (from: number, to: number, total: number) =>
+      `불러온 기록 ${total}개 중 ${from}–${to}`,
     retrySearch: "이야기 검색 다시 시도",
     worldsLabel: (count: number) => `${count}개의 World 탐색`
   },
@@ -159,6 +163,10 @@ const COPY = {
       "Story search could not finish. These results may be incomplete.",
     moreSearch: "Next story search results",
     previousSearch: "Previous story search results",
+    previousPage: "Previous records",
+    nextPage: "Next records",
+    pageRange: (from: number, to: number, total: number) =>
+      `${from}–${to} of ${total} loaded records`,
     retrySearch: "Retry story search",
     worldsLabel: (count: number) => `Explore ${count} Worlds`
   }
@@ -204,7 +212,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     setSourceState,
     catalog,
     entities,
-    result,
+    completeness,
     pending
   } = useGraphQuery();
   const copy = COPY[locale];
@@ -301,6 +309,21 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
       ])
     ).values()
   ];
+  const pageKey = JSON.stringify([
+    state.query,
+    activeTab,
+    searchTerm,
+    narrativeSearch.matches.map((match) => `${match.worldId}:${match.identity}`)
+  ]);
+  const [readerPage, setReaderPage] = useState({ key: "", page: 0 });
+  const page =
+    readerPage.key === pageKey
+      ? Math.min(
+          readerPage.page,
+          Math.max(0, Math.ceil(entityResults.length / 20) - 1)
+        )
+      : 0;
+  const visibleResults = entityResults.slice(page * 20, (page + 1) * 20);
 
   const toggleWorld = useCallback(
     (world: GraphSourceWorldOption) => {
@@ -520,7 +543,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                 >
                   {pending
                     ? copy.loading
-                    : result.completeness === "partial"
+                    : completeness === "partial"
                       ? copy.partial
                       : null}
                 </div>
@@ -627,7 +650,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                         className={styles.entityResults}
                         data-testid="identity-search-results"
                       >
-                        {entityResults.map((entity) => (
+                        {visibleResults.map((entity) => (
                           <article
                             className={styles.entityCard}
                             data-entity-id={entity.identity}
@@ -698,6 +721,35 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                             </details>
                           </article>
                         ))}
+                        {entityResults.length > 20 ? (
+                          <nav aria-label={copy.entityTitle}>
+                            <p role="status">
+                              {copy.pageRange(
+                                page * 20 + 1,
+                                page * 20 + visibleResults.length,
+                                entityResults.length
+                              )}
+                            </p>
+                            <button
+                              type="button"
+                              disabled={page === 0}
+                              onClick={() =>
+                                setReaderPage({ key: pageKey, page: page - 1 })
+                              }
+                            >
+                              {copy.previousPage}
+                            </button>
+                            <button
+                              type="button"
+                              disabled={(page + 1) * 20 >= entityResults.length}
+                              onClick={() =>
+                                setReaderPage({ key: pageKey, page: page + 1 })
+                              }
+                            >
+                              {copy.nextPage}
+                            </button>
+                          </nav>
+                        ) : null}
                         {narrativeSearch.pending ? (
                           <p role="status">{copy.searching}</p>
                         ) : null}

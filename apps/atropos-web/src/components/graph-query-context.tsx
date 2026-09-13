@@ -42,7 +42,7 @@ type GraphQueryContextValue = {
   readonly entities: readonly GraphSearchEntity[];
   readonly relations: readonly GraphRelationMatch[];
   readonly diagnostics: readonly GraphDiagnostic[];
-  readonly result: MoiraiGraphQueryResult;
+  readonly completeness: MoiraiGraphQueryResult["completeness"];
   readonly pending: boolean;
 };
 
@@ -56,7 +56,7 @@ export function GraphQueryProvider({
   entities,
   relations,
   diagnostics,
-  result
+  completeness
 }: Readonly<{
   children: ReactNode;
   initialState: MoiraiGraphUrlState;
@@ -65,7 +65,7 @@ export function GraphQueryProvider({
   entities: readonly GraphSearchEntity[];
   relations: readonly GraphRelationMatch[];
   diagnostics: readonly GraphDiagnostic[];
-  result: MoiraiGraphQueryResult;
+  completeness: MoiraiGraphQueryResult["completeness"];
 }>) {
   const [state, setLocalState] = useState(initialState);
   const router = useRouter();
@@ -138,7 +138,7 @@ export function GraphQueryProvider({
       entities,
       relations,
       diagnostics,
-      result,
+      completeness,
       pending
     }),
     [
@@ -147,7 +147,7 @@ export function GraphQueryProvider({
       diagnostics,
       entities,
       relations,
-      result,
+      completeness,
       pending,
       setSourceState,
       state

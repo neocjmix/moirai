@@ -37,6 +37,9 @@ it("reuses padded coverage and in-flight requests but separates selection and Ca
   expect(read).toHaveBeenCalledTimes(3);
   await load({ ...query(), canonIds: ["other"] });
   expect(read).toHaveBeenCalledTimes(4);
+  await load({ ...query(), canonIds: ["k", "other"] });
+  await load({ ...query(), canonIds: ["other", "k"] });
+  expect(read).toHaveBeenCalledTimes(6);
 });
 it("bounds LRU retention", async () => {
   const read = vi.fn(async () => response());

@@ -9,7 +9,7 @@ const keyFor = (q: Query) =>
   JSON.stringify({
     ...q,
     bbox: undefined,
-    canonIds: [...q.canonIds].sort(),
+    canonIds: q.canonIds,
     artifactClasses: [...(q.artifactClasses ?? [])].sort()
   });
 function covers(outer: Query["bbox"], inner: Query["bbox"]) {

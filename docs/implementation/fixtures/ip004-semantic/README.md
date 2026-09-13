@@ -36,6 +36,14 @@ imported as raw text. Grouping these records is explicitly an editorial inferenc
 
 ## Reproduction
 
+Stage 2 (`02-time-detail.change-plan.json`) is the first progressive refinement:
+expected revision 2 → revision 3. It adds a distinct letter-creation Event while
+reusing the process and 1446 record identities. Six Relations express containment,
+ordering, conservative 1443-inclusive/1445-exclusive Gregorian bounds and the
+process's start/end Events. Lunar month precision is not converted into an exact
+Gregorian date or duration. Run the same live command below with revision `3`.
+See [actual Revision 3 evidence](../../../evidence/ip-004-prb2-time.md).
+
 Read/validate/commit uses the repository Clotho skill and actual contract 4.
 Connected tool metadata still advertises legacy `"0.3.0"`; deployed Clotho accepts
 numeric `4`. Do not change canonical semantics or auth policy to fit stale metadata.

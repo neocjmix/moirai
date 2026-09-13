@@ -26,6 +26,19 @@ M5는 이 계획의 exit criteria가 충족되고 사용자가 별도로 활성�
 
 ## 3. 범위
 
+### 독자 화면 용어
+
+이 계획의 기존 `Event view`/`Event detail`은 아래 두 표면을 포함하는 **Event detail surface**를 뜻한다. 한쪽의 검증만으로 양쪽 완료를 선언하지 않는다.
+
+| 용어 | 실제 표면 | 구현과 검증 경계 |
+| --- | --- | --- |
+| Graph Event drawer | `/graph`에서 사건 선택 시 열리는 peek/full sheet | `graph-shell.tsx`의 `EventDrawerContent`; 기존 `Event drawer`, `detail sheet`, selection inspector에 대응. Narrative·시간·Canon 맥락·출처, loading/retry, 선택·닫기·focus 복귀를 검증한다. |
+| Event reading page | 안정적인 World Event URL 및 Canon-context Event URL | `EventSheet`를 사용하는 독립 route. Canon별 Narrative·시간·membership·관계와 revision-pinned 탐색을 검증한다. |
+| Event detail surface | 위 두 표면의 총칭 | drawer → reading page → graph 왕복과 동일 Revision/identity/Canon 의미를 함께 검증한다. |
+
+`drawer`/`sheet`는 표시 형태이며 모달 여부를 부정하는 말이 아니다. 현재 Graph Event drawer는 `role="dialog"`를 사용한다. 코드의 기존 식별자는 호환성을 위해 유지하며 독립 페이지의 `EventSheet`와 혼동하지 않는다. 과거 evidence의 용어는 당시 관찰 기록으로 보존한다.
+관련 기준: [TS-006 §7–8](../technical-specifications/TS-006-atropos-publication.md#ts-0067-시각-디자인-기준선).
+
 Production Readiness Gate는 세 track으로 구성한다.
 
 ### PR-A — Atropos product surface
@@ -52,7 +65,7 @@ PR-A 종료조건:
 
 1. Island가 기본적으로 사용자에게 “무엇을 탐색할 수 있는가”를 설명하며 내부 운영상태가 주 정보 위계를 차지하지 않는다.
 2. Island의 loading/empty/error/partial-result 상태가 deterministic하고 layout jump 없이 안정적이다.
-3. Event view에서 Narrative, 시간, membership, 관계, evidence가 현재 accepted semantics와 일치한다.
+3. Graph Event drawer와 Event reading page 각각에서 Narrative, 시간, Canon 맥락과 evidence가 현재 accepted semantics와 일치한다. membership·관계의 전체 읽기 및 Canon별 해석 구분은 Event reading page에서, 빠른 맥락 읽기와 선택 복귀는 drawer에서 검증한다.
 4. graph → event → graph, island → result → event → back 왕복에서 route/selection/query context가 예측 가능하게 복원된다.
 5. mobile Playwright 및 public production smoke에서 Graph baseline 회귀가 없다.
 6. 사용자가 내부 `/__status`, raw diagnostic, revision metadata를 이해하지 않아도 핵심 탐색 흐름을 사용할 수 있다.

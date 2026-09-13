@@ -21,9 +21,14 @@ M4.7 완료 — [viewport 연속성과 탐색 경계](M4.7-VIEWPORT-CONTINUITY.m
 
 2026-09-12 사용자 승인으로 기존 production 샘플 3개를 모두 삭제하고
 [조선 전기 도그푸딩 데이터](../evidence/joseon-dogfood.md)로 교체했다.
-현재 World는 `조선 전기 — 건국에서 세조까지` 하나이며 revision 2 ready,
-주요 사건 32개·Composite 9개·Relation 126개다. IP-004 PR-B1이 기존 identity를
-보존하면서 훈민정음 과정 1개·포함 관계 2개·서사 1개를 추가했다.
+현재 World는 `조선 전기 — 건국에서 세조까지` 하나이며 revision 3 ready,
+개별 사건 33개·Composite 9개·Relation 132개다. PR-B1의 기존 identity를 보존한
+훈민정음 과정에 PR-B2 첫 refinement가 창제 사건·선후·시작/종료·불확실한 시간 범위를
+추가했다. 실제 canonical·Publication readback과 공개 탐색은 확인했고,
+시작/종료가 있어도 시간 미정으로만 표시하는 결함의 수정은 다음 배포 검증 중이다.
+[Revision 3 evidence](../evidence/ip-004-prb2-time.md).
+화면 용어는 [IP-004](IP-004-production-readiness-gate.md#독자-화면-용어)의
+Graph Event drawer와 Event reading page로 구분하며 양쪽을 각각 검증한다.
 사용자 승인으로 도그푸딩 backlog를 수정했다: Gregorian 축·사건 설명 복구(PR #69)와
 시간 cluster의 개별 범위·순서 준수(#57). [검증 기록](../evidence/dogfood-backlog.md).
 완료 runtime `91f2230` — CI `34726121209`, smoke `34726218992` success,

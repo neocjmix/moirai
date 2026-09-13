@@ -22,6 +22,9 @@ if (!server.command.includes(prepare) || !server.command.includes(environment))
   throw Error("base_fixture_command_changed");
 export default defineConfig({
   ...base,
+  // Measure the reader without taking a complete DOM/screenshot trace at every
+  // action. Functional assertions, phase timings and failure context remain.
+  use: { ...base.use, trace: "off", screenshot: "only-on-failure" },
   testMatch: "ip004-reader-scale.spec.ts",
   workers: 1,
   retries: 0,

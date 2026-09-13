@@ -52,7 +52,7 @@ it.skipIf(!process.env.IP004_SCALE)(
         "2026-09-13T00:00:00Z"
       );
       const publicationMs = performance.now() - start;
-      console.info(
+      process.stdout.write(
         JSON.stringify({
           scale: count,
           phase: "canonical_publication",
@@ -63,7 +63,7 @@ it.skipIf(!process.env.IP004_SCALE)(
           ),
           objects: publication.documents.length,
           peak_rss_kib: process.resourceUsage().maxRSS
-        })
+        }) + "\n"
       );
       start = performance.now();
       const graphInput = queryFromPublicationDocuments(
@@ -73,7 +73,7 @@ it.skipIf(!process.env.IP004_SCALE)(
       const graphInputMs = performance.now() - start;
       start = performance.now();
       const baked = buildSpatialArtifacts(graphInput, publication.manifestBody);
-      console.info(
+      process.stdout.write(
         JSON.stringify({
           scale: count,
           phase: "spatial_publication",
@@ -85,7 +85,7 @@ it.skipIf(!process.env.IP004_SCALE)(
           ),
           objects: baked.documents.length,
           peak_rss_kib: process.resourceUsage().maxRSS
-        })
+        }) + "\n"
       );
       const documents = [
         ...publication.documents,

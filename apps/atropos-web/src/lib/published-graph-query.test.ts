@@ -78,7 +78,7 @@ const sharedRelation: PublicRelation = {
 
 function reader(failWorld?: string): PublishedGraphQueryReader {
   return {
-    async selectPublication(worldId) {
+    async selectPublicationRevision(worldId) {
       if (worldId === failWorld) throw new Error("unavailable");
       return {
         pointer: {
@@ -194,6 +194,45 @@ const sources: MoiraiGraphQuery["sources"] = [
 ];
 
 describe("M4.5-E immutable Publication query composition", () => {
+  it("reads the requested immutable revision after the World has advanced", async () => {
+    const original = reader();
+    const calls: number[] = [];
+    const historical = {
+      ...original,
+      async selectPublication(worldId: string) {
+        const selected = await original.selectPublicationRevision(worldId, 8);
+        return {
+          ...selected,
+          pointer: {
+            ...selected.pointer,
+            current_revision: 8,
+            served_revision: 8
+          }
+        };
+      },
+      async selectPublicationRevision(worldId: string, revision: number) {
+        calls.push(revision);
+        const selected = await original.selectPublicationRevision(
+          worldId,
+          revision
+        );
+        return {
+          ...selected,
+          pointer: { ...selected.pointer, current_revision: 8 }
+        };
+      }
+    };
+    const result = await composePublishedGraphQuery(
+      query([sources[0]!]),
+      historical
+    );
+    expect(result.completeness).toBe("complete");
+    expect(result.revision_vector).toEqual([
+      { world_id: "world-a", served_revision: 7 }
+    ]);
+    expect(result.events).toHaveLength(1);
+    expect(calls).toEqual([7]);
+  });
   it("deduplicates within a World while never merging the same ID across Worlds", async () => {
     const result = await composePublishedGraphQuery(query(sources), reader());
     expect(result.events).toHaveLength(2);

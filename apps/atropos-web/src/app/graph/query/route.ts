@@ -8,9 +8,11 @@ import {
   publishedGraphQueryDigest
 } from "../../../lib/published-graph-query";
 
+import { profilePublicationRoute } from "../../../lib/publication-profile";
 const MAX_BODY_BYTES = 64 * 1024;
 
-export async function POST(request: Request) {
+export const POST = profilePublicationRoute(handle);
+async function handle(request: Request) {
   const declaredLength = Number(request.headers.get("content-length") ?? "0");
   if (declaredLength > MAX_BODY_BYTES) {
     return Response.json({ error: "query_too_large" }, { status: 413 });

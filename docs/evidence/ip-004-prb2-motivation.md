@@ -1,8 +1,8 @@
 # IP-004 PR-B2 — second refinement, Revision 4
 
-Actual Clotho authoring and semantic public readback passed. A reader-search
-defect found by the real fixture is being fixed and requires deployed browser
-verification. This is not completion of PR-B or IP-004. M5 remains inactive.
+Actual Clotho authoring and semantic public readback passed. The reader-search
+defect found by the real fixture is fixed and verified in production through
+PR #86. This is not completion of PR-B or IP-004. M5 remains inactive.
 
 ## Natural language and interpretation
 
@@ -73,7 +73,30 @@ The acceptance reproduced the missing result before implementation; endpoint
 tests now cover exact identity, Canon isolation, Revision pinning, paging and
 digest rejection. Mobile tests cover real fixture Narrative search, toggling,
 drawer navigation and retry after a deliberately injected read failure. CI and
-deployed verification will be appended after this checkpoint ships.
+deployed verification follow below.
+
+## Deployed fix — PR #86
+
+[PR #86](https://github.com/neocjmix/moirai/pull/86) merged as
+`0f55516861b49835a284cf76fdb5dafd36cf3074`. PR
+[CI 34777488209](https://github.com/neocjmix/moirai/actions/runs/34777488209), main
+[CI 34777644068](https://github.com/neocjmix/moirai/actions/runs/34777644068), and
+[smoke 34777746572](https://github.com/neocjmix/moirai/actions/runs/34777746572)
+all succeeded, including PostgreSQL migration/integration, build, audit and mobile
+WebKit. Railway Atropos `8aab17f6-75f2-49c3-bfbb-09890857715e`, Clotho
+`f0b0ea80-5aaa-4050-b874-755072c81787`, worker
+`2b0ed880-d7d4-4dad-9482-e706e79a91d8` all SUCCESS at the merge SHA.
+Public health/status returned 200 and that exact SHA.
+
+The actual public browser searched 일상, found the existing process once in the
+chronicle Canon, disabled Narrative inclusion (no match), re-enabled it (same
+Event restored), and opened its Graph drawer with both Narratives, source links
+and named start/end summary. The stable Event reading page retained Revision 4,
+the same text and sources. Graph baseline geometry/interaction was unchanged.
+The Revision 4 live semantic readback also passed after deployment: World
+6,798ms; Canon 11,718ms; temporal 12,096ms; graph 18,636ms; process 9,859ms;
+creation 9,790ms; book 9,298ms. Payload sizes were unchanged. These remain client
+path samples, not a scale or p95 verdict.
 
 Open: third refinement with N:M and uncertainty, conflict/recovery, independent
 session rediscovery, final reader acceptance and measured scale/resource behavior.

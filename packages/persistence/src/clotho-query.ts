@@ -1,4 +1,8 @@
-import type { ClothoMethod, PublicEvent } from "@moirai/contracts";
+import type {
+  ClothoMethod,
+  PublicEvent,
+  PublicNarrative
+} from "@moirai/contracts";
 import {
   ChangeSetError,
   TEMPORAL_SOLVER_VERSION,
@@ -178,6 +182,10 @@ function graph(
     consumed = 0;
   const narrativePage: Array<{
     id: string;
+    canon_id: string;
+    title: string | null;
+    kind: PublicNarrative["kind"];
+    public_references: PublicNarrative["public_references"];
     scope_id: string;
     scope_type: string;
     locale: string;
@@ -196,6 +204,10 @@ function graph(
       const body = narrative.body.slice(start, start + available);
       narrativePage.push({
         id: narrative.id,
+        canon_id: narrative.canon_id,
+        title: narrative.title,
+        kind: narrative.kind,
+        public_references: narrative.public_references,
         scope_id: narrative.scope_id,
         scope_type: narrative.scope_type,
         locale: narrative.locale,
@@ -424,7 +436,12 @@ export async function queryClotho(
             e.title,
             e.summary ?? "",
             ...view.narratives
-              .filter((n) => n.scope_type === "event" && n.scope_id === e.id)
+              .filter(
+                (n) =>
+                  n.canon_id === input.canon_id &&
+                  n.scope_type === "event" &&
+                  n.scope_id === e.id
+              )
               .map((n) => `${n.title ?? ""} ${n.body}`)
           ]
             .join(" ")

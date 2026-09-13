@@ -1,5 +1,8 @@
 # 현재 구현 상태
 
+M4.7 활성 — [viewport 연속성과 탐색 경계](M4.7-VIEWPORT-CONTINUITY.md).
+사용자 승인: 복귀 버튼 제외. 현재 A(그림 유지·cache) 구현 중. M5 비활성.
+
 2026-09-12 사용자 승인으로 기존 production 샘플 3개를 모두 삭제하고
 [조선 전기 도그푸딩 데이터](../evidence/joseon-dogfood.md)로 교체했다.
 현재 World는 `조선 전기 — 건국에서 세조까지` 하나이며 revision 1 ready,
@@ -16,8 +19,8 @@ read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한�
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [M4.6 — URDR graph pipeline 위의 Moirai data](M4.6-URDR-GRAPH-MOIRAI-DATA.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `complete` — M4.6 A~F 완료. 기존 결함은 backlog #57 및 종료 evidence에 보존 |
-| 활성 milestone             | 없음 — M4.6 종료, M5 비활성                                                                          |
+| 실행 상태                  | `in_progress` — M4.7 A. M4.6 및 dogfood backlog 완료 이력 보존 |
+| 활성 milestone             | M4.7 — viewport 연속성/경계, M5 비활성                                                                          |
 | 현재 slice                 | 없음. Runtime `f2aa9f1`, CI `34701770563`, smoke `34701897131` success; Railway 세 서비스 동일 SHA. [M4.6 종료 증거](../evidence/m46-f-acceptance.md) |
 | M4.6-B checkpoint          | PR #55 merge `ad00da4ee10d55f8b948ba5fe3a2b737a15a570a`; PR/main CI `34683566545`/`34683671696`, smoke `34683794046` success; stable identity·Canon별 instance·lossless sidecar |
 | M4.6-A checkpoint          | PR #54 merge `2427b9b14c448abd0c889e576d05c353eb462b14`; CI `34683157095`, smoke `34683255320` success; spatial/gesture 16개 및 WebKit screenshot 검증 |

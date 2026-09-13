@@ -1,0 +1,63 @@
+name: IP-004 scale reader evidence
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ip004-scale.yml"
+      - "playwright.ip004.config.ts"
+      - "tests/e2e/ip004-reader-scale.spec.ts"
+      - "apps/atropos-web/src/components/graph-source-island.tsx"
+      - "apps/atropos-web/src/components/atropos-graph-root.tsx"
+  workflow_dispatch:
+    inputs:
+      scale:
+        description: Synthetic Event count
+        required: true
+        default: "1000"
+        type: choice
+        options: ["100", "1000", "10000"]
+
+permissions:
+  contents: read
+
+jobs:
+  reader:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        scale: ${{ fromJSON(github.event_name == 'workflow_dispatch' && format('[{0}]', inputs.scale) || '[100,1000,10000]') }}
+    env:
+      IP004_SCALE: ${{ matrix.scale }}
+      IP004_BROWSER_SCALE: ${{ matrix.scale }}
+      IP004_SCALE_ROUNDS: "10"
+      IP004_SCALE_KEEP: "1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps webkit
+      - name: Build synthetic immutable artifacts and measure actual read paths
+        run: |
+          set -o pipefail
+          pnpm exec vitest run apps/atropos-web/src/lib/ip004-scale.test.ts | tee /tmp/ip004-scale.log
+          node -e 'const fs=require("fs"); const rows=fs.readFileSync("/tmp/ip004-scale.log","utf8").split("\n").filter(line=>line.startsWith("{")); const fixture=rows.map(line=>JSON.parse(line)).find(row=>row.artifact_dir); if(!fixture) throw Error("missing fixture"); fs.appendFileSync(process.env.GITHUB_ENV,"IP004_SCALE_READ_DIR="+fixture.artifact_dir+"\n");'
+      - name: Real Next server and mobile WebKit reader
+        run: pnpm exec playwright test --config playwright.ip004.config.ts
+      - name: Reader failure context
+        if: failure()
+        run: |
+          find test-results -name error-context.md -exec cat {} \;
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ip004-scale-${{ matrix.scale }}
+          path: |
+            /tmp/ip004-scale.log
+            test-results/
+          retention-days: 14

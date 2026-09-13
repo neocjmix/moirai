@@ -62,7 +62,7 @@ export default async function GraphPage({
         initialReader={graphReaderState(params)}
         initialScreen="graph"
         relations={presentation.relations}
-        result={result}
+        completeness={result.completeness}
       />
     </>
   );

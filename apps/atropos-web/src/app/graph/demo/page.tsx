@@ -25,7 +25,7 @@ export default async function DemoGraphPage() {
       initialScreen="graph"
       initialGraphQuery={initialGraphQuery}
       catalog={catalog}
-      result={result}
+      completeness={result.completeness}
       {...presentation}
     />
   );

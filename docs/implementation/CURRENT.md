@@ -8,9 +8,9 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 
 | 항목 | 상태 |
 | --- | --- |
-| 현재 slice | PR-C2b — Graph 좌표를 보존하는 spatial 생성 비용 개선; 초기 payload·전체 query·메모리·큰 fixture browser 검증 잔여 |
-| 마지막 배포 검증 | PR #89, `b2e2845324ca427ca417f949de7f90a266ac85a9`; Railway Atropos·Clotho·worker SUCCESS |
-| 검증 | PR CI `34780018113`, main CI `34780163568`, smoke `34780301572` success; 실제 R5 semantic readback 5개 통과 |
+| 현재 slice | PR-C2c — 불필요한 client query data 제거·20개 reader paging·100/1k/10k 실제 Next/WebKit 검증; 전체 query·메모리 잔여 |
+| 마지막 배포 검증 | PR #90, `236dbc04d5dfdbdc75987b6c76a9e54b4735def2`; Railway Atropos·Clotho·worker SUCCESS |
+| 검증 | PR CI `34780504340`, main CI `34780771685` success; public health/status SHA와 Graph 렌더 확인; smoke `34780889158` 추적 |
 | 실제 World | 조선 전기 — 건국에서 세조까지; `01995c2a-7b00-7000-8000-000000000101` |
 | 실제 데이터 | current/target/served Revision 5 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133 |
 | Graph regression 경계 | M4.7 renderer/layout/interaction 유지, 후속 label hysteresis PR #77 포함; 재설계 금지 |
@@ -35,6 +35,7 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
   [10k 전체 workload](../evidence/ip-004-prc2-spatial.md)를 측정했다: canonical 56.3초,
   spatial 35.7초, 전체 build/query peak RSS 약 2.49GiB. 아직 Scale 통과가 아니다.
   초기 payload·query 읽기 수·resource 한계와 큰 fixture browser 검증은 잔여다.
+  [Reader payload](../evidence/ip-004-prc2-reader-payload.md)는 1k에서 5.28MB→1.98MB로 줄었으며 실제 HTML/browser 수치는 별도 gate로 확인한다.
   기존 100k bounded spatial 회귀 검증은 유지하며 Redis 등 새 infrastructure는 추가하지 않았다.
 
 ## 용어와 진입점

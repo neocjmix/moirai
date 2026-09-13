@@ -122,6 +122,33 @@
   gap: 14px;
 }
 
+.readerPaging {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.readerPaging p {
+  flex-basis: 100%;
+  margin: 0;
+  color: var(--gray-11);
+  font-size: 12px;
+}
+
+.readerPaging button {
+  min-height: 44px;
+  padding: 0 14px;
+  border: 1px solid var(--gray-7);
+  border-radius: 999px;
+  background: var(--gray-2);
+  color: var(--gray-12);
+}
+
+.readerPaging button:disabled {
+  opacity: 0.45;
+}
+
 .queryTabs {
   overflow-x: auto;
   overscroll-behavior-x: contain;

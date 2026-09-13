@@ -72,7 +72,7 @@ export default async function GraphScreenPage({
       initialGraphQuery={initialGraphQuery}
       initialScreen={definition.id}
       relations={presentation.relations}
-      result={result}
+      completeness={result.completeness}
     />
   );
 }

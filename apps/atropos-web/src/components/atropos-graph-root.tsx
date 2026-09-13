@@ -33,7 +33,7 @@ export function AtroposGraphRoot({
   entities,
   relations,
   diagnostics,
-  result,
+  completeness,
   spatial,
   demo = false
 }: Readonly<{
@@ -44,7 +44,7 @@ export function AtroposGraphRoot({
   entities: readonly GraphSearchEntity[];
   relations: readonly GraphRelationMatch[];
   diagnostics: readonly GraphDiagnostic[];
-  result: MoiraiGraphQueryResult;
+  completeness: MoiraiGraphQueryResult["completeness"];
   spatial: GraphSpatialBootstrap;
   demo?: boolean;
 }>) {
@@ -56,7 +56,7 @@ export function AtroposGraphRoot({
       initialState={initialGraphQuery}
       initialReader={initialReader}
       relations={relations}
-      result={result}
+      completeness={completeness}
     >
       <Theme
         accentColor="gray"

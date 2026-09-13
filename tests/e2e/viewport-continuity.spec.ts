@@ -34,17 +34,32 @@ test("far-away restored views recover inside the publication without return cont
     .poll(() => page.locator('[data-event-point-id^="m_event_"]').count())
     .toBeGreaterThan(0);
   await expect
-    .poll(() => {
-      const values = new URL(page.url()).searchParams
+    .poll(() =>
+      new URL(page.url()).searchParams
         .get("gsViewport")
         ?.split(",")
-        .map(Number);
-      return (
-        !!values &&
-        Math.abs(values[0]!) < 100000 &&
-        Math.abs(values[1]!) < 100000
-      );
-    })
+        .slice(0, 2)
+        .map(Number)
+    )
+    .not.toEqual([999000, 999000]);
+  // The synthetic fixture spans 220 to modern years; its fitted center is
+  // legitimately above 100000 world units. Assert visible data, not a made-up range.
+  await expect
+    .poll(() =>
+      page.locator('[data-event-point-id^="m_event_"]').evaluateAll((nodes) =>
+        nodes.some((node) => {
+          const rect = node.getBoundingClientRect();
+          return (
+            rect.width > 0 &&
+            rect.height > 0 &&
+            rect.right > 0 &&
+            rect.bottom > 0 &&
+            rect.left < innerWidth &&
+            rect.top < innerHeight
+          );
+        })
+      )
+    )
     .toBe(true);
   await expect(
     page.getByRole("button", {

@@ -179,7 +179,8 @@ it.skipIf(!process.env.IP004_SCALE)(
             narratives: fixture.narratives.length
           },
           storage: "local filesystem; no network latency",
-          process_role: "atropos_read; separate builder reports its own peak RSS",
+          process_role:
+            "atropos_read; separate builder reports its own peak RSS",
           rounds,
           paths: [...new Set(samples.map((s) => String(s.path)))].map(
             (path) => {

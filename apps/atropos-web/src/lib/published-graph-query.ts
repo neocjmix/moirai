@@ -134,6 +134,7 @@ export async function composePublishedGraphQuery(
   const sourceArtifactDigests: Record<string, string> = {};
   const timeSystems: MoiraiGraphQueryResult["time_systems"][number][] = [];
   const compatibility: MoiraiGraphQueryResult["compatibility"][number][] = [];
+  let readBudgetTruncated = false;
 
   await Promise.all(
     query.sources.map(async (source) => {
@@ -253,10 +254,26 @@ export async function composePublishedGraphQuery(
           }
         }
 
-        const documents = await Promise.all(
-          [...selectedEvents.values()].map((event) =>
-            reader.readWorldEvent(source.world_id, event.id, selected)
+        const matchingEvents = [...selectedEvents.values()]
+          .filter(
+            (event) =>
+              query.entity_filter.event_kinds.includes(event.kind) &&
+              (query.entity_filter.roles.length === 0 ||
+                event.roles.some((role) =>
+                  query.entity_filter.roles.includes(role)
+                ))
           )
+          .sort((a, b) => a.id.localeCompare(b.id));
+        if (matchingEvents.length > query.budget.max_entities)
+          readBudgetTruncated = true;
+        // Each World can contribute at most the global Event budget. Selecting
+        // before detail I/O preserves global sorted selection across Worlds.
+        const documents = await Promise.all(
+          matchingEvents
+            .slice(0, query.budget.max_entities)
+            .map((event) =>
+              reader.readWorldEvent(source.world_id, event.id, selected)
+            )
         );
         for (const document of documents) {
           const event = document.event;
@@ -385,6 +402,8 @@ export async function composePublishedGraphQuery(
             });
           }
           for (const composite of temporal.composites) {
+            if (!eventMap.has(eventKey(source.world_id, composite.event_id)))
+              continue;
             compositeMap.set(
               `${source.world_id}:${canonId}:${composite.event_id}`,
               {
@@ -604,10 +623,22 @@ export async function composePublishedGraphQuery(
     eventKey(a.world_id, a.id).localeCompare(eventKey(b.world_id, b.id))
   );
   const truncated =
+    readBudgetTruncated ||
     events.length > query.budget.max_entities ||
     relations.length > query.budget.max_relations;
   const boundedEvents = events.slice(0, query.budget.max_entities);
-  const boundedRelations = relations.slice(0, query.budget.max_relations);
+  const boundedEventKeys = new Set(
+    boundedEvents.map((event) => eventKey(event.world_id, event.id))
+  );
+  const boundedRelations = relations
+    .filter((relation) =>
+      [relation.source_ref, relation.target_ref].every(
+        (reference) =>
+          reference.kind !== "event" ||
+          boundedEventKeys.has(eventKey(relation.world_id, reference.event_id))
+      )
+    )
+    .slice(0, query.budget.max_relations);
 
   revisionVector.sort((a, b) => a.world_id.localeCompare(b.world_id));
   compatibility.sort((a, b) =>

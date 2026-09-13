@@ -17,31 +17,33 @@ import styles from "./graph-source-island.module.css";
 
 const COPY = {
   ko: {
-    relations: "R1 Relation 결과",
+    relations: "사건 사이의 연결",
     relationHint:
-      "공유 assertion은 한 번만 표시하고 Canon별 assertion은 별도 identity로 유지합니다.",
+      "사건의 순서, 원인, 포함 관계를 읽습니다. 같은 연결을 여러 Canon이 함께 채택할 수 있습니다.",
+    recordDetails: "관계의 기록과 근거",
     families: "Relation families",
     types: "개별 Relation type",
     matched: "matched Canon",
     memberships: "all memberships",
     endpoints: "endpoint membership evidence",
     time: "Canon–Time System evidence",
-    diagnostics: "Diagnostics",
+    diagnostics: "관측 정보",
     diagnosticHint:
       "지식 상태와 completeness를 표시하며 contradiction을 invalid로 만들지 않습니다.",
     valid: "valid knowledge state"
   },
   en: {
-    relations: "R1 Relation results",
+    relations: "Connections between events",
     relationHint:
-      "Shared assertions appear once; Canon-specific assertions retain distinct identities.",
+      "Read order, causes and containment. Several Canons can share the same assertion.",
+    recordDetails: "Relation record and evidence",
     families: "Relation families",
     types: "Individual Relation types",
     matched: "matched Canons",
     memberships: "all memberships",
     endpoints: "endpoint membership evidence",
     time: "Canon–Time System evidence",
-    diagnostics: "Diagnostics",
+    diagnostics: "Observation",
     diagnosticHint:
       "Knowledge state and completeness remain visible; contradiction is not invalidity.",
     valid: "valid knowledge state"
@@ -55,10 +57,22 @@ export function GraphRelationPanel({
   const {
     state,
     setState,
+    entities,
+    catalog,
     relations: sourceRelations,
     diagnostics: sourceDiagnostics
   } = useGraphQuery();
   const copy = COPY[locale];
+  const entityTitles = useMemo(
+    () =>
+      new Map(
+        entities.map((entity) => [
+          `${entity.worldId}:${entity.identity}`,
+          entity.title[locale]
+        ])
+      ),
+    [entities, locale]
+  );
   const relations = useMemo(
     () => searchGraphRelations(state, sourceRelations),
     [sourceRelations, state]
@@ -199,26 +213,50 @@ export function GraphRelationPanel({
               </div>
             </div>
             <p>
-              {relation.sourceIdentity} → {relation.targetIdentity}
+              {entityTitles.get(
+                `${relation.worldId}:${relation.sourceIdentity}`
+              ) ?? relation.sourceIdentity}{" "}
+              →{" "}
+              {entityTitles.get(
+                `${relation.worldId}:${relation.targetIdentity}`
+              ) ?? relation.targetIdentity}
             </p>
-            <dl>
-              <div>
-                <dt>{copy.matched}</dt>
-                <dd>{relation.matchedCanonIds.join(", ")}</dd>
-              </div>
-              <div>
-                <dt>{copy.memberships}</dt>
-                <dd>{relation.canonMemberships.join(", ")}</dd>
-              </div>
-              <div>
-                <dt>{copy.endpoints}</dt>
-                <dd>{relation.endpointEvidence.join(" · ")}</dd>
-              </div>
-              <div>
-                <dt>{copy.time}</dt>
-                <dd>{relation.timeSystemEvidence.join(" · ")}</dd>
-              </div>
-            </dl>
+            <p>
+              {relation.matchedCanonIds
+                .map(
+                  (id) =>
+                    catalog.worlds
+                      .find((world) => world.id === relation.worldId)
+                      ?.canons.find((canon) => canon.id === id)?.label[
+                      locale
+                    ] ?? id
+                )
+                .join(" · ")}
+            </p>
+            <details className={styles.recordDetails}>
+              <summary>{copy.recordDetails}</summary>
+              <p>
+                {relation.sourceIdentity} → {relation.targetIdentity}
+              </p>
+              <dl>
+                <div>
+                  <dt>{copy.matched}</dt>
+                  <dd>{relation.matchedCanonIds.join(", ")}</dd>
+                </div>
+                <div>
+                  <dt>{copy.memberships}</dt>
+                  <dd>{relation.canonMemberships.join(", ")}</dd>
+                </div>
+                <div>
+                  <dt>{copy.endpoints}</dt>
+                  <dd>{relation.endpointEvidence.join(" · ")}</dd>
+                </div>
+                <div>
+                  <dt>{copy.time}</dt>
+                  <dd>{relation.timeSystemEvidence.join(" · ")}</dd>
+                </div>
+              </dl>
+            </details>
           </article>
         ))}
       </div>

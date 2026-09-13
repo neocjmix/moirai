@@ -7,6 +7,7 @@ import {
   useEffect,
   useMemo,
   useState,
+  useTransition,
   type Dispatch,
   type ReactNode,
   type SetStateAction
@@ -37,6 +38,7 @@ type GraphQueryContextValue = {
   readonly relations: readonly GraphRelationMatch[];
   readonly diagnostics: readonly GraphDiagnostic[];
   readonly result: MoiraiGraphQueryResult;
+  readonly pending: boolean;
 };
 
 const GraphQueryContext = createContext<GraphQueryContextValue | null>(null);
@@ -60,6 +62,7 @@ export function GraphQueryProvider({
 }>) {
   const [state, setLocalState] = useState(initialState);
   const router = useRouter();
+  const [pending, startTransition] = useTransition();
   const setSourceState = useCallback<
     Dispatch<SetStateAction<MoiraiGraphUrlState>>
   >(
@@ -82,9 +85,11 @@ export function GraphQueryProvider({
           base.delete(name);
       }
       const nextSearch = buildGraphUrlSearch(base.toString(), next);
-      router.replace(
-        `${window.location.pathname}${nextSearch}${window.location.hash}`,
-        { scroll: false }
+      startTransition(() =>
+        router.replace(
+          `${window.location.pathname}${nextSearch}${window.location.hash}`,
+          { scroll: false }
+        )
       );
     },
     [router, state]
@@ -125,9 +130,19 @@ export function GraphQueryProvider({
       entities,
       relations,
       diagnostics,
-      result
+      result,
+      pending
     }),
-    [catalog, diagnostics, entities, relations, result, setSourceState, state]
+    [
+      catalog,
+      diagnostics,
+      entities,
+      relations,
+      result,
+      pending,
+      setSourceState,
+      state
+    ]
   );
   return (
     <GraphQueryContext.Provider value={value}>

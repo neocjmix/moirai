@@ -45,20 +45,30 @@ test("mobile source island restores published World, Canon, Time System, and Rev
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
   await expect(page.getByTestId("graph-stage")).toBeVisible();
   await expect(page.getByTestId("moirai-native-graph-stage")).toHaveCount(0);
+  await expect(page.getByTestId("moirai-source-island")).toContainText(
+    "Temporal Expressiveness Observatory"
+  );
   await page
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
     .click();
 
+  await expect(page.getByTestId("reader-world-overview")).toBeVisible();
   await expect(
-    page.getByRole("heading", { name: /시간 체계|Time System/ })
+    page.getByText("Revision vector", { exact: true })
+  ).not.toBeVisible();
+  await page
+    .getByText(/탐색 범위와 시간 기준|Sources and time frame/, { exact: true })
+    .click();
+  await expect(
+    page.getByRole("heading", { name: /시간 기준|Time frame/ })
   ).toBeVisible();
   await expect(
     page.getByLabel(/Temporal Expressiveness Observatory/)
   ).toBeChecked();
   await expect(page.getByText("served Revision 2").first()).toBeVisible();
   await expect(page.getByLabel(/Temporal Acceptance Canon/)).toBeChecked();
-  await expect(page.getByText("PUBLICATION SOURCE")).toBeVisible();
+  await expect(page.getByText("PUBLICATION SOURCE")).toHaveCount(0);
 
   await expect
     .poll(() => new URL(page.url()).searchParams.has("mq"))
@@ -68,6 +78,9 @@ test("mobile source island restores published World, Canon, Time System, and Rev
   await page
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
+    .click();
+  await page
+    .getByText(/탐색 범위와 시간 기준|Sources and time frame/, { exact: true })
     .click();
   await expect(
     page.getByLabel(/Temporal Expressiveness Observatory/)
@@ -117,10 +130,15 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
     .click();
-  await page.getByRole("tab", { name: "Entities" }).click();
+  await page.getByRole("tab", { name: /사건|Events/, exact: true }).click();
 
   const sharedA = page.locator(`[data-entity-id="${firstEventId}"]`);
   await expect(sharedA).toHaveCount(1);
+  await expect(sharedA).toContainText("Temporal Acceptance Canon");
+  await expect(
+    sharedA.getByText("persisted", { exact: true })
+  ).not.toBeVisible();
+  await sharedA.getByText(/기록 정보|Record details/, { exact: true }).click();
   await expect(sharedA).toContainText(canonId);
   await expect(sharedA).toContainText("persisted");
 
@@ -134,9 +152,31 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
     .click();
-  await page.getByRole("tab", { name: "Entities" }).click();
+  await page.getByRole("tab", { name: /사건|Events/, exact: true }).click();
   await expect(sharedA).toHaveCount(1);
   expect(new URL(page.url()).searchParams.get("mq")).toContain(firstEventId);
+});
+
+test("reader island keeps observation details outside its primary exploration tabs", async ({
+  page
+}) => {
+  await page.goto("/graph");
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  const island = page.getByTestId("moirai-source-island");
+  await expect(island.getByRole("tab")).toHaveCount(4);
+  await expect(island.getByTestId("reader-world-overview")).toContainText(
+    "Temporal Expressiveness Observatory"
+  );
+  await expect(island.getByTestId("graph-diagnostics")).not.toBeVisible();
+  await island
+    .getByText(/관측 정보|Observation/, { exact: true })
+    .first()
+    .click();
+  await expect(island.getByTestId("graph-diagnostics")).toBeVisible();
+  await expect(island.getByTestId("reader-world-overview")).toBeVisible();
 });
 
 test("R1 Relation filters preserve shared identity and explain contradiction", async ({
@@ -147,7 +187,9 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
     .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
     .first()
     .click();
-  await page.getByRole("tab", { name: "Relations" }).click();
+  await page
+    .getByRole("tab", { name: /연결|Connections/, exact: true })
+    .click();
 
   const shared = page
     .getByTestId("moirai-source-island")
@@ -164,7 +206,10 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
   await page.getByRole("button", { name: "not_after", exact: true }).click();
   await expect(shared).toBeVisible();
 
-  await page.getByRole("tab", { name: "Diagnostics" }).click();
+  await page
+    .getByTestId("reader-observation-details")
+    .locator("summary")
+    .click();
   const unplaced = page.locator('[data-diagnostic-code="unplaced"]').first();
   await expect(unplaced).toContainText(/valid knowledge state/);
   await expect(unplaced).toContainText(/no authored temporal placement/);

@@ -1,10 +1,13 @@
+import {
+  assertSameIdentitySet,
+  assertReadbackRevision
+} from "./public-readback.js";
+
 interface HealthPayload {
   readonly status: string;
   readonly service: string;
   readonly commit_sha: string;
 }
-
-export {};
 
 interface StatusPayload {
   readonly application: { readonly commit_sha: string };
@@ -36,7 +39,7 @@ interface GraphQueryPayload {
 }
 
 const graphWorldId = "01995c2a-7b00-7000-8000-000000000101";
-// Current public dogfood corpus. Overlapping-Canon acceptance stays in isolated CI.
+// Public dogfood corpus; pin one published Revision, including additive refinements.
 const graphCanon = "019f5b00-0000-7000-8000-000000000002";
 const graphTimeSystem = "019f5b00-0000-7000-8000-000000000003";
 const graphEventA = "019f5b00-0000-7000-8000-000000000100";
@@ -66,7 +69,7 @@ async function fetchJson<T>(path: string): Promise<T> {
   return (await response.json()) as T;
 }
 
-async function fetchGraphQuery(): Promise<GraphQueryPayload> {
+async function fetchGraphQuery(revision: number): Promise<GraphQueryPayload> {
   const response = await fetch(new URL("/graph/query", baseUrl), {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -78,7 +81,7 @@ async function fetchGraphQuery(): Promise<GraphQueryPayload> {
       sources: [
         {
           world_id: graphWorldId,
-          served_revision: 1,
+          served_revision: revision,
           canon_ids: [graphCanon],
           time_systems: [gregorianFrame]
         }
@@ -132,13 +135,44 @@ async function fetchGraphQuery(): Promise<GraphQueryPayload> {
 }
 
 async function verify(): Promise<void> {
-  const [health, ready, status, landing, graph] = await Promise.all([
-    fetchJson<HealthPayload>("/health/live"),
-    fetchJson<HealthPayload>("/health/ready"),
-    fetchJson<StatusPayload>("/status-public"),
-    fetch(new URL("/", baseUrl), { signal: AbortSignal.timeout(10_000) }),
-    fetchGraphQuery()
-  ]);
+  const pointer = await fetchJson<{
+    world_id: string;
+    served_revision: number;
+  }>(`/worlds/${graphWorldId}/current.json`);
+  const revision = pointer.served_revision;
+  assertReadbackRevision(graphWorldId, revision, pointer);
+  const prefix = `/worlds/${graphWorldId}/revisions/${revision}`;
+  const [health, ready, status, landing, graph, canon, temporal] =
+    await Promise.all([
+      fetchJson<HealthPayload>("/health/live"),
+      fetchJson<HealthPayload>("/health/ready"),
+      fetchJson<StatusPayload>("/status-public"),
+      fetch(new URL("/", baseUrl), { signal: AbortSignal.timeout(10_000) }),
+      fetchGraphQuery(revision),
+      fetchJson<{
+        canon: { id: string; world_id: string };
+        served_revision: number;
+        events: readonly { id: string }[];
+      }>(`${prefix}/canons/${graphCanon}.json`),
+      fetchJson<{
+        world_id: string;
+        canon_id: string;
+        served_revision: number;
+        source_revision: number;
+        relations: readonly { id: string }[];
+      }>(`${prefix}/graph/canons/${graphCanon}/temporal.json`)
+    ]);
+  assertReadbackRevision(graphWorldId, revision, {
+    world_id: canon.canon.world_id,
+    served_revision: canon.served_revision
+  });
+  assertReadbackRevision(graphWorldId, revision, temporal);
+  assertSameIdentitySet("Events", graph.result.events, canon.events);
+  assertSameIdentitySet(
+    "Relations",
+    graph.result.relations,
+    temporal.relations
+  );
   const eventIds = graph.result.events.map((event) => event.id);
   const timeBounds = graph.result.relations.filter(
     (relation) => relation.id === graphTimeBound
@@ -156,9 +190,10 @@ async function verify(): Promise<void> {
     graph.result.completeness !== "complete" ||
     graph.result.revision_vector.length !== 1 ||
     graph.result.revision_vector[0]?.world_id !== graphWorldId ||
-    graph.result.revision_vector[0]?.served_revision !== 1 ||
-    eventIds.length !== 40 ||
-    graph.result.relations.length !== 124 ||
+    graph.result.revision_vector[0]?.served_revision !== revision ||
+    canon.canon.id !== graphCanon ||
+    temporal.canon_id !== graphCanon ||
+    temporal.source_revision !== revision ||
     graph.result.events.some(
       (event) => event.matched_canon_ids.join(",") !== graphCanon
     ) ||

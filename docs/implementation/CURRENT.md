@@ -3,7 +3,7 @@
 IP-004 — [M5 진입 전 Production Readiness Gate](IP-004-production-readiness-gate.md) 활성.
 사용자 승인 범위: Atropos Island/Event product surface 안정화, Clotho 자연어 작성의 semantic E2E·점진적 refinement 검증, 실제 query path의 scale/latency/cache 검증. Graph view는 현재 안정된 regression baseline으로 유지하며 재설계하지 않는다. M5는 계속 비활성이다.
 
-PR-0 baseline은 [evidence/ip-004-pr0-baseline-2026-09-13.md](../evidence/ip-004-pr0-baseline-2026-09-13.md)에 고정했다. PR-A1은 PR #81·runtime `54929f7`로 배포 검증했다([evidence](../evidence/ip-004-pra1-island.md)). 현재 PR-A2 — Event 독자 경험·Revision/viewport/search 왕복 검증 중이다. Graph renderer/layout/interaction은 M4.7 baseline으로 유지한다. PR-B canonical write는 아직 없으며 PR-C는 실제 query shape를 계측한다.
+PR-0 baseline은 [evidence](../evidence/ip-004-pr0-baseline-2026-09-13.md)에 고정했다. PR-A1은 PR #81·runtime `54929f7`([evidence](../evidence/ip-004-pra1-island.md)), PR-A2는 PR #82·runtime `9456f13`으로 배포 검증했다([evidence](../evidence/ip-004-pra2-event.md)). Graph renderer/layout/interaction은 M4.7 baseline으로 유지한다. 현재 PR-B1 — 실제 Clotho coarse creation 전 Revision-safe query/readback harness 보강 중이며 canonical write는 아직 없다. PR-C는 PR-B의 실제 query shape를 계측한다.
 
 후속 도그푸딩 수정: Composite 레이블 후보 전환에 화면 기준 히스테리시스 적용.
 이전 변을 유지하면서 좌표는 계속 갱신하고, 충분한 개선·화면 이탈 시 전환한다.
@@ -35,9 +35,9 @@ read pipeline을 유지하면서 입력을 Moirai Publication data로 교체한�
 | 항목                       | 현재 값                                                                                                                       |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
 | 기준 계획                  | [IP-004 — Production Readiness Gate](IP-004-production-readiness-gate.md); [IP-001](IP-001-first-product-plan.md)은 상위 제품 계획 |
-| 실행 상태                  | `active` — PR-0 baseline, PR-A1 배포 완료; PR-A2 검증 중 |
+| 실행 상태                  | `active` — PR-0, PR-A1/A2 배포 검증 완료; PR-B1 진행 중 |
 | 활성 milestone             | IP-004 Production Readiness Gate — M5 entry blocker |
-| 현재 slice                 | PR-A2 Event 독자 경험·Canon별 시간/서사·고정 Revision과 Graph context 왕복 |
+| 현재 slice                 | PR-B1 Clotho coarse creation — 고정 Revision query와 identity readback 보강 후 실제 작성 |
 | M5 상태                    | 비활성 — IP-004 전체 종료 + 별도 사용자 활성화 필요 |
 | Graph 기준                 | M4.7 완료 상태를 regression baseline으로 유지; 재설계 금지 |
 | M4.6-B checkpoint          | PR #55 merge `ad00da4ee10d55f8b948ba5fe3a2b737a15a570a`; PR/main CI `34683566545`/`34683671696`, smoke `34683794046` success; stable identity·Canon별 instance·lossless sidecar |

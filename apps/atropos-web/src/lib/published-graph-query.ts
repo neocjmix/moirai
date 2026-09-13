@@ -21,7 +21,7 @@ import {
   readRelationalTime,
   readSubject,
   readWorldEvent,
-  selectPublication,
+  selectPublicationRevision,
   type SelectedPublication
 } from "./publication";
 
@@ -34,7 +34,10 @@ const MAX_EVIDENCE = 40_000;
 type CanonRead = Awaited<ReturnType<typeof readCanon>>;
 
 export type PublishedGraphQueryReader = {
-  readonly selectPublication: (worldId: string) => Promise<SelectedPublication>;
+  readonly selectPublicationRevision: (
+    worldId: string,
+    revision: number
+  ) => Promise<SelectedPublication>;
   readonly readCanon: (
     worldId: string,
     canonId: string,
@@ -55,7 +58,7 @@ export type PublishedGraphQueryReader = {
 };
 
 const DEFAULT_READER: PublishedGraphQueryReader = {
-  selectPublication,
+  selectPublicationRevision,
   readCanon,
   readWorldEvent,
   readGraphScope,
@@ -135,10 +138,13 @@ export async function composePublishedGraphQuery(
   await Promise.all(
     query.sources.map(async (source) => {
       try {
-        const selected = await reader.selectPublication(source.world_id);
+        const selected = await reader.selectPublicationRevision(
+          source.world_id,
+          source.served_revision
+        );
         if (selected.pointer.served_revision !== source.served_revision) {
           throw new Error(
-            "requested Publication Revision is not currently served"
+            "requested Publication Revision does not match selected artifact"
           );
         }
         const canonReads = await Promise.all(

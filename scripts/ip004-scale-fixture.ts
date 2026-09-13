@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
-import type { ChangePlan } from "@moirai/contracts";
-import { resolveCreateOperations } from "@moirai/domain";
-import type { CanonicalRevisionView } from "@moirai/projections";
+import type { ChangePlan } from "../packages/contracts/src/index.js";
+import { resolveCreateOperations } from "../packages/domain/src/index.js";
+import type { CanonicalRevisionView } from "../packages/projections/src/index.js";
 
 /** Synthetic copies of the real R5 topology, never a production authoring plan.
  * World, Event and Relation identities are disjoint from the public-history World. */

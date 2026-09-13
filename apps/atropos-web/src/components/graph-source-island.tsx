@@ -184,12 +184,22 @@ function sourceFromWorld(
 }
 
 export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
+  const {
+    initialReader,
+    state,
+    setState,
+    setSourceState,
+    catalog,
+    entities,
+    result,
+    pending
+  } = useGraphQuery();
   const copy = COPY[locale];
   const [open, setOpen] = useState(false);
   const [activeTab, setLocalTab] = useState<
     "sources" | "entities" | "search" | "relations"
-  >("sources");
-  const [searchTerm, setLocalSearch] = useState("");
+  >(initialReader.tab);
+  const [searchTerm, setLocalSearch] = useState(initialReader.search);
   useEffect(() => {
     const restore = () => {
       const query = new URLSearchParams(window.location.search);
@@ -202,7 +212,6 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
       const search = query.get("readerFind");
       setLocalSearch(search && search.length <= 512 ? search : "");
     };
-    restore();
     window.addEventListener("popstate", restore);
     return () => window.removeEventListener("popstate", restore);
   }, []);
@@ -232,15 +241,6 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     setLocalSearch(bounded);
     writeReaderLocation(activeTab, bounded);
   };
-  const {
-    state,
-    setState,
-    setSourceState,
-    catalog,
-    entities,
-    result,
-    pending
-  } = useGraphQuery();
   const [draftFrameId, setDraftFrameId] = useState<string | null>(null);
   const activeFrame = useMemo(
     () => findFrame(state, catalog),

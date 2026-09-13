@@ -2,7 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   eventReadingSearch,
   graphReturnHref,
-  withGraphReturnContext
+  withGraphReturnContext,
+  graphReaderState
 } from "./event-reading-navigation";
 
 const event =
@@ -19,6 +20,14 @@ const origin = new URLSearchParams({
 }).toString();
 
 describe("revision-pinned reader navigation", () => {
+  it("restores the reader from bounded server route inputs before client hydration", () => {
+    expect(
+      graphReaderState({ readerTab: "search", readerFind: "황산" })
+    ).toEqual({ tab: "search", search: "황산" });
+    expect(
+      graphReaderState({ readerTab: ["search"], readerFind: "x".repeat(513) })
+    ).toEqual({ tab: "sources", search: "" });
+  });
   it("carries only bounded graph reading context through Event routes", () => {
     const search = new URLSearchParams(eventReadingSearch(7, origin));
     expect(search.get("revision")).toBe("7");

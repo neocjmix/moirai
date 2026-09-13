@@ -4,6 +4,10 @@ import { useMemo, useCallback, lazy, Suspense } from "react";
 import { presentationNodeId } from "@moirai/graph-presentation";
 import { createMoiraiGraphReadLoader } from "../urdr-port/src/moirai-graph-read-loader";
 import type { GraphSpatialBootstrap } from "../lib/graph-spatial-bootstrap";
+import {
+  DEFAULT_GRAPH_READER,
+  type GraphReaderState
+} from "../lib/event-reading-navigation";
 import { Theme } from "@radix-ui/themes";
 
 import type {
@@ -24,6 +28,7 @@ import type {
 export function AtroposGraphRoot({
   initialScreen,
   initialGraphQuery,
+  initialReader = DEFAULT_GRAPH_READER,
   catalog,
   entities,
   relations,
@@ -34,6 +39,7 @@ export function AtroposGraphRoot({
 }: Readonly<{
   initialScreen: AtroposScreenId;
   initialGraphQuery: MoiraiGraphUrlState;
+  initialReader?: GraphReaderState;
   catalog: GraphSourceCatalog;
   entities: readonly GraphSearchEntity[];
   relations: readonly GraphRelationMatch[];
@@ -48,6 +54,7 @@ export function AtroposGraphRoot({
       diagnostics={diagnostics}
       entities={entities}
       initialState={initialGraphQuery}
+      initialReader={initialReader}
       relations={relations}
       result={result}
     >

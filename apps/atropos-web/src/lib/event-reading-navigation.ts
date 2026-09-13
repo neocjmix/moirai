@@ -8,6 +8,28 @@ const CONTEXT_LIMITS = [
   ["readerFind", 512]
 ] as const;
 
+export type GraphReaderState = {
+  readonly tab: "sources" | "entities" | "search" | "relations";
+  readonly search: string;
+};
+export const DEFAULT_GRAPH_READER: GraphReaderState = {
+  tab: "sources",
+  search: ""
+};
+export function graphReaderState(
+  query: Readonly<Record<string, string | string[] | undefined>>
+): GraphReaderState {
+  const tab = query.readerTab;
+  const search = query.readerFind;
+  return {
+    tab:
+      tab === "entities" || tab === "search" || tab === "relations"
+        ? tab
+        : "sources",
+    search: typeof search === "string" && search.length <= 512 ? search : ""
+  };
+}
+
 function boundedGraphContext(search: string): URLSearchParams {
   const input = new URLSearchParams(search);
   const mq = input.get("mq");

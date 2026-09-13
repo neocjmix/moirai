@@ -13,6 +13,10 @@ import {
   type SetStateAction
 } from "react";
 import { useRouter } from "next/navigation";
+import {
+  DEFAULT_GRAPH_READER,
+  type GraphReaderState
+} from "../lib/event-reading-navigation";
 
 import type {
   MoiraiGraphQueryResult,
@@ -30,6 +34,7 @@ import {
 } from "../lib/moirai-graph-source-query";
 
 type GraphQueryContextValue = {
+  readonly initialReader: GraphReaderState;
   readonly state: MoiraiGraphUrlState;
   readonly setState: Dispatch<SetStateAction<MoiraiGraphUrlState>>;
   readonly setSourceState: Dispatch<SetStateAction<MoiraiGraphUrlState>>;
@@ -46,6 +51,7 @@ const GraphQueryContext = createContext<GraphQueryContextValue | null>(null);
 export function GraphQueryProvider({
   children,
   initialState,
+  initialReader = DEFAULT_GRAPH_READER,
   catalog,
   entities,
   relations,
@@ -54,6 +60,7 @@ export function GraphQueryProvider({
 }: Readonly<{
   children: ReactNode;
   initialState: MoiraiGraphUrlState;
+  initialReader?: GraphReaderState;
   catalog: GraphSourceCatalog;
   entities: readonly GraphSearchEntity[];
   relations: readonly GraphRelationMatch[];
@@ -123,6 +130,7 @@ export function GraphQueryProvider({
 
   const value = useMemo(
     () => ({
+      initialReader,
       state,
       setState,
       setSourceState,
@@ -134,6 +142,7 @@ export function GraphQueryProvider({
       pending
     }),
     [
+      initialReader,
       catalog,
       diagnostics,
       entities,

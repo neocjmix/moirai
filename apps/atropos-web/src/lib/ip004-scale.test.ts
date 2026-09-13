@@ -65,6 +65,9 @@ it.skipIf(!process.env.IP004_SCALE)(
           peak_rss_kib: process.resourceUsage().maxRSS
         }) + "\n"
       );
+      // Let the runner deliver phase/RPC messages between long synchronous
+      // builds. This does not change either phase's measured CPU wall time.
+      await new Promise<void>((resolve) => setImmediate(resolve));
       start = performance.now();
       const graphInput = queryFromPublicationDocuments(
         publication.manifestBody,

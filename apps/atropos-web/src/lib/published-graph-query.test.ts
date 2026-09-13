@@ -194,6 +194,84 @@ const sources: MoiraiGraphQuery["sources"] = [
 ];
 
 describe("M4.5-E immutable Publication query composition", () => {
+  it("omits relations whose World falls outside the final global Event budget", async () => {
+    const original = reader();
+    const input = query([...sources].reverse());
+    const result = await composePublishedGraphQuery(
+      { ...input, budget: { ...input.budget, max_entities: 1 } },
+      {
+        ...original,
+        async readWorldEvent(worldId, eventId, selected) {
+          const document = await original.readWorldEvent(
+            worldId,
+            eventId,
+            selected
+          );
+          return {
+            ...document,
+            relations: [
+              {
+                ...sharedRelation,
+                world_id: worldId,
+                canon_memberships:
+                  worldId === "world-a" ? ["canon-a1", "canon-a2"] : ["canon-b"]
+              }
+            ]
+          };
+        }
+      }
+    );
+    expect(result.events.map((event) => event.world_id)).toEqual(["world-a"]);
+    expect(result.relations.map((relation) => relation.world_id)).toEqual([
+      "world-a"
+    ]);
+    expect(result.budget.truncated).toBe(true);
+  });
+  it("applies Event filters and the per-World read budget before fetching detail documents", async () => {
+    const original = reader();
+    const calls: string[] = [];
+    const records = Array.from({ length: 1000 }, (_, i) => ({
+      ...sharedEvent,
+      id: `event-${String(i).padStart(4, "0")}`,
+      kind: i % 2 ? ("atomic" as const) : ("composite" as const)
+    }));
+    const boundedReader: PublishedGraphQueryReader = {
+      ...original,
+      async readCanon(worldId, canonId, selected) {
+        return {
+          ...(await original.readCanon(worldId, canonId, selected)),
+          events: [...records].reverse()
+        };
+      },
+      async readWorldEvent(_worldId, eventId) {
+        calls.push(eventId);
+        return {
+          event: records.find((event) => event.id === eventId)!,
+          narratives: [],
+          relations: []
+        };
+      }
+    };
+    const input = query([sources[0]!]);
+    const result = await composePublishedGraphQuery(
+      {
+        ...input,
+        entity_filter: { ...input.entity_filter, event_kinds: ["atomic"] },
+        budget: { ...input.budget, max_entities: 5 }
+      },
+      boundedReader
+    );
+    expect(calls).toEqual([
+      "event-0001",
+      "event-0003",
+      "event-0005",
+      "event-0007",
+      "event-0009"
+    ]);
+    expect(result.events.map((event) => event.id)).toEqual(calls);
+    expect(result.budget.truncated).toBe(true);
+    expect(result.completeness).toBe("partial");
+  });
   it("reads the requested immutable revision after the World has advanced", async () => {
     const original = reader();
     const calls: number[] = [];

@@ -49,6 +49,10 @@ jobs:
           node -e 'const fs=require("fs"); const rows=fs.readFileSync("/tmp/ip004-scale.log","utf8").split("\n").filter(line=>line.startsWith("{")); const fixture=rows.map(line=>JSON.parse(line)).find(row=>row.artifact_dir); if(!fixture) throw Error("missing fixture"); fs.appendFileSync(process.env.GITHUB_ENV,"IP004_SCALE_READ_DIR="+fixture.artifact_dir+"\n");'
       - name: Real Next server and mobile WebKit reader
         run: pnpm exec playwright test --config playwright.ip004.config.ts
+      - name: Reader failure context
+        if: failure()
+        run: |
+          find test-results -name error-context.md -exec cat {} \;
       - uses: actions/upload-artifact@v4
         if: always()
         with:

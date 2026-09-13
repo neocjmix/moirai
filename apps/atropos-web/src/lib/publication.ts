@@ -6,6 +6,7 @@ import {
 } from "@moirai/graph-query";
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
+import { observePublicationRead } from "./publication-profile";
 import {
   LEGACY_PUBLICATION_FORMAT_VERSION,
   EVENT_MEMBERSHIP_PUBLICATION_FORMAT_VERSION,
@@ -63,7 +64,11 @@ export function assertPublicId(value: string): void {
   if (!UUID.test(value)) throw new Error("invalid public identifier");
 }
 
-export async function readPublicationObject(key: string): Promise<ObjectRead> {
+export function readPublicationObject(key: string): Promise<ObjectRead> {
+  return observePublicationRead(() => readPublicationObjectValue(key));
+}
+
+async function readPublicationObjectValue(key: string): Promise<ObjectRead> {
   if (!/^[a-z0-9/._-]+$/i.test(key) || key.includes(".."))
     throw new Error("invalid publication key");
   if (!hasPublicationStoreConfig()) {
@@ -89,7 +94,10 @@ export async function readPublishedWorlds(): Promise<
 > {
   if (!hasPublicationStoreConfig()) {
     if (process.env.LOCAL_PUBLICATION_FIXTURE_DIR) {
-      const publication = await readWorld(TEMPORAL_EXPRESSIVENESS_WORLD_ID);
+      const publication = await readWorld(
+        process.env.LOCAL_PUBLICATION_FIXTURE_WORLD_ID ??
+          TEMPORAL_EXPRESSIVENESS_WORLD_ID
+      );
       return [
         {
           availability: "ready",

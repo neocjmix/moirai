@@ -1,8 +1,9 @@
 # IP-004 PR-B2 — third refinement and Canon N:M, Revision 5
 
 Actual Clotho commit produced Revision 5; current/target/served 5 ready was
-confirmed. Canon-scoped authoring-read defects found by this fixture are being
-fixed. Independent-session acceptance and PR-C remain open; M5 is inactive.
+confirmed. Canon-scoped authoring-read defects found by this fixture are fixed
+and verified in production. Independent-session acceptance and PR-C remain open;
+M5 is inactive.
 
 ## Intent, abstraction and recovery
 
@@ -73,4 +74,30 @@ Measured single client-path samples (ms/bytes): World 10,832/1,208; original Can
 temporal 9,926/11,522, graph 11,334/22,887; process 9,558/7,247, creation
 10,276/6,811, book 10,041/8,495. These are network/proxy-inclusive readback
 samples, not server p95 or scale acceptance. Browser navigation, CI and deployed
-Clotho-read verification follow in the next checkpoint update.
+Clotho-read verification follow below.
+
+## Production reader and deployed fix — PR #87
+
+Public Island searched 사료비판 and returned the existing book once. Matched Canon
+was 훈민정음 — 기록과 해석; full membership showed both Canons. Its Graph Event
+drawer opened in the matching Canon and displayed only the source-critical
+Narrative and source. The stable Event reading page at Revision 5 displayed both
+Canon-labelled readings, both bounded year contexts, shared related Events and
+both Canon navigation links. No duplicate World Event was introduced.
+
+[PR #87](https://github.com/neocjmix/moirai/pull/87) merged as
+`28c1d3757531aa26cc3acc9982bab140fb02178e` after
+[CI 34778196146](https://github.com/neocjmix/moirai/actions/runs/34778196146)
+passed, including PostgreSQL, build/audit and mobile WebKit. Main
+[CI 34778359114](https://github.com/neocjmix/moirai/actions/runs/34778359114)
+and [smoke 34778492487](https://github.com/neocjmix/moirai/actions/runs/34778492487)
+passed. Railway Atropos `d44d1483-04f3-4335-8c4d-22122b95aa69`, Clotho
+`27d7fa19-417d-46c1-8003-1c36b926b751`, worker
+`35c93698-3420-4116-b42f-8d3596428c32` all SUCCESS at that SHA. Public
+health/status returned 200, the same SHA and the passed smoke result.
+
+Actual connected post-deploy search at Revision 5: 사료비판 returned **zero**
+Events in the original Canon and exactly the existing book in the new Canon.
+Actual bounded context returned old book Narrative, new Canon Narrative and new
+book Narrative with correct `canon_id`, title, kind and public references. This
+closes the observed read defect; it is not a claim of fresh-session acceptance.

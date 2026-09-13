@@ -1,6 +1,8 @@
 import { searchGraphReader } from "../../../lib/graph-reader-search";
+import { profilePublicationRoute } from "../../../lib/publication-profile";
 
-export async function POST(request: Request) {
+export const POST = profilePublicationRoute(handle);
+async function handle(request: Request) {
   const stream = request.body?.getReader();
   if (!stream)
     return Response.json({ error: "invalid_search" }, { status: 400 });

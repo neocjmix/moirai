@@ -1,5 +1,7 @@
 import { graphSpatialDetail } from "../../../lib/graph-spatial-detail";
-export async function POST(request: Request) {
+import { profilePublicationRoute } from "../../../lib/publication-profile";
+export const POST = profilePublicationRoute(handle);
+async function handle(request: Request) {
   if (Number(request.headers.get("content-length") ?? 0) > 65536)
     return Response.json({ error: "query_too_large" }, { status: 413 });
   const stream = request.body?.getReader();

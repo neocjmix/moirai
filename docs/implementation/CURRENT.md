@@ -8,9 +8,9 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 
 | 항목 | 상태 |
 | --- | --- |
-| 현재 slice | PR-B2 — 세 번째 실제 refinement와 N:M/불확실성 검증; Clotho Canon-scoped read 수정 |
-| 마지막 배포 검증 | PR #86, `0f55516861b49835a284cf76fdb5dafd36cf3074`; Railway Atropos·Clotho·worker SUCCESS |
-| 검증 | PR CI `34777488209`, main CI `34777644068`, smoke `34777746572` success; 실제 Narrative 본문 검색·toggle·drawer·Event reading page 확인 |
+| 현재 slice | PR-C1 — 실제 R5 topology의 100/1k/10k fixture와 Publication/query 계측; PR-B3 독립 세션 검증은 별도 잔여 |
+| 마지막 배포 검증 | PR #87, `28c1d3757531aa26cc3acc9982bab140fb02178e`; Railway Atropos·Clotho·worker SUCCESS |
+| 검증 | PR CI `34778196146`, main CI `34778359114`, smoke `34778492487` success; 두 Canon의 공개 reader 여정과 실제 Clotho 검색·context 수정 확인 |
 | 실제 World | 조선 전기 — 건국에서 세조까지; `01995c2a-7b00-7000-8000-000000000101` |
 | 실제 데이터 | current/target/served Revision 5 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133 |
 | Graph regression 경계 | M4.7 renderer/layout/interaction 유지, 후속 label hysteresis PR #77 포함; 재설계 금지 |
@@ -29,8 +29,8 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 - PR-B2 세 번째 보강 → Revision 5: [N:M·불확실성·충돌 복구](../evidence/ip-004-prb2-canon.md).
   같은 세 Event와 열 Relation을 두 번째 해석 Canon에 채택했다. 실제 stale commit은 거부됐고
   최신 context를 다시 읽어 재계획한 commit은 성공했다. Canon을 넘나드는 Clotho 검색과
-  Narrative Canon/source 누락의 수정 배포·readback을 검증 중이다.
-- PR-B 잔여: 세 번째 보강의 공개 여정·수정 배포, 독립 세션 재탐색, 전체 reader acceptance.
+  Narrative Canon/source 누락은 PR #87 배포 후 실제 연결에서 수정 검증됐다.
+- PR-B 잔여: 독립 LLM 세션의 World ID 기반 재탐색→후속 refinement, 전체 reader acceptance.
 - PR-C 잔여: 실제 query/workload와 100/1k/10k 규모 계측, 기존 100k spatial evidence 재사용,
   병목에 근거한 최소 개선, revision-safe cache·resource 한계 검증. Redis 등 새 infrastructure는 추가하지 않았다.
 

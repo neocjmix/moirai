@@ -1,7 +1,7 @@
 # IP-004 PR-B2 — first progressive refinement, Revision 3
 
 Status: actual authoring and semantic public readback passed; temporal-summary
-presentation fix awaits its own CI/deployment/public verification. IP-004 is not
+presentation fix is deployed and verified in both detail surfaces. IP-004 is not
 complete. M5 remains inactive.
 
 ## Actual Clotho and Publication evidence
@@ -51,7 +51,30 @@ semantics, renderer, layout, geometry, or graph interactions.
 The regression test first failed with 시간 정보 미정 on the real Revision 3 fixture,
 then passed with the named boundary summary. Local full suite: 236 passed, one
 explicit live-network test skipped; root typecheck and changed-file lint passed.
-Full CI/mobile and deployed-fix verification will be appended after deployment.
+Full CI/mobile and deployed-fix verification are recorded below.
+
+## Deployed fix — PR #85
+
+[PR #85](https://github.com/neocjmix/moirai/pull/85) merged as
+`1eff8c85619f0647a8069e2f7462bfe831b8fbaf` after all checks passed in
+[CI 34765374560](https://github.com/neocjmix/moirai/actions/runs/34765374560),
+including PostgreSQL migration/integration and mobile WebKit. Main
+[CI 34765522605](https://github.com/neocjmix/moirai/actions/runs/34765522605)
+also passed. Railway Atropos `a23d24f4-8f6b-483d-8991-9d608d366afb`, Clotho
+`0f869918-3e14-44aa-8158-70df85b3ef2d`, worker
+`10094305-8159-4700-b978-521e503538ff` are SUCCESS at that SHA.
+Public `/health` and `/status-public` returned 200 and the same SHA.
+Public browser verified the named start/end summary plus unresolved-duration
+caveat in the process Event reading page, then returned to the restored Graph
+Event drawer and verified the same summary and source-linked Narrative there.
+No new canonical Revision was needed for this presentation fix.
+Post-deploy [smoke 34765649245](https://github.com/neocjmix/moirai/actions/runs/34765649245)
+passed at the same application SHA.
+
+The Revision 3 live test was rerun successfully before the next write: World
+10,979ms, Canon 10,975ms, temporal 11,281ms, graph 12,622ms, process 10,870ms,
+creation 11,435ms, book 13,502ms; payload sizes unchanged. No assertion or timeout
+was weakened.
 
 Baseline main CI [34756276098](https://github.com/neocjmix/moirai/actions/runs/34756276098)
 and [smoke 34756389106](https://github.com/neocjmix/moirai/actions/runs/34756389106)

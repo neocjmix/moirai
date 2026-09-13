@@ -87,7 +87,20 @@ const view = {
       .filter((membership) => membership.relation_id === relation.id)
       .map((membership) => membership.canon_id)
   })),
-  narratives: rows("narrative")
+  narratives: [
+    ...rows("narrative"),
+    {
+      id: "019f3b00-0000-7000-8000-000000000901",
+      canon_id: "019f3b00-0000-7000-8000-000000000002",
+      scope_type: "event",
+      scope_id: "019f3b00-0000-7000-8000-000000000101",
+      locale: "ko",
+      kind: "annotation",
+      title: "검색 수용시험 이야기",
+      body: "이야기본문전용표식은 사건 제목이나 요약에 없는 CI 검색 검증 문장이다.",
+      public_references: []
+    }
+  ]
 } as unknown as CanonicalRevisionView;
 const artifacts = buildPublicationArtifacts(view, 2, "2026-09-06T00:00:00Z");
 const root = resolve(

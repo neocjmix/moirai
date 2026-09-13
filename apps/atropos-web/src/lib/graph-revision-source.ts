@@ -97,7 +97,7 @@ export async function readGraphRevision(
 /** Selected Event detail is loaded on demand, not the entire World's Event documents. */
 export async function readGraphEventNarratives(
   manifest: PublicationManifest,
-  canonId: string,
+  canonId: string | readonly string[],
   eventId: string
 ): Promise<readonly PublicNarrative[]> {
   assertPublicId(eventId);
@@ -117,9 +117,10 @@ export async function readGraphEventNarratives(
     doc.event.id !== eventId
   )
     throw Error("graph_event_revision_mismatch");
+  const canons = typeof canonId === "string" ? [canonId] : canonId;
   return (doc.narratives as PublicNarrative[]).filter(
     (n) =>
-      n.canon_id === canonId &&
+      canons.includes(n.canon_id) &&
       n.scope_type === "event" &&
       n.scope_id === eventId
   );

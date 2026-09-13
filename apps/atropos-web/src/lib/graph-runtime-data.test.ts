@@ -28,6 +28,11 @@ import { graphSpatialQueryContext } from "./graph-spatial-query";
 import { graphSpatialDetail } from "./graph-spatial-detail";
 import { moiraiSpatialReader } from "./moirai-spatial";
 import { graphSpatialBootstrap } from "./graph-spatial-bootstrap";
+import { composeGraphPublicationQuery } from "./graph-publication-composer";
+import { graphPresentationFromResult } from "./graph-query-presentation";
+import { searchGraphEntities } from "./moirai-graph-source-query";
+import { searchGraphReader } from "./graph-reader-search";
+import { POST as readerSearch } from "../app/graph/search/route";
 const k2 = "01995c2a-7b00-7000-8000-000000000020";
 const view: CanonicalRevisionView = {
   world: {
@@ -132,6 +137,110 @@ beforeAll(() => {
   }
 });
 describe("M4.6-E one revision across query, spatial and detail", () => {
+  it("finds the existing Event by its selected-Canon Narrative without duplicate results", async () => {
+    const loaded = await loadGraphPublicationSources([
+      { world_id: ids.worldId, served_revision: 4 }
+    ]);
+    const initial = createDefaultGraphUrlState(loaded.catalog);
+    const state = {
+      ...initial,
+      query: {
+        ...initial.query,
+        sources: initial.query.sources.map((s) => ({
+          ...s,
+          canon_ids: [ids.canonId]
+        }))
+      }
+    };
+    const result = composeGraphPublicationQuery(
+      state.query,
+      loaded.snapshots,
+      loaded.failures
+    );
+    const entities = graphPresentationFromResult(result).entities;
+    // Initial Graph input stays small: Event documents are fetched on search.
+    expect(searchGraphEntities(state, "한국어 설명", entities)).toHaveLength(0);
+    const response = await readerSearch(
+      new Request("https://example.org/graph/search", {
+        method: "POST",
+        body: JSON.stringify({ state, term: "한국어 설명" })
+      })
+    );
+    expect(response.status).toBe(200);
+    const { matches, nextCursor } = await response.json();
+    expect(matches).toHaveLength(1);
+    expect(matches[0]).toMatchObject({
+      identity: ids.eventId,
+      kind: "event",
+      matchedCanonIds: [ids.canonId]
+    });
+    expect(matches[0].reference).toMatchObject({
+      canon_id: ids.canonId,
+      served_revision: 4
+    });
+    expect(nextCursor).toBeNull();
+    expect(
+      (await searchGraphReader({ state, term: "다른 Canon의 설명" })).matches
+    ).toHaveLength(0);
+    expect(
+      (
+        await searchGraphReader({
+          state: {
+            ...state,
+            query: {
+              ...state.query,
+              entity_filter: {
+                ...state.query.entity_filter,
+                include_narratives: false
+              }
+            }
+          },
+          term: "한국어 설명"
+        })
+      ).matches
+    ).toHaveLength(0);
+    const both = {
+      ...state,
+      query: { ...state.query, sources: initial.query.sources }
+    };
+    const different = await searchGraphReader({
+      state: both,
+      term: "다른 Canon의 설명"
+    });
+    expect(different.matches).toHaveLength(1);
+    expect(different.matches[0]).toMatchObject({
+      identity: ids.eventId,
+      matchedCanonIds: [k2],
+      reference: { canon_id: k2 }
+    });
+    const first = await searchGraphReader({
+      state,
+      term: "revision 4",
+      limit: 1
+    });
+    const second = await searchGraphReader({
+      state,
+      term: "revision 4",
+      limit: 1,
+      cursor: first.nextCursor
+    });
+    expect(first.matches).toHaveLength(1);
+    expect(second.matches).toHaveLength(1);
+    expect(second.matches[0]!.identity).not.toBe(first.matches[0]!.identity);
+    expect(
+      (await searchGraphReader({ state, term: "revision 5" })).matches
+    ).toHaveLength(0);
+    const key = `worlds/${ids.worldId}/revisions/4/search/en.json`;
+    const original = store.get(key)!;
+    try {
+      store.set(key, original + " ");
+      await expect(
+        searchGraphReader({ state, term: "한국어 설명" })
+      ).rejects.toThrow("search_index_digest_mismatch");
+    } finally {
+      store.set(key, original);
+    }
+  });
   it("reads Korean Event narratives and sources from the selected immutable Canon scope", async () => {
     const loaded = await loadGraphPublicationSources([
       { world_id: ids.worldId, served_revision: 4 }

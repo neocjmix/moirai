@@ -1,0 +1,39 @@
+{
+  "contract_version": 4,
+  "change_set_id": "019f60ab-0000-7000-8000-000000000003",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 3,
+  "intent": "같은 훈민정음 과정에 왜 문자를 만들었는지 설명을 보태 줘. 세종의 서문에 나타난 백성의 표현 어려움과 일상 사용 목적을 출처와 함께 읽게 해 줘. 문자 창제가 해설서의 설명 대상을 마련했다는 연결은 편집상 해석으로 구분하고, 기존 사건을 다시 만들거나 단순 선후를 직접 원인으로 단정하지 마.",
+  "origins": [
+    { "kind": "human_instruction", "summary": "IP-004 authorized scripted refinement 2: enrich the existing process with public source-backed motivation and a qualified enabling relation, preserving all Event identities." },
+    { "kind": "source_explicit", "summary": "The Sejong preface describes difficulty expressing Korean through Chinese writing and the goal of easily learned letters for daily use. https://contents.history.go.kr/front/hm/view.do?levelId=hm_091_0010" },
+    { "kind": "llm_inference", "summary": "Letter creation provides the subject explained by the later explanatory book. Model this editorial connection as enables, not a claim of sole or direct historical causation; attach motivation to the existing process Narrative." }
+  ],
+  "operations": [
+    {
+      "kind": "create", "entity_type": "relation", "entity_id": "019f60ab-0000-7000-8000-000000000209",
+      "origin_refs": [{ "field": "*", "origin_index": 2 }],
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101", "type": "enables", "direction": "directed",
+        "source_ref": { "kind": "event", "event_id": "019f60ab-0000-7000-8000-000000000102" },
+        "target_ref": { "kind": "event", "event_id": "019f5b00-0000-7000-8000-000000000112" },
+        "attributes": { "interpretation": "문자 체계가 해설서의 설명 대상을 제공한다는 편집상 연결; 직접·단독 원인이라는 주장이 아님" }
+      }
+    },
+    {
+      "kind": "add", "entity_type": "relation_canon_membership",
+      "origin_refs": [{ "field": "*", "origin_index": 2 }],
+      "value": { "relation_id": "019f60ab-0000-7000-8000-000000000209", "canon_id": "019f5b00-0000-7000-8000-000000000002" }
+    },
+    {
+      "kind": "create", "entity_type": "narrative", "entity_id": "019f60ab-0000-7000-8000-000000000303",
+      "origin_refs": [{ "field": "*", "origin_index": 1 }, { "field": "body", "origin_index": 2 }],
+      "value": {
+        "canon_id": "019f5b00-0000-7000-8000-000000000002", "scope_type": "event", "scope_id": "019f60ab-0000-7000-8000-000000000101",
+        "locale": "ko", "kind": "annotation", "title": "왜 문자를 만들었나",
+        "body": "세종의 서문은 한자로 우리말을 적기 어려워 뜻을 전하지 못하는 사람들을 창제의 동기로 설명한다. 쉽게 배워 일상에서 쓰도록 하려는 목적도 밝힌다. 이는 서문이 제시하는 목적이며 모든 역사적 원인을 확정한 설명은 아니다.\n\n문자 창제와 해설서 완성은 기존의 서로 다른 사건으로 유지한다. 창제된 문자 체계가 해설서의 설명 대상을 제공한다는 연결은 이 Canon의 편집상 해석이다. 선후 관계만으로 직접 인과를 단정하지 않는다.",
+        "public_references": [{ "label": "국사편찬위원회 우리역사넷 — 훈민정음 서문", "url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_091_0010" }]
+      }
+    }
+  ]
+}

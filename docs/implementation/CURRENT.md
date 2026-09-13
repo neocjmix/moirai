@@ -2,7 +2,12 @@
 
 후속 도그푸딩 수정: Composite 레이블 후보 전환에 화면 기준 히스테리시스 적용.
 이전 변을 유지하면서 좌표는 계속 갱신하고, 충분한 개선·화면 이탈 시 전환한다.
-M4.7 완료 이력 유지, M5 비활성. 검증·배포 진행 중.
+M4.7 완료 이력 유지, M5 비활성. 후속 수정 완료: PR #77, runtime `3ccb6f1`.
+[CI 34735400926](https://github.com/neocjmix/moirai/actions/runs/34735400926)·
+[smoke 34735500662](https://github.com/neocjmix/moirai/actions/runs/34735500662) success.
+임계점 반복 왕복/역방향 전환/화면 이탈·topology 변경 검사 3개 및 mobile 회귀 통과.
+프로덕션 `/__status` SHA 확인, Composite 레이블 8개가 6px 왕복 이동을 그대로 따라가고
+원래 위치로 돌아오는 것을 실제 브라우저 DOM으로 확인했다.
 
 M4.7 완료 — [viewport 연속성과 탐색 경계](M4.7-VIEWPORT-CONTINUITY.md).
 사용자 승인: 복귀 버튼 제외. A~C 완료, M5 비활성.

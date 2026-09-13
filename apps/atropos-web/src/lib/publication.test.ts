@@ -3,6 +3,7 @@ import { tmpdir } from "node:os";
 import { dirname, join } from "node:path";
 import { TEMPORAL_EXPRESSIVENESS_WORLD_ID } from "@moirai/contracts";
 import { afterEach, describe, expect, it } from "vitest";
+import { profilePublication } from "./publication-profile";
 import {
   assertPublicId,
   hasPublicationStoreConfig,
@@ -19,6 +20,40 @@ afterEach(() => {
 });
 
 describe("Atropos publication reader", () => {
+  it("reuses immutable objects while observing pointer updates and retrying missing artifacts", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "moirai-cache-boundary-"));
+    delete process.env.AWS_ACCESS_KEY_ID;
+    process.env.LOCAL_PUBLICATION_FIXTURE_DIR = directory;
+    const prefix = `worlds/${TEMPORAL_EXPRESSIVENESS_WORLD_ID}`;
+    const old = `${prefix}/revisions/1/event.json`;
+    const next = `${prefix}/revisions/2/event.json`;
+    const pointer = `${prefix}/current.json`;
+    const put = async (key: string, value: string) => {
+      const file = join(directory, key);
+      await mkdir(dirname(file), { recursive: true });
+      await writeFile(file, value);
+    };
+    try {
+      await put(old, "old Event");
+      await put(pointer, "revision 1");
+      expect(
+        (await profilePublication(() => readPublicationObject(old))).metrics
+          .objects
+      ).toBe(1);
+      const repeat = await profilePublication(() => readPublicationObject(old));
+      expect(repeat.value.body).toBe("old Event");
+      expect(repeat.metrics.objects).toBe(0);
+      expect((await readPublicationObject(pointer)).body).toBe("revision 1");
+      await put(pointer, "revision 2");
+      expect((await readPublicationObject(pointer)).body).toBe("revision 2");
+      expect((await readPublicationObject(next)).status).toBe(404);
+      await put(next, "refined Event");
+      expect((await readPublicationObject(next)).body).toBe("refined Event");
+      expect((await readPublicationObject(old)).body).toBe("old Event");
+    } finally {
+      await rm(directory, { recursive: true });
+    }
+  });
   it("does not invent a World when the Publication Store is absent", async () => {
     for (const name of [
       "AWS_ACCESS_KEY_ID",

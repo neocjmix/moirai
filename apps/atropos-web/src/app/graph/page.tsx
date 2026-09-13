@@ -10,7 +10,7 @@ import {
   loadGraphPublicationSources,
   graphRevisionPins
 } from "../../lib/graph-publication-loader";
-import { composeGraphPublicationQuery } from "../../lib/graph-publication-composer";
+import { composeCachedGraphPublicationQuery as composeGraphPublicationQuery } from "../../lib/graph-publication-composer";
 import { graphPresentationFromResult } from "../../lib/graph-query-presentation";
 
 export default async function GraphPage({

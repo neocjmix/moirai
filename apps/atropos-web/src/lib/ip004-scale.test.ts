@@ -6,20 +6,26 @@ import { expect, it } from "vitest";
 import { presentationNodeId } from "@moirai/graph-presentation";
 import { ip004ScaleFixture } from "../../../../scripts/ip004-scale-fixture";
 import { loadGraphPublicationSources } from "./graph-publication-loader";
-import { composeGraphPublicationQuery } from "./graph-publication-composer";
+import {
+  composeCachedGraphPublicationQuery as composeGraphPublicationQuery,
+  graphReaderCompositionCacheMetrics
+} from "./graph-publication-composer";
 import { graphPresentationFromResult } from "./graph-query-presentation";
 import { createDefaultGraphUrlState } from "./moirai-graph-source-query";
 import { graphSpatialBootstrap } from "./graph-spatial-bootstrap";
 import {
   readWorldEvent,
   selectPublicationRevision,
-  hasPublicationStoreConfig
+  hasPublicationStoreConfig,
+  immutablePublicationCacheMetrics
 } from "./publication";
 import { profilePublication } from "./publication-profile";
 import { POST as spatial } from "../app/graph/spatial/route";
 import { POST as detail } from "../app/graph/detail/route";
 import { POST as search } from "../app/graph/search/route";
 import { POST as query } from "../app/graph/query/route";
+import { graphRevisionCacheMetrics } from "./graph-revision-source";
+import { graphSpatialContextCacheMetrics } from "./graph-spatial-query";
 
 // A dedicated process per scale keeps cold caches and peak RSS attributable.
 it.skipIf(!process.env.IP004_SCALE)(
@@ -169,6 +175,44 @@ it.skipIf(!process.env.IP004_SCALE)(
         );
       }
       await measure("full_graph_query", () => post(query, first.state.query));
+      // Fixed after the PR-C baseline; local/CI artifact service budgets are
+      // distinct from external public network latency and browser readiness.
+      const latencyBudgets: Record<string, number> = {
+        initial_cold: 3000,
+        initial_warm: 500,
+        drawer_cold: 2500,
+        drawer_warm: 100,
+        event_reading: 100,
+        spatial_cold: 2000,
+        spatial_warm: 750,
+        narrative_search: 500,
+        full_graph_query: 2000
+      };
+      for (const [path, limit] of Object.entries(latencyBudgets)) {
+        const times = samples
+          .filter((sample) => sample.path === path)
+          .map((sample) => Number(sample.app_ms))
+          .sort((a, b) => a - b);
+        expect(
+          times[Math.max(0, Math.ceil(times.length * 0.95) - 1)],
+          path
+        ).toBeLessThanOrEqual(limit);
+      }
+      expect(process.resourceUsage().maxRSS).toBeLessThanOrEqual(
+        3 * 1024 * 1024
+      );
+      for (const cache of [
+        graphRevisionCacheMetrics(),
+        graphReaderCompositionCacheMetrics(),
+        immutablePublicationCacheMetrics(),
+        graphSpatialContextCacheMetrics()
+      ]) {
+        expect(cache.accounted_bytes).toBeLessThanOrEqual(cache.max_bytes);
+        expect(cache.pending).toBe(0);
+      }
+      expect(graphReaderCompositionCacheMetrics().hits).toBeGreaterThanOrEqual(
+        rounds
+      );
       console.info(
         JSON.stringify({
           scale: count,
@@ -199,11 +243,18 @@ it.skipIf(!process.env.IP004_SCALE)(
                 objects_min: values("objects")[0],
                 objects_max: percentile("objects", 1),
                 artifact_bytes_max: percentile("bytes", 1),
+                heap_used_bytes_max: percentile("heap_used_bytes", 1),
                 payload_bytes_max: percentile("payload_bytes", 1)
               };
             }
           ),
-          peak_rss_kib: process.resourceUsage().maxRSS
+          peak_rss_kib: process.resourceUsage().maxRSS,
+          caches: {
+            revision: graphRevisionCacheMetrics(),
+            reader: graphReaderCompositionCacheMetrics(),
+            objects: immutablePublicationCacheMetrics(),
+            spatial_context: graphSpatialContextCacheMetrics()
+          }
         })
       );
     } finally {

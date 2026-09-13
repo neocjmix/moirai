@@ -1,7 +1,8 @@
 # IP-004 PR-C2d — bound Event detail reads before composition
 
-Status: local acceptance and 10k measurement passed; CI, deployment and public
-readback pending. IP-004 active, M5 inactive.
+Status: PR #92 merged as `8fd6973e4d681495f08e5d4204ce5e6ce498738c`;
+PR CI `34782925865` passed, all three Railway services SUCCESS. Public status
+reports this SHA and Graph baseline rendered. IP-004 active, M5 inactive.
 
 The measured public full-query path read 10,008 immutable objects for a 10,000
 Event World even though its response budget was 1,000 Events. Filter and stable
@@ -46,3 +47,11 @@ vitest run apps/atropos-web/src/lib/ip004-scale.test.ts`. The logged artifact
 directory can be supplied as `IP004_SCALE_READ_DIR` for read-only reruns. Fixtures
 are synthetic; these measurements do not substitute for connected Clotho E2E
 or the remaining genuine independent LLM-session refinement.
+
+Public Revision 5 POST readback passed: source-critical search returned the one
+existing Event, detail returned its reader data, and full query returned 200.
+Server application timings were 433 / 409 / 626 ms for search/detail/query;
+external wall times were 11.0 / 9.9 / 11.8 seconds and remain separate. The actual
+42-Event World is below the 1,000-Event cap, so its full query still reads 50
+objects; the 10k improvement must not be attributed to this small-World sample.
+Main CI `34783117455` and its post-deploy smoke are tracked separately.

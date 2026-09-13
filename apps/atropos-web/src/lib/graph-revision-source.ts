@@ -6,7 +6,9 @@ import type {
 } from "@moirai/contracts";
 import { publicationSnapshots } from "@moirai/graph-query";
 import { assertPublicId, readPublicationObject } from "./publication";
-const cache = new Map<string, Promise<GraphRevision>>();
+import { BoundedPublicationCache } from "./bounded-publication-cache";
+const cache = new BoundedPublicationCache<GraphRevision>(32, 128 * 1024 * 1024);
+export const graphRevisionCacheMetrics = () => cache.metrics();
 type GraphRevision = {
   manifest: PublicationManifest;
   world: PublicWorld;
@@ -21,9 +23,7 @@ export async function readGraphRevision(
   if (!Number.isSafeInteger(revision) || revision < 1)
     throw Error("invalid_graph_revision");
   const prefix = `worlds/${worldId}/revisions/${revision}/`;
-  const existing = cache.get(prefix);
-  if (existing) return existing;
-  const promise = (async () => {
+  return cache.read(prefix, async () => {
     const original = await readPublicationObject(`${prefix}manifest.json`);
     if (original.status !== 200 || !original.body)
       throw Error("graph_revision_unavailable");
@@ -83,15 +83,7 @@ export async function readGraphRevision(
         }
       )
     };
-  })();
-  cache.set(prefix, promise);
-  if (cache.size > 32) cache.delete(cache.keys().next().value!);
-  try {
-    return await promise;
-  } catch (error) {
-    if (cache.get(prefix) === promise) cache.delete(prefix);
-    throw error;
-  }
+  });
 }
 
 /** Selected Event detail is loaded on demand, not the entire World's Event documents. */

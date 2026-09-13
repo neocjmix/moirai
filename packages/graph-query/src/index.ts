@@ -141,12 +141,9 @@ function compatibility(
 }
 
 function temporalPosition(
-  eventId: string,
-  temporal: PublicRelationalTemporalProjection,
-  graphScope: PublicGraphScopeArtifact | null
+  position: PublicRelationalTemporalProjection["positions"][number] | undefined,
+  graphNode: PublicGraphScopeArtifact["nodes"][number] | undefined
 ): MoiraiGraphTemporalPosition {
-  const position = temporal.positions.find((item) => item.event_id === eventId);
-  const graphNode = graphScope?.nodes.find((node) => node.event_id === eventId);
   const evidence = position?.source_constraint_ids ?? [];
   if (position?.kind === "exact" && position.time_event)
     return { kind: "exact", at: position.time_event, evidence_ids: evidence };
@@ -310,6 +307,28 @@ export function composeGraphPublicationQuery(
         capabilities
       });
     }
+    // Preserve the first-match semantics of Array.find without scanning the
+    // complete Canon's temporal and scope arrays for every Event.
+    const positions = new Map<
+      string,
+      PublicRelationalTemporalProjection["positions"][number]
+    >();
+    for (const position of snapshot.temporal.positions)
+      if (!positions.has(position.event_id))
+        positions.set(position.event_id, position);
+    const graphNodes = new Map<
+      string,
+      PublicGraphScopeArtifact["nodes"][number]
+    >();
+    for (const node of snapshot.graphScope?.nodes ?? [])
+      if (!graphNodes.has(node.event_id)) graphNodes.set(node.event_id, node);
+    const eventNarratives = new Map<string, string[]>();
+    for (const narrative of snapshot.narratives) {
+      if (narrative.scope_type !== "event") continue;
+      const ids = eventNarratives.get(narrative.scope_id) ?? [];
+      ids.push(narrative.id);
+      eventNarratives.set(narrative.scope_id, ids);
+    }
     for (const event of snapshot.events) {
       const key = `${snapshot.worldId}:${event.id}`;
       const previous = eventMap.get(key);
@@ -333,16 +352,10 @@ export function composeGraphPublicationQuery(
         attributes: event.attributes,
         temporal_position:
           previous?.temporal_position ??
-          temporalPosition(event.id, snapshot.temporal, snapshot.graphScope),
+          temporalPosition(positions.get(event.id), graphNodes.get(event.id)),
         narrative_ids: strings([
           ...(previous?.narrative_ids ?? []),
-          ...snapshot.narratives
-            .filter(
-              (narrative) =>
-                narrative.scope_type === "event" &&
-                narrative.scope_id === event.id
-            )
-            .map((narrative) => narrative.id)
+          ...(eventNarratives.get(event.id) ?? [])
         ]),
         evidence_ids: strings([
           ...(previous?.evidence_ids ?? []),

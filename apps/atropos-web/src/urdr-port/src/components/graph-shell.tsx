@@ -8,6 +8,7 @@ import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
 import type { GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
 import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gregorian-axis-coordinate";
+import { reconcileViewport } from "../viewport-cache";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 
 import {
@@ -189,7 +190,6 @@ const EVENT_DRAWER_PEEK_OFFSET_PX = 408;
 const VIEWPORT_FETCH_GESTURE_SETTLE_MS = 150;
 const VIEWPORT_PERSIST_SETTLE_MS = 150;
 const GRAPH_SHELL_DEFAULT_TIME_LEVEL = "year";
-const GRAPH_SHELL_CORE_ARTIFACT_CLASSES = ["point", "region"] as const;
 const GRAPH_SHELL_FULL_ARTIFACT_CLASSES = ["point", "segment", "region"] as const;
 const EVENT_DRAWER_EXPAND_THRESHOLD_PX = 72;
 const EVENT_DRAWER_COLLAPSE_THRESHOLD_PX = 96;
@@ -2268,17 +2268,17 @@ export function GraphShell({
   const [runtimeViewportLoadState, setRuntimeViewportLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
 
+  const runtimeViewportOwnerRef = useRef(null);
   const chartViewportRef = useRef<HTMLDivElement | null>(null);
   const eventDrawerRef = useRef<HTMLElement | null>(null);
   const eventDrawerViewportRef = useRef<HTMLDivElement | null>(null);
   const eventSelectionNonceRef = useRef(0);
-  const lastViewportCenterYRef = useRef<number | null>(null);
   const pendingRestoredDrawerStageRef = useRef<EventDrawerStage | null>(null);
   const selectedEventSelectionRef = useRef<EventDrawerSelection | null>(null);
   const pendingEventTapRef = useRef<PendingEventTap | null>(null);
   const eventDrawerDragRef = useRef<EventDrawerDragState | null>(null);
   const bootstrapChartPlane = initialChartPlane ?? null;
-  useEffect(()=>{setRuntimeViewportResponse(null);},[loader]);
+  useEffect(()=>{setRuntimeViewportResponse(null);setRuntimeViewportLoadState("idle");},[loader]);
   // Moirai identity is an input/output seam; original selection and gestures stay intact.
   const onSelectionRef=useRef(onSelection);onSelectionRef.current=onSelection;
   useEffect(()=>{if(hasHydratedRestorableState && (selectedEventSelection || !externalFocus))onSelectionRef.current?.(selectedEventSelection?.eventId??null);},[selectedEventSelection?.eventId,hasHydratedRestorableState]);
@@ -2439,49 +2439,21 @@ export function GraphShell({
           includeNeighbors: selectedEventSelection ? true : false,
           ...(selectedEventSelection ? { selectedEntityId: selectedEventSelection.eventId } : {}),
         } as const;
-        const coreResponse = parseViewportResponse(await loader.loadViewport(locale, {
-          ...baseQuery,
-          artifactClasses: [...GRAPH_SHELL_CORE_ARTIFACT_CLASSES],
-        }));
-        if (active) {
-          setRuntimeViewportResponse(coreResponse);
-          setRuntimeViewportLoadState("ready");
-        }
-
         const fullResponse = parseViewportResponse(await loader.loadViewport(locale, {
           ...baseQuery,
           artifactClasses: [...GRAPH_SHELL_FULL_ARTIFACT_CLASSES],
         }));
         if (active) {
-          setRuntimeViewportResponse(fullResponse);
+          const sameOwner = runtimeViewportOwnerRef.current?.loader === loader && runtimeViewportOwnerRef.current?.canons === canonIds.join(",");
+          runtimeViewportOwnerRef.current = {loader, canons: canonIds.join(",")};
+          setRuntimeViewportResponse(previous => reconcileViewport(sameOwner ? previous : null, fullResponse));
+          setRuntimeViewportLoadState("ready");
         }
 
-        const currentCenterY = (bounds.minY + bounds.maxY) / 2;
-        const lastCenterY = lastViewportCenterYRef.current;
-        lastViewportCenterYRef.current = currentCenterY;
-        if (lastCenterY !== null) {
-          const deltaY = currentCenterY - lastCenterY;
-          if (Math.abs(deltaY) > 0.001) {
-            const viewportHeight = bounds.maxY - bounds.minY;
-            const direction = deltaY > 0 ? 1 : -1;
-            const prefetchBounds = {
-              minX: bounds.minX,
-              maxX: bounds.maxX,
-              minY: bounds.minY + viewportHeight * direction,
-              maxY: bounds.maxY + viewportHeight * direction,
-            };
-            void loader.loadViewport(locale, {
-              ...baseQuery,
-              bbox: prefetchBounds,
-              artifactClasses: [...GRAPH_SHELL_FULL_ARTIFACT_CLASSES],
-            }).catch(() => undefined);
-          }
-        }
       } catch (error) {
         if (!active || abortController.signal.aborted) {
           return;
         }
-        setRuntimeViewportResponse(null);
         setRuntimeViewportLoadState("error");
         setRuntimeViewportErrorMessage(
           error instanceof Error && error.message.trim().length > 0
@@ -2527,7 +2499,8 @@ export function GraphShell({
   }, [runtimeViewportResponse]);
 
   const visibleChartPlaneEntities = useMemo(() => {
-    if (runtimeViewportLoadState === "ready" && runtimeViewportResponse) {
+    if (runtimeViewportOwnerRef.current?.loader !== loader || runtimeViewportOwnerRef.current?.canons !== [...effectiveEnabledCanonIds].join(",")) return [];
+    if (runtimeViewportResponse) {
       return [...runtimeLinearEntities, ...runtimeRegionEntities];
     }
 
@@ -2540,7 +2513,7 @@ export function GraphShell({
     }
 
     return [...runtimeLinearEntities, ...runtimeRegionEntities];
-  }, [bootstrapVisibleChartPlaneEntities, runtimeLinearEntities, runtimeRegionEntities, runtimeViewportLoadState, runtimeViewportResponse]);
+  }, [bootstrapVisibleChartPlaneEntities, runtimeLinearEntities, runtimeRegionEntities, runtimeViewportLoadState, runtimeViewportResponse, loader, effectiveEnabledCanonIds]);
 
   useEffect(() => {
     if (usesLoadingWorkspace || !hasHydratedRestorableState) {

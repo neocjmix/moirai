@@ -1,4 +1,5 @@
-import { RelationalTime } from "../../../../../../../components/relational-time";
+import { EventTimeContext } from "../../../../../../../components/event-time-context";
+import { readerSearchFromQuery } from "../../../../../../../lib/event-reading-navigation";
 import { notFound } from "next/navigation";
 import { EventSheet } from "../../../../../../../components/event-sheet";
 import { StatusIsland } from "../../../../../../../components/status-island";
@@ -7,23 +8,31 @@ import {
   readRelationalTime,
   readEvent,
   readWorld,
-  selectPublication
+  selectPublication,
+  selectPublicationRevision
 } from "../../../../../../../lib/publication";
 
 export const dynamic = "force-dynamic";
 
 export default async function EventPage({
-  params
+  params,
+  searchParams
 }: {
   readonly params: Promise<{
     worldId: string;
     canonId: string;
     eventId: string;
   }>;
+  readonly searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { worldId, canonId, eventId } = await params;
   try {
-    const selected = await selectPublication(worldId);
+    const query = await searchParams;
+    const graphSearch = readerSearchFromQuery(query);
+    const selected =
+      typeof query.revision === "string"
+        ? await selectPublicationRevision(worldId, Number(query.revision))
+        : await selectPublication(worldId);
     const [
       { world },
       canonDocument,
@@ -65,15 +74,19 @@ export default async function EventPage({
           worldId={worldId}
           eventId={eventId}
           canonId={canonId}
+          graphSearch={graphSearch}
+          canonLabels={{ [canonId]: canon.title }}
           attributes={event.attributes}
           narratives={narratives}
           relations={relations}
           relatedEvents={relatedEvents}
           temporalContent={
-            <RelationalTime
+            <EventTimeContext
+              canonTitle={canon.title}
               projection={temporal}
               events={canonDocument.events}
               eventId={eventId}
+              graphSearch={graphSearch}
             />
           }
         />

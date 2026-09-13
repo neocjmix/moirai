@@ -1,7 +1,7 @@
 "use client";
 
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import type { MoiraiGraphSource, MoiraiGraphUrlState } from "@moirai/contracts";
 
@@ -184,13 +184,8 @@ function sourceFromWorld(
 }
 
 export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
-  const copy = COPY[locale];
-  const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<
-    "sources" | "entities" | "search" | "relations"
-  >("sources");
-  const [searchTerm, setSearchTerm] = useState("");
   const {
+    initialReader,
     state,
     setState,
     setSourceState,
@@ -199,6 +194,53 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     result,
     pending
   } = useGraphQuery();
+  const copy = COPY[locale];
+  const [open, setOpen] = useState(false);
+  const [activeTab, setLocalTab] = useState<
+    "sources" | "entities" | "search" | "relations"
+  >(initialReader.tab);
+  const [searchTerm, setLocalSearch] = useState(initialReader.search);
+  useEffect(() => {
+    const restore = () => {
+      const query = new URLSearchParams(window.location.search);
+      const tab = query.get("readerTab");
+      setLocalTab(
+        tab === "entities" || tab === "search" || tab === "relations"
+          ? tab
+          : "sources"
+      );
+      const search = query.get("readerFind");
+      setLocalSearch(search && search.length <= 512 ? search : "");
+    };
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
+  }, []);
+  // User actions own this URL slice. Hydration only reads it and cannot erase a
+  // newer tab/input during a simultaneous graph query or viewport restoration.
+  const writeReaderLocation = (tab: typeof activeTab, term: string) => {
+    const query = new URLSearchParams(window.location.search);
+    if (tab === "sources") query.delete("readerTab");
+    else query.set("readerTab", tab);
+    if (term) query.set("readerFind", term);
+    else query.delete("readerFind");
+    const serialized = query.toString();
+    const search = serialized ? `?${serialized}` : "";
+    if (search !== window.location.search)
+      window.history.replaceState(
+        null,
+        "",
+        `${window.location.pathname}${search}${window.location.hash}`
+      );
+  };
+  const setActiveTab = (tab: typeof activeTab) => {
+    setLocalTab(tab);
+    writeReaderLocation(tab, searchTerm);
+  };
+  const setSearchTerm = (term: string) => {
+    const bounded = term.slice(0, 512);
+    setLocalSearch(bounded);
+    writeReaderLocation(activeTab, bounded);
+  };
   const [draftFrameId, setDraftFrameId] = useState<string | null>(null);
   const activeFrame = useMemo(
     () => findFrame(state, catalog),
@@ -478,6 +520,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                           }
                           placeholder={copy.searchPlaceholder}
                           type="search"
+                          maxLength={512}
                           value={searchTerm}
                         />
                       ) : null}
@@ -577,11 +620,12 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                               </div>
                               <button
                                 aria-label={`${copy.focus}: ${entity.title[locale]}`}
-                                onClick={() =>
+                                onClick={() => {
                                   setState((current) =>
                                     focusGraphEntity(current, entity.reference)
-                                  )
-                                }
+                                  );
+                                  setOpen(false);
+                                }}
                                 type="button"
                               >
                                 {copy.focus}

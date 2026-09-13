@@ -861,6 +861,30 @@
   margin-top: 16px;
 }
 
+.eventDrawerNotesPanel summary,
+.eventDrawerNotesPanel > p > a,
+.eventDrawerStatus button {
+  display: inline-block;
+  min-height: 44px;
+  padding: 12px 0;
+  cursor: pointer;
+  overflow-wrap: anywhere;
+}
+
+.eventDrawerNotesPanel summary {
+  display: list-item;
+  list-style-position: inside;
+}
+
+.eventDrawerStatus button {
+  margin-left: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--gray-7);
+  border-radius: 16px;
+  background: var(--gray-2);
+  color: var(--gray-12);
+}
+
 .eventDrawerSection {
   display: grid;
   gap: 10px;

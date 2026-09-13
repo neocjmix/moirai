@@ -8,7 +8,8 @@ import {
   readGraphScope,
   readRelationalTime,
   readWorld,
-  selectPublication
+  selectPublication,
+  selectPublicationRevision
 } from "../../../../../lib/publication";
 
 export const dynamic = "force-dynamic";
@@ -18,12 +19,18 @@ export default async function CanonPage({
   searchParams
 }: {
   readonly params: Promise<{ worldId: string; canonId: string }>;
-  readonly searchParams: Promise<{ focus?: string | string[] }>;
+  readonly searchParams: Promise<{
+    focus?: string | string[];
+    revision?: string | string[];
+  }>;
 }) {
   const { worldId, canonId } = await params;
   const query = await searchParams;
   try {
-    const selected = await selectPublication(worldId);
+    const selected =
+      typeof query.revision === "string"
+        ? await selectPublicationRevision(worldId, Number(query.revision))
+        : await selectPublication(worldId);
     const [{ world }, canonDocument] = await Promise.all([
       readWorld(worldId, selected),
       readCanon(worldId, canonId, selected)
@@ -137,7 +144,7 @@ export default async function CanonPage({
             {events.map((event) => (
               <a
                 className="canon-card event-card"
-                href={`/worlds/${worldId}/canons/${canon.id}/events/${event.id}`}
+                href={`/worlds/${worldId}/canons/${canon.id}/events/${event.id}?revision=${pointer.served_revision}`}
                 key={event.id}
               >
                 <span>{event.title}</span>

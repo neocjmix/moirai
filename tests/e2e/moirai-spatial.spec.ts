@@ -84,26 +84,45 @@ test("Moirai Publication uses the copied viewport, bounded reads and same-revisi
   await target.click();
   const sheet = page.getByTestId("event-drawer-sheet");
   await expect(sheet).toBeVisible();
-  await expect(sheet).toContainText("Revision: 2");
+  await expect(sheet.getByTestId("event-observation")).not.toBeVisible();
+  await expect(sheet.locator("table")).not.toContainText("Revision 2");
+  await sheet
+    .getByText(/기록과 계산 근거|Record and calculation details/, {
+      exact: true
+    })
+    .click();
+  await expect(sheet).toContainText("Revision 2");
   await expect(sheet).toContainText("canon_memberships");
   await page.screenshot({
     path: testInfo.outputPath("moirai-spatial-mobile-sheet.png"),
     animations: "disabled"
   });
-  const link = sheet.getByRole("link", { name: "Open stable Event" });
+  const link = sheet.getByRole("link", {
+    name: /사건 상세 읽기|Read event detail/
+  });
   await expect(link).toHaveAttribute("href", /revision=2&mq=/);
   const shared = page.url();
+  const viewport = new URL(shared).searchParams.get("gsViewport");
+  await expect(link).toHaveAttribute("href", /gsViewport=/);
   const mq = new URL(shared).searchParams.get("mq")!;
   const state = JSON.parse(mq);
   expect(state.focus.kind).toBe("event");
   await link.click();
   await expect(page.getByTestId("return-to-graph")).toBeVisible();
   await expect(page.locator("main")).toContainText("2");
+  await expect(page.getByTestId("event-time-context").first()).toBeVisible();
+  await expect(page.getByTestId("event-raw-attributes")).not.toBeVisible();
+  const returnUrl = new URL(
+    (await page.getByTestId("return-to-graph").getAttribute("href")) ?? "",
+    page.url()
+  );
+  expect(returnUrl.searchParams.get("gsViewport")).toBe(viewport);
   await page.getByTestId("return-to-graph").click();
   await expect(page.getByTestId("event-drawer-sheet")).toBeVisible();
   await expect(page.getByTestId("event-drawer-sheet")).toContainText(
     state.focus.event_ref.event_id
   );
+  expect(new URL(page.url()).searchParams.get("gsViewport")).toBe(viewport);
   const html = await request.get(`/graph?mq=${encodeURIComponent(mq)}`);
   expect(await html.text()).toContain(state.focus.event_ref.event_id);
   expect(await html.text()).toContain("Revision vector:");

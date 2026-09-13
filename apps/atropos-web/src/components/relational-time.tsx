@@ -3,6 +3,7 @@ import type {
   PublicRelationalTemporalProjection,
   PublicTemporalAmount
 } from "@moirai/contracts";
+import { eventReadingSearch } from "../lib/event-reading-navigation";
 
 function amountText(amount: PublicTemporalAmount | null): string {
   if (!amount) return "계산할 수 없음";
@@ -21,16 +22,18 @@ function amountText(amount: PublicTemporalAmount | null): string {
 export function RelationalTime({
   projection,
   events,
-  eventId
+  eventId,
+  graphSearch = ""
 }: {
   readonly projection: PublicRelationalTemporalProjection;
   readonly events: readonly PublicEvent[];
   readonly eventId?: string;
+  readonly graphSearch?: string;
 }) {
   const eventById = new Map(events.map((event) => [event.id, event]));
   const title = (id: string) => eventById.get(id)?.title ?? id;
   const link = (id: string) =>
-    `/worlds/${projection.world_id}/canons/${projection.canon_id}/events/${id}`;
+    `/worlds/${projection.world_id}/canons/${projection.canon_id}/events/${id}${eventReadingSearch(projection.source_revision, graphSearch)}`;
   const positions = eventId
     ? projection.positions.filter((p) => p.event_id === eventId)
     : projection.positions;

@@ -252,7 +252,11 @@ export function GraphExplorer({
               World {artifact.world_id} · Canon {artifact.canon_id} · Revision{" "}
               {artifact.served_revision}
             </small>
-            <a href={selected.canonical_url}>Event 상세 열기 →</a>
+            <a
+              href={`${selected.canonical_url}?revision=${artifact.served_revision}`}
+            >
+              Event 상세 열기 →
+            </a>
           </aside>
         ) : null}
       </div>
@@ -269,7 +273,11 @@ export function GraphExplorer({
                 {chronologyLabel(node.chronology.mode)} · band{" "}
                 {node.chronology.rank}
               </span>
-              <a href={node.canonical_url}>상세</a>
+              <a
+                href={`${node.canonical_url}?revision=${artifact.served_revision}`}
+              >
+                상세
+              </a>
             </li>
           ))}
         </ul>

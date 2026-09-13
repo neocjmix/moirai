@@ -7,6 +7,11 @@ import type {
 } from "@moirai/contracts";
 import { useState, type ReactNode } from "react";
 import Markdown from "react-markdown";
+import {
+  eventReadingSearch,
+  graphReturnHref
+} from "../lib/event-reading-navigation";
+import { relationReadingLabel } from "../lib/relation-reading-label";
 
 interface EventSheetProps {
   readonly temporalContent?: ReactNode;
@@ -18,6 +23,8 @@ interface EventSheetProps {
   readonly worldId: string;
   readonly eventId: string;
   readonly canonId?: string;
+  readonly graphSearch?: string;
+  readonly canonLabels?: Readonly<Record<string, string>>;
   readonly attributes: Readonly<Record<string, unknown>>;
   readonly narratives: readonly PublicNarrative[];
   readonly relations: readonly PublicRelation[];
@@ -34,6 +41,8 @@ export function EventSheet({
   worldId,
   eventId,
   canonId,
+  graphSearch = "",
+  canonLabels = {},
   attributes,
   narratives,
   relations,
@@ -41,6 +50,7 @@ export function EventSheet({
 }: EventSheetProps) {
   const [expanded, setExpanded] = useState(false);
   const eventById = new Map(relatedEvents.map((event) => [event.id, event]));
+  const readingSearch = eventReadingSearch(revision, graphSearch);
   return (
     <article className="event-sheet" data-expanded={expanded}>
       <button
@@ -66,22 +76,29 @@ export function EventSheet({
         >
           {canonId ? (
             <>
-              <a href={`/worlds/${worldId}/events/${eventId}`}>
-                World Event canonical URL
+              <a href={`/worlds/${worldId}/events/${eventId}${readingSearch}`}>
+                이 사건의 모든 Canon 읽기
               </a>
               <a
-                href={`/worlds/${worldId}/canons/${canonId}?view=graph&focus=${eventId}`}
+                href={
+                  graphReturnHref(graphSearch) ??
+                  `/worlds/${worldId}/canons/${canonId}${readingSearch}&view=graph&focus=${eventId}`
+                }
               >
                 그래프로 돌아가기
               </a>
             </>
           ) : null}
         </nav>
-        {scopeContent}
         {temporalContent}
         {narratives.map((narrative) => (
           <section className="narrative-block" key={narrative.id}>
-            {narrative.title ? <h2>{narrative.title}</h2> : null}
+            <p className="eyebrow">
+              {canonLabels[narrative.canon_id] ?? "Canon"} · {narrative.locale}
+            </p>
+            {narrative.title && narrative.title !== title ? (
+              <h2>{narrative.title}</h2>
+            ) : null}
             <Markdown skipHtml>{narrative.body}</Markdown>
             {narrative.public_references.length > 0 ? (
               <ul className="public-references">
@@ -96,13 +113,14 @@ export function EventSheet({
             ) : null}
           </section>
         ))}
+        {scopeContent}
         {relations.length > 0 ? (
           <section
             className="context-block"
             aria-labelledby="relations-heading"
           >
             <p className="eyebrow" id="relations-heading">
-              RELATED CONTEXT
+              함께 읽을 사건
             </p>
             {relations.map((relation) => {
               const sourceId =
@@ -120,51 +138,63 @@ export function EventSheet({
               return related ? (
                 <a
                   className="relation-row"
-                  href={`/worlds/${worldId}/events/${related.id}`}
+                  href={`/worlds/${worldId}/events/${related.id}${readingSearch}`}
                   key={relation.id}
                 >
-                  <span>
-                    {outgoing ? relation.type : `${relation.type} · incoming`}
-                  </span>
+                  <span>{relationReadingLabel(relation.type, outgoing)}</span>
                   <b>{related.title}</b>
+                  <small>
+                    {(canonId ? [canonId] : relation.canon_memberships)
+                      .map((id) => canonLabels[id] ?? id)
+                      .join(" · ")}
+                  </small>
                   <i aria-hidden="true">→</i>
                 </a>
               ) : null;
             })}
           </section>
         ) : null}
-        <section
-          className="context-block"
-          aria-labelledby="event-attributes-heading"
-        >
-          <p className="eyebrow" id="event-attributes-heading">
-            STRUCTURED ATTRIBUTES
-          </p>
-          {Object.keys(attributes).length > 0 ? (
-            <dl className="structured-attributes">
-              {Object.entries(attributes).map(([key, value]) => (
-                <div key={key}>
-                  <dt>{key}</dt>
-                  <dd>
-                    <code>{JSON.stringify(value)}</code>
-                  </dd>
-                </div>
-              ))}
-            </dl>
-          ) : (
-            <p>No additional attributes.</p>
-          )}
-        </section>
-        <dl className="event-meta">
-          <div>
-            <dt>Publication</dt>
-            <dd>Revision {revision}</dd>
-          </div>
-          <div>
-            <dt>Reading source</dt>
-            <dd>Snapshot only</dd>
-          </div>
-        </dl>
+        <details className="context-block">
+          <summary>기록 정보 · 속성과 Publication</summary>
+          <section
+            className="context-block"
+            aria-labelledby="event-attributes-heading"
+            data-testid="event-raw-attributes"
+          >
+            <p className="eyebrow" id="event-attributes-heading">
+              STRUCTURED ATTRIBUTES
+            </p>
+            {Object.keys(attributes).length > 0 ? (
+              <dl className="structured-attributes">
+                {Object.entries(attributes).map(([key, value]) => (
+                  <div key={key}>
+                    <dt>{key}</dt>
+                    <dd>
+                      <code>{JSON.stringify(value)}</code>
+                    </dd>
+                  </div>
+                ))}
+              </dl>
+            ) : (
+              <p>No additional attributes.</p>
+            )}
+          </section>
+          <dl className="event-meta">
+            <div>
+              <dt>Publication</dt>
+              <dd>Revision {revision}</dd>
+            </div>
+            <div>
+              <dt>Reading source</dt>
+              <dd>Snapshot only</dd>
+            </div>
+          </dl>
+          <a
+            href={`/worlds/${worldId}/revisions/${revision}/events/${eventId}.json`}
+          >
+            이 판본의 공개 사건 원문
+          </a>
+        </details>
       </div>
     </article>
   );

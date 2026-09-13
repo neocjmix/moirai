@@ -721,6 +721,7 @@ a {
   background: #cbbeb2;
 }
 .sheet-copy {
+  overflow-wrap: anywhere;
   width: min(38rem, 100%);
   margin: 0 auto;
 }
@@ -741,6 +742,26 @@ a {
   margin-top: 1.5rem;
   padding-top: 1.25rem;
   border-top: 1px solid var(--line);
+}
+
+.event-sheet summary,
+.event-detail-navigation a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+  padding: 0.5rem 0;
+  cursor: pointer;
+}
+
+.event-detail-navigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 1rem;
+}
+
+.event-sheet details > summary {
+  display: list-item;
+  list-style-position: inside;
 }
 .narrative-block h2 {
   font-size: 1.35rem;

@@ -1,4 +1,5 @@
 import { graphSpatialBootstrap } from "../../lib/graph-spatial-bootstrap";
+import { graphReaderState } from "../../lib/event-reading-navigation";
 import { AtroposGraphRoot } from "../../components/atropos-graph-root";
 import { GraphQueryFallback } from "../../components/graph-query-fallback";
 import {
@@ -58,6 +59,7 @@ export default async function GraphPage({
         diagnostics={presentation.diagnostics}
         entities={presentation.entities}
         initialGraphQuery={initialGraphQuery}
+        initialReader={graphReaderState(params)}
         initialScreen="graph"
         relations={presentation.relations}
         result={result}

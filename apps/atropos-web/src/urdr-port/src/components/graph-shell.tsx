@@ -2871,7 +2871,10 @@ export function GraphShell({
     return rawRegions;
   }, [allProjectedInstantPoints, allWorldInstantPoints, compositeHullMode, view, viewportSize, visibleChartPlaneEntities]);
 
+  const compositePlacementHistoryRef = useRef({loader, entries: new Map()});
   const chartCompositeRegions = useMemo(() => {
+    const placements = new Map();
+    const history = compositePlacementHistoryRef.current.loader === loader ? compositePlacementHistoryRef.current.entries : new Map();
     const zoomBucket = getEditorialZoomBucket(view.scaleY);
     const projectedRawRegions = worldCompositeRegions.map((region) => {
       const projectedHullPoints = region.points.map((point) => projectWorldPoint(view, viewportSize, point));
@@ -2885,7 +2888,9 @@ export function GraphShell({
         COMPOSITE_LABEL_GUIDE_LENGTH,
         COMPOSITE_LABEL_GAP,
         allProjectedInstantPoints.map((point) => ({ x: point.x, y: point.y })),
+        history.get(region.id)?.label === renderedLabel ? history.get(region.id).placement : undefined,
       );
+      placements.set(region.id, {label: renderedLabel, placement});
       return {
         id: region.id,
         label: region.label,
@@ -2962,8 +2967,12 @@ export function GraphShell({
       .sort((left, right) => left.depth - right.depth || left.id.localeCompare(right.id))
       .map((region) => region.id);
 
-    return { regions, activeColorRegionIds, descendantOpacityById } satisfies CompositeRenderState;
-  }, [allProjectedInstantPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions]);
+    return { regions, activeColorRegionIds, descendantOpacityById, placements } satisfies CompositeRenderState;
+  }, [allProjectedInstantPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader]);
+  useEffect(() => {
+    compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
+  }, [loader, chartCompositeRegions]);
+
 
   const farZoomElisionState = useMemo(() => {
     const zoomBucket = getEditorialZoomBucket(view.scaleY);

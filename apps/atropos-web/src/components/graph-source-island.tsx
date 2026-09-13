@@ -186,31 +186,33 @@ function sourceFromWorld(
 export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
   const copy = COPY[locale];
   const [open, setOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<
+  const [activeTab, setLocalTab] = useState<
     "sources" | "entities" | "search" | "relations"
   >("sources");
-  const [searchTerm, setSearchTerm] = useState("");
-  const [readerRestored, setReaderRestored] = useState(false);
+  const [searchTerm, setLocalSearch] = useState("");
   useEffect(() => {
-    const query = new URLSearchParams(window.location.search);
-    const tab = query.get("readerTab");
-    if (
-      tab === "sources" ||
-      tab === "entities" ||
-      tab === "search" ||
-      tab === "relations"
-    )
-      setActiveTab(tab);
-    const search = query.get("readerFind");
-    if (search && search.length <= 512) setSearchTerm(search);
-    setReaderRestored(true);
+    const restore = () => {
+      const query = new URLSearchParams(window.location.search);
+      const tab = query.get("readerTab");
+      setLocalTab(
+        tab === "entities" || tab === "search" || tab === "relations"
+          ? tab
+          : "sources"
+      );
+      const search = query.get("readerFind");
+      setLocalSearch(search && search.length <= 512 ? search : "");
+    };
+    restore();
+    window.addEventListener("popstate", restore);
+    return () => window.removeEventListener("popstate", restore);
   }, []);
-  useEffect(() => {
-    if (!readerRestored) return;
+  // User actions own this URL slice. Hydration only reads it and cannot erase a
+  // newer tab/input during a simultaneous graph query or viewport restoration.
+  const writeReaderLocation = (tab: typeof activeTab, term: string) => {
     const query = new URLSearchParams(window.location.search);
-    if (activeTab === "sources") query.delete("readerTab");
-    else query.set("readerTab", activeTab);
-    if (searchTerm) query.set("readerFind", searchTerm);
+    if (tab === "sources") query.delete("readerTab");
+    else query.set("readerTab", tab);
+    if (term) query.set("readerFind", term);
     else query.delete("readerFind");
     const serialized = query.toString();
     const search = serialized ? `?${serialized}` : "";
@@ -220,7 +222,16 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
         "",
         `${window.location.pathname}${search}${window.location.hash}`
       );
-  }, [activeTab, readerRestored, searchTerm]);
+  };
+  const setActiveTab = (tab: typeof activeTab) => {
+    setLocalTab(tab);
+    writeReaderLocation(tab, searchTerm);
+  };
+  const setSearchTerm = (term: string) => {
+    const bounded = term.slice(0, 512);
+    setLocalSearch(bounded);
+    writeReaderLocation(activeTab, bounded);
+  };
   const {
     state,
     setState,

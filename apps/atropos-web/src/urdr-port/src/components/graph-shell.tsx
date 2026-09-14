@@ -1983,7 +1983,7 @@ function EventDrawerContent({
 }: EventDrawerContentProps) {
   const statusMessage = loadState === "error"
     ? copy.eventLoadErrorLabel
-    : loadState === "loading"
+    : loadState === "loading" || loadState === "idle"
       ? copy.eventLoadingLabel
       : "";
   const statusToneClassName = loadState === "error" ? styles.eventDrawerStatusError : "";
@@ -2051,7 +2051,7 @@ function EventDrawerContent({
               {statusMessage ? <div role={loadState === "error" ? "alert" : "status"} className={`${styles.eventDrawerStatus} ${statusToneClassName}`.trim()}>{statusMessage}{loadState === "error" ? <button type="button" onPointerDown={(event) => event.stopPropagation()} onClick={onRetry}>{locale === "ko" ? "다시 불러오기" : "Retry loading"}</button> : null}</div> : null}
               <section className={styles.eventDrawerNotesPanel}>
                 {readingContext ? <p>{readingContext.scopeLabel}</p> : null}
-                <table className={styles.eventMetadataTable}>
+                {loadState === "ready" ? <table className={styles.eventMetadataTable}>
                   <tbody>
                     {metadataRows.map((row) => (
                       <tr className={styles.eventMetadataRow} key={row.label}>
@@ -2060,7 +2060,7 @@ function EventDrawerContent({
                       </tr>
                     ))}
                   </tbody>
-                </table>
+                </table> : null}
 
                 {renderedNotes ? (
                   <div className={styles.eventMarkdown}>{renderedNotes}</div>
@@ -3576,7 +3576,10 @@ export function GraphShell({
 
     return allWorldInstantPoints.find((point) => point.eventId === renderedEventSelection.eventId) ?? null;
   }, [allWorldInstantPoints, renderedEventSelection]);
-  const selectedEventTitle = selectedEventRecord?.title ?? renderedEventSelection?.label ?? "";
+  const selectedEventTitle = selectedEventRecord?.title
+    ?? (renderedEventSelection?.label && renderedEventSelection.label !== renderedEventSelection.eventId
+      ? renderedEventSelection.label
+      : selectedEventLoadState === "error" ? copy.eventLoadErrorLabel : copy.eventLoadingLabel);
   const selectedEventNotes = selectedEventRecord?.notes ?? "";
   const selectedEventChronologySummary = selectedEventRecord?.chronologySummary ?? (() => {
     const firstAnchor = selectedEventRecord?.chronology?.authored?.[0];

@@ -27,6 +27,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-001 M4.7 — viewport 연속성과 탐색 경계](implementation/M4.7-VIEWPORT-CONTINUITY.md)
 - [IP-004 — M5 진입 전 Production Readiness Gate](implementation/IP-004-production-readiness-gate.md)
 - [IP-004 — 현재 gate evidence](evidence/ip-004-gate-status.md)
+- [IP-004 — 새 세션의 실제 refinement 검증](evidence/ip-004-prb3-fresh-session.md)
 - [IP-004 — 새 LLM 세션의 잔여 검증](implementation/IP-004-fresh-session-handoff.md)
 - [현재 구현 상태](implementation/CURRENT.md)
 - [M3-R 책임 경계 재정렬](implementation/M3-BOUNDARY.md)

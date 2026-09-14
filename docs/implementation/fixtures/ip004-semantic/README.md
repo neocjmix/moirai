@@ -86,4 +86,27 @@ pnpm exec vitest run scripts/clotho-semantic-acceptance.test.ts
 
 Default CI skips that live-network test. Passing the deterministic test does not
 establish semantic E2E. Public browser Island/Event/Graph navigation and actual
-Clotho readback must also be recorded for each stage. PR-B2/B3 and PR-C remain open.
+Clotho readback must also be recorded for each stage. Current acceptance status
+is recorded in the [gate evidence](../../../evidence/ip-004-gate-status.md).
+
+## Stage 5 — independent-session refinement
+
+`05-fresh-session-haerye.change-plan.json`, Revision 5 → 6, was authored and
+committed in the new Work session requested by the fresh-session handoff.
+Discovery was recorded before reading these earlier fixtures. Live Clotho
+searches in both Canons and a bounded context slice identified the existing
+creation, completion and process Events and their shared memberships.
+
+The new detail explains the completed 해례's five explanations and one example
+section. One source-linked annotation attaches to the existing completion Event
+in 훈민정음 — 기록과 해석. It creates no Event, Relation, Canon or membership;
+existing Narratives and uncertain dates remain. The public reference is the
+National Institute of Korean History's 우리역사넷 article, section 5.
+
+Actual validation returned valid with no errors/warnings; commit produced
+Revision 6 and Publication reached current/target/served 6 ready. See the
+[separate fresh-session evidence](../../../evidence/ip-004-prb3-fresh-session.md).
+Use `IP004_PUBLIC_READBACK_REVISION=6` with the read-only command above to compare
+all identities, memberships, Narratives and sources against the public output.
+The fixture replay remains reproducibility evidence, not the source of the
+session-independence claim. M5 stays inactive.

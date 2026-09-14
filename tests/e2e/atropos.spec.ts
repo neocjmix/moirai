@@ -291,9 +291,15 @@ test("Event detail failure can be retried without presenting stale knowledge", a
   page
 }) => {
   let allowDetail = false;
+  let releaseDetail!: () => void;
+  const pendingDetail = new Promise<void>((resolve) => {
+    releaseDetail = resolve;
+  });
   await page.route("**/graph/detail", async (route) => {
-    if (!allowDetail) await route.abort();
-    else await route.continue();
+    if (!allowDetail) {
+      await pendingDetail;
+      await route.abort();
+    } else await route.continue();
   });
   await page.goto("/graph");
   await page
@@ -306,6 +312,10 @@ test("Event detail failure can be retried without presenting stale knowledge", a
     .getByRole("button")
     .click();
   const sheet = page.getByTestId("event-drawer-sheet");
+  await expect(sheet.getByRole("status")).toBeVisible();
+  await expect(sheet).not.toContainText(firstEventId);
+  await expect(sheet.getByRole("table")).toHaveCount(0);
+  releaseDetail();
   await expect(sheet.getByRole("alert")).toContainText(
     /불러오지 못했습니다|Unable to load event notes/
   );
@@ -315,6 +325,7 @@ test("Event detail failure can be retried without presenting stale knowledge", a
     .getByRole("button", { name: /다시 불러오기|Retry loading/ })
     .click();
   await expect(sheet.getByTestId("read-stable-event")).toBeVisible();
+  await expect(sheet.getByRole("table")).toHaveCount(1);
   await expect(sheet.getByRole("alert")).toHaveCount(0);
   await expect(sheet.getByTestId("event-observation")).not.toBeVisible();
 });

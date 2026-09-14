@@ -1,15 +1,16 @@
 # IP-004 — production-readiness evidence checkpoint
 
 Observed 2026-09-14 UTC. **IP-004 active; M5 inactive.** This packet closes the
-Product and measured Scale tracks at the runtime below. It does not close the
-whole gate: PR-B's genuine independent-session refinement remains unverified.
+Product and measured Scale tracks at the runtime below. The fresh-session
+refinement now passed at Revision 6; final PR-Z closure awaits verification of the
+small drawer loading correction found during that acceptance.
 
 ## Acceptance decision
 
 | Axis | Decision | Evidence and boundary |
 | --- | --- | --- |
 | Product | YES | Reader-first Island, Graph Event drawer and Event reading page; same-head mobile CI and actual Revision 5 public navigation. Graph renderer/layout remain the baseline. |
-| Semantic E2E | OPEN | Actual Clotho coarse input plus three refinements reached Revisions 2–5 with identity, N:M membership and conflict recovery verified. A new LLM session must still rediscover context and perform the next refinement. |
+| Semantic E2E | YES | Actual coarse input and refinements at Revisions 2–5, followed by genuine fresh-session Clotho discovery and refinement at Revision 6. Identity, membership, source and public navigation passed. See the separate PR-B3 evidence. |
 | Scale | YES within the recorded workload | 100/1k/10k actual application paths and Next/WebKit CI pass fixed budgets. Existing 100k bounded spatial tests remain. This does not claim a full 100k canonical workload or production WAN p95. |
 
 ## Runtime and checks
@@ -112,15 +113,20 @@ The query's mutable discovery read remains uncached. These are single warm
 samples through this environment's WAN/proxy path, not end-user latency or p95.
 They demonstrate deployed immutable read reuse without hiding the external delay.
 
-## Remaining action
+## Fresh-session result and final action
 
-[IP-004 §3 PR-B scenario 5](../implementation/IP-004-production-readiness-gate.md)
-requires a **new LLM session** to rediscover context through allowed Clotho reads
-and then refine the World. The current implementation conversation already knows
-the fixture identities; continuing it, compacting it or replaying its plans does
-not establish session independence. No assertion is waived to close this gate.
+[Separate PR-B3 evidence](ip-004-prb3-fresh-session.md) records discovery before
+reading earlier authoring fixtures, the public source, exact validate/commit
+results and Revision 6 public navigation. It is not a replay of the implementation
+conversation. All six semantic acceptance tests, including actual public reads,
+passed; existing Events, Relations, memberships and Narratives remained intact.
 
-Use the [fresh-session handoff](../implementation/IP-004-fresh-session-handoff.md).
-After that actual write/publish/readback and current Product/Scale verification,
-the next session can record all three axes YES and IP-004 complete. M5 must still
-remain inactive until the user's separate entry decision.
+Baseline `585852e35400f239cc0490956c3a5b2a33e9f825` had all three Railway services
+SUCCESS, main CI `34803398308` and post-deploy smoke `34803539882` success, and
+matching public `/health`, `/__status` and `/status-public`. The historical scale
+PR and merge trees match, and later changes to that baseline were docs only.
+
+The browser round trip revealed pending detail showing an ID and empty metadata
+before loading completed. PR-Z corrects only this drawer presentation and adds a
+held-request mobile regression. Final completion requires the correction's CI,
+three-scale checks, deployment and public verification. M5 remains inactive.

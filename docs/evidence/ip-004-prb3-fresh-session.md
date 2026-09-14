@@ -152,3 +152,18 @@ no raw Event ID, no premature metadata, then the usual error/retry and loaded ta
 The scale workflow also watches this copied drawer file so the actual reader path
 is checked at all three sizes before merging. No ontology, data model, runtime
 provider or M5 scope is added.
+
+## Final result
+
+PR #95 merged as `b90d06f4ab0e876102f05285d89aaa664765f2fc`. PR CI
+`34810897021`, three-scale CI `34810897061`, main CI `34811118223` and
+post-deploy smoke `34811263818` all succeeded. Mobile tests: 23 passed.
+All three Railway applications reported SUCCESS at the same SHA.
+
+After deployment, a restored public Graph URL visibly showed “사건 노트를
+불러오는 중입니다.” without a raw ID or premature empty metadata. It then loaded
+the existing completion Event, both interpretation Narratives, public sources and
+one time table. Reading-page navigation and exact Graph return URL passed again.
+Clotho still reported Revision 6 ready. The fresh-session acceptance and the
+whole IP-004 gate are complete; M5 remains inactive. Final scale measurements,
+deployment IDs and the retained limits are in the [gate packet](ip-004-gate-status.md).

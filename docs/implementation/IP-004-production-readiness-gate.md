@@ -7,6 +7,12 @@ layer: implementation-plan
 
 # IP-004 — Production Readiness Gate before M5
 
+실행 상태 (2026-09-14): **complete**. 세 축의 종료 검증과 PR-Z 배포 확인은
+[통합 evidence](../evidence/ip-004-gate-status.md), 독립 세션 작성 검증은
+[PR-B3 evidence](../evidence/ip-004-prb3-fresh-session.md)에 기록했다.
+**M5는 inactive**이며 사용자의 별도 진입 결정이 필요하다. 아래 accepted 범위와
+종료조건은 그대로 유지한다.
+
 ## 1. 목적
 
 M4 계열의 graph/exploration 구현은 기능적으로 충분히 진전했지만, 첫 제품이 M5의 lifecycle·portability·operations 단계로 넘어가기 전에 세 가지 production readiness 문제가 남아 있다.

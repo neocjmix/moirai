@@ -1,6 +1,9 @@
 # IP-004 PR-C3 — measured query reuse and bounded cache retention
 
-Status: local implementation and acceptance checks; CI and deployment pending.
+Status: PR #93 merged and deployed as `c687fe94e751999d2df54d78abe94db188b34fbd`.
+All three Railway services SUCCESS. PR CI `34783354536`, three-scale workflow
+`34783354524`, main CI `34802375906` and post-deploy smoke `34802541817` passed.
+Public verification is recorded in the [gate evidence](ip-004-gate-status.md).
 IP-004 active, M5 inactive. This extends measured PR-C2 improvements, not canonical
 semantics, storage authority or the Graph renderer.
 
@@ -86,3 +89,25 @@ pointer updates, old/new Revision reads and missing-artifact retry. All existing
 canonical/Graph regression gates remain required. Scale YES still requires the
 same-head CI/browser and deployed public verification below; synthetic checks
 cannot close the genuine new-session Clotho semantic acceptance.
+
+## Same-head CI results
+
+Ten server samples per warm path; browser and full-query values are single
+samples. All fixed acceptance budgets passed without changing their thresholds.
+
+| Events | Warm initial p95 | Event read p95 | Spatial warm p95 | Full query | Graph ready | Drawer |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 100 | 2.68 ms | 3.67 ms | 14.52 ms | 50 ms | 1,869 ms | 375 ms |
+| 1,000 | 6.19 ms | 2.08 ms | 34.74 ms | 320 ms | 2,223 ms | 384 ms |
+| 10,000 | 42.61 ms | 5.19 ms | 219.51 ms | 810 ms | 3,091 ms | 1,176 ms |
+
+10k builder total: 92.7 seconds, peak RSS 2,115,212 KiB. Separate read process
+peak: 1,250,452 KiB. Reader cache recorded ten hits after one miss; immutable
+objects recorded 239 hits, 1,056 misses and 52 evictions, staying below its
+16 MiB weight cap. Warm drawer reads required zero physical object reads.
+
+The fixture intentionally repeats public knowledge patterns to exercise dense
+geometry and N:M semantics. Its compressed byte size is not a promise for all
+natural-language corpora; decoded HTML and resource measurements are retained
+alongside wire size. The 100k check covers bounded spatial geometry, not a full
+100k canonical publisher/browser workload.

@@ -54,4 +54,7 @@ Server application timings were 433 / 409 / 626 ms for search/detail/query;
 external wall times were 11.0 / 9.9 / 11.8 seconds and remain separate. The actual
 42-Event World is below the 1,000-Event cap, so its full query still reads 50
 objects; the 10k improvement must not be attributed to this small-World sample.
-Main CI `34783117455` and its post-deploy smoke are tracked separately.
+Main [CI 34783117455](https://github.com/neocjmix/moirai/actions/runs/34783117455)
+and [post-deploy smoke 34783259479](https://github.com/neocjmix/moirai/actions/runs/34783259479)
+passed. The subsequent cache resource policy and final scale budgets are recorded
+in [PR-C3](ip-004-prc3-query-cache.md).

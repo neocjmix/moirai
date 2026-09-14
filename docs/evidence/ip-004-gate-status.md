@@ -1,19 +1,54 @@
-# IP-004 — production-readiness evidence checkpoint
+# IP-004 — completed production-readiness gate
 
-Observed 2026-09-14 UTC. **IP-004 active; M5 inactive.** This packet closes the
-Product and measured Scale tracks at the runtime below. The fresh-session
-refinement now passed at Revision 6; final PR-Z closure awaits verification of the
-small drawer loading correction found during that acceptance.
+Observed 2026-09-14 UTC. **IP-004 complete; M5 inactive.** Product, Semantic E2E
+and measured Scale acceptance all passed. The genuinely new-session refinement
+reached Revision 6, and the drawer loading defect found during acceptance was
+fixed, checked at all three scales and verified on the public deployment.
 
 ## Acceptance decision
 
 | Axis | Decision | Evidence and boundary |
 | --- | --- | --- |
-| Product | YES | Reader-first Island, Graph Event drawer and Event reading page; same-head mobile CI and actual Revision 5 public navigation. Graph renderer/layout remain the baseline. |
+| Product | YES | Reader-first Island, Graph Event drawer and Event reading page; 23 mobile tests and actual Revision 6 public navigation, including corrected pending detail. Graph renderer/layout remain the baseline. |
 | Semantic E2E | YES | Actual coarse input and refinements at Revisions 2–5, followed by genuine fresh-session Clotho discovery and refinement at Revision 6. Identity, membership, source and public navigation passed. See the separate PR-B3 evidence. |
 | Scale | YES within the recorded workload | 100/1k/10k actual application paths and Next/WebKit CI pass fixed budgets. Existing 100k bounded spatial tests remain. This does not claim a full 100k canonical workload or production WAN p95. |
 
-## Runtime and checks
+## Final runtime and checks
+
+[PR #95](https://github.com/neocjmix/moirai/pull/95) merged as
+`b90d06f4ab0e876102f05285d89aaa664765f2fc`.
+
+- [PR CI](https://github.com/neocjmix/moirai/actions/runs/34810897021),
+  [three-scale CI](https://github.com/neocjmix/moirai/actions/runs/34810897061),
+  [main CI](https://github.com/neocjmix/moirai/actions/runs/34811118223), and
+  [post-deploy smoke](https://github.com/neocjmix/moirai/actions/runs/34811263818): success.
+- The mobile suite passed 23 tests, including the held-request loading/error/retry
+  regression. Full CI also passed format/lint, strict types, unit/contract/projection,
+  PostgreSQL migration/integration, production build, audit and secret scan.
+- Railway Atropos `5731888c-916c-4e3e-9b86-a03f9d8f6d38`, Clotho
+  `5f278789-d5a5-4bc0-957e-2a5cd4d55054`, worker
+  `e01b7001-fb3b-42ac-b030-dc8bbc818d9c`: SUCCESS at that same SHA.
+- Public status matched the SHA. A fresh restored Graph route displayed loading
+  copy instead of raw IDs/empty metadata, then the correct Narrative, sources and
+  1446 year context. Reading-page navigation and the exact Graph return URL passed.
+- Actual Clotho `world.get` after deployment confirmed current/target/served 6
+  ready. Canon 2 / Event 42 / Relation 133 are preserved; only one Narrative was added.
+
+Final three-scale rerun on PR head `c83b3cacf4725aa07f3c0efa415459b6d43ebb2d`:
+
+| Events | Warm initial p95 | Event read p95 | Spatial warm p95 | Full query (one sample) | Graph ready | Drawer |
+| --- | ---: | ---: | ---: | ---: | ---: | ---: |
+| 100 | 3.76 ms | 3.35 ms | 11.33 ms | 38.85 ms | 1,818 ms | 283 ms |
+| 1,000 | 6.59 ms | 3.06 ms | 33.46 ms | 332.22 ms | 2,208 ms | 356 ms |
+| 10,000 | 43.84 ms | 5.21 ms | 225.01 ms | 831.55 ms | 3,176 ms | 1,162 ms |
+
+10k builder 95.59 seconds / 2,278,100 KiB peak RSS; separate read process
+1,238,460 KiB peak RSS. Browser page errors: none. Fixed budgets were not weakened.
+These are the same production-like local-store/Next/WebKit workload limits described
+below, not end-user WAN latency. The closeout documentation requires no further
+canonical writes or runtime changes. M5 needs the user's separate entry decision.
+
+## Historical PR #93 runtime and checks
 
 [PR #93](https://github.com/neocjmix/moirai/pull/93) merged as
 `c687fe94e751999d2df54d78abe94db188b34fbd`.
@@ -113,7 +148,7 @@ The query's mutable discovery read remains uncached. These are single warm
 samples through this environment's WAN/proxy path, not end-user latency or p95.
 They demonstrate deployed immutable read reuse without hiding the external delay.
 
-## Fresh-session result and final action
+## Fresh-session result and resolved final action
 
 [Separate PR-B3 evidence](ip-004-prb3-fresh-session.md) records discovery before
 reading earlier authoring fixtures, the public source, exact validate/commit
@@ -128,5 +163,6 @@ PR and merge trees match, and later changes to that baseline were docs only.
 
 The browser round trip revealed pending detail showing an ID and empty metadata
 before loading completed. PR-Z corrects only this drawer presentation and adds a
-held-request mobile regression. Final completion requires the correction's CI,
-three-scale checks, deployment and public verification. M5 remains inactive.
+held-request mobile regression. The correction's CI, three-scale checks,
+deployment and public verification passed as recorded above. There are no
+remaining IP-004 acceptance items. M5 remains inactive.

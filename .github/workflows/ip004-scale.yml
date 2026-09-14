@@ -8,6 +8,7 @@ on:
       - "tests/e2e/ip004-reader-scale.spec.ts"
       - "apps/atropos-web/src/components/graph-source-island.tsx"
       - "apps/atropos-web/src/components/atropos-graph-root.tsx"
+      - "apps/atropos-web/src/urdr-port/src/components/graph-shell.tsx"
   workflow_dispatch:
     inputs:
       scale:

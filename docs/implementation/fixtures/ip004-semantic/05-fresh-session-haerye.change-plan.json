@@ -1,0 +1,53 @@
+{
+  "contract_version": 4,
+  "change_set_id": "019f62b7-6aa0-7000-8000-000000000001",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 5,
+  "intent": "기존 훈민정음 해설서 완성 사건에 해례의 구성과 내용을 설명하는 출처 기반 주석을 더한다.",
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f62b7-6aa0-7000-8000-000000000002",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        },
+        {
+          "field": "canon_id",
+          "origin_index": 1
+        },
+        {
+          "field": "scope_id",
+          "origin_index": 1
+        }
+      ],
+      "value": {
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_type": "event",
+        "scope_id": "019f5b00-0000-7000-8000-000000000112",
+        "locale": "ko",
+        "kind": "annotation",
+        "title": "해례에는 무엇이 담겼나",
+        "body": "해설서의 해례 부분은 다섯 해설과 하나의 용례로 구성된다. 제자해는 글자를 만든 원리, 초성해·중성해·종성해는 각 소리와 글자의 쓰임, 합자해는 초성·중성·종성을 합쳐 음절을 적는 방법을 설명한다. 용자례는 실제 단어를 어떻게 적는지 보여 준다.\n\n이 구성은 문자 창제 뒤에 완성된 해설서가 무엇을 설명하는지 구체화한다. 각 장을 별도의 역사적 사건으로 보거나, 장별 집필 순서와 완성 날짜를 이 설명만으로 정하지 않는다.",
+        "public_references": [
+          {
+            "label": "국사편찬위원회 우리역사넷 — 훈민정음, 제5절 해설서의 구성",
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_r300900"
+          }
+        ]
+      }
+    }
+  ],
+  "origins": [
+    {
+      "kind": "source_explicit",
+      "summary": "공개 우리역사넷 「훈민정음」 제5절의 해례 구성 설명을 요약했다. 제자해·초성해·중성해·종성해·합자해와 용자례의 내용이 근거다. https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_r300900"
+    },
+    {
+      "kind": "llm_inference",
+      "summary": "Revision 5의 Clotho 탐색에서 확인한 기존 해설서 완성 Event와 기록·해석 Canon에 주석을 연결한다. 새로운 사건·Canon·Relation은 필요하지 않으며 집필 순서나 정확한 날짜를 추론하지 않는다."
+    }
+  ]
+}

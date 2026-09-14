@@ -27,7 +27,8 @@ const refinementFiles = [
   "01-coarse.change-plan.json",
   "02-time-detail.change-plan.json",
   "03-motivation.change-plan.json",
-  "04-canon-interpretation.change-plan.json"
+  "04-canon-interpretation.change-plan.json",
+  "05-fresh-session-haerye.change-plan.json"
 ];
 
 /** Additive fixture replay only; production authoring must use actual Clotho. */
@@ -174,6 +175,60 @@ it("shares the same Events and Relations in a distinct interpretation Canon with
   );
   expect(document.events).toHaveLength(3);
   expect(document.narratives).toHaveLength(1);
+});
+
+it("adds the fresh-session explanation only to the existing completion Event's interpretation context", () => {
+  const plans = [
+    read("joseon-dogfood.change-plan.json"),
+    ...refinementFiles.slice(0, 4).map((f) => read(`ip004-semantic/${f}`))
+  ];
+  const before = replay(plans);
+  const plan = read("ip004-semantic/05-fresh-session-haerye.change-plan.json");
+  const input = { ...plan, actor };
+  expect(() =>
+    validateCandidateChangeSet(
+      input,
+      resolveCreateOperations(input, () => "").operations,
+      before
+    )
+  ).not.toThrow();
+  const after = replay([...plans, plan]);
+  expect(after.events).toEqual(before.events);
+  expect(after.relations).toEqual(before.relations);
+  expect(after.canons).toEqual(before.canons);
+  expect(after.eventCanonMemberships).toEqual(before.eventCanonMemberships);
+  expect(after.relationCanonMemberships).toEqual(
+    before.relationCanonMemberships
+  );
+  expect(after.narratives.slice(0, -1)).toEqual(before.narratives);
+  expect(after.narratives).toHaveLength(before.narratives.length + 1);
+  const added = after.narratives.at(-1)!;
+  expect(added).toMatchObject({
+    id: "019f62b7-6aa0-7000-8000-000000000002",
+    canon_id: "019f60ab-0000-7000-8000-000000000401",
+    scope_type: "event",
+    scope_id: "019f5b00-0000-7000-8000-000000000112",
+    kind: "annotation"
+  });
+  expect(added.body).toContain("용자례");
+  expect(added.public_references[0]?.url).toContain("contents.history.go.kr/");
+  const eventKey = `events/${added.scope_id}.json`;
+  const oldPublication = buildPublicationArtifacts(
+    before,
+    5,
+    "2026-09-14T00:00:00Z"
+  );
+  const newPublication = buildPublicationArtifacts(
+    after,
+    6,
+    "2026-09-14T00:00:00Z"
+  );
+  expect(
+    oldPublication.documents.find((d) => d.key.endsWith(eventKey))!.body
+  ).not.toContain(added.id);
+  expect(
+    newPublication.documents.find((d) => d.key.endsWith(eventKey))!.body
+  ).toContain(added.id);
 });
 
 // Explicit opt-in: CI's default unit run never contacts or writes production.

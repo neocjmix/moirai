@@ -1,5 +1,11 @@
 # IP-004 — independent-session acceptance handoff
 
+The independent-session acceptance was executed: live Clotho discovery followed
+by an additive refinement reached Revision 6. See the
+[separate evidence](../evidence/ip-004-prb3-fresh-session.md) and
+[current gate status](CURRENT.md). The original instructions below are retained
+for provenance; they are not an instruction to repeat the canonical write.
+
 This is the remaining PR-B session-independence check required by
 [IP-004](IP-004-production-readiness-gate.md). It must run in a genuinely new LLM
 session. Continuing or compacting the implementation conversation is not evidence

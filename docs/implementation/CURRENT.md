@@ -8,11 +8,11 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 
 | 항목 | 상태 |
 | --- | --- |
-| 현재 slice | PR-Z evidence 정리; PR-B3 새 LLM 세션 검증을 남겨 둔 안정 checkpoint |
+| 현재 slice | PR-Z 최종 검증. PR-B3 새 세션 검증 완료; 공개 QA에서 발견한 drawer 초기 로딩 표시 수정의 CI·배포 확인 중 |
 | 마지막 runtime 배포 검증 | PR #93, `c687fe94e751999d2df54d78abe94db188b34fbd`; Railway Atropos·Clotho·worker SUCCESS |
 | 검증 | PR CI `34783354536`, 100/1k/10k scale CI `34783354524`, main CI `34802375906`, smoke `34802541817` success; 공개 status·reader 왕복·실제 Revision 5 semantic readback 5개 테스트 통과 |
 | 실제 World | 조선 전기 — 건국에서 세조까지; `01995c2a-7b00-7000-8000-000000000101` |
-| 실제 데이터 | current/target/served Revision 5 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133 |
+| 실제 데이터 | current/target/served Revision 6 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133; 기존 해설서 완성 Event에 해례 구성 주석 1개 추가 |
 | Graph regression 경계 | M4.7 renderer/layout/interaction 유지, 후속 label hysteresis PR #77 포함; 재설계 금지 |
 | 사용자 승인 | IP-004 inspect→test→commit→PR→CI→merge→Railway→public verify→evidence 전 과정 자율 진행; 새로운 유료 provider·권한 확대·정본 삭제는 별도 경계 |
 
@@ -23,7 +23,7 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 | 축 | 현재 판단 |
 | --- | --- |
 | Product | YES. Island 독자 탐색, Graph Event drawer와 Event reading page 및 왕복을 실제 Revision 5와 mobile CI에서 검증했다. Graph renderer/layout은 보존했다. |
-| Semantic E2E | OPEN. 실제 coarse → 세 차례 refinement, identity/N:M/충돌 복구·공개 readback은 통과했다. 새 LLM 세션에서의 재탐색→다음 refinement만 남았다. |
+| Semantic E2E | YES. 새 세션에서 Clotho로 identity를 재탐색하고 Revision 5→6 refinement·Publication·Island/drawer/reading page 왕복을 확인했다. 이전 실제 작성·충돌 복구 증거와 별도로 기록했다. |
 | Scale | YES, 문서화된 workload/budget 범위. 100/1k/10k 실제 query·Next/WebKit 경로와 기존 100k bounded spatial 회귀가 통과했다. 전체 100k canonical workload나 production WAN p95를 검증한 것은 아니다. |
 
 - 실제 작성 이력: [Revision 2 coarse](../evidence/ip-004-prb1-coarse.md) →
@@ -34,10 +34,11 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
   drawer 1.18초, warm initial p95 42.61ms. Builder 92.7초, builder/read peak RSS
   각각 2,115,212/1,250,452 KiB. Revision-safe cache 보관량·무효화·rebuild를 검증했다.
   Redis 등 새 infrastructure나 비용 확장은 없다.
-- 다음 최소 단계: [새 LLM 세션 인계](IP-004-fresh-session-handoff.md).
-  IP-004 PR-B 필수 시나리오 5 때문에 실제 새 세션이 필요하다. 현재 대화의 계속 실행,
-  compaction 또는 fixture replay로 이 조건을 통과 처리하지 않는다. 실행 권한의 재승인을
-  요구하는 것이 아니다. 전체 세 축 YES 후에도 M5는 사용자 판단 전까지 inactive다.
+- [새 세션 실제 검증](../evidence/ip-004-prb3-fresh-session.md): 공개 Revision 6
+  semantic 검사 6개와 cache/readback 검사 10개 통과. 과거 Revision 5 URL은
+  최신 내용으로 바뀌지 않고, 새로운 `/graph`에서만 새 서사가 검색된다.
+- 다음 최소 단계: drawer 로딩 중 ID/빈 필드 노출 수정의 mobile·3-scale CI,
+  merge·배포·public smoke 확인 후 PR-Z 완료 기록. M5는 계속 inactive다.
 
 ## 용어와 진입점
 

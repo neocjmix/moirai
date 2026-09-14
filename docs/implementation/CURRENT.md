@@ -8,9 +8,9 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 
 | 항목 | 상태 |
 | --- | --- |
-| 현재 slice | PR-C3 — 반복 composition 재사용·기존 cache 보관량 제한·immutable object 재사용·측정 기반 budget 검증 |
-| 마지막 배포 검증 | PR #92, `8fd6973e4d681495f08e5d4204ce5e6ce498738c`; Railway Atropos·Clotho·worker SUCCESS |
-| 검증 | PR CI `34782925865` success; 공개 status SHA·Graph baseline·search/detail/query readback 확인; main CI `34783117455`와 후속 smoke 추적. PR #91 smoke `34782794184` passed |
+| 현재 slice | PR-Z evidence 정리; PR-B3 새 LLM 세션 검증을 남겨 둔 안정 checkpoint |
+| 마지막 runtime 배포 검증 | PR #93, `c687fe94e751999d2df54d78abe94db188b34fbd`; Railway Atropos·Clotho·worker SUCCESS |
+| 검증 | PR CI `34783354536`, 100/1k/10k scale CI `34783354524`, main CI `34802375906`, smoke `34802541817` success; 공개 status·reader 왕복·실제 Revision 5 semantic readback 5개 테스트 통과 |
 | 실제 World | 조선 전기 — 건국에서 세조까지; `01995c2a-7b00-7000-8000-000000000101` |
 | 실제 데이터 | current/target/served Revision 5 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133 |
 | Graph regression 경계 | M4.7 renderer/layout/interaction 유지, 후속 label hysteresis PR #77 포함; 재설계 금지 |
@@ -18,27 +18,26 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 
 ## 완료와 남은 일
 
-- PR-0 baseline 고정: [production·Graph·query·fixture](../evidence/ip-004-pr0-baseline-2026-09-13.md).
-- PR-A1 Island reader-first, PR-A2 Event 탐색 배포: [Island](../evidence/ip-004-pra1-island.md), [Event](../evidence/ip-004-pra2-event.md).
-  실제 refinement에서 발견한 결함은 계속 수정한다. Product 최종 gate는 아직 열려 있다.
-- PR-B1 실제 coarse 입력 → Revision 2: [identity 재사용과 공개 readback](../evidence/ip-004-prb1-coarse.md).
-- PR-B2 첫 보강 → Revision 3: [창제 사건·시간 범위·시작/종료](../evidence/ip-004-prb2-time.md).
-  명시적 경계가 있는데 시간 미정으로만 보이던 결함은 PR #85 배포 후 drawer/page 양쪽에서 검증했다.
-- PR-B2 두 번째 보강 → Revision 4: [목적·편집상 enables·Narrative](../evidence/ip-004-prb2-motivation.md).
-  실제 semantic readback과 PR #86의 검색 수정 배포·공개 검증을 완료했다.
-- PR-B2 세 번째 보강 → Revision 5: [N:M·불확실성·충돌 복구](../evidence/ip-004-prb2-canon.md).
-  같은 세 Event와 열 Relation을 두 번째 해석 Canon에 채택했다. 실제 stale commit은 거부됐고
-  최신 context를 다시 읽어 재계획한 commit은 성공했다. Canon을 넘나드는 Clotho 검색과
-  Narrative Canon/source 누락은 PR #87 배포 후 실제 연결에서 수정 검증됐다.
-- PR-B 잔여: 독립 LLM 세션의 World ID 기반 재탐색→후속 refinement, 전체 reader acceptance.
-- PR-C: [기준선](../evidence/ip-004-prc1-scale-baseline.md), [실제 timing·temporal 개선](../evidence/ip-004-prc2-temporal-projection.md).
-  [10k 전체 workload](../evidence/ip-004-prc2-spatial.md)를 측정했다: canonical 56.3초,
-  spatial 35.7초, 전체 build/query peak RSS 약 2.49GiB. 아직 Scale 통과가 아니다.
-  query 읽기 수·resource 한계의 최종 검증은 잔여다.
-  [Reader payload](../evidence/ip-004-prc2-reader-payload.md)는 1k에서 5.28MB→1.98MB로 줄었고 세 규모 WebKit 검증을 통과했다. 10k Graph 3.75초·drawer 2.16초는 단일 CI sample이다.
-  [Bounded query](../evidence/ip-004-prc2-bounded-query.md)는 10k에서 10,008→1,008개 문서 읽기·2,500→631ms로 개선됐고 PR #92 배포 후 공개 조회를 확인했다.
-  [PR-C3](../evidence/ip-004-prc3-query-cache.md)는 반복 초기 조회 558→19ms p50와 cache weight/RSS 분리 계측을 확인했으며 CI·배포 검증이 남았다.
-  기존 100k bounded spatial 회귀 검증은 유지하며 Redis 등 새 infrastructure는 추가하지 않았다.
+[통합 evidence와 한계](../evidence/ip-004-gate-status.md)에 CI·배포·fixture·공개 검증을 연결했다.
+
+| 축 | 현재 판단 |
+| --- | --- |
+| Product | YES. Island 독자 탐색, Graph Event drawer와 Event reading page 및 왕복을 실제 Revision 5와 mobile CI에서 검증했다. Graph renderer/layout은 보존했다. |
+| Semantic E2E | OPEN. 실제 coarse → 세 차례 refinement, identity/N:M/충돌 복구·공개 readback은 통과했다. 새 LLM 세션에서의 재탐색→다음 refinement만 남았다. |
+| Scale | YES, 문서화된 workload/budget 범위. 100/1k/10k 실제 query·Next/WebKit 경로와 기존 100k bounded spatial 회귀가 통과했다. 전체 100k canonical workload나 production WAN p95를 검증한 것은 아니다. |
+
+- 실제 작성 이력: [Revision 2 coarse](../evidence/ip-004-prb1-coarse.md) →
+  [Revision 3 시간](../evidence/ip-004-prb2-time.md) →
+  [Revision 4 목적·서사](../evidence/ip-004-prb2-motivation.md) →
+  [Revision 5 N:M·해석·충돌 복구](../evidence/ip-004-prb2-canon.md).
+- [PR-C3 최종 계측](../evidence/ip-004-prc3-query-cache.md): 10k Graph 3.09초,
+  drawer 1.18초, warm initial p95 42.61ms. Builder 92.7초, builder/read peak RSS
+  각각 2,115,212/1,250,452 KiB. Revision-safe cache 보관량·무효화·rebuild를 검증했다.
+  Redis 등 새 infrastructure나 비용 확장은 없다.
+- 다음 최소 단계: [새 LLM 세션 인계](IP-004-fresh-session-handoff.md).
+  IP-004 PR-B 필수 시나리오 5 때문에 실제 새 세션이 필요하다. 현재 대화의 계속 실행,
+  compaction 또는 fixture replay로 이 조건을 통과 처리하지 않는다. 실행 권한의 재승인을
+  요구하는 것이 아니다. 전체 세 축 YES 후에도 M5는 사용자 판단 전까지 inactive다.
 
 ## 용어와 진입점
 

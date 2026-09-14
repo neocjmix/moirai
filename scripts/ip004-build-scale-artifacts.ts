@@ -12,6 +12,7 @@ const root = process.argv[3];
 if (!root || !/^\/tmp\/moirai-ip004-scale-[a-zA-Z0-9]+$/.test(root))
   throw Error("generated_scale_root_required");
 const fixture = ip004ScaleFixture(count);
+const buildStarted = performance.now();
 process.stdout.write(
   JSON.stringify({
     scale: count,
@@ -83,6 +84,11 @@ process.stdout.write(
   JSON.stringify({
     scale: count,
     phase: "build_complete",
+    total_ms: performance.now() - buildStarted,
     peak_rss_kib: process.resourceUsage().maxRSS
   }) + "\n"
 );
+if (performance.now() - buildStarted > 180_000)
+  throw Error("scale_build_latency_budget");
+if (process.resourceUsage().maxRSS > 3 * 1024 * 1024)
+  throw Error("scale_builder_rss_budget");

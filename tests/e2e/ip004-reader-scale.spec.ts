@@ -27,6 +27,7 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
     page.getByRole("img", { name: "Projected chart surface" })
   ).toBeVisible();
   const graphReadyMs = Date.now() - start;
+  expect(graphReadyMs).toBeLessThanOrEqual(8000);
   phase("graph_ready");
   const htmlBytes = (await response!.body()).byteLength;
   const navigation = await page.evaluate(() =>
@@ -63,6 +64,7 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
     drawer.getByRole("heading", { name: "반포라는 이름과 기록이 말하는 범위" })
   ).toBeVisible();
   const drawerMs = Date.now() - detailStart;
+  expect(drawerMs).toBeLessThanOrEqual(5000);
   await drawer.getByRole("link", { name: "사건 상세 읽기 →" }).click();
   await expect(
     page.getByRole("heading", { name: "반포라는 이름과 기록이 말하는 범위" })

@@ -9,6 +9,7 @@ import type {
 
 import {
   composeGraphPublicationQuery,
+  composeCachedGraphPublicationQuery,
   graphQueryDigest,
   publicTimeSystemIdentity,
   type GraphPublicationCanonSnapshot
@@ -114,6 +115,48 @@ function snapshot(canonId: string): GraphPublicationCanonSnapshot {
 }
 
 describe("M4.5-E Publication query composition", () => {
+  it("reuses the same immutable reader query but separates new snapshots, revisions and filters", () => {
+    const input = createDefaultGraphUrlState(MOCK_GRAPH_SOURCE_CATALOG).query;
+    const current = snapshot(K1);
+    const first = composeCachedGraphPublicationQuery(input, [current]);
+    expect(composeCachedGraphPublicationQuery(input, [current])).toBe(first);
+    expect(composeCachedGraphPublicationQuery(input, [snapshot(K1)])).not.toBe(
+      first
+    );
+    const next = {
+      ...current,
+      servedRevision: 8,
+      events: current.events.map((event) => ({
+        ...event,
+        title: "Refined title"
+      }))
+    };
+    const nextInput = {
+      ...input,
+      sources: input.sources.map((source) =>
+        source.world_id === WORLD ? { ...source, served_revision: 8 } : source
+      )
+    };
+    const revised = composeCachedGraphPublicationQuery(nextInput, [next]);
+    expect(revised.events[0]?.title).toBe("Refined title");
+    expect(first.events[0]?.title).toBe("Shared event");
+    expect(
+      composeCachedGraphPublicationQuery(
+        {
+          ...input,
+          entity_filter: { ...input.entity_filter, event_kinds: ["composite"] }
+        },
+        [current]
+      ).events
+    ).toHaveLength(0);
+    expect(
+      composeCachedGraphPublicationQuery(
+        input,
+        [current],
+        [{ worldId: "missing", code: "source_unavailable" }]
+      )
+    ).not.toBe(first);
+  });
   it("deduplicates shared World identities and separates matched from complete memberships", () => {
     const state = createDefaultGraphUrlState(MOCK_GRAPH_SOURCE_CATALOG);
     const result = composeGraphPublicationQuery(state.query, [

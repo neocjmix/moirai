@@ -6,10 +6,11 @@ import {
   graphRevisionPins
 } from "./graph-publication-loader";
 import { normalizeGraphUrlState } from "./moirai-graph-source-query";
-const cache = new Map<
-  string,
-  Promise<Awaited<ReturnType<typeof buildContext>>>
->();
+import { BoundedPublicationCache } from "./bounded-publication-cache";
+const cache = new BoundedPublicationCache<
+  Awaited<ReturnType<typeof buildContext>>
+>(4, 128 * 1024 * 1024);
+export const graphSpatialContextCacheMetrics = () => cache.metrics();
 async function buildContext(value: unknown) {
   const raw = JSON.stringify(value);
   if (raw.length > 64 * 1024) throw Error("invalid_graph_query");
@@ -52,15 +53,5 @@ export async function graphSpatialQueryContext(value: unknown) {
     query: raw?.query,
     focus: null
   });
-  const existing = cache.get(key);
-  if (existing) return existing;
-  const promise = buildContext(JSON.parse(key));
-  cache.set(key, promise);
-  if (cache.size > 4) cache.delete(cache.keys().next().value!);
-  try {
-    return await promise;
-  } catch (error) {
-    if (cache.get(key) === promise) cache.delete(key);
-    throw error;
-  }
+  return cache.read(key, () => buildContext(JSON.parse(key)));
 }

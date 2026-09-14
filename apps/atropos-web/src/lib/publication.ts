@@ -7,6 +7,7 @@ import {
 import { readFile } from "node:fs/promises";
 import { join } from "node:path";
 import { observePublicationRead } from "./publication-profile";
+import { BoundedPublicationCache } from "./bounded-publication-cache";
 import {
   LEGACY_PUBLICATION_FORMAT_VERSION,
   EVENT_MEMBERSHIP_PUBLICATION_FORMAT_VERSION,
@@ -36,6 +37,12 @@ const UUID =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
 
 let objectStore: S3ObjectStore | undefined;
+const immutableObjects = new BoundedPublicationCache<ObjectRead>(
+  2048,
+  16 * 1024 * 1024
+);
+export const immutablePublicationCacheMetrics = () =>
+  immutableObjects.metrics();
 
 export type PublishedWorldObservation =
   | {
@@ -64,8 +71,33 @@ export function assertPublicId(value: string): void {
   if (!UUID.test(value)) throw new Error("invalid public identifier");
 }
 
-export function readPublicationObject(key: string): Promise<ObjectRead> {
-  return observePublicationRead(() => readPublicationObjectValue(key));
+export async function readPublicationObject(key: string): Promise<ObjectRead> {
+  const immutable = /^worlds\/([^/]+)\/revisions\/([1-9][0-9]*)\//.exec(key);
+  const cacheable =
+    immutable &&
+    UUID.test(immutable[1]!) &&
+    Number.isSafeInteger(Number(immutable[2]));
+  // The configured store is fixed for this server process; local fixture roots
+  // are separate namespaces. Mutable discovery/current pointers always bypass.
+  const cacheKey = cacheable
+    ? JSON.stringify([
+        hasPublicationStoreConfig()
+          ? "configured-store"
+          : process.env.LOCAL_PUBLICATION_FIXTURE_DIR,
+        key
+      ])
+    : null;
+  if (cacheKey) {
+    const existing = immutableObjects.get(cacheKey);
+    if (existing) return existing;
+  }
+  const read = await observePublicationRead(() =>
+    readPublicationObjectValue(key)
+  );
+  // Missing/failed publication can recover at the same revision; never cache it.
+  if (cacheKey && read.status === 200 && read.body !== null)
+    immutableObjects.set(cacheKey, read);
+  return read;
 }
 
 async function readPublicationObjectValue(key: string): Promise<ObjectRead> {

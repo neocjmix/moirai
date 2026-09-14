@@ -8,9 +8,9 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
 
 | 항목 | 상태 |
 | --- | --- |
-| 현재 slice | PR-C2d — 전체 query의 Event 읽기 한도 적용; PR-C3 반복 composition·cache 보관량 검증 준비 |
-| 마지막 배포 검증 | PR #91, `4cc5e54ebd8ef1e47d811ab6f4d5c495c1d021e8`; Railway Atropos·Clotho·worker SUCCESS |
-| 검증 | PR CI `34782393469`, 100/1k/10k WebKit `34782393447`, main CI `34782620473` success; 공개 Graph·Island paging·Narrative 검색·Event drawer 확인; 후속 smoke 추적 |
+| 현재 slice | PR-C3 — 반복 composition 재사용·기존 cache 보관량 제한·immutable object 재사용·측정 기반 budget 검증 |
+| 마지막 배포 검증 | PR #92, `8fd6973e4d681495f08e5d4204ce5e6ce498738c`; Railway Atropos·Clotho·worker SUCCESS |
+| 검증 | PR CI `34782925865` success; 공개 status SHA·Graph baseline·search/detail/query readback 확인; main CI `34783117455`와 후속 smoke 추적. PR #91 smoke `34782794184` passed |
 | 실제 World | 조선 전기 — 건국에서 세조까지; `01995c2a-7b00-7000-8000-000000000101` |
 | 실제 데이터 | current/target/served Revision 5 ready; Canon 2, Event 42 (atomic 33 / composite 9), Relation 133 |
 | Graph regression 경계 | M4.7 renderer/layout/interaction 유지, 후속 label hysteresis PR #77 포함; 재설계 금지 |
@@ -36,7 +36,8 @@ M5 이전 Product / Semantic E2E / Scale gate다. 세 축의 실제 evidence와 
   spatial 35.7초, 전체 build/query peak RSS 약 2.49GiB. 아직 Scale 통과가 아니다.
   query 읽기 수·resource 한계의 최종 검증은 잔여다.
   [Reader payload](../evidence/ip-004-prc2-reader-payload.md)는 1k에서 5.28MB→1.98MB로 줄었고 세 규모 WebKit 검증을 통과했다. 10k Graph 3.75초·drawer 2.16초는 단일 CI sample이다.
-  [Bounded query](../evidence/ip-004-prc2-bounded-query.md)는 10k에서 10,008→1,008개 문서 읽기·2,500→631ms로 개선됐으며 배포 검증 전이다.
+  [Bounded query](../evidence/ip-004-prc2-bounded-query.md)는 10k에서 10,008→1,008개 문서 읽기·2,500→631ms로 개선됐고 PR #92 배포 후 공개 조회를 확인했다.
+  [PR-C3](../evidence/ip-004-prc3-query-cache.md)는 반복 초기 조회 558→19ms p50와 cache weight/RSS 분리 계측을 확인했으며 CI·배포 검증이 남았다.
   기존 100k bounded spatial 회귀 검증은 유지하며 Redis 등 새 infrastructure는 추가하지 않았다.
 
 ## 용어와 진입점

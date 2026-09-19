@@ -3225,14 +3225,21 @@ export function GraphShell({
   }, [initialDrawerStage, renderedEventSelection, selectedEventSelection]);
 
   useEffect(() => {
-    if (!renderedEventSelection || !pendingRestoredDrawerStageRef.current) {
+    if (
+      !renderedEventSelection ||
+      !selectedEventSelection ||
+      !pendingRestoredDrawerStageRef.current
+    ) {
       return;
     }
 
-    if (eventDrawerStage === pendingRestoredDrawerStageRef.current) {
+    if (
+      renderedEventSelection.requestKey === selectedEventSelection.requestKey &&
+      eventDrawerStage === pendingRestoredDrawerStageRef.current
+    ) {
       pendingRestoredDrawerStageRef.current = null;
     }
-  }, [eventDrawerStage, renderedEventSelection]);
+  }, [eventDrawerStage, renderedEventSelection, selectedEventSelection]);
 
   useEffect(() => {
     if (!renderedEventSelection) {

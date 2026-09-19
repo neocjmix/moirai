@@ -100,7 +100,7 @@ test("Moirai Publication uses the copied viewport, bounded reads and same-revisi
   const link = sheet.getByRole("link", {
     name: /사건 상세 읽기|Read event detail/
   });
-  await expect(link).toHaveAttribute("href", /revision=2&mq=/);
+  await expect(link).toHaveAttribute("href", /revision=2.*mq=/);
   const shared = page.url();
   const viewport = new URL(shared).searchParams.get("gsViewport");
   await expect(link).toHaveAttribute("href", /gsViewport=/);

@@ -13,6 +13,10 @@ layer: implementation-plan
 **M5는 inactive**이며 사용자의 별도 진입 결정이 필요하다. 아래 accepted 범위와
 종료조건은 그대로 유지한다.
 
+> 후속 계획은 [IP-005](IP-005-graph-reader-consolidation.md)다. 아래 두 표면 용어와
+> 검증 범위는 IP-004 당시 기준으로 보존하며 후속 단일 Graph Event drawer 설계를
+> 소급 적용하지 않는다. 아래 실행 지시는 완료된 계획의 이력이며 재실행 지시가 아니다.
+
 ## 1. 목적
 
 M4 계열의 graph/exploration 구현은 기능적으로 충분히 진전했지만, 첫 제품이 M5의 lifecycle·portability·operations 단계로 넘어가기 전에 세 가지 production readiness 문제가 남아 있다.

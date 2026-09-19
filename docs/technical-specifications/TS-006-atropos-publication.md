@@ -18,6 +18,11 @@ traces:
 
 # TS-006 — Atropos 공개 읽기와 그래프 탐색
 
+> IP-005 승인 반영: 아래 Graph 중심 UI/URL 계약은 accepted 목표이며 runtime 구현은
+> 아직 시작하지 않았다. 현재 배포 증거는 IP-004의 두 읽기 표면 기준이다.
+> 실행 제한과 이전 단계는 [IP-005](../implementation/IP-005-graph-reader-consolidation.md),
+> 실제 상태는 [CURRENT](../implementation/CURRENT.md)를 따른다.
+
 ## TS-006.1 목적
 
 이 명세는 Atropos가 Publication Snapshot을 읽어 World, Canon, Event, Narrative와 파생 관점을 공개하고, 안정적인 URL과 단일·복수 World 그래프 탐색을 제공하는 방식을 정의한다.
@@ -96,61 +101,73 @@ Atropos server component와 client component가 각각 `current.json`을 읽어 
 
 ## TS-006.5 공개 URL
 
-### 정본 대상 URL
+### Graph 중심 공개 진입
 
-| 대상                | canonical route                                                 |
-| ------------------- | --------------------------------------------------------------- |
-| World               | `/worlds/{worldId}`                                             |
-| Canon               | `/worlds/{worldId}/canons/{canonId}`                            |
-| Event               | `/worlds/{worldId}/events/{eventId}`                             |
-| Subject             | `/worlds/{worldId}/canons/{canonId}/subjects/{subjectHandleId}` |
-| Correspondence 비교 | `/worlds/{worldId}/compare/{correspondenceId}`                  |
+- `/`는 `/graph`로 리디렉션한다. 독립 landing/World directory를 기본 화면으로 유지하지 않는다.
+- Event의 canonical 읽기 URL은 `/graph/events/{worldId}/{eventId}?revision=N&canon={canonId}`다.
+  이 URL은 **Graph Event drawer**의 full 상태를 직접 열고 SSR 핵심 읽기를 제공한다.
+- worldId/eventId는 immutable World-owned identity다. canon은 선택적 해석 맥락이며
+  지정 시 같은 World 및 해당 Revision의 Event membership을 검증한다.
+- Canon 생략 시 임의의 첫 Canon을 default로 선택하지 않는다. membership과 각 Canon의
+  Narrative·관계·시간을 구분한다. Event identity를 Canon별로 복제하지 않는다.
+- World/Canon/Search/Subject의 읽기·탐색 entry는 Graph의 island/drawer 안에 둔다.
+  독립 UI route와 기존 Canon-context Event alias는 제거하며 하위호환 redirect를 만들지 않는다.
+  제거된 UI URL은 404가 되어도 된다. slug alias를 새로 만들지 않는다.
+- 이 UI 전환은 아직 미공개인 구형 route에 한정한다. §3의 Publication JSON 경로,
+  artifact format 호환 및 §9의 정정·철회 identity 계약은 유지한다.
+- `/graph/private`, `/graph/explore`, `/graph/settings`의 현재 진입점과 availability를 보존한다.
+  이 결정으로 미래 private Publication/ACL/Tenant/E2EE를 활성화하지 않는다.
 
-- immutable ID가 URL 정체성을 결정한다.
-- slug는 ID 뒤에 사람이 읽는 optional segment 또는 별칭 route로 제공할 수 있다.
-- slug 변경 후 이전 별칭은 canonical ID route로 redirect한다.
-- 기존 `/worlds/{worldId}/canons/{canonId}/events/{eventId}`는 membership을 검증하는 context alias로 유지하고 World-level Event canonical route로 연결한다.
-- Subject route에는 Canon ID를 포함해 파생 context를 명확히 한다.
-- 어떤 Canon도 생략 가능한 default Canon으로 취급하지 않는다.
+### 탐색 상태와 공유 URL
 
-### 관점 URL
+실제 query encoding은 `mq`의 URL-encoded JSON(`version: 1`, `query`, `focus`)이다.
+query는 target Time System, World/Canon source set, World별 served Revision vector,
+scope, entity/relation/diagnostic filter와 budget을 보존한다. source 순서는 의미가 있으므로
+정규화 때 임의 정렬하지 않는다. 과거 개별 queryVersion/sources/zoom/x/y 예시를 별도 grammar로 만들지 않는다.
 
-다음 query parameter는 공유 가능한 탐색 관점을 표현한다.
+| parameter | 계약 |
+| --- | --- |
+| `revision` | 대상 World의 양의 safe integer Revision; 명시하면 latest fallback 금지 |
+| `canon` | 선택적 해석 context; membership 검증, 생략은 default Canon 선택이 아님 |
+| `mq` | versioned Graph query와 semantic focus; 최대 65536자, 유효성 검증 |
+| `readerTab`, `readerFind` | island의 sources/entities/search/relations와 검색어; 각 16/512자 상한 |
+| `gsViewport` | centerX,centerY,spanX,spanY; 최대 256자, 유한 값/양의 span, 현재 6자리 소수 정규화 |
+| `gsEvent`, `gsStage` | `/graph`의 peek 선택 표시 ID와 `peek`; 각 4096/16자 상한. semantic mq.focus와 일치해야 함 |
 
-- `view`: `narrative`, `graph`, `timeline`, `compare`
-- `focus`: Event, Subject 또는 correspondence ID
-- `timeSystem`: Time System ID
-- `range`: 선택한 시간 범위
-- `relations`: relation type filter
-- `canons`: 비교할 Canon ID 목록
-- `queryVersion`: 복수 source graph query encoding version
-- `sources`: World, Canon, served Revision을 보존하는 정규화된 source set
-- `zoom`, `x`, `y`: 그래프 viewport를 공유할 때의 정규화된 값
+full path는 Event/full 상태의 권위이며 중복 gsEvent/gsStage를 제거한다.
+closed는 `/graph`에서 mq.focus=null, gsEvent/gsStage 없음으로 표현한다.
+공유 builder는 parameter 순서·기본값을 정규화하고 안전한 allowlist만 싣는다.
+hover/animation, credential, 임의 return URL은 공유하지 않는다.
+Event 링크는 실제 href로 새 full URL을 가리키며 관련 World pin과 유효한 Canon 맥락을 유지한다.
 
-UI 내부의 일시적 panel open 상태와 hover 상태는 URL에 넣지 않는다. 공유 URL을 생성할 때 parameter 순서와 기본값을 정규화한다.
-Canon query parameter와 source set은 ownership partition이 아니라 interpretive scope filter다.
+revision 생략 시 유효한 mq의 해당 World pin을 사용하고, pin도 없으면 서버가 current를
+한 번 resolve해 bootstrap·공유 URL에 served Revision을 고정한다. client는 current를 재조회하지 않는다.
+명시 revision과 mq pin 충돌은 invalid-context이며 다른 source를 최신으로 바꾸지 않는다.
+path와 mq.focus가 다르면 path 대상에 focus를 정규화하되 기존 source/filter를 유지한다.
+잘못된 mq/Canon은 default query로 조용히 대체하지 않는다.
+mq 없는 직접 진입도 SSR 읽기가 가능하며 Graph context는 해당 Revision·명시 Canon 또는
+동등하게 표시한 Event memberships를 사용한다. 필요한 Time System 선택은 기존 흐름을 따른다.
+필터 밖 선택은 bounded 주변 맥락으로 유지하고, unplaced/비호환은 가짜 좌표 없이 명시한다.
+세부 전이·정규화 기준은 [IP-005 §3–4](../implementation/IP-005-graph-reader-consolidation.md#3-urlrevision탐색-맥락-계약)를 따른다.
 
 ## TS-006.6 World와 Canon 진입
 
-### World page
+World·Canon은 Graph source/island/drawer에서 읽으며 독립 페이지를 두지 않는다.
+기존 읽기 능력과 도메인 의미는 유지한다.
 
-- World Narrative 또는 설명
-- 모든 활성 Canon을 동등한 수준으로 나열
-- Canon overlap과 shared Event 수를 partition처럼 합산하지 않고 설명
-- Canon별 범위와 최근 공개 변경 요약
-- 명시적인 Canon 간 correspondence가 있을 때 비교 진입점
-- 검색과 전체 구조 탐색 진입점
+### World 맥락
 
-World page는 첫 Canon을 자동 선택하거나 `primary`, `official`, `alternative`로 분류하지 않는다.
+- World Narrative 또는 설명, 모든 활성 Canon을 동등하게 표시
+- overlap과 shared Event 수를 partition처럼 합산하지 않고 설명
+- Canon 범위와 최근 공개 변경 요약, 검색과 전체 구조 탐색 진입점
+- 첫 Canon 자동 선택 또는 primary/official/alternative 분류 금지
 
-### Canon page
+### Canon 맥락
 
-- 현재 Canon임을 지속적으로 보여주는 header와 breadcrumb
-- 이것이 authority나 exclusive truth branch가 아니라 선택한 interpretive scope임을 일관되게 표현
-- Canon Narrative
-- 주요 Process·Composite Event와 Event 탐색
-- 선택 가능한 Time System과 Timeline
-- 다른 Canon의 대응 대상이 있을 때 명시적인 비교 진입점
+- 현재 선택 Canon과 interpretive scope를 지속적으로 표시
+- Canon Narrative, Process·Composite Event·Event 및 derived Subject/Timeline 읽기
+- 선택 가능한 Time System과 명시적으로 작성된 correspondence 맥락 보존
+- 독립 route 제거를 이유로 도메인 기능을 제거하지 않으며, 미구현 비교 기능을 IP-005에서 새로 구현하지 않음
 
 ## TS-006.7 시각 디자인 기준선
 
@@ -162,18 +179,21 @@ Atropos의 공개 graph surface는 다음 디자인 문법을 유지한다.
 - chrome은 최소화하고 상단 중앙의 compact status island에 현재 Time System,
   World·Canon source set, view와 공개 가능한 projection·불확실성 경고를 모은다.
 - status island는 pill 상태에서 source, entity, relation, 검색과 diagnostic query panel로 확장된다.
-- Event detail은 모바일 우선의 bottom sheet로 열리며 peek와 fullscreen 두 단계를 가진다.
+- Graph Event drawer는 모바일 우선의 bottom sheet로 열리며 peek와 full 두 표시 상태를 가진다. full은 직접 URL로도 진입한다.
 - surface는 16~28px의 큰 radius, 얇은 중립 border와 낮은 대비 shadow를 사용한다.
 - animation은 짧은 opacity 변화와 `cubic-bezier(0.2, 0.9, 0.22, 1)` 계열의 부드러운 위치·크기 전환을 사용한다.
 - graph label은 배경색 outline으로 복잡한 선 위에서도 읽히게 하며 장식보다 정보 계층을 우선한다.
 
 desktop에서는 같은 status island와 detail sheet를 더 넓은 floating panel로 확장할 수 있지만 별도의 완전히 다른 정보 구조를 만들지 않는다. `prefers-reduced-motion`에서는 크기·이동 animation을 줄이거나 제거한다.
 
-## TS-006.8 Event와 Narrative page
+## TS-006.8 Graph Event drawer와 Narrative 읽기
 
-용어: §7의 graph 선택 시 열리는 bottom sheet는 **Graph Event drawer**, 이 절의 stable route는 **Event reading page**로 구분한다. 둘의 총칭은 **Event detail surface**다. 기존 문서의 `Event drawer`/`detail sheet`/selection inspector는 전자에, `stable Event page`는 후자에 대응한다. 표시 형태인 drawer/sheet와 dialog의 모달 동작은 별개이며 이 명명은 기존 접근성·route 계약을 변경하지 않는다.
+Event 읽기 표면은 **Graph Event drawer** 하나다. peek/full은 동일 표면의 표시 상태이며
+full 직접 URL의 SSR과 Graph 선택이 같은 읽기 구현·정보 구조를 공유한다.
+**Event reading page**와 **Event detail surface**(두 표면 총칭)는 IP-004 이전 구현/evidence를
+설명하는 역사적 용어다. drawer/sheet 형태와 dialog의 접근성·모달 동작을 혼동하지 않는다.
 
-Event page는 다음 정보를 구분해 보여준다.
+Graph Event drawer는 다음 정보를 구분해 보여준다.
 
 - 저장된 Event title·summary·역할
 - Event 범위 Narrative
@@ -187,6 +207,9 @@ Event page는 다음 정보를 구분해 보여준다.
 Narrative가 없는 Event도 구조 탐색은 가능해야 한다. 상위 Narrative가 하위 Event의 존재와 의미를 대신하지 않는다.
 
 Markdown은 server에서 안전한 HTML로 변환한다. raw HTML, script URL, event handler와 위험한 embed는 제거한다.
+
+full 직접 URL은 JavaScript 없이도 핵심 Event/Narrative와 실제 내부 링크를 제공한다.
+SSR과 hydration 이후 Graph는 동일 served Revision vector를 사용한다.
 
 ## TS-006.9 철회와 정정
 
@@ -215,7 +238,7 @@ private source, origin, 내부 validation과 철회된 본문은 색인하지 �
 
 ### 검색 결과
 
-- 대상 ID와 canonical URL
+- 대상 ID와 Graph 내부 읽기 href; Event는 §5의 full URL
 - World와 matched/all Canon membership context
 - 대상 종류
 - title과 안전한 snippet
@@ -345,11 +368,21 @@ diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전�
 
 - pan과 zoom은 pointer, wheel, pinch를 지원한다.
 - zoom anchor는 실제 pointer 또는 pinch centroid를 유지한다.
-- 선택은 canonical URL의 `focus`와 동기화한다.
-- 뒤로가기와 앞으로가기는 focus와 관점 이동을 복원한다.
+- 선택은 §5의 full path 또는 `/graph`의 mq.focus와 gsEvent에 일관되게 동기화한다.
+- 뒤로가기와 앞으로가기는 focus·관점·Revision·viewport와 peek/full/closed를 복원하며 새 history entry를 만들지 않는다.
 - node와 region은 keyboard focus와 Enter/Space activation을 지원한다.
 - 그래프만으로 제공되는 핵심 정보는 같은 page의 목록·Narrative·Relation 표에서도 접근할 수 있다.
-- 모바일에서 drawer는 graph를 완전히 가리지 않는 sheet로 동작하며 닫기와 focus 복귀가 명확해야 한다.
+- 모바일 peek는 graph 일부를 남기고 full은 전체 읽기 영역을 사용한다. 축소와 닫기는 별개다.
+- full → peek는 동일 Event를 유지하고 drawer/island/safe area를 제외한 실제 가용 영역에
+  Event와 필요한 bounded 주변 맥락을 적정 배율로 포커싱한다. offscreen·직접 진입도 동작한다.
+  이전 viewport로 복원하거나 선택을 닫는 동작으로 대체하지 않는다.
+- 사용자 선택/확대/축소/닫기는 의미 있는 전이마다 push 1회, 같은 상태는 no-op이다.
+  viewport·pin 정규화는 replace하며 상태 복원 중 push/진동을 만들지 않는다.
+- 닫기는 selection을 해제하고 탐색 context를 유지한다. keyboard focus는 trigger 또는
+  직접 진입 시 합리적 Graph focus target으로 복귀한다. 모달 동작의 focus containment를 보존한다.
+- 현재 URDR renderer/layout/pan/zoom, viewport continuity·선택 retention·label hysteresis를 유지한다.
+- invalid ID/membership/query, unavailable Revision, loading/error/retry를 구분한다.
+  retry는 같은 pin을 사용하며 stale 선택 응답이 새 drawer를 덮지 못한다.
 
 ## TS-006.17 Canon 비교 UI
 
@@ -359,7 +392,7 @@ diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전�
 - 공통점은 correspondence 기준으로 정렬하고 차이는 Canon별 column 또는 lane에 남긴다.
 - 같은 Event identity의 direct membership은 correspondence 없이 shared node/row로 정렬한다.
 - Event·Relation·시간·Narrative 차이를 하나의 합쳐진 값으로 만들지 않는다.
-- 비교 URL은 correspondence와 Canon ID를 명시한다.
+- 비교가 제공되는 Graph 관점은 correspondence와 Canon ID를 명시한다. 독립 compare route를 IP-005에서 새로 구현하지 않는다.
 
 ## TS-006.18 cache와 HTTP
 
@@ -371,7 +404,7 @@ diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전�
 
 ## TS-006.19 접근성·국제화·일반 웹
 
-- Narrative와 detail page는 JavaScript 없이도 핵심 내용을 읽을 수 있어야 한다.
+- Graph Event drawer의 full 직접 URL은 JavaScript 없이도 핵심 Event/Narrative·관계·출처를 읽고 실제 URL 링크를 따라갈 수 있어야 한다. SSR을 hydration 뒤 client fetch로 대체하지 않는다.
 - graph에는 text alternative와 focus 대상 목록을 제공한다.
 - 색만으로 Canon, Relation type, warning을 구분하지 않는다.
 - locale fallback은 요청 locale → World 기본 작성 locale → 사용 가능한 첫 locale 순으로 하되 Canon 우열과 무관하다.
@@ -381,8 +414,8 @@ diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전�
 
 ## TS-006.20 수용 기준
 
-1. World page가 특정 Canon을 자동 default로 선택하지 않는다.
-2. 공유된 Event URL이 slug 변경 후에도 같은 Event 또는 명시적 tombstone으로 열린다.
+1. Graph의 World/Canon 진입이 특정 Canon을 자동 default로 선택하지 않는다.
+2. §5의 공유 Event full URL이 직접 진입/reload/내부 링크에서 같은 Event 또는 명시적 tombstone으로 열린다.
 3. server-rendered Narrative와 hydrated graph가 같은 served Revision을 읽는다.
 4. Snapshot 교체 중 이전 Revision과 새 Revision의 document가 한 화면에 섞이지 않는다.
 5. 철회된 Event URL이 private 사유 없이 유효한 공개 안내를 제공한다.
@@ -399,6 +432,16 @@ diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전�
 16. 이름·slug·calendar kind가 같다는 이유만으로 Time System compatibility를 만들지 않는다.
 17. 동일 Event가 여러 선택 Canon에 참여해도 stable identity와 graph node를 무조건 복제하지 않는다.
 18. Event artifact와 export/import가 모든 Canon membership을 보존한다.
+19. `/`는 `/graph`로 연결되고 제거한 독립 UI route는 404이며 내부 stale href가 없다.
+20. full→peek는 offscreen/직접 진입에서도 동일 Event를 가용 영역의 적정 위치·배율로 보여준다.
+21. collapse/close가 구분되고 history와 URL/UI/selection/탐색 context가 일치한다.
+22. no-JS 핵심 읽기·안전한 Markdown·keyboard/focus/reduced motion·모바일 접근성을 보존한다.
+23. private/explore/settings의 기존 진입·availability와 Publication JSON/Graph API/health/status가 보존된다.
+24. 전량 fetch·race/stale response·Revision 혼합·viewport continuity/hysteresis 회귀가 없다.
+25. canonical 데이터/schema 의미와 기존 immutable artifact를 변경하지 않는다.
+
+IP-005는 위 승인된 읽기·UI 전환을 수행하는 별도 계획이며, 이 명세 변경으로 M5 또는
+미구현 lifecycle/비교/portability 기능이 활성화되지는 않는다.
 
 ## TS-006.21 복수 World graph query composition
 

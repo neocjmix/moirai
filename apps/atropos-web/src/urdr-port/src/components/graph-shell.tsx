@@ -3211,8 +3211,12 @@ export function GraphShell({
     }
 
     setEventDrawerStage(
-      pendingRestoredDrawerStageRef.current ??
-        (renderedEventSelection.requestKey === 0 ? initialDrawerStage : "peek"),
+      window.location.pathname.startsWith("/graph/events/")
+        ? "full"
+        : pendingRestoredDrawerStageRef.current ??
+            (renderedEventSelection.requestKey === 0
+              ? initialDrawerStage
+              : "peek"),
     );
     setIsEventDrawerDragging(false);
     if (eventDrawerRef.current) {

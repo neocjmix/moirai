@@ -7,6 +7,7 @@ import {
   buildGraphUrlSearch,
   type GraphSearchEntity
 } from "./moirai-graph-source-query";
+import { graphEventHref } from "./event-reading-navigation";
 
 /** Escape every data/URL interpolation; noscript must contain one static HTML string.
  * React streaming placeholders inside noscript are not DOM nodes when JS is enabled. */
@@ -41,7 +42,18 @@ export function graphFallbackMarkup({
     <p>Geometry may be unplaced; semantic Events and Relations remain listed. ${result.budget.truncated ? "Query budget reached; narrow the scope." : ""}</p>
     <ul>${results
       .map((entity) => {
-        const href = `/worlds/${entity.worldId}/events/${entity.identity}?revision=${state.query.sources.find((s) => s.world_id === entity.worldId)!.served_revision}&mq=${encodeURIComponent(mq)}`;
+        const source = state.query.sources.find(
+          (candidate) => candidate.world_id === entity.worldId
+        )!;
+        const href = graphEventHref({
+          worldId: entity.worldId,
+          eventId: entity.identity,
+          revision: source.served_revision,
+          ...(entity.matchedCanonIds.length === 1
+            ? { canonId: entity.matchedCanonIds[0]! }
+            : {}),
+          graphSearch: new URLSearchParams({ mq }).toString()
+        });
         return `<li><strong>${html(entity.title.ko)}</strong> (${html(entity.kind)}, ${entity.persisted ? "persisted" : "derived"}) — matched Canon: ${html(entity.matchedCanonIds.join(", "))}; all memberships: ${html(entity.canonMemberships.join(", "))}${entity.kind === "event" ? ` <a href="${html(href)}">Open Event</a>` : ""}</li>`;
       })
       .join("")}</ul>

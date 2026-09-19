@@ -6,7 +6,7 @@ import {
 } from "./graph-revision-source";
 import { buildGraphUrlSearch } from "./moirai-graph-source-query";
 import { moiraiSpatialReader } from "./moirai-spatial";
-import { eventReadingSearch } from "./event-reading-navigation";
+import { graphEventHref } from "./event-reading-navigation";
 import { eventTimeSummary } from "./event-time-summary";
 export async function graphSpatialDetail(
   state: unknown,
@@ -57,7 +57,13 @@ export async function graphSpatialDetail(
     : null;
   const returnSearch = buildGraphUrlSearch("", { ...validated, focus });
   const stable = eventId
-    ? `/worlds/${source.world_id}/events/${eventId}${eventReadingSearch(source.served_revision, returnSearch)}`
+    ? graphEventHref({
+        worldId: source.world_id,
+        eventId,
+        revision: source.served_revision,
+        canonId: source.canon_id,
+        graphSearch: returnSearch
+      })
     : null;
   const detail = {
     source,

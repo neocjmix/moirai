@@ -69,8 +69,12 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
   await expect(
     page.getByRole("heading", { name: "반포라는 이름과 기록이 말하는 범위" })
   ).toBeVisible();
+  await expect(page.getByRole("dialog", { name: "사건 패널" })).toHaveAttribute(
+    "data-stage",
+    "full"
+  );
   await expect(
-    page.getByRole("link", { name: "그래프로 돌아가기 / Return to graph" })
+    page.getByRole("button", { name: "그래프로 축소" })
   ).toBeVisible();
   expect(errors).toEqual([]);
   const measurement = {

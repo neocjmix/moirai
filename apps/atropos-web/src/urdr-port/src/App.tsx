@@ -17,6 +17,8 @@ import { RuntimeErrorBoundary } from "./components/runtime-error-boundary";
 import shellStyles from "./components/graph-shell.module.css";
 import { DEFAULT_COMPOSITE_SPLINE_TUNING, type CompositeHullMode, type CompositeSplineTuning } from "./components/graph-shell-region-geometry";
 import type { GraphReadLoader } from "./graph-read-loader";
+import type { EventDetailResponse } from "../shared/contracts";
+import type { GraphShellDrawerStage } from "./components/graph-shell-share-state";
 import {
   readManualAppLocaleOverride,
   resolveBrowserLocale,
@@ -29,6 +31,8 @@ type AppProps = {
   loader: GraphReadLoader;
   initialViewportCenter?: {x:number;y:number}|null;
   externalFocus?: {id:string;label:string}|null;
+  initialEventDetail?: EventDetailResponse;
+  initialDrawerStage?: GraphShellDrawerStage;
   onSelection?: (id:string|null)=>void;
   renderGraphPage?: (args: {
     workspace: GraphShellWorkspaceShell;
@@ -108,7 +112,7 @@ const SCREEN_ICONS = {
   settings: GearIcon,
 } as const;
 
-export function App({ initialScreen = "graph", loader, renderGraphPage, initialViewportCenter, externalFocus, onSelection }: AppProps) {
+export function App({ initialScreen = "graph", loader, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
@@ -133,6 +137,8 @@ export function App({ initialScreen = "graph", loader, renderGraphPage, initialV
         loader={loader}
         initialViewportCenter={initialViewportCenter}
         externalFocus={externalFocus}
+        initialEventDetail={initialEventDetail}
+        initialDrawerStage={initialDrawerStage}
         onSelection={onSelection}
         locale={locale}
       />

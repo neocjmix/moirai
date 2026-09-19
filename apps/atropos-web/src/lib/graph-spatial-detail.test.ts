@@ -116,7 +116,7 @@ describe("Event reader detail presentation", () => {
     expect(detail.readingContext?.observation).toContain("canon_memberships");
     expect(detail.readingContext?.observation).toContain(fixture.event);
     expect(detail.readingContext?.stableEventHref).toContain(
-      `/${fixture.event}?revision=7&mq=`
+      `/graph/events/${fixture.source.world_id}/${fixture.event}?revision=7&canon=${fixture.source.canon_id}&mq=`
     );
   });
   it("does not reinterpret enabling or other connections as direct causality", async () => {

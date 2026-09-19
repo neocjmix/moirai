@@ -100,7 +100,7 @@ test("Moirai Publication uses the copied viewport, bounded reads and same-revisi
   const link = sheet.getByRole("link", {
     name: /사건 상세 읽기|Read event detail/
   });
-  await expect(link).toHaveAttribute("href", /revision=2&mq=/);
+  await expect(link).toHaveAttribute("href", /revision=2.*mq=/);
   const shared = page.url();
   const viewport = new URL(shared).searchParams.get("gsViewport");
   await expect(link).toHaveAttribute("href", /gsViewport=/);
@@ -108,19 +108,29 @@ test("Moirai Publication uses the copied viewport, bounded reads and same-revisi
   const state = JSON.parse(mq);
   expect(state.focus.kind).toBe("event");
   await link.click();
-  await expect(page.getByTestId("return-to-graph")).toBeVisible();
-  await expect(page.locator("main")).toContainText("2");
-  await expect(page.getByTestId("event-time-context").first()).toBeVisible();
-  await expect(page.getByTestId("event-raw-attributes")).not.toBeVisible();
-  const returnUrl = new URL(
-    (await page.getByTestId("return-to-graph").getAttribute("href")) ?? "",
-    page.url()
+  await expect(page).toHaveURL(/\/graph\/events\//);
+  await expect(page.getByTestId("event-drawer-sheet")).toHaveAttribute(
+    "data-stage",
+    "full"
   );
-  expect(returnUrl.searchParams.get("gsViewport")).toBe(viewport);
-  await page.getByTestId("return-to-graph").click();
-  await expect(page.getByTestId("event-drawer-sheet")).toBeVisible();
   await expect(page.getByTestId("event-drawer-sheet")).toContainText(
     state.focus.event_ref.event_id
+  );
+  expect(new URL(page.url()).searchParams.get("gsViewport")).toBe(viewport);
+  await page
+    .getByTestId("event-drawer-sheet")
+    .getByText(/기록과 계산 근거|Record and calculation details/, {
+      exact: true
+    })
+    .click();
+  await expect(page.getByTestId("event-observation")).toContainText(
+    "Revision 2"
+  );
+  await page.getByTestId("event-drawer-stage-toggle").click();
+  await expect(page).toHaveURL(/\/graph\?/);
+  await expect(page.getByTestId("event-drawer-sheet")).toHaveAttribute(
+    "data-stage",
+    "peek"
   );
   expect(new URL(page.url()).searchParams.get("gsViewport")).toBe(viewport);
   const html = await request.get(`/graph?mq=${encodeURIComponent(mq)}`);

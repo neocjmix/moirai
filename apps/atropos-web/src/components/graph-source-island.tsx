@@ -812,7 +812,6 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                             ?.canon_ids.map((id) => canonLabel(world.id, id))
                             .join(" · ")}
                         </p>
-                        <a href={`/worlds/${world.id}`}>{copy.worldLink} →</a>
                       </article>
                     ))}
                     <div className={styles.readerActions}>

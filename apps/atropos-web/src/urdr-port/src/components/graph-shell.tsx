@@ -66,11 +66,32 @@ import {
 import styles from "./graph-shell.module.css";
 
 const GRAPH_SHELL_LOADING_WORKSPACE_BUILD_REVISION = "__loading__";
+const GRAPH_DRAWER_HISTORY_KEY = "moiraiGraphDrawer";
 
 const WORLD_UNITS_PER_YEAR = 140;
 const AXIS_MIN_PIXEL_SPACING = 20;
 
 type GregorianAxisUnit = "year" | "month" | "day" | "hour" | "minute" | "second";
+
+function readDrawerHistoryState(value: unknown): GraphShellRestorableState["drawer"] {
+  if (!value || typeof value !== "object") return undefined;
+  const drawer = (value as Record<string, unknown>)[GRAPH_DRAWER_HISTORY_KEY];
+  if (!drawer || typeof drawer !== "object") return undefined;
+  const { eventId, stage } = drawer as Record<string, unknown>;
+  return typeof eventId === "string" &&
+    eventId.length <= 4096 &&
+    (stage === "peek" || stage === "full")
+    ? { eventId, stage }
+    : undefined;
+}
+
+function browserHistoryState(drawer: GraphShellRestorableState["drawer"]) {
+  const current = window.history.state;
+  return {
+    ...(current && typeof current === "object" ? current : {}),
+    [GRAPH_DRAWER_HISTORY_KEY]: drawer ?? null,
+  };
+}
 
 type GregorianAxisStep = {
   unit: GregorianAxisUnit;
@@ -859,6 +880,8 @@ type GraphShellProps = {
   loader: GraphReadLoader;
   initialViewportCenter?: {x:number;y:number}|null;
   externalFocus?: {id:string;label:string}|null;
+  initialEventDetail?: EventDetailResponse;
+  initialDrawerStage?: GraphShellDrawerStage;
   onSelection?: (id:string|null)=>void;
   locale: AppLocale;
   compositeHullMode: CompositeHullMode;
@@ -1082,7 +1105,10 @@ type EventDrawerContentProps = {
   notes: string;
   loadState: "idle" | "loading" | "ready" | "error";
   selectedEventTitle: string;
+  stage: EventDrawerStage;
   viewportRef: React.RefObject<HTMLDivElement | null>;
+  onClose: () => void;
+  onStageChange: (stage: EventDrawerStage) => void;
   onTabChange: (tab: EventDrawerTab) => void;
   onRetry: () => void;
 };
@@ -1717,7 +1743,7 @@ function renderMarkdownInline(text: string, keyPrefix: string): ReactNode[] {
 
     if (linkLabel && linkHref) {
       nodes.push(
-        <a href={linkHref} key={tokenKey} rel="noreferrer" target={linkHref.startsWith("/worlds/") ? "_self" : "_blank"} onPointerDown={linkHref.startsWith("/worlds/") ? (event) => event.stopPropagation() : undefined}>
+        <a href={linkHref} key={tokenKey} rel="noreferrer" target={linkHref.startsWith("/graph/") ? "_self" : "_blank"} onPointerDown={linkHref.startsWith("/graph/") ? (event) => event.stopPropagation() : undefined}>
           {linkLabel}
         </a>,
       );
@@ -1977,7 +2003,10 @@ function EventDrawerContent({
   loadState,
   notes,
   selectedEventTitle,
+  stage,
   viewportRef,
+  onClose,
+  onStageChange,
   onTabChange,
   onRetry
 }: EventDrawerContentProps) {
@@ -2012,6 +2041,27 @@ function EventDrawerContent({
       <div className={styles.eventDrawerHeader}>
         <div className={styles.eventDrawerHeaderCopy}>
           <div className={styles.eventDrawerTitle}>{selectedEventTitle}</div>
+        </div>
+        <div>
+          <button
+            data-testid="event-drawer-stage-toggle"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={() => onStageChange(stage === "full" ? "peek" : "full")}
+            type="button"
+          >
+            {stage === "full"
+              ? locale === "ko" ? "그래프로 축소" : "Collapse to graph"
+              : locale === "ko" ? "전체 읽기" : "Read in full"}
+          </button>
+          <button
+            aria-label={locale === "ko" ? "사건 닫기" : "Close event"}
+            data-testid="event-drawer-close"
+            onPointerDown={(event) => event.stopPropagation()}
+            onClick={onClose}
+            type="button"
+          >
+            ×
+          </button>
         </div>
       </div>
 
@@ -2256,6 +2306,8 @@ export function GraphShell({
   loader,
   initialViewportCenter,
   externalFocus,
+  initialEventDetail,
+  initialDrawerStage = "peek",
   onSelection,
   locale,
   compositeHullMode,
@@ -2275,14 +2327,17 @@ export function GraphShell({
   const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
   const [visibleCompositeRegions, setVisibleCompositeRegions] = useState<CompositeFadePresence<CompositeRegion>[]>([]);
   const [visibleCompositeColorAssignments, setVisibleCompositeColorAssignments] = useState<CompositeColorAssignment[]>([]);
-  const [selectedEventSelection, setSelectedEventSelection] = useState<EventDrawerSelection | null>(null);
-  const [renderedEventSelection, setRenderedEventSelection] = useState<EventDrawerSelection | null>(null);
-  const [isEventDrawerOpen, setIsEventDrawerOpen] = useState(false);
-  const [eventDrawerStage, setEventDrawerStage] = useState<EventDrawerStage>("peek");
+  const initialEventSelection = externalFocus
+    ? { eventId: externalFocus.id, label: externalFocus.label, requestKey: 0 }
+    : null;
+  const [selectedEventSelection, setSelectedEventSelection] = useState<EventDrawerSelection | null>(initialEventSelection);
+  const [renderedEventSelection, setRenderedEventSelection] = useState<EventDrawerSelection | null>(initialEventSelection);
+  const [isEventDrawerOpen, setIsEventDrawerOpen] = useState(Boolean(initialEventSelection));
+  const [eventDrawerStage, setEventDrawerStage] = useState<EventDrawerStage>(initialDrawerStage);
   const [isEventDrawerDragging, setIsEventDrawerDragging] = useState(false);
-  const [selectedEventRecord, setSelectedEventRecord] = useState<EventDetailResponse | null>(null);
+  const [selectedEventRecord, setSelectedEventRecord] = useState<EventDetailResponse | null>(initialEventDetail ?? null);
   const [selectedEventTab, setSelectedEventTab] = useState<EventDrawerTab>("notes");
-  const [selectedEventLoadState, setSelectedEventLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
+  const [selectedEventLoadState, setSelectedEventLoadState] = useState<"idle" | "loading" | "ready" | "error">(initialEventDetail ? "ready" : "idle");
   const [runtimeViewportResponse, setRuntimeViewportResponse] = useState<ReturnType<typeof graphShellViewportResponseSchema.parse> | null>(null);
   const [runtimeViewportLoadState, setRuntimeViewportLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
@@ -2349,10 +2404,15 @@ export function GraphShell({
         }
       : null;
     const parsedUrlState = parseGraphShellUrlState(window.location.search);
+    const historyDrawer = readDrawerHistoryState(window.history.state);
     const urlState: GraphShellRestorableState = {
       ...parsedUrlState,
       shell: validateShellSliceForWorkspace(parsedUrlState.shell, workspace),
-      ...(externalFocusRef.current ? { drawer: { eventId: externalFocusRef.current.id, stage: parsedUrlState.drawer?.stage ?? "peek" } } : {}),
+      ...(window.location.pathname.startsWith("/graph/events/") && historyDrawer
+        ? { drawer: historyDrawer }
+        : externalFocusRef.current
+          ? { drawer: { eventId: externalFocusRef.current.id, stage: parsedUrlState.drawer?.stage ?? initialDrawerStage } }
+          : {}),
     };
 
     applyResolvedGraphShellState(resolveGraphShellRestorableState({
@@ -2361,7 +2421,7 @@ export function GraphShell({
       urlState,
     }));
     setHasHydratedRestorableState(true);
-  }, [applyResolvedGraphShellState, defaultShellSlice, viewportSize, workspace, initialViewportCenter]);
+  }, [applyResolvedGraphShellState, defaultShellSlice, viewportSize, workspace, initialViewportCenter, initialDrawerStage]);
 
   useEffect(() => {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) {
@@ -2610,7 +2670,18 @@ export function GraphShell({
         GRAPH_SHELL_LOCAL_STATE_KEY,
         JSON.stringify(serializeGraphShellLocalState(nextRestorableState)),
       );
-      const nextSearch = buildGraphShellUrlSearch(window.location.search, nextRestorableState);
+      let nextSearch = buildGraphShellUrlSearch(window.location.search, nextRestorableState);
+      if (
+        window.location.pathname.startsWith("/graph/events/") &&
+        persistedDrawerStage === "full"
+      ) {
+        const canonicalFullSearch = new URLSearchParams(nextSearch);
+        canonicalFullSearch.delete("gsEvent");
+        canonicalFullSearch.delete("gsStage");
+        nextSearch = canonicalFullSearch.size
+          ? `?${canonicalFullSearch}`
+          : "";
+      }
       if (nextSearch !== window.location.search) {
         window.history.replaceState(
           window.history.state,
@@ -3139,7 +3210,10 @@ export function GraphShell({
       return;
     }
 
-    setEventDrawerStage(pendingRestoredDrawerStageRef.current ?? "peek");
+    setEventDrawerStage(
+      pendingRestoredDrawerStageRef.current ??
+        (renderedEventSelection.requestKey === 0 ? initialDrawerStage : "peek"),
+    );
     setIsEventDrawerDragging(false);
     if (eventDrawerRef.current) {
       eventDrawerRef.current.style.setProperty("--event-drawer-drag-offset", "0px");
@@ -3148,7 +3222,7 @@ export function GraphShell({
     if (eventDrawerViewportRef.current) {
       eventDrawerViewportRef.current.scrollTop = 0;
     }
-  }, [renderedEventSelection, selectedEventSelection]);
+  }, [initialDrawerStage, renderedEventSelection, selectedEventSelection]);
 
   useEffect(() => {
     if (!renderedEventSelection || !pendingRestoredDrawerStageRef.current) {
@@ -3165,6 +3239,15 @@ export function GraphShell({
       setSelectedEventRecord(null);
       setSelectedEventTab("notes");
       setSelectedEventLoadState("idle");
+      return;
+    }
+
+    if (
+      initialEventDetail &&
+      initialEventDetail.id === renderedEventSelection.eventId
+    ) {
+      setSelectedEventRecord(initialEventDetail);
+      setSelectedEventLoadState("ready");
       return;
     }
 
@@ -3199,7 +3282,7 @@ export function GraphShell({
       });
 
     return () => abortController.abort();
-  }, [loader, locale, renderedEventSelection]);
+  }, [initialEventDetail, loader, locale, renderedEventSelection]);
 
   useEffect(() => {
     setVisibleCompositeRegions((current) => reconcileCompositeFadePresence(current, chartCompositeRegions.regions));
@@ -3400,6 +3483,22 @@ export function GraphShell({
     });
   }, [viewportSize, navigationBounds]);
 
+  const pushPeekSelectionHistory = useCallback((eventId: string) => {
+    if (typeof window === "undefined") return;
+    const params = new URLSearchParams(window.location.search);
+    params.delete("revision");
+    params.delete("canon");
+    params.set("gsEvent", eventId);
+    params.set("gsStage", "peek");
+    const next = `/graph?${params}${window.location.hash}`;
+    if (`${window.location.pathname}${window.location.search}${window.location.hash}` !== next)
+      window.history.pushState(
+        browserHistoryState({ eventId, stage: "peek" }),
+        "",
+        next,
+      );
+  }, []);
+
   const handleViewportPointerEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault();
 
@@ -3410,6 +3509,7 @@ export function GraphShell({
       const stayedWithinTapSlop = Math.hypot(deltaX, deltaY) <= EVENT_DRAWER_TAP_SLOP_PX;
       pendingEventTapRef.current = null;
       if (stayedWithinTapSlop && Object.keys(imageViewportState.activePointers).length === 1) {
+        pushPeekSelectionHistory(pendingEventTap.target.eventId);
         eventSelectionNonceRef.current += 1;
         pendingRestoredDrawerStageRef.current = "peek";
         setSelectedEventTab("notes");
@@ -3430,13 +3530,54 @@ export function GraphShell({
     }
 
     setImageViewportState(current => removeViewportPointer(current, event.pointerId));
-  }, [imageViewportState.activePointers]);
+  }, [imageViewportState.activePointers, pushPeekSelectionHistory]);
 
   const handleCloseSelectedEvent = useCallback(() => {
+    if (typeof window !== "undefined") {
+      const params = new URLSearchParams(window.location.search);
+      for (const name of ["revision", "canon", "gsEvent", "gsStage"])
+        params.delete(name);
+      const search = params.toString();
+      window.history.pushState(
+        browserHistoryState(undefined),
+        "",
+        `/graph${search ? `?${search}` : ""}${window.location.hash}`,
+      );
+    }
     pendingRestoredDrawerStageRef.current = null;
     setSelectedEventSelection(null);
     onSelectionRef.current?.(null);
   }, []);
+
+  const handleEventDrawerStageChange = useCallback((stage: EventDrawerStage) => {
+    const selection = selectedEventSelectionRef.current;
+    if (!selection || typeof window === "undefined") {
+      setEventDrawerStage(stage);
+      return;
+    }
+    if (stage === "full" && selectedEventRecord?.readingContext?.stableEventHref) {
+      window.history.pushState(
+        browserHistoryState({ eventId: selection.eventId, stage: "full" }),
+        "",
+        withGraphReturnContext(
+          selectedEventRecord.readingContext.stableEventHref,
+          window.location.search,
+        ),
+      );
+    } else if (stage === "peek") {
+      const params = new URLSearchParams(window.location.search);
+      params.delete("revision");
+      params.delete("canon");
+      params.set("gsEvent", selection.eventId);
+      params.set("gsStage", "peek");
+      window.history.pushState(
+        browserHistoryState({ eventId: selection.eventId, stage: "peek" }),
+        "",
+        `/graph?${params}${window.location.hash}`,
+      );
+    }
+    setEventDrawerStage(stage);
+  }, [selectedEventRecord]);
 
   const resetEventDrawerGesture = useCallback(() => {
     eventDrawerDragRef.current = null;
@@ -3453,14 +3594,14 @@ export function GraphShell({
 
     if (originStage === "peek") {
       if (deltaY <= -EVENT_DRAWER_EXPAND_THRESHOLD_PX) {
-        setEventDrawerStage("full");
+        handleEventDrawerStageChange("full");
         return;
       }
       if (deltaY >= EVENT_DRAWER_PEEK_DISMISS_THRESHOLD_PX) {
         handleCloseSelectedEvent();
         return;
       }
-      setEventDrawerStage("peek");
+      handleEventDrawerStageChange("peek");
       return;
     }
 
@@ -3469,11 +3610,11 @@ export function GraphShell({
       return;
     }
     if (deltaY >= EVENT_DRAWER_COLLAPSE_THRESHOLD_PX) {
-      setEventDrawerStage("peek");
+      handleEventDrawerStageChange("peek");
       return;
     }
-    setEventDrawerStage("full");
-  }, [handleCloseSelectedEvent]);
+    handleEventDrawerStageChange("full");
+  }, [handleCloseSelectedEvent, handleEventDrawerStageChange]);
 
   const updateEventDrawerDrag = useCallback((deltaY: number, originStage: EventDrawerStage) => {
     if (eventDrawerRef.current) {
@@ -3887,7 +4028,10 @@ export function GraphShell({
               onTabChange={setSelectedEventTab}
               onRetry={() => setSelectedEventSelection(current => current ? {...current, requestKey: ++eventSelectionNonceRef.current} : current)}
               selectedEventTitle={selectedEventTitle}
+              stage={eventDrawerStage}
               viewportRef={eventDrawerViewportRef}
+              onClose={handleCloseSelectedEvent}
+              onStageChange={handleEventDrawerStageChange}
             />
           </aside>
         ) : null}

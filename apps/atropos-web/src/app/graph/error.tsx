@@ -18,7 +18,7 @@ export default function GraphReadingError({
           <button className="text-action" type="button" onClick={reset}>
             다시 불러오기
           </button>
-          <a className="text-action" href="/">
+          <a className="text-action" href="/graph">
             공개 World 둘러보기
           </a>
         </nav>

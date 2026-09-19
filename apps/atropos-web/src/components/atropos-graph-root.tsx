@@ -24,6 +24,8 @@ import type {
   GraphSearchEntity,
   GraphSourceCatalog
 } from "../lib/moirai-graph-source-query";
+import type { EventDetailResponse } from "../urdr-port/shared/contracts";
+import type { GraphShellDrawerStage } from "../urdr-port/src/components/graph-shell-share-state";
 
 export function AtroposGraphRoot({
   initialScreen,
@@ -35,6 +37,8 @@ export function AtroposGraphRoot({
   diagnostics,
   completeness,
   spatial,
+  initialEventDetail,
+  initialDrawerStage,
   demo = false
 }: Readonly<{
   initialScreen: AtroposScreenId;
@@ -46,6 +50,8 @@ export function AtroposGraphRoot({
   diagnostics: readonly GraphDiagnostic[];
   completeness: MoiraiGraphQueryResult["completeness"];
   spatial: GraphSpatialBootstrap;
+  initialEventDetail?: EventDetailResponse;
+  initialDrawerStage?: GraphShellDrawerStage;
   demo?: boolean;
 }>) {
   return (
@@ -70,7 +76,12 @@ export function AtroposGraphRoot({
             <DemoGraphApp initialScreen={initialScreen} />
           </Suspense>
         ) : (
-          <MoiraiGraphApp initialScreen={initialScreen} spatial={spatial} />
+          <MoiraiGraphApp
+            initialScreen={initialScreen}
+            spatial={spatial}
+            {...(initialEventDetail ? { initialEventDetail } : {})}
+            {...(initialDrawerStage ? { initialDrawerStage } : {})}
+          />
         )}
       </Theme>
     </GraphQueryProvider>
@@ -80,10 +91,14 @@ export function AtroposGraphRoot({
 const DemoGraphApp = lazy(() => import("./urdr-demo-app"));
 function MoiraiGraphApp({
   initialScreen,
-  spatial
+  spatial,
+  initialEventDetail,
+  initialDrawerStage
 }: {
   initialScreen: AtroposScreenId;
   spatial: GraphSpatialBootstrap;
+  initialEventDetail?: EventDetailResponse;
+  initialDrawerStage?: GraphShellDrawerStage;
 }) {
   const { state, setState } = useGraphQuery();
   const queryKey = JSON.stringify(state.query);
@@ -178,6 +193,8 @@ function MoiraiGraphApp({
       loader={loader}
       initialViewportCenter={spatial.center}
       externalFocus={focus}
+      {...(initialEventDetail ? { initialEventDetail } : {})}
+      {...(initialDrawerStage ? { initialDrawerStage } : {})}
       onSelection={onSelection}
     />
   );

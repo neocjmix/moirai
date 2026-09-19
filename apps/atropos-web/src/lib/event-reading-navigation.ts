@@ -42,18 +42,28 @@ function boundedGraphContext(search: string): URLSearchParams {
   return result;
 }
 
-export function eventReadingSearch(revision: number, graphSearch = ""): string {
+export function graphEventHref({
+  worldId,
+  eventId,
+  revision,
+  canonId,
+  graphSearch = ""
+}: Readonly<{
+  worldId: string;
+  eventId: string;
+  revision: number;
+  canonId?: string;
+  graphSearch?: string;
+}>): string {
   if (!Number.isSafeInteger(revision) || revision < 1)
     throw Error("invalid_reader_revision");
+  const context = boundedGraphContext(graphSearch);
+  context.delete("gsEvent");
+  context.delete("gsStage");
   const result = new URLSearchParams({ revision: String(revision) });
-  for (const [key, value] of boundedGraphContext(graphSearch))
-    result.set(key, value);
-  return `?${result}`;
-}
-
-export function graphReturnHref(search: string): string | null {
-  const context = boundedGraphContext(search);
-  return context.has("mq") ? `/graph?${context}` : null;
+  if (canonId) result.set("canon", canonId);
+  for (const [key, value] of context) result.set(key, value);
+  return `/graph/events/${worldId}/${eventId}?${result}`;
 }
 
 /** Add the live viewport without replacing the server-validated source/focus/revision. */
@@ -61,23 +71,12 @@ export function withGraphReturnContext(
   stableHref: string,
   browserSearch: string
 ): string {
-  if (!/^\/worlds\/[0-9a-f-]{36}\/events\/[0-9a-f-]{36}\?/.test(stableHref))
+  if (!/^\/graph\/events\/[0-9a-f-]{36}\/[0-9a-f-]{36}\?/.test(stableHref))
     throw Error("invalid_stable_event_href");
   const url = new URL(stableHref, "https://atropos.invalid");
   for (const [key, value] of boundedGraphContext(browserSearch)) {
-    if (key !== "mq") url.searchParams.set(key, value);
+    if (key !== "mq" && key !== "gsEvent" && key !== "gsStage")
+      url.searchParams.set(key, value);
   }
   return `${url.pathname}${url.search}`;
-}
-
-export function readerSearchFromQuery(
-  query: Readonly<Record<string, string | string[] | undefined>>
-): string {
-  const search = new URLSearchParams();
-  for (const [key, limit] of CONTEXT_LIMITS) {
-    const value = query[key];
-    if (typeof value === "string" && value.length <= limit)
-      search.set(key, value);
-  }
-  return boundedGraphContext(search.toString()).toString();
 }

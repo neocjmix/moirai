@@ -5,6 +5,57 @@ const canonId = "019f3b00-0000-7000-8000-000000000002";
 const firstEventId = "019f3b00-0000-7000-8000-000000000101";
 const firstEventTitle = "220년에 기록된 사건";
 
+test("IP-005 canonical Event URL opens the same Graph drawer and preserves history", async ({
+  page
+}) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto("/");
+  await expect(page).toHaveURL(/\/graph(?:\?|$)/);
+  await expect(page.getByTestId("graph-stage")).toBeVisible();
+
+  await page.goto(
+    `/graph/events/${worldId}/${firstEventId}?revision=2&canon=${canonId}`
+  );
+  const drawer = page.getByTestId("event-drawer-sheet");
+  await expect(drawer).toBeVisible();
+  await expect(drawer).toHaveAttribute("data-stage", "full");
+  await expect(drawer).toContainText(firstEventTitle);
+  expect(new URL(page.url()).searchParams.has("gsStage")).toBe(false);
+
+  await page.getByTestId("event-drawer-stage-toggle").click();
+  await expect(page).toHaveURL(/\/graph\?/);
+  await expect(drawer).toHaveAttribute("data-stage", "peek");
+  expect(new URL(page.url()).searchParams.get("gsStage")).toBe("peek");
+
+  await page.goBack();
+  await expect(page).toHaveURL(
+    new RegExp(`/graph/events/${worldId}/${firstEventId}`)
+  );
+  await expect(drawer).toHaveAttribute("data-stage", "full");
+
+  await page.goForward();
+  await expect(page).toHaveURL(/\/graph\?/);
+  await expect(drawer).toHaveAttribute("data-stage", "peek");
+  await page.getByTestId("event-drawer-stage-toggle").click();
+  await expect(page).toHaveURL(
+    new RegExp(`/graph/events/${worldId}/${firstEventId}`)
+  );
+  await expect(drawer).toHaveAttribute("data-stage", "full");
+  await page.goBack();
+  await expect(drawer).toHaveAttribute("data-stage", "peek");
+  await page.goForward();
+  await expect(drawer).toHaveAttribute("data-stage", "full");
+
+  await page.getByTestId("event-drawer-close").click();
+  await expect(page).toHaveURL(/\/graph(?:\?|$)/);
+  await expect(drawer).toHaveCount(0);
+  await page.goBack();
+  await expect(drawer).toBeVisible();
+  await expect(drawer).toHaveAttribute("data-stage", "full");
+  expect(errors).toEqual([]);
+});
+
 test("story-only search finds the same Event and respects the Narrative toggle", async ({
   page
 }) => {
@@ -342,7 +393,7 @@ test("an unavailable selected revision offers recovery without silently reading 
   ).toBeVisible();
   await expect(
     page.getByRole("link", { name: "공개 World 둘러보기" })
-  ).toHaveAttribute("href", "/");
+  ).toHaveAttribute("href", "/graph");
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(0);
 });
 
@@ -382,69 +433,36 @@ test("R1 Relation filters preserve shared identity and explain contradiction", a
   await expect(unplaced).toContainText(/no authored temporal placement/);
 });
 
-test("mobile reader traverses the single relational temporal model", async ({
+test("mobile reader keeps relational evidence inside the Graph drawer", async ({
   page
 }) => {
   test.setTimeout(60_000);
-  await page.goto("/");
-  await expect(page.getByRole("heading", { name: "Atropos" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "공개 World" })).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "Temporal Expressiveness Observatory" })
-  ).toBeVisible();
-  await expect(page.getByText("SERVED REVISION 2")).toBeVisible();
-  await page.getByRole("link", { name: /Temporal Acceptance Canon/ }).click();
-  await expect(page).toHaveURL(`/worlds/${worldId}/canons/${canonId}`);
-  await expect(
-    page.getByRole("heading", { name: "Temporal Acceptance Canon" })
-  ).toBeVisible({ timeout: 15_000 });
-  await expect(page.getByText("시간 · REVISION 2")).toBeVisible();
-  await expect(
-    page.getByRole("heading", { name: "사건 관계 탐색" })
-  ).toBeVisible();
-  await expect(page.getByTestId("jointjs-graph-stage")).toBeVisible();
-  await page.getByText("접근 가능한 사건과 관계 목록").click();
-  await page.getByRole("button", { name: firstEventTitle }).click();
-  await expect(page).toHaveURL(new RegExp(`view=graph.*focus=${firstEventId}`));
-  await expect(
-    page.getByRole("link", { name: "Event 상세 열기 →" })
-  ).toBeVisible();
-  await expect(page.getByTestId("graph-inspector-sheet")).toContainText(
+  await page.goto(
+    `/graph/events/${worldId}/${firstEventId}?revision=2&canon=${canonId}`
+  );
+  const drawer = page.getByTestId("event-drawer-sheet");
+  await expect(drawer).toBeVisible();
+  await expect(drawer).toHaveAttribute("data-stage", "full");
+  await expect(drawer).toContainText(firstEventTitle);
+  await expect(drawer.locator("table")).toBeVisible();
+  await drawer
+    .getByText(/기록과 계산 근거|Record and calculation details/, {
+      exact: true
+    })
+    .click();
+  await expect(drawer.getByTestId("event-observation")).toContainText(
     "Revision 2"
   );
-  await expect(page.getByText("DERIVED TIMELINE")).toHaveCount(0);
-  await expect(page.getByText("DERIVED PROCESSES")).toHaveCount(0);
-  await page
-    .locator("a.event-card")
-    .filter({ hasText: firstEventTitle })
-    .click();
-  await expect(
-    page.getByRole("heading", { name: firstEventTitle })
-  ).toBeVisible();
-  await expect(page.getByTestId("event-raw-attributes")).not.toBeVisible();
-  await page
-    .getByText("기록 정보 · 속성과 Publication", { exact: true })
-    .click();
-  await expect(page.getByText("Revision 2", { exact: true })).toBeVisible();
-  await expect(
-    page.getByRole("link", { name: "이 사건의 모든 Canon 읽기" })
-  ).toHaveAttribute(
-    "href",
-    `/worlds/${worldId}/events/${firstEventId}?revision=2`
+  await expect(drawer.getByTestId("event-observation")).toContainText(canonId);
+  await expect(drawer.getByTestId("event-observation")).not.toContainText(
+    "temporal_placements"
   );
-  await expect(
-    page.getByRole("link", { name: "그래프로 돌아가기" })
-  ).toHaveAttribute(
+  await expect(drawer.getByTestId("read-stable-event")).toHaveAttribute(
     "href",
-    `/worlds/${worldId}/canons/${canonId}?revision=2&view=graph&focus=${firstEventId}`
+    new RegExp(
+      `/graph/events/${worldId}/${firstEventId}\\?revision=2&canon=${canonId}`
+    )
   );
-  await expect(page.getByText("STRUCTURED ATTRIBUTES")).toBeVisible();
-  await page
-    .getByText("시간 범위·구성 사건·계산 근거", { exact: true })
-    .click();
-  await expect(
-    page.getByRole("link", { name: "같은 Revision의 공개 시간 JSON" })
-  ).toBeVisible();
 });
 
 test("health and immutable artifacts expose only the relational model", async ({

@@ -1,11 +1,14 @@
 # 현재 구현 상태
 
-**IP-004 complete · IP-005 계획 문서화 단계 · runtime implementation not started · M5 inactive.**
+**IP-004 complete · IP-005 complete · M5 inactive.**
 
 [IP-005](IP-005-graph-reader-consolidation.md)는 IP-004와 M5 사이의 독립 리팩터링 계획이다.
-계획 accepted와 구현 활성화는 별개다. 현재 실행 권한은 단계 1의 문서 정합화·검사·commit·push·PR 생성까지다.
-단계 2 이후 구현, 코드/데이터 삭제, merge·배포는 시작하지 않는다.
-다음 구현은 Graph 중심 라우팅이며 새로운 실행 지시 후 착수한다. M5는 별도 활성화가 필요하다.
+2026-09-19 [PR #98](https://github.com/neocjmix/moirai/pull/98)을 main
+`6c30c7bbe8825957d4ad85b685137946d129df87`로 병합했고 Railway 세 application service가
+같은 SHA로 SUCCESS가 됐다. `/`는 `/graph`로 연결되고 Event 읽기는 revision-pinned
+Graph Event drawer의 peek/full로 통합됐다. 구형 UI route는 제거했지만 Publication JSON,
+Graph API, health/status와 immutable artifact 호환은 유지했다. [종료 evidence](../evidence/ip-005-graph-reader-consolidation.md)에
+CI·scale·배포·공개 history QA를 연결했다. M5는 별도 활성화가 필요하다.
 
 ## 과거 IP-004 검증 checkpoint
 
@@ -40,12 +43,12 @@
 
 목표 계약은 [TS-006](../technical-specifications/TS-006-atropos-publication.md)과 IP-005다.
 **Graph Event drawer**의 peek/full로 통합하며 full URL은
-`/graph/events/{worldId}/{eventId}?revision=N&canon={canonId}`다. 아직 구현되지 않았다.
+`/graph/events/{worldId}/{eventId}?revision=N&canon={canonId}`이며 현재 구현·배포됐다.
 아래 구형 Event URL 및 위 Product 왕복의 **Event reading page**는 과거 IP-004 검증 표면이다.
 [IP-004 용어](IP-004-production-readiness-gate.md#독자-화면-용어)는 당시 기준으로 보존한다.
 
 - [Public Atropos](https://moirai-production-8ed1.up.railway.app/) · [Graph](https://moirai-production-8ed1.up.railway.app/graph)
-- [검증한 Revision 6 사건](https://moirai-production-8ed1.up.railway.app/worlds/01995c2a-7b00-7000-8000-000000000101/events/019f5b00-0000-7000-8000-000000000112?revision=6)
+- [검증한 Revision 6 사건](https://moirai-production-8ed1.up.railway.app/graph/events/01995c2a-7b00-7000-8000-000000000101/019f5b00-0000-7000-8000-000000000112?revision=6)
 - [Clotho 인증 API](https://desirable-vitality-production-eb95.up.railway.app)
 - [작성 fixture와 실제 입력 단계](fixtures/ip004-semantic/README.md)
 - [이전 milestone·checkpoint](CHECKPOINTS-THROUGH-PR85.md)

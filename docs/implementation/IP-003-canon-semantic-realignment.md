@@ -203,7 +203,7 @@ canonical entity로 승격하지 않는다.
 > context alias 유지 결정만 Graph Event drawer full URL 및 구형 UI 404로 대체한다.
 > §11의 public UI alias와 §17의 context alias/tombstone 표현도 새 URL에 해석 맥락을
 > 보존하는 계약으로 읽는다. 이 문서의 원래 실행 이력, identity/membership, artifact·portability
-> 호환성과 M5 lifecycle 의미는 보존한다. IP-005 구현은 미시작이며 M5는 inactive다.
+> 호환성과 M5 lifecycle 의미는 보존한다. IP-005는 완료됐으며 M5는 inactive다.
 
 Publication의 immutable revision path와 served Revision 원자성을 유지한다.
 

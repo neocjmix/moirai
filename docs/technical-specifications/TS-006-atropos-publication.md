@@ -18,10 +18,9 @@ traces:
 
 # TS-006 — Atropos 공개 읽기와 그래프 탐색
 
-> IP-005 승인 반영: 아래 Graph 중심 UI/URL 계약은 accepted 목표이며 runtime 구현은
-> 아직 시작하지 않았다. 현재 배포 증거는 IP-004의 두 읽기 표면 기준이다.
-> 실행 제한과 이전 단계는 [IP-005](../implementation/IP-005-graph-reader-consolidation.md),
-> 실제 상태는 [CURRENT](../implementation/CURRENT.md)를 따른다.
+> IP-005 완료 반영: 아래 Graph 중심 UI/URL 계약은 main과 production에 구현됐다.
+> 종료 근거와 이전 단계는 [IP-005](../implementation/IP-005-graph-reader-consolidation.md),
+> 실제 상태는 [CURRENT](../implementation/CURRENT.md)를 따른다. M5는 inactive다.
 
 ## TS-006.1 목적
 

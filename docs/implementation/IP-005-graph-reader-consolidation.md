@@ -1,7 +1,7 @@
 ---
 id: IP-005
 title: Graph reader consolidation before M5
-status: accepted
+status: complete
 layer: implementation-plan
 ---
 
@@ -9,14 +9,14 @@ layer: implementation-plan
 
 ## 1. 효력과 실행 상태
 
-**계획 accepted · 단계 1 문서화만 허용 · runtime implementation not started · M5 inactive.**
+**구현·통합 검증·배포·공개 QA complete · M5 inactive.**
 
 완료된 [IP-004](IP-004-production-readiness-gate.md)와 비활성 M5 사이의 독립 리팩터링이다.
-IP-004의 미완료 track이나 M5 slice가 아니다. 사용자의 최신 “일단 1번만 시도하라”와
-이번 문서 전용 지시는 과거 전체 리팩터링 자율 실행 승인보다 우선한다.
-이번에는 문서 작성·정합화·검사·commit·push·main 대상 PR 생성까지만 수행한다.
-단계 2~7, runtime 수정, 코드 삭제, 데이터 변경, merge·배포와 M5 활성화는 실행하지 않는다.
-계획의 accepted 상태는 구현 활성화·완료 또는 배포 evidence가 아니다.
+IP-004의 미완료 track이나 M5 slice가 아니다. 2026-09-19 사용자의 구현 실행 지시에 따라
+단계 2~7을 수행했고 [PR #98](https://github.com/neocjmix/moirai/pull/98)을 main
+`6c30c7bbe8825957d4ad85b685137946d129df87`로 병합·배포했다. canonical write, schema migration,
+Publication Store 정리 또는 M5 활성화는 수행하지 않았다. 종료 근거는
+[IP-005 evidence](../evidence/ip-005-graph-reader-consolidation.md)에 고정한다.
 
 2026-09-14 GitHub 재확인 기준 main은 `6f0ea8c6f6cfad883710caf683fcff6b552dfbf0`
 ([PR #96](https://github.com/neocjmix/moirai/pull/96))이다. IP-005 원격 branch/PR은 없었고,
@@ -148,8 +148,8 @@ full drawer 내부 링크는 실제 href여야 한다. SSR과 Graph는 같은 se
 
 ## 6. 실제 route/import inventory와 정리 경계
 
-아래는 main `6f0ea8c`의 read-only inventory이며 **삭제 실행 기록이 아니다**.
-삭제 시점에 전체 import/call graph와 기능 대체 여부를 다시 확인한다.
+아래는 계획 당시 main `6f0ea8c`의 read-only inventory다. PR #98에서 대체 기능과 전체
+import/call graph를 다시 확인한 뒤 구형 UI route와 전용 component를 제거했다.
 
 | 현재 파일 (`apps/atropos-web/src/` 기준) | 현재 역할 → 향후 처리 |
 | --- | --- |
@@ -187,7 +187,7 @@ reset, canonical 삭제, Publication Store 청소, migration, infrastructure 삭
 
 ## 7. 실행 단계와 각 종료조건
 
-전체는 계획이며 **이번 실행은 단계 1까지만**이다. 이후 단계는 새로운 구현 실행 지시 후 시작한다.
+아래 단계 1~7은 완료됐다. 실제 검사·SHA·배포 연결은 종료 evidence를 따른다.
 
 | 단계 | 변경 범위 | 사용자에게 보이는 결과 | 자동 검증 | 유지 경계 | 종료조건 |
 | --- | --- | --- | --- | --- | --- |
@@ -216,9 +216,7 @@ reset, canonical 삭제, Publication Store 청소, migration, infrastructure 삭
 - canonical 데이터/schema·identity/membership 및 기존 immutable artifact가 불변이다.
 - 실제 commit/배포/공개 QA evidence로 종료하며 M5는 inactive다.
 
-미래 runtime 검증은 저장소의 format/lint/typecheck/unit/contract/build/mobile browser,
-secret scan 및 필요한 scale regression을 따른다. read 경계 변경에 따른 projection/leakage
-검사도 포함한다. 기존 100/1k/10k workload·budget와 100k bounded spatial 회귀를 재사용하되
-전체 100k canonical 또는 production WAN p95를 검증했다고 확대하지 않는다.
-문서 단계는 링크·ID·trace·diff·secret 검사와 public commit/PR로 완료하며 실행하지 않은
-runtime 테스트, 배포 또는 canonical readback을 통과했다고 적지 않는다.
+runtime 검증은 format/lint/typecheck/unit/contract/build/mobile WebKit, secret scan,
+100/1k/10k scale reader와 기존 100k bounded spatial 회귀를 통과했다. 전체 100k canonical
+workload 또는 production WAN p95를 검증한 것으로 확대하지 않는다. 배포 SHA와 공개 QA의
+정확한 범위는 종료 evidence에 기록하며 M5는 계속 inactive다.

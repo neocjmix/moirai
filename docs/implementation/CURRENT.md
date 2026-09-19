@@ -1,11 +1,15 @@
 # 현재 구현 상태
 
-**IP-004 complete · M5 inactive.** Product / Semantic E2E / Scale 세 축의
-종료조건을 충족했다. M5는 자동으로 시작하지 않으며 별도 사용자 지시를 기다린다.
-범위는 [IP-004](IP-004-production-readiness-gate.md)와
-[IP-003 §17](IP-003-canon-semantic-realignment.md#17-m5-재설계-범위)를 따른다.
+**IP-004 complete · IP-005 계획 문서화 단계 · runtime implementation not started · M5 inactive.**
 
-## 최종 checkpoint
+[IP-005](IP-005-graph-reader-consolidation.md)는 IP-004와 M5 사이의 독립 리팩터링 계획이다.
+계획 accepted와 구현 활성화는 별개다. 현재 실행 권한은 단계 1의 문서 정합화·검사·commit·push·PR 생성까지다.
+단계 2 이후 구현, 코드/데이터 삭제, merge·배포는 시작하지 않는다.
+다음 구현은 Graph 중심 라우팅이며 새로운 실행 지시 후 착수한다. M5는 별도 활성화가 필요하다.
+
+## 과거 IP-004 검증 checkpoint
+
+아래 runtime·CI·Revision·성능은 IP-004 종료 당시의 evidence이며 이번 문서 단계에서 재검증한 결과가 아니다.
 
 | 항목 | 상태 |
 | --- | --- |
@@ -30,14 +34,15 @@
   Builder 95.59초, builder/read peak RSS 2,278,100/1,238,460 KiB로 기존 budget 통과.
 - 공개 Revision 6 semantic 검사 6개 및 cache/readback 검사 10개 통과.
   이전 Revision 5 URL은 과거 상태를 보존한다. 새 provider·비용·권한 확대 없음.
-- 다음 단계: 사용자의 별도 M5 진입 결정. 이 완료 기록은 M5 활성화가 아니다.
+- 후속 순서: IP-005 구현 실행 지시 → 별도 리팩터링 완료 → 별도 M5 진입 결정. 현재는 문서 단계만 허용한다.
 
 ## 용어와 진입점
 
-[용어 정의](IP-004-production-readiness-gate.md#독자-화면-용어):
-**Graph Event drawer**는 그래프에서 사건을 눌러 여는 dialog/sheet,
-**Event reading page**는 stable URL 상세 읽기 페이지이며,
-**Event detail surface**는 둘의 총칭이다.
+목표 계약은 [TS-006](../technical-specifications/TS-006-atropos-publication.md)과 IP-005다.
+**Graph Event drawer**의 peek/full로 통합하며 full URL은
+`/graph/events/{worldId}/{eventId}?revision=N&canon={canonId}`다. 아직 구현되지 않았다.
+아래 구형 Event URL 및 위 Product 왕복의 **Event reading page**는 과거 IP-004 검증 표면이다.
+[IP-004 용어](IP-004-production-readiness-gate.md#독자-화면-용어)는 당시 기준으로 보존한다.
 
 - [Public Atropos](https://moirai-production-8ed1.up.railway.app/) · [Graph](https://moirai-production-8ed1.up.railway.app/graph)
 - [검증한 Revision 6 사건](https://moirai-production-8ed1.up.railway.app/worlds/01995c2a-7b00-7000-8000-000000000101/events/019f5b00-0000-7000-8000-000000000112?revision=6)

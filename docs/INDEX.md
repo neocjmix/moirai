@@ -29,6 +29,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-004 — 현재 gate evidence](evidence/ip-004-gate-status.md)
 - [IP-004 — 새 세션의 실제 refinement 검증](evidence/ip-004-prb3-fresh-session.md)
 - [IP-004 — 새 LLM 세션의 잔여 검증](implementation/IP-004-fresh-session-handoff.md)
+- [IP-005 — Graph reader consolidation before M5 (계획 accepted, 구현 미시작)](implementation/IP-005-graph-reader-consolidation.md)
 - [현재 구현 상태](implementation/CURRENT.md)
 - [M3-R 책임 경계 재정렬](implementation/M3-BOUNDARY.md)
 - [M3-C Auth0·MCP 연결](implementation/M3-CONNECTION.md)

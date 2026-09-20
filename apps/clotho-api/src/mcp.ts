@@ -65,6 +65,11 @@ const failure = (code: string) => ({
   ],
   isError: true
 });
+const discoveryMethods = new Set([
+  "initialize",
+  "notifications/initialized",
+  "tools/list"
+]);
 
 export function registerMcp(
   app: FastifyInstance,
@@ -131,18 +136,32 @@ export function registerMcp(
       };
       reply.raw.once("close", release);
       reply.raw.once("finish", release);
+    },
+    preHandler: async (request, reply) => {
       const principal =
         authenticate(request.headers.authorization, config.credentials) ??
         (await verify(request.headers.authorization));
-      if (!principal || !principal.world_ids.includes(CLOTHO_CONNECTION_WORLD))
-        return reply
-          .header("www-authenticate", challenge)
-          .code(401)
-          .send({ error: "unauthorized" });
-      principals.set(request, {
-        ...principal,
-        world_ids: [CLOTHO_CONNECTION_WORLD]
-      });
+      if (principal?.world_ids.includes(CLOTHO_CONNECTION_WORLD)) {
+        principals.set(request, {
+          ...principal,
+          world_ids: [CLOTHO_CONNECTION_WORLD]
+        });
+        return;
+      }
+      const body = request.body as Record<string, unknown> | undefined;
+      if (
+        request.method === "POST" &&
+        body &&
+        !Array.isArray(body) &&
+        body.jsonrpc === "2.0" &&
+        typeof body.method === "string" &&
+        discoveryMethods.has(body.method)
+      )
+        return;
+      return reply
+        .header("www-authenticate", challenge)
+        .code(401)
+        .send({ error: "unauthorized" });
     },
     handler: async (request, reply) => {
       // Stateless transport: no session token, replay buffer, or server-initiated SSE.
@@ -152,7 +171,6 @@ export function registerMcp(
           .code(405)
           .send({ error: "method_not_allowed" });
       const principal = principals.get(request);
-      if (!principal) return reply.code(401).send({ error: "unauthorized" });
       const body = request.body as Record<string, unknown> | undefined;
       if (
         !body ||
@@ -206,6 +224,13 @@ export function registerMcp(
         }))
       }));
       server.setRequestHandler(CallToolRequestSchema, async ({ params }) => {
+        if (!principal)
+          return {
+            ...failure("unauthorized"),
+            ...(metadataUrl
+              ? { _meta: { "mcp/www_authenticate": [challenge] } }
+              : {})
+          };
         const tool = methods.find((entry) => entry.name === params.name);
         if (!tool) return failure("unknown_tool");
         const scope = tool.method.startsWith("change.")

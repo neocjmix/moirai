@@ -138,10 +138,11 @@ export function registerMcp(
           !request.headers.authorization &&
           request.headers["content-length"] === "0"
         )
-          return reply
-            .header("www-authenticate", challenge)
-            .code(401)
-            .send({ error: "unauthorized" });
+          // ChatGPT sends an empty connectivity probe before it sends MCP
+          // initialize/tools/list. Authentication is declared per tool and
+          // enforced on tools/call, so let this transport-only probe succeed
+          // without starting a connection-level OAuth flow.
+          return reply.code(204).send();
         for (const [name, value] of [
           ["content-type", "application/json"],
           ["accept", "application/json, text/event-stream"]

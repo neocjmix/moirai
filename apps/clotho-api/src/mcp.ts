@@ -114,10 +114,22 @@ export function registerMcp(
     onRequest: async (request, reply) => {
       reply.header("cache-control", "no-store");
       reply.header("x-content-type-options", "nosniff");
-      // ChatGPT's aiohttp MCP discovery client can omit the transport media
-      // headers. This route accepts only JSON-RPC POST bodies, which Fastify
-      // still parses and the handler validates strictly below.
+      // ChatGPT's aiohttp MCP client can probe with a non-JSON media type
+      // before OAuth, so challenge it before Fastify attempts body parsing.
+      // Once authenticated, normalize the media headers for JSON-RPC.
       if (request.method === "POST") {
+        const contentType = request.headers["content-type"]
+          ?.split(";", 1)[0]
+          ?.trim()
+          .toLowerCase();
+        if (
+          !request.headers.authorization &&
+          contentType !== "application/json"
+        )
+          return reply
+            .header("www-authenticate", challenge)
+            .code(401)
+            .send({ error: "unauthorized" });
         for (const [name, value] of [
           ["content-type", "application/json"],
           ["accept", "application/json, text/event-stream"]
@@ -195,34 +207,6 @@ export function registerMcp(
           .send({ error: "method_not_allowed" });
       const principal = principals.get(request);
       const body = request.body as Record<string, unknown> | undefined;
-      if (!principal) {
-        const params =
-          body && !Array.isArray(body) && typeof body.params === "object"
-            ? (body.params as Record<string, unknown>)
-            : undefined;
-        app.log.info(
-          {
-            mcp_discovery: {
-              body_type: Array.isArray(body) ? "array" : typeof body,
-              keys:
-                body && !Array.isArray(body) ? Object.keys(body).sort() : [],
-              method:
-                body && !Array.isArray(body) && typeof body.method === "string"
-                  ? body.method
-                  : undefined,
-              id_type:
-                body && !Array.isArray(body) && body.id !== undefined
-                  ? typeof body.id
-                  : "missing",
-              protocol_version:
-                typeof params?.protocolVersion === "string"
-                  ? params.protocolVersion
-                  : undefined
-            }
-          },
-          "MCP unauthenticated discovery request shape"
-        );
-      }
       if (
         !body ||
         Array.isArray(body) ||

@@ -191,10 +191,16 @@ describe("Clotho MCP transport", () => {
     );
     expect(listed.statusCode).toBe(200);
     expect(listed.json().result.tools).toHaveLength(CLOTHO_METHODS.length);
+    const extensionProbe = await send(
+      { jsonrpc: "2.0", id: 3, method: "server/discover", params: {} },
+      ""
+    );
+    expect(extensionProbe.statusCode).toBe(200);
+    expect(extensionProbe.json().error.code).toBe(-32601);
     const denied = await send(
       {
         jsonrpc: "2.0",
-        id: 3,
+        id: 4,
         method: "tools/call",
         params: { name: "world_list", arguments: {} }
       },

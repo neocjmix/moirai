@@ -195,6 +195,34 @@ export function registerMcp(
           .send({ error: "method_not_allowed" });
       const principal = principals.get(request);
       const body = request.body as Record<string, unknown> | undefined;
+      if (!principal) {
+        const params =
+          body && !Array.isArray(body) && typeof body.params === "object"
+            ? (body.params as Record<string, unknown>)
+            : undefined;
+        app.log.info(
+          {
+            mcp_discovery: {
+              body_type: Array.isArray(body) ? "array" : typeof body,
+              keys:
+                body && !Array.isArray(body) ? Object.keys(body).sort() : [],
+              method:
+                body && !Array.isArray(body) && typeof body.method === "string"
+                  ? body.method
+                  : undefined,
+              id_type:
+                body && !Array.isArray(body) && body.id !== undefined
+                  ? typeof body.id
+                  : "missing",
+              protocol_version:
+                typeof params?.protocolVersion === "string"
+                  ? params.protocolVersion
+                  : undefined
+            }
+          },
+          "MCP unauthenticated discovery request shape"
+        );
+      }
       if (
         !body ||
         Array.isArray(body) ||

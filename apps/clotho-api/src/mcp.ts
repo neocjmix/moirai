@@ -68,6 +68,7 @@ const failure = (code: string) => ({
 const discoveryMethods = new Set([
   "initialize",
   "notifications/initialized",
+  "server/discover",
   "tools/list"
 ]);
 

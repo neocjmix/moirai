@@ -114,6 +114,29 @@ export function registerMcp(
     onRequest: async (request, reply) => {
       reply.header("cache-control", "no-store");
       reply.header("x-content-type-options", "nosniff");
+      // ChatGPT's aiohttp MCP discovery client can omit the transport media
+      // headers. This route accepts only JSON-RPC POST bodies, which Fastify
+      // still parses and the handler validates strictly below.
+      if (request.method === "POST") {
+        for (const [name, value] of [
+          ["content-type", "application/json"],
+          ["accept", "application/json, text/event-stream"]
+        ] as const) {
+          request.headers[name] = value;
+          let found = false;
+          for (
+            let index = 0;
+            index < request.raw.rawHeaders.length;
+            index += 2
+          ) {
+            if (request.raw.rawHeaders[index]?.toLowerCase() === name) {
+              request.raw.rawHeaders[index + 1] = value;
+              found = true;
+            }
+          }
+          if (!found) request.raw.rawHeaders.push(name, value);
+        }
+      }
       // Browser origin is an additional defense, never an authentication signal.
       const origin = request.headers.origin;
       if (

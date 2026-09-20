@@ -169,6 +169,43 @@ describe("Clotho MCP transport", () => {
     expect(metadata.body).not.toMatch(/operator|subject|actor|jwks/);
     expect(execute).not.toHaveBeenCalled();
   });
+  it("exposes only MCP discovery without authentication", async () => {
+    const { send, execute } = setup([], true);
+    const initialized = await send(
+      {
+        jsonrpc: "2.0",
+        id: 1,
+        method: "initialize",
+        params: {
+          protocolVersion: "2025-06-18",
+          capabilities: {},
+          clientInfo: { name: "discovery-test", version: "1" }
+        }
+      },
+      ""
+    );
+    expect(initialized.statusCode).toBe(200);
+    const listed = await send(
+      { jsonrpc: "2.0", id: 2, method: "tools/list" },
+      ""
+    );
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json().result.tools).toHaveLength(CLOTHO_METHODS.length);
+    const denied = await send(
+      {
+        jsonrpc: "2.0",
+        id: 3,
+        method: "tools/call",
+        params: { name: "world_list", arguments: {} }
+      },
+      ""
+    );
+    expect(denied.statusCode).toBe(401);
+    expect(denied.headers["www-authenticate"]).toContain(
+      "/.well-known/oauth-protected-resource/mcp"
+    );
+    expect(execute).not.toHaveBeenCalled();
+  });
   it("supports a real SDK client initialize, tool discovery and bounded query", async () => {
     const { app, execute } = setup();
     const address = await app.listen({ port: 0, host: "127.0.0.1" });

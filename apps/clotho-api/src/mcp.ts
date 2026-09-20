@@ -136,9 +136,7 @@ export function registerMcp(
       if (request.method === "POST") {
         if (
           !request.headers.authorization &&
-          (request.headers["content-length"] === "0" ||
-            (!request.headers["content-length"] &&
-              !request.headers["transfer-encoding"]))
+          request.headers["content-length"] === "0"
         )
           return reply
             .header("www-authenticate", challenge)

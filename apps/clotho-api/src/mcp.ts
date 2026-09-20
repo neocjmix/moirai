@@ -107,6 +107,23 @@ export function registerMcp(
     });
   }
 
+  // ChatGPT's aiohttp MCP client labels JSON-RPC discovery bodies as
+  // application/octet-stream. Register the parser before Fastify selects a
+  // content-type parser; changing the header in onRequest is too late.
+  app.addContentTypeParser(
+    "application/octet-stream",
+    { parseAs: "string" },
+    (_request, body, done) => {
+      const text = body.toString();
+      if (text.length === 0) return done(null, undefined);
+      try {
+        return done(null, JSON.parse(text));
+      } catch (error) {
+        return done(error as Error, undefined);
+      }
+    }
+  );
+
   app.route({
     method: ["GET", "POST", "DELETE"],
     url: "/mcp",
@@ -114,17 +131,14 @@ export function registerMcp(
     onRequest: async (request, reply) => {
       reply.header("cache-control", "no-store");
       reply.header("x-content-type-options", "nosniff");
-      // ChatGPT's aiohttp MCP client can probe with a non-JSON media type
-      // before OAuth, so challenge it before Fastify attempts body parsing.
-      // Once authenticated, normalize the media headers for JSON-RPC.
+      // Parsing uses the original media type selected before onRequest. The
+      // SDK receives the normalized headers after parsing.
       if (request.method === "POST") {
-        const contentType = request.headers["content-type"]
-          ?.split(";", 1)[0]
-          ?.trim()
-          .toLowerCase();
         if (
           !request.headers.authorization &&
-          contentType !== "application/json"
+          (request.headers["content-length"] === "0" ||
+            (!request.headers["content-length"] &&
+              !request.headers["transfer-encoding"]))
         )
           return reply
             .header("www-authenticate", challenge)

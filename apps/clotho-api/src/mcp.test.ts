@@ -206,7 +206,7 @@ describe("Clotho MCP transport", () => {
     );
     expect(execute).not.toHaveBeenCalled();
   });
-  it("challenges an unauthenticated aiohttp probe before body parsing", async () => {
+  it("parses unauthenticated aiohttp discovery JSON", async () => {
     const { app, execute } = setup([], true);
     const response = await app.inject({
       method: "POST",
@@ -221,6 +221,21 @@ describe("Clotho MCP transport", () => {
           clientInfo: { name: "aiohttp", version: "1" }
         }
       }),
+      headers: {
+        accept: "*/*",
+        "content-type": "application/octet-stream"
+      }
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.json().result.serverInfo.name).toBe("moirai-clotho");
+    expect(execute).not.toHaveBeenCalled();
+  });
+  it("challenges an empty unauthenticated aiohttp probe", async () => {
+    const { app, execute } = setup([], true);
+    const response = await app.inject({
+      method: "POST",
+      url: "/mcp",
+      payload: "",
       headers: {
         accept: "*/*",
         "content-type": "application/octet-stream"

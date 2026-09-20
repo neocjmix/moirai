@@ -238,6 +238,7 @@ describe("Clotho MCP transport", () => {
       payload: "",
       headers: {
         accept: "*/*",
+        "content-length": "0",
         "content-type": "application/octet-stream"
       }
     });

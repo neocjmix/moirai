@@ -175,28 +175,41 @@ const operation = (
   entity: string,
   properties: Record<string, unknown>,
   required: string[]
-): JsonSchema => ({
-  ...object(
-    {
-      kind: { const: "create" },
-      entity_type: { const: entity },
-      entity_id: id,
-      client_ref: { type: "string", pattern: "^[a-z][a-z0-9_-]{0,63}$" },
-      origin_refs: {
-        ...array(
-          object({
-            field: str(128),
-            origin_index: { type: "integer", minimum: 0, maximum: 99 }
-          })
-        ),
-        minItems: 1
-      },
-      value: object(properties, required)
+): readonly JsonSchema[] => {
+  const clientRef = {
+    type: "string",
+    pattern: "^[a-z][a-z0-9_-]{0,63}$"
+  };
+  const shared = {
+    kind: { const: "create" },
+    entity_type: { const: entity },
+    origin_refs: {
+      ...array(
+        object({
+          field: str(128),
+          origin_index: { type: "integer", minimum: 0, maximum: 99 }
+        })
+      ),
+      minItems: 1
     },
-    ["kind", "entity_type", "origin_refs", "value"]
-  ),
-  anyOf: [{ required: ["entity_id"] }, { required: ["client_ref"] }]
-});
+    value: object(properties, required)
+  };
+  const sharedRequired = ["kind", "entity_type", "origin_refs", "value"];
+
+  // Keep each alternative as a complete object schema. Some MCP consumers only
+  // render a composition branch and otherwise lose sibling properties when the
+  // target requirement is expressed as `object + anyOf(required ...)`.
+  return [
+    object({ ...shared, entity_id: id, client_ref: clientRef }, [
+      ...sharedRequired,
+      "entity_id"
+    ]),
+    object({ ...shared, client_ref: clientRef }, [
+      ...sharedRequired,
+      "client_ref"
+    ])
+  ];
+};
 const eventMembershipOperation = (kind: "add" | "remove"): JsonSchema =>
   object(
     {
@@ -268,9 +281,9 @@ const withdrawRelationOperation: JsonSchema = object(
   ["kind", "entity_type", "origin_refs", "value"]
 );
 function changePlanSchema(
-  relation: JsonSchema,
+  relation: readonly JsonSchema[],
   contractVersion: number,
-  event: JsonSchema,
+  event: readonly JsonSchema[],
   membershipOperations: readonly JsonSchema[] = []
 ): JsonSchema {
   return object({
@@ -296,7 +309,7 @@ function changePlanSchema(
       ...array(
         {
           oneOf: [
-            operation(
+            ...operation(
               "world",
               {
                 slug: str(128),
@@ -305,7 +318,7 @@ function changePlanSchema(
               },
               ["slug", "title"]
             ),
-            operation(
+            ...operation(
               "canon",
               {
                 world_id: ref,
@@ -315,9 +328,9 @@ function changePlanSchema(
               },
               ["world_id", "slug", "title"]
             ),
-            event,
-            relation,
-            operation(
+            ...event,
+            ...relation,
+            ...operation(
               "narrative",
               {
                 canon_id: ref,
@@ -341,7 +354,7 @@ function changePlanSchema(
                 "public_references"
               ]
             ),
-            operation(
+            ...operation(
               "time_system",
               {
                 world_id: ref,
@@ -360,7 +373,7 @@ function changePlanSchema(
                 "definition"
               ]
             ),
-            operation(
+            ...operation(
               "canon_time_system",
               { canon_id: ref, time_system_id: ref },
               ["canon_id", "time_system_id"]

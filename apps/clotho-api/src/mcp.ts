@@ -138,10 +138,6 @@ export function registerMcp(
           !request.headers.authorization &&
           request.headers["content-length"] === "0"
         )
-          // ChatGPT sends an empty connectivity probe before it sends MCP
-          // initialize/tools/list. Authentication is declared per tool and
-          // enforced on tools/call, so let this transport-only probe succeed
-          // without starting a connection-level OAuth flow.
           return reply.code(204).send();
         for (const [name, value] of [
           ["content-type", "application/json"],
@@ -186,6 +182,19 @@ export function registerMcp(
       reply.raw.once("finish", release);
     },
     preHandler: async (request, reply) => {
+      // ChatGPT uses both explicit zero-length and streamed bodyless POSTs as
+      // transport connectivity probes. At this stage Fastify has completed
+      // parsing, so an undefined body distinguishes either probe from a
+      // streamed JSON-RPC discovery request without relying on wire headers.
+      if (
+        request.method === "POST" &&
+        !request.headers.authorization &&
+        (request.headers["content-length"] === "0" ||
+          request.body === undefined ||
+          request.body === null ||
+          request.body === "")
+      )
+        return reply.code(204).send();
       const principal =
         authenticate(request.headers.authorization, config.credentials) ??
         (await verify(request.headers.authorization));
@@ -206,6 +215,21 @@ export function registerMcp(
         discoveryMethods.has(body.method)
       )
         return;
+      app.log.info(
+        {
+          event: "mcp_unauthenticated_denied",
+          user_agent: request.headers["user-agent"]?.slice(0, 80),
+          content_type: request.headers["content-type"]?.slice(0, 80),
+          content_length: request.headers["content-length"]?.slice(0, 24),
+          transfer_encoding: request.headers["transfer-encoding"]?.slice(0, 24),
+          body_kind: Array.isArray(body) ? "array" : typeof body,
+          rpc_method:
+            typeof body?.method === "string"
+              ? body.method.slice(0, 80)
+              : undefined
+        },
+        "Unauthenticated MCP request denied before tool execution"
+      );
       return reply
         .header("www-authenticate", challenge)
         .code(401)

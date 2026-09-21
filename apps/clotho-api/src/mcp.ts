@@ -65,13 +65,6 @@ const failure = (code: string) => ({
   ],
   isError: true
 });
-const discoveryMethods = new Set([
-  "initialize",
-  "notifications/initialized",
-  "server/discover",
-  "tools/list"
-]);
-
 export function registerMcp(
   app: FastifyInstance,
   config: {
@@ -135,11 +128,11 @@ export function registerMcp(
       // Parsing uses the original media type selected before onRequest. The
       // SDK receives the normalized headers after parsing.
       if (request.method === "POST") {
-        if (
-          !request.headers.authorization &&
-          request.headers["content-length"] === "0"
-        )
-          return reply.code(204).send();
+        if (!request.headers.authorization)
+          return reply
+            .header("www-authenticate", challenge)
+            .code(401)
+            .send({ error: "unauthorized" });
         for (const [name, value] of [
           ["content-type", "application/json"],
           ["accept", "application/json, text/event-stream"]
@@ -183,19 +176,6 @@ export function registerMcp(
       reply.raw.once("finish", release);
     },
     preHandler: async (request, reply) => {
-      // ChatGPT uses both explicit zero-length and streamed bodyless POSTs as
-      // transport connectivity probes. At this stage Fastify has completed
-      // parsing, so an undefined body distinguishes either probe from a
-      // streamed JSON-RPC discovery request without relying on wire headers.
-      if (
-        request.method === "POST" &&
-        !request.headers.authorization &&
-        (request.headers["content-length"] === "0" ||
-          request.body === undefined ||
-          request.body === null ||
-          request.body === "")
-      )
-        return reply.code(204).send();
       const principal =
         authenticate(request.headers.authorization, config.credentials) ??
         (await verify(request.headers.authorization));
@@ -207,15 +187,6 @@ export function registerMcp(
         return;
       }
       const body = request.body as Record<string, unknown> | undefined;
-      if (
-        request.method === "POST" &&
-        body &&
-        !Array.isArray(body) &&
-        body.jsonrpc === "2.0" &&
-        typeof body.method === "string" &&
-        discoveryMethods.has(body.method)
-      )
-        return;
       app.log.info(
         {
           event: "mcp_unauthenticated_denied",

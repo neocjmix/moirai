@@ -148,8 +148,12 @@ export function registerMcp(
   const metadataUrl = config.oidc
     ? `${new URL(config.oidc.resource).origin}/.well-known/oauth-protected-resource/mcp`
     : undefined;
+  // ChatGPT requires a refresh token to persist an MCP connection. Auth0 only
+  // issues one when the authorization request includes the OIDC offline_access
+  // scope, even if the dynamically registered client allows refresh_token.
+  const connectionScopes = ["world:read", "world:write", "offline_access"] as const;
   const challenge = metadataUrl
-    ? `Bearer resource_metadata="${metadataUrl}", scope="world:read world:write"`
+    ? `Bearer resource_metadata="${metadataUrl}", scope="${connectionScopes.join(" ")}"`
     : "Bearer";
 
   for (const url of [
@@ -163,7 +167,7 @@ export function registerMcp(
       return {
         resource: config.oidc.resource,
         authorization_servers: [config.oidc.issuer],
-        scopes_supported: ["world:read", "world:write"],
+        scopes_supported: [...connectionScopes],
         bearer_methods_supported: ["header"]
       };
     });

@@ -3,10 +3,8 @@
 import { useMemo, useCallback, lazy, Suspense } from "react";
 import { presentationNodeId } from "@moirai/graph-presentation";
 import { createMoiraiGraphReadLoader } from "../urdr-port/src/moirai-graph-read-loader";
-import {
-  selectGraphSpatialBootstrap,
-  type GraphSpatialBootstrap
-} from "../lib/graph-spatial-bootstrap";
+import type { GraphSpatialBootstrap } from "../lib/graph-spatial-bootstrap";
+import { selectGraphSpatialBootstrap } from "../lib/graph-spatial-selection";
 import {
   DEFAULT_GRAPH_READER,
   type GraphReaderState

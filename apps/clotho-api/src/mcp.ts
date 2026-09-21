@@ -7,6 +7,8 @@ import {
 import {
   CLOTHO_METHODS,
   CONTRACT_VERSION,
+  EVENT_MEMBERSHIP_CONTRACT_VERSION,
+  LEGACY_CONTRACT_VERSION,
   clothoInputSchema,
   type ChangePlan
 } from "@moirai/contracts";
@@ -54,49 +56,220 @@ const methods = CLOTHO_METHODS.map((method) => ({
   schema: clothoInputSchema(method),
   validate: validators.compile(clothoInputSchema(method))
 }));
-// The fully-expanded ChangePlan union is intentionally strict for execution,
-// but publishing it twice in tools/list makes the discovery response roughly
-// 175 KB. Some MCP hosts discard an oversized catalog without surfacing a
-// useful error. Keep AJV validation on the full contract above and publish a
-// compact descriptor that still names every top-level ChangePlan field.
-const compactChangeInputSchema = {
+// Execution keeps using the fully-expanded strict contract above. Discovery uses
+// one shared operation shape so all supported versions and entity fields remain
+// visible without duplicating a 175 KB discriminated union in tools/list.
+const uuidV7 = {
+  type: "string" as const,
+  pattern:
+    "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
+};
+const clientRef = {
+  type: "string" as const,
+  pattern: "^[a-z][a-z0-9_-]{0,63}$"
+};
+const entityReference = {
+  oneOf: [
+    uuidV7,
+    {
+      type: "object" as const,
+      properties: { client_ref: clientRef },
+      required: ["client_ref"],
+      additionalProperties: false
+    }
+  ]
+};
+const eventReference = {
+  type: "object" as const,
+  description:
+    "Stored Event: kind=event plus event_id or client_ref. Virtual Time Event: kind=time_event plus time_system_ref, definition_version, and coordinate.",
+  properties: {
+    kind: { enum: ["event", "time_event"] },
+    event_id: uuidV7,
+    client_ref: clientRef,
+    time_system_ref: {
+      type: "object" as const,
+      properties: {
+        time_system_id: uuidV7,
+        client_ref: clientRef
+      },
+      additionalProperties: false
+    },
+    definition_version: { type: "string" as const, maxLength: 64 },
+    coordinate: { type: "string" as const, maxLength: 1000 }
+  },
+  required: ["kind"],
+  additionalProperties: false
+};
+const operationValue = {
+  type: "object" as const,
+  description:
+    "Entity value. v4 event/relation use world_id; v2 event and v2/v3 relation use canon_id. Required fields depend on entity_type and are enforced by the execution schema.",
+  properties: {
+    world_id: entityReference,
+    canon_id: entityReference,
+    time_system_id: entityReference,
+    event_id: entityReference,
+    relation_id: entityReference,
+    slug: { type: ["string", "null"] as const, maxLength: 128 },
+    title: { type: ["string", "null"] as const, maxLength: 500 },
+    description: { type: ["string", "null"] as const, maxLength: 10000 },
+    kind: {
+      enum: [
+        "atomic",
+        "composite",
+        "calendar",
+        "ordinal",
+        "relative",
+        "custom"
+      ]
+    },
+    summary: { type: ["string", "null"] as const, maxLength: 10000 },
+    roles: {
+      type: "array" as const,
+      items: { type: "string" as const, maxLength: 128 },
+      maxItems: 100
+    },
+    attributes: { type: "object" as const, maxProperties: 100 },
+    type: {
+      enum: [
+        "contains",
+        "precedes",
+        "not_after",
+        "coincides",
+        "causes",
+        "enables",
+        "prevents",
+        "influences",
+        "starts",
+        "ends",
+        "identity_continues",
+        "identity_instance_of",
+        "identity_splits",
+        "identity_merges",
+        "derives_from",
+        "transfers"
+      ]
+    },
+    source_ref: eventReference,
+    target_ref: eventReference,
+    direction: { enum: ["directed", "undirected"] },
+    scope_type: { enum: ["canon", "event"] },
+    scope_id: entityReference,
+    locale: { type: "string" as const, maxLength: 32 },
+    body: { type: "string" as const, maxLength: 100000 },
+    public_references: {
+      type: "array" as const,
+      maxItems: 100,
+      items: {
+        type: "object" as const,
+        properties: {
+          label: { type: "string" as const, maxLength: 500 },
+          url: { type: "string" as const, maxLength: 2000 }
+        },
+        required: ["label", "url"],
+        additionalProperties: false
+      }
+    },
+    definition_version: { type: "string" as const, maxLength: 64 },
+    definition: { type: "object" as const, maxProperties: 100 }
+  },
+  additionalProperties: false
+};
+const publishedChangeInputSchema = {
   type: "object" as const,
   properties: {
     plan: {
       type: "object" as const,
       description:
-        "ChangePlan contract v4. Build operations from previously read World and Canon context; the server validates the complete discriminated-union contract.",
+        "ChangePlan v2, v3, or v4. Read the target World and Canon immediately before planning.",
       properties: {
-        contract_version: { const: CONTRACT_VERSION },
+        contract_version: {
+          enum: [
+            LEGACY_CONTRACT_VERSION,
+            EVENT_MEMBERSHIP_CONTRACT_VERSION,
+            CONTRACT_VERSION
+          ]
+        },
         change_set_id: {
-          type: "string" as const,
-          description: "UUIDv7 idempotency key."
+          ...uuidV7,
+          description: "Idempotency key. Reuse only for an exact payload retry."
         },
-        world_id: {
-          type: "string" as const,
-          description: "Target World UUIDv7."
-        },
+        world_id: uuidV7,
         expected_revision: {
           type: "integer" as const,
           minimum: 0,
-          description: "Revision observed immediately before planning."
+          maximum: Number.MAX_SAFE_INTEGER
         },
         intent: { type: "string" as const, maxLength: 2000 },
         origins: {
           type: "array" as const,
           minItems: 1,
           maxItems: 100,
-          description:
-            "Provenance entries with kind (source_explicit, human_instruction, or llm_inference) and summary.",
-          items: { type: "object" as const }
+          items: {
+            type: "object" as const,
+            properties: {
+              kind: {
+                enum: [
+                  "source_explicit",
+                  "human_instruction",
+                  "llm_inference"
+                ]
+              },
+              summary: { type: "string" as const, maxLength: 4000 }
+            },
+            required: ["kind", "summary"],
+            additionalProperties: false
+          }
         },
         operations: {
           type: "array" as const,
           minItems: 1,
           maxItems: 500,
-          description:
-            "Ordered contract-v4 create, update, or delete operations. Use entity-specific values and origin_refs; use client_ref for entities created within this plan.",
-          items: { type: "object" as const }
+          items: {
+            type: "object" as const,
+            description:
+              "For create, provide exactly one of entity_id or client_ref. add/remove/withdraw do not use either target field.",
+            properties: {
+              kind: { enum: ["create", "add", "remove", "withdraw"] },
+              entity_type: {
+                enum: [
+                  "world",
+                  "canon",
+                  "event",
+                  "relation",
+                  "narrative",
+                  "time_system",
+                  "canon_time_system",
+                  "event_canon_membership",
+                  "relation_canon_membership"
+                ]
+              },
+              entity_id: uuidV7,
+              client_ref: clientRef,
+              origin_refs: {
+                type: "array" as const,
+                minItems: 1,
+                maxItems: 100,
+                items: {
+                  type: "object" as const,
+                  properties: {
+                    field: { type: "string" as const, maxLength: 128 },
+                    origin_index: {
+                      type: "integer" as const,
+                      minimum: 0,
+                      maximum: 99
+                    }
+                  },
+                  required: ["field", "origin_index"],
+                  additionalProperties: false
+                }
+              },
+              value: operationValue
+            },
+            required: ["kind", "entity_type", "origin_refs", "value"],
+            additionalProperties: false
+          }
         }
       },
       required: [
@@ -352,7 +525,7 @@ export function registerMcp(
           name,
           description: descriptions[method],
           inputSchema: method.startsWith("change.")
-            ? compactChangeInputSchema
+            ? publishedChangeInputSchema
             : { ...schema, type: "object" as const },
           annotations: {
             readOnlyHint: method !== "change.commit",

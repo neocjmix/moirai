@@ -196,14 +196,16 @@ export function registerMcp(
       // Parsing uses the original media type selected before onRequest. The
       // SDK receives the normalized headers after parsing.
       if (request.method === "POST") {
+        // ChatGPT sends a bodyless transport preflight before JSON-RPC
+        // discovery. A 401 here stops its current client after metadata
+        // lookup, so it never sends initialize/tools/list. The real JSON-RPC
+        // discovery exchange is public below, while every tools/call remains
+        // OAuth-protected.
         if (
           !request.headers.authorization &&
           request.headers["content-length"] === "0"
         )
-          return reply
-            .header("www-authenticate", challenge)
-            .code(401)
-            .send({ error: "unauthorized" });
+          return reply.code(204).send();
         for (const [name, value] of [
           ["content-type", "application/json"],
           ["accept", "application/json, text/event-stream"]
@@ -247,6 +249,15 @@ export function registerMcp(
       reply.raw.once("finish", release);
     },
     preHandler: async (request, reply) => {
+      if (
+        request.method === "POST" &&
+        !request.headers.authorization &&
+        (request.headers["content-length"] === "0" ||
+          request.body === undefined ||
+          request.body === null ||
+          request.body === "")
+      )
+        return reply.code(204).send();
       const principal =
         authenticate(request.headers.authorization, config.credentials) ??
         (await verify(request.headers.authorization));

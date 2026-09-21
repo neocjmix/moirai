@@ -169,7 +169,7 @@ describe("Clotho MCP transport", () => {
     expect(metadata.body).not.toMatch(/operator|subject|actor|jwks/);
     expect(execute).not.toHaveBeenCalled();
   });
-  it("requires authentication for MCP discovery", async () => {
+  it("exposes only side-effect-free MCP discovery before token attachment", async () => {
     const { send, execute } = setup([], true);
     const initialized = await send(
       {
@@ -184,20 +184,20 @@ describe("Clotho MCP transport", () => {
       },
       ""
     );
-    expect(initialized.statusCode).toBe(401);
-    expect(initialized.headers["www-authenticate"]).toContain(
-      "/.well-known/oauth-protected-resource/mcp"
-    );
+    expect(initialized.statusCode).toBe(200);
+    expect(initialized.json().result.serverInfo.name).toBe("moirai-clotho");
     const listed = await send(
       { jsonrpc: "2.0", id: 2, method: "tools/list" },
       ""
     );
-    expect(listed.statusCode).toBe(401);
+    expect(listed.statusCode).toBe(200);
+    expect(listed.json().result.tools).toHaveLength(CLOTHO_METHODS.length);
     const extensionProbe = await send(
       { jsonrpc: "2.0", id: 3, method: "server/discover", params: {} },
       ""
     );
-    expect(extensionProbe.statusCode).toBe(401);
+    expect(extensionProbe.statusCode).toBe(200);
+    expect(extensionProbe.json().error.code).toBe(-32601);
     const denied = await send(
       {
         jsonrpc: "2.0",
@@ -213,7 +213,7 @@ describe("Clotho MCP transport", () => {
     );
     expect(execute).not.toHaveBeenCalled();
   });
-  it("challenges unauthenticated aiohttp discovery JSON", async () => {
+  it("parses unauthenticated aiohttp discovery JSON", async () => {
     const { app, execute } = setup([], true);
     const response = await app.inject({
       method: "POST",
@@ -233,10 +233,8 @@ describe("Clotho MCP transport", () => {
         "content-type": "application/octet-stream"
       }
     });
-    expect(response.statusCode).toBe(401);
-    expect(response.headers["www-authenticate"]).toContain(
-      "/.well-known/oauth-protected-resource/mcp"
-    );
+    expect(response.statusCode).toBe(200);
+    expect(response.json().result.serverInfo.name).toBe("moirai-clotho");
     expect(execute).not.toHaveBeenCalled();
   });
   it("challenges an empty unauthenticated aiohttp connectivity probe", async () => {

@@ -115,14 +115,7 @@ const operationValue = {
     title: { type: ["string", "null"] as const, maxLength: 500 },
     description: { type: ["string", "null"] as const, maxLength: 10000 },
     kind: {
-      enum: [
-        "atomic",
-        "composite",
-        "calendar",
-        "ordinal",
-        "relative",
-        "custom"
-      ]
+      enum: ["atomic", "composite", "calendar", "ordinal", "relative", "custom"]
     },
     summary: { type: ["string", "null"] as const, maxLength: 10000 },
     roles: {
@@ -210,11 +203,7 @@ const publishedChangeInputSchema = {
             type: "object" as const,
             properties: {
               kind: {
-                enum: [
-                  "source_explicit",
-                  "human_instruction",
-                  "llm_inference"
-                ]
+                enum: ["source_explicit", "human_instruction", "llm_inference"]
               },
               summary: { type: "string" as const, maxLength: 4000 }
             },

@@ -11,7 +11,7 @@
     "build": "pnpm -r --if-present build",
     "dev:web": "pnpm --filter @moirai/atropos-web dev",
     "format": "prettier --write .",
-    "format:check": "prettier --write . && git diff --exit-code",
+    "format:check": "prettier --check .",
     "lint": "eslint .",
     "typecheck": "tsc -p tsconfig.json --noEmit && pnpm -r --if-present typecheck",
     "test": "vitest run",

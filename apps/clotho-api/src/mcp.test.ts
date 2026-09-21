@@ -303,90 +303,29 @@ describe("Clotho MCP transport", () => {
       tools.find((tool) => tool.name === "change_validate")?.annotations
         ?.readOnlyHint
     ).toBe(true);
-    const planSchemas = (
-      commitTool?.inputSchema as {
-        properties?: { plan?: { oneOf?: unknown[] } };
-      }
-    ).properties?.plan?.oneOf as
-      | Array<{
-          properties?: {
-            operations?: { items?: { oneOf?: unknown[] } };
-          };
-        }>
-      | undefined;
-    expect(planSchemas).toHaveLength(3);
-    for (const planSchema of planSchemas ?? []) {
-      const variants = planSchema.properties?.operations?.items?.oneOf as
-        | Array<{
-            additionalProperties?: boolean;
-            anyOf?: unknown;
-            properties?: Record<string, { const?: string; type?: string }>;
-            required?: string[];
-          }>
-        | undefined;
-      const createVariants = (variants ?? []).filter(
-        (variant) => variant.properties?.kind?.const === "create"
-      );
-      expect(createVariants).toHaveLength(14);
-      expect(
-        new Set(
-          createVariants.map(
-            (variant) => variant.properties?.entity_type?.const
-          )
-        )
-      ).toEqual(
-        new Set([
-          "world",
-          "canon",
-          "event",
-          "relation",
-          "narrative",
-          "time_system",
-          "canon_time_system"
-        ])
-      );
-      for (const variant of createVariants) {
-        expect(variant).not.toHaveProperty("anyOf");
-        expect(variant.additionalProperties).toBe(false);
-        expect(variant.properties?.value?.type).toBe("object");
-        expect(variant.required).toEqual(
-          expect.arrayContaining([
-            "kind",
-            "entity_type",
-            "origin_refs",
-            "value"
-          ])
-        );
-        expect(
-          variant.required?.includes("entity_id") ||
-            variant.required?.includes("client_ref")
-        ).toBe(true);
-      }
-      for (const entityType of [
-        "world",
-        "canon",
-        "event",
-        "relation",
-        "narrative",
-        "time_system",
-        "canon_time_system"
-      ]) {
-        const targetVariants = createVariants.filter(
-          (variant) => variant.properties?.entity_type?.const === entityType
-        );
-        expect(targetVariants).toHaveLength(2);
-        const idTarget = targetVariants.find((variant) =>
-          variant.required?.includes("entity_id")
-        );
-        const clientTarget = targetVariants.find(
-          (variant) =>
-            variant.required?.includes("client_ref") &&
-            !variant.required.includes("entity_id")
-        );
-        expect(idTarget?.properties).toHaveProperty("client_ref");
-        expect(clientTarget?.properties).not.toHaveProperty("entity_id");
-      }
-    }
+    const changeSchema = commitTool?.inputSchema as {
+      properties?: {
+        plan?: {
+          required?: string[];
+          properties?: { operations?: { items?: { type?: string } } };
+        };
+      };
+    };
+    expect(changeSchema.properties?.plan?.required).toEqual(
+      expect.arrayContaining([
+        "contract_version",
+        "change_set_id",
+        "world_id",
+        "expected_revision",
+        "intent",
+        "origins",
+        "operations"
+      ])
+    );
+    expect(
+      changeSchema.properties?.plan?.properties?.operations?.items?.type
+    ).toBe("object");
+    expect(Buffer.byteLength(JSON.stringify(tools))).toBeLessThan(32_000);
     const result = await client.callTool({
       name: "world_get",
       arguments: { world_id: CLOTHO_CONNECTION_WORLD }

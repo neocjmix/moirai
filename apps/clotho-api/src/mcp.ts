@@ -151,7 +151,11 @@ export function registerMcp(
   // ChatGPT requires a refresh token to persist an MCP connection. Auth0 only
   // issues one when the authorization request includes the OIDC offline_access
   // scope, even if the dynamically registered client allows refresh_token.
-  const connectionScopes = ["world:read", "world:write", "offline_access"] as const;
+  const connectionScopes = [
+    "world:read",
+    "world:write",
+    "offline_access"
+  ] as const;
   const challenge = metadataUrl
     ? `Bearer resource_metadata="${metadataUrl}", scope="${connectionScopes.join(" ")}"`
     : "Bearer";

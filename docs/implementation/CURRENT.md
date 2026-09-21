@@ -1,11 +1,13 @@
 # 현재 구현 상태
 
-**IP-004 complete · IP-005 complete · IP-006 complete · IP-007 active · M5 inactive.**
+**IP-004 complete · IP-005 complete · IP-006 complete · IP-007 complete · M5 inactive.**
 
-[IP-007](IP-007-shared-event-reader-identity.md)은 여러 Canon에 참여하는 동일 Event를
-graph에서 하나의 node로 합성하고 Canon별 Narrative를 하나의 drawer 안에서 section과
-문단으로 구분하는 bounded Atropos 수정이다. canonical data와 Composite Event 생성
-계약은 바꾸지 않는다.
+[IP-007](IP-007-shared-event-reader-identity.md)은 PR #117, main
+`0ae844e39af7279df32414488c9dbba9aed3475c`로 완료했다. 여러 Canon에 참여하는 동일
+Event를 graph에서 하나의 node로 합성하고 Canon별 Narrative를 하나의 drawer 안에서
+section과 문단으로 구분한다. Revision 7의 계유정난 node 1개와 두 Canon Narrative
+section을 production에서 확인했다. canonical data와 Composite Event 생성 계약은
+바꾸지 않았다.
 
 [IP-006](IP-006-clotho-mcp-schema-repair.md)는 PR #115에서 MCP schema 복구와
 fresh-client validate를 완료했다. M5는 이 작업들로 자동 활성화되지 않는다.

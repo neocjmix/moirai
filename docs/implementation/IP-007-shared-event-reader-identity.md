@@ -1,7 +1,7 @@
 ---
 id: IP-007
 title: Shared Event graph identity and Canon Narrative drawer
-status: active
+status: complete
 layer: implementation
 owner: Atropos
 ---
@@ -33,3 +33,12 @@ owner: Atropos
 2. immutable legacy artifact ID의 정규화와 selection retention을 확인한다.
 3. detail test에서 한 Event의 두 Canon Narrative가 두 section으로 반환되고 문단 경계가 유지되는지 확인한다.
 4. CI 후 production에서 계유정난 node count 1과 drawer Canon section을 모바일 viewport로 확인한다.
+
+## 완료 evidence
+
+- PR [#117](https://github.com/neocjmix/moirai/pull/117), main `0ae844e39af7279df32414488c9dbba9aed3475c`
+- CI: format, lint, boundaries, typecheck, 265 unit tests, PostgreSQL integration, production build, audit, mobile Playwright 성공
+- scale reader: 100/1k/10k 성공
+- Railway production: Atropos·Clotho·worker 동일 commit 배포 SUCCESS
+- Revision 7 실데이터: 계유정난 Event `019f5b00-0000-7000-8000-000000000115` graph node 1개
+- 같은 drawer에서 조선 전기 연표와 단종 폐위 Canon Narrative section을 분리하고 문단 경계를 보존함

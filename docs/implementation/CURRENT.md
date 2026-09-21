@@ -1,13 +1,14 @@
 # 현재 구현 상태
 
-**IP-004 complete · IP-005 complete · IP-006 active · M5 inactive.**
+**IP-004 complete · IP-005 complete · IP-006 complete · IP-007 active · M5 inactive.**
 
-[IP-006](IP-006-clotho-mcp-schema-repair.md)는 최신 Clotho QA에서 확인된
-ChangePlan create-operation의 MCP 스키마 노출 붕괴(CQA-001/CQA-013)를 복구하는
-bounded pre-M5 작업이다. 정본 의미·데이터·Publication은 바꾸지 않고 실제 MCP
-`tools/list` 응답에 완전한 operation payload가 남도록 계약 생성과 회귀 테스트를
-수정한다. 배포 후 fresh-client schema 확인과 no-commit validate smoke까지 완료해야
-종료한다. M5는 이 작업으로 자동 활성화되지 않는다.
+[IP-007](IP-007-shared-event-reader-identity.md)은 여러 Canon에 참여하는 동일 Event를
+graph에서 하나의 node로 합성하고 Canon별 Narrative를 하나의 drawer 안에서 section과
+문단으로 구분하는 bounded Atropos 수정이다. canonical data와 Composite Event 생성
+계약은 바꾸지 않는다.
+
+[IP-006](IP-006-clotho-mcp-schema-repair.md)는 PR #115에서 MCP schema 복구와
+fresh-client validate를 완료했다. M5는 이 작업들로 자동 활성화되지 않는다.
 
 [IP-005](IP-005-graph-reader-consolidation.md)는 IP-004와 M5 사이의 독립 리팩터링 계획이다.
 2026-09-19 [PR #98](https://github.com/neocjmix/moirai/pull/98)을 main

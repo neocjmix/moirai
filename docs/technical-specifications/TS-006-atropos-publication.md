@@ -195,7 +195,7 @@ full 직접 URL의 SSR과 Graph 선택이 같은 읽기 구현·정보 구조를
 Graph Event drawer는 다음 정보를 구분해 보여준다.
 
 - 저장된 Event title·summary·역할
-- Event 범위 Narrative
+- Event 범위 Narrative. 선택 Canon이 여러 개이면 같은 drawer 안에서 Canon별 section으로 나누고 각 Narrative의 문단 경계를 보존한다.
 - 포함 parent와 child Event
 - Canon 내부 Relation
 - Event/Relation 기반 시간 projection과 virtual Time Event의 lossless coordinate
@@ -248,8 +248,10 @@ relevance는 텍스트 검색 결과의 순위일 뿐 Canon의 authority나 우�
 ## TS-006.11 그래프의 의미 단위
 
 SVG point·segment·region은 Publication projection을 그리는 표현 객체이며 정본 데이터가 아니다.
-Canon-specific layout이 다른 경우 표시 instance를 구분하되, World-level Event·Relation
-identity와 모든 membership은 query·inspector·stable URL에서 하나로 유지한다.
+같은 World·served Revision에서 Event point·Composite Event region은 Canon별 표시
+instance를 만들지 않고 World-level Event identity당 하나의 graph node로 합성한다.
+Canon별 layout·Narrative·시간·Relation은 그 node에 연결된 context evidence이며 node
+복제 근거가 아니다. 서로 다른 World의 Event identity는 병합하지 않는다.
 
 | 표현              | 의미                                              |
 | ----------------- | ------------------------------------------------- |
@@ -342,8 +344,10 @@ segment·region은 교차하는 모든 band에 색인한다. band가 비어 있�
 
 선택 entity는 bbox 밖에서도 유지하고 요청 시 직접 neighbor와 parent/child region
 closure를 읽는다. 이 탐색은 선택한 World·Canon·Revision 범위를 벗어나지 않는다.
-Canon은 사용자가 선택한 순서대로 local X에 누적 `widthHint + preferredGap`을 더해
-합성한다. presentation ID로 중복을 제거하며 budget 초과와 partial missing을
+서로 다른 World·served Revision source는 사용자가 선택한 순서대로 local X에
+`widthHint + preferredGap`을 더해 합성한다. 같은 World·served Revision의 Canon
+artifact는 하나의 좌표계에 evidence layer로 겹치고 Event identity 기반 presentation
+ID로 point·region 중복을 제거한다. budget 초과와 partial missing을
 diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전량 적재의
 우회로가 되어서는 안 된다. cache는 Revision과 scope에 고정하고 실패한 promise를
 제거해 같은 Revision에서 재시도한다. 다른 Revision으로 조용히 fallback하지 않는다.
@@ -389,7 +393,8 @@ diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전�
 - 어느 Canon도 왼쪽, 위쪽 또는 강조색을 이유로 기본·정본처럼 보이지 않게 한다.
 - ordering이 필요하면 사용자가 선택한 순서 또는 안정적인 중립 정렬을 사용한다.
 - 공통점은 correspondence 기준으로 정렬하고 차이는 Canon별 column 또는 lane에 남긴다.
-- 같은 Event identity의 direct membership은 correspondence 없이 shared node/row로 정렬한다.
+- 같은 Event identity의 direct membership은 correspondence 없이 정확히 하나의 shared node/row로 정렬한다. Composite Event도 같다.
+- Event drawer는 선택된 각 Canon의 Narrative를 Canon-labelled section으로 나누고 원문 문단을 보존한다.
 - Event·Relation·시간·Narrative 차이를 하나의 합쳐진 값으로 만들지 않는다.
 - 비교가 제공되는 Graph 관점은 correspondence와 Canon ID를 명시한다. 독립 compare route를 IP-005에서 새로 구현하지 않는다.
 
@@ -429,10 +434,11 @@ diagnostic·`truncated`로 공개한다. metadata·entity index도 browser 전�
 14. 복수 World graph와 text fallback이 같은 World별 Revision vector를 읽는다.
 15. 같은 화면의 World·Canon이 사실, Relation, Subject 또는 Revision 하나로 병합되지 않는다.
 16. 이름·slug·calendar kind가 같다는 이유만으로 Time System compatibility를 만들지 않는다.
-17. 동일 Event가 여러 선택 Canon에 참여해도 stable identity와 graph node를 무조건 복제하지 않는다.
+17. 동일 Event가 여러 선택 Canon에 참여하면 atomic/Composite 구분 없이 graph node가 정확히 하나다.
 18. Event artifact와 export/import가 모든 Canon membership을 보존한다.
 19. `/`는 `/graph`로 연결되고 제거한 독립 UI route는 404이며 내부 stale href가 없다.
 20. full→peek는 offscreen/직접 진입에서도 동일 Event를 가용 영역의 적정 위치·배율로 보여준다.
+21. 한 Event의 Canon별 Narrative는 하나의 drawer에서 Canon별 section과 문단 경계를 보존해 표시한다.
 21. collapse/close가 구분되고 history와 URL/UI/selection/탐색 context가 일치한다.
 22. no-JS 핵심 읽기·안전한 Markdown·keyboard/focus/reduced motion·모바일 접근성을 보존한다.
 23. private/explore/settings의 기존 진입·availability와 Publication JSON/Graph API/health/status가 보존된다.

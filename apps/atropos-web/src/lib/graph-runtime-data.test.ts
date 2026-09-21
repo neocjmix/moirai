@@ -241,7 +241,7 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
       store.set(key, original);
     }
   });
-  it("reads Korean Event narratives and sources from the selected immutable Canon scope", async () => {
+  it("groups a shared Event's selected Canon narratives without merging their prose", async () => {
     const loaded = await loadGraphPublicationSources([
       { world_id: ids.worldId, served_revision: 4 }
     ]);
@@ -253,9 +253,23 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
         { kind: "event", event_id: ids.eventId }
       )
     );
-    expect(detail.notes).toContain("선택한 Canon의 한국어 설명");
-    expect(detail.notes).toContain("[역사 자료](https://example.org/history)");
-    expect(detail.notes).not.toContain("다른 Canon의 설명");
+    expect(detail.narrativeSections).toHaveLength(2);
+    expect(detail.narrativeSections.map((section) => section.canonId)).toEqual([
+      ids.canonId,
+      k2
+    ]);
+    expect(detail.narrativeSections[0]!.narratives[0]!.body).toBe(
+      "선택한 Canon의 한국어 설명"
+    );
+    expect(detail.narrativeSections[1]!.narratives[0]!.body).toBe(
+      "다른 Canon의 설명"
+    );
+    expect(
+      detail.narrativeSections[0]!.narratives[0]!.publicReferences
+    ).toContainEqual({
+      label: "역사 자료",
+      url: "https://example.org/history"
+    });
   });
   it("connects a Gregorian axis only for the registered display codec", async () => {
     const loaded = await loadGraphPublicationSources([

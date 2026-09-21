@@ -19,7 +19,7 @@ export interface PresentationNode {
   readonly label: string;
   readonly visible: boolean;
   readonly contains: readonly string[];
-  /** A shared Event's first merged position is NEVER applied to every Canon. */
+  /** Canon-local evidence used during layout; graph composition merges the stable node ID. */
   readonly temporalPosition: MoiraiGraphTemporalPosition | null;
 }
 
@@ -73,13 +73,32 @@ export function presentationNodeId(
   ref: CanonicalEventReference
 ): string {
   const prefix = ref.kind === "time_event" ? "t_anchor_" : "m_event_";
-  return (
-    prefix +
-    key([
-      presentationScopeKey(source),
-      presentationIdentityKey(source.world_id, ref)
-    ])
-  );
+  return prefix + presentationIdentityKey(source.world_id, ref);
+}
+
+/**
+ * Converts pre-policy Canon-scoped node IDs to the stable World Event identity.
+ * New IDs pass through unchanged so immutable spatial artifacts can migrate lazily.
+ */
+export function canonicalPresentationNodeId(id: string): string {
+  const prefix = id.startsWith("m_event_")
+    ? "m_event_"
+    : id.startsWith("t_anchor_")
+      ? "t_anchor_"
+      : null;
+  if (!prefix) return id;
+  const encoded = id.slice(prefix.length);
+  try {
+    const decoded = JSON.parse(decodeURIComponent(encoded));
+    return Array.isArray(decoded) &&
+      decoded.length === 2 &&
+      typeof decoded[0] === "string" &&
+      typeof decoded[1] === "string"
+      ? prefix + decoded[1]
+      : id;
+  } catch {
+    return id;
+  }
 }
 
 export function projectPresentationInput(

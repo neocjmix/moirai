@@ -28,11 +28,11 @@ owner: Atropos
 
 ## BR-003.5 복수 Canon
 
-독자는 현재 적용한 Canon scope를 분명히 알 수 있어야 하며, overlap하는 Canon을 함께 선택하고 필요한 경우 비교할 수 있어야 한다. 같은 Event가 여러 Canon에 참여할 때 stable Event identity는 하나로 보인다. 비교는 어느 Canon을 정본·기본·공식·우위로 판정하지 않는다.
+독자는 현재 적용한 Canon scope를 분명히 알 수 있어야 하며, overlap하는 Canon을 함께 선택하고 필요한 경우 비교할 수 있어야 한다. 같은 Event가 여러 Canon에 참여할 때 stable Event identity와 graph node는 정확히 하나로 보인다. 이는 atomic Event와 Composite Event에 동일하게 적용하며, Canon별 Narrative·시간·관계 차이는 graph node를 복제하는 근거가 아니다. 비교는 어느 Canon을 정본·기본·공식·우위로 판정하지 않는다.
 
 ## BR-003.6 범위별 서술과 근거
 
-독자는 현재 Canon scope에 연결된 Canon·Process·Composite Event·단일 Event 단위의 authored Narrative를 읽을 수 있어야 한다. Canon과 Narrative는 서로 대체하지 않는다. 독자에게 제공할 인용이나 출처 설명이 세계 내용으로 명시적으로 작성된 경우에는 관련 링크도 확인할 수 있어야 한다. 운영용 원자료와 작성 유래 자체는 공개 대상이 아니다.
+독자는 현재 Canon scope에 연결된 Canon·Process·Composite Event·단일 Event 단위의 authored Narrative를 읽을 수 있어야 한다. 한 Event에 선택된 Canon별 Narrative가 여러 개이면 하나의 Event drawer 안에서 Canon별 section과 원문의 문단 경계를 보존해 표시한다. Narrative를 하나의 합성 문장으로 병합하거나 Narrative 차이 때문에 Event drawer를 복제하지 않는다. Canon과 Narrative는 서로 대체하지 않는다. 독자에게 제공할 인용이나 출처 설명이 세계 내용으로 명시적으로 작성된 경우에는 관련 링크도 확인할 수 있어야 한다. 운영용 원자료와 작성 유래 자체는 공개 대상이 아니다.
 
 ## BR-003.7 공유와 인용
 

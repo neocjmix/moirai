@@ -149,22 +149,16 @@ function MoiraiGraphApp({
       }
       if (!id.startsWith("m_event_") && !id.startsWith("t_anchor_")) return;
       try {
-        const [scopeKey, identityKey] = JSON.parse(
+        const identity = JSON.parse(
           decodeURIComponent(id.slice(id.startsWith("m_event_") ? 8 : 9))
         );
-        const [world_id, served_revision, canon_id] = JSON.parse(
-          decodeURIComponent(scopeKey)
+        if (!Array.isArray(identity) || typeof identity[0] !== "string") return;
+        const world_id = identity[0];
+        const source = state.query.sources.find(
+          (candidate) =>
+            candidate.world_id === world_id && candidate.canon_ids.length > 0
         );
-        const identity = JSON.parse(decodeURIComponent(identityKey));
-        if (
-          !state.query.sources.some(
-            (s) =>
-              s.world_id === world_id &&
-              s.served_revision === served_revision &&
-              s.canon_ids.includes(canon_id)
-          )
-        )
-          return;
+        if (!source) return;
         const event_ref =
           identity[1] === "event"
             ? { kind: "event" as const, event_id: identity[2] }
@@ -177,8 +171,8 @@ function MoiraiGraphApp({
         const next = {
           kind: "event" as const,
           world_id,
-          served_revision,
-          canon_id,
+          served_revision: source.served_revision,
+          canon_id: source.canon_ids[0]!,
           event_ref
         };
         setState((current) =>

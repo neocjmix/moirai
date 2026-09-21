@@ -4,8 +4,10 @@ import type {
   MoiraiGraphQueryResult
 } from "@moirai/contracts";
 import {
+  canonicalPresentationNodeId,
   findPresentationEvent,
   presentationIdentityKey,
+  presentationNodeId,
   projectPresentationInput
 } from "./index.js";
 
@@ -131,7 +133,7 @@ const fixture = (): MoiraiGraphQueryResult => ({
 });
 
 describe("M4.6-B one-way presentation input", () => {
-  it("keeps stable identity and all memberships behind Canon-specific instances", () => {
+  it("uses one stable graph node identity across Canon memberships", () => {
     const input = fixture();
     const before = structuredClone(input);
     const output = projectPresentationInput(input);
@@ -142,7 +144,7 @@ describe("M4.6-B one-way presentation input", () => {
       )
     );
     expect(instances).toHaveLength(2);
-    expect(new Set(instances.map((n) => n.id)).size).toBe(2);
+    expect(new Set(instances.map((n) => n.id)).size).toBe(1);
     expect(new Set(instances.map((n) => n.identityKey)).size).toBe(1);
     expect(output.scopes[0]!.links[0]!.identityKey).toBe(
       output.scopes[1]!.links[0]!.identityKey
@@ -155,6 +157,26 @@ describe("M4.6-B one-way presentation input", () => {
     );
     expect(output.sidecar).toEqual(before);
     expect(input).toEqual(before);
+  });
+
+  it("normalizes immutable legacy Canon-scoped node IDs", () => {
+    const source = { ...address, canon_id: "k1" };
+    const ref = { kind: "event" as const, event_id: "a" };
+    const identity = presentationIdentityKey("w", ref);
+    const legacy =
+      "m_event_" +
+      encodeURIComponent(
+        JSON.stringify([
+          encodeURIComponent(JSON.stringify(["w", 4, "k1"])),
+          identity
+        ])
+      );
+    expect(canonicalPresentationNodeId(legacy)).toBe(
+      presentationNodeId(source, ref)
+    );
+    expect(canonicalPresentationNodeId(presentationNodeId(source, ref))).toBe(
+      presentationNodeId(source, ref)
+    );
   });
 
   it("never treats the first merged Canon temporal result as every Canon's fact", () => {

@@ -605,7 +605,27 @@ export const eventRelatedItemSchema = z.object({
 });
 export type EventRelatedItem = z.infer<typeof eventRelatedItemSchema>;
 
+export const eventNarrativeSectionSchema = z.object({
+  canonId: z.string(),
+  canonLabel: z.string(),
+  narratives: z.array(
+    z.object({
+      id: z.string(),
+      locale: z.string(),
+      kind: z.enum(["primary", "summary", "annotation"]),
+      title: z.string().nullable(),
+      body: z.string(),
+      publicReferences: z.array(
+        z.object({ label: z.string(), url: z.string() })
+      ).default([])
+    })
+  ).default([])
+});
+export type EventNarrativeSection = z.infer<typeof eventNarrativeSectionSchema>;
+
 export const eventDetailResponseSchema = eventSchema.extend({
+  // Reader-only grouping: one Event drawer, Canon-labelled Narrative sections.
+  narrativeSections: z.array(eventNarrativeSectionSchema).default([]),
   // Moirai reader presentation only; never an authored URDR/Moirai entity model.
   readingContext: z.object({
     scopeLabel: z.string(),

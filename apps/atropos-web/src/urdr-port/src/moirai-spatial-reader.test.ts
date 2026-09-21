@@ -4,6 +4,8 @@ import type {
   MoiraiGraphSource
 } from "@moirai/contracts";
 import {
+  presentationIdentityKey,
+  presentationNodeId,
   projectPresentationInput,
   presentationScopeKey
 } from "@moirai/graph-presentation";
@@ -135,6 +137,29 @@ describe("M4.6-D revision-pinned spatial reader", () => {
     expect(far.reads.keys).not.toEqual(first.reads.keys);
     expect(reads.some((k) => k.endsWith("/current.json"))).toBe(false);
   });
+  it("normalizes legacy Canon-scoped Event nodes while retaining selection", async () => {
+    const ref = { kind: "event" as const, event_id: "shared" };
+    const legacyId =
+      "m_event_" +
+      encodeURIComponent(
+        JSON.stringify([scopeId, presentationIdentityKey(source.world_id, ref)])
+      );
+    const stableId = presentationNodeId(
+      { world_id: "w", served_revision: 4, canon_id: "k" },
+      ref
+    );
+    const { reader } = fixture([point(legacyId, 10)]);
+    const result = await reader.viewport({
+      sources: [source],
+      viewport: {
+        ...query(),
+        selectedEntityId: stableId
+      }
+    });
+    expect(cells(result).map((entity) => entity.id)).toEqual([stableId]);
+    expect(cells(result)[0]?.eventId).toBe(stableId);
+  });
+
   it("retains offscreen selection, neighbors and nested parent regions", async () => {
     const child = { ...point("child", 4096 * 9), containedBy: "inner" };
     const sibling = { ...point("sibling", 4096 * 10), containedBy: "inner" };

@@ -13,9 +13,10 @@ export async function graphSpatialDetail(
   id: string
 ): Promise<EventDetailResponse> {
   const { input, state: validated } = await graphSpatialQueryContext(state);
-  const scope = input.scopes.find(
+  const matchingScopes = input.scopes.filter(
     (s) => s.nodes.some((n) => n.id === id) || s.links.some((l) => l.id === id)
   );
+  const scope = matchingScopes[0];
   if (!scope) throw Error("graph_identity_outside_query");
   const node = scope.nodes.find((n) => n.id === id);
   const link = scope.links.find((l) => l.id === id);
@@ -29,14 +30,48 @@ export async function graphSpatialDetail(
   )!;
   const eventId =
     node?.reference.kind === "event" ? node.reference.event_id : null;
+  const eventScopes = eventId
+    ? matchingScopes.filter((candidate) =>
+        candidate.nodes.some(
+          (candidateNode) =>
+            candidateNode.id === id &&
+            candidateNode.reference.kind === "event" &&
+            candidateNode.reference.event_id === eventId
+        )
+      )
+    : [scope];
+  const canonIds = eventScopes.map((candidate) => candidate.source.canon_id);
+  const selectedSnapshots = canonIds.flatMap((canonId) => {
+    const selected = revision.snapshots.find(
+      (candidate) => candidate.canon.id === canonId
+    );
+    return selected ? [selected] : [];
+  });
   const event = eventId ? snapshot.events.find((e) => e.id === eventId) : null;
   const narratives = eventId
-    ? await readGraphEventNarratives(
-        revision.manifest,
-        source.canon_id,
-        eventId
-      )
+    ? await readGraphEventNarratives(revision.manifest, canonIds, eventId)
     : [];
+  const narrativeSections = selectedSnapshots.flatMap((selected) => {
+    const selectedNarratives = narratives.filter(
+      (narrative) => narrative.canon_id === selected.canon.id
+    );
+    return selectedNarratives.length
+      ? [
+          {
+            canonId: selected.canon.id,
+            canonLabel: selected.canon.title,
+            narratives: selectedNarratives.map((narrative) => ({
+              id: narrative.id,
+              locale: narrative.locale,
+              kind: narrative.kind,
+              title: narrative.title,
+              body: narrative.body,
+              publicReferences: [...narrative.public_references]
+            }))
+          }
+        ]
+      : [];
+  });
   const relations = eventId
     ? snapshot.temporal.relations.filter(
         (r) =>
@@ -116,8 +151,9 @@ export async function graphSpatialDetail(
     type: event?.kind === "composite" ? "historical-event" : "historical-event",
     title,
     notes,
+    narrativeSections,
     readingContext: {
-      scopeLabel: `${revision.world.title} · ${snapshot.canon.title}`,
+      scopeLabel: `${revision.world.title} · ${selectedSnapshots.map((selected) => selected.canon.title).join(" / ")}`,
       stableEventHref: stable,
       observation: `World: ${source.world_id}\nRevision ${source.served_revision}\nCanon: ${source.canon_id}\n\n${JSON.stringify(detail, null, 2)}`
     },

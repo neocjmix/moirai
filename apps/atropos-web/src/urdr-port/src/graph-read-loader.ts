@@ -217,6 +217,7 @@ function createMockEventDetail(
     title,
     participantEventIds: [],
     figureHandleIds: [],
+    narrativeSections: [],
     notes:
       locale === "ko"
         ? `**MOCK 데이터** — ${title} 사건의 상세 설명입니다. 실제 URDR API 연결 전 렌더링 확인용입니다.`

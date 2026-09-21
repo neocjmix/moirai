@@ -4,7 +4,10 @@ import type {
   MoiraiGraphDiagnostic,
   MoiraiGraphQueryResult
 } from "@moirai/contracts";
-import { presentationScopeKey } from "@moirai/graph-presentation";
+import {
+  canonicalPresentationNodeId,
+  presentationScopeKey
+} from "@moirai/graph-presentation";
 import {
   spatialDigest,
   spatialPrefix,
@@ -69,6 +72,18 @@ export interface SpatialViewportResult {
 }
 const bandNumber = (value: string) =>
   value.startsWith("n") ? -Number(value.slice(1)) : Number(value);
+const canonicalizeSpatialEntity = (
+  entity: GraphShellChartPlaneEntity
+): GraphShellChartPlaneEntity => ({
+  ...entity,
+  id: canonicalPresentationNodeId(entity.id),
+  eventId: canonicalPresentationNodeId(entity.eventId),
+  contains: entity.contains.map(canonicalPresentationNodeId),
+  ...(entity.containedBy
+    ? { containedBy: canonicalPresentationNodeId(entity.containedBy) }
+    : {})
+});
+
 const sourceError = (
   source: SpatialSource,
   code: string,
@@ -264,17 +279,35 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
         }
       })
     );
-    const canons = Object.fromEntries(
-      sources.map((s, i) => [
-        presentationScopeKey(s),
-        { widthHint: metas[i]?.widthHint ?? 1800, preferredGap: 240 }
-      ])
+    // Canons in the same immutable World revision are evidence layers over
+    // one Event plane. Only distinct World revisions receive horizontal offsets.
+    const groupKey = (source: SpatialSource) =>
+      JSON.stringify([source.world_id, source.served_revision]);
+    const groups = [
+      ...new Map(sources.map((source) => [groupKey(source), source])).keys()
+    ];
+    const groupCanons = Object.fromEntries(
+      groups.map((id) => {
+        const widths = sources.flatMap((source, index) =>
+          groupKey(source) === id ? [metas[index]?.widthHint ?? 1800] : []
+        );
+        return [
+          id,
+          { widthHint: Math.max(1800, ...widths), preferredGap: 240 }
+        ];
+      })
     );
-    const offsets = composeCanonOffsets(
-      sources.map(presentationScopeKey),
+    const groupOffsets = composeCanonOffsets(
+      groups,
       "full",
-      { canons },
+      { canons: groupCanons },
       new Map()
+    );
+    const offsets = new Map(
+      sources.map((source) => [
+        presentationScopeKey(source),
+        groupOffsets.get(groupKey(source)) ?? 0
+      ])
     );
     const requested = (query.artifactClasses ?? CLASSES).filter((c) =>
       CLASSES.includes(c as (typeof CLASSES)[number])
@@ -318,12 +351,15 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
               ])
             )
           };
-          const selected = getSelectedEntityRefs(
-            canonMeta,
-            query.selectedEntityId
-          );
+          const selectedArtifactId =
+            index.find(
+              (entry) =>
+                entry.id === query.selectedEntityId ||
+                canonicalPresentationNodeId(entry.id) === query.selectedEntityId
+            )?.id ?? query.selectedEntityId;
+          const selected = getSelectedEntityRefs(canonMeta, selectedArtifactId);
           const neighbors = query.includeNeighbors
-            ? getNeighborEntityRefs(canonMeta, selected, query.selectedEntityId)
+            ? getNeighborEntityRefs(canonMeta, selected, selectedArtifactId)
             : [];
           const refs = [
             ...selected,
@@ -331,7 +367,7 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
             ...getRegionRetentionRefs(
               canonMeta,
               [...selected, ...neighbors],
-              query.selectedEntityId
+              selectedArtifactId
             )
           ];
           for (const ref of refs) {
@@ -404,11 +440,12 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
             const entity = graphShellChartPlaneEntitySchema.parse(a.payload);
             if (entity.canonId !== meta.scopeId)
               throw Error("spatial_entity_scope_mismatch");
+            const normalized = canonicalizeSpatialEntity(entity);
             // A Relation's presentation identity must not overwrite its source Event
             // in the original loader's byEventId retention map. Geometry is untouched.
-            return entity.geometryKind === "segment"
-              ? { ...entity, eventId: entity.id }
-              : entity;
+            return normalized.geometryKind === "segment"
+              ? { ...normalized, eventId: normalized.id }
+              : normalized;
           });
         })
       );

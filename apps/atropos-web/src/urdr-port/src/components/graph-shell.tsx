@@ -1103,6 +1103,7 @@ type EventDrawerContentProps = {
   eventCauseLabels: string[];
   eventResultLabels: string[];
   notes: string;
+  narrativeSections: EventDetailResponse["narrativeSections"];
   loadState: "idle" | "loading" | "ready" | "error";
   selectedEventTitle: string;
   stage: EventDrawerStage;
@@ -2002,6 +2003,7 @@ function EventDrawerContent({
   eventResultLabels,
   loadState,
   notes,
+  narrativeSections,
   selectedEventTitle,
   stage,
   viewportRef,
@@ -2112,7 +2114,34 @@ function EventDrawerContent({
                   </tbody>
                 </table> : null}
 
-                {renderedNotes ? (
+                {narrativeSections.length > 0 ? (
+                  <div data-testid="event-narrative-sections">
+                    {narrativeSections.map((section) => (
+                      <section data-canon-id={section.canonId} key={section.canonId}>
+                        <h2>{section.canonLabel}</h2>
+                        {section.narratives.map((narrative) => (
+                          <article key={narrative.id}>
+                            {narrative.title ? <h3>{narrative.title}</h3> : null}
+                            <div className={styles.eventMarkdown}>
+                              {renderMarkdownDocument(narrative.body)}
+                            </div>
+                            {narrative.publicReferences.length > 0 ? (
+                              <ul>
+                                {narrative.publicReferences.map((reference) => (
+                                  <li key={reference.url}>
+                                    <a href={reference.url} rel="noreferrer" target="_blank">
+                                      {reference.label}
+                                    </a>
+                                  </li>
+                                ))}
+                              </ul>
+                            ) : null}
+                          </article>
+                        ))}
+                      </section>
+                    ))}
+                  </div>
+                ) : renderedNotes ? (
                   <div className={styles.eventMarkdown}>{renderedNotes}</div>
                 ) : loadState === "ready" ? (
                   <div className={styles.eventDrawerEmptyCopy}>{copy.eventNotesEmptyLabel}</div>
@@ -3733,6 +3762,7 @@ export function GraphShell({
       ? renderedEventSelection.label
       : selectedEventLoadState === "error" ? copy.eventLoadErrorLabel : copy.eventLoadingLabel);
   const selectedEventNotes = selectedEventRecord?.notes ?? "";
+  const selectedEventNarrativeSections = selectedEventRecord?.narrativeSections ?? [];
   const selectedEventChronologySummary = selectedEventRecord?.chronologySummary ?? (() => {
     const firstAnchor = selectedEventRecord?.chronology?.authored?.[0];
     return firstAnchor ? summarizeWorldAnchorForPanel(firstAnchor) : undefined;
@@ -4034,6 +4064,7 @@ export function GraphShell({
               eventResultLabels={selectedEventResultLabels}
               loadState={selectedEventLoadState}
               notes={selectedEventNotes}
+              narrativeSections={selectedEventNarrativeSections}
               readingContext={selectedEventRecord?.readingContext}
               locale={locale}
               onTabChange={setSelectedEventTab}

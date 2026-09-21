@@ -72,7 +72,10 @@ const compactChangeInputSchema = {
           type: "string" as const,
           description: "UUIDv7 idempotency key."
         },
-        world_id: { type: "string" as const, description: "Target World UUIDv7." },
+        world_id: {
+          type: "string" as const,
+          description: "Target World UUIDv7."
+        },
         expected_revision: {
           type: "integer" as const,
           minimum: 0,

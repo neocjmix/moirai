@@ -87,9 +87,9 @@ describe("selectGraphSpatialBootstrap", () => {
 
     const selected = selectGraphSpatialBootstrap(spatial, state);
 
-    expect(selected.workspace.navigationScopes?.map((scope) => scope.canonId)).toEqual([
-      secondId
-    ]);
+    expect(
+      selected.workspace.navigationScopes?.map((scope) => scope.canonId)
+    ).toEqual([secondId]);
     expect(selected.workspace.tabs[0]?.availableCanonIds).toEqual([secondId]);
     expect(selected.workspace.tabs[0]?.defaultEnabledCanonIds).toEqual([
       secondId

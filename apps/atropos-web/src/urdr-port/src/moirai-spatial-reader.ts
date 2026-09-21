@@ -2,36 +2,36 @@
 import type {
   MoiraiGraphSource,
   MoiraiGraphDiagnostic,
-  MoiraiGraphQueryResult,
+  MoiraiGraphQueryResult
 } from "@moirai/contracts";
 import {
   canonicalPresentationNodeId,
-  presentationScopeKey,
+  presentationScopeKey
 } from "@moirai/graph-presentation";
 import {
   spatialDigest,
   spatialPrefix,
   type SpatialManifest,
   type SpatialMeta,
-  type SpatialEntityIndexEntry,
+  type SpatialEntityIndexEntry
 } from "@moirai/graph-presentation/server";
 import {
   graphShellChartPlaneEntitySchema,
   type GraphShellChartPlaneEntity,
   type GraphShellViewportQuery,
-  type GraphShellViewportResponse,
+  type GraphShellViewportResponse
 } from "../shared/contracts/index";
 import {
   filterStaticViewportEntities,
   getBandRange,
   mergeUniqueEntities,
-  applyCanonOffset,
+  applyCanonOffset
 } from "./spatial-read";
 import { composeCanonOffsets } from "./spatial-composition";
 import {
   getSelectedEntityRefs,
   getNeighborEntityRefs,
-  getRegionRetentionRefs,
+  getRegionRetentionRefs
 } from "./spatial-retention";
 
 const MAX_CELLS = 2500;
@@ -39,7 +39,7 @@ const MAX_BYTES = 1024 * 1024;
 const MAX_OBJECT_READS = 256;
 const CLASSES = ["point", "segment", "region"] as const;
 export type SpatialRead = (
-  key: string,
+  key: string
 ) => Promise<{ status: number; body: string | null }>;
 export type SpatialSource = {
   world_id: string;
@@ -53,7 +53,7 @@ export interface SpatialViewportRequest {
   /** Optional semantic filter, evaluated server-side, never changes stored geometry. */
   readonly accept?: (
     entity: GraphShellChartPlaneEntity,
-    source: SpatialSource,
+    source: SpatialSource
   ) => boolean;
 }
 export interface SpatialViewportResult {
@@ -73,7 +73,7 @@ export interface SpatialViewportResult {
 const bandNumber = (value: string) =>
   value.startsWith("n") ? -Number(value.slice(1)) : Number(value);
 const canonicalizeSpatialEntity = (
-  entity: GraphShellChartPlaneEntity,
+  entity: GraphShellChartPlaneEntity
 ): GraphShellChartPlaneEntity => ({
   ...entity,
   id: canonicalPresentationNodeId(entity.id),
@@ -81,19 +81,19 @@ const canonicalizeSpatialEntity = (
   contains: entity.contains.map(canonicalPresentationNodeId),
   ...(entity.containedBy
     ? { containedBy: canonicalPresentationNodeId(entity.containedBy) }
-    : {}),
+    : {})
 });
 
 const sourceError = (
   source: SpatialSource,
   code: string,
-  message: string,
+  message: string
 ): MoiraiGraphDiagnostic => ({
   source,
   code,
   message,
   severity: "warning",
-  affected_ids: [],
+  affected_ids: []
 });
 
 export function createMoiraiSpatialReader(read: SpatialRead) {
@@ -101,7 +101,7 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
   let cacheHits = 0;
   async function document(
     key: string,
-    digest?: string,
+    digest?: string
   ): Promise<{ value: unknown; digest: string }> {
     const cacheKey = key + ":" + (digest ?? "");
     const existing = cache.get(cacheKey);
@@ -117,7 +117,7 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
         throw Error("spatial_digest_mismatch");
       return {
         value: JSON.parse(value.body),
-        digest: spatialDigest(value.body),
+        digest: spatialDigest(value.body)
       };
     })();
     cache.set(cacheKey, promise);
@@ -166,7 +166,7 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
     const ref = manifest.scopes.find(
       (s) =>
         s.canon_id === source.canon_id &&
-        s.scope_id === presentationScopeKey(source),
+        s.scope_id === presentationScopeKey(source)
     );
     if (!ref || !ref.meta_key.startsWith(prefix + "/scopes/"))
       throw Error("spatial_scope_missing");
@@ -189,11 +189,11 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
     return meta;
   }
   async function initialPoint(
-    source: SpatialSource,
+    source: SpatialSource
   ): Promise<{ x: number; y: number } | null> {
     const meta = await scope(source);
     const ref = meta.objects.find(
-      (o) => o.artifactClass === "point" && o.count > 0,
+      (o) => o.artifactClass === "point" && o.count > 0
     );
     if (!ref) return null;
     const doc = await json<{
@@ -213,11 +213,11 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
     )
       throw Error("spatial_object_mismatch");
     const payloads = doc.artifacts.map((a) =>
-      graphShellChartPlaneEntitySchema.parse(a.payload),
+      graphShellChartPlaneEntitySchema.parse(a.payload)
     );
     const point =
       payloads.find(
-        (e) => e.geometryKind === "point" && e.id.startsWith("m_event_"),
+        (e) => e.geometryKind === "point" && e.id.startsWith("m_event_")
       ) ?? payloads.find((e) => e.geometryKind === "point");
     if (!point || point.geometryKind !== "point") return null;
     if (point.canonId !== meta.scopeId)
@@ -225,13 +225,13 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
     return point.position;
   }
   async function sidecar(
-    source: SpatialSource,
+    source: SpatialSource
   ): Promise<MoiraiGraphQueryResult> {
     const meta = await scope(source);
     return json<MoiraiGraphQueryResult>(meta.sidecar_key, meta.sidecar_sha256);
   }
   async function viewport(
-    request: SpatialViewportRequest,
+    request: SpatialViewportRequest
   ): Promise<SpatialViewportResult> {
     const query = request.viewport;
     const max = Math.max(1, Math.min(MAX_CELLS, request.maxEntities ?? 1000));
@@ -243,7 +243,7 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
         query.bbox.minX,
         query.bbox.maxX,
         query.bbox.minY,
-        query.bbox.maxY,
+        query.bbox.maxY
       ].every(Number.isFinite) ||
       query.bbox.minX > query.bbox.maxX ||
       query.bbox.minY > query.bbox.maxY
@@ -253,14 +253,14 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
       s.canon_ids.map((canon_id) => ({
         world_id: s.world_id,
         served_revision: s.served_revision,
-        canon_id,
-      })),
+        canon_id
+      }))
     );
     const sourceByScope = new Map(
-      availableSources.map((s) => [presentationScopeKey(s), s]),
+      availableSources.map((s) => [presentationScopeKey(s), s])
     );
     const sources = query.canonIds.flatMap((id) =>
-      sourceByScope.has(id) ? [sourceByScope.get(id)!] : [],
+      sourceByScope.has(id) ? [sourceByScope.get(id)!] : []
     );
     const diagnostics: MoiraiGraphDiagnostic[] = [];
     const metas = await Promise.all(
@@ -272,45 +272,45 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
             sourceError(
               source,
               "m46_spatial_source_missing",
-              "The selected revision's spatial source is unavailable; other source revisions are unchanged.",
-            ),
+              "The selected revision's spatial source is unavailable; other source revisions are unchanged."
+            )
           );
           return null;
         }
-      }),
+      })
     );
     // Canons in the same immutable World revision are evidence layers over
     // one Event plane. Only distinct World revisions receive horizontal offsets.
     const groupKey = (source: SpatialSource) =>
       JSON.stringify([source.world_id, source.served_revision]);
     const groups = [
-      ...new Map(sources.map((source) => [groupKey(source), source])).keys(),
+      ...new Map(sources.map((source) => [groupKey(source), source])).keys()
     ];
     const groupCanons = Object.fromEntries(
       groups.map((id) => {
         const widths = sources.flatMap((source, index) =>
-          groupKey(source) === id ? [metas[index]?.widthHint ?? 1800] : [],
+          groupKey(source) === id ? [metas[index]?.widthHint ?? 1800] : []
         );
         return [
           id,
-          { widthHint: Math.max(1800, ...widths), preferredGap: 240 },
+          { widthHint: Math.max(1800, ...widths), preferredGap: 240 }
         ];
-      }),
+      })
     );
     const groupOffsets = composeCanonOffsets(
       groups,
       "full",
       { canons: groupCanons },
-      new Map(),
+      new Map()
     );
     const offsets = new Map(
       sources.map((source) => [
         presentationScopeKey(source),
-        groupOffsets.get(groupKey(source)) ?? 0,
-      ]),
+        groupOffsets.get(groupKey(source)) ?? 0
+      ])
     );
     const requested = (query.artifactClasses ?? CLASSES).filter((c) =>
-      CLASSES.includes(c as (typeof CLASSES)[number]),
+      CLASSES.includes(c as (typeof CLASSES)[number])
     );
     let truncated = diagnostics.length > 0 || requested.length < CLASSES.length;
     let objectReads = 0;
@@ -328,15 +328,15 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
           ...d,
           source,
           affected_ids: d.affected_ids.slice(0, 32),
-          message: d.message.slice(0, 512),
-        })),
+          message: d.message.slice(0, 512)
+        }))
       );
       const extra = new Map<string, Set<number>>();
       if (query.selectedEntityId) {
         try {
           const index = await json<SpatialEntityIndexEntry[]>(
             meta.index_key,
-            meta.index_sha256,
+            meta.index_sha256
           );
           const canonMeta = {
             entityIndex: Object.fromEntries(
@@ -346,17 +346,16 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
                   ...e,
                   eventId: e.geometryKind === "segment" ? e.id : e.eventId,
                   canonId: meta.scopeId,
-                  bandIndices: e.bands,
-                },
-              ]),
-            ),
+                  bandIndices: e.bands
+                }
+              ])
+            )
           };
           const selectedArtifactId =
             index.find(
               (entry) =>
                 entry.id === query.selectedEntityId ||
-                canonicalPresentationNodeId(entry.id) ===
-                  query.selectedEntityId,
+                canonicalPresentationNodeId(entry.id) === query.selectedEntityId
             )?.id ?? query.selectedEntityId;
           const selected = getSelectedEntityRefs(canonMeta, selectedArtifactId);
           const neighbors = query.includeNeighbors
@@ -368,8 +367,8 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
             ...getRegionRetentionRefs(
               canonMeta,
               [...selected, ...neighbors],
-              selectedArtifactId,
-            ),
+              selectedArtifactId
+            )
           ];
           for (const ref of refs) {
             const set = extra.get(ref.geometryKind) ?? new Set<number>();
@@ -382,8 +381,8 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
             sourceError(
               source,
               "m46_spatial_retention_missing",
-              "Selection index could not be read for this revision.",
-            ),
+              "Selection index could not be read for this revision."
+            )
           );
         }
       }
@@ -394,7 +393,7 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
             viewportMinY: query.bbox.minY,
             viewportMaxY: query.bbox.maxY,
             bandSize: meta.bandSize,
-            ...(o.artifactClass === "region" ? { overscanAfter: 3 } : {}),
+            ...(o.artifactClass === "region" ? { overscanAfter: 3 } : {})
           });
           const band = bandNumber(o.yBand);
           return (
@@ -406,15 +405,15 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
         .sort(
           (a, b) =>
             Number(
-              Boolean(extra.get(b.artifactClass)?.has(bandNumber(b.yBand))),
+              Boolean(extra.get(b.artifactClass)?.has(bandNumber(b.yBand)))
             ) -
             Number(
-              Boolean(extra.get(a.artifactClass)?.has(bandNumber(a.yBand))),
-            ),
+              Boolean(extra.get(a.artifactClass)?.has(bandNumber(a.yBand)))
+            )
         );
       const selectedObjects = objects.slice(
         0,
-        Math.max(0, MAX_OBJECT_READS - objectReads),
+        Math.max(0, MAX_OBJECT_READS - objectReads)
       );
       if (selectedObjects.length < objects.length) truncated = true;
       objectReads += selectedObjects.length;
@@ -448,14 +447,14 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
               ? { ...normalized, eventId: normalized.id }
               : normalized;
           });
-        }),
+        })
       );
       for (const result of results) {
         if (result.status === "fulfilled") {
           for (const entity of result.value)
             if (!request.accept || request.accept(entity, source))
               all.push(
-                applyCanonOffset(entity, offsets.get(meta.scopeId) ?? 0),
+                applyCanonOffset(entity, offsets.get(meta.scopeId) ?? 0)
               );
         } else {
           truncated = true;
@@ -463,8 +462,8 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
             sourceError(
               source,
               "m46_spatial_partial_missing",
-              "A declared spatial object is missing, invalid or has a mismatched digest.",
-            ),
+              "A declared spatial object is missing, invalid or has a mismatched digest."
+            )
           );
         }
       }
@@ -474,22 +473,22 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
         entities: mergeUniqueEntities(all),
         timeSystemId: "presentation",
         compatibilityKey: "presentation",
-        diagnostics: [],
+        diagnostics: []
       },
-      query,
+      query
     );
     const ordered = query.selectedEntityId
       ? [
           ...filtered.filter(
             (e) =>
               e.eventId === query.selectedEntityId ||
-              e.id === query.selectedEntityId,
+              e.id === query.selectedEntityId
           ),
           ...filtered.filter(
             (e) =>
               e.eventId !== query.selectedEntityId &&
-              e.id !== query.selectedEntityId,
-          ),
+              e.id !== query.selectedEntityId
+          )
         ]
       : filtered;
     const bounded: GraphShellChartPlaneEntity[] = [];
@@ -510,13 +509,13 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
         severity: "warning",
         affected_ids: [],
         message:
-          "Spatial response budget reached; zoom in or narrow sources. Omitted geometry is not an assertion of absence.",
+          "Spatial response budget reached; zoom in or narrow sources. Omitted geometry is not an assertion of absence."
       });
     const revisionVector = request.sources
       .filter((s) => sources.some((v) => v.world_id === s.world_id))
       .map((s) => ({
         world_id: s.world_id,
-        served_revision: s.served_revision,
+        served_revision: s.served_revision
       }));
     const revision =
       revisionVector.length === 1 ? revisionVector[0]!.served_revision : 0;
@@ -524,9 +523,9 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
       ...new Map(
         diagnostics.map((d) => [
           JSON.stringify([d.source, d.code, d.message]),
-          d,
-        ]),
-      ).values(),
+          d
+        ])
+      ).values()
     ].slice(0, 16);
     const response: SpatialViewportResult = {
       viewport: {
@@ -539,10 +538,10 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
         diagnostics: unique.map((d) => ({
           code: d.code,
           severity: d.severity === "error" ? "error" : "warning",
-          message: d.message,
+          message: d.message
         })),
         truncated,
-        cache: { stale: false },
+        cache: { stale: false }
       },
       revision_vector: revisionVector,
       diagnostics: unique,
@@ -550,15 +549,15 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
       reads: {
         objects: objectReads,
         cache_hits: cacheHits - beforeHits,
-        keys: readKeys,
-      },
+        keys: readKeys
+      }
     };
     // Enforce the serialized envelope too, including diagnostics and read evidence.
     while (Buffer.byteLength(JSON.stringify(response)) > MAX_BYTES) {
       const groups = [
         response.viewport.entities,
         response.viewport.edges,
-        response.viewport.regions,
+        response.viewport.regions
       ];
       const group = groups.find((g) => g.length > 0);
       if (!group) throw Error("spatial_response_budget");
@@ -575,6 +574,6 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
     reset() {
       cache.clear();
       cacheHits = 0;
-    },
+    }
   };
 }

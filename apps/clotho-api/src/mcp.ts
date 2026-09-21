@@ -157,7 +157,9 @@ export function registerMcp(
     "offline_access"
   ] as const;
   const challenge = metadataUrl
-    ? `Bearer resource_metadata="${metadataUrl}", scope="${connectionScopes.join(" ")}"`
+    ? `Bearer resource_metadata="${metadataUrl}", scope="${connectionScopes.join(
+        " "
+      )}"`
     : "Bearer";
 
   for (const url of [

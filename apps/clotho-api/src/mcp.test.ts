@@ -156,6 +156,9 @@ describe("Clotho MCP transport", () => {
     expect(response.headers["www-authenticate"]).toContain(
       "/.well-known/oauth-protected-resource/mcp"
     );
+    expect(response.headers["www-authenticate"]).toContain(
+      'scope="world:read world:write offline_access"'
+    );
     expect(response.body).not.toContain("private-input");
     const metadata = await app.inject(
       "/.well-known/oauth-protected-resource/mcp"
@@ -163,7 +166,7 @@ describe("Clotho MCP transport", () => {
     expect(metadata.json()).toEqual({
       resource: oidc.resource,
       authorization_servers: [oidc.issuer],
-      scopes_supported: ["world:read", "world:write"],
+      scopes_supported: ["world:read", "world:write", "offline_access"],
       bearer_methods_supported: ["header"]
     });
     expect(metadata.body).not.toMatch(/operator|subject|actor|jwks/);

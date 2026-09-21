@@ -72,7 +72,10 @@ const compactChangeInputSchema = {
           type: "string" as const,
           description: "UUIDv7 idempotency key."
         },
-        world_id: { type: "string" as const, description: "Target World UUIDv7." },
+        world_id: {
+          type: "string" as const,
+          description: "Target World UUIDv7."
+        },
         expected_revision: {
           type: "integer" as const,
           minimum: 0,
@@ -148,8 +151,12 @@ export function registerMcp(
   const metadataUrl = config.oidc
     ? `${new URL(config.oidc.resource).origin}/.well-known/oauth-protected-resource/mcp`
     : undefined;
+  // ChatGPT requires a refresh token to persist an MCP connection. Auth0 only
+  // issues one when the authorization request includes the OIDC offline_access
+  // scope, even if the dynamically registered client allows refresh_token.
+  const connectionScope = "world:read world:write offline_access";
   const challenge = metadataUrl
-    ? `Bearer resource_metadata="${metadataUrl}", scope="world:read world:write"`
+    ? `Bearer resource_metadata="${metadataUrl}", scope="${connectionScope}"`
     : "Bearer";
 
   for (const url of [
@@ -163,7 +170,7 @@ export function registerMcp(
       return {
         resource: config.oidc.resource,
         authorization_servers: [config.oidc.issuer],
-        scopes_supported: ["world:read", "world:write"],
+        scopes_supported: connectionScope.split(" "),
         bearer_methods_supported: ["header"]
       };
     });

@@ -54,6 +54,68 @@ const methods = CLOTHO_METHODS.map((method) => ({
   schema: clothoInputSchema(method),
   validate: validators.compile(clothoInputSchema(method))
 }));
+// The fully-expanded ChangePlan union is intentionally strict for execution,
+// but publishing it twice in tools/list makes the discovery response roughly
+// 175 KB. Some MCP hosts discard an oversized catalog without surfacing a
+// useful error. Keep AJV validation on the full contract above and publish a
+// compact descriptor that still names every top-level ChangePlan field.
+const compactChangeInputSchema = {
+  type: "object" as const,
+  properties: {
+    plan: {
+      type: "object" as const,
+      description:
+        "ChangePlan contract v4. Build operations from previously read World and Canon context; the server validates the complete discriminated-union contract.",
+      properties: {
+        contract_version: { const: CONTRACT_VERSION },
+        change_set_id: {
+          type: "string" as const,
+          description: "UUIDv7 idempotency key."
+        },
+        world_id: { type: "string" as const, description: "Target World UUIDv7." },
+        expected_revision: {
+          type: "integer" as const,
+          minimum: 0,
+          description: "Revision observed immediately before planning."
+        },
+        intent: { type: "string" as const, maxLength: 2000 },
+        origins: {
+          type: "array" as const,
+          minItems: 1,
+          maxItems: 100,
+          description:
+            "Provenance entries with kind (source_explicit, human_instruction, or llm_inference) and summary.",
+          items: { type: "object" as const }
+        },
+        operations: {
+          type: "array" as const,
+          minItems: 1,
+          maxItems: 500,
+          description:
+            "Ordered contract-v4 create, update, or delete operations. Use entity-specific values and origin_refs; use client_ref for entities created within this plan.",
+          items: { type: "object" as const }
+        }
+      },
+      required: [
+        "contract_version",
+        "change_set_id",
+        "world_id",
+        "expected_revision",
+        "intent",
+        "origins",
+        "operations"
+      ],
+      additionalProperties: false
+    },
+    plan_digest: {
+      type: "string" as const,
+      pattern: "^[0-9a-f]{64}$",
+      description: "Optional SHA-256 digest returned by change_validate."
+    }
+  },
+  required: ["plan"],
+  additionalProperties: false
+};
 const failure = (code: string) => ({
   content: [
     {
@@ -271,7 +333,9 @@ export function registerMcp(
         tools: methods.map(({ method, name, schema }) => ({
           name,
           description: descriptions[method],
-          inputSchema: { ...schema, type: "object" as const },
+          inputSchema: method.startsWith("change.")
+            ? compactChangeInputSchema
+            : { ...schema, type: "object" as const },
           annotations: {
             readOnlyHint: method !== "change.commit",
             destructiveHint: method === "change.commit",

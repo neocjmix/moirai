@@ -2,7 +2,7 @@ import type { EventDetailResponse } from "../urdr-port/shared/contracts";
 import { graphSpatialQueryContext } from "./graph-spatial-query";
 import {
   readGraphEventNarratives,
-  readGraphRevision
+  readGraphRevision,
 } from "./graph-revision-source";
 import { buildGraphUrlSearch } from "./moirai-graph-source-query";
 import { moiraiSpatialReader } from "./moirai-spatial";
@@ -10,11 +10,11 @@ import { graphEventHref } from "./event-reading-navigation";
 import { eventTimeSummary } from "./event-time-summary";
 export async function graphSpatialDetail(
   state: unknown,
-  id: string
+  id: string,
 ): Promise<EventDetailResponse> {
   const { input, state: validated } = await graphSpatialQueryContext(state);
   const matchingScopes = input.scopes.filter(
-    (s) => s.nodes.some((n) => n.id === id) || s.links.some((l) => l.id === id)
+    (s) => s.nodes.some((n) => n.id === id) || s.links.some((l) => l.id === id),
   );
   const scope = matchingScopes[0];
   if (!scope) throw Error("graph_identity_outside_query");
@@ -23,10 +23,10 @@ export async function graphSpatialDetail(
   const source = scope.source;
   const revision = await readGraphRevision(
     source.world_id,
-    source.served_revision
+    source.served_revision,
   );
   const snapshot = revision.snapshots.find(
-    (s) => s.canon.id === source.canon_id
+    (s) => s.canon.id === source.canon_id,
   )!;
   const eventId =
     node?.reference.kind === "event" ? node.reference.event_id : null;
@@ -36,13 +36,15 @@ export async function graphSpatialDetail(
           (candidateNode) =>
             candidateNode.id === id &&
             candidateNode.reference.kind === "event" &&
-            candidateNode.reference.event_id === eventId
-        )
+            candidateNode.reference.event_id === eventId,
+        ),
       )
     : [scope];
   const canonIds = eventScopes.map((candidate) => candidate.source.canon_id);
   const selectedSnapshots = canonIds.flatMap((canonId) => {
-    const selected = revision.snapshots.find((candidate) => candidate.canon.id === canonId);
+    const selected = revision.snapshots.find(
+      (candidate) => candidate.canon.id === canonId,
+    );
     return selected ? [selected] : [];
   });
   const event = eventId ? snapshot.events.find((e) => e.id === eventId) : null;
@@ -51,21 +53,23 @@ export async function graphSpatialDetail(
     : [];
   const narrativeSections = selectedSnapshots.flatMap((selected) => {
     const selectedNarratives = narratives.filter(
-      (narrative) => narrative.canon_id === selected.canon.id
+      (narrative) => narrative.canon_id === selected.canon.id,
     );
     return selectedNarratives.length
-      ? [{
-          canonId: selected.canon.id,
-          canonLabel: selected.canon.title,
-          narratives: selectedNarratives.map((narrative) => ({
-            id: narrative.id,
-            locale: narrative.locale,
-            kind: narrative.kind,
-            title: narrative.title,
-            body: narrative.body,
-            publicReferences: narrative.public_references
-          }))
-        }]
+      ? [
+          {
+            canonId: selected.canon.id,
+            canonLabel: selected.canon.title,
+            narratives: selectedNarratives.map((narrative) => ({
+              id: narrative.id,
+              locale: narrative.locale,
+              kind: narrative.kind,
+              title: narrative.title,
+              body: narrative.body,
+              publicReferences: narrative.public_references,
+            })),
+          },
+        ]
       : [];
   });
   const relations = eventId
@@ -73,7 +77,7 @@ export async function graphSpatialDetail(
         (r) =>
           (r.source_ref.kind === "event" &&
             r.source_ref.event_id === eventId) ||
-          (r.target_ref.kind === "event" && r.target_ref.event_id === eventId)
+          (r.target_ref.kind === "event" && r.target_ref.event_id === eventId),
       )
     : link
       ? [link.relation]
@@ -83,7 +87,7 @@ export async function graphSpatialDetail(
     ? {
         kind: "event" as const,
         ...source,
-        event_ref: { kind: "event" as const, event_id: eventId }
+        event_ref: { kind: "event" as const, event_id: eventId },
       }
     : null;
   const returnSearch = buildGraphUrlSearch("", { ...validated, focus });
@@ -93,14 +97,14 @@ export async function graphSpatialDetail(
         eventId,
         revision: source.served_revision,
         canonId: source.canon_id,
-        graphSearch: returnSearch
+        graphSearch: returnSearch,
       })
     : null;
   const detail = {
     source,
     identity: node?.reference ?? {
       kind: "relation",
-      relation_id: link!.relation.id
+      relation_id: link!.relation.id,
     },
     event: event ?? null,
     relation: link?.relation ?? null,
@@ -116,7 +120,7 @@ export async function graphSpatialDetail(
     narratives,
     subjects: eventId
       ? snapshot.subjects.filter((s) =>
-          s.subject?.member_event_ids.includes(eventId)
+          s.subject?.member_event_ids.includes(eventId),
         )
       : [],
     geometry_status: meta?.unplaced.includes(id) ? "unplaced" : "presentation",
@@ -124,8 +128,8 @@ export async function graphSpatialDetail(
       meta?.diagnostics.filter(
         (d) =>
           d.affected_ids.includes(id) ||
-          (eventId && d.affected_ids.includes(eventId))
-      ) ?? []
+          (eventId && d.affected_ids.includes(eventId)),
+      ) ?? [],
   };
   const title = event?.title ?? node?.label ?? link?.relation.type ?? id;
   const notes = [
@@ -136,8 +140,8 @@ export async function graphSpatialDetail(
     ...narratives.flatMap((n) => [
       n.title ? `## ${n.title}` : "",
       n.body,
-      ...n.public_references.map((ref) => `[${ref.label}](${ref.url})`)
-    ])
+      ...n.public_references.map((ref) => `[${ref.label}](${ref.url})`),
+    ]),
   ]
     .filter(Boolean)
     .join("\n\n");
@@ -151,7 +155,7 @@ export async function graphSpatialDetail(
     readingContext: {
       scopeLabel: `${revision.world.title} · ${selectedSnapshots.map((selected) => selected.canon.title).join(" / ")}`,
       stableEventHref: stable,
-      observation: `World: ${source.world_id}\nRevision ${source.served_revision}\nCanon: ${source.canon_id}\n\n${JSON.stringify(detail, null, 2)}`
+      observation: `World: ${source.world_id}\nRevision ${source.served_revision}\nCanon: ${source.canon_id}\n\n${JSON.stringify(detail, null, 2)}`,
     },
     participantEventIds: [],
     figureHandleIds: [],
@@ -176,7 +180,7 @@ export async function graphSpatialDetail(
           candidate.id ===
           (relation.source_ref.kind === "event"
             ? relation.source_ref.event_id
-            : null)
+            : null),
       );
       return cause ? [{ id: cause.id, label: cause.title }] : [];
     }),
@@ -193,9 +197,9 @@ export async function graphSpatialDetail(
           candidate.id ===
           (relation.target_ref.kind === "event"
             ? relation.target_ref.event_id
-            : null)
+            : null),
       );
       return effect ? [{ id: effect.id, label: effect.title }] : [];
-    })
+    }),
   };
 }

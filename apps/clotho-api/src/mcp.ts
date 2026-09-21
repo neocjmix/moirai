@@ -65,6 +65,12 @@ const failure = (code: string) => ({
   ],
   isError: true
 });
+const discoveryMethods = new Set([
+  "initialize",
+  "notifications/initialized",
+  "server/discover",
+  "tools/list"
+]);
 export function registerMcp(
   app: FastifyInstance,
   config: {
@@ -128,7 +134,10 @@ export function registerMcp(
       // Parsing uses the original media type selected before onRequest. The
       // SDK receives the normalized headers after parsing.
       if (request.method === "POST") {
-        if (!request.headers.authorization)
+        if (
+          !request.headers.authorization &&
+          request.headers["content-length"] === "0"
+        )
           return reply
             .header("www-authenticate", challenge)
             .code(401)
@@ -187,6 +196,28 @@ export function registerMcp(
         return;
       }
       const body = request.body as Record<string, unknown> | undefined;
+      // ChatGPT discovers tool descriptors before it has attached the newly
+      // granted access token. Keep execution protected while exposing only
+      // the standard, side-effect-free MCP discovery exchange. Bodyless
+      // probes still receive the OAuth challenge below, so the client can
+      // discover the protected-resource metadata and start authorization.
+      if (
+        request.method === "POST" &&
+        body &&
+        !Array.isArray(body) &&
+        body.jsonrpc === "2.0" &&
+        typeof body.method === "string" &&
+        discoveryMethods.has(body.method)
+      ) {
+        app.log.info(
+          {
+            event: "mcp_unauthenticated_discovery",
+            rpc_method: body.method.slice(0, 80)
+          },
+          "Serving public MCP tool discovery before OAuth token attachment"
+        );
+        return;
+      }
       app.log.info(
         {
           event: "mcp_unauthenticated_denied",

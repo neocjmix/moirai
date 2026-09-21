@@ -7,13 +7,13 @@ import type { GraphSpatialBootstrap } from "../lib/graph-spatial-bootstrap";
 import { selectGraphSpatialBootstrap } from "../lib/graph-spatial-selection";
 import {
   DEFAULT_GRAPH_READER,
-  type GraphReaderState
+  type GraphReaderState,
 } from "../lib/event-reading-navigation";
 import { Theme } from "@radix-ui/themes";
 
 import type {
   MoiraiGraphQueryResult,
-  MoiraiGraphUrlState
+  MoiraiGraphUrlState,
 } from "@moirai/contracts";
 
 import type { AtroposScreenId } from "../lib/atropos-screen-registry";
@@ -23,7 +23,7 @@ import type {
   GraphDiagnostic,
   GraphRelationMatch,
   GraphSearchEntity,
-  GraphSourceCatalog
+  GraphSourceCatalog,
 } from "../lib/moirai-graph-source-query";
 import type { EventDetailResponse } from "../urdr-port/shared/contracts";
 import type { GraphShellDrawerStage } from "../urdr-port/src/components/graph-shell-share-state";
@@ -40,7 +40,7 @@ export function AtroposGraphRoot({
   spatial,
   initialEventDetail,
   initialDrawerStage,
-  demo = false
+  demo = false,
 }: Readonly<{
   initialScreen: AtroposScreenId;
   initialGraphQuery: MoiraiGraphUrlState;
@@ -94,7 +94,7 @@ function MoiraiGraphApp({
   initialScreen,
   spatial,
   initialEventDetail,
-  initialDrawerStage
+  initialDrawerStage,
 }: {
   initialScreen: AtroposScreenId;
   spatial: GraphSpatialBootstrap;
@@ -105,13 +105,13 @@ function MoiraiGraphApp({
   const queryKey = JSON.stringify(state.query);
   const selectedSpatial = useMemo(
     () => selectGraphSpatialBootstrap(spatial, state),
-    [queryKey, spatial]
+    [queryKey, spatial],
   );
   const loader = useMemo(() => {
     const requestState = {
       version: 1 as const,
       query: JSON.parse(queryKey),
-      focus: null
+      focus: null,
     };
     return createMoiraiGraphReadLoader({
       sources: requestState.query.sources,
@@ -122,11 +122,11 @@ function MoiraiGraphApp({
         const response = await fetch("/graph/detail", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ state: requestState, id })
+          body: JSON.stringify({ state: requestState, id }),
         });
         if (!response.ok) throw Error("selected_detail_unavailable");
         return response.json();
-      }
+      },
     });
   }, [queryKey, selectedSpatial.workspace]);
   const focus =
@@ -136,28 +136,27 @@ function MoiraiGraphApp({
           label:
             state.focus.event_ref.kind === "event"
               ? state.focus.event_ref.event_id
-              : "Time Event"
+              : "Time Event",
         }
       : null;
   const onSelection = useCallback(
     (id: string | null) => {
       if (!id) {
         setState((current) =>
-          current.focus ? { ...current, focus: null } : current
+          current.focus ? { ...current, focus: null } : current,
         );
         return;
       }
       if (!id.startsWith("m_event_") && !id.startsWith("t_anchor_")) return;
       try {
         const identity = JSON.parse(
-          decodeURIComponent(id.slice(id.startsWith("m_event_") ? 8 : 9))
+          decodeURIComponent(id.slice(id.startsWith("m_event_") ? 8 : 9)),
         );
         if (!Array.isArray(identity) || typeof identity[0] !== "string") return;
         const world_id = identity[0];
         const source = state.query.sources.find(
           (candidate) =>
-            candidate.world_id === world_id &&
-            candidate.canon_ids.length > 0
+            candidate.world_id === world_id && candidate.canon_ids.length > 0,
         );
         if (!source) return;
         const event_ref =
@@ -167,25 +166,25 @@ function MoiraiGraphApp({
                 kind: "time_event" as const,
                 time_system_ref: { time_system_id: identity[2] },
                 definition_version: identity[3],
-                coordinate: identity[4]
+                coordinate: identity[4],
               };
         const next = {
           kind: "event" as const,
           world_id,
           served_revision: source.served_revision,
           canon_id: source.canon_ids[0]!,
-          event_ref
+          event_ref,
         };
         setState((current) =>
           JSON.stringify(current.focus) === JSON.stringify(next)
             ? current
-            : { ...current, focus: next }
+            : { ...current, focus: next },
         );
       } catch {
         return;
       }
     },
-    [setState, state.query.sources]
+    [setState, state.query.sources],
   );
   return (
     <App

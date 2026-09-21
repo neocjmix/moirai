@@ -10,6 +10,7 @@ export type GraphSpatialBootstrap = {
   workspace: GraphShellWorkspaceShell;
   center: { x: number; y: number } | null;
 };
+
 export async function graphSpatialBootstrap(
   state: MoiraiGraphUrlState,
   catalog: GraphSourceCatalog

@@ -1,10 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { MoiraiGraphUrlState } from "@moirai/contracts";
 import { presentationScopeKey } from "@moirai/graph-presentation";
-import {
-  selectGraphSpatialBootstrap,
-  type GraphSpatialBootstrap
-} from "./graph-spatial-bootstrap";
+import type { GraphSpatialBootstrap } from "./graph-spatial-bootstrap";
+import { selectGraphSpatialBootstrap } from "./graph-spatial-selection";
 
 const worldId = "01995c2a-7b00-7000-8000-000000000101";
 const source = (canon_id: string) => ({

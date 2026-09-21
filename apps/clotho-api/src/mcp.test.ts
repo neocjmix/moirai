@@ -1,7 +1,12 @@
 import { createHash, randomBytes } from "node:crypto";
 import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
-import { CLOTHO_METHODS, CONTRACT_VERSION } from "@moirai/contracts";
+import {
+  CLOTHO_METHODS,
+  CONTRACT_VERSION,
+  EVENT_MEMBERSHIP_CONTRACT_VERSION,
+  LEGACY_CONTRACT_VERSION
+} from "@moirai/contracts";
 import { ChangeSetError } from "@moirai/domain";
 import Fastify from "fastify";
 import { generateKeyPair, SignJWT } from "jose";
@@ -307,11 +312,25 @@ describe("Clotho MCP transport", () => {
       properties?: {
         plan?: {
           required?: string[];
-          properties?: { operations?: { items?: { type?: string } } };
+          properties?: {
+            contract_version?: { enum?: number[] };
+            operations?: {
+              items?: {
+                properties?: {
+                  entity_type?: { enum?: string[] };
+                  entity_id?: unknown;
+                  client_ref?: unknown;
+                  origin_refs?: unknown;
+                  value?: { properties?: Record<string, unknown> };
+                };
+              };
+            };
+          };
         };
       };
     };
-    expect(changeSchema.properties?.plan?.required).toEqual(
+    const planSchema = changeSchema.properties?.plan;
+    expect(planSchema?.required).toEqual(
       expect.arrayContaining([
         "contract_version",
         "change_set_id",
@@ -322,9 +341,48 @@ describe("Clotho MCP transport", () => {
         "operations"
       ])
     );
-    expect(
-      changeSchema.properties?.plan?.properties?.operations?.items?.type
-    ).toBe("object");
+    expect(planSchema?.properties?.contract_version?.enum).toEqual([
+      LEGACY_CONTRACT_VERSION,
+      EVENT_MEMBERSHIP_CONTRACT_VERSION,
+      CONTRACT_VERSION
+    ]);
+    const operationProperties =
+      planSchema?.properties?.operations?.items?.properties;
+    expect(operationProperties?.entity_type?.enum).toEqual(
+      expect.arrayContaining([
+        "world",
+        "canon",
+        "event",
+        "relation",
+        "narrative",
+        "time_system",
+        "canon_time_system",
+        "event_canon_membership",
+        "relation_canon_membership"
+      ])
+    );
+    expect(operationProperties).toEqual(
+      expect.objectContaining({
+        entity_id: expect.anything(),
+        client_ref: expect.anything(),
+        origin_refs: expect.anything(),
+        value: expect.anything()
+      })
+    );
+    expect(operationProperties?.value?.properties).toEqual(
+      expect.objectContaining({
+        world_id: expect.anything(),
+        canon_id: expect.anything(),
+        time_system_id: expect.anything(),
+        event_id: expect.anything(),
+        relation_id: expect.anything(),
+        source_ref: expect.anything(),
+        target_ref: expect.anything(),
+        scope_id: expect.anything(),
+        public_references: expect.anything(),
+        definition: expect.anything()
+      })
+    );
     expect(Buffer.byteLength(JSON.stringify(tools))).toBeLessThan(32_000);
     const result = await client.callTool({
       name: "world_get",

@@ -19,14 +19,14 @@ const fixture = vi.hoisted(() => {
     title,
     summary: "Public synthetic summary",
     roles: [],
-    attributes: {},
+    attributes: {}
   });
   return {
     sourceA,
     sourceB,
     event,
     cause,
-    records: [record(event, "Known event"), record(cause, "Its cause")],
+    records: [record(event, "Known event"), record(cause, "Its cause")]
   };
 });
 
@@ -38,11 +38,11 @@ vi.mock("./graph-spatial-query", () => ({
         sources: [
           {
             ...fixture.sourceA,
-            canon_ids: [fixture.sourceA.canon_id, fixture.sourceB.canon_id],
-          },
-        ],
+            canon_ids: [fixture.sourceA.canon_id, fixture.sourceB.canon_id]
+          }
+        ]
       },
-      focus: null,
+      focus: null
     },
     input: {
       scopes: [fixture.sourceA, fixture.sourceB].map((source, index) => ({
@@ -51,13 +51,13 @@ vi.mock("./graph-spatial-query", () => ({
         nodes: [
           {
             id: "point-1",
-            reference: { kind: "event", event_id: fixture.event },
-          },
+            reference: { kind: "event", event_id: fixture.event }
+          }
         ],
-        links: [],
-      })),
-    },
-  }),
+        links: []
+      }))
+    }
+  })
 }));
 vi.mock("./graph-revision-source", () => ({
   readGraphRevision: async () => ({
@@ -66,7 +66,7 @@ vi.mock("./graph-revision-source", () => ({
     snapshots: [fixture.sourceA, fixture.sourceB].map((source, index) => ({
       canon: {
         id: source.canon_id,
-        title: `Interpretation ${index ? "B" : "A"}`,
+        title: `Interpretation ${index ? "B" : "A"}`
       },
       events: fixture.records,
       subjects: [],
@@ -75,8 +75,8 @@ vi.mock("./graph-revision-source", () => ({
           {
             event_id: fixture.event,
             kind: "bounded",
-            display_label: "1443년 범위",
-          },
+            display_label: "1443년 범위"
+          }
         ],
         composites: [],
         relations: [
@@ -84,17 +84,17 @@ vi.mock("./graph-revision-source", () => ({
             id: "cause-1",
             type: "causes",
             source_ref: { kind: "event", event_id: fixture.cause },
-            target_ref: { kind: "event", event_id: fixture.event },
+            target_ref: { kind: "event", event_id: fixture.event }
           },
           {
             id: "enable-1",
             type: "enables",
             source_ref: { kind: "event", event_id: fixture.event },
-            target_ref: { kind: "event", event_id: fixture.cause },
-          },
-        ],
-      },
-    })),
+            target_ref: { kind: "event", event_id: fixture.cause }
+          }
+        ]
+      }
+    }))
   }),
   readGraphEventNarratives: async () => [
     {
@@ -107,8 +107,8 @@ vi.mock("./graph-revision-source", () => ({
       title: "기록 A",
       body: "첫 문단.\n\n둘째 문단.",
       public_references: [
-        { label: "Public evidence", url: "https://example.org/evidence" },
-      ],
+        { label: "Public evidence", url: "https://example.org/evidence" }
+      ]
     },
     {
       id: "narrative-b",
@@ -119,20 +119,20 @@ vi.mock("./graph-revision-source", () => ({
       kind: "annotation",
       title: "기록 B",
       body: "다른 Canon의 해석.",
-      public_references: [],
-    },
-  ],
+      public_references: []
+    }
+  ]
 }));
 vi.mock("./moirai-spatial", () => ({
   moiraiSpatialReader: {
-    scope: async () => ({ unplaced: [], diagnostics: [] }),
-  },
+    scope: async () => ({ unplaced: [], diagnostics: [] })
+  }
 }));
 
 describe("Event reader detail presentation", () => {
   it("groups one Event's narratives by selected Canon without merging prose", async () => {
     const detail = eventDetailResponseSchema.parse(
-      await graphSpatialDetail({}, "point-1"),
+      await graphSpatialDetail({}, "point-1")
     );
     expect(detail.chronologySummary).toBe("1443년 범위");
     expect(detail.narrativeSections).toEqual([
@@ -140,35 +140,35 @@ describe("Event reader detail presentation", () => {
         canonId: fixture.sourceA.canon_id,
         canonLabel: "Interpretation A",
         narratives: [
-          expect.objectContaining({ body: "첫 문단.\n\n둘째 문단." }),
-        ],
+          expect.objectContaining({ body: "첫 문단.\n\n둘째 문단." })
+        ]
       }),
       expect.objectContaining({
         canonId: fixture.sourceB.canon_id,
         canonLabel: "Interpretation B",
-        narratives: [expect.objectContaining({ body: "다른 Canon의 해석." })],
-      }),
+        narratives: [expect.objectContaining({ body: "다른 Canon의 해석." })]
+      })
     ]);
     expect(detail.readingContext?.scopeLabel).toBe(
-      "Public fixture World · Interpretation A / Interpretation B",
+      "Public fixture World · Interpretation A / Interpretation B"
     );
     expect(detail.readingContext?.observation).toContain("canon_memberships");
     expect(detail.readingContext?.stableEventHref).toContain(
-      `/graph/events/${fixture.sourceA.world_id}/${fixture.event}?revision=7&canon=${fixture.sourceA.canon_id}&mq=`,
+      `/graph/events/${fixture.sourceA.world_id}/${fixture.event}?revision=7&canon=${fixture.sourceA.canon_id}&mq=`
     );
   });
 
   it("does not reinterpret enabling or other connections as direct causality", async () => {
     const detail = await graphSpatialDetail({}, "point-1");
     expect(detail.causeEvents).toEqual([
-      { id: fixture.cause, label: "Its cause" },
+      { id: fixture.cause, label: "Its cause" }
     ]);
     expect(detail.resultEvents).toEqual([]);
   });
 
   it("does not synthesize detail for identities outside the selected query", async () => {
     await expect(graphSpatialDetail({}, "missing")).rejects.toThrow(
-      "graph_identity_outside_query",
+      "graph_identity_outside_query"
     );
   });
 });

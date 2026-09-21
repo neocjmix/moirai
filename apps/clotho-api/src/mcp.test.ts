@@ -169,7 +169,7 @@ describe("Clotho MCP transport", () => {
     expect(metadata.body).not.toMatch(/operator|subject|actor|jwks/);
     expect(execute).not.toHaveBeenCalled();
   });
-  it("exposes only MCP discovery without authentication", async () => {
+  it("requires authentication for MCP discovery", async () => {
     const { send, execute } = setup([], true);
     const initialized = await send(
       {
@@ -184,19 +184,20 @@ describe("Clotho MCP transport", () => {
       },
       ""
     );
-    expect(initialized.statusCode).toBe(200);
+    expect(initialized.statusCode).toBe(401);
+    expect(initialized.headers["www-authenticate"]).toContain(
+      "/.well-known/oauth-protected-resource/mcp"
+    );
     const listed = await send(
       { jsonrpc: "2.0", id: 2, method: "tools/list" },
       ""
     );
-    expect(listed.statusCode).toBe(200);
-    expect(listed.json().result.tools).toHaveLength(CLOTHO_METHODS.length);
+    expect(listed.statusCode).toBe(401);
     const extensionProbe = await send(
       { jsonrpc: "2.0", id: 3, method: "server/discover", params: {} },
       ""
     );
-    expect(extensionProbe.statusCode).toBe(200);
-    expect(extensionProbe.json().error.code).toBe(-32601);
+    expect(extensionProbe.statusCode).toBe(401);
     const denied = await send(
       {
         jsonrpc: "2.0",
@@ -212,7 +213,7 @@ describe("Clotho MCP transport", () => {
     );
     expect(execute).not.toHaveBeenCalled();
   });
-  it("parses unauthenticated aiohttp discovery JSON", async () => {
+  it("challenges unauthenticated aiohttp discovery JSON", async () => {
     const { app, execute } = setup([], true);
     const response = await app.inject({
       method: "POST",
@@ -232,11 +233,13 @@ describe("Clotho MCP transport", () => {
         "content-type": "application/octet-stream"
       }
     });
-    expect(response.statusCode).toBe(200);
-    expect(response.json().result.serverInfo.name).toBe("moirai-clotho");
+    expect(response.statusCode).toBe(401);
+    expect(response.headers["www-authenticate"]).toContain(
+      "/.well-known/oauth-protected-resource/mcp"
+    );
     expect(execute).not.toHaveBeenCalled();
   });
-  it("accepts an empty unauthenticated aiohttp connectivity probe", async () => {
+  it("challenges an empty unauthenticated aiohttp connectivity probe", async () => {
     const { app, execute } = setup([], true);
     const response = await app.inject({
       method: "POST",
@@ -248,12 +251,14 @@ describe("Clotho MCP transport", () => {
         "content-type": "application/octet-stream"
       }
     });
-    expect(response.statusCode).toBe(204);
-    expect(response.body).toBe("");
+    expect(response.statusCode).toBe(401);
+    expect(response.headers["www-authenticate"]).toContain(
+      "/.well-known/oauth-protected-resource/mcp"
+    );
     expect(execute).not.toHaveBeenCalled();
   });
   it("normalizes authenticated ChatGPT aiohttp media headers", async () => {
-    const { app, execute } = setup([], true);
+    const { app, execute } = setup([credential], true);
     const response = await app.inject({
       method: "POST",
       url: "/mcp",

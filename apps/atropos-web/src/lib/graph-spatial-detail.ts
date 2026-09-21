@@ -66,7 +66,7 @@ export async function graphSpatialDetail(
               kind: narrative.kind,
               title: narrative.title,
               body: narrative.body,
-              publicReferences: narrative.public_references
+              publicReferences: [...narrative.public_references]
             }))
           }
         ]

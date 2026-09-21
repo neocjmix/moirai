@@ -3,7 +3,10 @@
 import { useMemo, useCallback, lazy, Suspense } from "react";
 import { presentationNodeId } from "@moirai/graph-presentation";
 import { createMoiraiGraphReadLoader } from "../urdr-port/src/moirai-graph-read-loader";
-import type { GraphSpatialBootstrap } from "../lib/graph-spatial-bootstrap";
+import {
+  selectGraphSpatialBootstrap,
+  type GraphSpatialBootstrap
+} from "../lib/graph-spatial-bootstrap";
 import {
   DEFAULT_GRAPH_READER,
   type GraphReaderState
@@ -102,6 +105,10 @@ function MoiraiGraphApp({
 }) {
   const { state, setState } = useGraphQuery();
   const queryKey = JSON.stringify(state.query);
+  const selectedSpatial = useMemo(
+    () => selectGraphSpatialBootstrap(spatial, state),
+    [queryKey, spatial]
+  );
   const loader = useMemo(() => {
     const requestState = {
       version: 1 as const,
@@ -111,7 +118,7 @@ function MoiraiGraphApp({
     return createMoiraiGraphReadLoader({
       sources: requestState.query.sources,
       state: requestState,
-      workspace: spatial.workspace,
+      workspace: selectedSpatial.workspace,
       maxEntities: Math.min(2500, requestState.query.budget.max_entities),
       loadEventDetail: async (_locale, id) => {
         const response = await fetch("/graph/detail", {
@@ -123,7 +130,7 @@ function MoiraiGraphApp({
         return response.json();
       }
     });
-  }, [queryKey, spatial.workspace]);
+  }, [queryKey, selectedSpatial.workspace]);
   const focus =
     state.focus?.kind === "event"
       ? {
@@ -189,9 +196,10 @@ function MoiraiGraphApp({
   );
   return (
     <App
+      key={selectedSpatial.workspace.buildRevision}
       initialScreen={initialScreen}
       loader={loader}
-      initialViewportCenter={spatial.center}
+      initialViewportCenter={selectedSpatial.center}
       externalFocus={focus}
       {...(initialEventDetail ? { initialEventDetail } : {})}
       {...(initialDrawerStage ? { initialDrawerStage } : {})}

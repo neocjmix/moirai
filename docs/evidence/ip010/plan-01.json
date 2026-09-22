@@ -1,0 +1,2122 @@
+{
+  "contract_version": 4,
+  "change_set_id": "01a10010-0000-7000-8000-000000000001",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 28,
+  "intent": "IP-010 일본사: 설명 날짜와 canonical Time Event 분리, 13개 연표 chain 철회, 공유 시간관계 복원.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "IP-010: 사용자가 승인한 일본사 chronology E2E 교정. r27~28 일본사 신규 데이터만 metadata 교정/관계 철회; 기존 임진왜란 사실과 identity 보존."
+    },
+    {
+      "kind": "source_explicit",
+      "summary": "각 교정 Event 및 Time Event 관계의 source_references에 일본 공공기관·박물관·학술자료 기록. 구력 원문과 Gregorian 변환 검증 상태를 분리."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001001",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1467-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-725e-a664-d7966e1e0748"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year-range",
+          "source_references": [
+            {
+              "label": "京都文化博物館 — 信長上洛",
+              "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001001",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001002",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-725e-a664-d7966e1e0748"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1478-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year-range",
+          "source_references": [
+            {
+              "label": "京都文化博物館 — 信長上洛",
+              "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001002",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001003",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1543-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-74cc-af3a-780b9d89f629"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "鹿児島県 — 鉄砲伝来",
+              "url": "http://www.pref.kagoshima.jp/aa02/pr/gaiyou/itiban/hatu/teppo.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001003",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001004",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-74cc-af3a-780b9d89f629"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1544-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "鹿児島県 — 鉄砲伝来",
+              "url": "http://www.pref.kagoshima.jp/aa02/pr/gaiyou/itiban/hatu/teppo.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001004",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001005",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1560-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-7ea5-a6fc-f2ed974e62ef"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "愛知県図書館 — 郷土の三英傑年表",
+              "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001005",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001006",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-7ea5-a6fc-f2ed974e62ef"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1561-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "愛知県図書館 — 郷土の三英傑年表",
+              "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001006",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001007",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1568-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-738f-9ade-7a4ee4d674b1"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "京都文化博物館 — 信長上洛",
+              "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001007",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001008",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-738f-9ade-7a4ee4d674b1"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1569-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "京都文化博物館 — 信長上洛",
+              "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001008",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001009",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1573-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-7590-992f-88ec5443bb40"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "愛知県図書館 — 郷土の三英傑年表",
+              "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+            },
+            {
+              "label": "京都文化博物館 — 信長上洛",
+              "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001009",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001010",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-7590-992f-88ec5443bb40"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1574-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "愛知県図書館 — 郷土の三英傑年表",
+              "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+            },
+            {
+              "label": "京都文化博物館 — 信長上洛",
+              "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001010",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001011",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1575-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-7139-a833-4ba33b306cdd"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "愛知県図書館 — 郷土の三英傑年表",
+              "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001011",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001012",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544c-7139-a833-4ba33b306cdd"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1576-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "愛知県図書館 — 郷土の三英傑年表",
+              "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001012",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001013",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7cdd-b960-41ee088032b8"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "day",
+          "source_references": [
+            {
+              "label": "大山崎町 — 本能寺の変、旧暦と新暦",
+              "url": "http://www.town.oyamazaki.kyoto.jp/annai/kikakuzaisei/kannkou/kanko/machinokankosupotto/tenkawakemenotennozan/hideyosinomiti/930.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001013",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001014",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7cdd-b960-41ee088032b8"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-02T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "day",
+          "source_references": [
+            {
+              "label": "大山崎町 — 本能寺の変、旧暦と新暦",
+              "url": "http://www.town.oyamazaki.kyoto.jp/annai/kikakuzaisei/kannkou/kanko/machinokankosupotto/tenkawakemenotennozan/hideyosinomiti/930.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001014",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001015",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-12T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7629-8616-77bf6bf0006f"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "day",
+          "source_references": [
+            {
+              "label": "大山崎町 — 山崎合戦、新暦1582年7月12日",
+              "url": "http://www.town.oyamazaki.kyoto.jp/annai/kikakuzaisei/kannkou/kanko/machinokankosupotto/tenkawakemenotennozan/hideyosinomiti/962.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001015",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001016",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7629-8616-77bf6bf0006f"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-13T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "day",
+          "source_references": [
+            {
+              "label": "大山崎町 — 山崎合戦、新暦1582年7月12日",
+              "url": "http://www.town.oyamazaki.kyoto.jp/annai/kikakuzaisei/kannkou/kanko/machinokankosupotto/tenkawakemenotennozan/hideyosinomiti/962.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001016",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001017",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1583-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-729a-a00b-a4694d17ee19"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "大阪城天守閣 — 豊臣秀吉と大阪城",
+              "url": "https://osakac.xsrv.jp/library/history/toyotomi/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001017",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001018",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-729a-a00b-a4694d17ee19"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1584-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "大阪城天守閣 — 豊臣秀吉と大阪城",
+              "url": "https://osakac.xsrv.jp/library/history/toyotomi/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001018",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001019",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1587-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7456-be09-0fbb7945d6af"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "九州国立博物館 — 豊臣秀吉朱印状",
+              "url": "https://collection.kyuhaku.jp/advanced/37106.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001019",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001020",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7456-be09-0fbb7945d6af"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1588-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "九州国立博物館 — 豊臣秀吉朱印状",
+              "url": "https://collection.kyuhaku.jp/advanced/37106.html"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001020",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001021",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1588-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7391-b6c6-b7bc59a2b9c3"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "國學院雑誌122(11) — 天正十六年七月八日付秀吉朱印状二種の公布状況",
+              "url": "https://k-rain.repo.nii.ac.jp/record/703/files/kokugakuinzasshi_122_11_021.pdf"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001021",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001022",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7391-b6c6-b7bc59a2b9c3"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1589-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "國學院雑誌122(11) — 天正十六年七月八日付秀吉朱印状二種の公布状況",
+              "url": "https://k-rain.repo.nii.ac.jp/record/703/files/kokugakuinzasshi_122_11_021.pdf"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001022",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001023",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1590-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7d12-a909-ff87c6a07f71"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "文化庁 — 豊臣秀吉朱印状",
+              "url": "https://online.bunka.go.jp/index.php/heritages/detail/238525"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001023",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001024",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7d12-a909-ff87c6a07f71"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1591-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "文化庁 — 豊臣秀吉朱印状",
+              "url": "https://online.bunka.go.jp/index.php/heritages/detail/238525"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001024",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001025",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1598-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7f4a-a65a-fd76d67b8453"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year-range",
+          "source_references": [
+            {
+              "label": "国立公文書館 — 家康、天下人への道",
+              "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+            },
+            {
+              "label": "江戸東京博物館 — 大関ヶ原展",
+              "url": "https://www.edo-tokyo-museum.or.jp/s-exhibition/daisekigahara/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001025",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001026",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7f4a-a65a-fd76d67b8453"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1601-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year-range",
+          "source_references": [
+            {
+              "label": "国立公文書館 — 家康、天下人への道",
+              "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+            },
+            {
+              "label": "江戸東京博物館 — 大関ヶ原展",
+              "url": "https://www.edo-tokyo-museum.or.jp/s-exhibition/daisekigahara/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001026",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001027",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1600-10-21T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7058-8150-16d9ee2e0fc0"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "day",
+          "source_references": [
+            {
+              "label": "岐阜県 — 関ケ原合戦、西暦1600年10月21日",
+              "url": "https://www.pref.gifu.lg.jp/uploaded/attachment/207585.pdf"
+            },
+            {
+              "label": "国立公文書館 — 家康、天下人への道",
+              "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001027",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001028",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7058-8150-16d9ee2e0fc0"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1600-10-22T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "day",
+          "source_references": [
+            {
+              "label": "岐阜県 — 関ケ原合戦、西暦1600年10月21日",
+              "url": "https://www.pref.gifu.lg.jp/uploaded/attachment/207585.pdf"
+            },
+            {
+              "label": "国立公文書館 — 家康、天下人への道",
+              "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001028",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001029",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1603-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7f0f-a396-fe09d05844a5"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "国立公文書館 — 家康、天下人への道",
+              "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001029",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001030",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7f0f-a396-fe09d05844a5"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1604-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year",
+          "source_references": [
+            {
+              "label": "国立公文書館 — 家康、天下人への道",
+              "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001030",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001031",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "not_after",
+        "source_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1614-01-01T00:00:00.000000000000Z"
+        },
+        "target_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7fea-bc47-2e1c8deff091"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year-range",
+          "source_references": [
+            {
+              "label": "大阪城天守閣 — 豊臣秀吉と大阪城",
+              "url": "https://osakac.xsrv.jp/library/history/toyotomi/"
+            },
+            {
+              "label": "江戸東京博物館 — 大関ヶ原展",
+              "url": "https://www.edo-tokyo-museum.or.jp/s-exhibition/daisekigahara/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001031",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "relation",
+      "entity_id": "01a10010-0000-7000-8000-000000001032",
+      "value": {
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "type": "precedes",
+        "source_ref": {
+          "kind": "event",
+          "event_id": "01a0c8c3-544d-7fea-bc47-2e1c8deff091"
+        },
+        "target_ref": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1616-01-01T00:00:00.000000000000Z"
+        },
+        "direction": "directed",
+        "attributes": {
+          "basis": "historical knowledge bound; not an exact occurrence date",
+          "precision": "year-range",
+          "source_references": [
+            {
+              "label": "大阪城天守閣 — 豊臣秀吉と大阪城",
+              "url": "https://osakac.xsrv.jp/library/history/toyotomi/"
+            },
+            {
+              "label": "江戸東京博物館 — 大関ヶ原展",
+              "url": "https://www.edo-tokyo-museum.or.jp/s-exhibition/daisekigahara/"
+            }
+          ]
+        }
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a10010-0000-7000-8000-000000001032",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-71af-a3de-928111a1d042",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-71af-a3de-928111a1d042"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-77a7-9016-cb40e20ac985",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-77a7-9016-cb40e20ac985"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7144-bca2-d006dd7fd9e4",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7144-bca2-d006dd7fd9e4"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7a85-8161-0519b56a8420",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7a85-8161-0519b56a8420"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7a86-b156-4ea290332284",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7a86-b156-4ea290332284"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-780d-991c-4c4e3687dac8",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-780d-991c-4c4e3687dac8"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-73d5-bbd4-5200dfadd13c",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-73d5-bbd4-5200dfadd13c"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7eb5-9373-f7ae57f12386",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7eb5-9373-f7ae57f12386"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7e0a-9143-82cc12765571",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7e0a-9143-82cc12765571"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7f50-9e5c-36439d0d4c73",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655d-7f50-9e5c-36439d0d4c73"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655e-7025-abaf-50d52bf82b09",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655e-7025-abaf-50d52bf82b09"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655e-79b6-94b1-4c656bc4b7b5",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655e-79b6-94b1-4c656bc4b7b5"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "remove",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "01a0c8ce-655e-767b-8370-4d4503b3dce5",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "withdraw",
+      "entity_type": "relation",
+      "value": {
+        "relation_id": "01a0c8ce-655e-767b-8370-4d4503b3dce5"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "019f8c00-0000-7000-8000-000000010153",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "019f8c00-0000-7000-8000-000000010154",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "019f8c00-0000-7000-8000-000000010181",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    },
+    {
+      "kind": "add",
+      "entity_type": "relation_canon_membership",
+      "value": {
+        "relation_id": "019f8c00-0000-7000-8000-000000010182",
+        "canon_id": "01a0c8c3-544c-756a-968c-0a5bb38452ea"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 1
+        }
+      ]
+    }
+  ]
+}

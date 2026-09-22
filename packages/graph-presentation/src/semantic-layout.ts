@@ -18,7 +18,7 @@ import {
 } from "./urdr-chart-plane.js";
 import type { Dataset, GraphShellChartPlane } from "./urdr-layout-types.js";
 
-export const PRESENTATION_LAYOUT_VERSION = "urdr-0267c8f-moirai/3";
+export const PRESENTATION_LAYOUT_VERSION = "urdr-0267c8f-moirai/4";
 export interface ScopeLayout {
   readonly scope: PresentationScope;
   readonly chartPlane: GraphShellChartPlane;
@@ -120,6 +120,10 @@ export function layoutPresentationScope(
     );
   const positions = new Map(solved.projections.map((p) => [p.event_id, p]));
   const extents = new Map<string, { minYear: number; maxYear: number }>();
+
+  const structuralOnly =
+    input.sidecar.query.temporal_frame.target.adapter_identity ===
+    "structural-order-display/1";
   const ranks = new Map(scope.nodes.map((n) => [n.id, 0]));
   const layoutConstraints: LayoutConstraint[] = [];
   for (const link of scope.links) {
@@ -142,7 +146,7 @@ export function layoutPresentationScope(
   }
   // Longest lower-bound rank; zero-weight equality/non-strict cycles converge.
   // No rank is assigned to disconnected Events without temporal evidence.
-  if (solved.valid)
+  if (structuralOnly && solved.valid)
     for (let pass = 0; pass < scope.nodes.length; pass++) {
       let changed = false;
       for (const edge of layoutConstraints) {
@@ -202,8 +206,16 @@ export function layoutPresentationScope(
       position?.kind === "relative-only" ||
       single?.kind === "relative_only"
     ) {
-      const rank = ranks.get(node.id) ?? 0;
-      extents.set(node.id, { minYear: rank, maxYear: rank });
+      if (structuralOnly) {
+        const rank = ranks.get(node.id) ?? 0;
+        extents.set(node.id, { minYear: rank, maxYear: rank });
+        continue;
+      }
+      report(
+        "m46_relative_time_unplaced",
+        [node.identityKey],
+        "Relative order is preserved in the semantic result but has no coordinate on the selected time axis. Add Time Event constraints to place it; topology rank is not calendar time."
+      );
     }
   }
 

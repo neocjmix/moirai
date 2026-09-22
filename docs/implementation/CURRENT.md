@@ -1,5 +1,9 @@
 # 현재 구현 상태
 
+**IP-010 active — 사용자 승인 일본사 chronology E2E 교정. M5 inactive.**
+
+[IP-010](IP-010-japan-chronology.md)은 r28의 일본사 시간 제약 누락과 presentation rank→calendar 대체 결함을 수정한다. [조사 기록](../evidence/ip010/investigation.md), 전수 감사, 최소 교정 계획을 작성했다. 배포·Live 교정·실제 Graph 확인은 진행 중이다. 기존 임진왜란 정본 사실과 World identity를 보존한다.
+
 **IP-009 complete · IP-004/005/006/007/008 complete · M5 inactive.**
 
 [IP-009](IP-009-imjin-war-e2e.md)은 조선사 World의 범위를 임진왜란까지 확장했다. World ID와 `early-joseon` slug, 기존 세 Canon/50 Event/164 Relation/51 Narrative를 보존했다. PR #122–125는 World metadata write path, 중첩 Composite span, Canon별 drawer, World plane과 공유 Event의 초점·navigation 문제를 수정했다.

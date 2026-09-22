@@ -1,0 +1,245 @@
+{
+  "revision": 30,
+  "unchanged_existing_event_facts": true,
+  "unchanged_existing_relation_facts": true,
+  "event_count": 127,
+  "warnings": [
+    {
+      "code": "descriptive_date_without_temporal_anchor",
+      "path": "events.01a0c40a-a761-7fc7-aef2-10211e0ecb0e.attributes",
+      "affected_ids": [
+        "01a0c40a-a761-7fc7-aef2-10211e0ecb0e",
+        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
+      ],
+      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
+      "retryable": false
+    },
+    {
+      "code": "descriptive_date_without_temporal_anchor",
+      "path": "events.01a0c738-42d5-784b-8306-a18280b7d294.attributes",
+      "affected_ids": [
+        "01a0c738-42d5-784b-8306-a18280b7d294",
+        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
+      ],
+      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
+      "retryable": false
+    },
+    {
+      "code": "descriptive_date_without_temporal_anchor",
+      "path": "events.01a0c40a-a761-7fc7-aef2-10211e0ecb0e.attributes",
+      "affected_ids": [
+        "01a0c40a-a761-7fc7-aef2-10211e0ecb0e",
+        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
+      ],
+      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
+      "retryable": false
+    },
+    {
+      "code": "descriptive_date_without_temporal_anchor",
+      "path": "events.01a0c738-42d5-784b-8306-a18280b7d294.attributes",
+      "affected_ids": [
+        "01a0c738-42d5-784b-8306-a18280b7d294",
+        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
+      ],
+      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
+      "retryable": false
+    }
+  ],
+  "unplaced": [],
+  "events": [
+    {
+      "id": "019f8c00-0000-7000-8000-000000001000",
+      "title": "임진왜란(1592–1598)",
+      "geometry": "region",
+      "y": null
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001002",
+      "title": "부산진 전투",
+      "geometry": "point",
+      "y": 222935.36486033254
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001047",
+      "title": "도요토미 히데요시 사망",
+      "geometry": "point",
+      "y": 223820.03737243064
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001053",
+      "title": "일본군의 최종 철수와 전쟁 종결",
+      "geometry": "point",
+      "y": 223856.2598821331
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001056",
+      "title": "일본군의 원정 동원과 나고야 집결",
+      "geometry": "point",
+      "y": 222837.62158018304
+    },
+    {
+      "id": "01a0c8c3-544c-7139-a833-4ba33b306cdd",
+      "title": "나가시노 전투",
+      "geometry": "point",
+      "y": 220569.97748071488
+    },
+    {
+      "id": "01a0c8c3-544c-725e-a664-d7966e1e0748",
+      "title": "오닌의 난과 전국시대의 전개",
+      "geometry": "point",
+      "y": 206150.16050979827
+    },
+    {
+      "id": "01a0c8c3-544c-738f-9ade-7a4ee4d674b1",
+      "title": "오다 노부나가의 교토 입성",
+      "geometry": "point",
+      "y": 219590.05318384359
+    },
+    {
+      "id": "01a0c8c3-544c-74cc-af3a-780b9d89f629",
+      "title": "포르투갈 상인과 조총의 전래",
+      "geometry": "point",
+      "y": 216089.88548703943
+    },
+    {
+      "id": "01a0c8c3-544c-7590-992f-88ec5443bb40",
+      "title": "무로마치 막부의 붕괴",
+      "geometry": "point",
+      "y": 220290.16338460066
+    },
+    {
+      "id": "01a0c8c3-544c-7ea5-a6fc-f2ed974e62ef",
+      "title": "오케하자마 전투와 노부나가의 부상",
+      "geometry": "point",
+      "y": 218470.03018542475
+    },
+    {
+      "id": "01a0c8c3-544d-7058-8150-16d9ee2e0fc0",
+      "title": "세키가하라 전투",
+      "geometry": "point",
+      "y": 224112.88390589814
+    },
+    {
+      "id": "01a0c8c3-544d-729a-a00b-a4694d17ee19",
+      "title": "오사카성 건설과 히데요시 정권의 중심 형성",
+      "geometry": "point",
+      "y": 221690.00047913377
+    },
+    {
+      "id": "01a0c8c3-544d-7391-b6c6-b7bc59a2b9c3",
+      "title": "도검몰수령과 병농 분리의 강화",
+      "geometry": "point",
+      "y": 222390.1106798908
+    },
+    {
+      "id": "01a0c8c3-544d-7456-be09-0fbb7945d6af",
+      "title": "규슈 평정",
+      "geometry": "point",
+      "y": 222250.01197834316
+    },
+    {
+      "id": "01a0c8c3-544d-7629-8616-77bf6bf0006f",
+      "title": "야마자키 전투와 히데요시의 주도권 장악",
+      "geometry": "point",
+      "y": 221553.9265008864
+    },
+    {
+      "id": "01a0c8c3-544d-7cdd-b960-41ee088032b8",
+      "title": "혼노지의 변과 노부나가의 죽음",
+      "geometry": "point",
+      "y": 221549.7101240956
+    },
+    {
+      "id": "01a0c8c3-544d-7d12-a909-ff87c6a07f71",
+      "title": "오다와라 정벌과 일본 통일",
+      "geometry": "point",
+      "y": 222670.11642949545
+    },
+    {
+      "id": "01a0c8c3-544d-7f0f-a396-fe09d05844a5",
+      "title": "도쿠가와 이에야스의 쇼군 취임과 에도 막부 성립",
+      "geometry": "point",
+      "y": 224490.05797518088
+    },
+    {
+      "id": "01a0c8c3-544d-7f4a-a65a-fd76d67b8453",
+      "title": "히데요시 사후의 후계 체제와 권력 재편",
+      "geometry": "point",
+      "y": 223930.23812946194
+    },
+    {
+      "id": "01a0c8c3-544d-7fea-bc47-2e1c8deff091",
+      "title": "오사카 전투와 도요토미 가문의 몰락",
+      "geometry": "point",
+      "y": 226100.13894878063
+    },
+    {
+      "id": "01a0c8ce-655e-74a6-a5e7-36c672667e0f",
+      "title": "도요토미 히데요시의 통일과 해외 원정",
+      "geometry": "region",
+      "y": null
+    },
+    {
+      "id": "01a0c8ce-655e-7af6-b327-06020e197970",
+      "title": "오다 노부나가의 통일 전쟁",
+      "geometry": "region",
+      "y": null
+    },
+    {
+      "id": "01a0c8ce-655e-7f84-bfa3-b2e2a0954eee",
+      "title": "히데요시 사후 권력 재편과 도쿠가와 체제",
+      "geometry": "region",
+      "y": null
+    }
+  ],
+  "chronology": [
+    {
+      "slug": "japan-muromachi-fall",
+      "y": 220290.16338460066
+    },
+    {
+      "slug": "japan-nagashino",
+      "y": 220569.97748071488
+    },
+    {
+      "slug": "japan-honnoji",
+      "y": 221549.7101240956
+    },
+    {
+      "slug": "japan-yamazaki-hideyoshi",
+      "y": 221553.9265008864
+    },
+    {
+      "slug": "japan-osaka-castle",
+      "y": 221690.00047913377
+    },
+    {
+      "slug": "japan-sword-hunt",
+      "y": 222390.1106798908
+    },
+    {
+      "slug": "japan-odawara-unification",
+      "y": 222670.11642949545
+    },
+    {
+      "slug": "imjin-busan",
+      "y": 222935.36486033254
+    },
+    {
+      "slug": "imjin-hideyoshi",
+      "y": 223820.03737243064
+    },
+    {
+      "slug": "japan-sekigahara",
+      "y": 224112.88390589814
+    },
+    {
+      "slug": "japan-tokugawa-shogunate",
+      "y": 224490.05797518088
+    },
+    {
+      "slug": "japan-osaka-siege",
+      "y": 226100.13894878063
+    }
+  ]
+}

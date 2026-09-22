@@ -1,0 +1,282 @@
+[
+  {
+    "id": "01a0c8ce-655d-71af-a3de-928111a1d042",
+    "type": "precedes",
+    "source": "japan-onin-war",
+    "target": "japan-firearms-portuguese",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-77a7-9016-cb40e20ac985",
+    "type": "precedes",
+    "source": "japan-firearms-portuguese",
+    "target": "japan-okehazama",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-7144-bca2-d006dd7fd9e4",
+    "type": "precedes",
+    "source": "japan-okehazama",
+    "target": "japan-nobunaga-kyoto",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-7a85-8161-0519b56a8420",
+    "type": "precedes",
+    "source": "japan-nobunaga-kyoto",
+    "target": "japan-muromachi-fall",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-7a86-b156-4ea290332284",
+    "type": "precedes",
+    "source": "japan-muromachi-fall",
+    "target": "japan-nagashino",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-780d-991c-4c4e3687dac8",
+    "type": "precedes",
+    "source": "japan-nagashino",
+    "target": "japan-honnoji",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-7abb-ab37-375f322c0f11",
+    "type": "causes",
+    "source": "japan-honnoji",
+    "target": "japan-yamazaki-hideyoshi",
+    "action": "retain",
+    "reason": "직접적인 역사적 연결의 해석. 원인/가능 조건/영향은 절대 시간 좌표를 대체하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655d-73d5-bbd4-5200dfadd13c",
+    "type": "precedes",
+    "source": "japan-yamazaki-hideyoshi",
+    "target": "japan-osaka-castle",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-7eb5-9373-f7ae57f12386",
+    "type": "precedes",
+    "source": "japan-osaka-castle",
+    "target": "japan-kyushu-campaign",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-7e0a-9143-82cc12765571",
+    "type": "precedes",
+    "source": "japan-kyushu-campaign",
+    "target": "japan-sword-hunt",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655d-7f50-9e5c-36439d0d4c73",
+    "type": "precedes",
+    "source": "japan-sword-hunt",
+    "target": "japan-odawara-unification",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655e-7e8f-b356-1509df9d5a34",
+    "type": "enables",
+    "source": "japan-odawara-unification",
+    "target": "imjin-mobilization",
+    "action": "retain",
+    "reason": "직접적인 역사적 연결의 해석. 원인/가능 조건/영향은 절대 시간 좌표를 대체하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7025-abaf-50d52bf82b09",
+    "type": "precedes",
+    "source": "imjin-mobilization",
+    "target": "imjin-war",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655e-79b6-94b1-4c656bc4b7b5",
+    "type": "precedes",
+    "source": "imjin-war",
+    "target": "imjin-hideyoshi",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655e-7a97-aa2d-65e8ae59c74b",
+    "type": "causes",
+    "source": "imjin-hideyoshi",
+    "target": "japan-hideyoshi-succession-crisis",
+    "action": "retain",
+    "reason": "직접적인 역사적 연결의 해석. 원인/가능 조건/영향은 절대 시간 좌표를 대체하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7aee-a124-fc4c21cc4ddc",
+    "type": "influences",
+    "source": "japan-hideyoshi-succession-crisis",
+    "target": "japan-sekigahara",
+    "action": "retain",
+    "reason": "직접적인 역사적 연결의 해석. 원인/가능 조건/영향은 절대 시간 좌표를 대체하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7692-ba8a-37a0fefd353d",
+    "type": "enables",
+    "source": "japan-sekigahara",
+    "target": "japan-tokugawa-shogunate",
+    "action": "retain",
+    "reason": "직접적인 역사적 연결의 해석. 원인/가능 조건/영향은 절대 시간 좌표를 대체하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-767b-8370-4d4503b3dce5",
+    "type": "precedes",
+    "source": "japan-tokugawa-shogunate",
+    "target": "japan-osaka-siege",
+    "action": "withdraw",
+    "reason": "연표 나열을 위한 중복/과도한 선후 제약. 절대 시간 bounds로 대체."
+  },
+  {
+    "id": "01a0c8ce-655e-732f-a5b9-12bdf45cf4a8",
+    "type": "contains",
+    "source": "japan-nobunaga-era",
+    "target": "japan-okehazama",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-71f2-ac0d-e140177cebaa",
+    "type": "contains",
+    "source": "japan-nobunaga-era",
+    "target": "japan-nobunaga-kyoto",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7daa-a600-867fec76d4a5",
+    "type": "contains",
+    "source": "japan-nobunaga-era",
+    "target": "japan-muromachi-fall",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-74cc-aa9c-5f433b424388",
+    "type": "contains",
+    "source": "japan-nobunaga-era",
+    "target": "japan-nagashino",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-742b-bc0f-fd269fac9942",
+    "type": "contains",
+    "source": "japan-nobunaga-era",
+    "target": "japan-honnoji",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7d9c-9c8c-787e54f19af5",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "japan-yamazaki-hideyoshi",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7cdd-85dd-701253032917",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "japan-osaka-castle",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-764b-9117-a803afc84289",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "japan-kyushu-campaign",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7eba-8834-cf759b4852e6",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "japan-sword-hunt",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7ef0-a511-c1f501614b6e",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "japan-odawara-unification",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7b11-893e-4cd8846a097a",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "imjin-mobilization",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7320-9085-e0ab0bcce820",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "imjin-war",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-7347-baf0-336ab55d403e",
+    "type": "contains",
+    "source": "japan-hideyoshi-era",
+    "target": "imjin-hideyoshi",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-76ce-afed-cd01645ed73a",
+    "type": "contains",
+    "source": "japan-tokugawa-era",
+    "target": "japan-hideyoshi-succession-crisis",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-794f-832b-90f5fff14a07",
+    "type": "contains",
+    "source": "japan-tokugawa-era",
+    "target": "japan-sekigahara",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-789a-8d1c-1645e36d6be9",
+    "type": "contains",
+    "source": "japan-tokugawa-era",
+    "target": "japan-tokugawa-shogunate",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  },
+  {
+    "id": "01a0c8ce-655e-79af-8cb3-96d0d3e008b3",
+    "type": "contains",
+    "source": "japan-tokugawa-era",
+    "target": "japan-osaka-siege",
+    "action": "retain",
+    "reason": "주제별 실제 하위 사건 포함. starts/ends 또는 명시적 Duration을 새로 주장하지 않는다."
+  }
+]

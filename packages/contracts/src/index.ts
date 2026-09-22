@@ -244,6 +244,20 @@ export interface UpdateNarrativeOperation {
   }[];
 }
 
+/** Correct descriptive metadata; Event identity, kind and membership remain unchanged. */
+export interface UpdateEventMetadataOperation {
+  readonly kind: "update";
+  readonly entity_type: "event";
+  readonly value: {
+    readonly event_id: EntityReference;
+    readonly attributes: Readonly<Record<string, unknown>>;
+  };
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
+}
+
 export interface UpdateWorldOperation {
   readonly kind: "update";
   readonly entity_type: "world";
@@ -257,6 +271,7 @@ export interface UpdateWorldOperation {
 }
 
 export type ChangeOperation =
+  | UpdateEventMetadataOperation
   | UpdateWorldOperation
   | UpdateNarrativeOperation
   | CreateOperation

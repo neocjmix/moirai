@@ -459,6 +459,20 @@ export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
     updateNarrativeOperation,
     object({
       kind: { const: "update" },
+      entity_type: { const: "event" },
+      origin_refs: array(
+        object({
+          field: str(128),
+          origin_index: { type: "integer", minimum: 0 }
+        })
+      ),
+      value: object({
+        event_id: ref,
+        attributes: attrs
+      })
+    }),
+    object({
+      kind: { const: "update" },
       entity_type: { const: "world" },
       origin_refs: array(
         object({

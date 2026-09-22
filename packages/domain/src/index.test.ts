@@ -437,3 +437,35 @@ describe("World metadata corrections", () => {
     }
   });
 });
+
+describe("Event metadata corrections", () => {
+  const update = {
+    kind: "update" as const,
+    entity_type: "event" as const,
+    value: {
+      event_id: TEST_FIXTURE.eventId,
+      attributes: { date_precision: "year", date_original: "1573" }
+    }
+  };
+  it("preserves Event identity and warns that descriptive dates are not coordinates", () => {
+    const input = {
+      ...fixture(),
+      operations: [...fixture().operations, update]
+    };
+    expect(validateAgainstEmpty(input)).toMatchObject([
+      {
+        code: "descriptive_date_without_temporal_anchor",
+        affected_ids: [TEST_FIXTURE.eventId, TEST_FIXTURE.canonId]
+      }
+    ]);
+    expect(
+      resolveCreateOperations(input, () => "unused").operations.at(-1)
+        ?.entity_id
+    ).toBe(TEST_FIXTURE.eventId);
+  });
+  it("rejects metadata updates to a missing Event", () => {
+    expect(() =>
+      validateAgainstEmpty({ ...fixture(), operations: [update] })
+    ).toThrow();
+  });
+});

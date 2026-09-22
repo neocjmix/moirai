@@ -58,16 +58,12 @@ export async function graphSpatialBootstrap(
       const id = presentationNodeId(focus, focus.event_ref);
       const selected = await moiraiSpatialReader
         .viewport({
-          sources: [
-            {
-              world_id: focus.world_id,
-              served_revision: focus.served_revision,
-              canon_ids: [focus.canon_id],
-              time_systems: []
-            }
-          ],
+          // A shared Event can have different Canon-local layout coordinates.
+          // Resolve its representative through the same selected sources as the
+          // viewport, rather than centering a single-Canon representation.
+          sources: state.query.sources,
           viewport: {
-            canonIds: [meta.scopeId],
+            canonIds: ids,
             bbox: { minX: 0, maxX: 0, minY: 0, maxY: 0 },
             scale: 1,
             viewportWidth: 390,
@@ -84,10 +80,10 @@ export async function graphSpatialBootstrap(
           )
         : null;
       if (entity?.geometryKind === "point")
-        focusedCenter = { x: offset + entity.position.x, y: entity.position.y };
+        focusedCenter = { x: entity.position.x, y: entity.position.y };
       if (entity?.geometryKind === "region")
         focusedCenter = {
-          x: offset + (entity.worldBounds.minX + entity.worldBounds.maxX) / 2,
+          x: (entity.worldBounds.minX + entity.worldBounds.maxX) / 2,
           y: (entity.worldBounds.minY + entity.worldBounds.maxY) / 2
         };
     }

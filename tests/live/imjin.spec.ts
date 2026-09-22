@@ -37,6 +37,12 @@ test("published shared Event opens two reader narratives, source details, and hi
     sourceNotes.locator('a[href^="https://"]').first()
   ).toBeVisible();
   await sourceNotes.locator("summary").click();
+  // Expanding a shared drawer must preserve both Canon narratives.
+  const fullLink = drawer.getByRole("link", { name: "사건 상세 읽기 →" });
+  const fullHref = await fullLink.getAttribute("href");
+  expect(
+    new URL(fullHref!, "https://atropos.invalid").searchParams.has("canon")
+  ).toBe(false);
   const initialText = await drawer.innerText();
   expect(initialText.length).toBeGreaterThan(700);
   await page.screenshot({
@@ -67,6 +73,11 @@ test("published shared Event opens two reader narratives, source details, and hi
   await expect(drawer).toContainText("마지막 대규모 해전");
   await expect(drawer).not.toContainText("수군의 관점");
   await page.screenshot({ path: testInfo.outputPath("noryang-drawer.png") });
+  await page.getByTestId("event-drawer-close").click();
+  await expect(drawer).toHaveCount(0);
+  await expect(page.locator(`[data-event-point-id*="${noryang}"]`)).toHaveCount(
+    1
+  );
   // A fresh direct URL must not retain the previously visited Event's camera.
   await page.goto(
     `/graph/events/${world}/${hansan}?revision=${published.served_revision}`

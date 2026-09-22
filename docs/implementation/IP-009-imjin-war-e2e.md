@@ -33,3 +33,5 @@ Live direct URL에서 `canon=` 지정이 drawer 범위를 좁히지 않는 결�
 배포 전 live acceptance는 overview 두 건은 통과했으나 direct URL drawer 닫기 뒤 viewport에 점이 0개였다. bootstrap과 navigation bounds가 아직 Canon별 x offset을 더하는 반면 spatial reader는 World Revision별 단일 plane을 사용하고 있었다. World plane offset 계산을 공통 함수로 통일하고, 두 번째 Canon으로 공유 Event에 진입하는 회귀 검사를 추가한다. 서로 다른 World는 계속 분리한다.
 
 배포 후 같은 브라우저에서 노량→한산도로 새 canonical URL을 열면 localStorage의 이전 camera가 남았다. 명시적 URL viewport는 보존하되 없는 경우 새 Event의 server bootstrap center를 우선한다. 빠른 drawer 전환에서는 pending restoration보다 사용자 stage 조작을 우선한다. 페이지 이동 중 남은 spatial fetch는 pagehide/unmount에서 취소하고 cache에 뒤늦게 채워지지 않도록 dispose seam을 추가했다. 후속 PR의 실제 E2E는 이전 방문 camera가 있는 상태에서도 새 Event가 닫힌 drawer 뒤에 정확히 한 번 표시되는지 검사한다.
+
+100/1k/10k reader 회귀는 공유 drawer의 ‘사건 상세 읽기’ 링크가 첫 Canon을 임의로 고정하던 경로를 드러냈다. 명시적 `canon=`을 존중하도록 고친 뒤 기존 링크의 잘못된 축소가 실제 서술 누락으로 나타났다. 복수 Canon drawer에서 만드는 URL에는 단일 Canon 파라미터를 붙이지 않고, 선택한 source query를 그대로 보존한다. 단일 Canon/명시적 Canon drawer의 URL은 계속 해당 Canon을 고정한다.

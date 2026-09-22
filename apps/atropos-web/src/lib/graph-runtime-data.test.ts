@@ -429,7 +429,7 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
       '"geometry_status": "unplaced"'
     );
     expect(detail.readingContext?.stableEventHref).toContain(
-      `/graph/events/${ids.worldId}/${ids.thirdEventId}?revision=4&canon=${ids.canonId}&mq=`
+      `/graph/events/${ids.worldId}/${ids.thirdEventId}?revision=4&mq=`
     );
     expect(detail.notes).toContain("No supported geometry is available");
     await expect(graphSpatialDetail(state, "unscoped")).rejects.toThrow(

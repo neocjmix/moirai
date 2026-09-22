@@ -6,7 +6,7 @@
 
 목표 의미·dependency·migration·exit의 기준은 [IP-011](IP-011-architecture-realignment.md)이다. CON-003→CORE-MODEL→TS-002/004/005/006을 개정했으며 이 문서 변경은 runtime cutover 완료가 아니다. PR #129가 main `814a577`에 병합되어 authoritative baseline이 됐다.
 
-A1 branch에서 v4 transition policy 조회(HTTP/CLI client/MCP parity), 격리된 v5 stale/missing/replay prototype, DB 수치 계측과 1k/10k Publication cold/warm 측정을 구현했다. 실제 PostgreSQL·모바일 CI, 성능 budget 확정과 배포 검증은 진행 중이며 A1 exit는 아직 열려 있다. [측정 원본](../evidence/ip011/a1-local-scale.json)을 참조한다. 그다음 A2 v5+데이터 rehearsal → A3 cutover → A4 bounded read → A5 discovery → A6 역사 dogfooding이다. 대규모 역사 입력과 기존 M5를 먼저 활성화하지 않는다.
+A1 branch에서 v4 transition policy 조회(HTTP/CLI client/MCP parity), 격리된 v5 stale/missing/replay prototype, DB 수치 계측과 1k/10k Publication cold/warm 측정을 구현했다. 실제 PostgreSQL·모바일 100/1k/10k CI는 통과했고 [A4 budget](../evidence/ip011/a1-execution.md)을 고정했다. 배포 정책 검증 전이므로 A1 exit는 아직 열려 있다. [측정 원본](../evidence/ip011/a1-local-scale.json)을 참조한다. 그다음 A2 v5+데이터 rehearsal → A3 cutover → A4 bounded read → A5 discovery → A6 역사 dogfooding이다. 대규모 역사 입력과 기존 M5를 먼저 활성화하지 않는다.
 
 - [실제 조사와 한계](../evidence/ip011/reconstruction.md)
 - [migration 대상 IDs](../evidence/ip011/data-audit.json)

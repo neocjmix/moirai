@@ -1,0 +1,1016 @@
+{
+  "commit": "5f4b920e10952b7d4ed5160d36fead2a5ed117cb",
+  "ci_run": "https://github.com/neocjmix/moirai/actions/runs/35781457832",
+  "scale_run": "https://github.com/neocjmix/moirai/actions/runs/35781457890",
+  "environment": "ubuntu-latest hosted runner; PostgreSQL 17 service; local Publication filesystem; mobile WebKit iPhone 14; no network throttling; DB buffers not flushed; cold refers to application cache",
+  "measurements": [
+    {
+      "job_id": 106927687707,
+      "ip011_database": {
+        "scale": 100,
+        "cache": "first query then five repeats; PostgreSQL buffers not flushed",
+        "samples": [
+          {
+            "queries": 3,
+            "query_ms": 5.525109000000043,
+            "history_rows": 202,
+            "fold_ms": 0.6797259999999596,
+            "app_ms": 9.063560000000052,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 3.1983650000000807,
+            "history_rows": 202,
+            "fold_ms": 0.40408899999999903,
+            "app_ms": 4.723957000000041,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 3.23350999999991,
+            "history_rows": 202,
+            "fold_ms": 0.35022699999990436,
+            "app_ms": 4.429654000000028,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 2.1538439999999355,
+            "history_rows": 202,
+            "fold_ms": 0.17851499999994758,
+            "app_ms": 2.997747000000004,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 2.1132359999998016,
+            "history_rows": 202,
+            "fold_ms": 0.21464300000002368,
+            "app_ms": 2.8921679999999697,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 2.157970000000205,
+            "history_rows": 202,
+            "fold_ms": 0.1720029999999042,
+            "app_ms": 2.9029689999999846,
+            "payload_bytes": 510
+          }
+        ]
+      }
+    },
+    {
+      "job_id": 106927687707,
+      "ip011_database": {
+        "scale": 1000,
+        "cache": "first query then five repeats; PostgreSQL buffers not flushed",
+        "samples": [
+          {
+            "queries": 3,
+            "query_ms": 13.732194999999592,
+            "history_rows": 2002,
+            "fold_ms": 3.095930999999837,
+            "app_ms": 18.360803000000033,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 13.48158500000045,
+            "history_rows": 2002,
+            "fold_ms": 1.8970299999996314,
+            "app_ms": 16.729501000000255,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 10.346230000000105,
+            "history_rows": 2002,
+            "fold_ms": 2.5930969999999434,
+            "app_ms": 16.133973999999853,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 9.851616999999806,
+            "history_rows": 2002,
+            "fold_ms": 1.503802999999607,
+            "app_ms": 12.515788000000157,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 11.653964000000087,
+            "history_rows": 2002,
+            "fold_ms": 2.600279999999657,
+            "app_ms": 15.876228999999967,
+            "payload_bytes": 510
+          },
+          {
+            "queries": 3,
+            "query_ms": 13.460605000000214,
+            "history_rows": 2002,
+            "fold_ms": 2.571697000000313,
+            "app_ms": 17.595686999999998,
+            "payload_bytes": 510
+          }
+        ]
+      }
+    },
+    {
+      "job_id": 106927687448,
+      "scale": 10000,
+      "phase": "canonical_publication_start",
+      "started_at": "2026-09-22T20:38:17.948Z"
+    },
+    {
+      "job_id": 106927687448,
+      "scale": 10000,
+      "phase": "canonical_publication",
+      "ms": 37084.156876,
+      "bytes": 98697934,
+      "objects": 10008,
+      "peak_rss_kib": 1931840
+    },
+    {
+      "job_id": 106927687448,
+      "scale": 10000,
+      "phase": "spatial_publication",
+      "graph_input_ms": 307.11942999999883,
+      "ms": 37458.634221,
+      "bytes": 125432297,
+      "objects": 20,
+      "peak_rss_kib": 2485136
+    },
+    {
+      "job_id": 106927687448,
+      "scale": 10000,
+      "phase": "build_complete",
+      "total_ms": 75791.05710800001,
+      "peak_rss_kib": 2557948
+    },
+    {
+      "job_id": 106927687448,
+      "scale": 10000,
+      "fixture": {
+        "world": "019f60ac-2710-7000-8000-000000000001",
+        "events": 10000,
+        "relations": 31662,
+        "narratives": 8573
+      },
+      "storage": "local filesystem; no network latency",
+      "process_role": "atropos_read; separate builder reports its own peak RSS",
+      "rounds": 10,
+      "paths": [
+        {
+          "path": "initial_cold",
+          "samples": 1,
+          "app_p50_ms": 804.0565170000045,
+          "app_p95_ms": 804.0565170000045,
+          "serialize_p95_ms": 4.7425640000001295,
+          "parse_p95_ms": 3.6788519999972777,
+          "objects_min": 14,
+          "objects_max": 14,
+          "artifact_bytes_max": 59295405,
+          "heap_used_bytes_max": 344665968,
+          "payload_bytes_max": 2417342
+        },
+        {
+          "path": "drawer_cold",
+          "samples": 1,
+          "app_p50_ms": 527.259315999996,
+          "app_p95_ms": 527.259315999996,
+          "serialize_p95_ms": 0.05674899999576155,
+          "parse_p95_ms": 0.037941000002319925,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 8313,
+          "heap_used_bytes_max": 403177072,
+          "payload_bytes_max": 15498
+        },
+        {
+          "path": "spatial_cold",
+          "samples": 1,
+          "app_p50_ms": 611.6514450000104,
+          "app_p95_ms": 611.6514450000104,
+          "serialize_p95_ms": 0.05275200000323821,
+          "parse_p95_ms": 0.04231900000013411,
+          "objects_min": 12,
+          "objects_max": 12,
+          "artifact_bytes_max": 40134783,
+          "heap_used_bytes_max": 388838464,
+          "payload_bytes_max": 29243
+        },
+        {
+          "path": "initial_warm",
+          "samples": 10,
+          "app_p50_ms": 13.730630999998539,
+          "app_p95_ms": 34.37015899999824,
+          "serialize_p95_ms": 5.868254999993951,
+          "parse_p95_ms": 5.282252999997581,
+          "objects_min": 1,
+          "objects_max": 3,
+          "artifact_bytes_max": 2233495,
+          "heap_used_bytes_max": 658213144,
+          "payload_bytes_max": 2417342
+        },
+        {
+          "path": "event_reading",
+          "samples": 10,
+          "app_p50_ms": 2.3904850000108127,
+          "app_p95_ms": 3.428578999999445,
+          "serialize_p95_ms": 0.024217999991378747,
+          "parse_p95_ms": 0.05071600001247134,
+          "objects_min": 1,
+          "objects_max": 2,
+          "artifact_bytes_max": 8615,
+          "heap_used_bytes_max": 661161896,
+          "payload_bytes_max": 7622
+        },
+        {
+          "path": "drawer_warm",
+          "samples": 10,
+          "app_p50_ms": 4.802247999992687,
+          "app_p95_ms": 6.669018999993568,
+          "serialize_p95_ms": 0.0622049999947194,
+          "parse_p95_ms": 0.061579000001074746,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 661495432,
+          "payload_bytes_max": 15498
+        },
+        {
+          "path": "spatial_warm",
+          "samples": 10,
+          "app_p50_ms": 225.8245789999928,
+          "app_p95_ms": 237.46687499999825,
+          "serialize_p95_ms": 0.07496199999877717,
+          "parse_p95_ms": 0.07397499999206048,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 676035768,
+          "payload_bytes_max": 29244
+        },
+        {
+          "path": "narrative_search",
+          "samples": 10,
+          "app_p50_ms": 49.999171000003116,
+          "app_p95_ms": 95.92447099999117,
+          "serialize_p95_ms": 0.05721899999480229,
+          "parse_p95_ms": 0.0735770000028424,
+          "objects_min": 0,
+          "objects_max": 21,
+          "artifact_bytes_max": 7088889,
+          "heap_used_bytes_max": 650580704,
+          "payload_bytes_max": 20469
+        },
+        {
+          "path": "full_graph_query",
+          "samples": 1,
+          "app_p50_ms": 593.4380999999994,
+          "app_p95_ms": 593.4380999999994,
+          "serialize_p95_ms": 7.674103999990621,
+          "parse_p95_ms": 9.784062000006088,
+          "objects_min": 1007,
+          "objects_max": 1007,
+          "artifact_bytes_max": 45915385,
+          "heap_used_bytes_max": 604511368,
+          "payload_bytes_max": 3535478
+        }
+      ],
+      "peak_rss_kib": 933192,
+      "caches": {
+        "revision": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 43437745,
+          "max_bytes": 134217728,
+          "hits": 42,
+          "misses": 1,
+          "evictions": 0
+        },
+        "reader": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 3678605,
+          "max_bytes": 33554432,
+          "hits": 10,
+          "misses": 1,
+          "evictions": 0
+        },
+        "objects": {
+          "entries": 1002,
+          "pending": 0,
+          "accounted_bytes": 16084072,
+          "max_bytes": 16777216,
+          "hits": 239,
+          "misses": 1056,
+          "evictions": 52
+        },
+        "spatial_context": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 83100125,
+          "max_bytes": 134217728,
+          "hits": 21,
+          "misses": 1,
+          "evictions": 0
+        }
+      }
+    },
+    {
+      "job_id": 106927687448,
+      "ip004_browser_phase": "graph_ready",
+      "scale": 10000,
+      "elapsed_ms": 2937
+    },
+    {
+      "job_id": 106927687448,
+      "ip004_browser_phase": "pan_measured",
+      "scale": 10000,
+      "elapsed_ms": 5176
+    },
+    {
+      "job_id": 106927687448,
+      "ip004_browser_phase": "events_open",
+      "scale": 10000,
+      "elapsed_ms": 7107
+    },
+    {
+      "job_id": 106927687448,
+      "ip004_browser_phase": "first_page",
+      "scale": 10000,
+      "elapsed_ms": 7130
+    },
+    {
+      "job_id": 106927687448,
+      "ip004_browser_phase": "next_clicked",
+      "scale": 10000,
+      "elapsed_ms": 7784
+    },
+    {
+      "job_id": 106927687448,
+      "ip004_browser_phase": "next_page",
+      "scale": 10000,
+      "elapsed_ms": 7811
+    },
+    {
+      "job_id": 106927687448,
+      "ip004_browser": {
+        "scale": 10000,
+        "graphReadyMs": 2936,
+        "htmlBytes": 9527476,
+        "drawerMs": 1642,
+        "interaction": {
+          "samples": 120,
+          "frame_p95_ms": 32,
+          "frame_max_ms": 70,
+          "dom_nodes": 169
+        },
+        "navigation": [
+          {
+            "name": "http://127.0.0.1:3000/graph",
+            "entryType": "navigation",
+            "startTime": 0,
+            "duration": 1511,
+            "initiatorType": "navigation",
+            "nextHopProtocol": "http/1.1",
+            "workerStart": 0,
+            "redirectStart": 0,
+            "redirectEnd": 0,
+            "fetchStart": 1,
+            "domainLookupStart": 1,
+            "domainLookupEnd": 1,
+            "connectStart": 1,
+            "connectEnd": 1,
+            "secureConnectionStart": 0,
+            "requestStart": 1,
+            "finalResponseHeadersStart": 61,
+            "firstInterimResponseStart": 0,
+            "responseStart": 61,
+            "responseEnd": 1206,
+            "transferSize": 174501,
+            "encodedBodySize": 174201,
+            "decodedBodySize": 9527476,
+            "workerRouterEvaluationStart": 0,
+            "workerCacheLookupStart": 0,
+            "workerMatchedRouterSource": "",
+            "workerFinalRouterSource": "",
+            "deliveryType": "",
+            "serverTiming": [],
+            "unloadEventStart": 0,
+            "unloadEventEnd": 0,
+            "domInteractive": 1322,
+            "domContentLoadedEventStart": 1322,
+            "domContentLoadedEventEnd": 1322,
+            "domComplete": 1511,
+            "loadEventStart": 1511,
+            "loadEventEnd": 1511,
+            "type": "navigate",
+            "redirectCount": 0
+          }
+        ],
+        "pageErrors": []
+      }
+    },
+    {
+      "job_id": 106927687483,
+      "scale": 100,
+      "phase": "canonical_publication_start",
+      "started_at": "2026-09-22T20:38:10.506Z"
+    },
+    {
+      "job_id": 106927687483,
+      "scale": 100,
+      "phase": "canonical_publication",
+      "ms": 86.32602699999998,
+      "bytes": 1588294,
+      "objects": 108,
+      "peak_rss_kib": 118376
+    },
+    {
+      "job_id": 106927687483,
+      "scale": 100,
+      "phase": "spatial_publication",
+      "graph_input_ms": 7.20136500000001,
+      "ms": 41.58837199999999,
+      "bytes": 1390406,
+      "objects": 20,
+      "peak_rss_kib": 130364
+    },
+    {
+      "job_id": 106927687483,
+      "scale": 100,
+      "phase": "build_complete",
+      "total_ms": 150.59276400000002,
+      "peak_rss_kib": 133308
+    },
+    {
+      "job_id": 106927687483,
+      "scale": 100,
+      "fixture": {
+        "world": "019f60ac-0064-7000-8000-000000000001",
+        "events": 100,
+        "relations": 301,
+        "narratives": 89
+      },
+      "storage": "local filesystem; no network latency",
+      "process_role": "atropos_read; separate builder reports its own peak RSS",
+      "rounds": 10,
+      "paths": [
+        {
+          "path": "initial_cold",
+          "samples": 1,
+          "app_p50_ms": 24.738747999999987,
+          "app_p95_ms": 24.738747999999987,
+          "serialize_p95_ms": 0.7223020000000133,
+          "parse_p95_ms": 0.31698900000003505,
+          "objects_min": 13,
+          "objects_max": 13,
+          "artifact_bytes_max": 1257087,
+          "heap_used_bytes_max": 29926736,
+          "payload_bytes_max": 274816
+        },
+        {
+          "path": "drawer_cold",
+          "samples": 1,
+          "app_p50_ms": 8.316395000000057,
+          "app_p95_ms": 8.316395000000057,
+          "serialize_p95_ms": 0.033330999999975575,
+          "parse_p95_ms": 0.022233999999912157,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 8313,
+          "heap_used_bytes_max": 33995840,
+          "payload_bytes_max": 15496
+        },
+        {
+          "path": "spatial_cold",
+          "samples": 1,
+          "app_p50_ms": 14.737265999999977,
+          "app_p95_ms": 14.737265999999977,
+          "serialize_p95_ms": 0.03956000000005133,
+          "parse_p95_ms": 0.04018100000007507,
+          "objects_min": 12,
+          "objects_max": 12,
+          "artifact_bytes_max": 440377,
+          "heap_used_bytes_max": 31583904,
+          "payload_bytes_max": 24265
+        },
+        {
+          "path": "initial_warm",
+          "samples": 10,
+          "app_p50_ms": 1.2642700000000104,
+          "app_p95_ms": 2.459483000000091,
+          "serialize_p95_ms": 0.8616619999999102,
+          "parse_p95_ms": 0.6993470000001025,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 302,
+          "heap_used_bytes_max": 46382168,
+          "payload_bytes_max": 274816
+        },
+        {
+          "path": "event_reading",
+          "samples": 10,
+          "app_p50_ms": 0.2399120000000039,
+          "app_p95_ms": 1.414668000000006,
+          "serialize_p95_ms": 0.018397000000049957,
+          "parse_p95_ms": 0.01961899999992056,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 302,
+          "heap_used_bytes_max": 44728360,
+          "payload_bytes_max": 7622
+        },
+        {
+          "path": "drawer_warm",
+          "samples": 10,
+          "app_p50_ms": 0.6759420000000773,
+          "app_p95_ms": 1.2308790000000727,
+          "serialize_p95_ms": 0.03079600000000937,
+          "parse_p95_ms": 0.02776199999993878,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 45062008,
+          "payload_bytes_max": 15496
+        },
+        {
+          "path": "spatial_warm",
+          "samples": 10,
+          "app_p50_ms": 3.333035999999993,
+          "app_p95_ms": 6.600763000000029,
+          "serialize_p95_ms": 0.054072000000019216,
+          "parse_p95_ms": 0.045558999999911975,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 45960800,
+          "payload_bytes_max": 24266
+        },
+        {
+          "path": "narrative_search",
+          "samples": 10,
+          "app_p50_ms": 0.9995300000000498,
+          "app_p95_ms": 3.3668669999999565,
+          "serialize_p95_ms": 0.1587090000000444,
+          "parse_p95_ms": 0.012989999999945212,
+          "objects_min": 0,
+          "objects_max": 3,
+          "artifact_bytes_max": 85427,
+          "heap_used_bytes_max": 46629032,
+          "payload_bytes_max": 2073
+        },
+        {
+          "path": "full_graph_query",
+          "samples": 1,
+          "app_p50_ms": 24.926421999999775,
+          "app_p95_ms": 24.926421999999775,
+          "serialize_p95_ms": 0.7683609999999135,
+          "parse_p95_ms": 0.6631520000000819,
+          "objects_min": 98,
+          "objects_max": 98,
+          "artifact_bytes_max": 457596,
+          "heap_used_bytes_max": 43027832,
+          "payload_bytes_max": 394165
+        }
+      ],
+      "peak_rss_kib": 141132,
+      "caches": {
+        "revision": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 1049773,
+          "max_bytes": 134217728,
+          "hits": 42,
+          "misses": 1,
+          "evictions": 0
+        },
+        "reader": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 490784,
+          "max_bytes": 33554432,
+          "hits": 10,
+          "misses": 1,
+          "evictions": 0
+        },
+        "objects": {
+          "entries": 125,
+          "pending": 0,
+          "accounted_bytes": 3925955,
+          "max_bytes": 16777216,
+          "hits": 90,
+          "misses": 125,
+          "evictions": 0
+        },
+        "spatial_context": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 857700,
+          "max_bytes": 134217728,
+          "hits": 21,
+          "misses": 1,
+          "evictions": 0
+        }
+      }
+    },
+    {
+      "job_id": 106927687483,
+      "ip004_browser_phase": "graph_ready",
+      "scale": 100,
+      "elapsed_ms": 1242
+    },
+    {
+      "job_id": 106927687483,
+      "ip004_browser_phase": "pan_measured",
+      "scale": 100,
+      "elapsed_ms": 3887
+    },
+    {
+      "job_id": 106927687483,
+      "ip004_browser_phase": "events_open",
+      "scale": 100,
+      "elapsed_ms": 5054
+    },
+    {
+      "job_id": 106927687483,
+      "ip004_browser_phase": "first_page",
+      "scale": 100,
+      "elapsed_ms": 5067
+    },
+    {
+      "job_id": 106927687483,
+      "ip004_browser_phase": "next_clicked",
+      "scale": 100,
+      "elapsed_ms": 5555
+    },
+    {
+      "job_id": 106927687483,
+      "ip004_browser_phase": "next_page",
+      "scale": 100,
+      "elapsed_ms": 5572
+    },
+    {
+      "job_id": 106927687483,
+      "ip004_browser": {
+        "scale": 100,
+        "graphReadyMs": 1242,
+        "htmlBytes": 1067459,
+        "drawerMs": 838,
+        "interaction": {
+          "samples": 120,
+          "frame_p95_ms": 38,
+          "frame_max_ms": 242,
+          "dom_nodes": 187
+        },
+        "navigation": [
+          {
+            "name": "http://127.0.0.1:3000/graph",
+            "entryType": "navigation",
+            "startTime": 0,
+            "duration": 334,
+            "initiatorType": "navigation",
+            "nextHopProtocol": "http/1.1",
+            "workerStart": 0,
+            "redirectStart": 0,
+            "redirectEnd": 0,
+            "fetchStart": 1,
+            "domainLookupStart": 1,
+            "domainLookupEnd": 1,
+            "connectStart": 1,
+            "connectEnd": 1,
+            "secureConnectionStart": 0,
+            "requestStart": 1,
+            "finalResponseHeadersStart": 45,
+            "firstInterimResponseStart": 0,
+            "responseStart": 45,
+            "responseEnd": 171,
+            "transferSize": 36129,
+            "encodedBodySize": 35829,
+            "decodedBodySize": 1067459,
+            "workerRouterEvaluationStart": 0,
+            "workerCacheLookupStart": 0,
+            "workerMatchedRouterSource": "",
+            "workerFinalRouterSource": "",
+            "deliveryType": "",
+            "serverTiming": [],
+            "unloadEventStart": 0,
+            "unloadEventEnd": 0,
+            "domInteractive": 210,
+            "domContentLoadedEventStart": 210,
+            "domContentLoadedEventEnd": 210,
+            "domComplete": 334,
+            "loadEventStart": 334,
+            "loadEventEnd": 334,
+            "type": "navigate",
+            "redirectCount": 0
+          }
+        ],
+        "pageErrors": []
+      }
+    },
+    {
+      "job_id": 106927687080,
+      "scale": 1000,
+      "phase": "canonical_publication_start",
+      "started_at": "2026-09-22T20:38:27.579Z"
+    },
+    {
+      "job_id": 106927687080,
+      "scale": 1000,
+      "phase": "canonical_publication",
+      "ms": 1151.070273,
+      "bytes": 11996095,
+      "objects": 1008,
+      "peak_rss_kib": 204460
+    },
+    {
+      "job_id": 106927687080,
+      "scale": 1000,
+      "phase": "spatial_publication",
+      "graph_input_ms": 47.37591999999995,
+      "ms": 793.6385740000003,
+      "bytes": 12648790,
+      "objects": 20,
+      "peak_rss_kib": 253852
+    },
+    {
+      "job_id": 106927687080,
+      "scale": 1000,
+      "phase": "build_complete",
+      "total_ms": 2138.528102,
+      "peak_rss_kib": 253852
+    },
+    {
+      "job_id": 106927687080,
+      "scale": 1000,
+      "fixture": {
+        "world": "019f60ac-03e8-7000-8000-000000000001",
+        "events": 1000,
+        "relations": 3144,
+        "narratives": 862
+      },
+      "storage": "local filesystem; no network latency",
+      "process_role": "atropos_read; separate builder reports its own peak RSS",
+      "rounds": 10,
+      "paths": [
+        {
+          "path": "initial_cold",
+          "samples": 1,
+          "app_p50_ms": 162.77768700000024,
+          "app_p95_ms": 162.77768700000024,
+          "serialize_p95_ms": 7.288176999999905,
+          "parse_p95_ms": 5.768763000000035,
+          "objects_min": 13,
+          "objects_max": 13,
+          "artifact_bytes_max": 7918977,
+          "heap_used_bytes_max": 70490472,
+          "payload_bytes_max": 1982414
+        },
+        {
+          "path": "drawer_cold",
+          "samples": 1,
+          "app_p50_ms": 74.79157899999973,
+          "app_p95_ms": 74.79157899999973,
+          "serialize_p95_ms": 0.04797899999994115,
+          "parse_p95_ms": 0.035045999999965716,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 8313,
+          "heap_used_bytes_max": 62780440,
+          "payload_bytes_max": 15497
+        },
+        {
+          "path": "spatial_cold",
+          "samples": 1,
+          "app_p50_ms": 115.06003199999986,
+          "app_p95_ms": 115.06003199999986,
+          "serialize_p95_ms": 0.05430100000012317,
+          "parse_p95_ms": 0.049742000000151165,
+          "objects_min": 12,
+          "objects_max": 12,
+          "artifact_bytes_max": 4046661,
+          "heap_used_bytes_max": 80808928,
+          "payload_bytes_max": 24261
+        },
+        {
+          "path": "initial_warm",
+          "samples": 10,
+          "app_p50_ms": 4.8128999999999,
+          "app_p95_ms": 10.32130700000016,
+          "serialize_p95_ms": 8.114939999999933,
+          "parse_p95_ms": 4.548005000000558,
+          "objects_min": 1,
+          "objects_max": 2,
+          "artifact_bytes_max": 1325,
+          "heap_used_bytes_max": 106468448,
+          "payload_bytes_max": 1982414
+        },
+        {
+          "path": "event_reading",
+          "samples": 10,
+          "app_p50_ms": 0.8054120000006151,
+          "app_p95_ms": 5.385490000000118,
+          "serialize_p95_ms": 0.026609999999891443,
+          "parse_p95_ms": 0.054702000000361295,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 302,
+          "heap_used_bytes_max": 106830784,
+          "payload_bytes_max": 7622
+        },
+        {
+          "path": "drawer_warm",
+          "samples": 10,
+          "app_p50_ms": 2.142979000000196,
+          "app_p95_ms": 3.5490219999996953,
+          "serialize_p95_ms": 0.04743899999994028,
+          "parse_p95_ms": 0.03282100000024002,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 107174856,
+          "payload_bytes_max": 15497
+        },
+        {
+          "path": "spatial_warm",
+          "samples": 10,
+          "app_p50_ms": 29.926634000000377,
+          "app_p95_ms": 54.273639,
+          "serialize_p95_ms": 0.07430900000008478,
+          "parse_p95_ms": 0.08066000000007989,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 105084200,
+          "payload_bytes_max": 24262
+        },
+        {
+          "path": "narrative_search",
+          "samples": 10,
+          "app_p50_ms": 6.76056299999982,
+          "app_p95_ms": 28.309603000000152,
+          "serialize_p95_ms": 0.07679400000006353,
+          "parse_p95_ms": 0.09784299999955692,
+          "objects_min": 0,
+          "objects_max": 21,
+          "artifact_bytes_max": 840167,
+          "heap_used_bytes_max": 110402376,
+          "payload_bytes_max": 20469
+        },
+        {
+          "path": "full_graph_query",
+          "samples": 1,
+          "app_p50_ms": 443.60897100000057,
+          "app_p95_ms": 443.60897100000057,
+          "serialize_p95_ms": 11.597948000000542,
+          "parse_p95_ms": 9.496749000000818,
+          "objects_min": 985,
+          "objects_max": 985,
+          "artifact_bytes_max": 8203542,
+          "heap_used_bytes_max": 164666032,
+          "payload_bytes_max": 3187642
+        }
+      ],
+      "peak_rss_kib": 304424,
+      "caches": {
+        "revision": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 6460173,
+          "max_bytes": 134217728,
+          "hits": 42,
+          "misses": 1,
+          "evictions": 0
+        },
+        "reader": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 3181824,
+          "max_bytes": 33554432,
+          "hits": 10,
+          "misses": 1,
+          "evictions": 0
+        },
+        "objects": {
+          "entries": 1003,
+          "pending": 0,
+          "accounted_bytes": 14804688,
+          "max_bytes": 16777216,
+          "hits": 264,
+          "misses": 1031,
+          "evictions": 28
+        },
+        "spatial_context": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 8307693,
+          "max_bytes": 134217728,
+          "hits": 21,
+          "misses": 1,
+          "evictions": 0
+        }
+      }
+    },
+    {
+      "job_id": 106927687080,
+      "ip004_browser_phase": "graph_ready",
+      "scale": 1000,
+      "elapsed_ms": 2480
+    },
+    {
+      "job_id": 106927687080,
+      "ip004_browser_phase": "pan_measured",
+      "scale": 1000,
+      "elapsed_ms": 5582
+    },
+    {
+      "job_id": 106927687080,
+      "ip004_browser_phase": "events_open",
+      "scale": 1000,
+      "elapsed_ms": 7776
+    },
+    {
+      "job_id": 106927687080,
+      "ip004_browser_phase": "first_page",
+      "scale": 1000,
+      "elapsed_ms": 7787
+    },
+    {
+      "job_id": 106927687080,
+      "ip004_browser_phase": "next_clicked",
+      "scale": 1000,
+      "elapsed_ms": 8647
+    },
+    {
+      "job_id": 106927687080,
+      "ip004_browser_phase": "next_page",
+      "scale": 1000,
+      "elapsed_ms": 8663
+    },
+    {
+      "job_id": 106927687080,
+      "ip004_browser": {
+        "scale": 1000,
+        "graphReadyMs": 2478,
+        "htmlBytes": 8647955,
+        "drawerMs": 1918,
+        "interaction": {
+          "samples": 120,
+          "frame_p95_ms": 51,
+          "frame_max_ms": 429,
+          "dom_nodes": 191
+        },
+        "navigation": [
+          {
+            "name": "http://127.0.0.1:3000/graph",
+            "entryType": "navigation",
+            "startTime": 0,
+            "duration": 1018,
+            "initiatorType": "navigation",
+            "nextHopProtocol": "http/1.1",
+            "workerStart": 0,
+            "redirectStart": 0,
+            "redirectEnd": 0,
+            "fetchStart": 1,
+            "domainLookupStart": 1,
+            "domainLookupEnd": 1,
+            "connectStart": 1,
+            "connectEnd": 1,
+            "secureConnectionStart": 0,
+            "requestStart": 1,
+            "finalResponseHeadersStart": 83,
+            "firstInterimResponseStart": 0,
+            "responseStart": 83,
+            "responseEnd": 584,
+            "transferSize": 169871,
+            "encodedBodySize": 169571,
+            "decodedBodySize": 8647955,
+            "workerRouterEvaluationStart": 0,
+            "workerCacheLookupStart": 0,
+            "workerMatchedRouterSource": "",
+            "workerFinalRouterSource": "",
+            "deliveryType": "",
+            "serverTiming": [],
+            "unloadEventStart": 0,
+            "unloadEventEnd": 0,
+            "domInteractive": 822,
+            "domContentLoadedEventStart": 822,
+            "domContentLoadedEventEnd": 822,
+            "domComplete": 1018,
+            "loadEventStart": 1018,
+            "loadEventEnd": 1018,
+            "type": "navigate",
+            "redirectCount": 0
+          }
+        ],
+        "pageErrors": []
+      }
+    }
+  ]
+}

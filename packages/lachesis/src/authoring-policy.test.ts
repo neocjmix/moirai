@@ -20,10 +20,15 @@ describe("authoritative policy delivery", () => {
     // Isolated transaction model; no claim that v4 enforces the v5 gate.
     let current = { policy_version: "v5/1", policy_digest: "a".repeat(64) };
     const committed = new Map<string, { digest: string; revision: number }>();
-    const execute = (id: string, policy: typeof current, allowed = true) => {
+    const execute = (
+      id: string,
+      policy: typeof current,
+      allowed = true,
+      intent = "original"
+    ) => {
       if (!allowed) throw new Error("forbidden");
       const digest = createHash("sha256")
-        .update(JSON.stringify(policy))
+        .update(JSON.stringify({ policy, intent }))
         .digest("hex");
       const previous = committed.get(id);
       if (previous) {
@@ -41,6 +46,9 @@ describe("authoritative policy delivery", () => {
     expect(execute("same", old)).toBe(1);
     expect(() => execute("same", old, false)).toThrow("forbidden");
     expect(() => execute("same", current)).toThrow("idempotency_conflict");
+    expect(() => execute("same", old, true, "changed")).toThrow(
+      "idempotency_conflict"
+    );
     expect(() => execute("new", old)).toThrowError(
       expect.objectContaining({ code: "authoring_policy_mismatch" })
     );

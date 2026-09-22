@@ -1388,6 +1388,36 @@ export function validateCandidateChangeSet(
         );
     }
   }
+  for (const narrative of narratives.values()) {
+    if (narrative.scope_type !== "event") continue;
+    const event = events.get(narrative.scope_id);
+    if (
+      !event ||
+      !eventCanonMemberships.get(event.id)?.has(narrative.canon_id)
+    ) {
+      fail(
+        "cross_canon_narrative",
+        `narratives.${narrative.id}.scope_id`,
+        "Narrative Event scope must remain a member of its Canon",
+        [narrative.id, narrative.scope_id, narrative.canon_id]
+      );
+    }
+  }
+  const activeEvents = [...events.values()].filter(
+    (event) => !withdrawnEventIds.has(event.id)
+  );
+  for (const canon of canons.values())
+    temporalGraphFailure(
+      [...relations.values()].filter(
+        (relation) =>
+          !withdrawnRelationIds.has(relation.id) &&
+          relationCanonMemberships.get(relation.id)?.has(canon.id)
+      ),
+      activeEvents.filter((event) =>
+        eventCanonMemberships.get(event.id)?.has(canon.id)
+      ),
+      [...timeSystems.values()]
+    );
   const createdCompositeIds = new Set(
     operations.flatMap((operation) =>
       operation.kind === "create" &&
@@ -1423,36 +1453,6 @@ export function validateCandidateChangeSet(
         );
     }
   }
-  for (const narrative of narratives.values()) {
-    if (narrative.scope_type !== "event") continue;
-    const event = events.get(narrative.scope_id);
-    if (
-      !event ||
-      !eventCanonMemberships.get(event.id)?.has(narrative.canon_id)
-    ) {
-      fail(
-        "cross_canon_narrative",
-        `narratives.${narrative.id}.scope_id`,
-        "Narrative Event scope must remain a member of its Canon",
-        [narrative.id, narrative.scope_id, narrative.canon_id]
-      );
-    }
-  }
-  const activeEvents = [...events.values()].filter(
-    (event) => !withdrawnEventIds.has(event.id)
-  );
-  for (const canon of canons.values())
-    temporalGraphFailure(
-      [...relations.values()].filter(
-        (relation) =>
-          !withdrawnRelationIds.has(relation.id) &&
-          relationCanonMemberships.get(relation.id)?.has(canon.id)
-      ),
-      activeEvents.filter((event) =>
-        eventCanonMemberships.get(event.id)?.has(canon.id)
-      ),
-      [...timeSystems.values()]
-    );
   return [];
 }
 

@@ -404,7 +404,7 @@ export function resolveCreateOperations(
   return { operations, idMapping: Object.fromEntries(mapping) };
 }
 
-const RELATION_REGISTRY: Readonly<
+export const RELATION_REGISTRY: Readonly<
   Record<RelationType, { direction: "directed" | "undirected" }>
 > = {
   contains: { direction: "directed" },
@@ -454,9 +454,8 @@ function wouldCreateContainmentCycle(
   return false;
 }
 
-function validateTimeSystemDefinition(
+export function validateTimeSystemDefinition(
   definition: Readonly<Record<string, unknown>>,
-  _contractVersion: CreateChangeSet["contract_version"],
   path: string
 ): void {
   const codec = definition.coordinate_codec;
@@ -714,9 +713,12 @@ function relationEndpointEventInWorld(
   return null;
 }
 
-function temporalGraphFailure(
-  relations: readonly PublicRelation[],
-  events: readonly PublicEvent[],
+export function temporalGraphFailure(
+  relations: readonly Pick<
+    PublicRelation,
+    "id" | "type" | "source_ref" | "target_ref"
+  >[],
+  events: readonly Pick<PublicEvent, "id" | "kind">[],
   timeSystems: readonly PublicTimeSystem[]
 ): void {
   const temporalRelations = relations.filter(
@@ -1018,7 +1020,6 @@ export function validateCandidateChangeSet(
         nonEmpty(value.definition_version, `${path}.value.definition_version`);
         validateTimeSystemDefinition(
           value.definition,
-          input.contract_version,
           `${path}.value.definition`
         );
         timeSystems.set(operation.entity_id, {

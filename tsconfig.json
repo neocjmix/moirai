@@ -11,7 +11,9 @@
       "@moirai/domain": ["./packages/domain/src/index.ts"],
       "@moirai/persistence": ["./packages/persistence/src/index.ts"],
       "@moirai/projections": ["./packages/projections/src/index.ts"],
-      "@moirai/publication": ["./packages/publication/src/index.ts"]
+      "@moirai/publication": ["./packages/publication/src/index.ts"],
+      "@moirai/contracts/v5": ["./packages/contracts/src/v5.ts"],
+      "@moirai/domain/v5": ["./packages/domain/src/v5.ts"]
     }
   },
   "include": ["*.ts", "scripts/**/*.ts", "tests/**/*.ts", "types/**/*.d.ts"]

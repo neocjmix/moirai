@@ -9,6 +9,7 @@ import type {
 import type { AppLocale } from "./locale";
 
 export type GraphReadLoader = {
+  dispose?(): void;
   loadWorkspace(locale: AppLocale): Promise<GraphShellWorkspaceShell>;
   loadViewport(
     locale: AppLocale,

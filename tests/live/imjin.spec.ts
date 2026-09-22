@@ -67,6 +67,16 @@ test("published shared Event opens two reader narratives, source details, and hi
   await expect(drawer).toContainText("마지막 대규모 해전");
   await expect(drawer).not.toContainText("수군의 관점");
   await page.screenshot({ path: testInfo.outputPath("noryang-drawer.png") });
+  // A fresh direct URL must not retain the previously visited Event's camera.
+  await page.goto(
+    `/graph/events/${world}/${hansan}?revision=${published.served_revision}`
+  );
+  await expect(drawer).toContainText("한산도대첩");
+  await page.getByTestId("event-drawer-close").click();
+  await expect(drawer).toHaveCount(0);
+  await expect(page.locator(`[data-event-point-id*="${hansan}"]`)).toHaveCount(
+    1
+  );
   expect(errors).toEqual([]);
   await testInfo.attach("publication.json", {
     body: JSON.stringify(

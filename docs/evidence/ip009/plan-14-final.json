@@ -1,0 +1,49 @@
+{
+  "contract_version": 4,
+  "change_set_id": "019f8c00-0000-7000-8000-000000009026",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 25,
+  "intent": "임진왜란 Canon의 육해전·외교 연결 서술을 보강하고 검증한 중첩 Composite projection으로 최신 Publication을 발행한다.",
+  "origins": [
+    {
+      "kind": "llm_inference",
+      "summary": "기존 Canon 출처의 전쟁 전개를 종합하여 독자용 결말 문단을 보강한다. Event identity와 모든 기존 관계는 유지한다."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ],
+      "value": {
+        "narrative_id": "019f8c00-0000-7000-8000-000000003100",
+        "body": "임진왜란은 부산에서 노량으로 곧장 이어지는 하나의 진군로가 아니었다. 국왕과 조정은 북쪽으로 이동했고, 일본 육군은 여러 길로 북상했다. 남해에서는 조선 수군이 싸웠으며 각지에서는 의병과 관군, 승군이 점령군의 길목을 위협했다. 명군의 참전 뒤에는 연합 작전과 강화교섭이 전쟁의 또 다른 축이 되었다.\n\n초기의 침공과 반격, 수년간의 교섭, 정유재란과 마지막 철수를 함께 살피면 한 전투의 승패가 다른 전선과 어떻게 맞물렸는지 이해할 수 있다. 성을 지킨 군민과 전선을 움직인 격군, 군량을 나른 주민, 전쟁으로 삶의 터전을 잃은 사람들도 이 역사의 일부였다.\n\n바다의 승리가 곧바로 육지의 회복을 뜻하지는 않았고, 성 하나를 되찾았다고 전쟁이 끝난 것도 아니었다. 수군의 작전은 일본군의 해상 이동을 제약했고, 육상의 항전과 명군의 개입은 침공군이 장기 점령을 지속하기 어렵게 만들었다. 강화교섭이 무너진 뒤에는 다시 큰 희생이 이어졌다. 마지막 철수와 노량해전은 이런 여러 흐름이 전쟁의 끝에서 만나는 장면이었다.",
+        "kind": "primary",
+        "title": "전쟁을 여러 전선에서 읽기",
+        "locale": "ko",
+        "canon_id": "019f8c00-0000-7000-8000-000000000100",
+        "scope_id": "019f8c00-0000-7000-8000-000000000100",
+        "scope_type": "canon",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/front/nh/view.do?levelId=nh_029_0020_0020",
+            "label": "우리역사넷 — 일본군의 침략과 조선군의 항전"
+          },
+          {
+            "url": "https://contents.history.go.kr/mobile/nh/view.do?levelId=nh_029_0020_0030_0010_0020_0010",
+            "label": "우리역사넷 — 명·일 강화교섭"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0050692",
+            "label": "한국민족문화대백과사전 — 정유재란"
+          }
+        ]
+      }
+    }
+  ]
+}

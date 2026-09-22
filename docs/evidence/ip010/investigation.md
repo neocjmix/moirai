@@ -49,3 +49,5 @@ TS-010에 따라 Event와 virtual Time Event 사이의 `not_after`, `precedes`, 
 1573/1575/1582/1588/1598/1600 fixture는 topology 변경, Composite contains, 두 Canon의 동일 Event identity/좌표를 검증한다. Gregorian frame의 미앵커 상대 Event는 unplaced diagnostic으로 남기며 가짜 연도로 배치하지 않는다. 별도 structural-order-display frame은 기존 구조 배치를 유지한다.
 
 1k spatial fixture는 layout /3에서 이전 SHA와 완전히 일치함을 확인한 뒤 /4 versioned bundle SHA만 갱신했다. 좌표 회귀를 감추기 위한 golden 변경이 아니다.
+
+CI PostgreSQL 28개를 포함한 quality 검사는 통과했다. 100k mobile test는 pinch 이후 network response가 반드시 3회라는 가정에서 두 실행 모두 실패했다. production viewport cache는 padded coverage를 재사용하므로 zoom이 매번 요청을 만들 필요가 없다. 기존 viewport-continuity 시험과 같은 크기 변경으로 실제 coverage refresh를 발생시킨 뒤 원래 요청 수·500 entity·1 MiB·새 ID·금지 artifact 미조회 assertion을 모두 유지했다. chronology 좌표 코드는 이를 위해 바꾸지 않았다.

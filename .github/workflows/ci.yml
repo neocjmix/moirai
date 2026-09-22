@@ -84,6 +84,10 @@ jobs:
         # recorded before deployment and must be rechecked after rollout.
         continue-on-error: true
         run: pnpm exec playwright test --config playwright.imjin-live.config.ts
+      - name: Japan published chronology on mobile and desktop
+        if: github.event_name == 'pull_request' && github.head_ref == 'fix/ip010-japan-chronology-evidence'
+        # Read-only acceptance after the two reviewed Live corrections publish.
+        run: pnpm exec playwright test --config playwright.japan-live.config.ts
       - name: Graph regression evidence
         if: always()
         uses: actions/upload-artifact@v4

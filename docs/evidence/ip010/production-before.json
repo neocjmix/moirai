@@ -1,0 +1,362 @@
+{
+  "world_revision": 28,
+  "query_temporal_states": [
+    {
+      "id": "019f8c00-0000-7000-8000-000000001000",
+      "title": "임진왜란(1592–1598)",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 0,
+        "evidence_ids": [
+          "01a0c8ce-655e-7025-abaf-50d52bf82b09",
+          "01a0c8ce-655e-79b6-94b1-4c656bc4b7b5"
+        ]
+      }
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001047",
+      "title": "도요토미 히데요시 사망",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 1,
+        "evidence_ids": [
+          "01a0c8ce-655e-79b6-94b1-4c656bc4b7b5"
+        ]
+      }
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001056",
+      "title": "일본군의 원정 동원과 나고야 집결",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 2,
+        "evidence_ids": [
+          "01a0c8ce-655e-7025-abaf-50d52bf82b09"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544c-7139-a833-4ba33b306cdd",
+      "title": "나가시노 전투",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 3,
+        "evidence_ids": [
+          "01a0c8ce-655d-780d-991c-4c4e3687dac8",
+          "01a0c8ce-655d-7a86-b156-4ea290332284"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544c-725e-a664-d7966e1e0748",
+      "title": "오닌의 난과 전국시대의 전개",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 4,
+        "evidence_ids": [
+          "01a0c8ce-655d-71af-a3de-928111a1d042"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544c-738f-9ade-7a4ee4d674b1",
+      "title": "오다 노부나가의 교토 입성",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 5,
+        "evidence_ids": [
+          "01a0c8ce-655d-7144-bca2-d006dd7fd9e4",
+          "01a0c8ce-655d-7a85-8161-0519b56a8420"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544c-74cc-af3a-780b9d89f629",
+      "title": "포르투갈 상인과 조총의 전래",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 6,
+        "evidence_ids": [
+          "01a0c8ce-655d-71af-a3de-928111a1d042",
+          "01a0c8ce-655d-77a7-9016-cb40e20ac985"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544c-7590-992f-88ec5443bb40",
+      "title": "무로마치 막부의 붕괴",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 7,
+        "evidence_ids": [
+          "01a0c8ce-655d-7a85-8161-0519b56a8420",
+          "01a0c8ce-655d-7a86-b156-4ea290332284"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544c-7ea5-a6fc-f2ed974e62ef",
+      "title": "오케하자마 전투와 노부나가의 부상",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 8,
+        "evidence_ids": [
+          "01a0c8ce-655d-7144-bca2-d006dd7fd9e4",
+          "01a0c8ce-655d-77a7-9016-cb40e20ac985"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7058-8150-16d9ee2e0fc0",
+      "title": "세키가하라 전투",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-729a-a00b-a4694d17ee19",
+      "title": "오사카성 건설과 히데요시 정권의 중심 형성",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 10,
+        "evidence_ids": [
+          "01a0c8ce-655d-73d5-bbd4-5200dfadd13c",
+          "01a0c8ce-655d-7eb5-9373-f7ae57f12386"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7391-b6c6-b7bc59a2b9c3",
+      "title": "도검몰수령과 병농 분리의 강화",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 11,
+        "evidence_ids": [
+          "01a0c8ce-655d-7e0a-9143-82cc12765571",
+          "01a0c8ce-655d-7f50-9e5c-36439d0d4c73"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7456-be09-0fbb7945d6af",
+      "title": "규슈 평정",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 12,
+        "evidence_ids": [
+          "01a0c8ce-655d-7e0a-9143-82cc12765571",
+          "01a0c8ce-655d-7eb5-9373-f7ae57f12386"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7629-8616-77bf6bf0006f",
+      "title": "야마자키 전투와 히데요시의 주도권 장악",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 13,
+        "evidence_ids": [
+          "01a0c8ce-655d-73d5-bbd4-5200dfadd13c"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7cdd-b960-41ee088032b8",
+      "title": "혼노지의 변과 노부나가의 죽음",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 14,
+        "evidence_ids": [
+          "01a0c8ce-655d-780d-991c-4c4e3687dac8"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7d12-a909-ff87c6a07f71",
+      "title": "오다와라 정벌과 일본 통일",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 15,
+        "evidence_ids": [
+          "01a0c8ce-655d-7f50-9e5c-36439d0d4c73"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7f0f-a396-fe09d05844a5",
+      "title": "도쿠가와 이에야스의 쇼군 취임과 에도 막부 성립",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 16,
+        "evidence_ids": [
+          "01a0c8ce-655e-767b-8370-4d4503b3dce5"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7f4a-a65a-fd76d67b8453",
+      "title": "히데요시 사후의 후계 체제와 권력 재편",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      }
+    },
+    {
+      "id": "01a0c8c3-544d-7fea-bc47-2e1c8deff091",
+      "title": "오사카 전투와 도요토미 가문의 몰락",
+      "temporal_position": {
+        "kind": "relative_only",
+        "component_id": "01995c2a-7b00-7000-8000-000000000101:01a0c8c3-544c-756a-968c-0a5bb38452ea",
+        "rank": 18,
+        "evidence_ids": [
+          "01a0c8ce-655e-767b-8370-4d4503b3dce5"
+        ]
+      }
+    },
+    {
+      "id": "01a0c8ce-655e-74a6-a5e7-36c672667e0f",
+      "title": "도요토미 히데요시의 통일과 해외 원정",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      }
+    },
+    {
+      "id": "01a0c8ce-655e-7af6-b327-06020e197970",
+      "title": "오다 노부나가의 통일 전쟁",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      }
+    },
+    {
+      "id": "01a0c8ce-655e-7f84-bfa3-b2e2a0954eee",
+      "title": "히데요시 사후 권력 재편과 도쿠가와 체제",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      }
+    }
+  ],
+  "rendered_points": [
+    {
+      "title": "도요토미 히데요시 사망",
+      "x": 0,
+      "y": 280,
+      "fake_calendar_year": 2.0
+    },
+    {
+      "title": "일본군의 원정 동원과 나고야 집결",
+      "x": 126.79545680220326,
+      "y": 0,
+      "fake_calendar_year": 0.0
+    },
+    {
+      "title": "나가시노 전투",
+      "x": 169.70919914598255,
+      "y": 700,
+      "fake_calendar_year": 5.0
+    },
+    {
+      "title": "오닌의 난과 전국시대의 전개",
+      "x": 233.01978740162076,
+      "y": 0,
+      "fake_calendar_year": 0.0
+    },
+    {
+      "title": "오다 노부나가의 교토 입성",
+      "x": 410.5314060712494,
+      "y": 420,
+      "fake_calendar_year": 3.0
+    },
+    {
+      "title": "포르투갈 상인과 조총의 전래",
+      "x": 435.13867440017566,
+      "y": 140,
+      "fake_calendar_year": 1.0
+    },
+    {
+      "title": "무로마치 막부의 붕괴",
+      "x": 294.5223899544287,
+      "y": 560,
+      "fake_calendar_year": 4.0
+    },
+    {
+      "title": "오케하자마 전투와 노부나가의 부상",
+      "x": 327.7323685542928,
+      "y": 280,
+      "fake_calendar_year": 2.0
+    },
+    {
+      "title": "오사카성 건설과 히데요시 정권의 중심 형성",
+      "x": 343.48524397862167,
+      "y": 140,
+      "fake_calendar_year": 1.0
+    },
+    {
+      "title": "도검몰수령과 병농 분리의 강화",
+      "x": 262.4454748873777,
+      "y": 420,
+      "fake_calendar_year": 3.0
+    },
+    {
+      "title": "규슈 평정",
+      "x": 201.45981383800012,
+      "y": 280,
+      "fake_calendar_year": 2.0
+    },
+    {
+      "title": "야마자키 전투와 히데요시의 주도권 장악",
+      "x": 377.09480424161256,
+      "y": 0,
+      "fake_calendar_year": 0.0
+    },
+    {
+      "title": "혼노지의 변과 노부나가의 죽음",
+      "x": 470.9860695420721,
+      "y": 840,
+      "fake_calendar_year": 6.0
+    },
+    {
+      "title": "오다와라 정벌과 일본 통일",
+      "x": 496.7687053728878,
+      "y": 560,
+      "fake_calendar_year": 4.0
+    },
+    {
+      "title": "도쿠가와 이에야스의 쇼군 취임과 에도 막부 성립",
+      "x": 617.3005060200933,
+      "y": 0,
+      "fake_calendar_year": 0.0
+    },
+    {
+      "title": "오사카 전투와 도요토미 가문의 몰락",
+      "x": 680.0782713028544,
+      "y": 140,
+      "fake_calendar_year": 1.0
+    }
+  ],
+  "unplaced_count": 3
+}

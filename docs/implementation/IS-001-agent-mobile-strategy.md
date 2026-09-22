@@ -69,15 +69,15 @@ Moirai는 사용자가 주로 모바일에서 에이전트를 지시하고 배�
 
 사용자에게는 코드 변경량보다 판단 가능한 증거를 한 화면 분량으로 우선 제공한다.
 
-| 항목 | 보고 내용 |
-|---|---|
-| Outcome | 무엇이 실제로 동작하는가 |
-| Public URL | 모바일에서 바로 열 수 있는 route |
-| Revision | commit SHA와 배포된 build SHA |
-| Verification | 통과한 test, build와 smoke scenario |
-| Data | 사용한 synthetic fixture와 예상 상태 |
-| Risk | 남아 있는 위험, 미검증 범위와 rollback 방법 |
-| Next | 다음 구현 단위 또는 사용자 판단이 필요한 한 가지 |
+| 항목         | 보고 내용                                        |
+| ------------ | ------------------------------------------------ |
+| Outcome      | 무엇이 실제로 동작하는가                         |
+| Public URL   | 모바일에서 바로 열 수 있는 route                 |
+| Revision     | commit SHA와 배포된 build SHA                    |
+| Verification | 통과한 test, build와 smoke scenario              |
+| Data         | 사용한 synthetic fixture와 예상 상태             |
+| Risk         | 남아 있는 위험, 미검증 범위와 rollback 방법      |
+| Next         | 다음 구현 단위 또는 사용자 판단이 필요한 한 가지 |
 
 긴 실행 로그는 기본 보고가 아니다. 실패 원인이나 의사결정에 필요한 경우에만 요약하고 원본 artifact를 연결한다.
 
@@ -89,13 +89,13 @@ Moirai는 사용자가 주로 모바일에서 에이전트를 지시하고 배�
 
 최소한 다음 표면을 유지한다.
 
-| 표면 | 목적 | 공개 정책 |
-|---|---|---|
-| Atropos URL | 실제 독자 경험 검증 | 완전 공개 |
-| 고정 synthetic World | Event·graph·Revision의 반복 가능한 fixture | 완전 공개 |
-| `/health` | 배포 readiness의 최소 machine check | 완전 공개, 최소 정보만 반환 |
-| `/__status` | 현재 build와 공개 pipeline 상태 확인 | 완전 공개, allowlist metadata만 반환 |
-| GitHub Actions | test·build·secret scan 결과 | 공개 repository의 check와 summary |
+| 표면                 | 목적                                       | 공개 정책                            |
+| -------------------- | ------------------------------------------ | ------------------------------------ |
+| Atropos URL          | 실제 독자 경험 검증                        | 완전 공개                            |
+| 고정 synthetic World | Event·graph·Revision의 반복 가능한 fixture | 완전 공개                            |
+| `/health`            | 배포 readiness의 최소 machine check        | 완전 공개, 최소 정보만 반환          |
+| `/__status`          | 현재 build와 공개 pipeline 상태 확인       | 완전 공개, allowlist metadata만 반환 |
+| GitHub Actions       | test·build·secret scan 결과                | 공개 repository의 check와 summary    |
 
 `/__status`는 모바일에서 읽기 쉬운 HTML과 machine-readable JSON 중 적어도 하나를 제공한다. 다음 정보만 allowlist로 노출한다.
 
@@ -141,12 +141,12 @@ Raw infrastructure log, trace와 metric은 문제 해결을 위한 운영 표면
 3. diff self-review와 secret scan을 수행한다.
 4. commit하고 public GitHub에 push한다.
 5. CI가 typecheck, test, build와 보안 gate를 실행한다.
-6. CI가 성공한 commit만 cloud environment에 배포한다.
+6. 비공개 development observation 단계는 AGENTS.md의 checkpoint 배포 정책을 따른다. CI 실패와 미완료는 명시하며 완료로 보고하지 않는다. 공개 서비스 전환 후에는 승인된 release gate를 적용한다.
 7. healthcheck가 성공한 뒤 새 deployment로 traffic을 전환한다.
 8. post-deploy smoke test가 공개 URL에서 핵심 scenario를 확인한다.
 9. 에이전트가 URL, commit과 증거 요약을 사용자에게 전달한다.
 
-Railway의 GitHub autodeploy를 사용할 때 [Wait for CI](https://docs.railway.com/deployments/github-autodeploys)를 활성화해 실패한 commit의 배포를 건너뛴다. `/health`는 process가 떴다는 사실만이 아니라 필수 설정과 안전한 dependency readiness를 확인한 뒤 `200`을 반환한다. Railway [healthcheck](https://docs.railway.com/deployments/healthchecks)가 성공하기 전에는 이전 정상 deployment를 계속 제공한다.
+Railway의 [Wait for CI](https://docs.railway.com/deployments/github-autodeploys) 설정은 위 environment 단계 정책과 일치시킨다. `/health`는 process가 떴다는 사실만이 아니라 필수 설정과 안전한 dependency readiness를 확인한 뒤 `200`을 반환한다. Railway [healthcheck](https://docs.railway.com/deployments/healthchecks)가 성공하기 전에는 이전 정상 deployment를 계속 제공한다.
 
 ### PR preview 사용 기준
 
@@ -177,15 +177,15 @@ Railway의 [PR environments](https://docs.railway.com/environments)는 다음 �
 
 ### 변경 종류별 추가 gate
 
-| 변경 | 추가 검증 |
-|---|---|
-| schema·migration | 빈 DB와 이전 fixture 양쪽에서 migrate, semantic invariant 확인 |
-| Change Set | 원자성, conflict, idempotency와 history round-trip |
-| Projection | 같은 입력의 동일 digest, 오래된 worker의 pointer 역행 방지 |
-| Atropos | mobile viewport E2E, URL 안정성, accessibility와 graph budget |
-| export/import | semantic fingerprint round-trip와 path/resource 공격 fixture |
-| auth·secret | unauthorized case, log·artifact·client bundle leakage 검사 |
-| deployment | public health, status, synthetic World와 revision-pinned read smoke test |
+| 변경             | 추가 검증                                                                |
+| ---------------- | ------------------------------------------------------------------------ |
+| schema·migration | 빈 DB와 이전 fixture 양쪽에서 migrate, semantic invariant 확인           |
+| Change Set       | 원자성, conflict, idempotency와 history round-trip                       |
+| Projection       | 같은 입력의 동일 digest, 오래된 worker의 pointer 역행 방지               |
+| Atropos          | mobile viewport E2E, URL 안정성, accessibility와 graph budget            |
+| export/import    | semantic fingerprint round-trip와 path/resource 공격 fixture             |
+| auth·secret      | unauthorized case, log·artifact·client bundle leakage 검사               |
+| deployment       | public health, status, synthetic World와 revision-pinned read smoke test |
 
 Test를 통과시키기 위해 요구사항을 약화하거나 assertion을 삭제하지 않는다. flaky test는 원인과 owner 없이 retry로 덮지 않는다.
 
@@ -282,13 +282,13 @@ URDR의 NestJS, Drizzle, Vite application 구조, 데이터 모델과 배포된 
 
 Railway를 우선 후보로 사용하되 책임 경계를 유지한다.
 
-| Service/resource | exposure |
-|---|---|
-| `clotho-api` | 인증된 사용자·에이전트의 public TLS endpoint; 내부 Lachesis application 포함 |
-| `lachesis-worker` | public domain 없음, private network 사용 |
-| `atropos-web` | 완전 공개 |
-| PostgreSQL | application private network만 사용 |
-| Publication bucket | application credential로만 쓰고 public artifact 경로만 CDN으로 제공 |
+| Service/resource   | exposure                                                                     |
+| ------------------ | ---------------------------------------------------------------------------- |
+| `clotho-api`       | 인증된 사용자·에이전트의 public TLS endpoint; 내부 Lachesis application 포함 |
+| `lachesis-worker`  | public domain 없음, private network 사용                                     |
+| `atropos-web`      | 완전 공개                                                                    |
+| PostgreSQL         | application private network만 사용                                           |
+| Publication bucket | application credential로만 쓰고 public artifact 경로만 CDN으로 제공          |
 
 Railway는 private S3-compatible [Storage Buckets](https://docs.railway.com/storage-buckets)와 service 단위 [CDN](https://docs.railway.com/networking/cdn)을 제공한다. 첫 Publication infrastructure spike에서 다음을 검증한 뒤 재사용 여부를 확정한다.
 

@@ -34,7 +34,7 @@ Lachesis는 Clotho에서 전달한 작업의 최종 접근 권한과 세계 규�
 
 ## BR-002.6 범위 관리
 
-여러 World, Canon, 공개본과 시간 체계를 서로 혼동하지 않고 관리할 수 있어야 한다. Canon overlap과 shared Event identity를 정상 상태로 보존하며 Canon 사이 또는 한 Canon 안의 상충을 자동 병합하거나 진위 판정하지 않는다.
+여러 World, Collection, 공개본과 시간 체계를 서로 혼동하지 않고 관리할 수 있어야 한다. Collection overlap과 shared Event identity를 정상 상태로 보존하며 Collection 선택으로 사실의 적용 여부를 바꾸지 않는다. 출처 충돌은 근거와 불확실성을 보존하고 확정 제약의 모순은 거절한다.
 
 ## BR-002.7 충돌 보호
 
@@ -42,7 +42,7 @@ Lachesis는 Clotho에서 전달한 작업의 최종 접근 권한과 세계 규�
 
 ## BR-002.8 canonical content와 파생 표현
 
-World-owned Event, Canon membership과 승인된 Relation/Narrative content를 그로부터 계산되거나 편집된 관점·표현과 구분하여 관리할 수 있어야 한다.
+World-owned Event, Collection membership과 승인된 Relation/Narrative content를 그로부터 계산되거나 편집된 관점·표현과 구분하여 관리할 수 있어야 한다.
 
 ## BR-002.9 규모 확장
 
@@ -50,4 +50,4 @@ World-owned Event, Canon membership과 승인된 Relation/Narrative content를 �
 
 ## BR-002.10 진단 가능성
 
-구조적 모순, 불완전한 정보와 관리상의 문제를 숨기지 않고 확인할 수 있어야 한다. Canon 내부의 내용 상충, Canon overlap과 서로 다른 Canon 사이의 차이는 그 자체로 관리상의 오류가 아니다.
+구조적 모순, 불완전한 정보와 관리상의 문제를 숨기지 않고 확인할 수 있어야 한다. Collection overlap과 선택 차이는 오류가 아니다. 사실 제약 충돌과 Narrative 중복 ownership은 검증 대상이다.

@@ -18,7 +18,7 @@ Clotho는 사용자의 운영상 탐색·작성 진입점과 호출 주체 인�
 
 ## BR-001.2 기존 세계 이해
 
-LLM은 작성 전에 관련 World, Canon, 시간 체계, 사건과 관계를 탐색하고 기존 맥락을 이해할 수 있어야 한다.
+LLM은 작성 전에 관련 World, Collection, 시간 체계, 사건과 관계를 탐색하고 기존 맥락을 이해할 수 있어야 한다.
 
 ## BR-001.3 확장과 수정
 
@@ -30,7 +30,7 @@ LLM은 작성 전에 관련 World, Canon, 시간 체계, 사건과 관계를 탐
 
 ## BR-001.5 작성 위치 판단
 
-LLM은 새로운 Event가 어느 World에 속하고 어떤 Canon 하나 이상에 참여할지 이해해야 한다. 기존 Event identity가 이미 있다면 새 Canon 참여를 표현하기 위해 Event를 복제하지 않는다. 새 해석적 지식 범위가 필요할 때는 Canon을, transaction·Revision·export·access isolation이 필요할 때는 별도의 World를 제안할 수 있어야 한다.
+World는 reality로 선택하고 관심사는 Collection으로 선택한다. 새 지역·시대 또는 운영 편의를 이유로 실제 역사를 여러 World로 쪼개지 않는다. Event 생성 전에 World 범위에서 기존 identity 후보를 찾고 재사용한다. Collection 미선택 상태도 유효하며 일상 authoring policy는 탐색 가능한 적절한 membership을 권장한다.
 
 ## BR-001.6 오류 회복
 
@@ -47,3 +47,7 @@ LLM 세션이 바뀌어도 저장된 세계를 다시 읽고 이전 작업을 �
 ## BR-001.9 구조 은닉
 
 사용자는 내부 데이터 구조를 알지 못해도 자연어로 세계를 작성하고 수정할 수 있어야 한다.
+
+## BR-001.10 authoritative authoring policy
+
+작성자는 write 전에 현재 정책을 반드시 조회한다. 서버가 강제할 규칙, 작성 정책, 모델 판단의 경계를 공개하고 오래된 정책으로 제출된 write는 안전하게 거절해야 한다. 정책에는 reuse·granularity·relation·contains·membership·Narrative·시간 정밀도·출처 충돌·사전 검색·사후 검증이 포함된다. 정책 버전은 작성 이력에서 추적한다. 긴 plugin instruction이나 세션 기억을 유일한 근거로 삼지 않는다.

@@ -20,19 +20,19 @@ owner: Atropos
 
 ## BR-003.3 복수 관점
 
-독자는 Canon 전체의 Narrative에서 Process, Composite Event와 단일 Event의 Narrative까지 범위를 오가며 사건 관계, chronology와 정체성 등 여러 관점으로 같은 세계를 이해할 수 있어야 한다.
+독자는 Collection 전체의 Narrative에서 Process, Composite Event와 단일 Event의 Narrative까지 범위를 오가며 사건 관계, chronology와 정체성 등 여러 관점으로 같은 세계를 이해할 수 있어야 한다.
 
 ## BR-003.4 관계 탐색
 
 독자는 사건 사이의 인과, 순서, 포함 관계와 관련 맥락을 따라갈 수 있어야 한다.
 
-## BR-003.5 복수 Canon
+## BR-003.5 복수 Collection
 
-독자는 현재 적용한 Canon scope를 분명히 알 수 있어야 하며, overlap하는 Canon을 함께 선택하고 필요한 경우 비교할 수 있어야 한다. 같은 Event가 여러 Canon에 참여할 때 stable Event identity와 graph node는 정확히 하나로 보인다. 이는 atomic Event와 Composite Event에 동일하게 적용하며, Canon별 Narrative·시간·관계 차이는 graph node를 복제하는 근거가 아니다. 비교는 어느 Canon을 정본·기본·공식·우위로 판정하지 않는다.
+독자는 여러 Collection을 ON/OFF하며 overlap을 탐색한다. 동일 World/Event는 하나의 node·drawer를 공유한다. 선택 변경은 사실·Narrative·시간 의미를 변경하지 않는다. Collection container와 Composite container의 selection/contains 차이를 label·행동으로 구별한다.
 
 ## BR-003.6 범위별 서술과 근거
 
-독자는 현재 Canon scope에 연결된 Canon·Process·Composite Event·단일 Event 단위의 authored Narrative를 읽을 수 있어야 한다. 한 Event에 선택된 Canon별 Narrative가 여러 개이면 하나의 Event drawer 안에서 Canon별 section과 원문의 문단 경계를 보존해 표시한다. Narrative를 하나의 합성 문장으로 병합하거나 Narrative 차이 때문에 Event drawer를 복제하지 않는다. Canon과 Narrative는 서로 대체하지 않는다. 독자에게 제공할 인용이나 출처 설명이 세계 내용으로 명시적으로 작성된 경우에는 관련 링크도 확인할 수 있어야 한다. 운영용 원자료와 작성 유래 자체는 공개 대상이 아니다.
+Event drawer는 Collection과 무관한 단일 Event Narrative를 표시한다. Collection 소개는 그 Collection의 단일 Narrative다. 본문은 사건·인물·행동·배경·결과를 설명하며 역사 이해에 필요한 불확실성을 포함할 수 있다. 자료 해석·정밀도 주석과 공개 인용은 별도로 펼쳐 읽고 작성 과정·반복 면책·운영 진단은 본문에 표시하지 않는다. 이전 Canon별 section 표시는 이 계약으로 대체한다.
 
 ## BR-003.7 공유와 인용
 
@@ -53,8 +53,15 @@ owner: Atropos
 ## BR-003.11 호환되는 복수 World 탐색
 
 독자는 먼저 하나의 Time System 관점을 선택하고, 그 관점에서 좌표를 비교할 수 있는
-여러 World와 각 World의 여러 Canon을 한 탐색 화면에 함께 놓을 수 있어야 한다.
+여러 World와 각 World의 여러 Collection을 한 탐색 화면에 함께 놓을 수 있어야 한다.
 Atropos는 호환되지 않는 World를 같은 시간축에 놓거나 호환성을 이름으로 추측하지
 않으며, 함께 표시한다는 이유로 World의 canonical content·Revision·접근 경계 또는
-Event identity를 병합하지 않는다. Canon 선택은 World partition이 아니라 interpretive
-scope filter다.
+Event identity를 병합하지 않는다. Collection 선택은 World partition이 아니라 selection projection다.
+
+## BR-003.12 Collection discovery
+
+현재 viewport·time range·scale·visible Event·active Collections·graph adjacency를 근거로 관련 Collection을 발견하고 전환할 수 있어야 한다. 추천 이유는 겹치는 사건·시간·인접성처럼 설명 가능해야 한다. 관련성이 낮거나 후보가 없으면 억지 추천하지 않는다. 수동 importance나 recommended_with taxonomy는 요구하지 않는다.
+
+## BR-003.13 응답 범위와 연속성
+
+읽기 비용은 선택 범위와 명시된 budget에 의해 제한되어야 한다. 부분 결과·추가 결과·오류를 구별하고 pan/zoom 중 기존 화면을 유지한다. bounded 응답을 위해 World 전체를 매번 읽는 것은 이 요구를 만족하지 않는다.

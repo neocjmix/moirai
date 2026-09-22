@@ -1,14 +1,15 @@
 # 현재 구현 상태
 
-**IP-010 complete · IP-004/005/006/007/008/009 complete · M5 inactive.**
+**IP-011 A0 — authoritative planning baseline 수립. A1–A6 구현·migration 및 M5 비활성.**
 
-[IP-010](IP-010-japan-chronology.md)은 일본사 Canon의 canonical Time Event 제약 누락과 presentation rank→Gregorian 대체 결함을 수정했다. 기능 PR #127, commit `bf96316152d99821fb103b29e1addfca019ea8f7`의 Railway 세 서비스가 SUCCESS다.
+현재 배포는 v4 Canon 모델이다. main `05ebf3b27794e60d734a885cc428a30104118896`와 Railway 세 서비스 latest SUCCESS가 일치한다. 역사 World Live export는 revision30이다. IP-004~010 완료 이력은 유지한다.
 
-동아시아사 World는 current/target/served **30/30/30 ready**. 기존127 Event identity, 일본사 외108 Event/359 Relation의 사실 내용과 기존 임진왜란 temporal projection을 보존했다. 일본사24 Event 전부 배치되며 실제 Graph에서1573→1575→1582→1592→1598→1600→1603→1615 순서를 확인했다. [최종 검증 및 변경 범위](../evidence/ip010/final-verification.md)를 참조한다.
+목표 의미·dependency·migration·exit의 기준은 [IP-011](IP-011-architecture-realignment.md)이다. CON-003→CORE-MODEL→TS-002/004/005/006을 개정했으며 이 문서 변경은 runtime cutover 완료가 아니다. branch PR이 main에 반영되기 전에는 제안된 authoritative baseline이다.
 
-기능 CI: unit282, PostgreSQL28, mobile25 통과. production build·타입·보안 검사 통과. 추가 production iPhone/desktop acceptance와 화면 증거는 evidence PR의 CI artifacts에서 확인한다.
+다음 실행 단위는 A1: 현재 v4용 transition policy 조회, 격리된 v5 policy guard prototype과 성능 계측. 그다음 A2 v5+데이터 rehearsal → A3 cutover → A4 bounded read → A5 discovery → A6 역사 dogfooding이다. 대규모 역사 입력과 기존 M5를 먼저 활성화하지 않는다.
 
+- [실제 조사와 한계](../evidence/ip011/reconstruction.md)
+- [migration 대상 IDs](../evidence/ip011/data-audit.json)
+- [자기검증](../evidence/ip011/review.md)
 - Atropos: https://moirai-production-8ed1.up.railway.app
 - Clotho: https://desirable-vitality-production-eb95.up.railway.app
-- 과거 revision28 URL은 당시 snapshot이다. 최신 revision30을 열어 교정 결과를 확인한다.
-- 다음 작업은 별도 사용자 지시로 정한다. 이 완료 기록은 추가 milestone 승인이 아니다.

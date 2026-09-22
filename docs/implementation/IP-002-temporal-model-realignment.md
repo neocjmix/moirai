@@ -8,6 +8,8 @@ depends_on:
 
 # IP-002 — 시간 모델 재정렬 구현 계획
 
+> IP-011 이후 실행 순서와 목표 domain 계약은 [IP-011](IP-011-architecture-realignment.md)을 따른다. 아래 기록의 Canon·Narrative·membership 전제는 당시 구현 이력이며 현재 목표 의미를 재정의하지 않는다. 완료 이력은 취소하지 않으며 미완료 backlog는 IP-011로 재분류한다.
+
 이 계획은 2026-09-05 의미 결정과 함께 accepted됐다. 2026-09-07 사용자는 PR #4 병합, 기존 데이터 전체 삭제, production 단일 환경에서 Slice 7 활성화와 두 차례 종단간 재검증을 승인했다. 이 결정은 이전 호환·migration·별도 staging 전제를 대체한다.
 
 ## 목표와 금지선

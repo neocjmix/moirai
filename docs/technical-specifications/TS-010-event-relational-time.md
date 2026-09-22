@@ -15,7 +15,7 @@ traces:
 
 2026-09-05 사용자가 이 문서의 strictness, virtual reference와 Time System 계약을 승인했다. 이 문서는 accepted이며 [TS-002](TS-002-canonical-data-model.md), [TS-003](TS-003-change-revision-publication.md), [TS-004](TS-004-clotho-contract.md), [TS-005](TS-005-derived-models.md), [TS-006](TS-006-atropos-publication.md), [TS-007](TS-007-portability.md)의 시간 의미를 이 문서와 일치하도록 개정한다. 문서 승인은 runtime·schema migration·시험 World 쓰기를 자동 승인하지 않는다.
 
-2026-09-11 IP-003은 Event와 Relation identity를 World-owned로, Canon participation을 각각 1..N membership으로 재정렬했다. 같은 temporal assertion은 여러 Canon이 공유할 수 있지만 constraint solving과 endpoint/Time System 검증은 Canon별 membership context에서 독립 수행한다. 이 변경은 strictness, virtual Time Event, lossless coordinate와 Time System capability 의미를 바꾸지 않는다.
+2026-09-22 IP-011은 Collection을 selection으로 한정한다. temporal assertion은 World-level이며 선택과 무관하게 같은 Event의 사실 제약을 유지한다. strictness, virtual Time Event, lossless coordinate와 adapter capability는 보존한다.
 
 목표는 시간 정밀도마다 타입과 계산 분기를 늘리는 대신, Event와 Relation 하나의 문법으로 다음을 모두 표현하는 것이다.
 
@@ -28,13 +28,13 @@ traces:
 
 ## 2. 모델의 층
 
-| 층         | 요소                                                | 지위                                         |
-| ---------- | --------------------------------------------------- | -------------------------------------------- |
-| Canon context | active member Event와 적용 Relation              | 선택한 interpretive knowledge scope의 canonical input |
-| World      | Atomic Event, Composite Event                        | 저장되는 Event identity의 ownership          |
-| 동적 기준  | Time Event                                          | 좌표로부터 결정적으로 구해지며 저장하지 않음 |
-| 관리 정보  | provenance, confidence, assertion metadata          | canonical content의 유래와 확실성을 설명      |
-| Projection | temporal position, timeline geometry, duration view | 필요할 때 계산하는 편의 표현                 |
+| 층                   | 요소                                                | 지위                                         |
+| -------------------- | --------------------------------------------------- | -------------------------------------------- |
+| Collection selection | 표시할 Event 집합                                   | World facts의 bounded read projection        |
+| World                | Atomic Event, Composite Event                       | 저장되는 Event identity의 ownership          |
+| 동적 기준            | Time Event                                          | 좌표로부터 결정적으로 구해지며 저장하지 않음 |
+| 관리 정보            | provenance, confidence, assertion metadata          | canonical content의 유래와 확실성을 설명     |
+| Projection           | temporal position, timeline geometry, duration view | 필요할 때 계산하는 편의 표현                 |
 
 사건의 지속, 알려진 범위, 기록의 확실성, 입력 해상도와 화면 모양은 서로 다른 축이다. 하나의 `kind` 또는 `precision` 필드로 합치지 않는다.
 
@@ -46,20 +46,13 @@ Atomic Event는 모델이 더 작은 구성 사건으로 설명하지 않는 사
 
 ### 3.2 Composite Event
 
-지속되는 Event는 Composite Event로 표현한다. 완결된 지속 Event `D`는 다음을 만족해야 한다.
-
-1. 서로 다른 시작 Event `S`와 종료 Event `E`를 가진다.
-2. `D contains S`, `D contains E`가 성립한다.
-3. `S starts D`, `E ends D`가 각각 유일하다.
-4. `S precedes E`가 성립한다.
-
-진행 중이거나 기록이 불완전한 Composite Event를 commit할 수 있는지는 미결정 사항이다. 허용한다면 “실제로 종료되지 않음”과 “종료를 모름”을 구분해야 한다.
+Composite는 active contains에서 파생한다 (TS-002.7). 기간만으로 composite kind를 요구하지 않는다. starts/ends가 명시되면 기존 registry의 endpoint·유일성·strictness를 검증하되 자료가 없으면 시작/끝 Event를 발명하지 않는다. descendant span은 시각적 외곽이며 실제 duration이 아니다. 열린 경계는 unresolved로 표시한다.
 
 ### 3.3 Time Event
 
 Time Event는 Time System 안의 정확한 수학적 좌표 하나를 나타내는 동적 Event다.
 
-- Event 또는 Canon membership 테이블에 저장하지 않는다.
+- Event 또는 Collection membership 테이블에 저장하지 않는다.
 - create·withdraw·revision 대상이 아니다.
 - 같은 Time System, 정의 버전과 좌표는 항상 같은 식별자를 만든다.
 - 관계 검증·질의·반출 과정에서 일반 Event처럼 참조할 수 있다.
@@ -135,7 +128,7 @@ commit 전에 최소한 다음을 검증한다.
 
 거절 결과는 충돌에 참여한 Event·Relation·Time Event와 입력 근거를 최소 모순 집합에 가깝게 반환해야 한다. 단순 `invalid temporal data`로 숨기지 않는다.
 
-서로 다른 Time System에 놓인 일반 Event 사이의 authored `precedes`는 변환이 아니라 독립적인 Canon 사실이므로 허용한다. authored cross-system ordering은 coordinate conversion이나 Duration 계산 능력을 만들지 않는다. 명시적 adapter 없이 cross-system 좌표 차이, 공통 timeline 위치 또는 변환 결과를 요구하면 `unresolved`이고, Change Plan이 그런 계산 결과를 사실처럼 제출하면 validate에서 거절한다.
+서로 다른 Time System에 놓인 일반 Event 사이의 authored `precedes`는 변환이 아니라 독립적인 World 사실이므로 허용한다. authored cross-system ordering은 coordinate conversion이나 Duration 계산 능력을 만들지 않는다. 명시적 adapter 없이 cross-system 좌표 차이, 공통 timeline 위치 또는 변환 결과를 요구하면 `unresolved`이고, Change Plan이 그런 계산 결과를 사실처럼 제출하면 validate에서 거절한다.
 
 ## 7. Time System과 좌표 능력
 
@@ -160,7 +153,7 @@ conversion이 있어야 한다. title, slug, `kind` 또는 좌표 문자열 모�
 호환성 근거가 아니다. 호환성은 World canonical content 병합이나 cross-World identity를
 만들지 않는다.
 
-예를 들어 스타워즈 같은 허구 세계의 달력은 출전이 정의한 custom coordinate를 그대로 보존하며, 정의되지 않은 Gregorian 환산을 만들지 않는다. 빅뱅 직후 사건은 기원 이후 경과량을 임의정밀도 scalar string으로 표현하고 해당 adapter가 제공하는 범위에서만 비교·차이를 계산한다. 칙술루브 충돌과 공룡 멸종은 각각 별도 Event 또는 Composite Event로 두고, 지질 연대의 알려진 범위와 둘 사이의 authored 관계를 함께 보존한다. 학설이 다른 경우에는 Canon 또는 provenance를 분리하며 하나의 exact Gregorian timestamp로 합치지 않는다.
+예를 들어 스타워즈 같은 허구 세계의 달력은 출전이 정의한 custom coordinate를 그대로 보존하며, 정의되지 않은 Gregorian 환산을 만들지 않는다. 빅뱅 직후 사건은 기원 이후 경과량을 임의정밀도 scalar string으로 표현하고 해당 adapter가 제공하는 범위에서만 비교·차이를 계산한다. 칙술루브 충돌과 공룡 멸종은 각각 별도 Event 또는 Composite Event로 두고, 지질 연대의 알려진 범위와 둘 사이의 authored 관계를 함께 보존한다. 학설이 다르면 근거·주석과 양립 가능한 uncertainty를 보존하며 하나의 exact Gregorian timestamp로 합치지 않는다. 모순되는 확정 제약은 Collection별로 숨기지 않는다.
 
 수용시험의 공통 adapter는 `proleptic-gregorian-utc@1`이다.
 
@@ -200,7 +193,7 @@ Composite Event의 Duration은 명시적 시작·종료 경계의 위치 차이�
 
 모든 시간 파생 결과는 다음을 설명할 수 있어야 한다.
 
-- 어떤 Canon Relation과 virtual Time Event를 사용했는가
+- 어떤 World Relation과 virtual Time Event를 사용했는가
 - 어느 Time System·정의 버전·calendar adapter를 사용했는가
 - 어떤 algorithm version이 계산했는가
 - exact, bounded, relative-only, unresolved 중 무엇이며 왜 그런가
@@ -216,7 +209,7 @@ Composite Event의 Duration은 명시적 시작·종료 경계의 위치 차이�
 
 ## 13. 승인 수용 기준
 
-표현력의 최종 판정은 [시간 표현력 종단간 수용시험](../implementation/TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)을 따른다. 아래 항목의 unit test나 타입 구현만으로는 합격이 아니다. 구체적인 corpus를 Clotho로 validate·commit하고 Canon read-back, 계산 projection, Atropos 공개 출력과 export/import까지 확인해야 한다.
+표현력의 최종 판정은 [시간 표현력 종단간 수용시험](../implementation/TEMPORAL-EXPRESSIVENESS-ACCEPTANCE.md)을 따른다. 아래 항목의 unit test나 타입 구현만으로는 합격이 아니다. 구체적인 corpus를 Clotho로 validate·commit하고 World/Collection read-back, 계산 projection, Atropos 공개 출력과 export/import까지 확인해야 한다.
 
 - 연·월·일·ms·ps 예제가 단위별 Event 타입 없이 통과한다.
 - 지속 Event와 알려진 시간 범위가 서로 독립적으로 표현된다.
@@ -227,6 +220,6 @@ Composite Event의 Duration은 명시적 시작·종료 경계의 위치 차이�
 - `precedes`와 경계 모순이 commit 전에 설명 가능하게 거절된다.
 - Duration은 명시적 경계만, descendant span은 별도로 계산된다.
 - Projection은 source evidence와 algorithm version을 가진다.
-- Canon·DB·Publication·export 어디에도 Placement 또는 숫자 좌표 호환 형식이 없다.
+- 정본·DB·Publication·export 어디에도 Placement 또는 숫자 좌표 호환 형식이 없다.
 - 영향받는 accepted 명세가 같은 결정으로 개정된다.
 - 성공·거절 corpus 전체의 실제 입력과 출력 증거가 한 Revision 계보로 남는다.

@@ -23,7 +23,7 @@ traces:
 ## TS-003.2 Change Set 범위
 
 - 하나의 Change Set은 정확히 하나의 World만 변경한다.
-- World 생성 Change Set은 World, 초기 Canon, Time System, Event, Canon-Event membership, Relation과 Narrative를 함께 만들 수 있다.
+- World 생성 Change Set은 World, 초기 Collection, Time System, Event, Collection-Event membership, Relation과 Narrative를 함께 만들 수 있다.
 - 여러 World를 동시에 바꾸는 원자적 작업은 1차 구현에서 지원하지 않는다.
 - 하나의 이야기 단위는 여러 Operation을 가진 하나의 Change Set으로 제출한다.
 - Change Set 일부만 성공시키는 옵션은 제공하지 않는다.
@@ -60,7 +60,7 @@ restore는 별도 저수준 Operation이 아니다. 이전 상태와 현재 상�
 - JSON Merge Patch처럼 `null`과 누락의 의미가 불명확한 범용 patch를 외부 명령의 유일한 계약으로 사용하지 않는다.
 - entity type별 command schema가 수정 가능한 필드와 불변 필드를 제한한다.
 - 임시 client reference를 사용해 같은 Change Set에서 생성되는 레코드를 뒤의 Operation이 참조할 수 있다.
-- Canon-Event와 Canon-Relation membership은 독립 lifecycle record로 add·remove할 수 있다. 이는 Event 또는 Relation identity를 생성·복제하는 Operation이 아니다.
+- Collection-Event membership은 독립 lifecycle record로 add·remove할 수 있다. Relation은 Collection membership을 갖지 않는다. 이는 Event 또는 Relation identity를 생성·복제하는 Operation이 아니다.
 
 ## TS-003.4 검증 단계
 
@@ -71,7 +71,7 @@ Change Set 검증은 다음 순서를 따른다.
 3. `expected_revision`과 현재 Revision을 비교한다.
 4. 임시 reference를 실제 ID 후보로 해석한다.
 5. Operation을 메모리의 후보 상태에 순서대로 적용한다.
-6. 모든 Operation을 적용한 최종 후보 상태에서 [TS-002](TS-002-canonical-data-model.md)의 World ownership, Event·Relation 1..N Canon membership, 참조·시간·관계 불변식과 [TS-010](TS-010-event-relational-time.md)의 Canon별 시간 제약 모순을 검증한다.
+6. 모든 Operation을 적용한 최종 후보 상태에서 [TS-002](TS-002-canonical-data-model.md)의 World ownership, Event의 same-World 0..N Collection membership과 owner당 단일 Narrative, 참조·시간·관계 불변식과 [TS-010](TS-010-event-relational-time.md)의 World-level 시간 제약 모순을 검증한다.
 7. 철회와 수정이 관련 Relation, Narrative, correspondence와 공개 링크에 미치는 영향을 계산한다.
 8. 오류와 warning을 안정적인 code, 관련 ID와 수정 가능한 설명으로 반환한다.
 
@@ -105,7 +105,7 @@ Change Set 검증은 다음 순서를 따른다.
 1. 대상 World의 현재 Revision을 조건부 잠금한다.
 2. `expected_revision`을 다시 확인한다.
 3. 현재 정본 테이블에 모든 Operation을 적용한다.
-4. deferred transaction invariant로 모든 active Event와 Relation의 same-World active membership이 하나 이상인지 다시 확인한다.
+4. deferred transaction invariant로 same-World 참조, unique membership과 owner당 단일 active Narrative를 다시 확인한다. membership 0은 유효하다.
 5. `change_sets`와 순서 있는 `change_operations`에 `before`, `after`, origin과 warning을 기록한다.
 6. 새 `world_revisions` 레코드를 만든다.
 7. `worlds.current_revision`과 `worlds.publication_target_revision`을 같은 새 Revision으로 변경한다.
@@ -161,10 +161,10 @@ Change Set 검증은 다음 순서를 따른다.
 - 철회는 `withdrawn_revision`을 설정하고 현재 Publication의 정상 콘텐츠에서 제외한다.
 - 철회 이유 원문은 비공개 운영 정보다.
 - 안정적 공개 링크에 표시할 `public_withdrawal_notice`는 별도로 명시한다.
-- Event 철회 시 해당 Event의 active Canon membership과 해당 Event를 endpoint 또는 scope로 사용하는 활성 Relation, Narrative와 correspondence member를 같은 Change Set에서 처리해야 한다.
-- active Event의 마지막 Canon membership만 철회하는 Change Set은 `event_canon_membership_required`로 거절한다. Event 자체와 마지막 membership을 함께 철회하여 최종 상태가 valid한 전환은 허용한다.
-- active Relation의 마지막 Canon membership만 철회하는 Change Set은 `relation_canon_membership_required`로 거절한다. Relation 자체와 모든 membership을 함께 철회한 valid final state는 허용한다.
-- virtual Time Event는 철회 대상이 아니다. 이를 참조하는 Canon Relation만 일반 Relation 생명주기로 수정·철회한다.
+- Event 철회 시 해당 Event의 active Collection membership과 해당 Event를 endpoint 또는 scope로 사용하는 활성 Relation, Narrative와 correspondence member를 같은 Change Set에서 처리해야 한다.
+- active Event의 마지막 Collection membership 제거는 허용하며 Event와 Narrative는 유지한다.
+- Relation 철회는 World assertion을 철회한다. Collection 선택과 독립적이다.
+- virtual Time Event는 철회 대상이 아니다. 이를 참조하는 World Relation만 일반 Relation 생명주기로 수정·철회한다.
 - 기본 동작은 영향을 자동 삭제하는 것이 아니라 `dependent_content_active` 오류와 영향 목록을 반환하는 것이다.
 - 작성자는 의도에 따라 종속 항목을 함께 철회하거나 대상을 교체한다.
 - 철회된 ID와 slug alias는 새 콘텐츠에 재사용하지 않는다.
@@ -239,7 +239,7 @@ stateDiagram-v2
 - import는 대상 World 단위의 Change Set으로 검증하고 적용한다.
 - 전체 교체 import도 기존 World를 조용히 덮어쓰지 않고 expected Revision과 영향 요약을 요구한다.
 - schema migration은 현재 정본, Change Operation 이력과 Publication 재생성을 함께 검증한다.
-- migration 성공 여부는 행 수뿐 아니라 Event·Relation·Narrative·Canon 경계와 철회 상태의 의미 보존으로 판단한다.
+- migration 성공 여부는 행 수뿐 아니라 Event·Relation·Narrative·Collection 경계와 철회 상태의 의미 보존으로 판단한다.
 - import/export format의 상세 계약은 TS-007에서 정한다.
 
 ## TS-003.13 수용 기준
@@ -257,3 +257,7 @@ stateDiagram-v2
 9. 공개 Snapshot에 원자료, LLM 작업 과정과 내부 actor 정보가 포함되지 않는다.
 10. Snapshot을 모두 삭제한 뒤 정본 Revision에서 동일한 의미의 공개본을 재생성할 수 있다.
 11. 시간 모순은 World Revision과 Publication target을 증가시키기 전에 충돌한 Relation과 virtual Time Event reference를 포함해 거절된다.
+
+## TS-003.15 policy와 계약 cutover
+
+목표 v5는 TS-004의 policy_version/digest를 validate·신규 commit에서 검사하고 Change Set에 보존한다. 이미 성공한 동일 ID/digest retry는 기존 결과를 반환한다. v4 live write를 자동 변환하지 않는다. 실제 이행은 IP-011의 A1~A3을 따른다. 이 문서의 운영 이력·원자성·인가·outbox·복구 계약은 유지한다.

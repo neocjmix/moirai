@@ -30,9 +30,9 @@ owner: Cross-system
 
 상태, 지속 기간, 생애, 통치, 혼인과 전쟁 같은 장기 과정을 사건 구조로부터 이해할 수 있어야 한다.
 
-## BR-004.6 복수 Canon
+## BR-004.6 복수 Collection
 
-같은 World의 해석적 지식 범위를 나타내는 복수 Canon을 구분하고 overlap시킬 수 있어야 한다. 동일 Event identity는 여러 Canon에 참여할 수 있으며 어느 Canon도 authority, objective truth, completeness, consistency, 정본·기본·공식·우위를 함의하지 않는다.
+[CORE-MODEL](entities/CORE-MODEL.md)의 selection semantics를 따른다. 하나의 Event를 관심사마다 복제하지 않는다. 실제 세계사는 하나의 World이며 삼국지연의·MCU와 reality를 구분한다.
 
 ## BR-004.7 복잡한 시간 서사
 
@@ -42,9 +42,9 @@ owner: Cross-system
 
 정보, 지식과 물건의 유래 및 전달 경로를 추적할 수 있어야 한다.
 
-## BR-004.9 Canon 사이의 차이
+## BR-004.9 관심사와 사실의 차이
 
-여러 Canon이 같은 Event와 Relation assertion을 공유하거나 서로 다른 Event·관계·시간·Narrative context를 가질 수 있어야 한다. Relation identity는 World-level이고 active Relation은 같은 World의 Canon 1개 이상에 참여한다. Canon 사이 또는 한 Canon 안의 상충을 자동 병합하거나 진위 경쟁으로 바꾸어서는 안 된다.
+Collection마다 선택 집합과 Collection 소개는 달라도 공유 Event의 Narrative·시간·Relation 의미는 같다. 출처 충돌은 근거·주석·불확실성으로 표현한다. 서로 모순되는 확정 제약을 Collection별로 감춰 수용하지 않는다.
 
 ## BR-004.10 범위별 서술
 
@@ -52,7 +52,7 @@ owner: Cross-system
 
 Narrative는 다음 범위에 존재할 수 있어야 한다.
 
-- Canon
+- Collection
 - Process
 - Composite Event
 - 단일 Event

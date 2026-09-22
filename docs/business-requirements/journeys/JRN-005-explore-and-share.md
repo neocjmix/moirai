@@ -23,20 +23,20 @@ layer: business-requirements
 
 ## JRN-005.4 기본 흐름
 
-1. 독자는 자신이 어느 World, Canon과 공개본을 보고 있는지 이해한다.
-2. 독자는 Canon 단위 Narrative와 세계의 주요 사건·과정을 훑어본다.
+1. 독자는 자신이 어느 World, Collection과 공개본을 보고 있는지 이해한다.
+2. 독자는 Collection 단위 Narrative와 세계의 주요 사건·과정을 훑어본다.
 3. 독자는 Process 또는 Composite Event의 Narrative를 읽으며 여러 Event를 관통하는 맥락을 이해한다.
 4. 독자는 단일 Event로 들어가 해당 Narrative, 명시적으로 작성된 공개 인용·출처 설명과 관련 Relation을 읽고 인과·시간·Subject 관점으로 주변 맥락을 확장한다.
-5. 같은 대상에 대해 공개된 다른 Canon이 있으면 각각의 사실과 차이를 비교한다.
+5. 같은 대상에 대해 공개된 다른 Collection이 있으면 관심사별 선택과 소개를 비교하되 공유 Event의 사실·본문은 동일하게 읽는다.
 6. 독자는 현재 사건이나 탐색 관점을 안정적인 공개 링크로 공유한다.
 7. 다른 독자는 공유된 참조를 열어 의도된 사건과 충분한 주변 맥락을 확인한다.
 
 ## JRN-005.5 성공 결과
 
 - 독자는 내부 데이터 구조를 몰라도 세계를 탐색할 수 있다.
-- Canon, Process, Composite Event와 단일 Event의 Narrative 사이를 오갈 수 있다.
+- Collection, Process, Composite Event와 단일 Event의 Narrative 사이를 오갈 수 있다.
 - 전체 구조와 상세 서술 사이를 오갈 수 있다.
-- 현재 Canon과 공개본의 맥락을 잃지 않는다.
+- 현재 Collection과 공개본의 맥락을 잃지 않는다.
 - 공유된 참조가 다른 독자에게 의미 있는 동일 맥락을 제공한다.
 
 ## JRN-005.6 비즈니스 규칙
@@ -44,8 +44,8 @@ layer: business-requirements
 - Atropos는 LLM 작업 과정, 내부 검증 결과와 운영 정보를 노출하지 않는다.
 - 하나의 시각적 표현이나 한 범위의 Narrative를 세계의 유일한 의미로 제시하지 않는다.
 - 상위 범위의 Narrative는 하위 Event와 Narrative를 숨기거나 대체하지 않는다.
-- Atropos는 특정 Canon을 정본·기본·우위로 표시하지 않는다.
-- Canon 비교는 차이를 보여줄 뿐 하나의 사실로 합치거나 진위를 판정하지 않는다.
+- Atropos는 특정 Collection을 정본·기본·우위로 표시하지 않는다.
+- Collection 비교는 선택 차이를 보여주며 별도의 사실 universe를 만들지 않는다.
 - 모바일에서도 핵심 탐색과 읽기가 가능해야 한다.
 - 세계가 커져도 독자가 개요와 세부 사이를 실용적으로 이동할 수 있어야 한다.
 

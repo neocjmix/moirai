@@ -18,7 +18,7 @@ layer: business-requirements
 
 ## JRN-006.3 시작 조건
 
-- 하나 이상의 World와 관련 Canon, Event, Relation, Narrative, 작성 유래 및 운영 이력이 존재한다.
+- 하나 이상의 World와 관련 Collection, Event, Relation, Narrative, 작성 유래 및 운영 이력이 존재한다.
 - World 내용은 현재 Publication으로 공개되어 있거나 명시적으로 철회된 상태일 수 있다.
 
 ## JRN-006.4 기본 흐름
@@ -28,7 +28,7 @@ layer: business-requirements
 3. Moirai는 세계의 의미를 재구성하는 데 필요한 내용, 관계, 범위, 근거와 이력을 제공한다.
 4. 소유자는 반출된 자료를 별도로 보관한다.
 5. 소유자는 동일하거나 후속 시스템에서 복구를 요청한다.
-6. 복구된 세계의 범위, 사건, 관계, 서술, 출처와 구분 가능한 Canon을 확인한다.
+6. 복구된 세계의 범위, 사건, 관계, 서술, 출처와 구분 가능한 Collection을 확인한다.
 7. 소유자는 원본과 복구본 사이의 손실 또는 변환된 내용을 확인한다.
 
 ## JRN-006.5 성공 결과

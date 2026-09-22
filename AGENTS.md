@@ -99,11 +99,11 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 - Clotho application must not import persistence. Only `apps/clotho-api/src/app.ts` may wire database, Lachesis and readiness/shutdown.
 - Lachesis core must not import Clotho application, Fastify, MCP, OIDC or CLI. Internal calls require authenticated actor, World grants, action scope and expiry. Never trust actor fields from request bodies.
 - Run architecture checks, transport parity tests and adapter-independent authorization tests for boundary changes. Same-process modules are not OS or credential isolation.
-- Worker, migration, backup and recovery keep restricted internal paths. Do not add a public Lachesis route or a mandatory hidden tool sequence.
+- Worker, migration, backup and recovery keep restricted internal paths. Do not add a public Lachesis route or a mandatory hidden tool sequence. The explicit authoring policy lookup/version contract in TS-004 is required; it is not a hidden receipt workflow.
 
 ## Data and migrations
 
-- World is the mandatory transaction, revision, export and access scope. Do not normalize it out of service/repository boundaries.
+- World is one reality/factual universe and the mandatory Event identity, transaction, revision, export and access scope. Do not normalize it out of service/repository boundaries.
 - Use versioned migrations; do not perform untracked manual schema changes.
 - Keep canonical writes behind Lachesis and keep projections reproducible.
 - Treat Publication artifacts as rebuildable, but canonical PostgreSQL as durable.
@@ -131,3 +131,7 @@ Stop for user direction when work would:
 - choose an unspecified security or publication policy.
 
 Ordinary code failures, test failures and deployment errors are not reasons to hand work back prematurely. Diagnose and recover safely within scope.
+
+## IP-011 planning authority
+
+Read CON-003, entities/CORE-MODEL, TS-002/004/005/006 and IP-011 for the target model. CURRENT distinguishes accepted planning from deployed v4 behavior. Historical IP-003/IP-007 requirements do not restore Canon-specific Narrative ownership. This planning phase authorizes documentation/commit/push/PR, not runtime migration or activation of A1–A6.

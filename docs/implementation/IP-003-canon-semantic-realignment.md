@@ -18,6 +18,8 @@ depends_on:
 
 # IP-003 — Canon Semantic Realignment
 
+> IP-011 이후 실행 순서와 목표 domain 계약은 [IP-011](IP-011-architecture-realignment.md)을 따른다. 아래 기록의 Canon·Narrative·membership 전제는 당시 구현 이력이며 현재 목표 의미를 재정의하지 않는다. 완료 이력은 취소하지 않으며 미완료 backlog는 IP-011로 재분류한다.
+
 ## 1. 목적, 기준선과 실행 경계
 
 IP-003은 Canon을 배타적 truth branch에서 World 안의 지속적이고 명명된 해석적 지식
@@ -27,14 +29,14 @@ M5는 IP-003 종료 및 후속 계획 승인 전까지 비활성이다.
 
 조사 기준은 `main` `8854da284631f836cb34692f36070b718dce3e2d`이다.
 
-| 기준 | 확인 결과 |
-| --- | --- |
-| GitHub `main` | `8854da2` (`docs: scope runtime evidence to M4.5-C`) |
-| CI | run `34556657861` success; secret scan, typecheck/test/build/audit, smoke, mobile Playwright success |
-| post-deploy | run `34556777058` success |
-| production | Atropos `/__status` application SHA `8854da2`, deployed `2026-09-11T02:59:35.042Z`, smoke passed |
-| M4.5-C | `/graph`에서 Sources island, Time System 우선 선택, 두 World·세 Canon, served Revision `7·42`, URL 복원 확인 |
-| CURRENT | M4.5-C complete, M4.5-D inactive, M5 inactive로 실제 상태와 일치 |
+| 기준          | 확인 결과                                                                                                    |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| GitHub `main` | `8854da2` (`docs: scope runtime evidence to M4.5-C`)                                                         |
+| CI            | run `34556657861` success; secret scan, typecheck/test/build/audit, smoke, mobile Playwright success         |
+| post-deploy   | run `34556777058` success                                                                                    |
+| production    | Atropos `/__status` application SHA `8854da2`, deployed `2026-09-11T02:59:35.042Z`, smoke passed             |
+| M4.5-C        | `/graph`에서 Sources island, Time System 우선 선택, 두 World·세 Canon, served Revision `7·42`, URL 복원 확인 |
+| CURRENT       | M4.5-C complete, M4.5-D inactive, M5 inactive로 실제 상태와 일치                                             |
 
 이 문서의 slice 순서와 gate가 기존 IP-001의 일반 실행 순서보다 IP-003에 한해 우선한다.
 승인 대상 ontology를 임의 구현하지 않는다. 기술적으로 추가형이고 lossless하며 이미
@@ -103,26 +105,26 @@ World ownership은 `events.world_id`로 명시하고 `event.canon_id`를 semanti
 
 ## 5. semantic dependency map
 
-| 표면 | 현재 의존 | IP-003 영향 |
-| --- | --- | --- |
-| constitution/BR/journey | Canon truth context, 독립 사실, 새 fact면 새 Canon | 새 정의·overlap·shared Event로 규범 교체 |
-| TS-002 | `event.canon_id`, Canon-local slug, same-Canon endpoints | World-owned Event와 membership, 최종 상태 invariant |
-| TS-003 | World-scoped Change Set, create/update/withdraw 규범 | membership lifecycle과 Event withdrawal 원자성 명시 |
-| TS-004/Clotho | create Event에 `canon_id`; query slice `canon_ids` | World ownership + membership operations; scope filter 의미 교정 |
-| persistence | `events.canon_id`, `(canon_id,slug)`, revision payload | migration, membership table, old payload read adapter |
-| Relation | `relation.canon_id`, same-owner endpoint 검사 | 승인된 R1: World ownership + Canon N:M membership |
-| Narrative | `narrative.canon_id`, same-Canon Event scope | 단일 authored scope 보존; Event membership으로 참조 검증 |
-| derived projection | Canon별 `event.canon_id` filtering | membership join으로 입력 선택; context별 handle은 유지 |
-| publication | Event 문서 하나에 `canon_id`; Canon artifact filtering | Event에 `world_id`, `canon_memberships`; Canon view는 membership filter |
-| search | Event URL과 entry가 단일 Canon | Event identity entry 하나 + context 정보/alias |
-| graph contract | source filter는 `canon_ids`, result node는 단일 `canon_id` | filter는 유지하되 result Event node에 membership context 집합 |
-| M4.5-C URL | World별 `canon_ids`, served Revision vector | selection grammar 유지; partition이 아닌 interpretive filter로 표현 |
-| stable routes | `/worlds/:worldId/canons/:canonId/events/:eventId` | context alias 유지; World-level canonical Event URL 도입 |
-| artifacts | `events/{eventId}.json`, Canon graph/temporal paths | identity artifact는 1개; Canon artifacts가 shared Event를 참조 |
-| correspondence | 서로 다른 Canon의 Event/Subject 대응 | shared identity에는 불필요; distinct identity의 authored mapping만 유지 |
-| portability | Event row가 단일 `canon_id`; membership section 없음 | membership section과 World-owned Event, v1 input adapter |
-| Time System | Canon-TimeSystem N:M, Relation validation | TS-010 유지; Relation decision 전 ownership 변경 없음 |
-| production fixtures | 각 Event가 한 Canon | lossless backfill 후 overlap acceptance fixture 별도 추가 |
+| 표면                    | 현재 의존                                                  | IP-003 영향                                                             |
+| ----------------------- | ---------------------------------------------------------- | ----------------------------------------------------------------------- |
+| constitution/BR/journey | Canon truth context, 독립 사실, 새 fact면 새 Canon         | 새 정의·overlap·shared Event로 규범 교체                                |
+| TS-002                  | `event.canon_id`, Canon-local slug, same-Canon endpoints   | World-owned Event와 membership, 최종 상태 invariant                     |
+| TS-003                  | World-scoped Change Set, create/update/withdraw 규범       | membership lifecycle과 Event withdrawal 원자성 명시                     |
+| TS-004/Clotho           | create Event에 `canon_id`; query slice `canon_ids`         | World ownership + membership operations; scope filter 의미 교정         |
+| persistence             | `events.canon_id`, `(canon_id,slug)`, revision payload     | migration, membership table, old payload read adapter                   |
+| Relation                | `relation.canon_id`, same-owner endpoint 검사              | 승인된 R1: World ownership + Canon N:M membership                       |
+| Narrative               | `narrative.canon_id`, same-Canon Event scope               | 단일 authored scope 보존; Event membership으로 참조 검증                |
+| derived projection      | Canon별 `event.canon_id` filtering                         | membership join으로 입력 선택; context별 handle은 유지                  |
+| publication             | Event 문서 하나에 `canon_id`; Canon artifact filtering     | Event에 `world_id`, `canon_memberships`; Canon view는 membership filter |
+| search                  | Event URL과 entry가 단일 Canon                             | Event identity entry 하나 + context 정보/alias                          |
+| graph contract          | source filter는 `canon_ids`, result node는 단일 `canon_id` | filter는 유지하되 result Event node에 membership context 집합           |
+| M4.5-C URL              | World별 `canon_ids`, served Revision vector                | selection grammar 유지; partition이 아닌 interpretive filter로 표현     |
+| stable routes           | `/worlds/:worldId/canons/:canonId/events/:eventId`         | context alias 유지; World-level canonical Event URL 도입                |
+| artifacts               | `events/{eventId}.json`, Canon graph/temporal paths        | identity artifact는 1개; Canon artifacts가 shared Event를 참조          |
+| correspondence          | 서로 다른 Canon의 Event/Subject 대응                       | shared identity에는 불필요; distinct identity의 authored mapping만 유지 |
+| portability             | Event row가 단일 `canon_id`; membership section 없음       | membership section과 World-owned Event, v1 input adapter                |
+| Time System             | Canon-TimeSystem N:M, Relation validation                  | TS-010 유지; Relation decision 전 ownership 변경 없음                   |
+| production fixtures     | 각 Event가 한 Canon                                        | lossless backfill 후 overlap acceptance fixture 별도 추가               |
 
 ## 6. Relation semantics — DP-001 R1 승인
 
@@ -143,11 +145,11 @@ assertion으로 표현한다. 기존 `relation.canon_id`는 lossless하게 membe
 
 ### 대안
 
-| 선택 | 장점 | 비용·위험 |
-| --- | --- | --- |
-| R1 권장 | shared assertion과 Canon별 assertion을 모두 직접 표현; lossless backfill | Relation membership lifecycle·publication·query 계약 추가 필요 |
-| R2 Canon-specific Relation 유지 | migration과 기존 TS-010 영향 최소 | shared assertion identity를 표현하지 못하고 Canon별 duplicate Relation 필요 |
-| R3 shared Relation + Canon-specific interpretation entity | assertion/interpretation을 가장 세밀히 분리 | 새 핵심 entity와 더 큰 authoring·migration·governance 결정 필요 |
+| 선택                                                      | 장점                                                                     | 비용·위험                                                                   |
+| --------------------------------------------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------- |
+| R1 권장                                                   | shared assertion과 Canon별 assertion을 모두 직접 표현; lossless backfill | Relation membership lifecycle·publication·query 계약 추가 필요              |
+| R2 Canon-specific Relation 유지                           | migration과 기존 TS-010 영향 최소                                        | shared assertion identity를 표현하지 못하고 Canon별 duplicate Relation 필요 |
+| R3 shared Relation + Canon-specific interpretation entity | assertion/interpretation을 가장 세밀히 분리                              | 새 핵심 entity와 더 큰 authoring·migration·governance 결정 필요             |
 
 R1 승인으로 Slice 5를 시작한다. R2/R3로 되돌리거나 Interpretation 같은 새 핵심 entity를
 도입하려면 새로운 사용자 승인이 필요하다.
@@ -418,11 +420,11 @@ M4.5와 M5를 실제 R1 결과에 맞췄고 M4.5-D1과 M5는 활성화하지 않
 World W, Canon K1/K2/K3와 Event A/B/C/D를 실제 write한다.
 
 | Event | membership |
-| --- | --- |
-| A | K1, K2 |
-| B | K1, K2, K3 |
-| C | K2 |
-| D | K3 |
+| ----- | ---------- |
+| A     | K1, K2     |
+| B     | K1, K2, K3 |
+| C     | K2         |
+| D     | K3         |
 
 필수 positive/negative 판정:
 
@@ -448,28 +450,28 @@ complete가 아니다.
 
 Event/Canon cutover와 승인된 R1 결과로 다음 경계를 확정한다. 어느 후속 slice도 자동 시작하지 않는다.
 
-| 기존 slice | 예상 처리 | Canon realignment 영향 |
-| --- | --- | --- |
-| A | 유지·contract revision | source address의 단일 `canon_id`를 membership context로 교체 |
-| B | 유지 | shell/navigation 변화 없음; 용어만 검증 |
-| C | 유지·의미 교정 | `canon_ids`는 partition이 아닌 interpretive filter; shared Event count grammar 추가 |
-| D | 분할 | Entities/Search와 Relations/Diagnostics를 identity/membership-aware 단계로 분리 |
-| E | 재작성 | Publication composition이 Event identity 하나와 membership context를 보존 |
-| F | 재작성 | World-level Event route, Canon context alias와 inspector membership 표시 |
-| G | 유지·adapter 수정 | legacy viewport bridge가 shared Event를 duplicate하지 않고 loss를 진단 |
-| H | 재설계 | multi-Canon shared node, Canon-specific Relation style, correspondence overlay, LOD/100k |
+| 기존 slice | 예상 처리              | Canon realignment 영향                                                                   |
+| ---------- | ---------------------- | ---------------------------------------------------------------------------------------- |
+| A          | 유지·contract revision | source address의 단일 `canon_id`를 membership context로 교체                             |
+| B          | 유지                   | shell/navigation 변화 없음; 용어만 검증                                                  |
+| C          | 유지·의미 교정         | `canon_ids`는 partition이 아닌 interpretive filter; shared Event count grammar 추가      |
+| D          | 분할                   | Entities/Search와 Relations/Diagnostics를 identity/membership-aware 단계로 분리          |
+| E          | 재작성                 | Publication composition이 Event identity 하나와 membership context를 보존                |
+| F          | 재작성                 | World-level Event route, Canon context alias와 inspector membership 표시                 |
+| G          | 유지·adapter 수정      | legacy viewport bridge가 shared Event를 duplicate하지 않고 loss를 진단                   |
+| H          | 재설계                 | multi-Canon shared node, Canon-specific Relation style, correspondence overlay, LOD/100k |
 
 새 dependency는 `IP-003 -> D1 -> D2 -> E -> F -> G -> H`다. D2 이후 Relation 표면은 DP-001의
 승인 모델에 의존한다.
 
-| 새 slice | 범위 | 종료조건 |
-| --- | --- | --- |
-| D1 Entities/Search | identity와 membership match를 분리한 filter/search | shared Event 결과가 하나이며 matched Canon과 전체 membership을 함께 표시; URL round-trip |
-| D2 Relations/Diagnostics | Relation filter, contradiction·completeness 진단 | R1 shared/Canon-specific assertion을 손실 없이 구분; contradiction을 structural error로 만들지 않음 |
-| E Publication composition | 실제 multi-World query를 revision별 artifact에 조합 | Event identity 중복 0, World별 served Revision vector·truncation·membership context 보존 |
-| F inspector/routes | World Event inspector와 Canon context alias | canonical URL 하나, context alias membership 검사, Narrative authored context와 evidence 보존 |
-| G legacy bridge | renderer 직전 v1 adapter와 loss diagnostics | shared Event/Relation 복제 0, collapse를 조용히 허용하지 않음, native v3 fixture loss 0 |
-| H graph viewport | shared node, Relation style, correspondence overlay, LOD/100k | multi-Canon shared Event 한 node, authored correspondence만 overlay, 100k 전체 browser 적재 없음, mobile interaction 통과 |
+| 새 slice                  | 범위                                                          | 종료조건                                                                                                                  |
+| ------------------------- | ------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| D1 Entities/Search        | identity와 membership match를 분리한 filter/search            | shared Event 결과가 하나이며 matched Canon과 전체 membership을 함께 표시; URL round-trip                                  |
+| D2 Relations/Diagnostics  | Relation filter, contradiction·completeness 진단              | R1 shared/Canon-specific assertion을 손실 없이 구분; contradiction을 structural error로 만들지 않음                       |
+| E Publication composition | 실제 multi-World query를 revision별 artifact에 조합           | Event identity 중복 0, World별 served Revision vector·truncation·membership context 보존                                  |
+| F inspector/routes        | World Event inspector와 Canon context alias                   | canonical URL 하나, context alias membership 검사, Narrative authored context와 evidence 보존                             |
+| G legacy bridge           | renderer 직전 v1 adapter와 loss diagnostics                   | shared Event/Relation 복제 0, collapse를 조용히 허용하지 않음, native v3 fixture loss 0                                   |
+| H graph viewport          | shared node, Relation style, correspondence overlay, LOD/100k | multi-Canon shared Event 한 node, authored correspondence만 overlay, 100k 전체 browser 적재 없음, mobile interaction 통과 |
 
 A는 IP-003 결과인 result v3로 contract revision됐고 B shell은 유지하며 C selector/Revision vector와 layout은 유지하되
 `canon_ids`를 interpretive scope filter로 읽는다. comparison은 shared identity, distinct authored
@@ -488,13 +490,13 @@ M5는 inactive다. 기존 lifecycle/portability/operational 범위를 유지하�
   identity를 만들지 않는다.
 - backup/restore와 Publication rebuild는 orphan 0과 shared Event membership을 검증한다.
 
-| 새 slice | 범위 | 종료조건 |
-| --- | --- | --- |
-| M5-A lifecycle | Event·Relation update/withdraw/restore와 membership lifecycle | 한 Revision final state에서 두 entity의 active orphan 0; identity와 context alias tombstone 보존 |
-| M5-B revision recovery | Event/Relation 본문과 membership diff, compensating restore | identity 변경과 membership 변경을 분리 표시하고 restore 뒤 fingerprint 일치 |
-| M5-C portability | owner-full/content/public/scoped export, preserve-ID/clone | Event·Relation N:M membership round-trip, deterministic remap, cross-World identity 미생성 |
-| M5-D governance/access | publication·export isolation과 future private/multitenant 경계 | official/default/priority Canon 미도입, World boundary 밖 정보 누출 0 |
-| M5-E operations | backup/restore, Publication rebuild, SLO·migration gate | restore/rebuild 뒤 Event·Relation orphan 0, shared membership 보존, rollback drill과 full-story 검증 |
+| 새 slice               | 범위                                                           | 종료조건                                                                                             |
+| ---------------------- | -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------- |
+| M5-A lifecycle         | Event·Relation update/withdraw/restore와 membership lifecycle  | 한 Revision final state에서 두 entity의 active orphan 0; identity와 context alias tombstone 보존     |
+| M5-B revision recovery | Event/Relation 본문과 membership diff, compensating restore    | identity 변경과 membership 변경을 분리 표시하고 restore 뒤 fingerprint 일치                          |
+| M5-C portability       | owner-full/content/public/scoped export, preserve-ID/clone     | Event·Relation N:M membership round-trip, deterministic remap, cross-World identity 미생성           |
+| M5-D governance/access | publication·export isolation과 future private/multitenant 경계 | official/default/priority Canon 미도입, World boundary 밖 정보 누출 0                                |
+| M5-E operations        | backup/restore, Publication rebuild, SLO·migration gate        | restore/rebuild 뒤 Event·Relation orphan 0, shared membership 보존, rollback drill과 full-story 검증 |
 
 Relation의 lifecycle·diff·portability 종료조건에는 R1 World identity, Canon N:M, active 최소 1,
 per-Canon endpoint membership과 withdrawal final-state rule을 그대로 적용한다. M5는 계속 inactive이며
@@ -510,9 +512,9 @@ M4.5 종료와 별도 사용자 승인 전 구현하지 않는다.
 
 현재 decision register:
 
-| ID | 상태 | 결정 | 권장 | 재개 지점 |
-| --- | --- | --- | --- | --- |
-| DP-001 | approved and implemented: R1 (2026-09-11) | World-level Relation identity + Canon N:M membership | R1 | complete |
+| ID     | 상태                                      | 결정                                                 | 권장 | 재개 지점 |
+| ------ | ----------------------------------------- | ---------------------------------------------------- | ---- | --------- |
+| DP-001 | approved and implemented: R1 (2026-09-11) | World-level Relation identity + Canon N:M membership | R1   | complete  |
 
 현재 종료 상태는 `complete`다. Slice 0~7, Event/Canon과 R1 Relation의 production acceptance,
 문서 정렬 및 M4.5/M5 재설계를 완료했다. 추가 semantic approval 없이 IP-003 자체에 남은 구현은

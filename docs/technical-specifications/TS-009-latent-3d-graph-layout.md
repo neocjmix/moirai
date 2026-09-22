@@ -16,6 +16,8 @@ related:
 
 # TS-009 — 잠재 3D 그래프 레이아웃과 2D 투영
 
+> IP-011: 이 문서는 과거 JointJS 전제의 draft 연구안이며 현재 architecture/실행 기준이 아니다. 재활성화 전 TS-002/005/006 및 현재 SVG renderer에 맞춰 다시 설계한다.
+
 ## TS-009.1 목적
 
 이 명세는 Atropos의 그래프에서 관계선, 군집, 중첩 포함 구조가 동시에 나타날 때 발생하는 시각적 복잡도를 줄이기 위한 잠재 3차원 레이아웃을 정의한다.
@@ -332,13 +334,16 @@ type LatentLayoutArtifact = {
   algorithmVersion: string;
   seed: string | number;
   parameters: Record<string, number | string | boolean>;
-  nodes: Record<string, {
-    x: number;
-    y: number;
-    z: number;
-    yMin: number;
-    yMax: number;
-  }>;
+  nodes: Record<
+    string,
+    {
+      x: number;
+      y: number;
+      z: number;
+      yMin: number;
+      yMax: number;
+    }
+  >;
 };
 ```
 

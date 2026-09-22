@@ -7,6 +7,8 @@ layer: implementation-plan
 
 # IP-004 — Production Readiness Gate before M5
 
+> IP-011 이후 실행 순서와 목표 domain 계약은 [IP-011](IP-011-architecture-realignment.md)을 따른다. 아래 기록의 Canon·Narrative·membership 전제는 당시 구현 이력이며 현재 목표 의미를 재정의하지 않는다. 완료 이력은 취소하지 않으며 미완료 backlog는 IP-011로 재분류한다.
+
 실행 상태 (2026-09-14): **complete**. 세 축의 종료 검증과 PR-Z 배포 확인은
 [통합 evidence](../evidence/ip-004-gate-status.md), 독립 세션 작성 검증은
 [PR-B3 evidence](../evidence/ip-004-prb3-fresh-session.md)에 기록했다.
@@ -40,14 +42,14 @@ M5는 이 계획의 exit criteria가 충족되고 사용자가 별도로 활성�
 
 이 계획의 기존 `Event view`/`Event detail`은 아래 두 표면을 포함하는 **Event detail surface**를 뜻한다. 한쪽의 검증만으로 양쪽 완료를 선언하지 않는다.
 
-| 용어 | 실제 표면 | 구현과 검증 경계 |
-| --- | --- | --- |
-| Graph Event drawer | `/graph`에서 사건 선택 시 열리는 peek/full sheet | `graph-shell.tsx`의 `EventDrawerContent`; 기존 `Event drawer`, `detail sheet`, selection inspector에 대응. Narrative·시간·Canon 맥락·출처, loading/retry, 선택·닫기·focus 복귀를 검증한다. |
-| Event reading page | 안정적인 World Event URL 및 Canon-context Event URL | `EventSheet`를 사용하는 독립 route. Canon별 Narrative·시간·membership·관계와 revision-pinned 탐색을 검증한다. |
-| Event detail surface | 위 두 표면의 총칭 | drawer → reading page → graph 왕복과 동일 Revision/identity/Canon 의미를 함께 검증한다. |
+| 용어                 | 실제 표면                                           | 구현과 검증 경계                                                                                                                                                                           |
+| -------------------- | --------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Graph Event drawer   | `/graph`에서 사건 선택 시 열리는 peek/full sheet    | `graph-shell.tsx`의 `EventDrawerContent`; 기존 `Event drawer`, `detail sheet`, selection inspector에 대응. Narrative·시간·Canon 맥락·출처, loading/retry, 선택·닫기·focus 복귀를 검증한다. |
+| Event reading page   | 안정적인 World Event URL 및 Canon-context Event URL | `EventSheet`를 사용하는 독립 route. Canon별 Narrative·시간·membership·관계와 revision-pinned 탐색을 검증한다.                                                                              |
+| Event detail surface | 위 두 표면의 총칭                                   | drawer → reading page → graph 왕복과 동일 Revision/identity/Canon 의미를 함께 검증한다.                                                                                                    |
 
 `drawer`/`sheet`는 표시 형태이며 모달 여부를 부정하는 말이 아니다. 현재 Graph Event drawer는 `role="dialog"`를 사용한다. 코드의 기존 식별자는 호환성을 위해 유지하며 독립 페이지의 `EventSheet`와 혼동하지 않는다. 과거 evidence의 용어는 당시 관찰 기록으로 보존한다.
-관련 기준: [TS-006 §7–8](../technical-specifications/TS-006-atropos-publication.md#ts-0067-시각-디자인-기준선).
+관련 기준: [TS-006 §7–8](../technical-specifications/TS-006-atropos-publication.md).
 
 Production Readiness Gate는 세 track으로 구성한다.
 

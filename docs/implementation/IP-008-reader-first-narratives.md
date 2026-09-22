@@ -1,3 +1,5 @@
+> IP-011 이후 실행 순서와 목표 domain 계약은 [IP-011](IP-011-architecture-realignment.md)을 따른다. 아래 기록의 Canon·Narrative·membership 전제는 당시 구현 이력이며 현재 목표 의미를 재정의하지 않는다. 완료 이력은 취소하지 않으며 미완료 backlog는 IP-011로 재분류한다.
+
 # IP-008 — 독자 중심 Narrative
 
 사용자가 기존 데이터·신규 작성 기준·UI 개선과 Git/Railway/Moirai 쓰기를 명시적으로 승인한 독립 작업이다. M5는 비활성으로 유지한다.

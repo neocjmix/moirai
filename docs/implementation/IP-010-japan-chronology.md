@@ -1,3 +1,5 @@
+> IP-011 이후 실행 순서와 목표 domain 계약은 [IP-011](IP-011-architecture-realignment.md)을 따른다. 아래 기록의 Canon·Narrative·membership 전제는 당시 구현 이력이며 현재 목표 의미를 재정의하지 않는다. 완료 이력은 취소하지 않으며 미완료 backlog는 IP-011로 재분류한다.
+
 # IP-010 — 일본사 chronology 복구
 
 사용자의 명시적 E2E 교정 지시로 활성화한다. TS-010 시간 관계, TS-005/006 graph coordinate, CON-003/BR-004 관계 의미를 보존한다. M5 전체 편집 기능이나 달력 변환기를 새로 구현하지 않는다.

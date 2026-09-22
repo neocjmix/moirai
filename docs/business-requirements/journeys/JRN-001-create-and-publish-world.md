@@ -25,14 +25,14 @@ layer: business-requirements
 ## JRN-001.4 기본 흐름
 
 1. 작성자는 만들고 싶은 세계와 원자료를 LLM에 설명한다.
-2. LLM은 자료의 범위와 작성자가 구성하려는 World 및 Canon의 경계를 확인한다.
-3. LLM은 하나 이상의 [ENT-002](../entities/INDEX.md) Canon과 필요한 [ENT-003](../entities/INDEX.md) Time System을 포함해 세계의 기본 범위를 구성한다.
+2. LLM은 자료의 범위와 작성자가 구성하려는 World 및 Collection의 경계를 확인한다.
+3. LLM은 하나 이상의 [ENT-021](../entities/INDEX.md) Collection과 필요한 [ENT-003](../entities/INDEX.md) Time System을 포함해 세계의 기본 범위를 구성한다.
 4. LLM은 [ENT-004](../entities/INDEX.md) Event, [ENT-005](../entities/INDEX.md) Relation과 [ENT-006](../entities/INDEX.md) Narrative를 작성하고 사용한 원자료와 작성 유래를 남긴다.
 5. Lachesis는 하나의 의미 있는 변경을 검증하고 성공한 세계 내용을 보존한다.
 6. 성공적으로 반영된 내용은 별도의 draft나 출판 승인 없이 현재 [ENT-013](../entities/INDEX.md) Publication에 자동 반영된다.
 7. Atropos는 식별 가능한 현재 공개본을 독자에게 제공한다.
 8. 작성자는 공개된 결과를 확인하고 필요한 경우 LLM을 통해 정정하거나 철회한다.
-9. 독자는 공개 주소에서 World의 개요를 보고 하나 이상의 Canon scope로 Event, Relation과 Narrative를 탐색한다.
+9. 독자는 공개 주소에서 World의 개요를 보고 하나 이상의 Collection scope로 Event, Relation과 Narrative를 탐색한다.
 
 ## JRN-001.5 성공 결과
 
@@ -44,10 +44,10 @@ layer: business-requirements
 ## JRN-001.6 비즈니스 규칙
 
 - Clotho를 통해 성공적으로 반영된 세계 내용은 자동으로 공개된다.
-- 모든 active persisted Event는 정확히 한 World에 속하고 같은 World의 Canon 하나 이상에 참여해야 한다.
-- 출판 여부와 Canon 수는 Canon에 authority나 objective truth를 부여하지 않는다.
-- LLM은 같은 Event가 여러 Canon에 참여한다는 이유로 Event identity를 복제하지 않는다.
-- 모든 active Relation은 정확히 한 World에 속하고 같은 World의 Canon 하나 이상에 참여해야 한다. 같은 assertion의 shared membership은 Relation identity를 복제하지 않는다.
+- 모든 active persisted Event는 정확히 한 World에 속하며 같은 World의 Collection 0..N에 참여한다. 일반 작성 흐름은 발견 가능한 Collection 선택을 권장하지만 membership은 존재 조건이 아니다.
+- 출판 여부와 Collection 수는 Collection에 authority나 objective truth를 부여하지 않는다.
+- LLM은 같은 Event가 여러 Collection에 참여한다는 이유로 Event identity를 복제하지 않는다.
+- 모든 active Relation은 정확히 한 World에 속한다. Collection 선택은 assertion의 적용 여부를 바꾸지 않는다.
 - 하나의 의미 있는 변경은 저장과 공개에서 모두 일관된 상태로 보여야 한다.
 - 인간은 공개 결과를 정정하거나 철회할 수 있어야 한다.
 - 독자는 내부 작성 도구나 관리 구조를 알 필요가 없다.

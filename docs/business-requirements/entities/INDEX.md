@@ -12,65 +12,49 @@
 - `deferred`: 관련 요구는 있으나 독립 비즈니스 개념인지는 이후 판단
 - `rejected`: 현재 모델에서 독립 비즈니스 개념으로 사용하지 않음
 
-## 핵심 개념
+## 현재 용어 (glossary)
 
-| ID | 개념 | 상태 | 분류 | 정의 |
-|---|---|---|---|---|
-| ENT-001 | World | accepted | core | canonical content의 transaction·Revision·export·access를 묶는 최상위 범위 |
-| ENT-002 | Canon | accepted | core | World 안의 persistent, named interpretive knowledge scope. authority·exclusivity·completeness·consistency·objective truth를 함의하지 않음 |
-| ENT-003 | Time System | accepted | core | Event를 시간상에서 읽기 위한 좌표와 해석 규칙. 현재 Canon과 N:M으로 연결됨 |
-| ENT-004 | Event | accepted | core | 정확히 한 World에 속하며 같은 World의 Canon 하나 이상에 참여하는 사건 identity의 핵심 단위 |
-| ENT-005 | Relation | accepted | core | World-level assertion identity. 같은 World의 Canon 1..N에 참여하며 shared 또는 Canon별 assertion을 구분 |
-| ENT-006 | Narrative | accepted | core | 단일 Event부터 Composite Event, Process와 Canon까지 선택된 범위를 사람이 읽을 수 있게 서술한 내용 |
-| ENT-013 | Publication | accepted | core | Atropos가 독자에게 제공하는 World의 현재 공개 표현 |
+| ID      | 용어        | 분류       | 정의                                                               |
+| ------- | ----------- | ---------- | ------------------------------------------------------------------ |
+| ENT-001 | World       | core       | 하나의 reality와 Event identity boundary                           |
+| ENT-002 | Canon       | superseded | 이전 의미를 보존한 ID. ENT-021 Collection으로 대체; ID 재사용 없음 |
+| ENT-021 | Collection  | core       | World Event graph의 관심사별 선택·navigation 단위                  |
+| ENT-003 | Time System | core       | 좌표·해석·비교 capability 정의                                     |
+| ENT-004 | Event       | core       | 정확히 하나의 World에 속한 사건 identity; Collection 0..N          |
+| ENT-005 | Relation    | core       | World-owned EventReference 사이의 assertion                        |
+| ENT-006 | Narrative   | core       | Event 또는 Collection 하나가 소유하는 단일 서술                    |
+| ENT-013 | Publication | core       | 한 World Revision의 공개 projection                                |
+| ENT-016 | Subject     | derived    | World identity 관계로 읽는 대상                                    |
+| ENT-017 | Process     | derived    | 과정으로 읽는 Event 구조의 역할                                    |
+| ENT-018 | State       | derived    | 근거 사건으로 읽는 상태                                            |
+| ENT-019 | Duration    | derived    | 지원되는 경계·시간으로 계산하는 기간                               |
+| ENT-020 | Timeline    | derived    | 선택 범위·시간 체계에서 읽는 배열                                  |
 
-## 파생 개념
-
-파생 개념은 사용자와 독자에게 의미가 있지만 별도의 정본 사실을 만들지 않는다.
-
-| ID | 개념 | 상태 | 분류 | 정의 |
-|---|---|---|---|---|
-| ENT-016 | Subject | accepted | derived | Canon의 여러 Event와 Relation에서 동일한 인물·조직·장소·사물로 읽히는 대상 |
-| ENT-017 | Process | accepted | derived | 과정으로 읽히는 Composite Event의 역할. 모든 Process는 Composite Event로 표현되지만 그 역은 필수가 아님 |
-| ENT-018 | State | accepted | derived | 특정 시점 또는 범위에서 성립한다고 읽히는 상태 |
-| ENT-019 | Duration | accepted | derived | Event 경계와 시간 정보에서 읽히는 지속 기간 |
-| ENT-020 | Timeline | accepted | derived | 선택한 Canon, 범위와 Time System에 따라 Event를 배열한 관점 |
-
-Process는 Composite Event로 표현하며 별도 핵심 엔티티로 저장하지 않는다. 구체적인 스키마와 판별 방식은 기술 명세에서 정한다.
+Composite Event는 ENT-004의 contains 기반 파생 성격이며 새 type/ID가 아니다.
+정확한 관계와 cardinality는 [CORE-MODEL](CORE-MODEL.md)을 따른다.
 
 ## 운영 개념과 보류된 후보
 
 다음 운영 책임은 반드시 구현해야 하지만 세계의 의미를 구성하는 독립 엔티티로 채택하지 않는다. 구체적인 기록 구조와 식별 방식은 기술 명세에서 정한다.
 
-| ID | 후보 | 상태 | 현재 판단 | 다시 검토할 조건 |
-|---|---|---|---|---|
-| ENT-007 | Source | operational | 원자료와 작성 유래를 비공개 운영 정보로 보존한다. 공개 인용은 명시적으로 작성된 세계 내용이다. | 자료 재사용, 참고문헌 관리, 라이선스 또는 출처별 탐색이 독립 사용자 목적이 될 때 |
-| ENT-009 | Change | operational | 의미 있는 작성 작업과 변경 이력을 일관성·감사 단위로 관리한다. | 사용자가 변경 자체를 선택·관리해야 할 때 |
-| ENT-010 | Revision | operational | 이전의 유효한 상태를 식별하고 복구할 수 있도록 이력을 보존한다. | 특정 내부 상태를 사용자가 직접 참조·비교해야 할 때 |
-| ENT-014 | Edition | deferred | 1차 구현은 현재 공개본만 제공하며 독립 Edition 개념을 전제하지 않는다. | 과거 공개본을 독자가 계속 열고 인용하거나 복원해야 할 때 |
+| ID      | 후보     | 상태        | 현재 판단                                                                                      | 다시 검토할 조건                                                                 |
+| ------- | -------- | ----------- | ---------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| ENT-007 | Source   | operational | 원자료와 작성 유래를 비공개 운영 정보로 보존한다. 공개 인용은 명시적으로 작성된 세계 내용이다. | 자료 재사용, 참고문헌 관리, 라이선스 또는 출처별 탐색이 독립 사용자 목적이 될 때 |
+| ENT-009 | Change   | operational | 의미 있는 작성 작업과 변경 이력을 일관성·감사 단위로 관리한다.                                 | 사용자가 변경 자체를 선택·관리해야 할 때                                         |
+| ENT-010 | Revision | operational | 이전의 유효한 상태를 식별하고 복구할 수 있도록 이력을 보존한다.                                | 특정 내부 상태를 사용자가 직접 참조·비교해야 할 때                               |
+| ENT-014 | Edition  | deferred    | 1차 구현은 현재 공개본만 제공하며 독립 Edition 개념을 전제하지 않는다.                         | 과거 공개본을 독자가 계속 열고 인용하거나 복원해야 할 때                         |
 
 ## 독립 개념에서 제외
 
 제외된 ID는 다른 개념에 재사용하지 않는다. 관련 행위나 요구사항은 유지될 수 있다.
 
-| ID | 후보 | 상태 | 제외 이유 |
-|---|---|---|---|
-| ENT-008 | Claim | rejected | canonical content와 원자료 사이에 일반화된 주장 계층은 현재 필요하지 않다. |
-| ENT-011 | Contributor | rejected | 작성자, 출판자, LLM과 외부 주체가 수행하는 역할이다. |
-| ENT-012 | Review | rejected | 인간이 수행하는 검토 행위와 그 결과 상태이며 현재 독립 엔티티가 아니다. |
-| ENT-015 | Public Reference | rejected | 공개 대상에 요구되는 안정적인 주소와 식별 성질이다. |
+| ID      | 후보             | 상태     | 제외 이유                                                                  |
+| ------- | ---------------- | -------- | -------------------------------------------------------------------------- |
+| ENT-008 | Claim            | rejected | canonical content와 원자료 사이에 일반화된 주장 계층은 현재 필요하지 않다. |
+| ENT-011 | Contributor      | rejected | 작성자, 출판자, LLM과 외부 주체가 수행하는 역할이다.                       |
+| ENT-012 | Review           | rejected | 인간이 수행하는 검토 행위와 그 결과 상태이며 현재 독립 엔티티가 아니다.    |
+| ENT-015 | Public Reference | rejected | 공개 대상에 요구되는 안정적인 주소와 식별 성질이다.                        |
 
-## Canon 간 대응
+## 대응의 상태
 
-[JRN-007](../journeys/JRN-007-connect-and-compare-across-canons.md)에서 서로 다른 Canon의 대응 대상을 연결하고 비교해야 할 필요가 확인됐다.
-
-이 연결은 다음 원칙을 따른다.
-
-- Canon membership 또는 shared Event identity가 아니다.
-- Canon 내부의 ENT-005 Relation과 구분한다.
-- 서로 다른 Event identity와 파생 Subject를 병합하지 않는다. 하나의 shared Event가 여러 Canon에 참여하는 경우에는 correspondence가 필요하지 않다.
-- 작성자가 승인·정정·제거할 수 있다.
-- Atropos의 Canon 비교와 탐색에 사용될 수 있다.
-- 반출과 복구 시 의미가 보존되어야 한다.
-
-현재는 독립 엔티티 ID를 발급하지 않고 [BCR-008](CORE-MODEL.md#bcr-008-canon-간-대응) 관리 관계로 정의한다.
+기존 Canon 간 correspondence는 [BCR-008](CORE-MODEL.md#bcr-008-대응--deferred)에 따라 deferred다. 기존 이력은 보존한다.

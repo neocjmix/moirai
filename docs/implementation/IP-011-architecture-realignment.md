@@ -61,7 +61,7 @@ A1 transition policy는 v4 서버에 v5 semantics를 쓰라고 지시하지 않�
 
 ### 5.1 inventory와 preservation manifest
 
-A2 시작 시 최신 main/deployment/World Revision을 다시 고정한다. 현재 근거는 historical World revision 30이고 전체 설치 inventory를 대체하지 않는다. 모든 World·withdrawn rows·Narrative locales·correspondence·Subject handles·grant/export 형식은 owner-full read로 추가 감사한다. DB migrations 001–009와 현재 실제 applied schema를 대조한다. 이번에는 SQL 운영 접속으로 applied migrations를 확인하지 않았으므로 코드가 배포 DB schema의 완전한 증거라고 주장하지 않는다.
+A2 시작 시 최신 main/deployment/World Revision을 다시 고정한다. 현재 근거는 historical World revision 30이고 전체 설치 inventory를 대체하지 않는다. 모든 World·withdrawn rows·Narrative locales·correspondence·Subject handles·grant/export 형식은 owner-full read로 추가 감사한다. DB migrations 001–009와 현재 실제 applied schema를 대조한다. A0에서는 운영 DB의 applied migrations를 직접 확인하지 않았다. A2에서는 owner-full read로 실제 001–009 적용을 확인했고, 19개 테이블·sequence·실제 schema fingerprint를 포함한 암호화 backup의 격리 복원 digest 일치까지 검증했다([실행 증거](../evidence/ip011/a2-execution.md)). 이 증거는 v5 migration rehearsal 완료를 뜻하지 않는다.
 
 World/Event/Collection/Relation/Narrative별 old→new ID, membership, old body digest, 보존 문단·인용, 이관 사유, reviewer disposition, revision mapping을 기록한다. backup restore를 복제 환경에서 시험한다. 현재 IDs를 제목이나 새 Collection으로 재발급하지 않는다.
 

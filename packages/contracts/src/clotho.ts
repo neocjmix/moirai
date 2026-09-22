@@ -456,7 +456,26 @@ export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
     relationMembershipOperation("add"),
     relationMembershipOperation("remove"),
     withdrawRelationOperation,
-    updateNarrativeOperation
+    updateNarrativeOperation,
+    object({
+      kind: { const: "update" },
+      entity_type: { const: "world" },
+      origin_refs: array(
+        object({
+          field: str(128),
+          origin_index: { type: "integer", minimum: 0 }
+        })
+      ),
+      value: object(
+        {
+          world_id: ref,
+          slug: str(128),
+          title: str(500),
+          description: nullable(str(10000))
+        },
+        ["world_id", "slug", "title", "description"]
+      )
+    })
   ]
 );
 export const EVENT_MEMBERSHIP_CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(

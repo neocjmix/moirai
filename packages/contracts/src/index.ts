@@ -244,7 +244,20 @@ export interface UpdateNarrativeOperation {
   }[];
 }
 
+export interface UpdateWorldOperation {
+  readonly kind: "update";
+  readonly entity_type: "world";
+  readonly value: CreateWorldOperation["value"] & {
+    readonly world_id: EntityReference;
+  };
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
+}
+
 export type ChangeOperation =
+  | UpdateWorldOperation
   | UpdateNarrativeOperation
   | CreateOperation
   | AddEventCanonMembershipOperation

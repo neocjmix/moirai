@@ -41,9 +41,9 @@ const descriptions = {
   "time-event.resolve":
     "Resolve one deterministic virtual Time Event without storing an Event row.",
   "change.validate":
-    "Validate a ChangePlan without storing or publishing it. This is not commit authorization.",
+    "Validate a ChangePlan without storing or publishing it. This is not commit authorization. v4 operations use kind=create plus entity_type for entity creation; kind=add/remove plus entity_type=event_canon_membership or relation_canon_membership for membership; and kind=withdraw plus entity_type=event or relation. There are no create_event or membership operation kinds.",
   "change.commit":
-    "Atomically commit a ChangePlan. Successful canonical content becomes public. Enforces expected_revision and idempotency."
+    "Atomically commit a ChangePlan. Successful canonical content becomes public. Enforces expected_revision and idempotency. v4 operations use kind=create plus entity_type for entity creation; kind=add/remove plus entity_type=event_canon_membership or relation_canon_membership for membership; and kind=withdraw plus entity_type=event or relation. There are no create_event or membership operation kinds."
 };
 const validators = new Ajv({
   allErrors: false,
@@ -115,7 +115,17 @@ const operationValue = {
     title: { type: ["string", "null"] as const, maxLength: 500 },
     description: { type: ["string", "null"] as const, maxLength: 10000 },
     kind: {
-      enum: ["atomic", "composite", "calendar", "ordinal", "relative", "custom"]
+      enum: [
+        "atomic",
+        "composite",
+        "primary",
+        "summary",
+        "annotation",
+        "calendar",
+        "ordinal",
+        "relative",
+        "custom"
+      ]
     },
     summary: { type: ["string", "null"] as const, maxLength: 10000 },
     roles: {
@@ -169,6 +179,96 @@ const operationValue = {
   },
   additionalProperties: false
 };
+const originRefs = {
+  type: "array" as const,
+  minItems: 1,
+  maxItems: 100,
+  items: {
+    type: "object" as const,
+    properties: {
+      field: { type: "string" as const, maxLength: 128 },
+      origin_index: {
+        type: "integer" as const,
+        minimum: 0,
+        maximum: 99
+      }
+    },
+    required: ["field", "origin_index"],
+    additionalProperties: false
+  }
+};
+const createOperation = {
+  type: "object" as const,
+  description:
+    "Create an entity. Use kind=create and a concrete entity_type. Provide entity_id, client_ref, or both.",
+  properties: {
+    kind: { const: "create" },
+    entity_type: {
+      enum: [
+        "world",
+        "canon",
+        "event",
+        "relation",
+        "narrative",
+        "time_system",
+        "canon_time_system"
+      ]
+    },
+    entity_id: uuidV7,
+    client_ref: clientRef,
+    origin_refs: originRefs,
+    value: operationValue
+  },
+  required: ["kind", "entity_type", "origin_refs", "value"],
+  anyOf: [{ required: ["entity_id"] }, { required: ["client_ref"] }],
+  additionalProperties: false
+};
+const membershipOperation = {
+  type: "object" as const,
+  description:
+    "Add or remove Event or Relation membership in a Canon. IDs may be UUIDs or client_ref objects.",
+  properties: {
+    kind: { enum: ["add", "remove"] },
+    entity_type: {
+      enum: ["event_canon_membership", "relation_canon_membership"]
+    },
+    origin_refs: originRefs,
+    value: {
+      type: "object" as const,
+      properties: {
+        canon_id: entityReference,
+        event_id: entityReference,
+        relation_id: entityReference
+      },
+      required: ["canon_id"],
+      anyOf: [{ required: ["event_id"] }, { required: ["relation_id"] }],
+      additionalProperties: false
+    }
+  },
+  required: ["kind", "entity_type", "origin_refs", "value"],
+  additionalProperties: false
+};
+const withdrawOperation = {
+  type: "object" as const,
+  description:
+    "Withdraw an Event or Relation. value contains event_id or relation_id; no create target field is used.",
+  properties: {
+    kind: { const: "withdraw" },
+    entity_type: { enum: ["event", "relation"] },
+    origin_refs: originRefs,
+    value: {
+      type: "object" as const,
+      properties: {
+        event_id: entityReference,
+        relation_id: entityReference
+      },
+      anyOf: [{ required: ["event_id"] }, { required: ["relation_id"] }],
+      additionalProperties: false
+    }
+  },
+  required: ["kind", "entity_type", "origin_refs", "value"],
+  additionalProperties: false
+};
 const publishedChangeInputSchema = {
   type: "object" as const,
   properties: {
@@ -216,48 +316,9 @@ const publishedChangeInputSchema = {
           minItems: 1,
           maxItems: 500,
           items: {
-            type: "object" as const,
             description:
-              "For create, provide exactly one of entity_id or client_ref. add/remove/withdraw do not use either target field.",
-            properties: {
-              kind: { enum: ["create", "add", "remove", "withdraw"] },
-              entity_type: {
-                enum: [
-                  "world",
-                  "canon",
-                  "event",
-                  "relation",
-                  "narrative",
-                  "time_system",
-                  "canon_time_system",
-                  "event_canon_membership",
-                  "relation_canon_membership"
-                ]
-              },
-              entity_id: uuidV7,
-              client_ref: clientRef,
-              origin_refs: {
-                type: "array" as const,
-                minItems: 1,
-                maxItems: 100,
-                items: {
-                  type: "object" as const,
-                  properties: {
-                    field: { type: "string" as const, maxLength: 128 },
-                    origin_index: {
-                      type: "integer" as const,
-                      minimum: 0,
-                      maximum: 99
-                    }
-                  },
-                  required: ["field", "origin_index"],
-                  additionalProperties: false
-                }
-              },
-              value: operationValue
-            },
-            required: ["kind", "entity_type", "origin_refs", "value"],
-            additionalProperties: false
+              "ChangePlan v4 operation discriminator. Choose one branch by kind and entity_type; create_event and membership are not operation kinds.",
+            oneOf: [createOperation, membershipOperation, withdrawOperation]
           }
         }
       },
@@ -281,12 +342,65 @@ const publishedChangeInputSchema = {
   required: ["plan"],
   additionalProperties: false
 };
-const failure = (code: string) => ({
+type ValidationIssue = {
+  path: string;
+  keyword: string;
+  message: string;
+  expected?: unknown;
+};
+
+const safeValidationIssues = (
+  errors: (typeof methods)[number]["validate"]["errors"]
+): ValidationIssue[] => {
+  const issues: ValidationIssue[] = [];
+  const seen = new Set<string>();
+  for (const error of errors ?? []) {
+    const params = error.params as Record<string, unknown>;
+    const expected =
+      error.keyword === "required"
+        ? params.missingProperty
+        : error.keyword === "const"
+          ? params.allowedValue
+          : error.keyword === "enum"
+            ? params.allowedValues
+            : error.keyword === "type"
+              ? params.type
+              : ["minItems", "maxItems", "minLength", "maxLength"].includes(
+                    error.keyword
+                  )
+                ? params.limit
+                : undefined;
+    const missingProperty =
+      error.keyword === "required" && typeof params.missingProperty === "string"
+        ? params.missingProperty.replaceAll("~", "~0").replaceAll("/", "~1")
+        : undefined;
+    const issue = {
+      path: missingProperty
+        ? `${error.instancePath}/${missingProperty}`
+        : error.instancePath || "/",
+      keyword: error.keyword,
+      message: error.message ?? "does not match the contract",
+      ...(expected === undefined ? {} : { expected })
+    };
+    const key = JSON.stringify(issue);
+    if (seen.has(key)) continue;
+    seen.add(key);
+    issues.push(issue);
+    if (issues.length === 12) break;
+  }
+  return issues;
+};
+
+const failure = (code: string, issues?: readonly ValidationIssue[]) => ({
   content: [
     {
       type: "text" as const,
       text: JSON.stringify({
-        error: { code, message: "Request could not be completed" }
+        error: {
+          code,
+          message: "Request could not be completed",
+          ...(issues?.length ? { issues } : {})
+        }
       })
     }
   ],
@@ -569,7 +683,11 @@ export function registerMcp(
               : {})
           };
         const input = params.arguments ?? {};
-        if (!tool.validate(input)) return failure("invalid_request");
+        if (!tool.validate(input))
+          return failure(
+            "invalid_request",
+            safeValidationIssues(tool.validate.errors)
+          );
         const worldId = tool.method.startsWith("change.")
           ? (input.plan as ChangePlan).world_id
           : input.world_id;

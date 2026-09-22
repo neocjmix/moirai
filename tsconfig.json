@@ -6,6 +6,7 @@
     "noEmit": true,
     "paths": {
       "@moirai/contracts": ["./packages/contracts/src/index.ts"],
+      "@moirai/contracts/legacy-v4": ["./packages/contracts/src/legacy-v4.ts"],
       "@moirai/contracts/testing": ["./packages/contracts/src/testing.ts"],
       "@moirai/domain": ["./packages/domain/src/index.ts"],
       "@moirai/persistence": ["./packages/persistence/src/index.ts"],

@@ -60,12 +60,21 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
   const detailStart = Date.now();
   await match.click();
   const drawer = page.getByRole("dialog", { name: "사건 패널" });
+  const openSourceNote = async () => {
+    const note = drawer.getByTestId("narrative-notes").filter({
+      has: page.getByText("반포라는 이름과 기록이 말하는 범위", { exact: true })
+    });
+    await expect(note).not.toHaveAttribute("open", "");
+    await note.locator("summary").click();
+  };
+  await openSourceNote();
   await expect(
     drawer.getByRole("heading", { name: "반포라는 이름과 기록이 말하는 범위" })
   ).toBeVisible();
   const drawerMs = Date.now() - detailStart;
   expect(drawerMs).toBeLessThanOrEqual(5000);
   await drawer.getByRole("link", { name: "사건 상세 읽기 →" }).click();
+  await openSourceNote();
   await expect(
     page.getByRole("heading", { name: "반포라는 이름과 기록이 말하는 범위" })
   ).toBeVisible();

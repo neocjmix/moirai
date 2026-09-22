@@ -12,6 +12,7 @@ it("authenticates backup ciphertext and rejects wrong keys or tampering", () => 
   const image: DatabaseImage = {
     format: "moirai-v4-db-backup/1",
     migration: "009_ip003_relation_memberships",
+    schema_json: "{}",
     tables: BACKUP_TABLES.map((name) => ({ name, rows_json: "[]", count: 0 })),
     sequences: []
   };

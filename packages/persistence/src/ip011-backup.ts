@@ -45,6 +45,7 @@ interface SequenceImage {
 export interface DatabaseImage {
   format: "moirai-v4-db-backup/1";
   migration: string;
+  schema_json: string;
   tables: TableImage[];
   sequences: SequenceImage[];
 }
@@ -60,6 +61,31 @@ export async function captureDatabaseImage(
     .execute(async (tx) => {
       await sql`set transaction read only`.execute(tx);
       await sql`set local statement_timeout = '30s'`.execute(tx);
+      const schema_json = (
+        await sql<{ schema_json: string }>`
+        select jsonb_build_object(
+          'columns', (select jsonb_agg(to_jsonb(c) order by table_name,ordinal_position) from (
+            select table_name,column_name,ordinal_position,is_nullable,data_type,udt_name,column_default,character_maximum_length,numeric_precision,numeric_scale,datetime_precision,identity_generation
+            from information_schema.columns where table_schema='public'
+          ) c),
+          'constraints', (select jsonb_agg(to_jsonb(c) order by table_name,name) from (
+            select r.relname as table_name,c.conname as name,pg_get_constraintdef(c.oid) as definition
+            from pg_constraint c join pg_class r on r.oid=c.conrelid join pg_namespace n on n.oid=r.relnamespace where n.nspname='public'
+          ) c),
+          'indexes', (select jsonb_agg(to_jsonb(i) order by tablename,indexname) from (
+            select tablename,indexname,indexdef from pg_indexes where schemaname='public'
+          ) i),
+          'triggers', (select jsonb_agg(to_jsonb(t) order by table_name,name) from (
+            select r.relname as table_name,t.tgname as name,t.tgenabled as enabled,pg_get_triggerdef(t.oid) as definition
+            from pg_trigger t join pg_class r on r.oid=t.tgrelid join pg_namespace n on n.oid=r.relnamespace where n.nspname='public' and not t.tgisinternal
+          ) t),
+          'table_security', (select jsonb_agg(to_jsonb(r) order by name) from (select c.relname as name,c.relrowsecurity,c.relforcerowsecurity,c.relacl::text as acl from pg_class c join pg_namespace n on n.oid=c.relnamespace where n.nspname='public' and c.relkind in ('r','p')) r),
+          'policies', (select jsonb_agg(to_jsonb(p) order by tablename,policyname) from (select tablename,policyname,permissive,roles,cmd,qual,with_check from pg_policies where schemaname='public') p),
+          'functions', (select jsonb_agg(pg_get_functiondef(p.oid) order by p.proname,pg_get_function_identity_arguments(p.oid)) from pg_proc p join pg_namespace n on n.oid=p.pronamespace where n.nspname='public' and p.prokind='f'),
+          'views', (select jsonb_agg(to_jsonb(v) order by viewname) from (select viewname,definition from pg_views where schemaname='public') v)
+        )::text as schema_json
+      `.execute(tx)
+      ).rows[0]!.schema_json;
       const actual = (
         await sql<{
           table_name: string;
@@ -112,7 +138,13 @@ export async function captureDatabaseImage(
         ).rows[0]!;
         sequences.push({ name, ...row });
       }
-      return { format: "moirai-v4-db-backup/1", migration, tables, sequences };
+      return {
+        format: "moirai-v4-db-backup/1",
+        migration,
+        schema_json,
+        tables,
+        sequences
+      };
     });
 }
 
@@ -173,6 +205,7 @@ export function decryptDatabaseImage(
   const image = JSON.parse(body.toString("utf8")) as DatabaseImage;
   if (
     image.format !== "moirai-v4-db-backup/1" ||
+    typeof image.schema_json !== "string" ||
     image.migration !== "009_ip003_relation_memberships" ||
     image.tables.map((t) => t.name).join() !== BACKUP_TABLES.join()
   )
@@ -203,6 +236,8 @@ export async function restoreFreshRehearsal(
   await migrateToVersion(target.toString(), image.migration);
   const db = createDatabase(target.toString());
   try {
+    if ((await captureDatabaseImage(db)).schema_json !== image.schema_json)
+      throw Error("rehearsal_schema_mismatch");
     await db.transaction().execute(async (tx) => {
       await sql`set local statement_timeout = '30s'`.execute(tx);
       await sql`truncate ${sql.join(BACKUP_TABLES.map((t) => sql.table(`public.${t}`)))} cascade`.execute(

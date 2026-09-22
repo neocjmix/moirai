@@ -20,9 +20,13 @@ const url = process.env.DATABASE_URL;
 describe.skipIf(!url)("IP-011 encrypted backup and isolated restore", () => {
   const db = createDatabase(url ?? "");
   const name = "ip011_rehearsal_" + randomBytes(8).toString("hex");
+  const mismatchName = "ip011_rehearsal_" + randomBytes(8).toString("hex");
   beforeAll(async () => migrateToLatest(url ?? ""));
   afterAll(async () => {
     await sql`drop database if exists ${sql.id(name)} with (force)`.execute(db);
+    await sql`drop database if exists ${sql.id(mismatchName)} with (force)`.execute(
+      db
+    );
     await db.destroy();
   });
   it("preserves all tables, microseconds, large JSON numbers and sequences without source writes", async () => {
@@ -57,6 +61,13 @@ describe.skipIf(!url)("IP-011 encrypted backup and isolated restore", () => {
       name
     );
     expect(restored.digest).toBe(databaseImageDigest(before));
+    await expect(
+      restoreFreshRehearsal(
+        url!,
+        { ...before, schema_json: "{}" },
+        mismatchName
+      )
+    ).rejects.toThrow("rehearsal_schema_mismatch");
     await expect(
       restoreFreshRehearsal(url!, before, name)
     ).rejects.toBeDefined();

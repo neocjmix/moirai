@@ -14,7 +14,7 @@ The public snapshot omitted the 14 withdrawn Relation rows and 14 withdrawn memb
 
 The operator-only `scripts/ip011-backup-rehearsal.ts backup-and-rehearse` captures the exact v4 table inventory in a read-only transaction, keeps PostgreSQL JSON text intact (including large numbers and microsecond timestamps), encrypts with AES-256-GCM before writing an immutable operational backup object, reads/decrypts it back, and restores into a newly created `ip011_rehearsal_<random>` database. It never restores over an existing database or writes a Publication pointer. The source's full row/sequence digest is checked again after rehearsal.
 
-`IP011_BACKUP_KEY` is an independent 32-byte secret supplied through the worker's secret variables, never committed, logged, returned, or stored with the ciphertext. Object storage receives only authenticated ciphertext under `operational-backups/ip011/`, never plaintext private Change Set origins. This is a v4 migration backup format, not a new public export contract. Unknown tables or schema versions stop the operation. Rehearsal DB names are recorded for subsequent v5 tests and explicit cleanup.
+`IP011_BACKUP_KEY` is an independent 32-byte secret supplied through the worker's secret variables, never committed, logged, returned, or stored with the ciphertext. Object storage receives only authenticated ciphertext under `operational-backups/ip011/`, never plaintext private Change Set origins. This is a v4 migration backup format, not a new public export contract. Unknown tables or schema versions stop the operation. Columns/defaults, constraints, indexes, triggers, table ACL/RLS policies, public function definitions and views are fingerprinted and compared before restoring rows; matching migration ledger names alone do not prove absence of schema drift. Rehearsal DB names are recorded for subsequent v5 tests and explicit cleanup.
 
 A PostgreSQL integration test verifies restore fidelity, numeric/date precision, source immutability, sequence state and refusal to overwrite an existing database. Local crypto tests verify wrong-key and ciphertext-tamper rejection. CI and production backup/restore execution are pending this checkpoint; no backup success is claimed yet.
 
@@ -29,3 +29,7 @@ An offline v4-validator experiment over the revision-30 snapshot assigned all 12
 ## Remaining A2 gates
 
 Encrypted backup and exact restore on the real installation; reviewed Narrative preservation manifest; v5 canonical/contract/API/UI/MCP/export/tests transition; migration on the isolated restored copy; old Revision/export fidelity; World-level invariant and scenario tests. No production schema/content cutover has been executed. A3 remains gated on all of these.
+
+## Adversarial review corrections
+
+A restore through `jsonb_populate_recordset` could silently discard a manually added column if only migration names were compared. The rehearsal now compares actual schema definitions before inserting any backup rows and tests refusal on a mismatch. Application table/sequence fidelity is covered; cluster roles, provider settings and grants outside the versioned application schema are not a physical PostgreSQL cluster backup.

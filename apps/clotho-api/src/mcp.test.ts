@@ -317,12 +317,21 @@ describe("Clotho MCP transport", () => {
             operations?: {
               items?: {
                 properties?: {
-                  entity_type?: { enum?: string[] };
                   entity_id?: unknown;
                   client_ref?: unknown;
                   origin_refs?: unknown;
                   value?: { properties?: Record<string, unknown> };
                 };
+                oneOf?: Array<{
+                  properties?: {
+                    kind?: { const?: string; enum?: string[] };
+                    entity_type?: { enum?: string[] };
+                    entity_id?: unknown;
+                    client_ref?: unknown;
+                    origin_refs?: unknown;
+                    value?: { properties?: Record<string, unknown> };
+                  };
+                }>;
               };
             };
           };
@@ -346,9 +355,15 @@ describe("Clotho MCP transport", () => {
       EVENT_MEMBERSHIP_CONTRACT_VERSION,
       CONTRACT_VERSION
     ]);
+    const operationBranches =
+      planSchema?.properties?.operations?.items?.oneOf ?? [];
     const operationProperties =
       planSchema?.properties?.operations?.items?.properties;
-    expect(operationProperties?.entity_type?.enum).toEqual(
+    const createProperties = operationBranches[0]?.properties;
+    const membershipProperties = operationBranches[1]?.properties;
+    const withdrawProperties = operationBranches[2]?.properties;
+    expect(createProperties?.kind?.const).toBe("create");
+    expect(createProperties?.entity_type?.enum).toEqual(
       expect.arrayContaining([
         "world",
         "canon",
@@ -356,9 +371,7 @@ describe("Clotho MCP transport", () => {
         "relation",
         "narrative",
         "time_system",
-        "canon_time_system",
-        "event_canon_membership",
-        "relation_canon_membership"
+        "canon_time_system"
       ])
     );
     expect(operationProperties).toEqual(
@@ -383,6 +396,20 @@ describe("Clotho MCP transport", () => {
         definition: expect.anything()
       })
     );
+    expect(operationProperties?.value?.properties?.kind).toMatchObject({
+      enum: expect.arrayContaining(["atomic", "primary", "annotation"])
+    });
+    expect(membershipProperties?.kind?.enum).toEqual(["add", "remove"]);
+    expect(membershipProperties?.entity_type?.enum).toEqual([
+      "event_canon_membership",
+      "relation_canon_membership"
+    ]);
+    expect(withdrawProperties?.kind?.const).toBe("withdraw");
+    expect(withdrawProperties?.entity_type?.enum).toEqual([
+      "event",
+      "relation"
+    ]);
+    expect(commitTool?.description).toContain("There are no create_event");
     expect(Buffer.byteLength(JSON.stringify(tools))).toBeLessThan(32_000);
     const result = await client.callTool({
       name: "world_get",
@@ -414,6 +441,44 @@ describe("Clotho MCP transport", () => {
       expect(response.body).toContain(code);
       expect(response.body).not.toContain("private-input");
     }
+    expect(execute).not.toHaveBeenCalled();
+  });
+  it("returns bounded schema diagnostics without echoing invalid input", async () => {
+    const { call, execute } = setup();
+    const response = await call("change_validate", {
+      plan: {
+        contract_version: CONTRACT_VERSION,
+        change_set_id: "01995c2a-7b00-7000-8000-000000000198",
+        world_id: CLOTHO_CONNECTION_WORLD,
+        expected_revision: 7,
+        intent: "private-intent",
+        origins: [{ kind: "human_instruction", summary: "private-summary" }],
+        operations: [
+          {
+            kind: "create_event",
+            entity_type: "event",
+            client_ref: "private-ref",
+            origin_refs: [{ field: "*", origin_index: 0 }],
+            value: {}
+          }
+        ]
+      }
+    });
+    const body = response.body;
+    const error = JSON.parse(response.json().result.content[0].text).error as {
+      code: string;
+      issues: Array<{ path: string; expected?: unknown }>;
+    };
+    expect(body).toContain("invalid_request");
+    expect(error.issues).toContainEqual(
+      expect.objectContaining({
+        path: "/plan/operations/0/kind",
+        expected: "create"
+      })
+    );
+    expect(body).not.toMatch(
+      /private-intent|private-summary|private-ref|create_event/
+    );
     expect(execute).not.toHaveBeenCalled();
   });
   it("blocks browser Origin, batches, oversized bodies and stateful methods", async () => {

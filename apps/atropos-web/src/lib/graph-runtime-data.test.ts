@@ -376,6 +376,121 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
     );
     expect(secondBoot.center).toEqual(focused.center);
   });
+  it("centers a shared Event on the selected multi-Canon geometry when Canon layouts differ", async () => {
+    const worldId = "01995c2a-7b00-7000-8000-000000000090";
+    const extraId = "01995c2a-7b00-7000-8000-000000000091";
+    const relationId = "01995c2a-7b00-7000-8000-000000000092";
+    const input: CanonicalRevisionView = {
+      ...view,
+      world: { ...view.world, id: worldId },
+      canons: view.canons.map((c) => ({ ...c, world_id: worldId })),
+      events: [
+        ...view.events.map((e) => ({ ...e, world_id: worldId })),
+        {
+          ...view.events[0]!,
+          id: extraId,
+          world_id: worldId,
+          canon_memberships: [k2]
+        }
+      ],
+      relations: [
+        ...view.relations.map((r) => ({ ...r, world_id: worldId })),
+        {
+          ...view.relations[0]!,
+          id: relationId,
+          world_id: worldId,
+          canon_memberships: [k2],
+          source_ref: { kind: "event", event_id: extraId }
+        }
+      ],
+      eventCanonMemberships: [
+        ...view.eventCanonMemberships,
+        { event_id: extraId, canon_id: k2 }
+      ],
+      relationCanonMemberships: [
+        ...view.relationCanonMemberships,
+        { relation_id: relationId, canon_id: k2 }
+      ]
+    };
+    const publication = buildPublicationArtifacts(
+      input,
+      1,
+      "2026-09-22T00:00:00Z"
+    );
+    const spatial = buildSpatialArtifacts(
+      queryFromPublicationDocuments(
+        publication.manifestBody,
+        publication.documents
+      )!,
+      publication.manifestBody
+    );
+    for (const d of [
+      ...publication.documents,
+      ...spatial.documents,
+      { key: publication.manifestKey, body: publication.manifestBody },
+      { key: spatial.manifestKey, body: spatial.manifestBody }
+    ])
+      store.set(d.key, d.body);
+    const loaded = await loadGraphPublicationSources(
+      [{ world_id: worldId, served_revision: 1 }],
+      { onlyPinned: true }
+    );
+    const state = createDefaultGraphUrlState(loaded.catalog);
+    const focus = {
+      kind: "event" as const,
+      world_id: worldId,
+      served_revision: 1,
+      canon_id: ids.canonId,
+      event_ref: { kind: "event" as const, event_id: ids.secondEventId }
+    };
+    const id = presentationNodeId(focus, focus.event_ref);
+    const boot = await graphSpatialBootstrap(
+      { ...state, focus },
+      loaded.catalog
+    );
+    const request = {
+      sources: state.query.sources,
+      viewport: {
+        canonIds: boot.workspace.canons.map((c) => c.id),
+        bbox: { minX: -1e7, maxX: 1e7, minY: -1e7, maxY: 1e7 },
+        scale: 1,
+        viewportWidth: 390,
+        viewportHeight: 844,
+        includeNeighbors: false
+      }
+    };
+    const visible = await moiraiSpatialReader.viewport(request);
+    const shared = visible.viewport.entities.filter((e) => e.id === id);
+    expect(shared).toHaveLength(1);
+    const single = await moiraiSpatialReader.viewport({
+      ...request,
+      viewport: {
+        ...request.viewport,
+        canonIds: [boot.workspace.canons[0]!.id]
+      }
+    });
+    const first = single.viewport.entities.find((e) => e.id === id)!;
+    expect(shared[0]!.geometryKind).toBe("point");
+    expect(first.geometryKind).toBe("point");
+    if (shared[0]!.geometryKind !== "point" || first.geometryKind !== "point")
+      throw Error("expected points");
+    expect(shared[0]!.position).not.toEqual(first.position);
+    expect(boot.center).toEqual(shared[0]!.position);
+    // Closing the drawer removes selection retention; the Event must remain in frame.
+    const closed = await moiraiSpatialReader.viewport({
+      ...request,
+      viewport: {
+        ...request.viewport,
+        bbox: {
+          minX: boot.center!.x - 1,
+          maxX: boot.center!.x + 1,
+          minY: boot.center!.y - 1,
+          maxY: boot.center!.y + 1
+        }
+      }
+    });
+    expect(closed.viewport.entities.filter((e) => e.id === id)).toHaveLength(1);
+  });
   it("applies semantic filters without capping spatial exploration to the initial query budget", async () => {
     const loaded = await loadGraphPublicationSources([
       { world_id: ids.worldId, served_revision: 4 }

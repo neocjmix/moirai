@@ -80,6 +80,9 @@ jobs:
         run: pnpm test:e2e
       - name: Imjin public desktop and mobile acceptance
         if: github.event_name == 'pull_request' && github.head_ref == 'feat/imjin-e2e'
+        # This observes the deployed version, not the unmerged PR. Its result is
+        # recorded before deployment and must be rechecked after rollout.
+        continue-on-error: true
         run: pnpm exec playwright test --config playwright.imjin-live.config.ts
       - name: Graph regression evidence
         if: always()

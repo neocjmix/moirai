@@ -286,15 +286,6 @@ export function projectRelationalTime(
     const spanEvidence = [...membershipEvidence];
     let spanComplete = descendantRefs.size > 0;
     for (const ref of descendantRefs.values()) {
-      // A nested container has no required point position. Its descendants
-      // (including authored boundary Time Events) are already in this closure.
-      // Empty containers and undated atomic leaves must still remain unresolved.
-      if (
-        ref.kind === "event" &&
-        compositeIds.has(ref.event_id) &&
-        populatedContainers.has(ref.event_id)
-      )
-        continue;
       const exact = point(ref);
       if (exact) {
         coordinates.push(exact);
@@ -306,7 +297,16 @@ export function projectRelationalTime(
       if (position?.kind === "bounded" && position.lower && position.upper) {
         coordinates.push(position.lower.time_event, position.upper.time_event);
         spanEvidence.push(...position.source_constraint_ids);
-      } else spanComplete = false;
+      } else if (
+        ref.kind !== "event" ||
+        !compositeIds.has(ref.event_id) ||
+        !populatedContainers.has(ref.event_id)
+      ) {
+        // An unpositioned nested container is represented by its descendants
+        // already in this closure. Empty containers and undated atomic leaves
+        // still make the enclosing span unresolved.
+        spanComplete = false;
+      }
     }
     const first = coordinates[0];
     const sameSystem =

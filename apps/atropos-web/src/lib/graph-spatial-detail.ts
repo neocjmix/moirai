@@ -10,11 +10,14 @@ import { graphEventHref } from "./event-reading-navigation";
 import { eventTimeSummary } from "./event-time-summary";
 export async function graphSpatialDetail(
   state: unknown,
-  id: string
+  id: string,
+  requestedCanonId?: string
 ): Promise<EventDetailResponse> {
   const { input, state: validated } = await graphSpatialQueryContext(state);
   const matchingScopes = input.scopes.filter(
-    (s) => s.nodes.some((n) => n.id === id) || s.links.some((l) => l.id === id)
+    (s) =>
+      (!requestedCanonId || s.source.canon_id === requestedCanonId) &&
+      (s.nodes.some((n) => n.id === id) || s.links.some((l) => l.id === id))
   );
   const scope = matchingScopes[0];
   if (!scope) throw Error("graph_identity_outside_query");

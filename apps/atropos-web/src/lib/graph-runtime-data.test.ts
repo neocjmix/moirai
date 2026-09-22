@@ -368,6 +368,13 @@ describe("M4.6-E one revision across query, spatial and detail", () => {
       }
     });
     expect(framed.viewport.entities.some((e) => e.id === focusedId)).toBe(true);
+    // A shared Event focused through the second Canon stays on the World plane.
+    const secondFocus = { ...focus, canon_id: k2 };
+    const secondBoot = await graphSpatialBootstrap(
+      { ...state, focus: secondFocus },
+      loaded.catalog
+    );
+    expect(secondBoot.center).toEqual(focused.center);
   });
   it("applies semantic filters without capping spatial exploration to the initial query budget", async () => {
     const loaded = await loadGraphPublicationSources([

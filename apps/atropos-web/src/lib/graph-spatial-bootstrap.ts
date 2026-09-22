@@ -5,6 +5,7 @@ import {
 } from "@moirai/graph-presentation";
 import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import type { GraphSourceCatalog } from "./moirai-graph-source-query";
+import { composePlaneOffsets } from "../urdr-port/src/spatial-composition";
 import { moiraiSpatialReader } from "./moirai-spatial";
 export type GraphSpatialBootstrap = {
   workspace: GraphShellWorkspaceShell;
@@ -33,11 +34,21 @@ export async function graphSpatialBootstrap(
   const metas = await Promise.all(
     sources.map((s) => moiraiSpatialReader.scope(s).catch(() => null))
   );
-  let offset = 0;
+  const navigationScopes = sources.map((source, i) => ({
+    canonId: presentationScopeKey(source),
+    planeId: JSON.stringify([source.world_id, source.served_revision]),
+    widthHint: Math.max(1800, metas[i]?.widthHint ?? 1800),
+    bounds: metas[i]?.bounds ?? null,
+    ready: metas[i] !== null
+  }));
+  const offsets = composePlaneOffsets(
+    navigationScopes.map((scope) => ({ ...scope, id: scope.canonId }))
+  );
   let center: GraphSpatialBootstrap["center"] = null;
   let focusedCenter: GraphSpatialBootstrap["center"] = null;
   for (let i = 0; i < metas.length; i++) {
     const meta = metas[i];
+    const offset = offsets.get(ids[i]!) ?? 0;
     const focus = state.focus;
     if (
       meta?.entityCount &&
@@ -86,16 +97,10 @@ export async function graphSpatialBootstrap(
         .catch(() => null);
       if (point) center = { x: offset + point.x, y: point.y };
     }
-    offset += (meta?.widthHint ?? 1800) + 240;
   }
   center = focusedCenter ?? center;
   const workspace: GraphShellWorkspaceShell = {
-    navigationScopes: sources.map((source, i) => ({
-      canonId: presentationScopeKey(source),
-      widthHint: metas[i]?.widthHint ?? 1800,
-      bounds: metas[i]?.bounds ?? null,
-      ready: metas[i] !== null
-    })),
+    navigationScopes,
     // The Moirai producer uses elapsed mean Gregorian years from year zero.
     // Structural/custom frames must never receive Gregorian calendar labels.
     ...(state.query.temporal_frame.target.adapter_identity ===

@@ -27,6 +27,16 @@ test("published shared Event opens two reader narratives, source details, and hi
   await expect(drawer).toContainText("와키자카 야스하루");
   await expect(drawer).toContainText("전장 선택 자체가 승리의 중요한 조건");
   await expect(drawer).not.toContainText("이 데이터는 연도 수준");
+  const sourceNotes = drawer
+    .locator("details")
+    .filter({ has: page.locator("summary", { hasText: "주석과 출처" }) })
+    .first();
+  await expect(sourceNotes).not.toHaveAttribute("open", "");
+  await sourceNotes.locator("summary").click();
+  await expect(
+    sourceNotes.locator('a[href^="https://"]').first()
+  ).toBeVisible();
+  await sourceNotes.locator("summary").click();
   const initialText = await drawer.innerText();
   expect(initialText.length).toBeGreaterThan(700);
   await page.screenshot({

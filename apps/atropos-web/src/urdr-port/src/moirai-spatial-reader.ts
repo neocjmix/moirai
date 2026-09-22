@@ -27,7 +27,7 @@ import {
   mergeUniqueEntities,
   applyCanonOffset
 } from "./spatial-read";
-import { composeCanonOffsets } from "./spatial-composition";
+import { composePlaneOffsets } from "./spatial-composition";
 import {
   getSelectedEntityRefs,
   getNeighborEntityRefs,
@@ -281,33 +281,12 @@ export function createMoiraiSpatialReader(read: SpatialRead) {
     );
     // Canons in the same immutable World revision are evidence layers over
     // one Event plane. Only distinct World revisions receive horizontal offsets.
-    const groupKey = (source: SpatialSource) =>
-      JSON.stringify([source.world_id, source.served_revision]);
-    const groups = [
-      ...new Map(sources.map((source) => [groupKey(source), source])).keys()
-    ];
-    const groupCanons = Object.fromEntries(
-      groups.map((id) => {
-        const widths = sources.flatMap((source, index) =>
-          groupKey(source) === id ? [metas[index]?.widthHint ?? 1800] : []
-        );
-        return [
-          id,
-          { widthHint: Math.max(1800, ...widths), preferredGap: 240 }
-        ];
-      })
-    );
-    const groupOffsets = composeCanonOffsets(
-      groups,
-      "full",
-      { canons: groupCanons },
-      new Map()
-    );
-    const offsets = new Map(
-      sources.map((source) => [
-        presentationScopeKey(source),
-        groupOffsets.get(groupKey(source)) ?? 0
-      ])
+    const offsets = composePlaneOffsets(
+      sources.map((source, index) => ({
+        id: presentationScopeKey(source),
+        planeId: JSON.stringify([source.world_id, source.served_revision]),
+        widthHint: Math.max(1800, metas[index]?.widthHint ?? 1800)
+      }))
     );
     const requested = (query.artifactClasses ?? CLASSES).filter((c) =>
       CLASSES.includes(c as (typeof CLASSES)[number])

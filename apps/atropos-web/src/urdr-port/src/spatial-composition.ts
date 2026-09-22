@@ -102,3 +102,27 @@ export function getStaticEntityBandIndices(
     (_, index) => startBand + index
   );
 }
+
+/** Canons sharing a World revision overlay the same plane. */
+export function composePlaneOffsets(
+  scopes: readonly {
+    id: string;
+    planeId?: string | undefined;
+    widthHint: number;
+  }[]
+): Map<string, number> {
+  const widths = new Map<string, number>();
+  for (const scope of scopes) {
+    const group = scope.planeId ?? scope.id;
+    widths.set(group, Math.max(widths.get(group) ?? 0, scope.widthHint));
+  }
+  const groups = new Map<string, number>();
+  let offset = 0;
+  for (const [group, width] of widths) {
+    groups.set(group, offset);
+    offset += width + 240;
+  }
+  return new Map(
+    scopes.map((scope) => [scope.id, groups.get(scope.planeId ?? scope.id)!])
+  );
+}

@@ -3684,6 +3684,8 @@ export function GraphShell({
   }, []);
 
   const handleEventDrawerPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    // Native controls must receive their tap instead of starting a sheet drag.
+    if (event.target instanceof Element && event.target.closest("a, button, summary, input, select, textarea")) return;
     if (event.pointerType === "mouse" && event.button !== 0) {
       return;
     }

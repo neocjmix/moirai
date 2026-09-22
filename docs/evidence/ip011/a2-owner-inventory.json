@@ -1,0 +1,161 @@
+{
+  "observed_at": "2026-09-22T20:49:15.412679968Z",
+  "deployment": "f3a6f89f-8bd2-401f-9274-dca6fb3b6f97",
+  "commit": "1b837bf7457090da2d4225219fa72265865ec8bf",
+  "method": "owner database repeatable-read, read-only transaction via temporary worker startup audit; original command restored",
+  "operation": "ip011_owner_inventory",
+  "read_only": true,
+  "tables": {
+    "canon_event_memberships": {
+      "rows": 153,
+      "active": 153,
+      "withdrawn": 0
+    },
+    "canon_relation_memberships": {
+      "rows": 491,
+      "active": 477,
+      "withdrawn": 14
+    },
+    "canon_time_systems": {
+      "rows": 6,
+      "active": 6,
+      "withdrawn": 0
+    },
+    "canons": {
+      "rows": 6,
+      "active": 6,
+      "withdrawn": 0
+    },
+    "change_operations": {
+      "rows": 1474
+    },
+    "change_sets": {
+      "rows": 30
+    },
+    "events": {
+      "rows": 127,
+      "active": 127,
+      "withdrawn": 0
+    },
+    "kysely_migration": {
+      "rows": 9
+    },
+    "kysely_migration_lock": {
+      "rows": 1
+    },
+    "moirai_system_metadata": {
+      "rows": 0
+    },
+    "narratives": {
+      "rows": 160,
+      "active": 160,
+      "withdrawn": 0
+    },
+    "publication_outbox": {
+      "rows": 30
+    },
+    "relations": {
+      "rows": 429,
+      "active": 415,
+      "withdrawn": 14
+    },
+    "subject_handle_members": {
+      "rows": 0
+    },
+    "subject_handles": {
+      "rows": 0
+    },
+    "time_systems": {
+      "rows": 1,
+      "active": 1,
+      "withdrawn": 0
+    },
+    "world_publication_state": {
+      "rows": 1
+    },
+    "world_revisions": {
+      "rows": 30
+    },
+    "worlds": {
+      "rows": 1,
+      "active": 1,
+      "withdrawn": 0
+    }
+  },
+  "migrations": [
+    {
+      "name": "001_milestone_zero"
+    },
+    {
+      "name": "002_milestone_one"
+    },
+    {
+      "name": "003_milestone_two"
+    },
+    {
+      "name": "004_operation_origins"
+    },
+    {
+      "name": "005_subject_handles"
+    },
+    {
+      "name": "006_ip003_event_memberships"
+    },
+    {
+      "name": "007_ip003_event_membership_invariant"
+    },
+    {
+      "name": "008_ip003_event_ownership_cutover"
+    },
+    {
+      "name": "009_ip003_relation_memberships"
+    }
+  ],
+  "worlds": [
+    {
+      "id": "01995c2a-7b00-7000-8000-000000000101",
+      "slug": "early-joseon",
+      "current_revision": 30,
+      "publication_target_revision": 30,
+      "withdrawn_revision": null
+    }
+  ],
+  "locales": [
+    {
+      "locale": "ko",
+      "scope_type": "canon",
+      "kind": "annotation",
+      "rows": 1,
+      "active": 1
+    },
+    {
+      "locale": "ko",
+      "scope_type": "canon",
+      "kind": "primary",
+      "rows": 4,
+      "active": 4
+    },
+    {
+      "locale": "ko",
+      "scope_type": "event",
+      "kind": "annotation",
+      "rows": 21,
+      "active": 21
+    },
+    {
+      "locale": "ko",
+      "scope_type": "event",
+      "kind": "primary",
+      "rows": 132,
+      "active": 132
+    },
+    {
+      "locale": "ko",
+      "scope_type": "event",
+      "kind": "summary",
+      "rows": 2,
+      "active": 2
+    }
+  ],
+  "handles": []
+}

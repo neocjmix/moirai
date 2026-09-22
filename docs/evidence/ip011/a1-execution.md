@@ -26,7 +26,7 @@ PostgreSQL one-result search returns the same 510 bytes but reads 202 history ro
 
 Mobile WebKit graph-ready times at 100/1k/10k are 1242/2478/2936ms and drawer times 838/1918/1642ms. Decoded initial HTML is 1.07/8.65/9.53MB (compressed transfer 36/170/175KB). Pan frame p95 is 38/51/32ms and max 242/429/70ms over 120 frames per run. These samples are noisy and non-monotonic; they identify long-frame risk but do not establish a scaling law. No page errors occurred. React component commit attribution remains an A4 diagnosis task if frame gates fail; total browser/layout/DOM evidence is already captured.
 
-No production data mutation has been performed. Deployment verification of policy delivery is still pending this PR's merge. A2–A6 remain authorized and dependency-gated.
+No production data mutation has been performed. Deployment verification and the cached Live catalog limitation are recorded in [A2 execution](a2-execution.md). A2–A6 remain authorized and dependency-gated.
 
 ## Fixed A4 acceptance budgets
 

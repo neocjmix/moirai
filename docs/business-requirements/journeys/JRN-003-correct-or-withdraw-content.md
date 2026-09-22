@@ -26,7 +26,7 @@ layer: business-requirements
 
 1. 독자 또는 작성자가 공개된 Event, Relation 또는 Narrative의 문제를 발견한다.
 2. 작성자는 해당 공개 맥락을 LLM에 전달하고 정정 또는 철회를 요청한다.
-3. LLM은 공개 내용과 그 근거가 된 World, Canon, Event, Relation, Narrative와 작성 유래를 확인한다.
+3. LLM은 공개 내용과 그 근거가 된 World, Collection, Event, Relation, Narrative와 작성 유래를 확인한다.
 4. LLM은 오류의 범위와 영향을 받는 다른 내용을 식별한다.
 5. 정정인 경우 Lachesis가 변경을 검증하고 이전 상태와 이력을 보존한 채 반영한다.
 6. 성공적으로 반영된 정정은 Atropos의 현재 공개본에도 자동 반영된다.

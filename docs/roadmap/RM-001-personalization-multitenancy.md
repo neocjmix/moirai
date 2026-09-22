@@ -9,6 +9,8 @@ implementation_scope: future
 
 # RM-001 — 개인화·다중 Tenant 확장 안전장치
 
+> IP-011 이후 domain 의미는 CON-003/CORE-MODEL이 소유한다. 이 미래 호환성 문서의 Canon 표기는 당시 용어이며 Collection별 사실·Narrative ownership을 재도입하지 않는다. Tenant/ACL/private Publication은 계속 비활성이다.
+
 ## 문서 효력
 
 > **현재 구현 범위가 아니다.** 이 문서는 미래 확장을 불필요하게 막는 결정을 피하기 위한 비규범적 로드맵이다. 아래 기능을 현재 backlog, 수용 기준, schema, API 또는 UI에 선행 구현하라는 지시로 해석해서는 안 된다.
@@ -54,14 +56,14 @@ implementation_scope: future
 
 다음은 방향을 설명하기 위한 예상 개념이며 현재 schema 요구사항이 아니다.
 
-| 개념 | 미래 책임 | 현재 구현 여부 |
-|---|---|---|
-| Principal | 사람, 서비스 계정 또는 에이전트의 내부 식별 | 구현하지 않음 |
-| Tenant | 개인 또는 조직의 보안·관리·과금 경계 | 구현하지 않음 |
-| Group | 조직 안의 부서·팀·역할 집합 | 구현하지 않음 |
-| Membership | Principal과 Tenant·Group의 관계 | 구현하지 않음 |
-| Grant | 주체가 자원 범위에서 수행할 수 있는 행동 | 구현하지 않음 |
-| Release | 특정 World Revision의 선택 범위와 audience | 구현하지 않음 |
+| 개념       | 미래 책임                                   | 현재 구현 여부 |
+| ---------- | ------------------------------------------- | -------------- |
+| Principal  | 사람, 서비스 계정 또는 에이전트의 내부 식별 | 구현하지 않음  |
+| Tenant     | 개인 또는 조직의 보안·관리·과금 경계        | 구현하지 않음  |
+| Group      | 조직 안의 부서·팀·역할 집합                 | 구현하지 않음  |
+| Membership | Principal과 Tenant·Group의 관계             | 구현하지 않음  |
+| Grant      | 주체가 자원 범위에서 수행할 수 있는 행동    | 구현하지 않음  |
+| Release    | 특정 World Revision의 선택 범위와 audience  | 구현하지 않음  |
 
 Tenant와 World를 같은 개념으로 고정하지 않는다. 개인 또는 조직 하나가 여러 World를 소유할 수 있고, World의 콘텐츠·이식성 경계와 Tenant의 관리·보안 경계는 독립적으로 발전할 수 있어야 한다.
 

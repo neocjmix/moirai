@@ -7,6 +7,8 @@ layer: implementation-plan
 
 # IP-005 — Graph reader consolidation before M5
 
+> IP-011 이후 실행 순서와 목표 domain 계약은 [IP-011](IP-011-architecture-realignment.md)을 따른다. 아래 기록의 Canon·Narrative·membership 전제는 당시 구현 이력이며 현재 목표 의미를 재정의하지 않는다. 완료 이력은 취소하지 않으며 미완료 backlog는 IP-011로 재분류한다.
+
 ## 1. 효력과 실행 상태
 
 **구현·통합 검증·배포·공개 QA complete · M5 inactive.**
@@ -72,15 +74,15 @@ worldId/eventId는 World-owned Event identity이며 canon은 선택적 해석 �
 query의 target Time System, source set(World/Canon/served Revision vector), scope,
 entity/relation/diagnostic filter와 budget을 보존한다. 아래 src 경로는 `apps/atropos-web/` 기준이다.
 
-| 상태 | encoding 및 목표 계약 |
-| --- | --- |
-| 대상과 full 상태 | 위 path가 Event와 full 상태의 유일한 권위다. full URL에 중복 `gsEvent`/`gsStage`를 만들지 않는다. |
-| Revision | 양의 safe integer `revision`. 명시하면 고정 artifact를 읽고 latest로 fallback하지 않는다. |
-| 그래프 맥락 | 유효한 `mq` JSON을 유지한다. source 순서는 Canon 합성 위치에 영향을 주므로 정렬하지 않는다. 동일 source의 중복은 정규화하며 World별 Revision을 하나로 강제 합성하지 않는다. |
-| island | `readerTab=sources|entities|search|relations`, `readerFind`(최대 512자). 기본 sources/빈 검색은 공유 URL에서 생략 가능하다. |
-| viewport | `gsViewport=centerX,centerY,spanX,spanY`, 유한 수/양의 span 검증, 현재 6자리 소수 정규화 유지. |
-| peek | `/graph?mq=...&gsEvent=...&gsStage=peek`; mq.focus는 World-scoped semantic reference, gsEvent는 renderer adapter의 표시 ID로 양방향 매핑한다. |
-| closed | `/graph?mq=...`; mq.focus는 null, gsEvent/gsStage 제거. 탐색 필터와 Revision vector는 유지한다. |
+| 상태             | encoding 및 목표 계약                                                                                                                                                       |
+| ---------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 대상과 full 상태 | 위 path가 Event와 full 상태의 유일한 권위다. full URL에 중복 `gsEvent`/`gsStage`를 만들지 않는다.                                                                           |
+| Revision         | 양의 safe integer `revision`. 명시하면 고정 artifact를 읽고 latest로 fallback하지 않는다.                                                                                   |
+| 그래프 맥락      | 유효한 `mq` JSON을 유지한다. source 순서는 Canon 합성 위치에 영향을 주므로 정렬하지 않는다. 동일 source의 중복은 정규화하며 World별 Revision을 하나로 강제 합성하지 않는다. |
+| island           | `readerTab=sources                                                                                                                                                          | entities | search | relations`, `readerFind`(최대 512자). 기본 sources/빈 검색은 공유 URL에서 생략 가능하다. |
+| viewport         | `gsViewport=centerX,centerY,spanX,spanY`, 유한 수/양의 span 검증, 현재 6자리 소수 정규화 유지.                                                                              |
+| peek             | `/graph?mq=...&gsEvent=...&gsStage=peek`; mq.focus는 World-scoped semantic reference, gsEvent는 renderer adapter의 표시 ID로 양방향 매핑한다.                               |
+| closed           | `/graph?mq=...`; mq.focus는 null, gsEvent/gsStage 제거. 탐색 필터와 Revision vector는 유지한다.                                                                             |
 
 현재 `event-reading-navigation.ts`의 allowlist와 상한(`mq` 65536,
 `gsViewport` 256, `gsEvent` 4096, `gsStage` 16, `readerTab` 16, `readerFind` 512)을
@@ -105,15 +107,15 @@ Time System 선택이 필요한 경우 기존 선택 흐름을 사용하며 새 
 
 ## 4. 상태 전이와 full → peek 포커싱
 
-| 동작 | URL/UI 결과 | history |
-| --- | --- | --- |
-| Graph에서 Event 선택 | 같은 World/Revision의 선택, peek, mq.focus 및 gsEvent 일치 | 새 대상이면 push 1회; 같은 선택은 no-op |
-| peek → full | 동일 Event의 full path, query context 유지 | push 1회 |
-| full → peek 축소 | `/graph`, 동일 Event 선택 유지, 가용 영역에 새 focus/적정 배율 | push 1회; 이후 정규화는 replace |
-| peek/full 닫기 | closed, 선택 해제, context 유지; full에서는 graph로 복귀 | push 1회; 이미 closed면 no-op |
-| back/forward | 해당 entry의 path·stage·selection·query·viewport 복원 | push 금지, 복원 루프 금지 |
-| reload/직접 주소 입력 | URL 우선 복원; full은 full SSR, peek는 같은 선택 | 필요 정규화만 replace |
-| pan/zoom·서버 pin 확정 | 같은 entry의 viewport/pin 갱신 | replace; frame마다 entry 추가 금지 |
+| 동작                   | URL/UI 결과                                                    | history                                 |
+| ---------------------- | -------------------------------------------------------------- | --------------------------------------- |
+| Graph에서 Event 선택   | 같은 World/Revision의 선택, peek, mq.focus 및 gsEvent 일치     | 새 대상이면 push 1회; 같은 선택은 no-op |
+| peek → full            | 동일 Event의 full path, query context 유지                     | push 1회                                |
+| full → peek 축소       | `/graph`, 동일 Event 선택 유지, 가용 영역에 새 focus/적정 배율 | push 1회; 이후 정규화는 replace         |
+| peek/full 닫기         | closed, 선택 해제, context 유지; full에서는 graph로 복귀       | push 1회; 이미 closed면 no-op           |
+| back/forward           | 해당 entry의 path·stage·selection·query·viewport 복원          | push 금지, 복원 루프 금지               |
+| reload/직접 주소 입력  | URL 우선 복원; full은 full SSR, peek는 같은 선택               | 필요 정규화만 replace                   |
+| pan/zoom·서버 pin 확정 | 같은 entry의 viewport/pin 갱신                                 | replace; frame마다 entry 추가 금지      |
 
 축소는 닫기나 이전 viewport 복원이 아니다. full이 화면을 가리는 동안에도 대상 identity와
 해석 맥락을 유지한다. 축소 후 drawer/island/safe area를 제외한 **실제 가용 영역**에
@@ -137,30 +139,30 @@ full URL은 서버에서 Event title/summary, Narrative, parent/child, 관계·m
 full drawer 내부 링크는 실제 href여야 한다. SSR과 Graph는 같은 served Revision vector를 쓴다.
 이것은 읽기·인용 계약이며 SEO 순위 개선을 보장하지 않는다.
 
-| 경우 | 요구되는 결과 |
-| --- | --- |
-| invalid ID / 없는 Event / invalid membership | 명확한 not-found/invalid-context; 임의 Event·Canon 대체 금지 |
-| invalid revision/query | 안전한 입력 오류; 잘못된 값을 latest/default로 숨기지 않음 |
-| unavailable Revision/artifact | 해당 pin의 unavailable 상태; 다른 Revision으로 fallback 금지 |
-| loading/error/retry | 현재 대상과 맥락을 유지하고 구분 가능한 상태 제공; retry는 같은 pin |
-| partial source failure | 실패 source와 범위를 명시하고 다른 source pin 유지 |
-| 빠른 선택 변경 | 오래된 응답이 새 drawer를 덮지 않음; focus/URL 불일치 없음 |
+| 경우                                         | 요구되는 결과                                                       |
+| -------------------------------------------- | ------------------------------------------------------------------- |
+| invalid ID / 없는 Event / invalid membership | 명확한 not-found/invalid-context; 임의 Event·Canon 대체 금지        |
+| invalid revision/query                       | 안전한 입력 오류; 잘못된 값을 latest/default로 숨기지 않음          |
+| unavailable Revision/artifact                | 해당 pin의 unavailable 상태; 다른 Revision으로 fallback 금지        |
+| loading/error/retry                          | 현재 대상과 맥락을 유지하고 구분 가능한 상태 제공; retry는 같은 pin |
+| partial source failure                       | 실패 source와 범위를 명시하고 다른 source pin 유지                  |
+| 빠른 선택 변경                               | 오래된 응답이 새 drawer를 덮지 않음; focus/URL 불일치 없음          |
 
 ## 6. 실제 route/import inventory와 정리 경계
 
 아래는 계획 당시 main `6f0ea8c`의 read-only inventory다. PR #98에서 대체 기능과 전체
 import/call graph를 다시 확인한 뒤 구형 UI route와 전용 component를 제거했다.
 
-| 현재 파일 (`apps/atropos-web/src/` 기준) | 현재 역할 → 향후 처리 |
-| --- | --- |
-| `app/page.tsx` | Publication World directory → `/graph` redirect |
-| `app/worlds/[worldId]/page.tsx` | World/Canon 목록 → Graph source/island 읽기 |
-| `app/worlds/[worldId]/search/page.tsx` | SearchSurface 독립 읽기 → island search |
-| `app/worlds/[worldId]/events/[eventId]/page.tsx` | readWorldEvent + EventSheet + Canon별 temporal 조회 → full SSR drawer |
-| `app/worlds/[worldId]/canons/[canonId]/events/[eventId]/page.tsx` | membership 검사 + EventSheet → 새 URL의 canon context |
-| `app/worlds/[worldId]/canons/[canonId]/page.tsx` | Canon Narrative/temporal/Subject/Event 링크 → island/drawer |
-| `app/worlds/[worldId]/canons/[canonId]/subjects/[subjectHandleId]/page.tsx` | derived Subject/lineage/anchor → Graph 내 읽기 |
-| `app/graph/[screen]/page.tsx` + `lib/atropos-screen-registry.ts` | `/graph/private`, `/graph/explore` unavailable, `/graph/settings` available 보존; operations auth_gated_future 미활성 |
+| 현재 파일 (`apps/atropos-web/src/` 기준)                                    | 현재 역할 → 향후 처리                                                                                                 |
+| --------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `app/page.tsx`                                                              | Publication World directory → `/graph` redirect                                                                       |
+| `app/worlds/[worldId]/page.tsx`                                             | World/Canon 목록 → Graph source/island 읽기                                                                           |
+| `app/worlds/[worldId]/search/page.tsx`                                      | SearchSurface 독립 읽기 → island search                                                                               |
+| `app/worlds/[worldId]/events/[eventId]/page.tsx`                            | readWorldEvent + EventSheet + Canon별 temporal 조회 → full SSR drawer                                                 |
+| `app/worlds/[worldId]/canons/[canonId]/events/[eventId]/page.tsx`           | membership 검사 + EventSheet → 새 URL의 canon context                                                                 |
+| `app/worlds/[worldId]/canons/[canonId]/page.tsx`                            | Canon Narrative/temporal/Subject/Event 링크 → island/drawer                                                           |
+| `app/worlds/[worldId]/canons/[canonId]/subjects/[subjectHandleId]/page.tsx` | derived Subject/lineage/anchor → Graph 내 읽기                                                                        |
+| `app/graph/[screen]/page.tsx` + `lib/atropos-screen-registry.ts`            | `/graph/private`, `/graph/explore` unavailable, `/graph/settings` available 보존; operations auth_gated_future 미활성 |
 
 두 Event route → `components/event-sheet.tsx` → `lib/event-reading-navigation.ts`,
 `components/event-time-context.tsx`/`relational-time.tsx`가 SSR·시간·링크 경로다.
@@ -189,15 +191,15 @@ reset, canonical 삭제, Publication Store 청소, migration, infrastructure 삭
 
 아래 단계 1~7은 완료됐다. 실제 검사·SHA·배포 연결은 종료 evidence를 따른다.
 
-| 단계 | 변경 범위 | 사용자에게 보이는 결과 | 자동 검증 | 유지 경계 | 종료조건 |
-| --- | --- | --- | --- | --- | --- |
-| 1. 계획·문서 계약 | IP-005 신설, CURRENT/TS-006/INDEX 및 최소 대체 안내 | 실제 GitHub docs-only PR | 링크·ID·trace·용어·상태·URL 계약, 전체 diff, secret scan | runtime/데이터/배포 무변경, M5 inactive | remote commit/변경 파일 확인과 main 대상 PR 생성; merge 안 함 |
-| 2. Graph 중심 라우팅 | root redirect와 Graph 내 World/Canon/Search/Subject 진입 준비 | 기본 Graph 진입과 내부 탐색 | route·내부 href·기존 화면 smoke | 읽기 대체 전 구형 페이지 제거 금지, 보존 screen 유지 | root/Graph 진입 및 후속 이전 경로 검증 |
-| 3. 단일 drawer | full route, peek/full/closed, history, occlusion-aware focus | 링크 직접 읽기와 축소 후 같은 Event | URL round-trip, offscreen/direct focus, history, race 테스트 | renderer/layout/Revision/identity 불변 | §3~4 전이와 context 보존 검증 |
-| 4. SSR 이전·정리 | 핵심 SSR/참조 이전, 구형 UI/무참조 코드·payload 제거 | no-JS 읽기, 새 링크만 사용, 옛 UI 404 | SSR/hydration pin·safe Markdown·route/import 검사 | JSON/API/health, durable data·artifact 보존 | 기능 대체 증거 후 삭제, stale 내부 링크 0 |
-| 5. 통합 검증 | 회귀·접근성·성능·보안 | 모바일 안정성·실패/재시도·bounded 읽기 | 관련 format/lint/typecheck/unit/contract/build/mobile/secret 및 scale | 유효 assertion 유지, 임의 budget 완화 금지 | §8 전체 runtime acceptance 증거 확보 |
-| 6. 병합·배포·공개 QA | runtime PR merge, Railway 배포와 관측 | public Atropos에서 새 읽기 UX | CI, status/health/synthetic smoke, 공개 mobile QA | 별도 구현 실행 권한 아래만, canonical write 불필요 | 실제 deployed SHA와 QA 연결; 오류는 수정 후 재검증 |
-| 7. 종료 기록 | evidence packet/CURRENT 정합화 | 완료/미검증 범위와 다음 경계가 명확 | SHA·URL·검사·문서 상태 교차검사 | IP-004 evidence 소급 수정 금지, M5 inactive | 전체 종료조건 충족 시에만 IP-005 complete |
+| 단계                 | 변경 범위                                                     | 사용자에게 보이는 결과                 | 자동 검증                                                             | 유지 경계                                            | 종료조건                                                      |
+| -------------------- | ------------------------------------------------------------- | -------------------------------------- | --------------------------------------------------------------------- | ---------------------------------------------------- | ------------------------------------------------------------- |
+| 1. 계획·문서 계약    | IP-005 신설, CURRENT/TS-006/INDEX 및 최소 대체 안내           | 실제 GitHub docs-only PR               | 링크·ID·trace·용어·상태·URL 계약, 전체 diff, secret scan              | runtime/데이터/배포 무변경, M5 inactive              | remote commit/변경 파일 확인과 main 대상 PR 생성; merge 안 함 |
+| 2. Graph 중심 라우팅 | root redirect와 Graph 내 World/Canon/Search/Subject 진입 준비 | 기본 Graph 진입과 내부 탐색            | route·내부 href·기존 화면 smoke                                       | 읽기 대체 전 구형 페이지 제거 금지, 보존 screen 유지 | root/Graph 진입 및 후속 이전 경로 검증                        |
+| 3. 단일 drawer       | full route, peek/full/closed, history, occlusion-aware focus  | 링크 직접 읽기와 축소 후 같은 Event    | URL round-trip, offscreen/direct focus, history, race 테스트          | renderer/layout/Revision/identity 불변               | §3~4 전이와 context 보존 검증                                 |
+| 4. SSR 이전·정리     | 핵심 SSR/참조 이전, 구형 UI/무참조 코드·payload 제거          | no-JS 읽기, 새 링크만 사용, 옛 UI 404  | SSR/hydration pin·safe Markdown·route/import 검사                     | JSON/API/health, durable data·artifact 보존          | 기능 대체 증거 후 삭제, stale 내부 링크 0                     |
+| 5. 통합 검증         | 회귀·접근성·성능·보안                                         | 모바일 안정성·실패/재시도·bounded 읽기 | 관련 format/lint/typecheck/unit/contract/build/mobile/secret 및 scale | 유효 assertion 유지, 임의 budget 완화 금지           | §8 전체 runtime acceptance 증거 확보                          |
+| 6. 병합·배포·공개 QA | runtime PR merge, Railway 배포와 관측                         | public Atropos에서 새 읽기 UX          | CI, status/health/synthetic smoke, 공개 mobile QA                     | 별도 구현 실행 권한 아래만, canonical write 불필요   | 실제 deployed SHA와 QA 연결; 오류는 수정 후 재검증            |
+| 7. 종료 기록         | evidence packet/CURRENT 정합화                                | 완료/미검증 범위와 다음 경계가 명확    | SHA·URL·검사·문서 상태 교차검사                                       | IP-004 evidence 소급 수정 금지, M5 inactive          | 전체 종료조건 충족 시에만 IP-005 complete                     |
 
 ## 8. 전체 종료조건과 미래 검증
 

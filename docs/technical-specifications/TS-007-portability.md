@@ -20,12 +20,12 @@ traces:
 
 ## TS-007.2 반출 종류
 
-| 종류         | 목적                              | private 정보                            |
-| ------------ | --------------------------------- | --------------------------------------- |
-| `owner-full` | 완전한 보관·복구·이전             | Change 이력과 선택한 원자료 포함        |
-| `content`    | 세계 의미의 이동과 교환           | private origin과 원자료 원문 제외 가능  |
-| `public`     | 현재 공개본의 재배포              | Publication에 허용된 정보만 포함        |
-| `scoped`     | Canon·시간·Event 범위의 부분 반출 | 누락 범위와 복구 제한을 manifest에 명시 |
+| 종류         | 목적                                   | private 정보                            |
+| ------------ | -------------------------------------- | --------------------------------------- |
+| `owner-full` | 완전한 보관·복구·이전                  | Change 이력과 선택한 원자료 포함        |
+| `content`    | 세계 의미의 이동과 교환                | private origin과 원자료 원문 제외 가능  |
+| `public`     | 현재 공개본의 재배포                   | Publication에 허용된 정보만 포함        |
+| `scoped`     | Collection·시간·Event 범위의 부분 반출 | 누락 범위와 복구 제한을 manifest에 명시 |
 
 `public` export는 owner backup을 대신하지 않는다. `scoped` export는 원본 World 전체를 손실 없이 복구할 수 있다고 표시하지 않는다.
 
@@ -52,11 +52,11 @@ ZIP은 운반 container일 뿐 의미 schema가 아니다. 동일한 논리 docu
 ```text
 manifest.json
 content/world.json
-content/canons.ndjson
+content/collections.ndjson
 content/time-systems.ndjson
-content/canon-time-systems.ndjson
+content/collection-time-systems.ndjson
 content/events.ndjson
-content/canon-event-memberships.ndjson
+content/collection-event-memberships.ndjson
 content/relations.ndjson
 content/narratives.ndjson
 content/correspondences.ndjson
@@ -88,7 +88,7 @@ export 종류에 따라 일부 파일이 없을 수 있으며 manifest의 `inclu
 | `world_id`             | 원본 World ID                             |
 | `source_revision`      | 일관되게 읽은 World Revision              |
 | `publication_revision` | public export이면 served Revision         |
-| `scope`                | 포함한 Canon, Event, 시간 범위            |
+| `scope`                | 포함한 Collection, Event, 시간 범위       |
 | `included_sections`    | 실제 포함 영역                            |
 | `omitted_sections`     | 제외 영역과 이유                          |
 | `schema_versions`      | content, history, origin별 schema version |
@@ -101,15 +101,15 @@ manifest 자체의 digest는 package 밖에 별도 `.sha256` 파일로 제공할
 
 ### 반드시 보존
 
-- World와 Canon identity; Canon에는 authority·default·priority 의미를 추가하지 않음
-- Event의 World identity와 모든 Canon membership
-- Time System 정의와 Canon의 다대다 사용 관계
+- World와 Collection identity; Collection에는 authority·default·priority 의미를 추가하지 않음
+- Event의 World identity와 모든 Collection membership
+- Time System 정의와 Collection의 다대다 사용 관계
 - Event Relation과 virtual Time Event 좌표의 실제 precision·uncertainty
 - Relation type, 방향과 persisted 또는 virtual EventReference endpoint
 - virtual Time Event를 재생성하는 Time System ID, definition version과 canonical coordinate
 - Narrative, locale와 공개 인용
 - 철회 상태와 공개 tombstone 정보
-- Canon 간 correspondence와 member
+- 기존 correspondence와 member의 이력 (신규 기능 deferred)
 - 안정적인 ID와 slug alias
 
 ### owner-full에서 추가 보존
@@ -189,7 +189,7 @@ flowchart TD
 2. manifest와 모든 file digest를 확인한다.
 3. format과 section schema version을 확인한다.
 4. 필요한 순차 migration을 메모리 또는 임시 작업공간에서 수행한다.
-5. ID, World ownership, Event·Relation 1..N Canon membership, Time System과 철회 불변식을 검증한다.
+5. ID, World ownership, Event 0..N same-World Collection membership과 단일 Narrative ownership, Time System과 철회 불변식을 검증한다.
 6. 대상 모드의 ID collision과 현재 World 차이를 계산한다.
 7. 사용자에게 생성·변경·철회·누락과 손실 가능성을 preview한다.
 8. 하나의 World Change Set 또는 복구 전용 원자적 bootstrap transaction으로 적용한다.
@@ -221,8 +221,8 @@ content, history, origin과 Publication format은 독립적으로 version한다.
 round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semantic fingerprint를 비교한다.
 
 - World별 Event identity와 활성·철회 상태
-- Canon별 Event membership 집합과 active orphan 수
-- Relation World identity, type, endpoint와 모든 Canon membership
+- Collection별 Event membership 집합과 Collection 미선택 Event 수 (유효 상태)
+- Relation World identity, type, endpoint와 assertion attributes
 - Time System 정의·capability와 virtual Time Event reference precision
 - 포함 graph와 Process 역할
 - Narrative scope·locale·body digest
@@ -232,14 +232,9 @@ round-trip 검증은 JSON byte equality만 검사하지 않는다. 다음 semant
 
 ID remap이 있는 clone mode에서는 mapping을 적용한 뒤 비교한다.
 
-구 package의 Event `canon_id`는 해당 Canon의 World와 단일 membership으로 lossless 변환한다. 정보만으로 membership을 결정할 수 없는 package는 추론하지 않고 import를 중단한다.
-구 package의 Relation `canon_id`도 같은 방식으로 World ownership과 단일 membership으로 lossless 변환한다. 새 package는 Relation membership section을 독립적으로 왕복한다.
+### IP-011 format cutover
 
-IP-003 content package `2.0`은 `world-event-canon-membership/1` schema와
-`event-canon-memberships.ndjson`을 사용한다. `1.0`/`event-relational-time/1` reader는 위의
-단일 membership adapter로만 유지한다. v2 export는 Event의 `world_id`, embedded membership
-목록과 association section의 정확한 일치를 검증하고 orphan, duplicate, dangling 또는
-cross-World membership을 거절한다.
+목표 export는 Collection/Event membership, World Relation, 단일 owner Narrative를 보존하는 새 major format이다. 기존 v2/v3/v4 형식은 historical evidence/explicit conversion 입력으로만 읽는다. narrative merge와 relation scope 제거는 lossless 이름 변환이 아니므로 자동 import하지 않는다. IP-011의 ID mapping·내용 보존·충돌 검토 manifest가 필요하다. 기존 bytes/digests와 schema version은 그대로 보존한다. 새 live export는 예전 canon 필드 alias를 병행하지 않는다.
 
 ## TS-007.13 backup과 export의 차이
 

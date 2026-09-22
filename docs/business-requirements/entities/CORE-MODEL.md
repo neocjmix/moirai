@@ -1,96 +1,52 @@
 # 핵심 비즈니스 개념 관계와 책임
 
-이 문서는 확정된 비즈니스 개념 사이의 의미와 책임 경계를 정의한다. 데이터 구조, API와 저장 방식은 기술 명세에서 결정한다. World/Event/Canon cardinality는 승인된 의미의 일부로 이 문서에서도 명시한다.
+의미의 최상위 근거는 [CON-003](../../constitution/CON-003-world-truth.md)다. 이 문서는 관계·용어의 단일 참조점이며 물리 schema는 TS-002가 소유한다.
 
-## 개념 관계
+## BCR-001 World
 
-```mermaid
-flowchart TD
-    W["ENT-001 World"] --> C["ENT-002 Canon"]
-    W --> T["ENT-003 Time System"]
-    W --> E["ENT-004 Event"]
-    W --> R["ENT-005 Relation"]
-    C --> N["ENT-006 Narrative"]
-    C <-->|"N:M membership; Event side 1..N"| E
-    E --> CE["Composite Event"]
-    E --> N
-    W --> P["ENT-013 Publication"]
-    P --> C
-```
+하나의 reality/factual universe이자 Event identity·transaction·Revision·export·access·Publication 경계. 실제 역사는 하나의 World, 삼국지연의·MCU는 별도 World다. 시간 체계 호환은 World 병합의 근거가 아니다. 서비스에 수록된 지역과 시대는 coverage다.
 
-## BCR-001 World와 Canon
+## BCR-002 Collection과 membership
 
-ENT-001 World는 canonical content의 transaction, Revision, export, access와 publication isolation을 묶는 최상위 경계다. World 자체가 Canon 사이의 진위를 판정하지 않는다.
+World Event graph의 관심사별 선택 집합. World 1:N Collection, World 1:N Event, Collection N:M Event이며 Event 측 membership은 0..N이다. Collection은 사건을 소유하지 않는다. 비어 있는 Collection은 설명을 가진 탐색 시작점일 수 있다. order·importance·recommended_with 필드를 선제 도입하지 않는다.
 
-## BCR-002 Canon의 해석적 지식 범위와 Event membership
+## BCR-003 Time System
 
-ENT-002 Canon은 World 안의 persistent, named interpretive knowledge scope다. 함께 고려하는 curated body of world knowledge를 식별하지만 authority, exclusivity, completeness, consistency 또는 objective truth를 뜻하지 않는다. Canon들은 overlap할 수 있다.
+World가 자기완결적 반출을 위해 정의를 소유한다. 여러 Collection이 같은 시간 표현을 사용할 수 있으나 사실의 적용 여부는 Collection에 귀속하지 않는다. 서로 다른 World도 정의와 adapter capability가 호환되면 같은 표시 축을 사용할 수 있다.
 
-ENT-004 Event는 정확히 하나의 World에 속하고 같은 World의 Canon 하나 이상에 참여한다. Event identity와 Canon membership은 분리하며 같은 Event를 Canon마다 복제하지 않는다. active Event가 마지막 membership을 잃는 상태와 cross-World membership은 허용하지 않는다.
+## BCR-004 Event·Composite·Process
 
-## BCR-003 Canon과 Time System
+Event는 독립적으로 식별·참조할 사건이다. contains(parent, child)는 “이 사건이 저 사건을 구성한다”는 World 주장이다. 하나 이상의 active contains 자식을 가진 Event를 Composite로 읽는다. 부분 자료에서 자식이 아직 없다는 것은 현실의 원자성 주장이 아니다. Process는 과정으로 읽는 파생 역할이다. 기간이 있다는 이유만으로 가짜 시작·끝 사건이나 Composite를 만들지 않는다.
 
-ENT-002 Canon은 ENT-003 Time System을 통해 참여 Event의 시간을 읽을 수 있다. Time System은 Event의 의미를 시간축에 표현하기 위한 규칙이며 Canon의 우열을 만들지 않는다.
+## BCR-005 Relation
 
-하나의 Canon은 하나 이상의 Time System을 사용할 수 있고, 같은 Time System을 여러 Canon이 공유할 수 있다. 어느 Time System도 본질적으로 정본이나 기본 시간축이 아니며 사용 맥락에 따라 선택된다.
+Relation identity와 assertion은 World에 귀속한다. Collection별 별도 사실·시간 제약은 없다. 기본 read는 선택 Event의 induced graph와 명시된 bounded neighborhood를 사용한다. 숨겨진 endpoint를 향한 관계는 continuation으로 알릴 수 있다. temporal/containment 근거는 화면에서 안 보인다고 무효가 되지 않는다.
 
-## BCR-004 Event의 구성
+## BCR-006 Narrative
 
-ENT-004 Event는 단일 사건일 수도 있고 다른 Event를 포함하는 Composite Event일 수도 있다. Composite Event를 별도의 핵심 개념으로 만들지 않는다.
+각 Event와 Collection에 정확히 하나의 Narrative가 있다. 본문·선택적 요약·주석·공개 출처는 같은 owner의 내용이다. 언어 표현은 같은 Narrative의 번역이지 별도 관점 소유권이 아니다. 현 단계는 기존 ko 자료를 유지하고 다국어 편집 workflow는 연기한다. Collection별 Event Narrative를 생성하지 않는다.
 
-ENT-017 Process는 과정으로 읽히는 Composite Event의 역할이다. 모든 Process는 하나의 Composite Event로 표현하지만 모든 Composite Event가 Process인 것은 아니다. Process를 위한 별도의 핵심 개념이나 사실 저장소를 만들지 않는다.
+## BCR-007 파생 모델
 
-## BCR-005 Canon 맥락의 Relation
+Subject·Process·State·Duration·Timeline·layout은 World Event/Relation/Time System 근거에서 계산한다. Collection은 결과의 선택·표시 범위다. 부분 조회 결과로 전체 구조를 단정하지 않으며 Revision·근거·잘림을 드러낸다.
 
-ENT-005 Relation은 포함, 순서, 인과, 조건, 영향, 방해와 정체성 연속 등을 표현한다. Event identity가 World-level로 바뀐 뒤에도 Canon마다 다른 assertion과 여러 Canon이 공유하는 assertion을 구분해 표현할 수 있어야 한다.
+## BCR-008 대응 — deferred
 
-2026-09-11 승인된 IP-003 R1에서 Relation identity는 World-level이고 Canon participation은 N:M이다. 모든 active Relation은 같은 World의 Canon 하나 이상에 참여한다. 같은 assertion은 여러 Canon이 하나의 Relation identity로 공유하고, Canon마다 다른 assertion은 별도 Relation identity와 membership으로 표현한다. Relation과 작성·관리·비교를 위한 Canon correspondence는 같은 의미로 취급하지 않는다.
-
-## BCR-006 Narrative의 범위
-
-ENT-006 Narrative는 다음 범위를 서술할 수 있다.
-
-- ENT-002 Canon
-- ENT-017 Process
-- Composite Event
-- 단일 ENT-004 Event
-
-범위가 다른 Narrative는 같은 개념이다. 상위 범위의 Narrative는 하위 Event, Relation과 Narrative를 대체하지 않는다.
-
-## BCR-007 파생 개념
-
-ENT-016 Subject, ENT-017 Process, ENT-018 State, ENT-019 Duration과 ENT-020 Timeline은 Event, Relation, 명시적 Canon membership과 Time System에서 읽거나 계산한다.
-
-파생 결과를 제공하기 위해 새로운 canonical content를 만들거나 원본 의미를 변경하지 않는다.
-
-## BCR-008 Canon 간 대응
-
-서로 다른 Event identity 또는 Canon-specific 파생 Subject가 서로 대응함을 작성자가 명시할 수 있다. 하나의 Event identity가 여러 Canon에 직접 참여하는 경우에는 correspondence가 필요하지 않다.
-
-Canon 간 대응은 다음 성격을 가진다.
-
-- Canon membership 또는 Relation assertion이 아니다.
-- Canon 내부 Relation과 구분되는 관리·비교 관계다.
-- 연결된 Event나 Subject를 하나의 정체성 또는 사건 이력으로 병합하지 않는다.
-- 일대일 관계로 제한하지 않는다.
-- 공개된 범위 안에서 Atropos의 Canon 비교에 사용될 수 있다.
+기존 Canon-specific correspondence 요구는 현재 실행 범위에서 철회한다. 같은 Event는 membership으로 재사용하며 별도 대응이 필요 없다. distinct Event 비교 요구와 기존 correspondence 기록은 보존하되 새 대응 ontology·cross-World merge를 도입하지 않는다. 재활성화에는 별도 요구와 계획이 필요하다.
 
 ## BCR-009 Publication
 
-ENT-013 Publication은 Atropos가 독자에게 제공하는 한 World의 현재 공개 표현이다.
-
-1차 구현에서는 Clotho를 통해 성공적으로 반영된 World, Canon, Event, Canon membership, Relation, Narrative와 Canon 간 대응에 별도로 관리되는 비공개 중간 상태가 없으며 현재 Publication의 내용이 된다. 이는 공개 제공 시간에 관한 SLA가 아니라 논리적 상태 모델이다. Publication에 포함되었다는 사실은 Canon에 authority나 objective truth를 부여하지 않는다.
-
-인간은 공개된 내용을 정정하거나 철회할 수 있다. draft, 선택적 출판과 과거 공개본의 독립적인 열람은 후속 확장으로 남긴다.
+성공한 canonical 변경은 자동 Publication 대상이다. Publication은 World Revision의 공개 allowlist projection이며 Collection이 출판·권한 경계를 대체하지 않는다. 의미 정합성은 World에, 읽기 분할은 artifact/index에 둔다.
 
 ## BCR-010 시스템 책임
 
-| 시스템 | 비즈니스 책임 |
-|---|---|
-| Clotho | LLM이 World와 Canon의 기존 맥락을 읽고 Event, Relation과 Narrative를 작성·수정할 수 있게 한다. 성공적으로 반영된 세계 내용은 1차 구현에서 자동 출판 대상이 된다. |
-| Lachesis | World, Canon, Time System, Event, Relation, Narrative, 작성 유래와 운영 이력을 보존·검증·관리한다. 운영 인터페이스와 내부 정보는 비공개다. |
-| Atropos | Lachesis에 성공적으로 반영된 세계 내용의 현재 Publication을 자동으로 공개하고 독자가 Narrative와 세계 구조를 탐색·비교할 수 있게 한다. 유일한 공개 사용자 서비스다. |
+| 시스템   | 책임                                                  |
+| -------- | ----------------------------------------------------- |
+| Clotho   | 인증된 authoring 진입점, policy 제공, bounded context |
+| Lachesis | 최종 인가·불변식·원자적 commit·이력                   |
+| Worker   | 재생성 가능한 Revision projection과 Publication       |
+| Atropos  | 공개 Publication에서 선택·발견·읽기                   |
 
 ## BCR-011 인간의 권한
 
-인간은 LLM에 세계 내용을 지시하고 결과를 확인하며 정정하거나 철회할 수 있다. 1차 구현의 자동 출판은 인간에게 명확히 알려져야 하며 숨은 출판 규칙으로 동작해서는 안 된다.
+인간의 지시·정정·철회와 자동 출판 고지를 유지한다. Collection 해제는 Event 삭제가 아니다. 실제 정본 migration은 보존 manifest와 검증을 갖춘 명시적 작업으로 수행한다.

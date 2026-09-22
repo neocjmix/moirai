@@ -27,16 +27,16 @@ traces:
 
 ### 기술 stack
 
-| 영역 | 기준 기술 |
-|---|---|
-| runtime | Node.js active LTS, TypeScript strict mode |
-| workspace | pnpm workspace monorepo |
-| Clotho HTTP·MCP | Fastify와 versioned JSON Schema |
-| persistence | PostgreSQL, Kysely 기반 typed SQL과 명시적 migration |
-| background work | PostgreSQL outbox·job table과 같은 domain/projector module |
-| Atropos | Next.js App Router, React, JointJS |
-| Publication·attachment | S3-compatible object storage, public artifact는 CDN 사용 |
-| test | Vitest, Playwright, database integration test |
+| 영역                   | 기준 기술                                                  |
+| ---------------------- | ---------------------------------------------------------- |
+| runtime                | Node.js active LTS, TypeScript strict mode                 |
+| workspace              | pnpm workspace monorepo                                    |
+| Clotho HTTP·MCP        | Fastify와 versioned JSON Schema                            |
+| persistence            | PostgreSQL, Kysely 기반 typed SQL과 명시적 migration       |
+| background work        | PostgreSQL outbox·job table과 같은 domain/projector module |
+| Atropos                | Next.js App Router, React, URDR-derived SVG renderer       |
+| Publication·attachment | S3-compatible object storage, public artifact는 CDN 사용   |
+| test                   | Vitest, Playwright, database integration test              |
 
 특정 hosting 사업자의 독점 기능을 정본 형식이나 domain contract에 포함하지 않는다.
 
@@ -52,14 +52,14 @@ flowchart TD
 
 ### 구성 요소
 
-| 구성 요소 | 책임 | 금지되는 책임 |
-|---|---|---|
-| Clotho | Skill·CLI·HTTP·MCP, 외부 인증, 도구 계약과 작업 맥락 구성을 소유한다. | 정본 검증을 단독으로 결정하거나 persistence를 직접 호출하지 않는다. |
-| Lachesis application | 최종 World·행위 인가, 명령 검증, Change Set 적용, 일관된 정본 조회와 이력·복구를 소유한다. | 외부 HTTP·MCP·OIDC·CLI에 의존하거나 Projection을 정본으로 취급하지 않는다. |
-| Projection Worker | 정본 Revision으로부터 파생 모델과 Publication Snapshot을 결정적으로 생성한다. | canonical Event·membership·Relation을 수정하거나 작성 명령을 승인하지 않는다. |
-| Atropos Web | 완성된 공개 Snapshot을 읽어 탐색·비교·공유 화면을 제공한다. | 정본 저장소와 비공개 운영 정보에 접근하거나 세계 내용을 수정하지 않는다. |
-| Canonical PostgreSQL | 현재 정본 상태, Change Set, Revision과 비공개 운영 정보를 보존한다. | UI 전용 배치·좌표·캐시를 정본 사실로 승격하지 않는다. |
-| Publication Store | Revision별 불변 공개 Snapshot과 현재 제공 포인터를 보존한다. | 작성 유래, 검증 로그, 자격 정보 등 비공개 운영 정보를 저장하지 않는다. |
+| 구성 요소            | 책임                                                                                       | 금지되는 책임                                                                 |
+| -------------------- | ------------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------- |
+| Clotho               | Skill·CLI·HTTP·MCP, 외부 인증, 도구 계약과 작업 맥락 구성을 소유한다.                      | 정본 검증을 단독으로 결정하거나 persistence를 직접 호출하지 않는다.           |
+| Lachesis application | 최종 World·행위 인가, 명령 검증, Change Set 적용, 일관된 정본 조회와 이력·복구를 소유한다. | 외부 HTTP·MCP·OIDC·CLI에 의존하거나 Projection을 정본으로 취급하지 않는다.    |
+| Projection Worker    | 정본 Revision으로부터 파생 모델과 Publication Snapshot을 결정적으로 생성한다.              | canonical Event·membership·Relation을 수정하거나 작성 명령을 승인하지 않는다. |
+| Atropos Web          | 완성된 공개 Snapshot을 읽어 탐색·비교·공유 화면을 제공한다.                                | 정본 저장소와 비공개 운영 정보에 접근하거나 세계 내용을 수정하지 않는다.      |
+| Canonical PostgreSQL | 현재 정본 상태, Change Set, Revision과 비공개 운영 정보를 보존한다.                        | UI 전용 배치·좌표·캐시를 정본 사실로 승격하지 않는다.                         |
+| Publication Store    | Revision별 불변 공개 Snapshot과 현재 제공 포인터를 보존한다.                               | 작성 유래, 검증 로그, 자격 정보 등 비공개 운영 정보를 저장하지 않는다.        |
 
 ## TS-001.3 정본 소유권
 
@@ -113,8 +113,8 @@ skills/clotho
 
 ### 공개 가능 데이터
 
-- 활성 상태의 World, Canon, Time System, Event, Relation과 Narrative
-- 공개 가능한 Canon 간 대응
+- 활성 상태의 World, Collection, Time System, Event, Relation과 Narrative
+- 보존 대상인 기존 대응 이력 (신규 비교 기능은 deferred)
 - 명시적으로 세계 내용으로 작성된 인용과 출처 설명
 - 정정·철회된 안정적 링크에 필요한 공개 상태와 안내
 - 공개 데이터로부터 계산된 Subject, Process, State, Duration과 Timeline
@@ -174,3 +174,7 @@ Clotho와 Lachesis는 우선 같은 API process에서 실행한다. 이는 코�
 - 검색 엔진과 전문 인덱스
 
 이 선택들은 본 문서의 소유권, 원자성, 공개 격리와 재생성 가능성을 보존해야 한다.
+
+## TS-001.13 IP-011 architecture baseline
+
+제품 의미는 CON-003/CORE-MODEL, 정본 계약은 TS-002, policy는 TS-004, 파생은 TS-005, read scalability/discovery는 TS-006이 각각 소유한다. 전체 World reconstruction은 export/rebuild에 허용하되 interactive authoring/read는 indexed bounded query로 전환한다. 기존 service boundary·인가·Publication 격리는 유지한다. authoring policy artifact는 Clotho가 제공하고 Lachesis가 사용 version을 검증한다. 실행 순서의 유일한 기준은 IP-011과 CURRENT다.

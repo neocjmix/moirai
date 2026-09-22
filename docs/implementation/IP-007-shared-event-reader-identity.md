@@ -8,6 +8,8 @@ owner: Atropos
 
 # IP-007 — Shared Event graph identity and Canon Narrative drawer
 
+> IP-011 이후 실행 순서와 목표 domain 계약은 [IP-011](IP-011-architecture-realignment.md)을 따른다. 아래 기록의 Canon·Narrative·membership 전제는 당시 구현 이력이며 현재 목표 의미를 재정의하지 않는다. 완료 이력은 취소하지 않으며 미완료 backlog는 IP-011로 재분류한다.
+
 관련 요구사항: [BR-003](../business-requirements/BR-003-atropos-publication.md)  
 관련 명세: [TS-006](../technical-specifications/TS-006-atropos-publication.md)
 

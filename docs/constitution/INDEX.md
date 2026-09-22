@@ -2,12 +2,12 @@
 
 헌법은 Moirai가 무엇이며 어떤 원칙 아래 존재하는지를 규정한다. 구현 편의나 개별 기능 요구로 암묵적으로 변경할 수 없다.
 
-| ID | 문서 | 상태 |
-|---|---|---|
-| CON-001 | [목적](CON-001-purpose.md) | accepted |
-| CON-002 | [세 시스템과 책임 경계](CON-002-system-boundaries.md) | accepted |
-| CON-003 | [Canon과 해석적 지식 범위](CON-003-world-truth.md) | accepted |
-| CON-004 | [인간의 최종 권위](CON-004-human-authority.md) | accepted |
-| CON-005 | [운영 경계와 자동 출판](CON-005-publication-boundary.md) | accepted |
+| ID      | 문서                                                            | 상태     |
+| ------- | --------------------------------------------------------------- | -------- |
+| CON-001 | [목적](CON-001-purpose.md)                                      | accepted |
+| CON-002 | [세 시스템과 책임 경계](CON-002-system-boundaries.md)           | accepted |
+| CON-003 | [World의 사실 경계와 Collection 선택](CON-003-world-truth.md)   | accepted |
+| CON-004 | [인간의 최종 권위](CON-004-human-authority.md)                  | accepted |
+| CON-005 | [운영 경계와 자동 출판](CON-005-publication-boundary.md)        | accepted |
 | CON-006 | [URDR 요구사항 소싱 원칙](CON-006-urdr-requirement-sourcing.md) | accepted |
-| CON-007 | [데이터 주권과 지속성](CON-007-data-sovereignty.md) | accepted |
+| CON-007 | [데이터 주권과 지속성](CON-007-data-sovereignty.md)             | accepted |

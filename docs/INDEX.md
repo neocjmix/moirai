@@ -8,6 +8,16 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 헌법은 비즈니스 요구사항보다 우선하고 비즈니스 요구사항은 기술 명세보다 우선한다. 하위 계층이 상위 계층과 충돌하면 하위 문서를 수정하거나 상위 계층의 변경을 명시적으로 결정해야 한다.
 
+## 현재 authoritative baseline — IP-011
+
+[IP-011 architecture realignment](implementation/IP-011-architecture-realignment.md)이 현재 planning과 남은 milestone 순서를 소유한다. 개정 CON-003/BR/TS는 목표 계약이며 배포는 v4다. [CURRENT](implementation/CURRENT.md)가 실행 활성 상태를 구분한다.
+
+- [Domain glossary](business-requirements/entities/INDEX.md), [관계·ownership](business-requirements/entities/CORE-MODEL.md)
+- [Authoring policy](technical-specifications/TS-004-clotho-contract.md), [read scalability·discovery](technical-specifications/TS-006-atropos-publication.md)
+- [실제 상태·불일치](evidence/ip011/reconstruction.md), [migration inventory](evidence/ip011/data-audit.json), [자기검증](evidence/ip011/review.md)
+
+아래 기존 구현 문서는 당시 완료·결정 이력이다. 현재 목표 정의를 중복 소유하지 않는다. ENT-002 Canon은 superseded, ENT-021 Collection을 새로 발급한다.
+
 ## 비규범 로드맵
 
 - [RM-001 — 개인화·다중 Tenant 확장 안전장치](roadmap/RM-001-personalization-multitenancy.md)

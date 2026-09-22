@@ -19,7 +19,7 @@ Atropos만이 실질적인 공개 사용자 서비스다. Clotho와 Lachesis의 
 
 ## CON-005.3 세계 내용과 내부 정보의 경계
 
-Event, Relation, Narrative와 Canon 간 대응 같은 세계 내용은 자동 출판 대상이다. LLM 작업 과정, 내부 검증 결과, 운영 로그, 비공개 자격 정보와 시스템 내부 정보는 Atropos에 노출되어서는 안 된다.
+Event, Relation, Narrative와 Collection 간 대응 같은 세계 내용은 자동 출판 대상이다. LLM 작업 과정, 내부 검증 결과, 운영 로그, 비공개 자격 정보와 시스템 내부 정보는 Atropos에 노출되어서는 안 된다.
 
 ## CON-005.4 정정과 철회
 
@@ -31,4 +31,4 @@ Atropos가 제공하는 각 시점의 공개본은 하나의 의미 있는 변�
 
 ## CON-005.6 후속 출판 흐름
 
-draft, 선택적 출판, 사전 검토와 과거 공개본 열람은 후속 확장으로 추가할 수 있다. 이러한 확장은 World, Canon, Event, Relation과 Narrative의 의미를 변경하지 않아야 한다.
+draft, 선택적 출판, 사전 검토와 과거 공개본 열람은 후속 확장으로 추가할 수 있다. 이러한 확장은 World, Collection, Event, Relation과 Narrative의 의미를 변경하지 않아야 한다.

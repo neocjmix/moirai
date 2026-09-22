@@ -23,14 +23,14 @@ traces:
 
 ## TS-008.2 환경과 신뢰 경계
 
-| 경계 | 접근 |
-|---|---|
-| Atropos public web | 익명 읽기 |
-| Publication Store | Atropos의 읽기와 worker의 쓰기 |
-| Clotho HTTP·MCP | 인증된 operator와 agent·CLI client |
-| Lachesis internal application | 신뢰된 서버 Clotho와 제한된 내부 운영 |
-| Canonical PostgreSQL | Lachesis application, worker와 제한된 migration job |
-| private source storage | Lachesis의 origin 기능과 export job |
+| 경계                          | 접근                                                |
+| ----------------------------- | --------------------------------------------------- |
+| Atropos public web            | 익명 읽기                                           |
+| Publication Store             | Atropos의 읽기와 worker의 쓰기                      |
+| Clotho HTTP·MCP               | 인증된 operator와 agent·CLI client                  |
+| Lachesis internal application | 신뢰된 서버 Clotho와 제한된 내부 운영               |
+| Canonical PostgreSQL          | Lachesis application, worker와 제한된 migration job |
+| private source storage        | Lachesis의 origin 기능과 export job                 |
 
 - Atropos runtime은 Canonical PostgreSQL credential을 갖지 않는다.
 - Clotho application은 데이터베이스와 Publication Store에 직접 접근하지 않는다. 같은 프로세스의 bootstrap만 Lachesis와 DB를 조립한다. 이 배치는 credential 격리를 제공하지 않는다.
@@ -61,22 +61,22 @@ traces:
 - Lachesis 내부 계약은 인증된 actor, 허용 World, 행위 scope와 만료를 요구한다. 최종 인가는 adapter 밖에서도 실행하며 commit마다 재확인한다. 외부 요청의 actor·scope는 신뢰하지 않는다.
 - 같은 process에서는 신뢰된 bootstrap이 인증 adapter와 내부 application을 연결한다. 별도 process로 분리할 때는 검증된 서비스 간 신뢰 전달 계약을 먼저 정의한다.
 - 다중 역할, 승인 workflow와 공동 편집은 구현하지 않는다.
-- 인증 방식이 Canon에 authority·objective truth 의미나 Publication 상태를 만들지 않는다.
+- 인증 방식이 Collection에 authority·objective truth 의미나 Publication 상태를 만들지 않는다.
 
 ## TS-008.4 주요 위협과 통제
 
-| 위협 | 통제 |
-|---|---|
-| 원자료 prompt injection | source를 instruction과 분리하고 typed tool만 허용 |
-| private 정보의 공개 Snapshot 유출 | allowlist projection, 누출 검증 test |
-| Markdown XSS | raw HTML 제한, sanitizer, CSP |
-| Change replay·중복 write | idempotency key, request digest, expected Revision |
-| 권한 없는 직접 DB write | network와 DB role 분리, write path 제한 |
-| import path traversal·zip bomb | TS-007 container validation과 resource limit |
-| graph resource exhaustion | LOD, viewport budget, server-side artifact 제한 |
-| SSRF를 통한 원자료 fetch | URL scheme·host policy, size/time limit, private IP 차단 |
-| log를 통한 본문·token 유출 | 구조화된 metadata allowlist와 redaction |
-| 공급망 변조 | lockfile, provenance가 있는 build, dependency audit |
+| 위협                              | 통제                                                     |
+| --------------------------------- | -------------------------------------------------------- |
+| 원자료 prompt injection           | source를 instruction과 분리하고 typed tool만 허용        |
+| private 정보의 공개 Snapshot 유출 | allowlist projection, 누출 검증 test                     |
+| Markdown XSS                      | raw HTML 제한, sanitizer, CSP                            |
+| Change replay·중복 write          | idempotency key, request digest, expected Revision       |
+| 권한 없는 직접 DB write           | network와 DB role 분리, write path 제한                  |
+| import path traversal·zip bomb    | TS-007 container validation과 resource limit             |
+| graph resource exhaustion         | LOD, viewport budget, server-side artifact 제한          |
+| SSRF를 통한 원자료 fetch          | URL scheme·host policy, size/time limit, private IP 차단 |
+| log를 통한 본문·token 유출        | 구조화된 metadata allowlist와 redaction                  |
+| 공급망 변조                       | lockfile, provenance가 있는 build, dependency audit      |
 
 ## TS-008.5 데이터 보호
 
@@ -147,11 +147,11 @@ Change commit → outbox → projection build → pointer swap까지 Change Set 
 
 ## TS-008.8 health check
 
-| check | 의미 |
-|---|---|
-| `/health/live` | process event loop가 응답하는지 확인 |
-| `/health/ready` | 해당 service가 요청을 안전하게 받을 dependency 상태인지 확인 |
-| projection freshness | target과 served Revision 차이 및 oldest age |
+| check                 | 의미                                                         |
+| --------------------- | ------------------------------------------------------------ |
+| `/health/live`        | process event loop가 응답하는지 확인                         |
+| `/health/ready`       | 해당 service가 요청을 안전하게 받을 dependency 상태인지 확인 |
+| projection freshness  | target과 served Revision 차이 및 oldest age                  |
 | Publication integrity | current pointer가 완성된 manifest와 digest를 가리키는지 확인 |
 
 Lachesis DB 장애가 Atropos process readiness를 자동 실패시키지 않는다. Atropos는 마지막 완성 Snapshot을 제공할 수 있다.
@@ -189,7 +189,7 @@ commit latency는 Publication projection 시간을 포함하지 않는다.
 
 - World 하나당 Event 100,000개
 - Relation 500,000개
-- Canon 20개
+- Collection 20개 (IP-011은 후보 수 증가 fixture도 추가)
 - Narrative 본문 합계 1GB
 - Subject Handle 50,000개
 - 동시 public reader 1,000명
@@ -201,7 +201,7 @@ commit latency는 Publication projection 시간을 포함하지 않는다.
 
 중간급 모바일 기기의 한 viewport에서 목표 budget:
 
-- JointJS cell 총합 1,000 이하
+- SVG rendered entity 총합 1,000 이하
 - 동시에 표시되는 text label 250 이하
 - 초기 graph artifact 압축 크기 500KB 이하
 - pointer interaction 중 30fps 미만 frame이 연속 500ms 이상 지속되지 않음
@@ -290,7 +290,7 @@ application rollback은 World Revision을 되돌리지 않는다. 잘못된 세�
 
 ### domain test
 
-- Canon 경계와 Relation endpoint
+- World 경계와 Collection membership 및 Relation endpoint
 - contains cycle
 - Time System 좌표와 uncertainty
 - Change 원자성, conflict와 idempotency
@@ -298,7 +298,7 @@ application rollback은 World Revision을 되돌리지 않는다. 잘못된 세�
 
 ### property test
 
-- Relation graph 생성에서도 cross-Canon 불변식 유지
+- Relation graph 생성에서도 same-World 불변식 유지
 - Change Operation 재생으로 임의 Revision 재구성
 - export/import semantic fingerprint round-trip
 - 오래된 worker가 pointer를 되돌리지 못함
@@ -308,7 +308,7 @@ application rollback은 World Revision을 되돌리지 않는다. 잘못된 세�
 - 새 World 작성→commit→Snapshot→Atropos 공개
 - 기존 World 확장과 안정적 URL 유지
 - 정정·철회와 tombstone
-- Canon 비교
+- Collection 선택·discovery
 - restore-in-place와 clone import
 - Lachesis 중단 중 마지막 Snapshot 읽기
 
@@ -377,3 +377,7 @@ alert에는 World ID와 Revision은 포함할 수 있지만 Narrative·원자료
 8. application rollback이 World Revision을 되돌리지 않는다.
 9. 전체 test suite가 background process를 남기지 않고 종료한다.
 10. Change commit에서 공개 route까지의 synthetic test가 production 배포 후 통과한다.
+
+## TS-008.17 IP-011 성능 적용
+
+위 100k/500k/1GB/1,000-reader는 출시 목표이며 달성된 상태가 아니다. A1에서 TS-006의 stage metrics와 고정 환경을 정하고 기존 graph budget(1,000 entities/250 labels/초기 압축500KB/interaction 30fps 하한)을 회귀 기준으로 유지한다. TS-006의 1MiB는 개별 viewport 응답의 상한으로 초기 압축 artifact500KB와 다른 측정이다. latency는 측정 후 A4 시작 전 고정하며 baseline 이후 임의 완화하지 않는다.

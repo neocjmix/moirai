@@ -133,7 +133,7 @@ export async function graphSpatialDetail(
   };
   const title = event?.title ?? node?.label ?? link?.relation.type ?? id;
   const notes = [
-    narratives.length ? "" : event?.summary,
+    narratives.some((n) => n.kind !== "annotation") ? "" : event?.summary,
     meta?.unplaced.includes(id)
       ? "No supported geometry is available. The Event and its evidence remain available below."
       : "",

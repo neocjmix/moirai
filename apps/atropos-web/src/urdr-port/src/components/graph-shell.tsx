@@ -2116,6 +2116,7 @@ function EventDrawerContent({
 
                 {narrativeSections.length > 0 ? (
                   <div data-testid="event-narrative-sections">
+                    {!narrativeSections.some((section) => section.narratives.some((narrative) => narrative.kind !== "annotation")) && renderedNotes ? <div className={styles.eventMarkdown}>{renderedNotes}</div> : null}
                     {narrativeSections.map((section) => (
                       <section data-canon-id={section.canonId} key={section.canonId}>
                         <h2>{section.canonLabel}</h2>

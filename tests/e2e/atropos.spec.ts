@@ -556,7 +556,9 @@ test("reader prose stays visible while notes and citations can be opened", async
   );
   const drawer = page.getByTestId("event-drawer-sheet");
   await expect(
-    drawer.getByText("이야기본문전용표식", { exact: false })
+    drawer
+      .getByTestId("event-narrative-sections")
+      .getByText("이야기본문전용표식", { exact: false })
   ).toBeVisible();
   const notes = drawer.getByTestId("narrative-notes").first();
   await expect(notes).not.toHaveAttribute("open", "");

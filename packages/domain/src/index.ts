@@ -1539,6 +1539,9 @@ export function validateCandidateChangeSet(
         .map((p) => p.event_id)
     );
     for (const event of activeEvents) {
+      // A thematic Composite may validly derive its span from contained Events.
+      // Boundary/containment validity is checked by temporalGraphFailure.
+      if (event.kind === "composite") continue;
       if (
         !eventCanonMemberships.get(event.id)?.has(canon.id) ||
         anchored.has(event.id)

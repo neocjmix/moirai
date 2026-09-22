@@ -3,48 +3,7 @@
   "unchanged_existing_event_facts": true,
   "unchanged_existing_relation_facts": true,
   "event_count": 127,
-  "warnings": [
-    {
-      "code": "descriptive_date_without_temporal_anchor",
-      "path": "events.01a0c40a-a761-7fc7-aef2-10211e0ecb0e.attributes",
-      "affected_ids": [
-        "01a0c40a-a761-7fc7-aef2-10211e0ecb0e",
-        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
-      ],
-      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
-      "retryable": false
-    },
-    {
-      "code": "descriptive_date_without_temporal_anchor",
-      "path": "events.01a0c738-42d5-784b-8306-a18280b7d294.attributes",
-      "affected_ids": [
-        "01a0c738-42d5-784b-8306-a18280b7d294",
-        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
-      ],
-      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
-      "retryable": false
-    },
-    {
-      "code": "descriptive_date_without_temporal_anchor",
-      "path": "events.01a0c40a-a761-7fc7-aef2-10211e0ecb0e.attributes",
-      "affected_ids": [
-        "01a0c40a-a761-7fc7-aef2-10211e0ecb0e",
-        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
-      ],
-      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
-      "retryable": false
-    },
-    {
-      "code": "descriptive_date_without_temporal_anchor",
-      "path": "events.01a0c738-42d5-784b-8306-a18280b7d294.attributes",
-      "affected_ids": [
-        "01a0c738-42d5-784b-8306-a18280b7d294",
-        "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57"
-      ],
-      "message": "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
-      "retryable": false
-    }
-  ],
+  "warnings": [],
   "unplaced": [],
   "events": [
     {

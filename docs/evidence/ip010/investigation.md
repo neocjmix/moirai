@@ -44,7 +44,7 @@ TS-010에 따라 Event와 virtual Time Event 사이의 `not_after`, `precedes`, 
 
 ## 검증
 
-`rehearsal.json`: r28 export에 두 계획을 read-only 적용한 validator → publication → query → layout 결과. 일본사24 Event 전부 배치, 요구 순서 유지, 기존 Event facts/Relation facts 보존. 경고2건은 이번 작업 대상 외인 단종 Canon의 원래 미앵커 날짜이며 각 계획에서 반복 보고된다. 해당 데이터를 임의 수정하지 않는다.
+`rehearsal.json`: r28 export에 두 계획을 read-only 적용한 validator → publication → query → layout 결과. 일본사24 Event 전부 배치, 요구 순서 유지, 기존 Event facts/Relation facts 보존. 단종 Canon의 두 Composite는 descendant span으로 배치되는 정상적인 aggregate이므로 atomic의 미앵커 날짜 경고 대상에서 제외했다. 해당 정본 데이터는 수정하지 않았다.
 
 1573/1575/1582/1588/1598/1600 fixture는 topology 변경, Composite contains, 두 Canon의 동일 Event identity/좌표를 검증한다. Gregorian frame의 미앵커 상대 Event는 unplaced diagnostic으로 남기며 가짜 연도로 배치하지 않는다. 별도 structural-order-display frame은 기존 구조 배치를 유지한다.
 

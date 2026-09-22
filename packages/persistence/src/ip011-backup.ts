@@ -64,8 +64,8 @@ export async function captureDatabaseImage(
       const schema_json = (
         await sql<{ schema_json: string }>`
         select jsonb_build_object(
-          'columns', (select jsonb_agg(to_jsonb(c) order by table_name,ordinal_position) from (
-            select table_name,column_name,ordinal_position,is_nullable,data_type,udt_name,column_default,character_maximum_length,numeric_precision,numeric_scale,datetime_precision,identity_generation
+          'columns', (select jsonb_agg(to_jsonb(c) order by table_name,column_name) from (
+            select table_name,column_name,is_nullable,data_type,udt_name,column_default,character_maximum_length,numeric_precision,numeric_scale,datetime_precision,identity_generation
             from information_schema.columns where table_schema='public'
           ) c),
           'constraints', (select jsonb_agg(to_jsonb(c) order by table_name,name) from (
@@ -236,8 +236,24 @@ export async function restoreFreshRehearsal(
   await migrateToVersion(target.toString(), image.migration);
   const db = createDatabase(target.toString());
   try {
-    if ((await captureDatabaseImage(db)).schema_json !== image.schema_json)
-      throw Error("rehearsal_schema_mismatch");
+    const restoredSchema = (await captureDatabaseImage(db)).schema_json;
+    if (restoredSchema !== image.schema_json) {
+      const expected = JSON.parse(image.schema_json) as Record<string, unknown>;
+      const actual = JSON.parse(restoredSchema) as Record<string, unknown>;
+      const changed = [
+        "columns",
+        "constraints",
+        "indexes",
+        "triggers",
+        "table_security",
+        "policies",
+        "functions",
+        "views"
+      ].filter(
+        (key) => JSON.stringify(expected[key]) !== JSON.stringify(actual[key])
+      );
+      throw Error(`rehearsal_schema_mismatch:${changed.join(",")}`);
+    }
     await db.transaction().execute(async (tx) => {
       await sql`set local statement_timeout = '30s'`.execute(tx);
       await sql`truncate ${sql.join(BACKUP_TABLES.map((t) => sql.table(`public.${t}`)))} cascade`.execute(

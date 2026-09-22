@@ -33,3 +33,5 @@ Encrypted backup and exact restore on the real installation; reviewed Narrative 
 ## Adversarial review corrections
 
 A restore through `jsonb_populate_recordset` could silently discard a manually added column if only migration names were compared. The rehearsal now compares actual schema definitions before inserting any backup rows and tests refusal on a mismatch. Application table/sequence fidelity is covered; cluster roles, provider settings and grants outside the versioned application schema are not a physical PostgreSQL cluster backup.
+
+CI subsequently caught physical column ordinals changing after a migration down/up cycle. The schema comparison now sorts columns by name and compares their semantic definition; dropped-column position holes are excluded. Type/default/nullability/constraints and ACL/RLS checks remain enforced. Mismatch diagnostics expose only the names of schema sections, never private definitions.

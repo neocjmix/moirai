@@ -28,7 +28,7 @@ An offline v4-validator experiment over the revision-30 snapshot assigned all 12
 
 ## Remaining A2 gates
 
-Reviewed Narrative preservation manifest; v5 canonical/contract/API/UI/MCP/export/tests transition; migration on the isolated restored copy; old Revision/export fidelity; World-level invariant and scenario tests. No production schema/content cutover has been executed. A3 remains gated on all of these.
+Narrative preservation manifest is now materialized and passes offline revision-30 validation ([input and editorial decisions](../../../data/migrations/ip011/README.md)); v5 canonical/contract/API/UI/MCP/export/tests transition remains; migration on the isolated restored copy; old Revision/export fidelity; World-level invariant and scenario tests. No production schema/content cutover has been executed. A3 remains gated on all of these.
 
 ## Adversarial review corrections
 
@@ -39,3 +39,6 @@ CI subsequently caught physical column ordinals changing after a migration down/
 ## Historical reader boundary
 
 The v2–v4 operation fold now lives in a separate read-only interpreter and uses explicitly versioned record shapes. The current v4 entry point delegates to it without changing runtime semantics. A raw historical-row regression fixture checks legacy Canon ownership, one Event shared by two Canons, per-Canon Narrative preservation, composite kind, membership removal and withdrawal at four revisions. It deliberately avoids generating history through the current writer. This prepares old-revision fidelity; it does not introduce v5 writes or assert that the remaining publication/export transition is complete.
+
+
+The manifest covers all 160 public Narrative records with source/target digests and dispositions: 119 retained identities, 14 additions, 41 retirements, and 22 embedded notes. Eight early reign/founding Events also require removal of editorial `curation` metadata and reader-facing summary replacement. The original 127 Event, 6 Canon and 415 active Relation IDs and all exported membership rows are mapped without rekeying. This is reviewed migration input, not an applied canonical change or final semantic rehearsal.

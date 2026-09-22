@@ -1,0 +1,95 @@
+{
+  "code_commit": "bf96316152d99821fb103b29e1addfca019ea8f7",
+  "pull_request": "https://github.com/neocjmix/moirai/pull/127",
+  "ci_run": 35728933945,
+  "unit_tests": 282,
+  "integration_tests": 28,
+  "mobile_tests": 25,
+  "mobile_skipped": 1,
+  "deployments": {
+    "deployments": [
+      {
+        "id": "9394b9fe-3410-4fdf-bef4-b054a3c69d57",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-22T12:47:30.013Z",
+        "updatedAt": "2026-09-22T12:49:11.393Z",
+        "serviceId": "dafb90ad-69bc-420f-b0d2-65a5f6bbc2cf",
+        "environmentId": "990773c0-31d9-435c-8d36-21c15352fe51",
+        "url": null,
+        "snapshotId": "ad4458c6-b6dc-4c99-80c9-2e1cc7674d50",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "fix: restore canonical Japan chronology end to end (IP-010)\n\n* fix: preserve canonical chronology in Japan graph (IP-010)\n\n* test: verify published Japan chronology and deterministic viewport refresh\n\n* fix: preserve descendant-span authoring for thematic composites",
+          "commitHash": "bf96316152d99821fb103b29e1addfca019ea8f7",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "9b37c4aa-52aa-4136-ba39-10143cff3c51",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-22T12:47:30.013Z",
+        "updatedAt": "2026-09-22T12:50:31.860Z",
+        "serviceId": "fe402236-354f-4088-8182-aaf5f7b34a99",
+        "environmentId": "990773c0-31d9-435c-8d36-21c15352fe51",
+        "url": null,
+        "snapshotId": "0bf3e6c1-00b6-4dab-8956-f6312851f4a1",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "fix: restore canonical Japan chronology end to end (IP-010)\n\n* fix: preserve canonical chronology in Japan graph (IP-010)\n\n* test: verify published Japan chronology and deterministic viewport refresh\n\n* fix: preserve descendant-span authoring for thematic composites",
+          "commitHash": "bf96316152d99821fb103b29e1addfca019ea8f7",
+          "branch": "main"
+        }
+      },
+      {
+        "id": "749cbd2f-53a8-4950-b4d1-a4574cb65983",
+        "status": "SUCCESS",
+        "createdAt": "2026-09-22T12:47:30.013Z",
+        "updatedAt": "2026-09-22T12:49:23.680Z",
+        "serviceId": "ed61330b-87b2-40f2-a692-3453739f09a5",
+        "environmentId": "990773c0-31d9-435c-8d36-21c15352fe51",
+        "url": null,
+        "snapshotId": "aa9fb6e6-a19d-4279-b8e1-5764b21f2b85",
+        "meta": {
+          "reason": "deploy",
+          "commitMessage": "fix: restore canonical Japan chronology end to end (IP-010)\n\n* fix: preserve canonical chronology in Japan graph (IP-010)\n\n* test: verify published Japan chronology and deterministic viewport refresh\n\n* fix: preserve descendant-span authoring for thematic composites",
+          "commitHash": "bf96316152d99821fb103b29e1addfca019ea8f7",
+          "branch": "main"
+        }
+      }
+    ]
+  },
+  "commits": [
+    {
+      "contract_version": 4,
+      "result": {
+        "change_set_id": "01a10010-0000-7000-8000-000000000001",
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "current_revision": 29,
+        "publication_target_revision": 29,
+        "served_revision": 28,
+        "idempotent_replay": false,
+        "id_mapping": {},
+        "warnings": []
+      }
+    },
+    {
+      "contract_version": 4,
+      "result": {
+        "change_set_id": "01a10010-0000-7000-8000-000000000002",
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "current_revision": 30,
+        "publication_target_revision": 30,
+        "served_revision": 29,
+        "idempotent_replay": false,
+        "id_mapping": {},
+        "warnings": []
+      }
+    }
+  ],
+  "publication": {
+    "currentRevision": 30,
+    "targetRevision": 30,
+    "servedRevision": 30,
+    "projectionStatus": "ready"
+  }
+}

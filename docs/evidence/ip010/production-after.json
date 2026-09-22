@@ -1,0 +1,705 @@
+{
+  "revision": 30,
+  "unplaced_count": 0,
+  "truncated": false,
+  "control_temporal_positions_and_composites_unchanged": true,
+  "shared_events_identical_canonical_temporal_projections": [
+    "019f8c00-0000-7000-8000-000000001047",
+    "019f8c00-0000-7000-8000-000000001056",
+    "019f8c00-0000-7000-8000-000000001002",
+    "019f8c00-0000-7000-8000-000000001053"
+  ],
+  "chronology_matches_rehearsal": true,
+  "chronology": [
+    {
+      "slug": "japan-muromachi-fall",
+      "y": 220290.16338460066
+    },
+    {
+      "slug": "japan-nagashino",
+      "y": 220569.97748071488
+    },
+    {
+      "slug": "japan-honnoji",
+      "y": 221549.7101240956
+    },
+    {
+      "slug": "japan-yamazaki-hideyoshi",
+      "y": 221553.9265008864
+    },
+    {
+      "slug": "japan-osaka-castle",
+      "y": 221690.00047913377
+    },
+    {
+      "slug": "japan-sword-hunt",
+      "y": 222390.1106798908
+    },
+    {
+      "slug": "japan-odawara-unification",
+      "y": 222670.11642949545
+    },
+    {
+      "slug": "imjin-busan",
+      "y": 222935.36486033254
+    },
+    {
+      "slug": "imjin-hideyoshi",
+      "y": 223820.03737243064
+    },
+    {
+      "slug": "japan-sekigahara",
+      "y": 224112.88390589814
+    },
+    {
+      "slug": "japan-tokugawa-shogunate",
+      "y": 224490.05797518088
+    },
+    {
+      "slug": "japan-osaka-siege",
+      "y": 226100.13894878063
+    }
+  ],
+  "events": [
+    {
+      "id": "019f8c00-0000-7000-8000-000000001000",
+      "title": "임진왜란(1592–1598)",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      },
+      "y": null
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001002",
+      "title": "부산진 전투",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1592-05-24T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1592-05-25T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "019f8c00-0000-7000-8000-000000010002",
+          "019f8c00-0000-7000-8000-000000010003"
+        ]
+      },
+      "y": 222935.36486033254
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001047",
+      "title": "도요토미 히데요시 사망",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1598-09-18T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1598-09-19T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "019f8c00-0000-7000-8000-000000010153",
+          "019f8c00-0000-7000-8000-000000010154"
+        ]
+      },
+      "y": 223820.03737243064
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001053",
+      "title": "일본군의 최종 철수와 전쟁 종결",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1598-12-17T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1598-12-27T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "019f8c00-0000-7000-8000-000000010171",
+          "019f8c00-0000-7000-8000-000000010172"
+        ]
+      },
+      "y": 223856.2598821331
+    },
+    {
+      "id": "019f8c00-0000-7000-8000-000000001056",
+      "title": "일본군의 원정 동원과 나고야 집결",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1591-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1592-05-24T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "019f8c00-0000-7000-8000-000000010181",
+          "019f8c00-0000-7000-8000-000000010182"
+        ]
+      },
+      "y": 222837.62158018304
+    },
+    {
+      "id": "01a0c8c3-544c-7139-a833-4ba33b306cdd",
+      "title": "나가시노 전투",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1575-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1576-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001011",
+          "01a10010-0000-7000-8000-000000001012"
+        ]
+      },
+      "y": 220569.97748071488
+    },
+    {
+      "id": "01a0c8c3-544c-725e-a664-d7966e1e0748",
+      "title": "오닌의 난과 전국시대의 전개",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1467-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1478-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001001",
+          "01a10010-0000-7000-8000-000000001002"
+        ]
+      },
+      "y": 206150.16050979827
+    },
+    {
+      "id": "01a0c8c3-544c-738f-9ade-7a4ee4d674b1",
+      "title": "오다 노부나가의 교토 입성",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1568-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1569-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001007",
+          "01a10010-0000-7000-8000-000000001008"
+        ]
+      },
+      "y": 219590.05318384359
+    },
+    {
+      "id": "01a0c8c3-544c-74cc-af3a-780b9d89f629",
+      "title": "포르투갈 상인과 조총의 전래",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1543-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1544-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001003",
+          "01a10010-0000-7000-8000-000000001004"
+        ]
+      },
+      "y": 216089.88548703943
+    },
+    {
+      "id": "01a0c8c3-544c-7590-992f-88ec5443bb40",
+      "title": "무로마치 막부의 붕괴",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1573-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1574-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001009",
+          "01a10010-0000-7000-8000-000000001010"
+        ]
+      },
+      "y": 220290.16338460066
+    },
+    {
+      "id": "01a0c8c3-544c-7ea5-a6fc-f2ed974e62ef",
+      "title": "오케하자마 전투와 노부나가의 부상",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1560-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1561-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001005",
+          "01a10010-0000-7000-8000-000000001006"
+        ]
+      },
+      "y": 218470.03018542475
+    },
+    {
+      "id": "01a0c8c3-544d-7058-8150-16d9ee2e0fc0",
+      "title": "세키가하라 전투",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1600-10-21T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1600-10-22T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001027",
+          "01a10010-0000-7000-8000-000000001028"
+        ]
+      },
+      "y": 224112.88390589814
+    },
+    {
+      "id": "01a0c8c3-544d-729a-a00b-a4694d17ee19",
+      "title": "오사카성 건설과 히데요시 정권의 중심 형성",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1583-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1584-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001017",
+          "01a10010-0000-7000-8000-000000001018"
+        ]
+      },
+      "y": 221690.00047913377
+    },
+    {
+      "id": "01a0c8c3-544d-7391-b6c6-b7bc59a2b9c3",
+      "title": "도검몰수령과 병농 분리의 강화",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1588-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1589-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001021",
+          "01a10010-0000-7000-8000-000000001022"
+        ]
+      },
+      "y": 222390.1106798908
+    },
+    {
+      "id": "01a0c8c3-544d-7456-be09-0fbb7945d6af",
+      "title": "규슈 평정",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1587-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1588-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001019",
+          "01a10010-0000-7000-8000-000000001020"
+        ]
+      },
+      "y": 222250.01197834316
+    },
+    {
+      "id": "01a0c8c3-544d-7629-8616-77bf6bf0006f",
+      "title": "야마자키 전투와 히데요시의 주도권 장악",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-12T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-13T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001015",
+          "01a10010-0000-7000-8000-000000001016"
+        ]
+      },
+      "y": 221553.9265008864
+    },
+    {
+      "id": "01a0c8c3-544d-7cdd-b960-41ee088032b8",
+      "title": "혼노지의 변과 노부나가의 죽음",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1582-07-02T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001013",
+          "01a10010-0000-7000-8000-000000001014"
+        ]
+      },
+      "y": 221549.7101240956
+    },
+    {
+      "id": "01a0c8c3-544d-7d12-a909-ff87c6a07f71",
+      "title": "오다와라 정벌과 일본 통일",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1590-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1591-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001023",
+          "01a10010-0000-7000-8000-000000001024"
+        ]
+      },
+      "y": 222670.11642949545
+    },
+    {
+      "id": "01a0c8c3-544d-7f0f-a396-fe09d05844a5",
+      "title": "도쿠가와 이에야스의 쇼군 취임과 에도 막부 성립",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1603-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1604-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001029",
+          "01a10010-0000-7000-8000-000000001030"
+        ]
+      },
+      "y": 224490.05797518088
+    },
+    {
+      "id": "01a0c8c3-544d-7f4a-a65a-fd76d67b8453",
+      "title": "히데요시 사후의 후계 체제와 권력 재편",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1598-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1601-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001025",
+          "01a10010-0000-7000-8000-000000001026"
+        ]
+      },
+      "y": 223930.23812946194
+    },
+    {
+      "id": "01a0c8c3-544d-7fea-bc47-2e1c8deff091",
+      "title": "오사카 전투와 도요토미 가문의 몰락",
+      "temporal_position": {
+        "kind": "bounded",
+        "lower": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1614-01-01T00:00:00.000000000000Z"
+        },
+        "lower_inclusive": true,
+        "upper": {
+          "kind": "time_event",
+          "time_system_ref": {
+            "time_system_id": "019f5b00-0000-7000-8000-000000000003"
+          },
+          "definition_version": "1",
+          "coordinate": "1616-01-01T00:00:00.000000000000Z"
+        },
+        "upper_inclusive": false,
+        "evidence_ids": [
+          "01a10010-0000-7000-8000-000000001031",
+          "01a10010-0000-7000-8000-000000001032"
+        ]
+      },
+      "y": 226100.13894878063
+    },
+    {
+      "id": "01a0c8ce-655e-74a6-a5e7-36c672667e0f",
+      "title": "도요토미 히데요시의 통일과 해외 원정",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      },
+      "y": null
+    },
+    {
+      "id": "01a0c8ce-655e-7af6-b327-06020e197970",
+      "title": "오다 노부나가의 통일 전쟁",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      },
+      "y": null
+    },
+    {
+      "id": "01a0c8ce-655e-7f84-bfa3-b2e2a0954eee",
+      "title": "히데요시 사후 권력 재편과 도쿠가와 체제",
+      "temporal_position": {
+        "kind": "unplaced",
+        "reason_code": "No position constraints",
+        "evidence_ids": []
+      },
+      "y": null
+    }
+  ]
+}

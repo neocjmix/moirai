@@ -24,7 +24,7 @@ import type { CanonicalRevisionView } from "./index.js";
 import { temporalProofIndex } from "./temporal-proof.js";
 
 export const RELATIONAL_TIME_ALGORITHM_VERSION =
-  "event-relational-projection/1";
+  "event-relational-projection/2";
 
 const unique = (ids: readonly string[]) => [...new Set(ids)].sort();
 
@@ -100,6 +100,14 @@ export function projectRelationalTime(
       structural.push({ ...edge, type: relation.type });
   }
   const composites = events.filter((e) => e.kind === "composite");
+  const compositeIds = new Set(composites.map((event) => event.id));
+  const populatedContainers = new Set(
+    structural.flatMap((relation) =>
+      relation.type === "contains" && relation.source.kind === "event"
+        ? [relation.source.event_id]
+        : []
+    )
+  );
   const complete = composites.filter((e) =>
     structural.some(
       (r) =>
@@ -278,6 +286,15 @@ export function projectRelationalTime(
     const spanEvidence = [...membershipEvidence];
     let spanComplete = descendantRefs.size > 0;
     for (const ref of descendantRefs.values()) {
+      // A nested container has no required point position. Its descendants
+      // (including authored boundary Time Events) are already in this closure.
+      // Empty containers and undated atomic leaves must still remain unresolved.
+      if (
+        ref.kind === "event" &&
+        compositeIds.has(ref.event_id) &&
+        populatedContainers.has(ref.event_id)
+      )
+        continue;
       const exact = point(ref);
       if (exact) {
         coordinates.push(exact);

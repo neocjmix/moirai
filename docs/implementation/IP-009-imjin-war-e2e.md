@@ -19,3 +19,9 @@ World metadata → Canon → 초기 침공/최상위 Composite → 수군 → �
 ## 종료 검증
 
 atomic 중복, nested contains, 부분 순서, 병렬 전선, 공유 Event의 Canon별 Narrative를 확인한다. current/target/served 최신 Revision 및 ready, Atropos graph/drawer/직접 URL/모바일을 실제 확인한다. Event/Composite/Narrative/Relation 수와 사료, 수정 결함, 남은 한계를 evidence에 기록한다.
+
+## 실제 구축에서 발견한 중첩 범위 결함
+
+Revision 23의 임진왜란 최상위 Composite는 날짜가 있는 atomic 후손을 모두 포함하지만 `descendant_span`이 unresolved였다. 하위 Composite를 점 위치가 없는 후손으로 처리한 것이 원인이다. nonempty Composite의 contains closure를 순회해 그 후손의 범위를 사용한다. 빈 Composite 또는 날짜 없는 atomic 후손은 계속 unresolved이며, 이 계산은 실제 Duration이나 Composite의 점 위치를 생성하지 않는다. projection algorithm version을 2로 올린다.
+
+실제 공개 데이터의 desktop/WebKit iPhone 14 E2E는 별도 `playwright.imjin-live.config.ts`로 실행한다. PR의 `feat/imjin-e2e`에서만 production read-only acceptance를 추가 실행하며 일반 fixture CI는 외부 데이터에 의존하지 않는다. merge·배포 후 같은 acceptance job을 다시 실행해 최종 Publication을 확인한다.

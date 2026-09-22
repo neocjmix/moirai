@@ -84,6 +84,25 @@ describe("create Change Set validation", () => {
     expect(() => validateCreateChangeSet(fixture())).not.toThrow();
   });
 
+  it("rejects a newly created Composite Event without an authored child", () => {
+    const input = fixture();
+    const incomplete = {
+      ...input,
+      operations: input.operations.map((operation) =>
+        operation.entity_type === "event" && operation.kind === "create"
+          ? {
+              ...operation,
+              value: { ...operation.value, kind: "composite" as const }
+            }
+          : operation
+      )
+    } as CreateChangeSet;
+
+    expect(() => validateAgainstEmpty(incomplete)).toThrowError(
+      expect.objectContaining({ code: "composite_children_required" })
+    );
+  });
+
   it("rejects a partial Event reference with a stable error", () => {
     const input = fixture();
     const invalid = {

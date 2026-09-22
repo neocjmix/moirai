@@ -397,3 +397,43 @@ describe("reader-first Narrative corrections", () => {
     ).toEqual([]);
   });
 });
+
+describe("World metadata corrections", () => {
+  const update = {
+    kind: "update" as const,
+    entity_type: "world" as const,
+    value: {
+      world_id: TEST_FIXTURE.worldId,
+      slug: "test-world",
+      title: "Expanded history",
+      description: "1380–1598"
+    }
+  };
+  it("preserves identity and accepts a title/description correction", () => {
+    const input = {
+      ...fixture(),
+      operations: [...fixture().operations, update]
+    };
+    expect(validateAgainstEmpty(input)).toEqual([]);
+    expect(
+      resolveCreateOperations(input, () => "unused").operations.at(-1)
+        ?.entity_id
+    ).toBe(TEST_FIXTURE.worldId);
+  });
+  it("rejects another World, missing World and slug changes", () => {
+    expect(() =>
+      validateAgainstEmpty({ ...fixture(), operations: [update] })
+    ).toThrow("existing Change Set World");
+    for (const value of [
+      { ...update.value, world_id: TEST_FIXTURE.eventId },
+      { ...update.value, slug: "changed" }
+    ]) {
+      expect(() =>
+        validateAgainstEmpty({
+          ...fixture(),
+          operations: [...fixture().operations, { ...update, value }]
+        })
+      ).toThrow();
+    }
+  });
+});

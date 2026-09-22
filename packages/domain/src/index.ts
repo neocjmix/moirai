@@ -364,10 +364,15 @@ export function resolveCreateOperations(
         readonly event_id?: string;
         readonly relation_id?: string;
         readonly narrative_id?: string;
+        readonly world_id?: string;
       };
       return {
         ...operation,
-        entity_id: value.event_id ?? value.relation_id ?? value.narrative_id!,
+        entity_id:
+          value.event_id ??
+          value.relation_id ??
+          value.narrative_id ??
+          value.world_id!,
         value
       } as ResolvedChangeOperation;
     }
@@ -937,6 +942,29 @@ export function validateCandidateChangeSet(
     switch (operation.entity_type) {
       case "world": {
         const value = operation.value;
+        if (operation.kind === "update") {
+          if (!candidateWorld || operation.entity_id !== input.world_id)
+            fail(
+              "world_scope_mismatch",
+              path,
+              "World update must target the existing Change Set World",
+              [operation.entity_id]
+            );
+          if (candidateWorld.slug !== value.slug)
+            fail(
+              "world_slug_immutable",
+              path,
+              "World metadata corrections preserve the URL slug",
+              [operation.entity_id]
+            );
+          nonEmpty(value.title, `${path}.value.title`);
+          candidateWorld = {
+            ...candidateWorld,
+            title: value.title,
+            description: value.description ?? null
+          };
+          break;
+        }
         if (candidateWorld || operation.entity_id !== input.world_id) {
           fail(
             "world_scope_mismatch",

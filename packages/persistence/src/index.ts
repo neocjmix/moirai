@@ -365,6 +365,18 @@ async function applyCreate(
   revision: number,
   worldId: string
 ): Promise<void> {
+  if (operation.kind === "update" && operation.entity_type === "world") {
+    await transaction
+      .updateTable("worlds")
+      .set({
+        title: operation.value.title,
+        description: operation.value.description ?? null,
+        updated_revision: revision
+      })
+      .where("id", "=", worldId)
+      .execute();
+    return;
+  }
   if (operation.kind === "update") {
     const value = operation.value;
     await transaction
@@ -933,12 +945,17 @@ export async function commitCreateChangeSet(
     const narrativeHistory = new Map(
       existing.narratives.map((narrative) => [narrative.id, narrative])
     );
+    let worldHistory = existing.world;
     for (const [operationIndex, operation] of operations.entries()) {
       const after = publicRecord(operation);
       const before =
         operation.kind === "update"
-          ? narrativeHistory.get(operation.entity_id)
+          ? operation.entity_type === "world"
+            ? worldHistory
+            : narrativeHistory.get(operation.entity_id)
           : undefined;
+      if (operation.entity_type === "world")
+        worldHistory = after as unknown as PublicWorld;
       if (operation.entity_type === "narrative")
         narrativeHistory.set(
           operation.entity_id,

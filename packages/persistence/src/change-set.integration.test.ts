@@ -100,6 +100,59 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     });
   });
 
+  it("updates World metadata with preserved identity, history, idempotency and publication target", async () => {
+    const base = createTestChangeSet();
+    await commitCreateChangeSet(db, base);
+    const previous = await readWorldAtRevision(db, base.world_id, 1);
+    const correction: CreateChangeSet = {
+      ...base,
+      change_set_id: "01995c2a-7b00-7000-8000-000000000779",
+      expected_revision: 1,
+      operations: [
+        {
+          kind: "update",
+          entity_type: "world",
+          value: {
+            world_id: base.world_id,
+            slug: previous.world.slug,
+            title: "Expanded history",
+            description: "1380–1598"
+          }
+        }
+      ]
+    };
+    expect(await commitCreateChangeSet(db, correction)).toMatchObject({
+      current_revision: 2,
+      publication_target_revision: 2
+    });
+    expect(
+      (await commitCreateChangeSet(db, correction)).idempotent_replay
+    ).toBe(true);
+    expect(await readWorldAtRevision(db, base.world_id, 1)).toEqual(previous);
+    const current = await readWorldAtRevision(db, base.world_id, 2);
+    expect(current.world).toEqual({
+      ...previous.world,
+      title: "Expanded history",
+      description: "1380–1598"
+    });
+    expect(current.events).toEqual(previous.events);
+    expect(current.canons).toEqual(previous.canons);
+    const history = await db
+      .selectFrom("change_operations")
+      .select(["before", "after"])
+      .where("change_set_id", "=", correction.change_set_id)
+      .executeTakeFirstOrThrow();
+    expect(history.before).toEqual(previous.world);
+    expect(history.after).toEqual(current.world);
+    expect(
+      await db
+        .selectFrom("worlds")
+        .select(["title", "description"])
+        .where("id", "=", base.world_id)
+        .executeTakeFirstOrThrow()
+    ).toEqual({ title: "Expanded history", description: "1380–1598" });
+  });
+
   it("commits World, Canon, Event, one Revision and outbox atomically", async () => {
     const input = createTestChangeSet();
     const result = await commitCreateChangeSet(db, input);

@@ -41,9 +41,9 @@ const descriptions = {
   "time-event.resolve":
     "Resolve one deterministic virtual Time Event without storing an Event row.",
   "change.validate":
-    "Read-only validation. v4: create entities; add/remove event_canon_membership or relation_canon_membership; withdraw event/relation; update narrative with narrative_id and full fields, preserving scope/locale. There are no create_event or membership operation kinds.",
+    "Validate v4: create; add/remove event_canon_membership or relation_canon_membership; withdraw event/relation; update narrative: narrative_id + full fields (fixed scope/locale); update world: world_id, fixed slug, title, description. There are no create_event or membership operation kinds.",
   "change.commit":
-    "Public atomic commit; revision/idempotency checked. v4: create entities; add/remove event_canon_membership or relation_canon_membership; withdraw event/relation; update narrative with narrative_id and full fields, preserving scope/locale. There are no create_event or membership operation kinds."
+    "Public commit; revision/idempotency checked. v4: create; add/remove event_canon_membership or relation_canon_membership; withdraw event/relation; update narrative: narrative_id + full fields (fixed scope/locale); update world: world_id, fixed slug, title, description. There are no create_event or membership operation kinds."
 };
 const validators = new Ajv({
   allErrors: false,
@@ -208,7 +208,7 @@ const originRefs = {
 const createOperation = {
   type: "object" as const,
   description:
-    "Create: entity_id or client_ref. Update narrative: narrative_id and full fields; preserve scope/locale. primary/summary=prose; annotation=note.",
+    "Create: entity_id/client_ref. Narrative update: narrative_id + fields, fixed scope/locale. primary/summary=prose; annotation=note.",
   properties: {
     kind: { enum: ["create", "update"] },
     entity_type: {

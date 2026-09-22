@@ -302,3 +302,7 @@ LLM은 동일한 실패 입력을 무한 반복하지 않는다. retryable 오�
 v4에 `kind=update`, `entity_type=narrative`를 추가한다. `value`는 `narrative_id`와 create Narrative의 전체 필드다. `canon_id`, `scope_type`, `scope_id`, `locale`는 기존 값과 같아야 한다. 본문·제목·분류·공개 인용을 교체하고 before/after와 새 Revision을 저장한다. World 범위 검증·expected_revision·idempotency를 그대로 적용한다. 다른 엔티티의 일반 update 기능이나 M5 전체를 활성화하지 않는다.
 
 작성자는 primary/summary에 독자가 읽을 사건 설명을 쓰고, 특정 자료·날짜 해석은 annotation, 출처는 public_references, 작성 과정은 intent/origins로 분리한다. `narrative_editorial_content`는 명백한 작성 과정 문구를 검출하는 경고다. 한국어·영어의 제한된 휴리스틱이며 편집 검토를 대체하지 않는다. 경고가 있으면 commit 전에 검토·보정한다. 역사적 견해 차이와 불확실성을 무조건 제거하지 않는다.
+
+## IP-009: World metadata 정정
+
+v4 `kind=update`, `entity_type=world`의 value는 `world_id`, 현재와 같은 `slug`, `title`, `description`이다. ID와 slug는 불변이며 title/description만 정정한다. World별 기존 권한, expected_revision, idempotency, before/after 이력과 자동 Publication을 적용한다. 과거 Revision의 metadata와 Canon/Event identity는 보존한다.

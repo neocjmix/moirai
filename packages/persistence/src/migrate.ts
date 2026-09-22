@@ -51,6 +51,22 @@ export async function migrateOneDown(connectionString: string): Promise<void> {
   }
 }
 
+/** Restore rehearsal must recreate the backup's schema before testing upgrades. */
+export async function migrateToVersion(
+  connectionString: string,
+  version: string
+): Promise<void> {
+  if (!/^\d{3}_[a-z0-9_]+$/.test(version))
+    throw Error("invalid_migration_version");
+  const db = createDatabase(connectionString);
+  try {
+    const { error } = await createMigrator(db).migrateTo(version);
+    if (error) throw error;
+  } finally {
+    await db.destroy();
+  }
+}
+
 async function main(): Promise<void> {
   const connectionString = process.env.DATABASE_URL;
   if (!connectionString) {

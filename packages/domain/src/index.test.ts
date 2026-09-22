@@ -320,3 +320,80 @@ describe("create Change Set validation", () => {
     );
   });
 });
+
+describe("reader-first Narrative corrections", () => {
+  const narrativeId = "01995c2a-7b00-7000-8000-000000000777";
+  const value = {
+    canon_id: TEST_FIXTURE.canonId,
+    scope_type: "canon" as const,
+    scope_id: TEST_FIXTURE.canonId,
+    locale: "ko",
+    kind: "primary" as const,
+    title: "사건",
+    body: "왕위가 바뀌었다.",
+    public_references: []
+  };
+  const create = {
+    kind: "create" as const,
+    entity_type: "narrative" as const,
+    entity_id: narrativeId,
+    value
+  };
+  const update = {
+    kind: "update" as const,
+    entity_type: "narrative" as const,
+    value: {
+      ...value,
+      narrative_id: narrativeId,
+      body: "왕위 교체 이후 제도가 바뀌었다."
+    }
+  };
+  it("corrects prose and classification under the same identity", () => {
+    const input = {
+      ...fixture(),
+      operations: [
+        ...fixture().operations,
+        create,
+        { ...update, value: { ...update.value, kind: "annotation" as const } }
+      ]
+    };
+    expect(validateAgainstEmpty(input)).toEqual([]);
+    expect(
+      resolveCreateOperations(input, () => "unused").operations.at(-1)
+        ?.entity_id
+    ).toBe(narrativeId);
+  });
+  it("rejects unknown Narrative and scope changes", () => {
+    expect(() =>
+      validateAgainstEmpty({
+        ...fixture(),
+        operations: [...fixture().operations, update]
+      })
+    ).toThrow("Narrative does not exist");
+    expect(() =>
+      validateAgainstEmpty({
+        ...fixture(),
+        operations: [
+          ...fixture().operations,
+          create,
+          { ...update, value: { ...update.value, locale: "en" } }
+        ]
+      })
+    ).toThrow("preserve Canon, scope and locale");
+  });
+  it("flags process boilerplate but allows substantive historical uncertainty", () => {
+    const input = (body: string) => ({
+      ...fixture(),
+      operations: [
+        ...fixture().operations,
+        { ...create, value: { ...value, body } }
+      ]
+    });
+    expect(
+      validateAgainstEmpty(input("이 Canon은 기존 사건을 재사용한다."))
+    ).toMatchObject([{ code: "narrative_editorial_content" }]);
+    expect(
+      validateAgainstEmpty(input("사망 경위는 기록에 따라 다르게 전한다."))
+    ).toEqual([]);
+  });
+});

@@ -2116,28 +2116,30 @@ function EventDrawerContent({
 
                 {narrativeSections.length > 0 ? (
                   <div data-testid="event-narrative-sections">
+                    {!narrativeSections.some((section) => section.narratives.some((narrative) => narrative.kind !== "annotation")) && renderedNotes ? <div className={styles.eventMarkdown}>{renderedNotes}</div> : null}
                     {narrativeSections.map((section) => (
                       <section data-canon-id={section.canonId} key={section.canonId}>
                         <h2>{section.canonLabel}</h2>
-                        {section.narratives.map((narrative) => (
-                          <article key={narrative.id}>
+                        {section.narratives.filter((narrative) => narrative.kind !== "annotation").map((narrative) => (
+                          <article key={narrative.id} data-narrative-kind={narrative.kind}>
                             {narrative.title ? <h3>{narrative.title}</h3> : null}
-                            <div className={styles.eventMarkdown}>
-                              {renderMarkdownDocument(narrative.body)}
-                            </div>
-                            {narrative.publicReferences.length > 0 ? (
-                              <ul>
-                                {narrative.publicReferences.map((reference) => (
-                                  <li key={reference.url}>
-                                    <a href={reference.url} rel="noreferrer" target="_blank">
-                                      {reference.label}
-                                    </a>
-                                  </li>
-                                ))}
-                              </ul>
-                            ) : null}
+                            <div className={styles.eventMarkdown}>{renderMarkdownDocument(narrative.body)}</div>
                           </article>
                         ))}
+                        {section.narratives.some((narrative) => narrative.kind === "annotation" || narrative.publicReferences.length > 0) ? (
+                          <details data-testid="narrative-notes">
+                            <summary>{locale === "ko" ? "주석과 출처" : "Notes and sources"}</summary>
+                            {section.narratives.map((narrative) => (
+                              narrative.kind === "annotation" || narrative.publicReferences.length > 0 ? <article key={narrative.id} data-narrative-kind={narrative.kind}>
+                                {narrative.title ? <h3>{narrative.title}</h3> : null}
+                                {narrative.kind === "annotation" ? <div className={styles.eventMarkdown}>{renderMarkdownDocument(narrative.body)}</div> : null}
+                                {narrative.publicReferences.length > 0 ? <ul>{narrative.publicReferences.map((reference) => (
+                                  <li key={reference.url}><a href={reference.url} rel="noreferrer" target="_blank">{reference.label}</a></li>
+                                ))}</ul> : null}
+                              </article> : null
+                            ))}
+                          </details>
+                        ) : null}
                       </section>
                     ))}
                   </div>
@@ -3682,6 +3684,8 @@ export function GraphShell({
   }, []);
 
   const handleEventDrawerPointerDown = useCallback((event: ReactPointerEvent<HTMLElement>) => {
+    // Native controls must receive their tap instead of starting a sheet drag.
+    if (event.target instanceof Element && event.target.closest("a, button, summary, input, select, textarea")) return;
     if (event.pointerType === "mouse" && event.button !== 0) {
       return;
     }

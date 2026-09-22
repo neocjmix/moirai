@@ -371,7 +371,7 @@ describe("Clotho MCP transport", () => {
         })
       ])
     );
-    expect(createProperties?.kind?.const).toBe("create");
+    expect(createProperties?.kind?.enum).toEqual(["create", "update"]);
     expect(createProperties?.entity_type?.enum).toEqual(
       expect.arrayContaining([
         "world",
@@ -393,7 +393,8 @@ describe("Clotho MCP transport", () => {
     );
     expect(operationBranches[0]?.anyOf).toEqual([
       { required: ["entity_id"] },
-      { required: ["client_ref"] }
+      { required: ["client_ref"] },
+      { properties: { kind: { const: "update" } }, required: ["kind"] }
     ]);
     expect(createProperties?.value?.properties).toEqual(
       expect.objectContaining({

@@ -46,3 +46,11 @@ On an uncertain transport outcome, retry the exact same plan and Change Set ID;
 never mint a new ID just because a response timed out. On `revision_conflict`,
 refresh World and affected context, reconsider the plan, and use a new Change Set
 ID for the revised plan. Stop for ambiguous intent or expanded authority.
+
+## Reader-first Narrative writing
+
+Write `primary`/`summary` for the reader: participants, action, context and consequences. Keep historical uncertainty necessary to understand the event. Put specific source interpretation or date-precision notes in `annotation`, and citation links in `public_references`. Atropos initially collapses annotations and sources. Do not classify substantive historical explanation as annotation merely because it cites a source.
+
+Omit generic disclaimers, writing-process commentary, entity reuse, graph modelling and Canon-status boilerplate from reader prose. Record change rationale in `intent`/`origins`. Review every existing paragraph when correcting data; do not blanket-delete uncertainty or hide all old annotations.
+
+Use v4 `kind=update`, `entity_type=narrative`, with `value.narrative_id` and all Narrative fields to correct existing prose. Preserve Canon, scope and locale. This retains identity and previous Revisions. Resolve `narrative_editorial_content` warnings before commit; this limited heuristic does not replace editorial review. Verify published prose, collapsed notes, citations and the previous Revision after correction.

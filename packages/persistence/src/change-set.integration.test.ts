@@ -37,6 +37,69 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
   afterAll(async () => db.destroy());
 
+  it("corrects Narrative content with stable identity, historical before/after and idempotency", async () => {
+    const base = createTestChangeSet();
+    await commitCreateChangeSet(db, base);
+    const expansion = createTestExpansionChangeSet();
+    await commitCreateChangeSet(db, expansion);
+    const previous = await readWorldAtRevision(db, base.world_id, 2);
+    const original = previous.narratives[0]!;
+    const { id, ...value } = original;
+    const correction: CreateChangeSet = {
+      ...base,
+      change_set_id: "01995c2a-7b00-7000-8000-000000000778",
+      expected_revision: 2,
+      intent: "Separate source note from reader prose",
+      operations: [
+        {
+          kind: "update",
+          entity_type: "narrative",
+          value: {
+            ...value,
+            narrative_id: id,
+            kind: "annotation",
+            body: "Specific source interpretation."
+          }
+        }
+      ]
+    };
+    expect((await commitCreateChangeSet(db, correction)).current_revision).toBe(
+      3
+    );
+    expect(
+      (await commitCreateChangeSet(db, correction)).idempotent_replay
+    ).toBe(true);
+    expect(
+      (await readWorldAtRevision(db, base.world_id, 2)).narratives
+    ).toEqual(previous.narratives);
+    expect(
+      (await readWorldAtRevision(db, base.world_id, 3)).narratives.find(
+        (n) => n.id === id
+      )
+    ).toMatchObject({
+      ...original,
+      kind: "annotation",
+      body: "Specific source interpretation."
+    });
+    const history = await db
+      .selectFrom("change_operations")
+      .select(["before", "after"])
+      .where("change_set_id", "=", correction.change_set_id)
+      .executeTakeFirstOrThrow();
+    expect(history.before).toEqual(original);
+    expect(history.after).toMatchObject({ id, kind: "annotation" });
+    const current = await db
+      .selectFrom("narratives")
+      .select(["id", "body", "updated_revision"])
+      .where("id", "=", id)
+      .executeTakeFirstOrThrow();
+    expect(current).toEqual({
+      id,
+      body: "Specific source interpretation.",
+      updated_revision: 3
+    });
+  });
+
   it("commits World, Canon, Event, one Revision and outbox atomically", async () => {
     const input = createTestChangeSet();
     const result = await commitCreateChangeSet(db, input);

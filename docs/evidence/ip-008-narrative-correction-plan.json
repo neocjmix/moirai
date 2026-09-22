@@ -1,0 +1,1364 @@
+{
+  "contract_version": 4,
+  "change_set_id": "019f6dd0-0000-7000-8000-000000000010",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "expected_revision": 9,
+  "intent": "독자 중심 Narrative 보정: 반복 면책·작성 과정 설명을 제거하고 역사 서술을 primary로 재분류하며 특정 자료·날짜 해석만 보조 주석으로 분리한다. 기존 ID·공개 인용·사건·관계·시간과 이전 Revision은 보존한다.",
+  "origins": [
+    {
+      "kind": "human_instruction",
+      "summary": "사용자가 본문/주석 분리, 기존 데이터 보정 및 신규 작성 기준 개선과 Moirai Live 쓰기를 명시 승인했다. Revision 9의 기존 서술과 출처만 편집하며 새로운 역사적 사실을 추가하지 않는다."
+    }
+  ],
+  "operations": [
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "이성계 등이 남원 일대에서 왜구를 격퇴했다.",
+        "kind": "primary",
+        "title": "황산대첩",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000100",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001003"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "이성계와 조민수가 요동 정벌군을 돌려 개경으로 돌아왔다.",
+        "kind": "primary",
+        "title": "위화도 회군",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000101",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001006"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "토지 수조권을 재편하는 과전법이 시행되었다.",
+        "kind": "primary",
+        "title": "과전법 시행",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000102",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/mid/ta_m71_0050_0030_0030_0030",
+            "label": "우리역사넷 — 전제 개혁과 고려 왕조의 멸망"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001009"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "이방원 측이 정몽주를 살해했다.",
+        "kind": "primary",
+        "title": "정몽주 피살",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000103",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000100c"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "이성계가 왕위에 오르며 새 왕조가 시작되었다.",
+        "kind": "primary",
+        "title": "조선 건국·태조 즉위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000104",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000100f"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "새 왕조의 국호를 조선으로 정해 사용하기 시작했다.",
+        "kind": "primary",
+        "title": "국호 조선 사용",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000105",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001012"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "새 왕조의 수도를 한양으로 옮겼다.",
+        "kind": "primary",
+        "title": "한양 천도",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000106",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001015"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "새 수도의 궁궐과 종묘가 완공되었다.",
+        "kind": "primary",
+        "title": "경복궁·종묘 준공",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000107",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001018"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "한양 도성을 두 차례에 걸쳐 축조했다.",
+        "kind": "primary",
+        "title": "한양 도성 축조",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000108",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000101b"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "이방원이 정도전과 이방석 등을 제거하고 실권을 장악했다.",
+        "kind": "primary",
+        "title": "제1차 왕자의 난",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000109",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0059039",
+            "label": "한국민족문화대백과사전 — 태종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000101e"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "태조가 이방과에게 왕위를 넘겼다.",
+        "kind": "primary",
+        "title": "정종 즉위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000010a",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001021"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "이방원과 이방간의 권력 다툼에서 이방원이 승리했다.",
+        "kind": "primary",
+        "title": "제2차 왕자의 난",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000010b",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0059039",
+            "label": "한국민족문화대백과사전 — 태종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001024"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "정종의 양위로 이방원이 왕위에 올랐다.",
+        "kind": "primary",
+        "title": "태종 즉위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000010c",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0059039",
+            "label": "한국민족문화대백과사전 — 태종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001027"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "태종이 개경에서 한양으로 수도를 다시 옮겼다.",
+        "kind": "primary",
+        "title": "한양 재천도",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000010d",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_n312600",
+            "label": "우리역사넷 — 태조 이성계"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000102a"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "육조가 국왕에게 직접 보고하는 체제를 시행했다.",
+        "kind": "primary",
+        "title": "육조직계제 시행",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000010e",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029857",
+            "label": "한국민족문화대백과사전 — 세종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000102d"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "태종의 양위로 충녕대군이 왕위에 올랐다.",
+        "kind": "primary",
+        "title": "세종 즉위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000010f",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029857",
+            "label": "한국민족문화대백과사전 — 세종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001030"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "궁중 학문 연구와 정책 자문을 위한 집현전을 설치했다.",
+        "kind": "primary",
+        "title": "집현전 설치",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000110",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0055081",
+            "label": "한국민족문화대백과사전 — 집현전"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001033"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "세종이 의정부를 통한 국정 심의 체제로 전환했다.",
+        "kind": "primary",
+        "title": "의정부서사제로 전환",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000111",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029857",
+            "label": "한국민족문화대백과사전 — 세종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001036"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "훈민정음의 완성을 알리는 기록이 실록 음력 9월조에 남아 있다.",
+        "kind": "primary",
+        "title": "훈민정음 반포",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000112",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html",
+            "label": "국립국어원 — 훈민정음 기록과 한글날"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001039"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "세종 사후 왕세자 이향이 왕위를 이었다.",
+        "kind": "primary",
+        "title": "문종 즉위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000113",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0019665",
+            "label": "한국민족문화대백과사전 — 문종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000103c"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "문종 사후 어린 왕세자가 왕위에 올랐다.",
+        "kind": "primary",
+        "title": "단종 즉위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000114",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000103f"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "수양대군이 김종서·황보인 등을 제거하고 권력을 장악했다.",
+        "kind": "primary",
+        "title": "계유정난",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000115",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001042"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "수양대군이 단종에게 양위를 강요하여 왕위에 올랐다.",
+        "kind": "primary",
+        "title": "세조 즉위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000116",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001045"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "성삼문 등은 단종 복위를 추진했으나 발각되어 처형되었다.",
+        "kind": "primary",
+        "title": "사육신의 단종 복위 시도",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000117",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001048"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "단종 복위 사건 뒤 세조가 집현전을 폐지했다.",
+        "kind": "primary",
+        "title": "집현전 폐지",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000118",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0055081",
+            "label": "한국민족문화대백과사전 — 집현전"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000104b"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "단종은 노산군으로 강등되어 영월로 유배되었다.",
+        "kind": "primary",
+        "title": "단종 영월 유배",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-000000000119",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000104e"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "영월에 유배된 단종이 죽임을 당했다.",
+        "kind": "primary",
+        "title": "단종 죽음",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000011a",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001051"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "경국대전 편찬 과정에서 호전이 반행되었다.",
+        "kind": "primary",
+        "title": "경국대전 호전 반행",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000011b",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001054"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "호전에 이어 형전이 반행되었다. 전체 법전의 최종 완성을 뜻하지 않는다.",
+        "kind": "primary",
+        "title": "경국대전 형전 반행",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000011c",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001057"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "현직 관리에게 수조권을 지급하는 직전법이 시행되었다.",
+        "kind": "primary",
+        "title": "직전법 시행",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000011d",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0054533",
+            "label": "한국민족문화대백과사전 — 직전"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000105a"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "함길도에서 이시애가 일으킨 반란을 조정이 진압했다.",
+        "kind": "primary",
+        "title": "이시애의 난",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000011e",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-00000000105d"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "세조가 예종에게 왕위를 넘겼다.",
+        "kind": "primary",
+        "title": "세조 양위",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f5b00-0000-7000-8000-00000000011f",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "019f5b00-0000-7000-8000-000000001060"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "훈민정음은 문자 창제와 해설서 완성으로 이어졌다. 세종 25년 음력 12월 기록은 문자 28자의 창제를 전하고, 1446년 음력 9월 기록은 해설서의 완성을 전한다.",
+        "kind": "summary",
+        "title": "창제에서 해설서까지",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f60ab-0000-7000-8000-000000000101",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html",
+            "label": "국립국어원 — 훈민정음 기록과 한글날"
+          }
+        ],
+        "narrative_id": "019f60ab-0000-7000-8000-000000000301"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "실록의 세종 25년 음력 12월 기록은 문자 28자의 창제를 전한다. 문자의 창제는 1446년 해설서 완성보다 앞선 사건이다.",
+        "kind": "primary",
+        "title": "문자 28자의 창제",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f60ab-0000-7000-8000-000000000102",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html",
+            "label": "국립국어원 — 훈민정음 기록과 한글날"
+          }
+        ],
+        "narrative_id": "019f60ab-0000-7000-8000-000000000302"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "세종은 서문에서 한자로 우리말을 적기 어려워 뜻을 전하지 못하는 사람들을 위해 문자를 만들었다고 밝혔다. 쉽게 배워 일상에서 쓰도록 하려는 목적도 제시했다.",
+        "kind": "primary",
+        "title": "왜 문자를 만들었나",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f60ab-0000-7000-8000-000000000101",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/front/hm/view.do?levelId=hm_091_0010",
+            "label": "국사편찬위원회 우리역사넷 — 훈민정음 서문"
+          }
+        ],
+        "narrative_id": "019f60ab-0000-7000-8000-000000000303"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "훈민정음의 문자 창제와 해설서 완성은 서로 다른 시기에 이루어졌다. 창제된 문자의 원리와 쓰임은 해례에서 설명되었다. 창제 기록과 해설서의 내용을 함께 살펴보면 새 문자가 어떤 목적에서 만들어졌고 어떻게 사용되도록 설계되었는지 이해할 수 있다.",
+        "kind": "primary",
+        "title": "문자 창제와 해설서의 완성",
+        "locale": "ko",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_type": "canon",
+        "public_references": [],
+        "narrative_id": "019f60ab-0000-7000-8000-000000000304"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1446년 음력 9월의 기록은 훈민정음 해설서의 완성을 전한다. 국립국어원 해설은 이를 문자 자체의 창제와 구별하며, 공식 반포 행사를 입증하는 기록으로 보지 않는다.",
+        "kind": "primary",
+        "title": "‘반포’와 해설서 완성 기록",
+        "locale": "ko",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_id": "019f5b00-0000-7000-8000-000000000112",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html",
+            "label": "국립국어원 — 훈민정음 기록과 한글날"
+          }
+        ],
+        "narrative_id": "019f60ab-0000-7000-8000-000000000305"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "해설서의 해례 부분은 다섯 해설과 하나의 용례로 구성된다. 제자해는 글자를 만든 원리, 초성해·중성해·종성해는 각 소리와 글자의 쓰임, 합자해는 초성·중성·종성을 합쳐 음절을 적는 방법을 설명한다. 용자례는 실제 단어를 어떻게 적는지 보여 준다.",
+        "kind": "primary",
+        "title": "해례에는 무엇이 담겼나",
+        "locale": "ko",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_id": "019f5b00-0000-7000-8000-000000000112",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_r300900",
+            "label": "국사편찬위원회 우리역사넷 — 훈민정음, 제5절 해설서의 구성"
+          }
+        ],
+        "narrative_id": "019f62b7-6aa0-7000-8000-000000000002"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "단종은 1452년 즉위했으나, 이듬해 계유정난으로 수양대군이 권력을 장악했다. 1455년 세조 즉위로 왕위를 잃은 뒤에도 단종을 복위시키려는 움직임이 이어졌다. 1456년 사육신의 복위 시도와 집현전 폐지, 1457년 영월 유배와 죽음은 왕위 교체가 불러온 정치적 격변을 보여 준다.",
+        "kind": "primary",
+        "title": "왕위의 이동과 그 뒤의 파장",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_type": "canon",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "01a0c40a-a762-7aaa-99b7-971447162d20"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1452년 어린 단종이 즉위했으나 1453년 계유정난으로 수양대군이 권력을 장악했다. 1455년 수양대군은 단종에게 양위를 강요하고 세조로 즉위했다. 1456년 성삼문 등은 단종 복위를 추진했으나 발각되어 처형되었고, 그 뒤 집현전도 폐지되었다. 1457년 단종은 노산군으로 강등되어 영월에 유배되었고 그곳에서 죽임을 당했다.",
+        "kind": "summary",
+        "title": "단종 폐위와 몰락의 여섯 해",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "01a0c40a-a761-7fc7-aef2-10211e0ecb0e",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0055081",
+            "label": "한국민족문화대백과사전 — 집현전"
+          }
+        ],
+        "narrative_id": "01a0c40a-a762-797a-b5da-83116e2be425"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1453년 계유정난으로 수양대군은 김종서·황보인 등을 제거하고 정국의 주도권을 장악했다. 단종이 왕위를 넘긴 것은 그로부터 2년 뒤인 1455년이었다.",
+        "kind": "primary",
+        "title": "권력 장악에서 왕위 교체로",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "019f5b00-0000-7000-8000-000000000115",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "01a0c40a-a762-7371-8056-5c3509661099"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1455년 수양대군은 단종에게 양위를 강요하고 세조로 즉위했다. 왕위를 넘기는 형식은 양위였지만, 단종에게는 강제로 왕위를 잃은 사건이었다.",
+        "kind": "primary",
+        "title": "양위라는 형식과 강제",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "019f5b00-0000-7000-8000-000000000116",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "01a0c40a-a762-79b5-b95d-d0597f96e062"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1456년 성삼문 등을 중심으로 한 단종 복위 계획이 발각되어 관련자들이 처형되었다. 같은 해 집현전도 폐지되었다.",
+        "kind": "primary",
+        "title": "복위 시도와 탄압의 확대",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "019f5b00-0000-7000-8000-000000000117",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0055081",
+            "label": "한국민족문화대백과사전 — 집현전"
+          }
+        ],
+        "narrative_id": "01a0c40a-a762-7e17-aff5-be4a2e09cfce"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1457년 단종은 노산군으로 강등되어 영월로 유배되었다. 1455년 왕위 상실에 이어 신분과 거처가 다시 바뀌었다.",
+        "kind": "primary",
+        "title": "노산군 강등과 영월 유배",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "019f5b00-0000-7000-8000-000000000119",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ],
+        "narrative_id": "01a0c40a-a762-7a61-8b46-025e77917e4e"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1457년 영월에 유배된 단종은 그곳에서 죽임을 당했다.",
+        "kind": "primary",
+        "title": "유배지에서의 죽음",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "019f5b00-0000-7000-8000-00000000011a",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          }
+        ],
+        "narrative_id": "01a0c40a-a762-73e3-9820-8bb6d5c0d5c5"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1452년 문종이 사망한 뒤 어린 단종이 즉위했다. 문종의 유지를 받든 김종서·황보인 등 의정부 대신들은 단종을 보필한다는 명분 아래 정국의 중심에 섰다. 이 사건은 특정 인물의 단독 섭정을 뜻하기보다, 왕의 나이가 어리고 왕실의 수렴청정 주체가 부재한 조건에서 대신들의 권한이 커진 정치적 국면을 가리킨다.",
+        "kind": "primary",
+        "title": "고명과 보정의 범위",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "01a0c738-42d5-784b-8306-a18280b7d294",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_i300800",
+            "label": "우리역사넷 — 계유정난"
+          }
+        ],
+        "narrative_id": "01a0c738-42d5-7f52-8a68-54cafd2eec50"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "계유정난은 반대파 제거에 그치지 않았다. 수양대군은 정권과 병권을 장악하고 협력자들을 주요 관직과 정난공신에 배치했다. 정변 뒤의 공신 책봉과 권력 재편은 1455년 왕위 교체에 앞서 이루어졌다.",
+        "kind": "primary",
+        "title": "정변 이후의 제도화",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "01a0c738-42d5-7f25-a16c-423232d382cf",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://contents.history.go.kr/mobile/kc/view.do?code=kc_age_30&levelId=kc_i300800",
+            "label": "우리역사넷 — 계유정난"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          }
+        ],
+        "narrative_id": "01a0c738-42d5-7cf4-b162-a8d56796d3f4"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "update",
+      "entity_type": "narrative",
+      "value": {
+        "body": "1457년 순흥에 유배된 금성대군과 순흥부사 이보흠의 단종 복위 계획은 발각되어 관련자 처벌로 이어졌다. 순흥도호부도 혁파되어 그 영역이 인근 군현에 분산되었다. 단종 개인의 몰락을 넘어 복위 운동의 여파가 지역 행정 질서까지 미친 사건이다.",
+        "kind": "primary",
+        "title": "복위 시도에서 지역 탄압까지",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "01a0c738-42d5-78b7-a852-95ea236415cf",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0032014",
+            "label": "한국민족문화대백과사전 — 순흥"
+          }
+        ],
+        "narrative_id": "01a0c738-42d5-7908-9a5f-aa5966c68d54"
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f6dd0-0000-7000-8000-000000000001",
+      "value": {
+        "body": "세종 25년 음력 12월이라는 사료의 날짜 표기를 따른다. 음력 월일을 서력 월일로 환산한 값은 제공하지 않는다.",
+        "kind": "annotation",
+        "title": "창제 기록의 날짜",
+        "locale": "ko",
+        "canon_id": "019f5b00-0000-7000-8000-000000000002",
+        "scope_id": "019f60ab-0000-7000-8000-000000000102",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html",
+            "label": "국립국어원 — 훈민정음 기록과 한글날"
+          }
+        ]
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f6dd0-0000-7000-8000-000000000002",
+      "value": {
+        "body": "1446년 음력 9월의 기록과 오늘날 한글날인 10월 9일은 구별해야 한다. 기념일을 당시 사건의 서력 날짜로 대입하지 않는다.",
+        "kind": "annotation",
+        "title": "해설서 기록과 기념일",
+        "locale": "ko",
+        "canon_id": "019f60ab-0000-7000-8000-000000000401",
+        "scope_id": "019f5b00-0000-7000-8000-000000000112",
+        "scope_type": "event",
+        "public_references": [
+          {
+            "url": "https://www.korean.go.kr/hangeul/origin/001.html",
+            "label": "국립국어원 — 훈민정음 기록과 한글날"
+          }
+        ]
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    },
+    {
+      "kind": "create",
+      "entity_type": "narrative",
+      "entity_id": "019f6dd0-0000-7000-8000-000000000003",
+      "value": {
+        "body": "단종실록의 편찬 배경과 사건 명칭에는 후대의 정치적 평가가 개입될 수 있다. 사건의 명칭과 평가를 읽을 때 이 맥락을 함께 고려한다.",
+        "kind": "annotation",
+        "title": "단종 관련 기록을 읽을 때",
+        "locale": "ko",
+        "canon_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_id": "01a0c40a-a761-73d7-a8d2-fb4cddb6fd57",
+        "scope_type": "canon",
+        "public_references": [
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0013661",
+            "label": "한국민족문화대백과사전 — 단종"
+          },
+          {
+            "url": "https://encykorea.aks.ac.kr/Article/E0029849",
+            "label": "한국민족문화대백과사전 — 세조"
+          }
+        ]
+      },
+      "origin_refs": [
+        {
+          "field": "*",
+          "origin_index": 0
+        }
+      ]
+    }
+  ]
+}

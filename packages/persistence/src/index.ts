@@ -365,6 +365,21 @@ async function applyCreate(
   revision: number,
   worldId: string
 ): Promise<void> {
+  if (operation.kind === "update") {
+    const value = operation.value;
+    await transaction
+      .updateTable("narratives")
+      .set({
+        kind: value.kind,
+        title: value.title ?? null,
+        body: value.body,
+        public_references: JSON.stringify(value.public_references),
+        updated_revision: revision
+      })
+      .where("id", "=", operation.entity_id)
+      .execute();
+    return;
+  }
   if (operation.kind === "add") {
     if (operation.entity_type === "relation_canon_membership") {
       await sql`
@@ -915,7 +930,20 @@ export async function commitCreateChangeSet(
         result: JSON.stringify(result)
       })
       .execute();
+    const narrativeHistory = new Map(
+      existing.narratives.map((narrative) => [narrative.id, narrative])
+    );
     for (const [operationIndex, operation] of operations.entries()) {
+      const after = publicRecord(operation);
+      const before =
+        operation.kind === "update"
+          ? narrativeHistory.get(operation.entity_id)
+          : undefined;
+      if (operation.entity_type === "narrative")
+        narrativeHistory.set(
+          operation.entity_id,
+          after as unknown as PublicNarrative
+        );
       await transaction
         .insertInto("change_operations")
         .values({
@@ -926,8 +954,8 @@ export async function commitCreateChangeSet(
           entity_type: operation.entity_type,
           entity_id: operation.entity_id,
           operation_kind: operation.kind,
-          before: null,
-          after: JSON.stringify(publicRecord(operation)),
+          before: before ? JSON.stringify(before) : null,
+          after: JSON.stringify(after),
           origin_refs: JSON.stringify(operation.origin_refs ?? [])
         })
         .execute();

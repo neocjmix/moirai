@@ -86,3 +86,25 @@ it("partial updates retain existing edges, complete updates evict them", () => {
   expect(reconcileViewport(old, response(true)).edges).toEqual(old.edges);
   expect(reconcileViewport(old, response()).edges).toEqual([]);
 });
+it("disposes pending reads on page exit without retaining a late response", async () => {
+  let finish!: (value: R) => void;
+  let signal!: AbortSignal;
+  const read = vi.fn((_query: Q, abort: AbortSignal) => {
+    signal = abort;
+    return new Promise<R>((resolve) => {
+      finish = resolve;
+    });
+  });
+  const load = createViewportCache(read);
+  const pending = load(query());
+  const rejected = expect(pending).rejects.toMatchObject({
+    name: "AbortError"
+  });
+  load.dispose();
+  expect(signal.aborted).toBe(true);
+  finish(response());
+  await rejected;
+  read.mockImplementation(async () => response());
+  await load(query());
+  expect(read).toHaveBeenCalledTimes(2);
+});

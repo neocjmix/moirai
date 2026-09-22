@@ -99,7 +99,7 @@ export async function graphSpatialDetail(
         worldId: source.world_id,
         eventId,
         revision: source.served_revision,
-        canonId: source.canon_id,
+        ...(canonIds.length === 1 ? { canonId: source.canon_id } : {}),
         graphSearch: returnSearch
       })
     : null;

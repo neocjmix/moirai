@@ -1,0 +1,67 @@
+{
+  "revision": 26,
+  "uniqueEvents": 58,
+  "eventKinds": {
+    "composite": 12,
+    "atomic": 46
+  },
+  "mainEvents": 57,
+  "seaEvents": 12,
+  "sharedEvents": 11,
+  "relations": 195,
+  "relationTypes": {
+    "contains": 66,
+    "not_after": 46,
+    "precedes": 69,
+    "influences": 10,
+    "enables": 3,
+    "causes": 1
+  },
+  "narratives": 89,
+  "narrativeKinds": {
+    "primary": 70,
+    "annotation": 19
+  },
+  "primaryChars": 25003,
+  "primaryMinChars": 255,
+  "allHaveReferences": true,
+  "originalEventsUnchanged": true,
+  "duplicateAtomicTitle": [],
+  "editorialLeak": [],
+  "worldTotals": {
+    "canons": 5,
+    "events": 108,
+    "relations": 359,
+    "narratives": 140
+  },
+  "preservation": {
+    "canons": {
+      "originalCount": 3,
+      "unchanged": true
+    },
+    "events": {
+      "originalCount": 50,
+      "unchanged": true
+    },
+    "relations": {
+      "originalCount": 164,
+      "unchanged": true
+    },
+    "narratives": {
+      "originalCount": 51,
+      "unchanged": true
+    },
+    "timeSystems": {
+      "originalCount": 1,
+      "unchanged": true
+    }
+  },
+  "partialOrder": {
+    "mainContains": 55,
+    "eventPrecedes": 23,
+    "incomparableAtomicPairs": 988,
+    "allAtomicPairs": 1035,
+    "sameDayIndependent": true,
+    "cycle": false
+  }
+}

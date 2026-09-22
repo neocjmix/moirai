@@ -2383,6 +2383,12 @@ export function GraphShell({
   const pendingEventTapRef = useRef<PendingEventTap | null>(null);
   const eventDrawerDragRef = useRef<EventDrawerDragState | null>(null);
   const bootstrapChartPlane = initialChartPlane ?? null;
+  useEffect(() => {
+    const dispose = () => loader.dispose?.();
+    window.addEventListener("pagehide", dispose);
+    return () => { window.removeEventListener("pagehide", dispose); dispose(); };
+  }, [loader]);
+
   useEffect(()=>{setRuntimeViewportResponse(null);setRuntimeViewportLoadState("idle");},[loader]);
   // Moirai identity is an input/output seam; original selection and gestures stay intact.
   const onSelectionRef=useRef(onSelection);onSelectionRef.current=onSelection;
@@ -2439,6 +2445,11 @@ export function GraphShell({
     const urlState: GraphShellRestorableState = {
       ...parsedUrlState,
       shell: validateShellSliceForWorkspace(parsedUrlState.shell, workspace),
+      // A new canonical Event URL must focus its Event rather than a previous
+      // session's camera. Explicit URL viewports remain authoritative.
+      ...(!parsedUrlState.viewport && window.location.pathname.startsWith("/graph/events/") && initialViewportCenter
+        ? { viewport: { centerX: initialViewportCenter.x, centerY: initialViewportCenter.y, spanX: viewportSize.width, spanY: viewportSize.height } }
+        : {}),
       ...(window.location.pathname.startsWith("/graph/events/") && historyDrawer
         ? { drawer: historyDrawer }
         : externalFocusRef.current
@@ -3592,6 +3603,9 @@ export function GraphShell({
   }, []);
 
   const handleEventDrawerStageChange = useCallback((stage: EventDrawerStage) => {
+    // User gestures supersede a still-pending initial/history restoration.
+    pendingRestoredDrawerStageRef.current = stage;
+
     const selection = selectedEventSelectionRef.current;
     if (!selection || typeof window === "undefined") {
       setEventDrawerStage(stage);

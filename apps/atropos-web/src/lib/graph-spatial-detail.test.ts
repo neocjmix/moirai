@@ -143,6 +143,9 @@ describe("Event reader detail presentation", () => {
     expect(detail.readingContext?.scopeLabel).toBe(
       "Public fixture World · Interpretation A"
     );
+    expect(detail.readingContext?.stableEventHref).toContain(
+      `&canon=${fixture.sourceA.canon_id}&`
+    );
     await expect(
       graphSpatialDetail({}, "point-1", "outside-query")
     ).rejects.toThrow("graph_identity_outside_query");
@@ -171,7 +174,7 @@ describe("Event reader detail presentation", () => {
     );
     expect(detail.readingContext?.observation).toContain("canon_memberships");
     expect(detail.readingContext?.stableEventHref).toContain(
-      `/graph/events/${fixture.sourceA.world_id}/${fixture.event}?revision=7&canon=${fixture.sourceA.canon_id}&mq=`
+      `/graph/events/${fixture.sourceA.world_id}/${fixture.event}?revision=7&mq=`
     );
   });
 

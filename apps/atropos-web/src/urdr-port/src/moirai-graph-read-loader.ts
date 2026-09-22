@@ -54,6 +54,7 @@ export function createMoiraiGraphReadLoader(input: {
     return graphShellViewportResponseSchema.parse(body.viewport);
   });
   return {
+    dispose: () => cached.dispose(),
     loadWorkspace: async () => input.workspace,
     loadEventDetail: input.loadEventDetail,
     loadViewport: (_locale, viewport) => cached(viewport)

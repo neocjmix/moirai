@@ -41,7 +41,7 @@ export function createViewportCache(
     { controller: AbortController; promise: Promise<Response> }
   >();
   let bytes = 0;
-  return async (query: Query): Promise<Response> => {
+  const load = async (query: Query): Promise<Response> => {
     const key = keyFor(query);
     const exact = key + JSON.stringify(query.bbox);
     const found = entries.findIndex(
@@ -86,6 +86,14 @@ export function createViewportCache(
     pending.set(exact, { controller, promise });
     return promise;
   };
+  return Object.assign(load, {
+    dispose() {
+      for (const { controller } of pending.values()) controller.abort();
+      pending.clear();
+      entries.length = 0;
+      bytes = 0;
+    }
+  });
 }
 
 /** Only a complete response can evict the old viewport. Partial reads retain identity and edges. */

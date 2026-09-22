@@ -316,16 +316,14 @@ describe("Clotho MCP transport", () => {
             contract_version?: { enum?: number[] };
             operations?: {
               items?: {
-                properties?: {
-                  entity_id?: unknown;
-                  client_ref?: unknown;
-                  origin_refs?: unknown;
-                  value?: { properties?: Record<string, unknown> };
-                };
                 oneOf?: Array<{
+                  type?: string;
+                  required?: string[];
+                  anyOf?: Array<{ required?: string[] }>;
+                  additionalProperties?: boolean;
                   properties?: {
                     kind?: { const?: string; enum?: string[] };
-                    entity_type?: { enum?: string[] };
+                    entity_type?: { const?: string; enum?: string[] };
                     entity_id?: unknown;
                     client_ref?: unknown;
                     origin_refs?: unknown;
@@ -357,11 +355,19 @@ describe("Clotho MCP transport", () => {
     ]);
     const operationBranches =
       planSchema?.properties?.operations?.items?.oneOf ?? [];
-    const operationProperties =
-      planSchema?.properties?.operations?.items?.properties;
     const createProperties = operationBranches[0]?.properties;
     const membershipProperties = operationBranches[1]?.properties;
     const withdrawProperties = operationBranches[2]?.properties;
+    expect(operationBranches).toHaveLength(3);
+    expect(operationBranches).toEqual(
+      expect.arrayContaining([
+        expect.objectContaining({
+          type: "object",
+          required: ["kind", "entity_type", "origin_refs", "value"],
+          additionalProperties: false
+        })
+      ])
+    );
     expect(createProperties?.kind?.const).toBe("create");
     expect(createProperties?.entity_type?.enum).toEqual(
       expect.arrayContaining([
@@ -374,7 +380,7 @@ describe("Clotho MCP transport", () => {
         "canon_time_system"
       ])
     );
-    expect(operationProperties).toEqual(
+    expect(createProperties).toEqual(
       expect.objectContaining({
         entity_id: expect.anything(),
         client_ref: expect.anything(),
@@ -382,7 +388,11 @@ describe("Clotho MCP transport", () => {
         value: expect.anything()
       })
     );
-    expect(operationProperties?.value?.properties).toEqual(
+    expect(operationBranches[0]?.anyOf).toEqual([
+      { required: ["entity_id"] },
+      { required: ["client_ref"] }
+    ]);
+    expect(createProperties?.value?.properties).toEqual(
       expect.objectContaining({
         world_id: expect.anything(),
         canon_id: expect.anything(),
@@ -396,7 +406,7 @@ describe("Clotho MCP transport", () => {
         definition: expect.anything()
       })
     );
-    expect(operationProperties?.value?.properties?.kind).toMatchObject({
+    expect(createProperties?.value?.properties?.kind).toMatchObject({
       enum: expect.arrayContaining(["atomic", "primary", "annotation"])
     });
     expect(membershipProperties?.kind?.enum).toEqual(["add", "remove"]);
@@ -404,6 +414,13 @@ describe("Clotho MCP transport", () => {
       "event_canon_membership",
       "relation_canon_membership"
     ]);
+    expect(membershipProperties?.value?.properties).toEqual(
+      expect.objectContaining({
+        canon_id: expect.anything(),
+        event_id: expect.anything(),
+        relation_id: expect.anything()
+      })
+    );
     expect(withdrawProperties?.kind?.const).toBe("withdraw");
     expect(withdrawProperties?.entity_type?.enum).toEqual([
       "event",

@@ -194,6 +194,9 @@ describe("Clotho MCP transport", () => {
     );
     expect(initialized.statusCode).toBe(200);
     expect(initialized.json().result.serverInfo.name).toBe("moirai-clotho");
+    expect(initialized.json().result.instructions).toContain(
+      "Model every Composite Event with one or more contains Relations"
+    );
     const listed = await send(
       { jsonrpc: "2.0", id: 2, method: "tools/list" },
       ""

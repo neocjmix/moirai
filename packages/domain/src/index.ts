@@ -1418,6 +1418,41 @@ export function validateCandidateChangeSet(
       ),
       [...timeSystems.values()]
     );
+  const createdCompositeIds = new Set(
+    operations.flatMap((operation) =>
+      operation.kind === "create" &&
+      operation.entity_type === "event" &&
+      operation.value.kind === "composite"
+        ? [operation.entity_id]
+        : []
+    )
+  );
+  for (const compositeId of createdCompositeIds) {
+    if (withdrawnEventIds.has(compositeId)) continue;
+    for (const canonId of eventCanonMemberships.get(compositeId) ?? []) {
+      const hasChild = [...relations.values()].some((relation) => {
+        if (
+          withdrawnRelationIds.has(relation.id) ||
+          relation.type !== "contains" ||
+          !relationCanonMemberships.get(relation.id)?.has(canonId)
+        )
+          return false;
+        const endpoints = canonicalRelationEndpoints(relation);
+        return (
+          endpoints?.source.kind === "event" &&
+          endpoints.source.event_id === compositeId &&
+          endpoints.target.kind === "event"
+        );
+      });
+      if (!hasChild)
+        fail(
+          "composite_children_required",
+          `events.${compositeId}`,
+          "A newly created Composite Event requires at least one contains Relation in each Canon membership in the same Change Set",
+          [compositeId, canonId]
+        );
+    }
+  }
   return [];
 }
 

@@ -18,7 +18,7 @@ import {
 } from "./urdr-chart-plane.js";
 import type { Dataset, GraphShellChartPlane } from "./urdr-layout-types.js";
 
-export const PRESENTATION_LAYOUT_VERSION = "urdr-0267c8f-moirai/2";
+export const PRESENTATION_LAYOUT_VERSION = "urdr-0267c8f-moirai/3";
 export interface ScopeLayout {
   readonly scope: PresentationScope;
   readonly chartPlane: GraphShellChartPlane;

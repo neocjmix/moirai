@@ -567,7 +567,11 @@ function buildPlacementIntervalKey(candidate: PlacementCandidate) {
 }
 
 function intervalsOverlap(left: PlacementCandidate, right: PlacementCandidate) {
-  return left.minYear <= right.maxYear && right.minYear <= left.maxYear;
+  // A shared boundary is not usable room for presentation spreading. Treating
+  // adjacent year buckets as overlapping lets their boundary anchors bridge
+  // otherwise independent clusters and can collapse every preferred point
+  // back onto the minimum strict-order gap during bounded repair.
+  return left.minYear < right.maxYear && right.minYear < left.maxYear;
 }
 
 function hasDirectConstraint(
@@ -798,7 +802,12 @@ function redistributePlacedPointClusters(
   const pointCandidates = context.scopedEvents
     .filter((event) => {
       const kind = context.eventKindById.get(event.id);
-      return kind === "instant" || kind === "anchor";
+      // Anchors define the immutable edges of a temporal bucket. They must not
+      // participate in the presentation-only redistribution inside that
+      // bucket, otherwise a chain of adjacent anchors joins many years into a
+      // single cluster and the later bounded repair compresses same-year
+      // Events back to ORDER_MIN_GAP_YEARS.
+      return kind === "instant";
     })
     .map((event) => {
       const geometry = state.geometryByEventId.get(event.id);

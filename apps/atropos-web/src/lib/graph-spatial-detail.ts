@@ -137,11 +137,9 @@ export async function graphSpatialDetail(
     meta?.unplaced.includes(id)
       ? "No supported geometry is available. The Event and its evidence remain available below."
       : "",
-    ...narratives.flatMap((n) => [
-      n.title ? `## ${n.title}` : "",
-      n.body,
-      ...n.public_references.map((ref) => `[${ref.label}](${ref.url})`)
-    ])
+    ...narratives
+      .filter((n) => n.kind !== "annotation")
+      .flatMap((n) => [n.title ? `## ${n.title}` : "", n.body])
   ]
     .filter(Boolean)
     .join("\n\n");

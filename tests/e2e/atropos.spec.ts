@@ -547,3 +547,28 @@ test("health and immutable artifacts expose only the relational model", async ({
     ).toBe(404);
   }
 });
+
+test("reader prose stays visible while notes and citations can be opened", async ({
+  page
+}) => {
+  await page.goto(
+    `/graph/events/${worldId}/${firstEventId}?revision=2&canon=${canonId}`
+  );
+  const drawer = page.getByTestId("event-drawer-sheet");
+  await expect(
+    drawer.getByText("이야기본문전용표식", { exact: false })
+  ).toBeVisible();
+  const notes = drawer.getByTestId("narrative-notes").first();
+  await expect(notes).not.toHaveAttribute("open", "");
+  await expect(
+    notes.getByText("보조주석전용표식", { exact: false })
+  ).toBeHidden();
+  await notes.locator("summary").click();
+  await expect(
+    notes.getByText("보조주석전용표식", { exact: false })
+  ).toBeVisible();
+  await expect(notes.getByRole("link", { name: "합성 출처" })).toHaveAttribute(
+    "href",
+    "https://example.org/history"
+  );
+});

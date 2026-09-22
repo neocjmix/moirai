@@ -468,3 +468,7 @@ Time System 호환성과 Event 배치 가능성은 구분한다. World가 선택
 복수 World query의 의미 결과는 renderer cell과 독립적이어야 한다. 기존 UI를 위한
 adapter가 일부 의미를 표시하지 못하면 그 손실을 diagnostic으로 공개하며, renderer의
 제약을 Publication 또는 graph query contract로 역전파하지 않는다.
+
+## IP-008: 본문과 주석의 읽기 우선순위
+
+Canon별 Narrative section에서 primary/summary 본문을 먼저 표시한다. annotation과 public_references는 같은 Canon의 기본 닫힘 `주석과 출처` disclosure에 표시한다. 키보드·모바일·JavaScript 없는 읽기에서도 펼칠 수 있다. 본문에 필요한 역사적 논쟁은 annotation이라는 이유로 숨기지 않도록 작성 시 분류를 검토한다. 날짜 정밀도와 작성 과정 설명을 본문에 반복하지 않는다.

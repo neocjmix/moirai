@@ -402,6 +402,37 @@ const relationOperation = (ownerField: "canon_id" | "world_id") =>
     [ownerField, "type", "source_ref", "target_ref", "direction", "attributes"]
   );
 
+const updateNarrativeOperation = object({
+  kind: { const: "update" },
+  entity_type: { const: "narrative" },
+  origin_refs: array(
+    object({ field: str(128), origin_index: { type: "integer", minimum: 0 } })
+  ),
+  value: object(
+    {
+      narrative_id: ref,
+      canon_id: ref,
+      scope_type: choice("canon", "event"),
+      scope_id: ref,
+      locale: str(32),
+      kind: choice("primary", "summary", "annotation"),
+      title: nullable(str(500)),
+      body: str(100000),
+      public_references: array(object({ label: str(500), url: str(2000) }))
+    },
+    [
+      "narrative_id",
+      "canon_id",
+      "scope_type",
+      "scope_id",
+      "locale",
+      "kind",
+      "body",
+      "public_references"
+    ]
+  )
+});
+
 export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
   relationOperation("world_id"),
   CONTRACT_VERSION,
@@ -424,7 +455,8 @@ export const CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(
     withdrawEventOperation,
     relationMembershipOperation("add"),
     relationMembershipOperation("remove"),
-    withdrawRelationOperation
+    withdrawRelationOperation,
+    updateNarrativeOperation
   ]
 );
 export const EVENT_MEMBERSHIP_CHANGE_PLAN_SCHEMA: JsonSchema = changePlanSchema(

@@ -95,9 +95,22 @@ const view = {
       scope_type: "event",
       scope_id: "019f3b00-0000-7000-8000-000000000101",
       locale: "ko",
-      kind: "annotation",
+      kind: "primary",
       title: "검색 수용시험 이야기",
       body: "이야기본문전용표식은 사건 제목이나 요약에 없는 CI 검색 검증 문장이다.",
+      public_references: [
+        { label: "합성 출처", url: "https://example.org/history" }
+      ]
+    },
+    {
+      id: "019f3b00-0000-7000-8000-000000000902",
+      canon_id: "019f3b00-0000-7000-8000-000000000002",
+      scope_type: "event",
+      scope_id: "019f3b00-0000-7000-8000-000000000101",
+      locale: "ko",
+      kind: "annotation",
+      title: "날짜의 근거",
+      body: "보조주석전용표식: 자료의 연도 표기를 따른다.",
       public_references: []
     }
   ]

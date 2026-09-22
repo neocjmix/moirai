@@ -360,10 +360,14 @@ export function resolveCreateOperations(
         operation.value,
         mapping,
         `operations.${index}.value`
-      ) as { readonly event_id?: string; readonly relation_id?: string };
+      ) as {
+        readonly event_id?: string;
+        readonly relation_id?: string;
+        readonly narrative_id?: string;
+      };
       return {
         ...operation,
-        entity_id: value.event_id ?? value.relation_id!,
+        entity_id: value.event_id ?? value.relation_id ?? value.narrative_id!,
         value
       } as ResolvedChangeOperation;
     }
@@ -874,6 +878,7 @@ export function validateCandidateChangeSet(
   operations: readonly ResolvedCreateOperation[],
   existing: CanonicalState
 ): readonly ValidationIssue[] {
+  const warnings: ValidationIssue[] = [];
   const world = existing.world;
   const canons = new Map(existing.canons.map((item) => [item.id, item]));
   const timeSystems = new Map(
@@ -1209,6 +1214,29 @@ export function validateCandidateChangeSet(
       }
       case "narrative": {
         const value = operation.value;
+        if (operation.kind === "update") {
+          const previous = narratives.get(operation.entity_id);
+          if (!previous)
+            fail(
+              "narrative_not_found",
+              `${path}.value.narrative_id`,
+              "Narrative does not exist in this World",
+              [operation.entity_id]
+            );
+          if (
+            previous.canon_id !== value.canon_id ||
+            previous.scope_type !== value.scope_type ||
+            previous.scope_id !== value.scope_id ||
+            previous.locale !== value.locale
+          ) {
+            fail(
+              "narrative_scope_immutable",
+              `${path}.value`,
+              "Narrative corrections preserve Canon, scope and locale",
+              [operation.entity_id]
+            );
+          }
+        }
         const canon = canons.get(value.canon_id);
         if (!canon)
           fail(
@@ -1248,6 +1276,21 @@ export function validateCandidateChangeSet(
           );
         }
         nonEmpty(value.body, `${path}.value.body`);
+        if (
+          value.kind !== "annotation" &&
+          /(?:기존.{0,24}사건.{0,24}(?:재사용|공유)|이 Canon은|그래프에는.{0,24}범위|월일은 확정하지 않았다|(?:this canon|existing events?).{0,40}(?:reuse|re-use|share)|as an AI)/i.test(
+            value.body
+          )
+        ) {
+          warnings.push({
+            code: "narrative_editorial_content",
+            path: `${path}.value.body`,
+            affected_ids: [operation.entity_id],
+            message:
+              "Review reader prose: omit writing-process boilerplate; put specific source/date notes in annotation and change rationale in intent/origins. Keep uncertainty needed to understand the event.",
+            retryable: false
+          });
+        }
         for (const [
           referenceIndex,
           reference
@@ -1453,7 +1496,7 @@ export function validateCandidateChangeSet(
         );
     }
   }
-  return [];
+  return warnings;
 }
 
 export function stableStringify(value: unknown): string {

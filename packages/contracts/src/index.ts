@@ -231,7 +231,21 @@ export type CreateOperation =
   | CreateRelationOperation
   | CreateNarrativeOperation;
 
+/** Correct reader-facing prose without replacing its identity or scope. */
+export interface UpdateNarrativeOperation {
+  readonly kind: "update";
+  readonly entity_type: "narrative";
+  readonly value: CreateNarrativeOperation["value"] & {
+    readonly narrative_id: EntityReference;
+  };
+  readonly origin_refs?: readonly {
+    readonly field: string;
+    readonly origin_index: number;
+  }[];
+}
+
 export type ChangeOperation =
+  | UpdateNarrativeOperation
   | CreateOperation
   | AddEventCanonMembershipOperation
   | RemoveEventCanonMembershipOperation

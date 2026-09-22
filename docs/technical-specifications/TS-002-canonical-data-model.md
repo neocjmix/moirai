@@ -347,3 +347,9 @@ PostgreSQL table layout은 반출 형식이 아니다. 반출은 다음을 가�
 - schema version 및 변환 결과
 
 구체적인 파일 구성과 import 검증은 TS-007에서 정의한다.
+
+## IP-008: 독자를 위한 Narrative 분류
+
+사용자 승인에 따라 `primary`와 `summary`는 사건의 인물·행동·배경·결과를 설명한다. 사건 이해에 필요한 역사적 불확실성은 본문에 남긴다. `annotation`은 특정 자료의 해석, 날짜 정밀도 등 보조 주석이다. 출처 링크는 `public_references`에 둔다. 작성 과정, 엔티티 재사용, 모델링 방법, 반복 면책문구와 Canon의 지위 설명은 본문에 쓰지 않는다. 변경 이유는 ChangePlan `intent`/`origins`로 기록한다.
+
+Narrative 정정은 ID와 Canon·scope·locale를 유지하고 새 Revision을 만든다. 기존 Revision의 원문과 공개 인용은 보존한다.

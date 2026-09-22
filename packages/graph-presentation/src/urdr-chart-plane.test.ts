@@ -128,4 +128,75 @@ describe("pinned original URDR producer parity", () => {
     if (b?.geometryKind !== "point") throw Error("Missing B");
     expect(b.position.y).toBeGreaterThan(a.position.y);
   });
+  it("distributes an ordered same-year chain across its year bucket", () => {
+    const years = Array.from({ length: 7 }, (_, index) => 1452 + index);
+    const boundaryEvents = years.map((year) => ({
+      id: `year-${year}`,
+      canonId: "k",
+      type: "temporal-anchor" as const,
+      title: String(year)
+    }));
+    const sameYearEvents = ["exile", "restoration", "demotion", "death"].map(
+      (id) => ({ id, canonId: "k", type: "instant" as const, title: id })
+    );
+    const dense: Dataset = {
+      timeSystems: dataset.timeSystems,
+      canons: dataset.canons,
+      events: [...boundaryEvents, ...sameYearEvents],
+      structuralLinks: [],
+      semanticLinks: []
+    };
+    const extents = new Map<string, { minYear: number; maxYear: number }>([
+      ...years.map(
+        (year) => [`year-${year}`, { minYear: year, maxYear: year }] as const
+      ),
+      ...sameYearEvents.map(
+        (event) => [event.id, { minYear: 1457, maxYear: 1458 }] as const
+      )
+    ]);
+    const chain = [
+      { beforeId: "year-1452", afterId: "year-1453", minGapYears: 0.001 },
+      { beforeId: "year-1453", afterId: "year-1454", minGapYears: 0.001 },
+      { beforeId: "year-1454", afterId: "year-1455", minGapYears: 0.001 },
+      { beforeId: "year-1455", afterId: "year-1456", minGapYears: 0.001 },
+      { beforeId: "year-1456", afterId: "year-1457", minGapYears: 0.001 },
+      { beforeId: "year-1457", afterId: "exile", minGapYears: 0.001 },
+      { beforeId: "exile", afterId: "restoration", minGapYears: 0.001 },
+      { beforeId: "restoration", afterId: "demotion", minGapYears: 0.001 },
+      { beforeId: "demotion", afterId: "death", minGapYears: 0.001 },
+      { beforeId: "death", afterId: "year-1458", minGapYears: 0.001 }
+    ].map((constraint, index) => ({
+      ...constraint,
+      source: `chain-${index}`
+    }));
+    const result = buildGraphShellChartPlane(
+      dense,
+      {
+        axis: {
+          ...board.axis,
+          startYear: 1452,
+          endYear: 1458
+        }
+      },
+      { explicitExtents: extents, temporalConstraints: chain }
+    );
+    const y = sameYearEvents.map((event) => {
+      const point = result.entities.find(
+        (entity) =>
+          entity.eventId === event.id && entity.geometryKind === "point"
+      );
+      if (point?.geometryKind !== "point") throw Error(`Missing ${event.id}`);
+      return point.position.y;
+    });
+
+    expect(y).toEqual([...y].sort((left, right) => left - right));
+    expect(y[0]!).toBeGreaterThan(chronologyYearToWorldYForTest(1457));
+    expect(y.at(-1)!).toBeLessThan(chronologyYearToWorldYForTest(1458));
+    for (let index = 1; index < y.length; index += 1)
+      expect(y[index]! - y[index - 1]!).toBeGreaterThan(35);
+  });
 });
+
+function chronologyYearToWorldYForTest(year: number) {
+  return (year - (1452 + 1458) / 2) * 140;
+}

@@ -16,8 +16,9 @@ it("preserves the entire frozen 1k Graph spatial bundle including every coordina
     publication.documents
   )!;
   const spatial = buildSpatialArtifacts(result, publication.manifestBody);
-  // Captured after shared Event IDs became Canon-independent; includes all artifact bytes.
+  // Captured for layout /3 after same-year redistribution stopped treating
+  // immutable bucket anchors as movable cluster members; includes all bytes.
   expect(
     createHash("sha256").update(JSON.stringify(spatial)).digest("hex")
-  ).toBe("5fc6459a2f1083c079ee58ca947797f28592e9a380a49831bf8846d31025b7e5");
+  ).toBe("d3ea3c877b94d943088b7de3860b3198c8cb9c0831bd4707a08326478af01874");
 });

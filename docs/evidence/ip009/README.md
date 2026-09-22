@@ -21,6 +21,7 @@ World: `01995c2a-7b00-7000-8000-000000000101` (`early-joseon`). 기존 50개 Eve
 | 23 | 전쟁 전야의 사절과 원정 동원 |
 | 24 | 본문과 분리한 날짜/사료 주석, 난중일기 링크, Canon 서문 |
 | 25 | 해상전 Canon: 11 atomic Event 재사용, 새 관점 Narrative, 별도 Composite |
+| 26 | Canon 서문 보강 및 projection v2 최신 Publication |
 
 ## 날짜와 사료
 
@@ -30,4 +31,4 @@ World: `01995c2a-7b00-7000-8000-000000000101` (`early-joseon`). 기존 50개 Eve
 
 전체 전쟁의 exact Duration을 창작하지 않았다. contains로 묶은 사건의 알려진 날짜 범위와 실제 지속시간은 구별한다. 하위 사건이 모두 dated일 때에도 중첩 Composite의 descendant span이 unresolved가 되던 projection 결함을 실제 데이터로 재현했고 회귀 검사와 함께 수정했다.
 
-최종 publication/구조/브라우저 검증 결과는 이 디렉터리의 후속 evidence에 기록한다.
+최종 publication/구조/브라우저 검증 결과는 [최종 보고서](final-verification.md), [구조·보존 감사](audit-revision26.json), [Composite 범위](projection-revision26.json), [Live readback](world-readback.json), [공개 배포 상태](public-status.json)에 기록했다.

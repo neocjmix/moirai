@@ -1,0 +1,16 @@
+{
+  "world": {
+    "id": "01995c2a-7b00-7000-8000-000000000101",
+    "slug": "early-joseon",
+    "title": "조선사 — 건국에서 임진왜란까지",
+    "description": "황산대첩(1380)과 조선 건국기부터 임진왜란의 종결(1598)까지. 왕위 계승, 제도와 문화, 전쟁과 외교를 여러 Canon에서 함께 탐색한다."
+  },
+  "publication": {
+    "currentRevision": 26,
+    "targetRevision": 26,
+    "servedRevision": 26,
+    "projectionStatus": "ready"
+  },
+  "canon_count": 5,
+  "source_revision": 26
+}

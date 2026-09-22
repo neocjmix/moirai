@@ -94,6 +94,66 @@ const canonId = "019f3b00-0000-7000-8000-000000000002";
 const eventId = (suffix: string) =>
   `019f3b00-0000-7000-8000-000000000${suffix}`;
 describe("TS-010 publication projection", () => {
+  it("derives nested descendant spans without inventing a container position or duration", () => {
+    const view = corpus();
+    const child = view.events.find((event) => event.id === eventId("107"))!;
+    const parent = { ...child, id: eventId("201"), title: "Outer process" };
+    const relation = {
+      id: eventId("202"),
+      world_id: view.world.id,
+      type: "contains" as const,
+      direction: "directed" as const,
+      source_ref: { kind: "event" as const, event_id: parent.id },
+      target_ref: { kind: "event" as const, event_id: child.id },
+      attributes: {},
+      canon_memberships: [canonId]
+    };
+    const nested = {
+      ...view,
+      events: [...view.events, parent],
+      relations: [...view.relations, relation]
+    };
+    const result = projectRelationalTime(nested, 3, canonId);
+    const outer = result.composites.find(
+      (item) => item.event_id === parent.id
+    )!;
+    const inner = result.composites.find((item) => item.event_id === child.id)!;
+    expect(outer.descendant_span.kind).toBe("exact");
+    expect(outer.descendant_span.start).toEqual(inner.descendant_span.start);
+    expect(outer.descendant_span.end).toEqual(inner.descendant_span.end);
+    expect(outer.descendant_span.evidence).toContain(relation.id);
+    expect(outer.duration.kind).toBe("unresolved");
+    expect(
+      result.positions.find((item) => item.event_id === parent.id)?.kind
+    ).toBe("unresolved");
+
+    // One undated leaf invalidates the enclosing known span, even when another
+    // nested subtree is fully dated. An empty container does the same.
+    for (const kind of ["atomic", "composite"] as const) {
+      const unknown = { ...child, id: eventId("203"), kind };
+      const withUnknown = projectRelationalTime(
+        {
+          ...nested,
+          events: [...nested.events, unknown],
+          relations: [
+            ...nested.relations,
+            {
+              ...relation,
+              id: eventId("204"),
+              source_ref: { kind: "event", event_id: child.id },
+              target_ref: { kind: "event", event_id: unknown.id }
+            }
+          ]
+        },
+        4,
+        canonId
+      );
+      expect(
+        withUnknown.composites.find((item) => item.event_id === parent.id)
+          ?.descendant_span.kind
+      ).toBe("unresolved");
+    }
+  });
   it("preserves all five concrete knowledge ranges and their exclusive upper bounds", () => {
     const result = projectRelationalTime(corpus(), 2, canonId);
     const expected = json("expected/solver-projection.json") as {

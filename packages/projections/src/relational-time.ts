@@ -24,7 +24,7 @@ import type { CanonicalRevisionView } from "./index.js";
 import { temporalProofIndex } from "./temporal-proof.js";
 
 export const RELATIONAL_TIME_ALGORITHM_VERSION =
-  "event-relational-projection/1";
+  "event-relational-projection/2";
 
 const unique = (ids: readonly string[]) => [...new Set(ids)].sort();
 
@@ -100,6 +100,14 @@ export function projectRelationalTime(
       structural.push({ ...edge, type: relation.type });
   }
   const composites = events.filter((e) => e.kind === "composite");
+  const compositeIds = new Set(composites.map((event) => event.id));
+  const populatedContainers = new Set(
+    structural.flatMap((relation) =>
+      relation.type === "contains" && relation.source.kind === "event"
+        ? [relation.source.event_id]
+        : []
+    )
+  );
   const complete = composites.filter((e) =>
     structural.some(
       (r) =>
@@ -289,7 +297,16 @@ export function projectRelationalTime(
       if (position?.kind === "bounded" && position.lower && position.upper) {
         coordinates.push(position.lower.time_event, position.upper.time_event);
         spanEvidence.push(...position.source_constraint_ids);
-      } else spanComplete = false;
+      } else if (
+        ref.kind !== "event" ||
+        !compositeIds.has(ref.event_id) ||
+        !populatedContainers.has(ref.event_id)
+      ) {
+        // An unpositioned nested container is represented by its descendants
+        // already in this closure. Empty containers and undated atomic leaves
+        // still make the enclosing span unresolved.
+        spanComplete = false;
+      }
     }
     const first = coordinates[0];
     const sameSystem =

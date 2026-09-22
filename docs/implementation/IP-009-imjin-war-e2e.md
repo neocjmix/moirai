@@ -19,3 +19,15 @@ World metadata → Canon → 초기 침공/최상위 Composite → 수군 → �
 ## 종료 검증
 
 atomic 중복, nested contains, 부분 순서, 병렬 전선, 공유 Event의 Canon별 Narrative를 확인한다. current/target/served 최신 Revision 및 ready, Atropos graph/drawer/직접 URL/모바일을 실제 확인한다. Event/Composite/Narrative/Relation 수와 사료, 수정 결함, 남은 한계를 evidence에 기록한다.
+
+## 실제 구축에서 발견한 중첩 범위 결함
+
+Revision 23의 임진왜란 최상위 Composite는 날짜가 있는 atomic 후손을 모두 포함하지만 `descendant_span`이 unresolved였다. 하위 Composite를 점 위치가 없는 후손으로 처리한 것이 원인이다. nonempty Composite의 contains closure를 순회해 그 후손의 범위를 사용한다. 빈 Composite 또는 날짜 없는 atomic 후손은 계속 unresolved이며, 이 계산은 실제 Duration이나 Composite의 점 위치를 생성하지 않는다. projection algorithm version을 2로 올린다.
+
+실제 공개 데이터의 desktop/WebKit iPhone 14 E2E는 별도 `playwright.imjin-live.config.ts`로 실행한다. PR의 `feat/imjin-e2e`에서만 production read-only acceptance를 추가 실행하며 일반 fixture CI는 외부 데이터에 의존하지 않는다. merge·배포 후 같은 acceptance job을 다시 실행해 최종 Publication을 확인한다.
+
+Live direct URL에서 `canon=` 지정이 drawer 범위를 좁히지 않는 결함도 재현했다. `graphSpatialDetail`은 이미 여러 Canon Narrative를 모으는데 route가 Canon마다 이를 재호출해 시간 설명도 중복했다. 한 번만 읽고 명시된 Canon을 detail scope에 적용한다. 그래프의 Event identity와 선택한 전체 그래프 context는 그대로 유지한다. Live acceptance는 배포 전에는 구 버전을 관측하므로 CI의 배포 승인 gate와 분리하고, 최종 완료에는 배포 후 성공을 반드시 확인한다.
+
+기존 R5/1k byte-golden은 projection v2로 갱신한다. 원 코드를 복원했을 때 세 기존 golden이 모두 통과함을 확인했다. 변경 전후 temporal projection diff는 algorithm version, 중첩된 두 Composite의 descendant_span(null→후손 범위), 그에 따른 digest에 한정되었다. atomic position과 authored relation은 바뀌지 않았다.
+
+배포 전 live acceptance는 overview 두 건은 통과했으나 direct URL drawer 닫기 뒤 viewport에 점이 0개였다. bootstrap과 navigation bounds가 아직 Canon별 x offset을 더하는 반면 spatial reader는 World Revision별 단일 plane을 사용하고 있었다. World plane offset 계산을 공통 함수로 통일하고, 두 번째 Canon으로 공유 Event에 진입하는 회귀 검사를 추가한다. 서로 다른 World는 계속 분리한다.

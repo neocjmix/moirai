@@ -1,3 +1,5 @@
+// IP-009 version 2 baseline: nested descendant spans now resolve.
+// Reviewed against version 1; atomic positions and authored relations are unchanged.
 import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import { buildPublicationArtifacts } from "@moirai/publication";
@@ -16,5 +18,5 @@ it("preserves the complete 1k query result across lookup indexing", () => {
   )!;
   expect(
     createHash("sha256").update(JSON.stringify(result)).digest("hex")
-  ).toBe("482e67153dd8449c88b73645fcf46d15208c04dbdad75335ad55b13c1820a768");
+  ).toBe("3d4c2e2ae497a43e9fa154e0e154e4f3b7aa7a4ba691489a8871706496e1e433");
 });

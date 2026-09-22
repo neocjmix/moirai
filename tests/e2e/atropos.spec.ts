@@ -507,7 +507,7 @@ test("health and immutable artifacts expose only the relational model", async ({
     source_revision: 2,
     projection_type: "event_relational_time",
     canon_id: canonId,
-    algorithm_version: "event-relational-projection/1"
+    algorithm_version: "event-relational-projection/2"
   });
 
   const graphScope = await request.get(

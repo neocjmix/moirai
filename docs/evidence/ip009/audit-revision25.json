@@ -1,0 +1,31 @@
+{
+  "revision": 25,
+  "uniqueEvents": 58,
+  "eventKinds": {
+    "composite": 12,
+    "atomic": 46
+  },
+  "mainEvents": 57,
+  "seaEvents": 12,
+  "sharedEvents": 11,
+  "relations": 195,
+  "relationTypes": {
+    "contains": 66,
+    "not_after": 46,
+    "precedes": 69,
+    "influences": 10,
+    "enables": 3,
+    "causes": 1
+  },
+  "narratives": 89,
+  "narrativeKinds": {
+    "primary": 70,
+    "annotation": 19
+  },
+  "primaryChars": 24803,
+  "primaryMinChars": 255,
+  "allHaveReferences": true,
+  "originalEventsUnchanged": true,
+  "duplicateAtomicTitle": [],
+  "editorialLeak": []
+}

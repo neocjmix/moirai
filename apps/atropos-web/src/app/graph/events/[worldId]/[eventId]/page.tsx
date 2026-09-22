@@ -2,10 +2,7 @@ import { presentationNodeId } from "@moirai/graph-presentation";
 import { notFound } from "next/navigation";
 import { AtroposGraphRoot } from "../../../../../components/atropos-graph-root";
 import { GraphQueryFallback } from "../../../../../components/graph-query-fallback";
-import {
-  graphEventHref,
-  graphReaderState
-} from "../../../../../lib/event-reading-navigation";
+import { graphReaderState } from "../../../../../lib/event-reading-navigation";
 import { composeCachedGraphPublicationQuery as composeGraphPublicationQuery } from "../../../../../lib/graph-publication-composer";
 import {
   graphRevisionPins,
@@ -107,62 +104,13 @@ export default async function GraphEventPage({
     );
     const presentation = graphPresentationFromResult(result);
     const spatial = await graphSpatialBootstrap(initialGraphQuery, catalog);
-    const detailCanons = requestedCanonId
-      ? [requestedCanonId]
-      : event.canon_memberships.filter((canonId) =>
-          source.canon_ids.includes(canonId)
-        );
-    const selectedDetails = await Promise.all(
-      detailCanons.map((canonId) => {
-        const canonFocus = { ...focus, canon_id: canonId };
-        return graphSpatialDetail(
-          initialGraphQuery,
-          presentationNodeId(canonFocus, canonFocus.event_ref)
-        );
-      })
+    // graphSpatialDetail already groups all selected Canon narratives around
+    // one World Event. Read once; an explicit URL Canon narrows only the drawer.
+    const initialEventDetail = await graphSpatialDetail(
+      initialGraphQuery,
+      presentationNodeId(focus, focus.event_ref),
+      requestedCanonId ?? undefined
     );
-    const selectedDetail = selectedDetails[0]!;
-    const graphSearch = new URLSearchParams();
-    if (raw) graphSearch.set("mq", raw);
-    const initialEventDetail = requestedCanonId
-      ? selectedDetail
-      : {
-          ...selectedDetail,
-          notes: selectedDetails
-            .flatMap((detail) => [
-              `## ${detail.readingContext?.scopeLabel ?? detail.canonId}`,
-              detail.notes
-            ])
-            .filter(Boolean)
-            .join("\n\n"),
-          chronologySummary: selectedDetails
-            .map(
-              (detail) =>
-                `${detail.readingContext?.scopeLabel ?? detail.canonId}: ${detail.chronologySummary}`
-            )
-            .join("\n"),
-          causeEvents: uniqueEventLinks(
-            selectedDetails.flatMap((detail) => detail.causeEvents)
-          ),
-          resultEvents: uniqueEventLinks(
-            selectedDetails.flatMap((detail) => detail.resultEvents)
-          ),
-          readingContext: {
-            scopeLabel: `${selectedDetails.length} Canon contexts`,
-            stableEventHref: graphEventHref({
-              worldId,
-              eventId,
-              revision: pointer.served_revision,
-              graphSearch: graphSearch.toString()
-            }),
-            observation: selectedDetails
-              .map(
-                (detail) =>
-                  `## ${detail.readingContext?.scopeLabel ?? detail.canonId}\n${detail.readingContext?.observation ?? ""}`
-              )
-              .join("\n\n")
-          }
-        };
 
     return (
       <>
@@ -189,10 +137,4 @@ export default async function GraphEventPage({
   } catch {
     notFound();
   }
-}
-
-function uniqueEventLinks(
-  links: readonly { readonly id: string; readonly label: string }[]
-) {
-  return [...new Map(links.map((link) => [link.id, link])).values()];
 }

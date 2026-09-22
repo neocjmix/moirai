@@ -1,3 +1,5 @@
+// IP-009 version 2 baseline: nested descendant spans now resolve.
+// Reviewed against version 1; atomic positions and authored relations are unchanged.
 import { createHash } from "node:crypto";
 import { expect, it } from "vitest";
 import { buildPublicationArtifacts } from "@moirai/publication";
@@ -20,5 +22,5 @@ it("preserves the entire frozen 1k Graph spatial bundle including every coordina
   // immutable bucket anchors as movable cluster members; includes all bytes.
   expect(
     createHash("sha256").update(JSON.stringify(spatial)).digest("hex")
-  ).toBe("d3ea3c877b94d943088b7de3860b3198c8cb9c0831bd4707a08326478af01874");
+  ).toBe("6a0d4c774ea5619e5039213cf8a82ab9a1588b850e0074a6e416334372b57987");
 });

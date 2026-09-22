@@ -75,3 +75,13 @@ it("preserves the pinch world point when a scale hits its minimum away from the 
     (pivot.y - raw.y) / raw.scaleY
   );
 });
+it("overlays Canon bounds within a World revision and separates different Worlds", () => {
+  const scopes = [
+    { canonId: "a", planeId: "world-1", bounds, widthHint: 1100, ready: true },
+    { canonId: "b", planeId: "world-1", bounds, widthHint: 1500, ready: true },
+    { canonId: "c", planeId: "world-2", bounds, widthHint: 1100, ready: true }
+  ];
+  expect(composeNavigationBounds(scopes, ["a", "b"])).toEqual(bounds);
+  expect(composeNavigationBounds(scopes, ["a", "b", "c"])).toEqual({ ...bounds, maxX: 2740 });
+  expect(composeNavigationBounds(scopes, ["b", "c"])).toEqual({ ...bounds, maxX: 2740 });
+});

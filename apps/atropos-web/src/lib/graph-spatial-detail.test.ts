@@ -130,6 +130,23 @@ vi.mock("./moirai-spatial", () => ({
 }));
 
 describe("Event reader detail presentation", () => {
+  it("honors an explicit Canon without changing the shared Event identity", async () => {
+    const detail = await graphSpatialDetail(
+      {},
+      "point-1",
+      fixture.sourceA.canon_id
+    );
+    expect(detail.id).toBe("point-1");
+    expect(detail.narrativeSections?.map((section) => section.canonId)).toEqual(
+      [fixture.sourceA.canon_id]
+    );
+    expect(detail.readingContext?.scopeLabel).toBe(
+      "Public fixture World · Interpretation A"
+    );
+    await expect(
+      graphSpatialDetail({}, "point-1", "outside-query")
+    ).rejects.toThrow("graph_identity_outside_query");
+  });
   it("groups one Event's narratives by selected Canon without merging prose", async () => {
     const detail = eventDetailResponseSchema.parse(
       await graphSpatialDetail({}, "point-1")

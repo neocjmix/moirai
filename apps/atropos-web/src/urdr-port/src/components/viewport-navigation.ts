@@ -1,3 +1,4 @@
+import { composePlaneOffsets } from "../spatial-composition";
 import type { ImageViewportView } from "./image-viewport";
 export type NavigationBounds = {
   minX: number;
@@ -8,6 +9,7 @@ export type NavigationBounds = {
 type Size = { width: number; height: number };
 export type NavigationScope = {
   canonId: string;
+  planeId?: string | undefined;
   widthHint: number;
   bounds: NavigationBounds | null;
   ready: boolean;
@@ -16,12 +18,16 @@ export function composeNavigationBounds(
   scopes: readonly NavigationScope[],
   ids: readonly string[]
 ): NavigationBounds | null {
-  let offset = 0;
+  const offsets = composePlaneOffsets(ids.flatMap((id) => {
+    const scope = scopes.find((s) => s.canonId === id);
+    return scope ? [{ ...scope, id }] : [];
+  }));
   let union: NavigationBounds | null = null;
   for (const id of ids) {
     const scope = scopes.find((s) => s.canonId === id);
     if (!scope?.ready) return null;
     const b = scope.bounds;
+    const offset = offsets.get(id) ?? 0;
     if (b) {
       const shifted = { ...b, minX: b.minX + offset, maxX: b.maxX + offset };
       union = union
@@ -33,7 +39,6 @@ export function composeNavigationBounds(
           }
         : shifted;
     }
-    offset += scope.widthHint + 240;
   }
   return union;
 }

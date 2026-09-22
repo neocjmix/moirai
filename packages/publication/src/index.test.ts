@@ -35,7 +35,7 @@ describe("single Event/Relation publication format", () => {
     expect(manifest.format_version).toBe("3.0.0");
     expect(artifacts.pointer.format_version).toBe("3.0.0");
     expect(manifest.algorithms.relational_time).toBe(
-      "event-relational-projection/1"
+      "event-relational-projection/2"
     );
     expect(manifest.algorithms.graph_scope).toBe(
       "event-relational-graph-scope/2"

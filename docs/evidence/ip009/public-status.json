@@ -1,0 +1,23 @@
+{
+  "application": {
+    "service": "atropos-web",
+    "version": "0.0.0-dev",
+    "commit_sha": "ebea433cdc8a66e767c253b8fb15e9a988c6ece5",
+    "deployed_at": "2026-09-22T10:04:44.148Z"
+  },
+  "versions": {
+    "contract": "4",
+    "schema": "1.0.0",
+    "publication_format": "3.0.0"
+  },
+  "smoke": {
+    "result": "passed",
+    "checked_at": "2026-09-22T10:05:32Z",
+    "run_url": "https://github.com/neocjmix/moirai/actions/runs/35714013300"
+  },
+  "surfaces": {
+    "atropos": "ok",
+    "health": "ok",
+    "status": "ok"
+  }
+}

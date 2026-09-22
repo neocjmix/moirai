@@ -33,6 +33,8 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-005 — CI·배포·공개 QA evidence](evidence/ip-005-graph-reader-consolidation.md)
 - [IP-006 — Clotho MCP ChangePlan schema repair before M5 (complete, M5 inactive)](implementation/IP-006-clotho-mcp-schema-repair.md)
 - [IP-007 — Shared Event graph identity and Canon Narrative drawer (complete, M5 inactive)](implementation/IP-007-shared-event-reader-identity.md)
+- [IP-009 — 임진왜란 실제 역사 구축과 E2E](implementation/IP-009-imjin-war-e2e.md)
+- [IP-009 — 최종 검증 결과](evidence/ip009/final-verification.md)
 - [현재 구현 상태](implementation/CURRENT.md)
 - [M3-R 책임 경계 재정렬](implementation/M3-BOUNDARY.md)
 - [M3-C Auth0·MCP 연결](implementation/M3-CONNECTION.md)

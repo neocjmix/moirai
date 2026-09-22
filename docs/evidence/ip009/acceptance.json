@@ -1,0 +1,60 @@
+{
+  "functionalCommit": "ebea433cdc8a66e767c253b8fb15e9a988c6ece5",
+  "publication": {
+    "currentRevision": 26,
+    "targetRevision": 26,
+    "servedRevision": 26,
+    "projectionStatus": "ready"
+  },
+  "ci": {
+    "run": "https://github.com/neocjmix/moirai/actions/runs/35713592786",
+    "mobileJob": 106701098724,
+    "unitIntegrationBuildAudit": "passed",
+    "secretScan": "passed",
+    "mobileFixture": {
+      "passed": 25,
+      "skipped": 1
+    },
+    "liveAcceptance": {
+      "passed": 4,
+      "failed": 0,
+      "projects": [
+        "iphone-14",
+        "desktop-webkit"
+      ],
+      "artifactId": 10688052393,
+      "artifactSha256": "212961e6703724034e7dea2a066801be18187ccb74a37f0bcc829300699d5ad0"
+    }
+  },
+  "smoke": {
+    "run": "https://github.com/neocjmix/moirai/actions/runs/35714013300",
+    "publicReadiness": "passed",
+    "authenticatedClotho": "passed"
+  },
+  "scaleRegression": {
+    "run": "https://github.com/neocjmix/moirai/actions/runs/35712081390",
+    "fixtureEventCounts": [
+      100,
+      1000,
+      10000
+    ],
+    "result": "passed"
+  },
+  "railwayServices": [
+    {
+      "serviceId": "ed61330b-87b2-40f2-a692-3453739f09a5",
+      "status": "SUCCESS",
+      "commit": "ebea433cdc8a66e767c253b8fb15e9a988c6ece5"
+    },
+    {
+      "serviceId": "fe402236-354f-4088-8182-aaf5f7b34a99",
+      "status": "SUCCESS",
+      "commit": "ebea433cdc8a66e767c253b8fb15e9a988c6ece5"
+    },
+    {
+      "serviceId": "dafb90ad-69bc-420f-b0d2-65a5f6bbc2cf",
+      "status": "SUCCESS",
+      "commit": "ebea433cdc8a66e767c253b8fb15e9a988c6ece5"
+    }
+  ]
+}

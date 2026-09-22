@@ -134,4 +134,4 @@ Ordinary code failures, test failures and deployment errors are not reasons to h
 
 ## IP-011 planning authority
 
-Read CON-003, entities/CORE-MODEL, TS-002/004/005/006 and IP-011 for the target model. CURRENT distinguishes accepted planning from deployed v4 behavior. Historical IP-003/IP-007 requirements do not restore Canon-specific Narrative ownership. This planning phase authorizes documentation/commit/push/PR, not runtime migration or activation of A1–A6.
+Read CON-003, entities/CORE-MODEL, TS-002/004/005/006 and IP-011 for the target model. CURRENT distinguishes accepted planning from deployed v4 behavior. Historical IP-003/IP-007 requirements do not restore Canon-specific Narrative ownership. The user authorized IP-011 execution on 2026-09-22 after merging #129, including writes, corrections, deletion, merge and deployment. Execute A1–A6 in dependency order; retain rehearsal/backup/validation gates before canonical migration.

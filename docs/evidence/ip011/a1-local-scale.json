@@ -1,0 +1,403 @@
+{
+  "measured_at": "2026-09-22",
+  "source": "IP004_SCALE={1000,10000} vitest run apps/atropos-web/src/lib/ip004-scale.test.ts",
+  "environment": "local filesystem, no network latency, synthetic fixture, cold process then 10 warm samples; not production SLO",
+  "measurements": [
+    {
+      "scale": 1000,
+      "phase": "canonical_publication_start",
+      "started_at": "2026-09-22T20:24:51.690Z"
+    },
+    {
+      "scale": 1000,
+      "phase": "canonical_publication",
+      "ms": 1076.853668,
+      "bytes": 11996095,
+      "objects": 1008,
+      "peak_rss_kib": 225812
+    },
+    {
+      "scale": 1000,
+      "phase": "spatial_publication",
+      "graph_input_ms": 34.320812999999816,
+      "ms": 529.6363429999999,
+      "bytes": 12648790,
+      "objects": 20,
+      "peak_rss_kib": 321108
+    },
+    {
+      "scale": 1000,
+      "phase": "build_complete",
+      "total_ms": 1773.022688,
+      "peak_rss_kib": 332132
+    },
+    {
+      "scale": 1000,
+      "fixture": {
+        "world": "019f60ac-03e8-7000-8000-000000000001",
+        "events": 1000,
+        "relations": 3144,
+        "narratives": 862
+      },
+      "storage": "local filesystem; no network latency",
+      "process_role": "atropos_read; separate builder reports its own peak RSS",
+      "rounds": 10,
+      "paths": [
+        {
+          "path": "initial_cold",
+          "samples": 1,
+          "app_p50_ms": 151.77234099999987,
+          "app_p95_ms": 151.77234099999987,
+          "serialize_p95_ms": 11.827712000000247,
+          "parse_p95_ms": 5.599336000000221,
+          "objects_min": 13,
+          "objects_max": 13,
+          "artifact_bytes_max": 7918977,
+          "heap_used_bytes_max": 84773528,
+          "payload_bytes_max": 1982414
+        },
+        {
+          "path": "drawer_cold",
+          "samples": 1,
+          "app_p50_ms": 88.97344199999998,
+          "app_p95_ms": 88.97344199999998,
+          "serialize_p95_ms": 0.057106000000203494,
+          "parse_p95_ms": 0.036604999999781285,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 8313,
+          "heap_used_bytes_max": 62328248,
+          "payload_bytes_max": 15497
+        },
+        {
+          "path": "spatial_cold",
+          "samples": 1,
+          "app_p50_ms": 80.95009900000014,
+          "app_p95_ms": 80.95009900000014,
+          "serialize_p95_ms": 0.09381199999961609,
+          "parse_p95_ms": 0.05016599999999016,
+          "objects_min": 12,
+          "objects_max": 12,
+          "artifact_bytes_max": 4046661,
+          "heap_used_bytes_max": 115905576,
+          "payload_bytes_max": 24261
+        },
+        {
+          "path": "initial_warm",
+          "samples": 10,
+          "app_p50_ms": 3.4811620000000403,
+          "app_p95_ms": 8.92312099999981,
+          "serialize_p95_ms": 5.8374549999998635,
+          "parse_p95_ms": 5.220244999999522,
+          "objects_min": 1,
+          "objects_max": 2,
+          "artifact_bytes_max": 1325,
+          "heap_used_bytes_max": 137743832,
+          "payload_bytes_max": 1982414
+        },
+        {
+          "path": "event_reading",
+          "samples": 10,
+          "app_p50_ms": 0.8912049999998999,
+          "app_p95_ms": 4.660639999999603,
+          "serialize_p95_ms": 0.06903400000010151,
+          "parse_p95_ms": 0.07092699999975594,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 302,
+          "heap_used_bytes_max": 132096720,
+          "payload_bytes_max": 7622
+        },
+        {
+          "path": "drawer_warm",
+          "samples": 10,
+          "app_p50_ms": 2.0235830000001442,
+          "app_p95_ms": 2.9724730000002637,
+          "serialize_p95_ms": 0.06859400000030291,
+          "parse_p95_ms": 0.045208000000457105,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 132494936,
+          "payload_bytes_max": 15497
+        },
+        {
+          "path": "spatial_warm",
+          "samples": 10,
+          "app_p50_ms": 25.235609000000295,
+          "app_p95_ms": 30.777897999999823,
+          "serialize_p95_ms": 0.1329810000006546,
+          "parse_p95_ms": 0.0678619999998773,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 141640864,
+          "payload_bytes_max": 24262
+        },
+        {
+          "path": "narrative_search",
+          "samples": 10,
+          "app_p50_ms": 7.143806999999924,
+          "app_p95_ms": 22.602405999999974,
+          "serialize_p95_ms": 0.06970500000079483,
+          "parse_p95_ms": 0.08488800000031915,
+          "objects_min": 0,
+          "objects_max": 21,
+          "artifact_bytes_max": 840167,
+          "heap_used_bytes_max": 147052752,
+          "payload_bytes_max": 20469
+        },
+        {
+          "path": "full_graph_query",
+          "samples": 1,
+          "app_p50_ms": 360.6060240000006,
+          "app_p95_ms": 360.6060240000006,
+          "serialize_p95_ms": 13.184178999999858,
+          "parse_p95_ms": 11.468410000000404,
+          "objects_min": 985,
+          "objects_max": 985,
+          "artifact_bytes_max": 8203542,
+          "heap_used_bytes_max": 150402256,
+          "payload_bytes_max": 3187642
+        }
+      ],
+      "peak_rss_kib": 364920,
+      "caches": {
+        "revision": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 6460173,
+          "max_bytes": 134217728,
+          "hits": 42,
+          "misses": 1,
+          "evictions": 0
+        },
+        "reader": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 3181824,
+          "max_bytes": 33554432,
+          "hits": 10,
+          "misses": 1,
+          "evictions": 0
+        },
+        "objects": {
+          "entries": 1003,
+          "pending": 0,
+          "accounted_bytes": 14804688,
+          "max_bytes": 16777216,
+          "hits": 264,
+          "misses": 1031,
+          "evictions": 28
+        },
+        "spatial_context": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 8307693,
+          "max_bytes": 134217728,
+          "hits": 21,
+          "misses": 1,
+          "evictions": 0
+        }
+      }
+    },
+    {
+      "scale": 10000,
+      "phase": "canonical_publication_start",
+      "started_at": "2026-09-22T20:25:12.355Z"
+    },
+    {
+      "scale": 10000,
+      "phase": "canonical_publication",
+      "ms": 41577.281670000004,
+      "bytes": 98697934,
+      "objects": 10008,
+      "peak_rss_kib": 1940144
+    },
+    {
+      "scale": 10000,
+      "phase": "spatial_publication",
+      "graph_input_ms": 288.5774500000043,
+      "ms": 33206.00965100001,
+      "bytes": 125432297,
+      "objects": 20,
+      "peak_rss_kib": 1987480
+    },
+    {
+      "scale": 10000,
+      "phase": "build_complete",
+      "total_ms": 76752.924134,
+      "peak_rss_kib": 2067476
+    },
+    {
+      "scale": 10000,
+      "fixture": {
+        "world": "019f60ac-2710-7000-8000-000000000001",
+        "events": 10000,
+        "relations": 31662,
+        "narratives": 8573
+      },
+      "storage": "local filesystem; no network latency",
+      "process_role": "atropos_read; separate builder reports its own peak RSS",
+      "rounds": 10,
+      "paths": [
+        {
+          "path": "initial_cold",
+          "samples": 1,
+          "app_p50_ms": 967.364797000002,
+          "app_p95_ms": 967.364797000002,
+          "serialize_p95_ms": 8.225537999998778,
+          "parse_p95_ms": 4.6720880000066245,
+          "objects_min": 14,
+          "objects_max": 14,
+          "artifact_bytes_max": 59295405,
+          "heap_used_bytes_max": 325898560,
+          "payload_bytes_max": 2417342
+        },
+        {
+          "path": "drawer_cold",
+          "samples": 1,
+          "app_p50_ms": 685.6982040000003,
+          "app_p95_ms": 685.6982040000003,
+          "serialize_p95_ms": 0.041442000001552515,
+          "parse_p95_ms": 0.02764099999330938,
+          "objects_min": 1,
+          "objects_max": 1,
+          "artifact_bytes_max": 8313,
+          "heap_used_bytes_max": 366954768,
+          "payload_bytes_max": 15498
+        },
+        {
+          "path": "spatial_cold",
+          "samples": 1,
+          "app_p50_ms": 726.4741249999934,
+          "app_p95_ms": 726.4741249999934,
+          "serialize_p95_ms": 0.06323500000871718,
+          "parse_p95_ms": 0.048853000000235625,
+          "objects_min": 12,
+          "objects_max": 12,
+          "artifact_bytes_max": 40134783,
+          "heap_used_bytes_max": 522436752,
+          "payload_bytes_max": 29243
+        },
+        {
+          "path": "initial_warm",
+          "samples": 10,
+          "app_p50_ms": 18.67479099999764,
+          "app_p95_ms": 33.26980100000219,
+          "serialize_p95_ms": 9.788716000010027,
+          "parse_p95_ms": 10.141879000002518,
+          "objects_min": 1,
+          "objects_max": 3,
+          "artifact_bytes_max": 2233495,
+          "heap_used_bytes_max": 1274314504,
+          "payload_bytes_max": 2417342
+        },
+        {
+          "path": "event_reading",
+          "samples": 10,
+          "app_p50_ms": 3.5504760000039823,
+          "app_p95_ms": 8.830721000005724,
+          "serialize_p95_ms": 0.13025700001162477,
+          "parse_p95_ms": 0.052358999993884936,
+          "objects_min": 1,
+          "objects_max": 2,
+          "artifact_bytes_max": 8615,
+          "heap_used_bytes_max": 1225382896,
+          "payload_bytes_max": 7622
+        },
+        {
+          "path": "drawer_warm",
+          "samples": 10,
+          "app_p50_ms": 8.175241999997525,
+          "app_p95_ms": 10.60272399999667,
+          "serialize_p95_ms": 0.04556899999442976,
+          "parse_p95_ms": 0.03649500000756234,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 1225698472,
+          "payload_bytes_max": 15498
+        },
+        {
+          "path": "spatial_warm",
+          "samples": 10,
+          "app_p50_ms": 347.22252700000536,
+          "app_p95_ms": 408.5003679999936,
+          "serialize_p95_ms": 0.16036199999507517,
+          "parse_p95_ms": 0.25402300000132527,
+          "objects_min": 0,
+          "objects_max": 0,
+          "artifact_bytes_max": 0,
+          "heap_used_bytes_max": 1234265352,
+          "payload_bytes_max": 29244
+        },
+        {
+          "path": "narrative_search",
+          "samples": 10,
+          "app_p50_ms": 62.891692000004696,
+          "app_p95_ms": 97.25142299999425,
+          "serialize_p95_ms": 0.04308500001206994,
+          "parse_p95_ms": 0.04881399999430869,
+          "objects_min": 0,
+          "objects_max": 21,
+          "artifact_bytes_max": 7088889,
+          "heap_used_bytes_max": 1236915200,
+          "payload_bytes_max": 20469
+        },
+        {
+          "path": "full_graph_query",
+          "samples": 1,
+          "app_p50_ms": 658.5910989999975,
+          "app_p95_ms": 658.5910989999975,
+          "serialize_p95_ms": 13.401305000006687,
+          "parse_p95_ms": 8.53798999999708,
+          "objects_min": 1007,
+          "objects_max": 1007,
+          "artifact_bytes_max": 45915385,
+          "heap_used_bytes_max": 631927728,
+          "payload_bytes_max": 3535478
+        }
+      ],
+      "peak_rss_kib": 1742600,
+      "caches": {
+        "revision": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 43437745,
+          "max_bytes": 134217728,
+          "hits": 42,
+          "misses": 1,
+          "evictions": 0
+        },
+        "reader": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 3678605,
+          "max_bytes": 33554432,
+          "hits": 10,
+          "misses": 1,
+          "evictions": 0
+        },
+        "objects": {
+          "entries": 1002,
+          "pending": 0,
+          "accounted_bytes": 16084072,
+          "max_bytes": 16777216,
+          "hits": 239,
+          "misses": 1056,
+          "evictions": 52
+        },
+        "spatial_context": {
+          "entries": 1,
+          "pending": 0,
+          "accounted_bytes": 83100125,
+          "max_bytes": 134217728,
+          "hits": 21,
+          "misses": 1,
+          "evictions": 0
+        }
+      }
+    }
+  ]
+}

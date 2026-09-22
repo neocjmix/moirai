@@ -1,3 +1,4 @@
+import { AUTHORING_POLICY, CONTRACT_VERSION } from "@moirai/contracts";
 import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import { describe, expect, it, vi, afterEach } from "vitest";
@@ -6,6 +7,41 @@ import { callClotho } from "./client.js";
 const token = randomBytes(32).toString("base64url");
 afterEach(() => vi.unstubAllGlobals());
 describe("Clotho JSON client", () => {
+  it("preserves the complete policy envelope through the CLI HTTP client", async () => {
+    const envelope = {
+      contract_version: CONTRACT_VERSION,
+      result: AUTHORING_POLICY
+    };
+    let received = "";
+    const server = createServer(async (request, response) => {
+      expect(request.url).toBe("/v1/clotho/authoring.policy.get");
+      expect(request.headers.authorization).toBe(`Bearer ${token}`);
+      for await (const chunk of request) received += String(chunk);
+      response.setHeader("content-type", "application/json");
+      response.end(JSON.stringify(envelope));
+    });
+    await new Promise<void>((resolve) =>
+      server.listen(0, "127.0.0.1", resolve)
+    );
+    const input = {
+      world_id: "01995c2a-7b00-7000-8000-000000000101",
+      contract_version: 4
+    };
+    try {
+      const address = server.address() as { port: number };
+      expect(
+        await callClotho(
+          { baseUrl: `http://127.0.0.1:${address.port}`, token },
+          "authoring.policy.get",
+          input
+        )
+      ).toEqual(envelope);
+      expect(JSON.parse(received)).toEqual(input);
+    } finally {
+      server.close();
+    }
+  });
+
   it("requires HTTPS outside loopback and rejects URL credentials", async () => {
     for (const baseUrl of [
       "http://example.com",

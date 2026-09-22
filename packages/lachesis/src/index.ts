@@ -1,3 +1,4 @@
+import { AUTHORING_POLICY } from "@moirai/contracts";
 import type {
   ChangePlan,
   ClothoMethod,
@@ -97,6 +98,7 @@ export function createLachesis(store: CanonicalStore): Lachesis {
           "world_id",
           "World is required"
         );
+      if (method === "authoring.policy.get") return AUTHORING_POLICY;
       return store.query(method, input, actor.world_ids);
     },
     async validate(plan, actor, digest) {

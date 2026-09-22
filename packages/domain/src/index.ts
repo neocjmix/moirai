@@ -22,9 +22,10 @@ import {
   temporalAdapterRegistry
 } from "./temporal-relations.js";
 import { solveTemporalGraph } from "./temporal-graph.js";
-import type {
-  CompositeTemporalRelation,
-  TemporalConstraint
+import {
+  solveTemporalConstraints,
+  type CompositeTemporalRelation,
+  type TemporalConstraint
 } from "./temporal.js";
 
 export * from "./temporal.js";
@@ -1055,6 +1056,21 @@ export function validateCandidateChangeSet(
         break;
       }
       case "event": {
+        if (operation.kind === "update") {
+          const previous = events.get(operation.entity_id);
+          if (!previous || withdrawnEventIds.has(operation.entity_id))
+            fail(
+              "event_not_found",
+              path,
+              "Event metadata target must be active in this World",
+              [operation.entity_id]
+            );
+          events.set(operation.entity_id, {
+            ...previous,
+            attributes: operation.value.attributes
+          });
+          break;
+        }
         if (operation.kind === "withdraw") {
           const event = events.get(operation.value.event_id);
           if (!event) {
@@ -1489,6 +1505,64 @@ export function validateCandidateChangeSet(
       ),
       [...timeSystems.values()]
     );
+  // Metadata is descriptive: warn when an authored date has no canonical anchor
+  // in a member Canon, including when an existing Event is newly shared.
+  for (const canon of canons.values()) {
+    const canonRelations = [...relations.values()].filter(
+      (r) =>
+        !withdrawnRelationIds.has(r.id) &&
+        relationCanonMemberships.get(r.id)?.has(canon.id) &&
+        ["precedes", "not_after", "coincides"].includes(r.type)
+    );
+    const solved = solveTemporalConstraints(
+      canonRelations.flatMap((r) => {
+        const endpoints = canonicalRelationEndpoints(r);
+        return endpoints &&
+          (r.type === "precedes" ||
+            r.type === "not_after" ||
+            r.type === "coincides")
+          ? [
+              {
+                id: r.id,
+                type: r.type,
+                source: endpoints.source,
+                target: endpoints.target
+              }
+            ]
+          : [];
+      }),
+      temporalAdapterRegistry([...timeSystems.values()])
+    );
+    const anchored = new Set(
+      solved.projections
+        .filter((p) => p.kind === "exact" || p.kind === "bounded")
+        .map((p) => p.event_id)
+    );
+    for (const event of activeEvents) {
+      // A thematic Composite may validly derive its span from contained Events.
+      // Boundary/containment validity is checked by temporalGraphFailure.
+      if (event.kind === "composite") continue;
+      if (
+        !eventCanonMemberships.get(event.id)?.has(canon.id) ||
+        anchored.has(event.id)
+      )
+        continue;
+      if (
+        !["gregorian_lower", "date_original", "date_precision"].some(
+          (key) => key in event.attributes
+        )
+      )
+        continue;
+      warnings.push({
+        code: "descriptive_date_without_temporal_anchor",
+        path: `events.${event.id}.attributes`,
+        affected_ids: [event.id, canon.id],
+        message:
+          "Date attributes do not place an Event. Add canonical Time Event not_after/precedes bounds in this Canon, or share the existing temporal Relation memberships. Relative topology is not calendar time.",
+        retryable: false
+      });
+    }
+  }
   const createdCompositeIds = new Set(
     operations.flatMap((operation) =>
       operation.kind === "create" &&

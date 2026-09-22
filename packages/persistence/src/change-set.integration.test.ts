@@ -37,6 +37,63 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
   });
   afterAll(async () => db.destroy());
 
+  it("corrects Event metadata without replacing identity, membership or historical revisions", async () => {
+    const base = createTestChangeSet();
+    await commitCreateChangeSet(db, base);
+    const previous = await readWorldAtRevision(db, base.world_id, 1);
+    const original = previous.events[0]!;
+    const correction: CreateChangeSet = {
+      ...base,
+      change_set_id: "01995c2a-7b00-7000-8000-000000000779",
+      expected_revision: 1,
+      operations: [
+        {
+          kind: "update",
+          entity_type: "event",
+          value: {
+            event_id: original.id,
+            attributes: { date_precision: "year", date_original: "1573" }
+          }
+        }
+      ]
+    };
+    expect((await commitCreateChangeSet(db, correction)).current_revision).toBe(
+      2
+    );
+    expect(
+      (await commitCreateChangeSet(db, correction)).idempotent_replay
+    ).toBe(true);
+    expect((await readWorldAtRevision(db, base.world_id, 1)).events).toEqual(
+      previous.events
+    );
+    const after = await readWorldAtRevision(db, base.world_id, 2);
+    expect(after.events).toEqual([
+      {
+        ...original,
+        attributes: { date_precision: "year", date_original: "1573" }
+      }
+    ]);
+    expect(after.eventCanonMemberships).toEqual(previous.eventCanonMemberships);
+    const invalid = {
+      ...correction,
+      change_set_id: "01995c2a-7b00-7000-8000-000000000780",
+      expected_revision: 2,
+      operations: [
+        {
+          kind: "update" as const,
+          entity_type: "event" as const,
+          value: {
+            event_id: "01995c2a-7b00-7000-8000-000000000781",
+            attributes: {}
+          }
+        }
+      ]
+    };
+    await expect(commitCreateChangeSet(db, invalid)).rejects.toMatchObject({
+      code: "event_not_found"
+    });
+  });
+
   it("corrects Narrative content with stable identity, historical before/after and idempotency", async () => {
     const base = createTestChangeSet();
     await commitCreateChangeSet(db, base);

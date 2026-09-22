@@ -26,7 +26,7 @@ const relation = (
   direction: "directed",
   attributes: {}
 });
-function fixture() {
+function fixture(anchored = true) {
   const relations = [
     relation("ab", "precedes", "a", "b"),
     relation("ia", "contains", "inner", "a"),
@@ -34,6 +34,45 @@ function fixture() {
     relation("oi", "contains", "outer", "inner"),
     relation("cause", "causes", "c", "d")
   ];
+  const system = {
+    id: "t",
+    world_id: "w",
+    slug: "gregorian",
+    title: "Gregorian",
+    kind: "calendar" as const,
+    definition_version: "1",
+    definition: {
+      coordinate_codec: "yyyy-iso-fields-fraction12-z-v1",
+      calendar: "proleptic-gregorian",
+      timezone: "UTC",
+      fractional_digits: 12,
+      leap_second_policy: "reject",
+      interval_policy: "half-open",
+      capabilities: [
+        "canonicalize",
+        "equality",
+        "compare",
+        "boundary",
+        "difference"
+      ]
+    }
+  };
+  if (anchored)
+    for (const [id, year] of [
+      ["a", 1573],
+      ["b", 1575]
+    ] as const) {
+      relations.push({
+        ...relation("anchor-" + id, "coincides", id, id),
+        direction: "undirected",
+        target_ref: {
+          kind: "time_event",
+          time_system_ref: { time_system_id: "t" },
+          definition_version: "1",
+          coordinate: `${year}-01-01T00:00:00.000000000000Z`
+        }
+      });
+    }
   const view: CanonicalRevisionView = {
     world: { id: "w", slug: "w", title: "World", description: null },
     canons: [
@@ -51,8 +90,8 @@ function fixture() {
       attributes: {}
     })),
     relations,
-    timeSystems: [],
-    canonTimeSystems: [],
+    timeSystems: [system],
+    canonTimeSystems: [{ id: "kt", canon_id: "k", time_system_id: "t" }],
     eventCanonMemberships: ["a", "b", "c", "d", "outer", "inner"].map(
       (event_id) => ({ event_id, canon_id: "k" })
     ),
@@ -70,7 +109,7 @@ function fixture() {
   return { artifacts, result };
 }
 describe("M4.6-C Publication spatial producer", () => {
-  it("preserves relative order, deepest-first nesting, and unplaced causal-only Events", () => {
+  it("preserves anchored order, deepest-first nesting, and unplaced causal-only Events", () => {
     const { result } = fixture();
     const input = projectPresentationInput(result);
     const scope = input.scopes[0]!;
@@ -109,8 +148,23 @@ describe("M4.6-C Publication spatial producer", () => {
       );
     }
   });
+  it("keeps relative-only topology in the sidecar without inventing calendar geometry", () => {
+    const { result } = fixture(false);
+    const input = projectPresentationInput(result);
+    const layout = layoutPresentationScope(input, input.scopes[0]!);
+    expect(layout.temporal.find((e) => e.event_id === "a")?.kind).toBe(
+      "relative-only"
+    );
+    expect(
+      layout.chartPlane.entities.filter((e) => e.geometryKind === "point")
+    ).toEqual([]);
+    expect(layout.unplaced).toHaveLength(6);
+    expect(
+      layout.diagnostics.some((d) => d.code === "m46_relative_time_unplaced")
+    ).toBe(true);
+  });
   it("converts the Gregorian adapter's picoseconds to finite display years", () => {
-    const { result } = fixture();
+    const { result } = fixture(false);
     const identity = {
       time_system_id: "t",
       definition_version: "1",

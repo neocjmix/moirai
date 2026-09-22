@@ -315,6 +315,11 @@ function publicRecord(
       return { id: operation.entity_id, ...value };
     }
     case "event": {
+      if (operation.kind === "update")
+        return {
+          id: operation.entity_id,
+          attributes: operation.value.attributes
+        };
       const value = operation.value;
       return {
         id: operation.entity_id,
@@ -374,6 +379,18 @@ async function applyCreate(
         updated_revision: revision
       })
       .where("id", "=", worldId)
+      .execute();
+    return;
+  }
+  if (operation.kind === "update" && operation.entity_type === "event") {
+    await transaction
+      .updateTable("events")
+      .set({
+        attributes: JSON.stringify(operation.value.attributes),
+        updated_revision: revision
+      })
+      .where("id", "=", operation.entity_id)
+      .where("world_id", "=", worldId)
       .execute();
     return;
   }
@@ -945,15 +962,28 @@ export async function commitCreateChangeSet(
     const narrativeHistory = new Map(
       existing.narratives.map((narrative) => [narrative.id, narrative])
     );
+    const eventHistory = new Map(
+      existing.events.map((event) => [event.id, event])
+    );
     let worldHistory = existing.world;
     for (const [operationIndex, operation] of operations.entries()) {
-      const after = publicRecord(operation);
+      const after =
+        operation.kind === "update" && operation.entity_type === "event"
+          ? {
+              ...eventHistory.get(operation.entity_id)!,
+              attributes: operation.value.attributes
+            }
+          : publicRecord(operation);
       const before =
         operation.kind === "update"
           ? operation.entity_type === "world"
             ? worldHistory
-            : narrativeHistory.get(operation.entity_id)
+            : operation.entity_type === "event"
+              ? eventHistory.get(operation.entity_id)
+              : narrativeHistory.get(operation.entity_id)
           : undefined;
+      if (operation.entity_type === "event" && operation.kind !== "withdraw")
+        eventHistory.set(operation.entity_id, after as unknown as PublicEvent);
       if (operation.entity_type === "world")
         worldHistory = after as unknown as PublicWorld;
       if (operation.entity_type === "narrative")

@@ -1,0 +1,747 @@
+[
+  {
+    "id": "01a0c8c3-544c-725e-a664-d7966e1e0748",
+    "slug": "japan-onin-war",
+    "title": "오닌의 난과 전국시대의 전개",
+    "before": {
+      "date_original": [
+        "GR",
+        "1467-01-01",
+        "1478-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1467-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2134.html",
+          "label": "Japan Guide — Muromachi Period"
+        }
+      ],
+      "historical_identity_key": "japan-onin-war",
+      "gregorian_upper_exclusive": "1478-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-onin-war",
+      "date_precision": "year-range",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "応仁元年〜文明9年"
+      },
+      "source_references": [
+        {
+          "label": "京都文化博物館 — 信長上洛",
+          "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+        }
+      ],
+      "source_annotation": "전쟁 전체의 연도 범위. 정확한 개시·종결일을 주장하지 않는다.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year_range": [
+        1467,
+        1477
+      ]
+    },
+    "canonical_lower_inclusive": "1467-01-01",
+    "canonical_upper_exclusive": "1478-01-01"
+  },
+  {
+    "id": "01a0c8c3-544c-74cc-af3a-780b9d89f629",
+    "slug": "japan-firearms-portuguese",
+    "title": "포르투갈 상인과 조총의 전래",
+    "before": {
+      "date_original": [
+        "GR",
+        "1543-01-01",
+        "1544-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1543-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2134.html",
+          "label": "Japan Guide — Muromachi Period"
+        }
+      ],
+      "historical_identity_key": "japan-firearms-portuguese",
+      "gregorian_upper_exclusive": "1544-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-firearms-portuguese",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天文12年"
+      },
+      "source_references": [
+        {
+          "label": "鹿児島県 — 鉄砲伝来",
+          "url": "http://www.pref.kagoshima.jp/aa02/pr/gaiyou/itiban/hatu/teppo.html"
+        }
+      ],
+      "source_annotation": "전래 연도만 채택. 월일 변환 미검증.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1543
+    },
+    "canonical_lower_inclusive": "1543-01-01",
+    "canonical_upper_exclusive": "1544-01-01"
+  },
+  {
+    "id": "01a0c8c3-544c-7ea5-a6fc-f2ed974e62ef",
+    "slug": "japan-okehazama",
+    "title": "오케하자마 전투와 노부나가의 부상",
+    "before": {
+      "date_original": [
+        "GR",
+        "1560-01-01",
+        "1561-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1560-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-okehazama",
+      "gregorian_upper_exclusive": "1561-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-okehazama",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "永禄3年"
+      },
+      "source_references": [
+        {
+          "label": "愛知県図書館 — 郷土の三英傑年表",
+          "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+        }
+      ],
+      "source_annotation": "월일 변환 미검증. 연도 정밀도.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1560
+    },
+    "canonical_lower_inclusive": "1560-01-01",
+    "canonical_upper_exclusive": "1561-01-01"
+  },
+  {
+    "id": "01a0c8c3-544c-738f-9ade-7a4ee4d674b1",
+    "slug": "japan-nobunaga-kyoto",
+    "title": "오다 노부나가의 교토 입성",
+    "before": {
+      "date_original": [
+        "GR",
+        "1568-01-01",
+        "1569-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1568-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2134.html",
+          "label": "Japan Guide — Muromachi Period"
+        },
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-nobunaga-kyoto",
+      "gregorian_upper_exclusive": "1569-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-nobunaga-kyoto",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "永禄11年9月26日"
+      },
+      "source_references": [
+        {
+          "label": "京都文化博物館 — 信長上洛",
+          "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+        }
+      ],
+      "source_annotation": "일본 구력 원일은 보존하되 Gregorian 월일 변환 미검증.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1568
+    },
+    "canonical_lower_inclusive": "1568-01-01",
+    "canonical_upper_exclusive": "1569-01-01"
+  },
+  {
+    "id": "01a0c8c3-544c-7590-992f-88ec5443bb40",
+    "slug": "japan-muromachi-fall",
+    "title": "무로마치 막부의 붕괴",
+    "before": {
+      "date_original": [
+        "GR",
+        "1573-01-01",
+        "1574-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1573-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2134.html",
+          "label": "Japan Guide — Muromachi Period"
+        },
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-muromachi-fall",
+      "gregorian_upper_exclusive": "1574-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-muromachi-fall",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正元年"
+      },
+      "source_references": [
+        {
+          "label": "愛知県図書館 — 郷土の三英傑年表",
+          "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+        },
+        {
+          "label": "京都文化博物館 — 信長上洛",
+          "url": "https://www.bunpaku.or.jp/exhi_sogo_post/nobunagazyouraku450/"
+        }
+      ],
+      "source_annotation": "막부 붕괴 연도. 월일 변환 미검증.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1573
+    },
+    "canonical_lower_inclusive": "1573-01-01",
+    "canonical_upper_exclusive": "1574-01-01"
+  },
+  {
+    "id": "01a0c8c3-544c-7139-a833-4ba33b306cdd",
+    "slug": "japan-nagashino",
+    "title": "나가시노 전투",
+    "before": {
+      "date_original": [
+        "GR",
+        "1575-01-01",
+        "1576-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1575-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-nagashino",
+      "gregorian_upper_exclusive": "1576-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-nagashino",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正3年"
+      },
+      "source_references": [
+        {
+          "label": "愛知県図書館 — 郷土の三英傑年表",
+          "url": "https://www.aichi-pref-library.jp/s005/about/area/010/050/20250316174437.html"
+        }
+      ],
+      "source_annotation": "월일 변환 미검증. 연도 정밀도.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1575
+    },
+    "canonical_lower_inclusive": "1575-01-01",
+    "canonical_upper_exclusive": "1576-01-01"
+  },
+  {
+    "id": "01a0c8c3-544d-7cdd-b960-41ee088032b8",
+    "slug": "japan-honnoji",
+    "title": "혼노지의 변과 노부나가의 죽음",
+    "before": {
+      "date_original": [
+        "GR",
+        "1582-06-01",
+        "1582-07-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1582-06-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-honnoji",
+      "gregorian_upper_exclusive": "1582-07-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-honnoji",
+      "date_precision": "day",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正10年6月2日"
+      },
+      "source_references": [
+        {
+          "label": "大山崎町 — 本能寺の変、旧暦と新暦",
+          "url": "http://www.town.oyamazaki.kyoto.jp/annai/kikakuzaisei/kannkou/kanko/machinokankosupotto/tenkawakemenotennozan/hideyosinomiti/930.html"
+        }
+      ],
+      "source_annotation": "대야마자키정의 명시적 신력 7월1일. Julian 6월21일과 혼동하지 않는다.",
+      "calendar_conversion": {
+        "status": "source-explicit Gregorian",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "gregorian_date": "1582-07-01"
+    },
+    "canonical_lower_inclusive": "1582-07-01",
+    "canonical_upper_exclusive": "1582-07-02"
+  },
+  {
+    "id": "01a0c8c3-544d-7629-8616-77bf6bf0006f",
+    "slug": "japan-yamazaki-hideyoshi",
+    "title": "야마자키 전투와 히데요시의 주도권 장악",
+    "before": {
+      "date_original": [
+        "GR",
+        "1582-06-01",
+        "1583-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1582-06-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-yamazaki-hideyoshi",
+      "gregorian_upper_exclusive": "1583-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-yamazaki-hideyoshi",
+      "date_precision": "day",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正10年6月13日"
+      },
+      "source_references": [
+        {
+          "label": "大山崎町 — 山崎合戦、新暦1582年7月12日",
+          "url": "http://www.town.oyamazaki.kyoto.jp/annai/kikakuzaisei/kannkou/kanko/machinokankosupotto/tenkawakemenotennozan/hideyosinomiti/962.html"
+        }
+      ],
+      "source_annotation": "좌표는 야마자키 전투의 날짜. 이후 권력 장악 전체가 하루에 끝났다는 뜻이 아니다.",
+      "calendar_conversion": {
+        "status": "source-explicit Gregorian",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "gregorian_date": "1582-07-12"
+    },
+    "canonical_lower_inclusive": "1582-07-12",
+    "canonical_upper_exclusive": "1582-07-13"
+  },
+  {
+    "id": "01a0c8c3-544d-729a-a00b-a4694d17ee19",
+    "slug": "japan-osaka-castle",
+    "title": "오사카성 건설과 히데요시 정권의 중심 형성",
+    "before": {
+      "date_original": [
+        "GR",
+        "1583-01-01",
+        "1584-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1583-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-osaka-castle",
+      "gregorian_upper_exclusive": "1584-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-osaka-castle",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正11年"
+      },
+      "source_references": [
+        {
+          "label": "大阪城天守閣 — 豊臣秀吉と大阪城",
+          "url": "https://osakac.xsrv.jp/library/history/toyotomi/"
+        }
+      ],
+      "source_annotation": "1583은 축성 착수 연도이며 정권 형성·성 완공 전체의 종결일이 아니다.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1583
+    },
+    "canonical_lower_inclusive": "1583-01-01",
+    "canonical_upper_exclusive": "1584-01-01"
+  },
+  {
+    "id": "01a0c8c3-544d-7456-be09-0fbb7945d6af",
+    "slug": "japan-kyushu-campaign",
+    "title": "규슈 평정",
+    "before": {
+      "date_original": [
+        "GR",
+        "1587-01-01",
+        "1588-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1587-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-kyushu-campaign",
+      "gregorian_upper_exclusive": "1588-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-kyushu-campaign",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正15年5月（平定）"
+      },
+      "source_references": [
+        {
+          "label": "九州国立博物館 — 豊臣秀吉朱印状",
+          "url": "https://collection.kyuhaku.jp/advanced/37106.html"
+        }
+      ],
+      "source_annotation": "규슈 평정 연도. 일본 구력 5월을 Gregorian 5월로 바꾸지 않는다.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1587
+    },
+    "canonical_lower_inclusive": "1587-01-01",
+    "canonical_upper_exclusive": "1588-01-01"
+  },
+  {
+    "id": "01a0c8c3-544d-7391-b6c6-b7bc59a2b9c3",
+    "slug": "japan-sword-hunt",
+    "title": "도검몰수령과 병농 분리의 강화",
+    "before": {
+      "date_original": [
+        "GR",
+        "1588-01-01",
+        "1589-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1588-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-sword-hunt",
+      "gregorian_upper_exclusive": "1589-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-sword-hunt",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正16年7月8日（刀狩令）"
+      },
+      "source_references": [
+        {
+          "label": "國學院雑誌122(11) — 天正十六年七月八日付秀吉朱印状二種の公布状況",
+          "url": "https://k-rain.repo.nii.ac.jp/record/703/files/kokugakuinzasshi_122_11_021.pdf"
+        }
+      ],
+      "source_annotation": "명령 원일 보존. 시행·병농 분리는 과정이며 정확한 Gregorian 일자 변환은 미검증.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1588
+    },
+    "canonical_lower_inclusive": "1588-01-01",
+    "canonical_upper_exclusive": "1589-01-01"
+  },
+  {
+    "id": "01a0c8c3-544d-7d12-a909-ff87c6a07f71",
+    "slug": "japan-odawara-unification",
+    "title": "오다와라 정벌과 일본 통일",
+    "before": {
+      "date_original": [
+        "GR",
+        "1590-01-01",
+        "1591-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1590-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        }
+      ],
+      "historical_identity_key": "japan-odawara-unification",
+      "gregorian_upper_exclusive": "1591-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-odawara-unification",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "天正18年"
+      },
+      "source_references": [
+        {
+          "label": "文化庁 — 豊臣秀吉朱印状",
+          "url": "https://online.bunka.go.jp/index.php/heritages/detail/238525"
+        }
+      ],
+      "source_annotation": "오다와라 정벌과 통일의 연도. 월일 변환 미검증.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1590
+    },
+    "canonical_lower_inclusive": "1590-01-01",
+    "canonical_upper_exclusive": "1591-01-01"
+  },
+  {
+    "id": "01a0c8c3-544d-7f4a-a65a-fd76d67b8453",
+    "slug": "japan-hideyoshi-succession-crisis",
+    "title": "히데요시 사후의 후계 체제와 권력 재편",
+    "before": {
+      "date_original": [
+        "GR",
+        "1598-09-18",
+        "1600-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1598-09-18",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2123.html",
+          "label": "Japan Guide — Azuchi-Momoyama Period"
+        },
+        {
+          "url": "https://www.japan-guide.com/e/e2128.html",
+          "label": "Japan Guide — Edo Period"
+        }
+      ],
+      "historical_identity_key": "japan-hideyoshi-succession-crisis",
+      "gregorian_upper_exclusive": "1600-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-hideyoshi-succession-crisis",
+      "date_precision": "year-range",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "慶長3年（秀吉死後）〜慶長5年（関ケ原）"
+      },
+      "source_references": [
+        {
+          "label": "国立公文書館 — 家康、天下人への道",
+          "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+        },
+        {
+          "label": "江戸東京博物館 — 大関ヶ原展",
+          "url": "https://www.edo-tokyo-museum.or.jp/s-exhibition/daisekigahara/"
+        }
+      ],
+      "source_annotation": "사후 권력 재편의 해석적 기간. 1600년1월1일 종결이라는 기존 임의 경계를 제거한다.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year_range": [
+        1598,
+        1600
+      ]
+    },
+    "canonical_lower_inclusive": "1598-01-01",
+    "canonical_upper_exclusive": "1601-01-01"
+  },
+  {
+    "id": "01a0c8c3-544d-7058-8150-16d9ee2e0fc0",
+    "slug": "japan-sekigahara",
+    "title": "세키가하라 전투",
+    "before": {
+      "date_original": [
+        "GR",
+        "1600-10-21",
+        "1600-10-22"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1600-10-21",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2128.html",
+          "label": "Japan Guide — Edo Period"
+        },
+        {
+          "url": "https://www.japan-guide.com/ad/sekigahara/",
+          "label": "Japan Guide — Sekigahara"
+        }
+      ],
+      "historical_identity_key": "japan-sekigahara",
+      "gregorian_upper_exclusive": "1600-10-22"
+    },
+    "after": {
+      "historical_identity_key": "japan-sekigahara",
+      "date_precision": "day",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "慶長5年9月15日"
+      },
+      "source_references": [
+        {
+          "label": "岐阜県 — 関ケ原合戦、西暦1600年10月21日",
+          "url": "https://www.pref.gifu.lg.jp/uploaded/attachment/207585.pdf"
+        },
+        {
+          "label": "国立公文書館 — 家康、天下人への道",
+          "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+        }
+      ],
+      "source_annotation": "기후현이 신력과 구력을 함께 명시.",
+      "calendar_conversion": {
+        "status": "source-explicit Gregorian",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "gregorian_date": "1600-10-21"
+    },
+    "canonical_lower_inclusive": "1600-10-21",
+    "canonical_upper_exclusive": "1600-10-22"
+  },
+  {
+    "id": "01a0c8c3-544d-7f0f-a396-fe09d05844a5",
+    "slug": "japan-tokugawa-shogunate",
+    "title": "도쿠가와 이에야스의 쇼군 취임과 에도 막부 성립",
+    "before": {
+      "date_original": [
+        "GR",
+        "1603-01-01",
+        "1604-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1603-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2128.html",
+          "label": "Japan Guide — Edo Period"
+        }
+      ],
+      "historical_identity_key": "japan-tokugawa-shogunate",
+      "gregorian_upper_exclusive": "1604-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-tokugawa-shogunate",
+      "date_precision": "year",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "慶長8年2月12日"
+      },
+      "source_references": [
+        {
+          "label": "国立公文書館 — 家康、天下人への道",
+          "url": "https://www.archives.go.jp/exhibition/digital/ieyasu/contents3_01/"
+        }
+      ],
+      "source_annotation": "정이대장군 임명 원일 보존. Gregorian 월일 변환 미검증.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year": 1603
+    },
+    "canonical_lower_inclusive": "1603-01-01",
+    "canonical_upper_exclusive": "1604-01-01"
+  },
+  {
+    "id": "01a0c8c3-544d-7fea-bc47-2e1c8deff091",
+    "slug": "japan-osaka-siege",
+    "title": "오사카 전투와 도요토미 가문의 몰락",
+    "before": {
+      "date_original": [
+        "GR",
+        "1614-01-01",
+        "1616-01-01"
+      ],
+      "date_precision": "range",
+      "gregorian_lower": "1614-01-01",
+      "source_references": [
+        {
+          "url": "https://www.japan-guide.com/e/e2128.html",
+          "label": "Japan Guide — Edo Period"
+        }
+      ],
+      "historical_identity_key": "japan-osaka-siege",
+      "gregorian_upper_exclusive": "1616-01-01"
+    },
+    "after": {
+      "historical_identity_key": "japan-osaka-siege",
+      "date_precision": "year-range",
+      "date_original": {
+        "calendar": "Japanese historical lunisolar",
+        "text": "慶長19年（冬の陣）〜慶長20年（夏の陣）"
+      },
+      "source_references": [
+        {
+          "label": "大阪城天守閣 — 豊臣秀吉と大阪城",
+          "url": "https://osakac.xsrv.jp/library/history/toyotomi/"
+        },
+        {
+          "label": "江戸東京博物館 — 大関ヶ原展",
+          "url": "https://www.edo-tokyo-museum.or.jp/s-exhibition/daisekigahara/"
+        }
+      ],
+      "source_annotation": "동·하계 전역을 포함한 연도 범위. 종료일을 임의로 확정하지 않는다.",
+      "calendar_conversion": {
+        "status": "year-only; month/day conversion unverified",
+        "policy": "No Korean lunisolar converter used; January 1 bounds are year-bucket limits, not occurrence dates."
+      },
+      "historical_year_range": [
+        1614,
+        1615
+      ]
+    },
+    "canonical_lower_inclusive": "1614-01-01",
+    "canonical_upper_exclusive": "1616-01-01"
+  }
+]

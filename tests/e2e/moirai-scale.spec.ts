@@ -171,6 +171,12 @@ test("100k artifacts stay bounded while the original browser viewport pans and z
       Number(new URL(page.url()).searchParams.get("gsViewport")!.split(",")[3])
     )
     .toBeGreaterThan(beforeZoom[3]!);
+  // A pinch may remain inside padded cached coverage. Viewport dimensions
+  // are part of the cache key, so force a distinct coverage request before
+  // counting responses; do not require redundant network work on every zoom.
+  const beforeResize = observed.length;
+  await page.setViewportSize({ width: 400, height: 844 });
+  await expect.poll(() => observed.length).toBeGreaterThan(beforeResize);
   await expect.poll(() => observed.length).toBeGreaterThan(2);
   expect(observed.every((r) => r.count <= 500 && r.bytes <= 1024 * 1024)).toBe(
     true

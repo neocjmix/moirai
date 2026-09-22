@@ -437,3 +437,85 @@ describe("World metadata corrections", () => {
     }
   });
 });
+
+describe("Event metadata corrections", () => {
+  const update = {
+    kind: "update" as const,
+    entity_type: "event" as const,
+    value: {
+      event_id: TEST_FIXTURE.eventId,
+      attributes: { date_precision: "year", date_original: "1573" }
+    }
+  };
+  it("preserves Event identity and warns that descriptive dates are not coordinates", () => {
+    const input = {
+      ...fixture(),
+      operations: [...fixture().operations, update]
+    };
+    expect(validateAgainstEmpty(input)).toMatchObject([
+      {
+        code: "descriptive_date_without_temporal_anchor",
+        affected_ids: [TEST_FIXTURE.eventId, TEST_FIXTURE.canonId]
+      }
+    ]);
+    expect(
+      resolveCreateOperations(input, () => "unused").operations.at(-1)
+        ?.entity_id
+    ).toBe(TEST_FIXTURE.eventId);
+  });
+  it("does not demand explicit Time Event anchors for a thematic Composite", () => {
+    const composite = "01995c2a-7b00-7000-8000-000000000777";
+    const relation = "01995c2a-7b00-7000-8000-000000000778";
+    const input: CreateChangeSet = {
+      ...fixture(),
+      operations: [
+        ...fixture().operations,
+        {
+          kind: "create",
+          entity_type: "event",
+          entity_id: composite,
+          value: {
+            world_id: TEST_FIXTURE.worldId,
+            slug: "aggregate",
+            title: "Aggregate",
+            kind: "composite",
+            roles: [],
+            attributes: {
+              date_precision: "year",
+              historical_range: [1573, 1600]
+            }
+          }
+        },
+        {
+          kind: "add",
+          entity_type: "event_canon_membership",
+          value: { event_id: composite, canon_id: TEST_FIXTURE.canonId }
+        },
+        {
+          kind: "create",
+          entity_type: "relation",
+          entity_id: relation,
+          value: {
+            world_id: TEST_FIXTURE.worldId,
+            type: "contains",
+            source_ref: { kind: "event", event_id: composite },
+            target_ref: { kind: "event", event_id: TEST_FIXTURE.eventId },
+            direction: "directed",
+            attributes: {}
+          }
+        },
+        {
+          kind: "add",
+          entity_type: "relation_canon_membership",
+          value: { relation_id: relation, canon_id: TEST_FIXTURE.canonId }
+        }
+      ]
+    };
+    expect(validateAgainstEmpty(input)).toEqual([]);
+  });
+  it("rejects metadata updates to a missing Event", () => {
+    expect(() =>
+      validateAgainstEmpty({ ...fixture(), operations: [update] })
+    ).toThrow();
+  });
+});

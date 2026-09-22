@@ -6,6 +6,8 @@ on:
       - ".github/workflows/ip004-scale.yml"
       - "playwright.ip004.config.ts"
       - "tests/e2e/ip004-reader-scale.spec.ts"
+      - "packages/contracts/src/authoring-policy.ts"
+      - "packages/persistence/src/read-profile.ts"
       - "apps/atropos-web/src/components/graph-source-island.tsx"
       - "apps/atropos-web/src/components/atropos-graph-root.tsx"
       - "apps/atropos-web/src/urdr-port/src/components/graph-shell.tsx"

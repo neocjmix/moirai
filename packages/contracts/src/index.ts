@@ -617,3 +617,5 @@ export interface PublicStatusResponse {
 }
 
 export * from "./relational-time.js";
+
+export { AUTHORING_POLICY } from "./authoring-policy.js";

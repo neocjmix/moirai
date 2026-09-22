@@ -66,6 +66,7 @@ export function normalizeLegacyChangePlan(plan: unknown): ChangePlan {
   } as unknown as ChangePlan;
 }
 export const CLOTHO_METHODS = [
+  "authoring.policy.get",
   "world.list",
   "world.get",
   "world.export",
@@ -550,6 +551,11 @@ const graph = {
 };
 export function clothoInputSchema(method: ClothoMethod): JsonSchema {
   switch (method) {
+    case "authoring.policy.get":
+      return object(
+        { world_id: id, contract_version: { const: CONTRACT_VERSION } },
+        ["world_id", "contract_version"]
+      );
     case "world.list":
       return object({ ...page, query: str(500) }, []);
     case "world.export":

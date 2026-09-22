@@ -9,7 +9,7 @@ layer: implementation-plan
 
 ## 1. 상태·권한·근거
 
-2026-09-22 사용자 지시로 authoritative planning baseline을 개정한다. 이 PR의 범위는 조사·문서·commit/push/PR이다. A0의 문서/조사는 활성, A1–A6 runtime/schema/data 전환과 기존 M5는 비활성이다. merge·배포·destructive migration을 이번 planning 완료에 포함하지 않는다.
+A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 실행과 쓰기·삭제·수정·병합·배포를 위임했다. A1부터 dependency와 rehearsal/backup/검증 gate를 지키며 A6까지 진행한다. 기존 M5의 별도 후속 범위는 활성화하지 않는다.
 
 [실제 상태](../evidence/ip011/reconstruction.md), [데이터 감사](../evidence/ip011/data-audit.json), [자기검증](../evidence/ip011/review.md)을 근거로 한다. 관측된 배포 v4와 accepted target v5는 명시적으로 다르다. 이 차이는 허용된 migration backlog이며 문서끼리의 모순을 허용한다는 뜻이 아니다.
 

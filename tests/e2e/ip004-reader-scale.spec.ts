@@ -29,6 +29,28 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
   const graphReadyMs = Date.now() - start;
   expect(graphReadyMs).toBeLessThanOrEqual(8000);
   phase("graph_ready");
+  const frameSample = page.evaluate(async () => {
+    const intervals: number[] = [];
+    let last = performance.now();
+    for (let i = 0; i < 120; i++) {
+      const now = await new Promise<number>(requestAnimationFrame);
+      intervals.push(now - last);
+      last = now;
+    }
+    intervals.sort((a, b) => a - b);
+    return {
+      samples: intervals.length,
+      frame_p95_ms: intervals[Math.ceil(intervals.length * 0.95) - 1],
+      frame_max_ms: intervals.at(-1),
+      dom_nodes: document.querySelectorAll("*").length
+    };
+  });
+  await page.mouse.move(20, 450);
+  await page.mouse.down();
+  await page.mouse.move(60, 510, { steps: 30 });
+  await page.mouse.up();
+  const interaction = await frameSample;
+  phase("pan_measured");
   const htmlBytes = (await response!.body()).byteLength;
   const navigation = await page.evaluate(() =>
     performance.getEntriesByType("navigation").map((entry) => entry.toJSON())
@@ -91,6 +113,7 @@ test("large World keeps reader paging, Narrative search and both Event surfaces 
     graphReadyMs,
     htmlBytes,
     drawerMs,
+    interaction,
     navigation,
     pageErrors: errors
   };

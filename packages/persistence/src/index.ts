@@ -39,6 +39,8 @@ import {
 } from "kysely";
 import { createHash, randomBytes } from "node:crypto";
 import pg from "pg";
+import { observeQuery, observeHistoryFold } from "./read-profile.js";
+export { profileCanonicalRead } from "./read-profile.js";
 export { queryClotho } from "./clotho-query.js";
 
 interface RevisionFields {
@@ -242,6 +244,9 @@ export interface PublicationJob {
 
 export function createDatabase(connectionString: string): MoiraiDatabase {
   return new Kysely<DatabaseSchema>({
+    log(event) {
+      observeQuery(event.queryDurationMillis);
+    },
     dialect: new PostgresDialect({
       pool: new pg.Pool({ connectionString, max: 5 })
     })
@@ -1125,6 +1130,7 @@ export async function readWorldAtRevision(
     .orderBy("revision")
     .orderBy("operation_index")
     .execute();
+  const foldStart = performance.now();
   const latest = new Map<string, (typeof operations)[number]>();
   const eventCanonMemberships = new Map<string, Set<string>>();
   const relationCanonMemberships = new Map<string, Set<string>>();
@@ -1237,7 +1243,7 @@ export async function readWorldAtRevision(
         canon_memberships: canonMemberships
       };
     }) as unknown as PublicEvent[];
-  return {
+  const result: RevisionView = {
     world,
     canons,
     timeSystems,
@@ -1284,6 +1290,8 @@ export async function readWorldAtRevision(
     narratives: byType("narrative") as unknown as PublicNarrative[],
     generatedAt: revisionRecord.committed_at.toISOString()
   };
+  observeHistoryFold(operations.length, performance.now() - foldStart);
+  return result;
 }
 
 export async function reconcileSubjectHandleState(

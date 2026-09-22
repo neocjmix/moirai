@@ -54,6 +54,7 @@ const plan = {
   ]
 };
 const inputs: Record<ClothoMethod, Record<string, unknown>> = {
+  "authoring.policy.get": { world_id, contract_version: 4 },
   "world.list": {},
   "world.export": { world_id },
   "world.get": { world_id },

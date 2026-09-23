@@ -299,11 +299,17 @@ describe("v5 World final-state invariants", () => {
 });
 
 describe("v5 atomic candidate operations", () => {
+  const origin_refs = [{ field: "*", origin_index: 0 }];
   it("withdraws a Collection without withdrawing its Events, Relations or Event Narratives", () => {
     const state = fixture();
     const before = JSON.stringify(state);
     const next = applyV5Operations(state, "history", [
-      { kind: "withdraw", entity_type: "collection", entity_id: "danjong" }
+      {
+        kind: "withdraw",
+        entity_type: "collection",
+        entity_id: "danjong",
+        origin_refs
+      }
     ]);
     expect(next.events).toEqual(state.events);
     expect(next.relations).toEqual(state.relations);
@@ -324,6 +330,7 @@ describe("v5 atomic candidate operations", () => {
       kind: "create" as const,
       entity_type: "event" as const,
       entity_id: eventId,
+      origin_refs,
       value: eventValue
     };
     expect(() => applyV5Operations(state, "history", [create])).toThrow(
@@ -336,6 +343,7 @@ describe("v5 atomic candidate operations", () => {
         kind: "create",
         entity_type: "narrative",
         entity_id: narrativeId,
+        origin_refs,
         value: narrativeValue
       }
     ]);
@@ -348,12 +356,27 @@ describe("v5 atomic candidate operations", () => {
     const state = fixture();
     expect(() =>
       applyV5Operations(state, "history", [
-        { kind: "withdraw", entity_type: "event", entity_id: "sengoku" }
+        {
+          kind: "withdraw",
+          entity_type: "event",
+          entity_id: "sengoku",
+          origin_refs
+        }
       ])
     ).toThrow("dangling narrative owner");
     const next = applyV5Operations(state, "history", [
-      { kind: "withdraw", entity_type: "narrative", entity_id: "n-sengoku" },
-      { kind: "withdraw", entity_type: "event", entity_id: "sengoku" }
+      {
+        kind: "withdraw",
+        entity_type: "narrative",
+        entity_id: "n-sengoku",
+        origin_refs
+      },
+      {
+        kind: "withdraw",
+        entity_type: "event",
+        entity_id: "sengoku",
+        origin_refs
+      }
     ]);
     expect(next.events).toHaveLength(state.events.length - 1);
     const { id, ...value } = narrative("coup");
@@ -363,6 +386,7 @@ describe("v5 atomic candidate operations", () => {
           kind: "update",
           entity_type: "narrative",
           entity_id: id,
+          origin_refs,
           value: { ...value, scope_id: "abdication" }
         }
       ])

@@ -198,6 +198,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
           kind: "create",
           entity_type: "event",
           entity_id: eventId,
+          origin_refs: [{ field: "*", origin_index: 0 }],
           value: {
             world_id: TEST_FIXTURE.worldId,
             slug: "v5-policy-test",
@@ -211,6 +212,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
           kind: "create",
           entity_type: "narrative",
           entity_id: narrativeId,
+          origin_refs: [{ field: "*", origin_index: 0 }],
           value: {
             world_id: TEST_FIXTURE.worldId,
             scope_type: "event",
@@ -225,6 +227,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         {
           kind: "add",
           entity_type: "event_collection_membership",
+          origin_refs: [{ field: "*", origin_index: 0 }],
           value: {
             event_id: eventId,
             collection_id: TEST_FIXTURE.canonId
@@ -278,10 +281,12 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       });
       const ledger = await sql<{
         count: string;
-      }>`select count(*)::text as count from change_operations where change_set_id=${change.change_set_id}`.execute(
+        sourced: string;
+      }>`select count(*)::text as count, count(*) filter (where origin_refs='[{"field":"*","origin_index":0}]'::jsonb)::text as sourced from change_operations where change_set_id=${change.change_set_id}`.execute(
         clone
       );
       expect(ledger.rows[0]?.count).toBe("3");
+      expect(ledger.rows[0]?.sourced).toBe("3");
       const withdraw = await commitV5Resolved(clone, {
         ...change,
         change_set_id: "019f5000-1100-7000-8000-000000000025",
@@ -290,7 +295,8 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
           {
             kind: "withdraw",
             entity_type: "collection",
-            entity_id: TEST_FIXTURE.canonId
+            entity_id: TEST_FIXTURE.canonId,
+            origin_refs: [{ field: "*", origin_index: 0 }]
           }
         ]
       });
@@ -304,6 +310,14 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       expect(afterSelection.events).toHaveLength(4);
       expect(afterSelection.relations).toHaveLength(2);
       expect(afterSelection.narratives).toHaveLength(4);
+      const cascaded = await sql<{
+        count: string;
+        sourced: string;
+      }>`select count(*)::text as count, count(*) filter (where origin_refs='[{"field":"*","origin_index":0}]'::jsonb)::text as sourced from change_operations where change_set_id='019f5000-1100-7000-8000-000000000025'::uuid`.execute(
+        clone
+      );
+      expect(Number(cascaded.rows[0]?.count)).toBeGreaterThan(1);
+      expect(cascaded.rows[0]?.sourced).toBe(cascaded.rows[0]?.count);
       expect(databaseImageDigest(await captureDatabaseImage(source))).toBe(
         sourceDigest
       );

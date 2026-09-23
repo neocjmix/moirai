@@ -25,7 +25,8 @@ const plan: Omit<ResolvedV5Change, "actor"> = {
     {
       kind: "withdraw",
       entity_type: "event",
-      entity_id: TEST_FIXTURE.eventId
+      entity_id: TEST_FIXTURE.eventId,
+      origin_refs: [{ field: "*", origin_index: 0 }]
     }
   ]
 };

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildV5ContentAndTemporalStagedArtifacts,
   buildV5ContentStagedArtifacts,
   buildV5StagedIndex,
   readV5StagedDocument,
@@ -42,6 +43,47 @@ describe("inactive v5 hierarchical integrity index", () => {
         document.key.endsWith("/current.json")
       )
     ).toBe(false);
+  });
+
+  it("indexes World temporal detail separately from the active Publication", async () => {
+    const state = {
+      world: {
+        id: "world-1",
+        slug: "history",
+        title: "실제 세계사",
+        description: null
+      },
+      collections: [],
+      events: [],
+      relations: [],
+      narratives: [],
+      eventCollectionMemberships: [],
+      timeSystems: [],
+      collectionTimeSystems: []
+    };
+    const built = buildV5ContentAndTemporalStagedArtifacts(state, 31);
+    verifyV5StagedIndex(built);
+    expect(JSON.parse(built.root.body)).toMatchObject({
+      completeness: "content-and-temporal-detail-only",
+      document_count: 2
+    });
+    const temporalKey = `${prefix}temporal/world.json`;
+    const objects = new Map(
+      [...built.documents, ...built.index].map(({ key, body }) => [key, body])
+    );
+    expect(
+      JSON.parse(
+        (await readV5StagedDocument(
+          built.root.body,
+          temporalKey,
+          async (key) => objects.get(key) ?? null
+        ))!
+      )
+    ).toMatchObject({
+      position_count: 0,
+      completeness: "temporal-detail-only"
+    });
+    expect(built.root.key).not.toContain("current.json");
   });
   it("bounds the root and every index page even when document count grows", () => {
     const small = buildV5StagedIndex("world-1", 31, input(4));

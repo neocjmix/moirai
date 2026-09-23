@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@moirai/domain/v5-operations": fileURLToPath(
+        new URL("./packages/domain/src/v5-operations.ts", import.meta.url)
+      ),
       "@moirai/domain/v5": fileURLToPath(
         new URL("./packages/domain/src/v5.ts", import.meta.url)
       ),

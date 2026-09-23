@@ -205,6 +205,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       ],
       policy_version: V5_AUTHORING_POLICY.policy_version,
       policy_digest: V5_AUTHORING_POLICY.policy_digest,
+      id_mapping: { "created-event": eventId },
       operations: [
         {
           kind: "create",
@@ -275,7 +276,8 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       expect(committed).toMatchObject({
         current_revision: 4,
         idempotent_replay: false,
-        publication_target_revision: 4
+        publication_target_revision: 4,
+        id_mapping: { "created-event": eventId }
       });
       expect(await commitV5Resolved(clone, change)).toMatchObject({
         current_revision: 4,

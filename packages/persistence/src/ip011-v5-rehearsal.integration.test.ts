@@ -20,6 +20,8 @@ import { readLegacyV4WorldAtRevision } from "./legacy-v4-reader.js";
 import { readActiveV5State } from "./v5-read.js";
 import { commitV5Resolved } from "./v5-change.js";
 import { TEST_FIXTURE } from "@moirai/contracts/testing";
+import { orderedV5State } from "@moirai/domain/v5";
+import { readV5WorldAtRevision } from "./v5-history-reader.js";
 
 const sourceUrl = process.env.DATABASE_URL;
 describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
@@ -174,6 +176,16 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         clone
       );
       expect(archived.rows[0]?.count).toBe("2");
+      await expect(
+        readV5WorldAtRevision(clone, TEST_FIXTURE.worldId, 2)
+      ).rejects.toThrow("use_legacy_reader");
+      expect(
+        orderedV5State(
+          await readV5WorldAtRevision(clone, TEST_FIXTURE.worldId, 3)
+        )
+      ).toEqual(
+        orderedV5State(await readActiveV5State(clone, TEST_FIXTURE.worldId))
+      );
     } finally {
       await clone.destroy();
     }
@@ -279,6 +291,11 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         event_id: eventId,
         collection_id: TEST_FIXTURE.canonId
       });
+      expect(
+        orderedV5State(
+          await readV5WorldAtRevision(clone, TEST_FIXTURE.worldId, 4)
+        )
+      ).toEqual(orderedV5State(state));
       const ledger = await sql<{
         count: string;
         sourced: string;
@@ -310,6 +327,15 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       expect(afterSelection.events).toHaveLength(4);
       expect(afterSelection.relations).toHaveLength(2);
       expect(afterSelection.narratives).toHaveLength(4);
+      expect(
+        orderedV5State(
+          await readV5WorldAtRevision(clone, TEST_FIXTURE.worldId, 5)
+        )
+      ).toEqual(orderedV5State(afterSelection));
+      expect(
+        (await readV5WorldAtRevision(clone, TEST_FIXTURE.worldId, 4))
+          .collections
+      ).toHaveLength(1);
       const cascaded = await sql<{
         count: string;
         sourced: string;

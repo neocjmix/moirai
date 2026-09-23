@@ -292,3 +292,24 @@ export function assertV5CanonicalState(state: CanonicalState): void {
 }
 
 export { applyV5Operations } from "./v5-operations.js";
+
+/** Stable export/rehearsal ordering; object/array content is never mutated. */
+export function orderedV5State(state: CanonicalState): CanonicalState {
+  const byId = <T extends { readonly id: string }>(rows: readonly T[]) =>
+    [...rows].sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
+  return {
+    ...state,
+    collections: byId(state.collections),
+    timeSystems: byId(state.timeSystems),
+    collectionTimeSystems: byId(state.collectionTimeSystems),
+    events: byId(state.events),
+    relations: byId(state.relations),
+    narratives: byId(state.narratives),
+    eventCollectionMemberships: [...state.eventCollectionMemberships].sort(
+      (a, b) =>
+        `${a.collection_id}:${a.event_id}`.localeCompare(
+          `${b.collection_id}:${b.event_id}`
+        )
+    )
+  };
+}

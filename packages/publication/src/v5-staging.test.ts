@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   buildV5ContentStagedArtifacts,
   buildV5StagedIndex,
+  readV5StagedDocument,
   verifyV5StagedIndex
 } from "./v5-staging.js";
 
@@ -58,6 +59,38 @@ describe("inactive v5 hierarchical integrity index", () => {
     expect(buildV5StagedIndex("world-1", 31, input(20_000)).root).toEqual(
       large.root
     );
+  });
+
+  it("finds distant details with only one branch per level", async () => {
+    const built = buildV5StagedIndex("world-1", 31, input(20_000));
+    const objects = new Map(
+      [...built.documents, ...built.index].map(({ key, body }) => [key, body])
+    );
+    const reads: string[] = [];
+    const get = async (key: string) => {
+      reads.push(key);
+      return objects.get(key) ?? null;
+    };
+    const target = input(20_000)[19_999]!;
+    expect(await readV5StagedDocument(built.root.body, target.key, get)).toBe(
+      target.body
+    );
+    expect(reads.length).toBeLessThanOrEqual(4);
+    expect(reads.at(-1)).toBe(target.key);
+    reads.length = 0;
+    expect(
+      await readV5StagedDocument(
+        built.root.body,
+        `${prefix}content/events/999999.json`,
+        get
+      )
+    ).toBeNull();
+    expect(reads).toEqual([]);
+    reads.length = 0;
+    objects.set(target.key, "altered");
+    await expect(
+      readV5StagedDocument(built.root.body, target.key, get)
+    ).rejects.toThrow("v5_index_digest_mismatch");
   });
 
   it("rejects altered, missing, extra, duplicate and cross-revision documents", () => {

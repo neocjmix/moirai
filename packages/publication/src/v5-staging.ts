@@ -14,6 +14,8 @@ export interface V5StagedObject {
 interface Ref {
   readonly key: string;
   readonly sha256: string;
+  readonly first_key: string;
+  readonly last_key: string;
 }
 
 interface Node {
@@ -73,7 +75,9 @@ export function buildV5StagedIndex(
   let level = 0;
   let refs: Ref[] = documents.map(({ key, body }) => ({
     key,
-    sha256: hash(body)
+    sha256: hash(body),
+    first_key: key,
+    last_key: key
   }));
   do {
     const next: Ref[] = [];
@@ -91,7 +95,12 @@ export function buildV5StagedIndex(
       };
       const body = JSON.stringify(node);
       index.push({ key, body });
-      next.push({ key, sha256: hash(body) });
+      next.push({
+        key,
+        sha256: hash(body),
+        first_key: node.entries[0]?.first_key ?? "",
+        last_key: node.entries.at(-1)?.last_key ?? ""
+      });
     }
     refs = next;
     level++;
@@ -110,6 +119,79 @@ export function buildV5StagedIndex(
     })
   };
   return { documents, index, root };
+}
+
+function select(entries: readonly Ref[], key: string): Ref | undefined {
+  return entries.find(
+    (entry) => entry.first_key <= key && key <= entry.last_key
+  );
+}
+
+/** A bounded lookup seam for the eventual v5 reader. The root must first be
+ * authenticated by a complete Publication pointer; this function never
+ * changes the active v4 pointer or fetches unselected branches. */
+export async function readV5StagedDocument(
+  rootBody: string,
+  documentKey: string,
+  get: (key: string) => Promise<string | null>
+): Promise<string | null> {
+  const root = JSON.parse(rootBody) as {
+    format_version: string;
+    world_id: string;
+    revision: number;
+    completeness: string;
+    fanout: number;
+    index_depth: number;
+    entries: Ref[];
+  };
+  const prefix = `worlds/${root.world_id}/revisions/${root.revision}/v5/`;
+  if (
+    !documentKey.startsWith(prefix) ||
+    root.format_version !== "v5-staging-index/1" ||
+    root.completeness !== "content-only" ||
+    root.fanout !== FANOUT ||
+    !Number.isSafeInteger(root.index_depth) ||
+    root.index_depth < 1 ||
+    root.entries.length > FANOUT ||
+    !orderedRanges(root.entries)
+  )
+    throw Error("v5_index_lookup_invalid");
+  let refs: readonly Ref[] = root.entries;
+  for (let level = root.index_depth - 1; level >= 0; level--) {
+    const selected = select(refs, documentKey);
+    if (!selected) return null;
+    if (!selected.key.startsWith(`${prefix}index/${level}/`))
+      throw Error("v5_index_depth_invalid");
+    const body = await get(selected.key);
+    if (body === null || hash(body) !== selected.sha256)
+      throw Error("v5_index_digest_mismatch");
+    const node = JSON.parse(body) as Node;
+    if (
+      node.world_id !== root.world_id ||
+      node.revision !== root.revision ||
+      node.kind !== (level === 0 ? "leaf" : "branch") ||
+      node.entries.length > FANOUT ||
+      !orderedRanges(node.entries) ||
+      selected.first_key !== (node.entries[0]?.first_key ?? "") ||
+      selected.last_key !== (node.entries.at(-1)?.last_key ?? "")
+    )
+      throw Error("v5_index_node_invalid");
+    refs = node.entries;
+  }
+  const selected = select(refs, documentKey);
+  if (!selected || selected.key !== documentKey) return null;
+  const body = await get(selected.key);
+  if (body === null || hash(body) !== selected.sha256)
+    throw Error("v5_index_digest_mismatch");
+  return body;
+}
+
+function orderedRanges(entries: readonly Ref[]): boolean {
+  return entries.every(
+    (entry, index) =>
+      entry.first_key <= entry.last_key &&
+      (index === 0 || entries[index - 1]!.last_key < entry.first_key)
+  );
 }
 
 /** Offline integrity check, not a public reader. It traverses every branch
@@ -133,6 +215,7 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||
     root.entries.length > FANOUT ||
+    !orderedRanges(root.entries) ||
     artifacts.root.key !== `${prefix}manifest.json`
   )
     throw Error("v5_index_root_invalid");
@@ -149,6 +232,8 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
   const visit = (ref: Ref, level: number): void => {
     if (!ref.key.startsWith(prefix) || visited.has(ref.key))
       throw Error("v5_index_reference_invalid");
+    if (level === -1 && (ref.first_key !== ref.key || ref.last_key !== ref.key))
+      throw Error("v5_index_range_invalid");
     const body = objects.get(ref.key);
     if (body === undefined || hash(body) !== ref.sha256)
       throw Error("v5_index_digest_mismatch");
@@ -167,6 +252,9 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
       node.kind !== (level === 0 ? "leaf" : "branch") ||
       !["leaf", "branch"].includes(node.kind) ||
       node.entries.length > FANOUT ||
+      !orderedRanges(node.entries) ||
+      ref.first_key !== (node.entries[0]?.first_key ?? "") ||
+      ref.last_key !== (node.entries.at(-1)?.last_key ?? "") ||
       (node.kind === "leaf" &&
         node.entries.some((entry) =>
           entry.key.startsWith(`${prefix}index/`)

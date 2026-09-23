@@ -409,7 +409,7 @@ export async function commitV5Resolved(
       publication_target_revision: revision,
       served_revision: served,
       idempotent_replay: false,
-      id_mapping: {},
+      id_mapping: input.id_mapping ?? {},
       warnings: []
     };
     await sql`insert into change_sets(id,world_id,request_digest,actor,intent,contract_version,origins,result,policy_version,policy_digest)

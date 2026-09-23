@@ -2,7 +2,7 @@
 
 **IP-011 A2 active — 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22). A2–A6는 dependency gate 순서대로 진행하며 M5는 별도 후속 범위다.**
 
-현재 배포는 v4 Canon 모델이다. main `42fe92ddbde56ce1fba1adbfd633d022dc0c73a3`에 PR #135까지 병합됐으며 Railway web/API/worker의 최신 배포가 모두 이 커밋에서 SUCCESS다. 역사 World의 마지막 확인된 Revision은 30이다. IP-004~010 완료 이력은 유지한다.
+현재 배포는 v4 Canon 모델이다. PR #135의 runtime 커밋 `42fe92ddbde56ce1fba1adbfd633d022dc0c73a3`이 main에 병합됐으며 Railway web/API/worker에서 모두 SUCCESS를 확인했다. PR #136은 실행 gate에 대한 문서만 변경했다. 역사 World의 마지막 확인된 Revision은 30이다. IP-004~010 완료 이력은 유지한다.
 
 목표 의미·dependency·migration·exit의 기준은 [IP-011](IP-011-architecture-realignment.md)이다. CON-003→CORE-MODEL→TS-002/004/005/006을 개정했으며 이 문서 변경은 runtime cutover 완료가 아니다. PR #129가 main `814a577`에 병합되어 authoritative baseline이 됐다.
 

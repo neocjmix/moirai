@@ -25,6 +25,7 @@ export {
   GRAPH_SCOPE_ALGORITHM_VERSION,
   projectCanonGraphScope
 } from "./graph-scope.js";
+export { buildV5ContentPages } from "./v5-content.js";
 
 export const SUBJECT_ALGORITHM_VERSION = "event-relational-subject/1";
 

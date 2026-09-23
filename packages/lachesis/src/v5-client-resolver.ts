@@ -152,7 +152,7 @@ export function resolveV5DraftChange(
       !Array.isArray(operation.origin_refs) ||
       operation.origin_refs.length === 0 ||
       operation.origin_refs.some(
-        (ref) =>
+        (ref: OriginRef) =>
           !Number.isSafeInteger(ref.origin_index) ||
           ref.origin_index < 0 ||
           ref.origin_index >= plan.origins.length ||

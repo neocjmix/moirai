@@ -31,6 +31,9 @@ export default defineConfig({
       "@moirai/lachesis/database": fileURLToPath(
         new URL("./packages/lachesis/src/database.ts", import.meta.url)
       ),
+      "@moirai/lachesis/v5": fileURLToPath(
+        new URL("./packages/lachesis/src/v5.ts", import.meta.url)
+      ),
       "@moirai/lachesis": fileURLToPath(
         new URL("./packages/lachesis/src/index.ts", import.meta.url)
       ),

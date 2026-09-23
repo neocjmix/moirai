@@ -26,6 +26,8 @@ export {
   projectCanonGraphScope
 } from "./graph-scope.js";
 export { buildV5ContentPages } from "./v5-content.js";
+export { projectV5WorldTemporal } from "./v5-temporal.js";
+export { buildV5TemporalDetailPages } from "./v5-temporal-pages.js";
 
 export const SUBJECT_ALGORITHM_VERSION = "event-relational-subject/1";
 

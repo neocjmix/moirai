@@ -1,7 +1,11 @@
 /** Inactive v5 artifact index. The v4 pointer and manifest are deliberately
  * untouched; this tree cannot be served until all read shards are complete. */
 import { createHash } from "node:crypto";
-import { buildV5ContentPages } from "@moirai/projections";
+import {
+  buildV5ContentPages,
+  buildV5TemporalDetailPages,
+  projectV5WorldTemporal
+} from "@moirai/projections";
 
 const FANOUT = 128;
 const hash = (body: string) => createHash("sha256").update(body).digest("hex");
@@ -25,6 +29,8 @@ interface Node {
   readonly entries: readonly Ref[];
 }
 
+type Completeness = "content-only" | "content-and-temporal-detail-only";
+
 export interface V5StagedArtifacts {
   readonly documents: readonly V5StagedObject[];
   readonly index: readonly V5StagedObject[];
@@ -46,12 +52,31 @@ export function buildV5ContentStagedArtifacts(
   );
 }
 
+/** The temporal truth is World-wide, regardless of Collection visibility.
+ * This still cannot serve a viewport without spatial/scale indexes. */
+export function buildV5ContentAndTemporalStagedArtifacts(
+  state: Parameters<typeof buildV5ContentPages>[0],
+  revision: number
+): V5StagedArtifacts {
+  const documents = [
+    ...buildV5ContentPages(state, revision),
+    ...buildV5TemporalDetailPages(projectV5WorldTemporal(state, revision))
+  ];
+  return buildV5StagedIndex(
+    state.world.id,
+    revision,
+    documents.map(({ key, value }) => ({ key, body: JSON.stringify(value) })),
+    "content-and-temporal-detail-only"
+  );
+}
+
 /** Root and every branch have bounded fanout. Leaf refs cover all documents,
  * including details and adjacency pages, without putting their keys in root. */
 export function buildV5StagedIndex(
   worldId: string,
   revision: number,
-  input: readonly V5StagedObject[]
+  input: readonly V5StagedObject[],
+  completeness: Completeness = "content-only"
 ): V5StagedArtifacts {
   if (
     !/^[a-zA-Z0-9-]+$/.test(worldId) ||
@@ -115,7 +140,7 @@ export function buildV5StagedIndex(
       format_version: "v5-staging-index/1",
       world_id: worldId,
       revision,
-      completeness: "content-only",
+      completeness,
       fanout: FANOUT,
       document_count: documents.length,
       index_depth: level,
@@ -152,7 +177,9 @@ export async function readV5StagedDocument(
   if (
     !documentKey.startsWith(prefix) ||
     root.format_version !== "v5-staging-index/1" ||
-    root.completeness !== "content-only" ||
+    !["content-only", "content-and-temporal-detail-only"].includes(
+      root.completeness
+    ) ||
     root.fanout !== FANOUT ||
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||
@@ -214,7 +241,9 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
   const prefix = `worlds/${root.world_id}/revisions/${root.revision}/v5/`;
   if (
     root.format_version !== "v5-staging-index/1" ||
-    root.completeness !== "content-only" ||
+    !["content-only", "content-and-temporal-detail-only"].includes(
+      root.completeness
+    ) ||
     root.fanout !== FANOUT ||
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||

@@ -108,3 +108,5 @@ export type ResolvedOperation =
       readonly entity_type: "event_collection_membership";
       readonly value: EventCollectionMembership;
     };
+
+export { V5_AUTHORING_POLICY } from "./authoring-policy-v5.js";

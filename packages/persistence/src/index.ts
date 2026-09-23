@@ -258,7 +258,7 @@ export async function checkDatabaseReady(db: MoiraiDatabase): Promise<void> {
   await sql`select 1`.execute(db);
 }
 
-function uuidV7(now = Date.now()): string {
+export function uuidV7(now = Date.now()): string {
   const bytes = randomBytes(16);
   let timestamp = BigInt(now);
   for (let index = 5; index >= 0; index -= 1) {

@@ -1,0 +1,178 @@
+import { randomBytes } from "node:crypto";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
+import { sql } from "kysely";
+import type { CanonicalState } from "@moirai/contracts/v5";
+import type { LegacyV4RevisionView } from "@moirai/contracts/legacy-v4";
+import { createDatabase, commitCreateChangeSet } from "./index.js";
+import {
+  captureDatabaseImage,
+  databaseImageDigest,
+  restoreFreshRehearsal
+} from "./ip011-backup.js";
+import { migrateToVersion } from "./migrate.js";
+import {
+  createTestChangeSet,
+  createTestExpansionChangeSet
+} from "./test-fixture.js";
+import { rehearseV5Database } from "./ip011-v5-rehearsal.js";
+import { readLegacyV4WorldAtRevision } from "./legacy-v4-reader.js";
+import { TEST_FIXTURE } from "@moirai/contracts/testing";
+
+const sourceUrl = process.env.DATABASE_URL;
+describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
+  const source = createDatabase(sourceUrl ?? "");
+  const name = `ip011_rehearsal_${randomBytes(8).toString("hex")}`;
+  const cloneUrl = new URL(sourceUrl ?? "postgresql://localhost/unused");
+  cloneUrl.pathname = `/${name}`;
+  let sourceDigest: string;
+
+  const build = (snapshot: LegacyV4RevisionView): CanonicalState => {
+    const ownerNarratives = snapshot.narratives.map((n) => ({
+      id: n.id,
+      world_id: snapshot.world.id,
+      scope_type:
+        n.scope_type === "canon" ? ("collection" as const) : ("event" as const),
+      scope_id: n.scope_id,
+      locale: n.locale,
+      title: n.title,
+      body: n.body,
+      public_references: n.public_references,
+      notes: []
+    }));
+    for (const event of snapshot.events.filter(
+      (e) =>
+        !ownerNarratives.some(
+          (n) => n.scope_type === "event" && n.scope_id === e.id
+        )
+    )) {
+      ownerNarratives.push({
+        id:
+          event.id === TEST_FIXTURE.eventId
+            ? "019f5000-1100-7000-8000-000000000014"
+            : "019f5000-1100-7000-8000-000000000015",
+        world_id: snapshot.world.id,
+        scope_type: "event",
+        scope_id: event.id,
+        locale: "en",
+        title: event.title,
+        body: event.summary ?? event.title,
+        public_references: [],
+        notes: []
+      });
+    }
+    return {
+      world: snapshot.world,
+      collections: snapshot.canons,
+      timeSystems: snapshot.timeSystems,
+      collectionTimeSystems: snapshot.canonTimeSystems.map((link) => ({
+        id: link.id,
+        collection_id: link.canon_id,
+        time_system_id: link.time_system_id
+      })),
+      events: snapshot.events.map((e) => ({
+        id: e.id,
+        world_id: e.world_id,
+        slug: e.slug,
+        title: e.title,
+        summary: e.summary,
+        roles: e.roles,
+        attributes: e.attributes
+      })),
+      eventCollectionMemberships: snapshot.eventCanonMemberships.map((m) => ({
+        event_id: m.event_id,
+        collection_id: m.canon_id
+      })),
+      relations: snapshot.relations.map((r) => ({
+        id: r.id,
+        world_id: r.world_id,
+        type: r.type,
+        source_ref: r.source_ref,
+        target_ref: r.target_ref,
+        direction: r.direction,
+        attributes: r.attributes
+      })),
+      narratives: ownerNarratives
+    };
+  };
+  beforeAll(async () => {
+    await migrateToVersion(sourceUrl!, "009_ip003_relation_memberships");
+    await sql`truncate worlds cascade`.execute(source);
+    await commitCreateChangeSet(source, createTestChangeSet());
+    await commitCreateChangeSet(source, createTestExpansionChangeSet());
+    const image = await captureDatabaseImage(source);
+    sourceDigest = databaseImageDigest(image);
+    await restoreFreshRehearsal(sourceUrl!, image, name);
+  });
+  afterAll(async () => {
+    await sql`drop database if exists ${sql.id(name)} with (force)`.execute(
+      source
+    );
+    await source.destroy();
+  });
+
+  it("fails closed before schema changes when a candidate loses a required owner Narrative", async () => {
+    await expect(
+      rehearseV5Database(sourceUrl!, name, {
+        world_id: TEST_FIXTURE.worldId,
+        expected_revision: 2,
+        preservation_digest: "a".repeat(64),
+        build_candidate: (snapshot) => ({ ...build(snapshot), narratives: [] })
+      })
+    ).rejects.toThrow();
+    const clone = createDatabase(cloneUrl.toString());
+    try {
+      expect(databaseImageDigest(await captureDatabaseImage(clone))).toBe(
+        sourceDigest
+      );
+    } finally {
+      await clone.destroy();
+    }
+  });
+  it("commits schema, content, provenance and Revision atomically on the clone, retaining old history", async () => {
+    const result = await rehearseV5Database(sourceUrl!, name, {
+      world_id: TEST_FIXTURE.worldId,
+      expected_revision: 2,
+      preservation_digest: "a".repeat(64),
+      build_candidate: build
+    });
+    expect(result).toMatchObject({
+      from_revision: 2,
+      to_revision: 3,
+      history_unchanged: true,
+      legacy_revision_unchanged: true,
+      operational_source_unchanged: true,
+      events: 3,
+      collections: 1,
+      narratives: 4,
+      relations: 2,
+      publication_processed: false
+    });
+    expect(databaseImageDigest(await captureDatabaseImage(source))).toBe(
+      sourceDigest
+    );
+    const clone = createDatabase(cloneUrl.toString());
+    try {
+      const old = await readLegacyV4WorldAtRevision(
+        clone,
+        TEST_FIXTURE.worldId,
+        2
+      );
+      expect(old.canons).toHaveLength(1);
+      expect(old.events[0]?.kind).toBe("atomic");
+      const ledger = await sql<{
+        name: string;
+      }>`select name from kysely_migration order by name desc limit 1`.execute(
+        clone
+      );
+      expect(ledger.rows[0]?.name).toBe("010_ip011_collections");
+      const archived = await sql<{
+        count: string;
+      }>`select count(*)::text as count from change_operations where entity_type='relation_canon_membership' and operation_kind='retire_applicability'`.execute(
+        clone
+      );
+      expect(archived.rows[0]?.count).toBe("2");
+    } finally {
+      await clone.destroy();
+    }
+  });
+});

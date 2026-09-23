@@ -4,6 +4,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@moirai/domain/v5": fileURLToPath(
+        new URL("./packages/domain/src/v5.ts", import.meta.url)
+      ),
+      "@moirai/contracts/v5": fileURLToPath(
+        new URL("./packages/contracts/src/v5.ts", import.meta.url)
+      ),
       "@moirai/graph-query": fileURLToPath(
         new URL("./packages/graph-query/src/index.ts", import.meta.url)
       ),

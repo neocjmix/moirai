@@ -15,7 +15,9 @@
       "@moirai/contracts/v5": ["./packages/contracts/src/v5.ts"],
       "@moirai/contracts/v5-wire": ["./packages/contracts/src/v5-wire.ts"],
       "@moirai/domain/v5": ["./packages/domain/src/v5.ts"],
-      "@moirai/domain/v5-operations": ["./packages/domain/src/v5-operations.ts"],
+      "@moirai/domain/v5-operations": [
+        "./packages/domain/src/v5-operations.ts"
+      ],
       "@moirai/lachesis/v5": ["./packages/lachesis/src/v5.ts"]
     }
   },

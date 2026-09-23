@@ -95,7 +95,11 @@ type UpdateEntityOperation = {
     readonly value: Omit<EntityRecords[K], "id">;
   };
 }[MutableEntity];
-export type ResolvedOperation =
+export interface OriginRef {
+  readonly field: string;
+  readonly origin_index: number;
+}
+export type ResolvedOperation = (
   | CreateEntityOperation
   | UpdateEntityOperation
   | {
@@ -107,7 +111,8 @@ export type ResolvedOperation =
       readonly kind: "add" | "remove";
       readonly entity_type: "event_collection_membership";
       readonly value: EventCollectionMembership;
-    };
+    }
+) & { readonly origin_refs: readonly OriginRef[] };
 
 /** Internal final-ID transaction input. External client_ref resolution is a separate ingress step. */
 export interface ResolvedV5Change {

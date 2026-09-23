@@ -1,7 +1,7 @@
 /** Internal v5 transaction. Never wire to v4 ingress or the default migrator. */
 import { createHash } from "node:crypto";
 import { sql, type QueryExecutorProvider } from "kysely";
-import type { ResolvedV5Change } from "@moirai/contracts/v5";
+import type { OriginRef, ResolvedV5Change } from "@moirai/contracts/v5";
 import { V5_AUTHORING_POLICY } from "@moirai/contracts/v5";
 import { ChangeSetError, stableStringify } from "@moirai/domain";
 import { applyV5Operations } from "@moirai/domain/v5-operations";
@@ -28,6 +28,79 @@ interface HistoryChange {
   operation_kind: "create" | "update" | "withdraw" | "add" | "remove";
   before: unknown;
   after: unknown;
+}
+
+/** Attribute final-state diffs to the submitted operations, including the
+ * selection/Narrative withdrawals implied by retiring a Collection. */
+export function attributeV5ChangeOrigins(
+  input: ResolvedV5Change,
+  changes: HistoryChange[]
+) {
+  const direct = new Map<string, OriginRef[]>();
+  const collectionRetirements = new Map<string, OriginRef[]>();
+  for (const operation of input.operations) {
+    const refs = operation.origin_refs;
+    if (
+      !Array.isArray(refs) ||
+      refs.length === 0 ||
+      refs.some(
+        (ref) =>
+          typeof ref?.field !== "string" ||
+          ref.field.length === 0 ||
+          ref.field.length > 128 ||
+          !Number.isSafeInteger(ref.origin_index) ||
+          ref.origin_index < 0 ||
+          ref.origin_index >= input.origins.length
+      )
+    )
+      throw new ChangeSetError(
+        "invalid_origin_refs",
+        "operations.origin_refs",
+        "Every operation needs valid source references"
+      );
+    const key =
+      operation.entity_type === "event_collection_membership"
+        ? `${operation.entity_type}:${pair(operation.value)}`
+        : `${operation.entity_type}:${operation.entity_id}`;
+    direct.set(key, [...(direct.get(key) ?? []), ...refs]);
+    if (operation.kind === "withdraw" && operation.entity_type === "collection")
+      collectionRetirements.set(operation.entity_id, refs);
+  }
+  return changes.map((change) => {
+    const before = change.before as Record<string, unknown> | null;
+    const after = change.after as Record<string, unknown> | null;
+    const selection = (after ?? before) as {
+      collection_id: string;
+      event_id: string;
+    } | null;
+    const key =
+      change.entity_type === "event_collection_membership" && selection
+        ? `${change.entity_type}:${pair(selection)}`
+        : `${change.entity_type}:${change.entity_id}`;
+    const implicitCollection =
+      change.operation_kind === "withdraw" || change.operation_kind === "remove"
+        ? change.entity_type === "narrative" &&
+          before?.scope_type === "collection"
+          ? String(before.scope_id)
+          : change.entity_type === "collection_time_system" ||
+              change.entity_type === "event_collection_membership"
+            ? String(before?.collection_id)
+            : null
+        : null;
+    const refs =
+      direct.get(key) ??
+      (implicitCollection
+        ? collectionRetirements.get(implicitCollection)
+        : undefined);
+    if (!refs?.length)
+      throw new ChangeSetError(
+        "missing_change_origin",
+        "operations.origin_refs",
+        "Every canonical history change must have a source operation",
+        [change.entity_id]
+      );
+    return refs;
+  });
 }
 
 async function insertEntity(
@@ -320,6 +393,7 @@ export async function commitV5Resolved(
     const reread = await readActiveV5State(tx, input.world_id);
     if (digest(orderedV5State(reread)) !== digest(orderedV5State(candidate)))
       throw new Error("v5_write_readback_mismatch");
+    const changeOrigins = attributeV5ChangeOrigins(input, changes);
     const served =
       (
         await sql<{
@@ -344,7 +418,7 @@ export async function commitV5Resolved(
     );
     for (const [index, change] of changes.entries())
       await sql`insert into change_operations(change_set_id,world_id,revision,operation_index,entity_type,entity_id,operation_kind,"before","after",origin_refs)
-        values (${input.change_set_id},${input.world_id},${revision},${index},${change.entity_type},${change.entity_id},${change.operation_kind},${change.before === null ? null : JSON.stringify(change.before)}::jsonb,${change.after === null ? null : JSON.stringify(change.after)}::jsonb,'[]'::jsonb)`.execute(
+        values (${input.change_set_id},${input.world_id},${revision},${index},${change.entity_type},${change.entity_id},${change.operation_kind},${change.before === null ? null : JSON.stringify(change.before)}::jsonb,${change.after === null ? null : JSON.stringify(change.after)}::jsonb,${JSON.stringify(changeOrigins[index])}::jsonb)`.execute(
         tx
       );
     await sql`insert into world_revisions(id,world_id,revision,change_set_id) values (${uuidV7()},${input.world_id},${revision},${input.change_set_id})`.execute(

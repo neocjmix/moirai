@@ -47,7 +47,7 @@ export interface Lachesis {
 }
 const uuid =
   /^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/;
-function authorize(
+export function authorizeActor(
   actor: ActorContext,
   scope: ClothoScope,
   world?: unknown
@@ -73,7 +73,7 @@ export function createLachesis(store: CanonicalStore): Lachesis {
     actor: ActorContext,
     digest?: string
   ): CreateChangeSet {
-    authorize(actor, "world:write", plan.world_id);
+    authorizeActor(actor, "world:write", plan.world_id);
     if (Object.hasOwn(plan, "actor") || !uuid.test(plan.world_id))
       throw new ChangeSetError(
         "invalid_request",
@@ -91,7 +91,7 @@ export function createLachesis(store: CanonicalStore): Lachesis {
   }
   return {
     async query(method, input, actor) {
-      authorize(actor, "world:read", input.world_id);
+      authorizeActor(actor, "world:read", input.world_id);
       if (method !== "world.list" && typeof input.world_id !== "string")
         throw new ChangeSetError(
           "invalid_request",

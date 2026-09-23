@@ -1,7 +1,7 @@
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { sql } from "kysely";
-import type { CanonicalState } from "@moirai/contracts/v5";
+import type { CanonicalState, ResolvedV5Change } from "@moirai/contracts/v5";
 import { V5_AUTHORING_POLICY } from "@moirai/contracts/v5";
 import type { LegacyV4RevisionView } from "@moirai/contracts/legacy-v4";
 import { createDatabase, commitCreateChangeSet } from "./index.js";
@@ -18,7 +18,7 @@ import {
 import { rehearseV5Database } from "./ip011-v5-rehearsal.js";
 import { readLegacyV4WorldAtRevision } from "./legacy-v4-reader.js";
 import { readActiveV5State } from "./v5-read.js";
-import { commitV5Resolved, type V5ResolvedChange } from "./v5-change.js";
+import { commitV5Resolved } from "./v5-change.js";
 import { TEST_FIXTURE } from "@moirai/contracts/testing";
 
 const sourceUrl = process.env.DATABASE_URL;
@@ -182,7 +182,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
     const clone = createDatabase(cloneUrl.toString());
     const eventId = "019f5000-1100-7000-8000-000000000021";
     const narrativeId = "019f5000-1100-7000-8000-000000000022";
-    const change: V5ResolvedChange = {
+    const change: ResolvedV5Change = {
       change_set_id: "019f5000-1100-7000-8000-000000000023",
       world_id: TEST_FIXTURE.worldId,
       expected_revision: 3,

@@ -60,7 +60,11 @@ export function buildV5StagedIndex(
   )
     throw Error("v5_index_identity_invalid");
   const prefix = `worlds/${worldId}/revisions/${revision}/v5/`;
-  const documents = [...input].sort((a, b) => a.key.localeCompare(b.key));
+  // Use the same ordinal ordering as range checks and object-store keys;
+  // locale collation can order uppercase/punctuation differently.
+  const documents = [...input].sort((a, b) =>
+    a.key < b.key ? -1 : a.key > b.key ? 1 : 0
+  );
   for (let i = 0; i < documents.length; i++) {
     const document = documents[i]!;
     if (

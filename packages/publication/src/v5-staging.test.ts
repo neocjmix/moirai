@@ -93,6 +93,25 @@ describe("inactive v5 hierarchical integrity index", () => {
     ).rejects.toThrow("v5_index_digest_mismatch");
   });
 
+  it("uses ordinal key ranges rather than locale collation", async () => {
+    const mixed = ["a", "A", "-"].map((name) => ({
+      key: `${prefix}content/events/${name}.json`,
+      body: name
+    }));
+    const built = buildV5StagedIndex("world-1", 31, mixed);
+    verifyV5StagedIndex(built);
+    const objects = new Map(
+      [...built.documents, ...built.index].map(({ key, body }) => [key, body])
+    );
+    expect(
+      await readV5StagedDocument(
+        built.root.body,
+        `${prefix}content/events/A.json`,
+        async (key) => objects.get(key) ?? null
+      )
+    ).toBe("A");
+  });
+
   it("rejects altered, missing, extra, duplicate and cross-revision documents", () => {
     const built = buildV5StagedIndex("world-1", 31, input(129));
     expect(() =>

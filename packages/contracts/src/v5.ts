@@ -109,4 +109,17 @@ export type ResolvedOperation =
       readonly value: EventCollectionMembership;
     };
 
+/** Internal final-ID transaction input. External client_ref resolution is a separate ingress step. */
+export interface ResolvedV5Change {
+  readonly change_set_id: string;
+  readonly world_id: string;
+  readonly expected_revision: number;
+  readonly actor: string;
+  readonly intent: string;
+  readonly origins: readonly Record<string, unknown>[];
+  readonly policy_version: string;
+  readonly policy_digest: string;
+  readonly operations: readonly ResolvedOperation[];
+}
+
 export { V5_AUTHORING_POLICY } from "./authoring-policy-v5.js";

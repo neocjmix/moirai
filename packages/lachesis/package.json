@@ -11,6 +11,10 @@
     "./database": {
       "types": "./src/database.ts",
       "import": "./dist/database.js"
+    },
+    "./v5": {
+      "types": "./src/v5.ts",
+      "import": "./dist/v5.js"
     }
   },
   "scripts": {

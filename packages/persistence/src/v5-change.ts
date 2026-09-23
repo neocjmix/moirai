@@ -1,25 +1,13 @@
 /** Internal v5 transaction. Never wire to v4 ingress or the default migrator. */
 import { createHash } from "node:crypto";
 import { sql, type QueryExecutorProvider } from "kysely";
-import type { ResolvedOperation } from "@moirai/contracts/v5";
+import type { ResolvedV5Change } from "@moirai/contracts/v5";
 import { V5_AUTHORING_POLICY } from "@moirai/contracts/v5";
 import { ChangeSetError, stableStringify } from "@moirai/domain";
 import { applyV5Operations } from "@moirai/domain/v5-operations";
 import { orderedV5State } from "@moirai/domain/v5";
 import { uuidV7, type MoiraiDatabase } from "./index.js";
 import { readActiveV5State } from "./v5-read.js";
-
-export interface V5ResolvedChange {
-  readonly change_set_id: string;
-  readonly world_id: string;
-  readonly expected_revision: number;
-  readonly actor: string;
-  readonly intent: string;
-  readonly origins: readonly Record<string, unknown>[];
-  readonly policy_version: string;
-  readonly policy_digest: string;
-  readonly operations: readonly ResolvedOperation[];
-}
 
 const digest = (value: unknown) =>
   createHash("sha256").update(stableStringify(value)).digest("hex");
@@ -133,7 +121,7 @@ async function updateEntity(
  * Full World read is validation-only and must not be used for interactive queries. */
 export async function commitV5Resolved(
   db: MoiraiDatabase,
-  input: V5ResolvedChange
+  input: ResolvedV5Change
 ) {
   if (
     !uuid.test(input.change_set_id) ||

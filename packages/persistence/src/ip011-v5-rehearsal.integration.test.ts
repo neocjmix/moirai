@@ -2,6 +2,7 @@ import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { sql } from "kysely";
 import type { CanonicalState } from "@moirai/contracts/v5";
+import { V5_AUTHORING_POLICY } from "@moirai/contracts/v5";
 import type { LegacyV4RevisionView } from "@moirai/contracts/legacy-v4";
 import { createDatabase, commitCreateChangeSet } from "./index.js";
 import {
@@ -16,6 +17,8 @@ import {
 } from "./test-fixture.js";
 import { rehearseV5Database } from "./ip011-v5-rehearsal.js";
 import { readLegacyV4WorldAtRevision } from "./legacy-v4-reader.js";
+import { readActiveV5State } from "./v5-read.js";
+import { commitV5Resolved, type V5ResolvedChange } from "./v5-change.js";
 import { TEST_FIXTURE } from "@moirai/contracts/testing";
 
 const sourceUrl = process.env.DATABASE_URL;
@@ -171,6 +174,139 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         clone
       );
       expect(archived.rows[0]?.count).toBe("2");
+    } finally {
+      await clone.destroy();
+    }
+  });
+  it("commits one policy-bound v5 Change Set atomically, with exact replay and missing Narrative rejection", async () => {
+    const clone = createDatabase(cloneUrl.toString());
+    const eventId = "019f5000-1100-7000-8000-000000000021";
+    const narrativeId = "019f5000-1100-7000-8000-000000000022";
+    const change: V5ResolvedChange = {
+      change_set_id: "019f5000-1100-7000-8000-000000000023",
+      world_id: TEST_FIXTURE.worldId,
+      expected_revision: 3,
+      actor: "019f5000-1100-7000-8000-000000000024",
+      intent: "Synthetic isolated policy and replay regression",
+      origins: [
+        { kind: "system_derived", summary: "Disposable PostgreSQL fixture" }
+      ],
+      policy_version: V5_AUTHORING_POLICY.policy_version,
+      policy_digest: V5_AUTHORING_POLICY.policy_digest,
+      operations: [
+        {
+          kind: "create",
+          entity_type: "event",
+          entity_id: eventId,
+          value: {
+            world_id: TEST_FIXTURE.worldId,
+            slug: "v5-policy-test",
+            title: "Synthetic Event",
+            summary: "An isolated test Event",
+            roles: [],
+            attributes: {}
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "narrative",
+          entity_id: narrativeId,
+          value: {
+            world_id: TEST_FIXTURE.worldId,
+            scope_type: "event",
+            scope_id: eventId,
+            locale: "en",
+            title: "Synthetic Event",
+            body: "A reader-facing test account.",
+            public_references: [],
+            notes: []
+          }
+        },
+        {
+          kind: "add",
+          entity_type: "event_collection_membership",
+          value: {
+            event_id: eventId,
+            collection_id: TEST_FIXTURE.canonId
+          }
+        }
+      ]
+    };
+    try {
+      await expect(
+        commitV5Resolved(clone, { ...change, policy_version: "" })
+      ).rejects.toMatchObject({ code: "authoring_policy_required" });
+      await expect(
+        commitV5Resolved(clone, { ...change, policy_digest: "b".repeat(64) })
+      ).rejects.toMatchObject({ code: "authoring_policy_mismatch" });
+      await expect(
+        commitV5Resolved(clone, {
+          ...change,
+          operations: change.operations.filter(
+            (op) => op.entity_type !== "narrative"
+          )
+        })
+      ).rejects.toThrow();
+      expect(
+        (
+          await sql<{
+            current_revision: number;
+          }>`select current_revision from worlds where id=${TEST_FIXTURE.worldId}`.execute(
+            clone
+          )
+        ).rows[0]?.current_revision
+      ).toBe(3);
+      const committed = await commitV5Resolved(clone, change);
+      expect(committed).toMatchObject({
+        current_revision: 4,
+        idempotent_replay: false,
+        publication_target_revision: 4
+      });
+      expect(await commitV5Resolved(clone, change)).toMatchObject({
+        current_revision: 4,
+        idempotent_replay: true
+      });
+      await expect(
+        commitV5Resolved(clone, { ...change, intent: "Changed payload" })
+      ).rejects.toMatchObject({ code: "idempotency_key_reused" });
+      const state = await readActiveV5State(clone, TEST_FIXTURE.worldId);
+      expect(state.events).toHaveLength(4);
+      expect(state.narratives).toHaveLength(5);
+      expect(state.eventCollectionMemberships).toContainEqual({
+        event_id: eventId,
+        collection_id: TEST_FIXTURE.canonId
+      });
+      const ledger = await sql<{
+        count: string;
+      }>`select count(*)::text as count from change_operations where change_set_id=${change.change_set_id}`.execute(
+        clone
+      );
+      expect(ledger.rows[0]?.count).toBe("3");
+      const withdraw = await commitV5Resolved(clone, {
+        ...change,
+        change_set_id: "019f5000-1100-7000-8000-000000000025",
+        expected_revision: 4,
+        operations: [
+          {
+            kind: "withdraw",
+            entity_type: "collection",
+            entity_id: TEST_FIXTURE.canonId
+          }
+        ]
+      });
+      expect(withdraw).toMatchObject({ current_revision: 5 });
+      const afterSelection = await readActiveV5State(
+        clone,
+        TEST_FIXTURE.worldId
+      );
+      expect(afterSelection.collections).toHaveLength(0);
+      expect(afterSelection.eventCollectionMemberships).toHaveLength(0);
+      expect(afterSelection.events).toHaveLength(4);
+      expect(afterSelection.relations).toHaveLength(2);
+      expect(afterSelection.narratives).toHaveLength(4);
+      expect(databaseImageDigest(await captureDatabaseImage(source))).toBe(
+        sourceDigest
+      );
     } finally {
       await clone.destroy();
     }

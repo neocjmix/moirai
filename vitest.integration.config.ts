@@ -13,11 +13,17 @@ export default defineConfig({
       "@moirai/contracts/v5": fileURLToPath(
         new URL("./packages/contracts/src/v5.ts", import.meta.url)
       ),
+      "@moirai/contracts/v5-wire": fileURLToPath(
+        new URL("./packages/contracts/src/v5-wire.ts", import.meta.url)
+      ),
       "@moirai/graph-query": fileURLToPath(
         new URL("./packages/graph-query/src/index.ts", import.meta.url)
       ),
       "@moirai/lachesis/database": fileURLToPath(
         new URL("./packages/lachesis/src/database.ts", import.meta.url)
+      ),
+      "@moirai/lachesis/v5": fileURLToPath(
+        new URL("./packages/lachesis/src/v5.ts", import.meta.url)
       ),
       "@moirai/lachesis": fileURLToPath(
         new URL("./packages/lachesis/src/index.ts", import.meta.url)

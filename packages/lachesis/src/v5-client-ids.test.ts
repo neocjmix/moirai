@@ -108,6 +108,17 @@ describe("v5 draft resolution", () => {
     expect(() =>
       resolveV5DraftChange({ ...draft, operations: [draft.operations[0]!] })
     ).toThrow();
+    expect(() =>
+      resolveV5DraftChange({
+        ...draft,
+        operations: [
+          {
+            ...draft.operations[1]!,
+            origin_refs: [{ field: "not_a_field", origin_index: 0 }]
+          }
+        ]
+      })
+    ).toThrow();
   });
   it("resolves tagged Relation endpoints without rewriting arbitrary prose", () => {
     const withRelation: V5DraftChange = {

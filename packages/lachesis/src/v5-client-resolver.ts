@@ -148,6 +148,20 @@ export function resolveV5DraftChange(
   const mapping = new Map<string, string>();
   const allocated = new Set<string>();
   for (const [index, operation] of plan.operations.entries()) {
+    if (
+      !Array.isArray(operation.origin_refs) ||
+      operation.origin_refs.length === 0 ||
+      operation.origin_refs.some(
+        (ref: OriginRef) =>
+          !Number.isSafeInteger(ref.origin_index) ||
+          ref.origin_index < 0 ||
+          ref.origin_index >= plan.origins.length ||
+          typeof ref.field !== "string" ||
+          (ref.field !== "*" &&
+            (!operation.value || !Object.hasOwn(operation.value, ref.field)))
+      )
+    )
+      return invalid(`operations.${index}.origin_refs`);
     if (operation.kind !== "create") continue;
     if (
       !creatable.has(operation.entity_type) ||

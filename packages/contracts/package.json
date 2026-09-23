@@ -19,6 +19,10 @@
     "./v5": {
       "types": "./src/v5.ts",
       "import": "./dist/v5.js"
+    },
+    "./v5-wire": {
+      "types": "./src/v5-wire.ts",
+      "import": "./dist/v5-wire.js"
     }
   },
   "scripts": {

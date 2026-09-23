@@ -9,6 +9,7 @@ import {
   resolveV5DraftChange,
   type V5DraftChange
 } from "./v5-client-resolver.js";
+export type { V5DraftChange } from "./v5-client-resolver.js";
 
 export interface V5CanonicalStore {
   commit(input: ResolvedV5Change): Promise<unknown>;

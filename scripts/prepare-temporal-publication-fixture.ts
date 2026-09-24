@@ -16,6 +16,7 @@ import {
   currentKey
 } from "../packages/publication/src/index.js";
 import type { CanonicalRevisionView } from "../packages/projections/src/index.js";
+import { prepareV5PublicationFixture } from "./prepare-v5-publication-fixture.js";
 
 const base = new URL(
   "../docs/implementation/fixtures/temporal-expressiveness/",
@@ -135,6 +136,7 @@ for (const item of [
   await mkdir(resolve(path, ".."), { recursive: true });
   await writeFile(path, item.body);
 }
+await prepareV5PublicationFixture(root);
 process.stdout.write(
-  "Prepared the separate Temporal Expressiveness Observatory CI publication fixture\n"
+  "Prepared isolated v4 and v5 browser Publication fixtures\n"
 );

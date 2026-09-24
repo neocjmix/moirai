@@ -136,6 +136,22 @@
   display: flex;
   gap: 0.3rem;
 }
+.compositeNavigation {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  padding: 0.35rem 1rem 0.7rem;
+  max-height: 8rem;
+  overflow: auto;
+}
+.compositeNavigation button {
+  min-height: 2.75rem;
+  border: 1px solid #596c87;
+  background: #e7ecf2;
+  color: #304158;
+  border-radius: 0.4rem;
+  cursor: pointer;
+}
 .panLayer {
   width: 100%;
   will-change: transform;

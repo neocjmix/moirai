@@ -40,6 +40,11 @@ const errorResult = (code: string) => ({
     { type: "text" as const, text: JSON.stringify({ error: { code } }) }
   ]
 });
+const discovery = new Set([
+  "initialize",
+  "notifications/initialized",
+  "tools/list"
+]);
 
 export function registerV5McpRoutes(
   app: FastifyInstance,
@@ -57,20 +62,37 @@ export function registerV5McpRoutes(
         reply.header("cache-control", "no-store");
         if (request.headers.origin)
           return reply.code(403).send({ error: "origin_not_allowed" });
+      },
+      preHandler: async (request, reply) => {
+        if (
+          !request.headers.authorization &&
+          request.headers["content-length"] === "0"
+        )
+          return reply.code(204).send();
         const principal =
           authenticate(request.headers.authorization, credentials) ??
           (await verify(request.headers.authorization).catch(() => undefined));
-        if (!principal)
-          return reply
-            .header("www-authenticate", "Bearer")
-            .code(401)
-            .send({ error: "unauthorized" });
-        principals.set(request, principal);
+        if (principal) {
+          principals.set(request, principal);
+          return;
+        }
+        const body = request.body as Record<string, unknown> | undefined;
+        if (
+          body &&
+          !Array.isArray(body) &&
+          body.jsonrpc === "2.0" &&
+          typeof body.method === "string" &&
+          discovery.has(body.method)
+        )
+          return;
+        return reply
+          .header("www-authenticate", "Bearer")
+          .code(401)
+          .send({ error: "unauthorized" });
       }
     },
     async (request, reply) => {
       const actor = principals.get(request);
-      if (!actor) return reply.code(401).send({ error: "unauthorized" });
       const server = new Server(
         { name: "moirai-clotho-v5-stage", version: "5" },
         {
@@ -97,6 +119,7 @@ export function registerV5McpRoutes(
         ]
       }));
       server.setRequestHandler(CallToolRequestSchema, async ({ params }) => {
+        if (!actor) return errorResult("unauthorized");
         const input = params.arguments ?? {};
         try {
           if (params.name === "authoring_policy_get" && !validPolicy(input))

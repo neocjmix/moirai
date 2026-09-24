@@ -97,7 +97,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       const candidates = [];
       for (const query of [
         "계유정난",
-        "단종",
+        "단종 폐위",
         "임진왜란",
         "전국시대",
         "세키가하라"

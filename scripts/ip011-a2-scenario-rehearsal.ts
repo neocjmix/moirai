@@ -66,6 +66,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       phase = "scenario_reads";
       const details = [];
       for (const item of cases) {
+        phase = `detail_${item.name}`;
         let cursor: string | null = null;
         let pages = 0,
           memberships = 0,
@@ -101,6 +102,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         "전국시대",
         "세키가하라"
       ]) {
+        phase = `search_${candidates.length}`;
         let cursor: string | null = null;
         const ids: string[] = [];
         do {
@@ -119,6 +121,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         if (new Set(ids).size !== ids.length) throw Error("search_duplicates");
         candidates.push({ query, ids });
       }
+      phase = "shared_sample";
       const shared = (
         await sql<{ event_id: string; collection_count: string }>`
         select event_id, count(distinct collection_id)::text as collection_count
@@ -128,6 +131,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         order by event_id limit 20
       `.execute(db)
       ).rows;
+      phase = "shared_total";
       const sharedTotal = (
         await sql<{ count: string }>`
         select count(*)::text as count from (
@@ -137,6 +141,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         ) s
       `.execute(db)
       ).rows[0];
+      phase = "composite_overlap";
       const overlap = (
         await sql<{ count: string }>`
         select count(distinct r.id)::text as count from relations r
@@ -148,6 +153,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
           and r.type = 'contains' and parent.collection_id = child.collection_id
       `.execute(db)
       ).rows[0];
+      phase = "world_count";
       const worlds = (
         await sql<{ count: string }>`
         select count(*)::text as count from worlds where withdrawn_revision is null

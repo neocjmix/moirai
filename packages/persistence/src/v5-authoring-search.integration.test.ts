@@ -110,6 +110,7 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
     ]);
     expect(detail.relations).toHaveLength(16);
     expect(detail.relations[0]?.type).toBe("precedes");
+    expect(detail.neighbors.map((neighbor) => neighbor.id)).toEqual([second]);
     expect(detail.next_cursor).toBeTruthy();
     const next = await getV5EventEvidence(db, {
       world_id: world,

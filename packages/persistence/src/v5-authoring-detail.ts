@@ -129,6 +129,33 @@ export async function getV5EventEvidence(
       ).rows;
       const membershipPage = memberships.slice(0, 16);
       const relationPage = relations.slice(0, 16);
+      const neighborIds = [
+        ...new Set(
+          relationPage.flatMap((relation) =>
+            [relation.source_ref, relation.target_ref].flatMap((ref) => {
+              if (!ref || typeof ref !== "object") return [];
+              const id = (ref as { event_id?: unknown }).event_id;
+              return typeof id === "string" &&
+                uuid.test(id) &&
+                id !== input.event_id
+                ? [id]
+                : [];
+            })
+          )
+        )
+      ];
+      const neighbors = neighborIds.length
+        ? (
+            await sql<{
+              id: string;
+              title: string;
+              summary: string | null;
+            }>`select id, title, left(summary, 1000) as summary from events
+        where world_id = ${input.world_id} and withdrawn_revision is null
+          and id in (${sql.join(neighborIds.map((id) => sql`${id}::uuid`))})
+        order by id limit 32`.execute(tx)
+          ).rows
+        : [];
       const moreMemberships = memberships.length > 16;
       const moreRelations = relations.length > 16;
       const next_cursor =
@@ -148,6 +175,7 @@ export async function getV5EventEvidence(
         narrative,
         memberships: membershipPage,
         relations: relationPage,
+        neighbors,
         next_cursor
       };
     });

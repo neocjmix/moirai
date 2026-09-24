@@ -291,6 +291,7 @@ export function V5Explorer({
   const width = viewport.maxX - viewport.minX,
     height = viewport.maxY - viewport.minY;
   const radius = Math.max(Math.min(width, height) * 0.012, 0.01);
+  const visibleComposites = shapes.filter((shape) => shape.kind === "region");
   return (
     <main className={styles.shell}>
       <header className={styles.header}>
@@ -550,6 +551,24 @@ export function V5Explorer({
                 </button>
               )}
           </div>
+          {visibleComposites.length > 0 && (
+            <nav
+              className={styles.compositeNavigation}
+              aria-label="보이는 복합 사건"
+            >
+              {visibleComposites.slice(0, 16).map((shape, index) => (
+                <button
+                  type="button"
+                  key={shape.event_id}
+                  aria-label={`복합 사건 열기 ${shape.event_id}`}
+                  onClick={() => void openEvent(shape.event_id)}
+                >
+                  복합 사건 {index + 1}
+                </button>
+              ))}
+              {visibleComposites.length > 16 && <span>더 보려면 확대</span>}
+            </nav>
+          )}
           {error && (
             <p className={styles.error} role="alert">
               {error}

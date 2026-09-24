@@ -17,6 +17,7 @@ import { createDatabase, uuidV7, type MoiraiDatabase } from "./index.js";
 import { captureDatabaseImage, databaseImageDigest } from "./ip011-backup.js";
 import { readLegacyV4WorldAtRevision } from "./legacy-v4-reader.js";
 import { readActiveV5State } from "./v5-read.js";
+import { readV5WorldAtRevision } from "./v5-history-reader.js";
 import {
   IP011_MIGRATION,
   prepare,
@@ -300,6 +301,13 @@ export async function rehearseV5Database(
     const actual = await readActiveV5State(target, input.world_id);
     if (fingerprint(actual) !== candidateDigest)
       throw Error("v5_committed_readback_mismatch");
+    const replayed = await readV5WorldAtRevision(
+      target,
+      input.world_id,
+      revision
+    );
+    if (fingerprint(replayed) !== candidateDigest)
+      throw Error("v5_revision_replay_mismatch");
     const historical = await readLegacyV4WorldAtRevision(
       target,
       input.world_id,
@@ -320,6 +328,7 @@ export async function rehearseV5Database(
       candidate_digest: candidateDigest,
       history_unchanged: true,
       legacy_revision_unchanged: true,
+      v5_revision_replay_matches_active: true,
       withdrawn_relations_unchanged: true,
       operational_source_unchanged: true,
       events: actual.events.length,

@@ -453,7 +453,10 @@ export async function exportWorldPackage(
   zip.end({ forceZip64Format: true, comment: "" });
   return { bytes: await result, manifest, fingerprint };
 }
-async function packageFiles(bytes: Buffer): Promise<Map<string, Buffer>> {
+/** Shared guarded ZIP64 reader for historical v1-v3 and the staged v5 format. */
+export async function packageFiles(
+  bytes: Buffer
+): Promise<Map<string, Buffer>> {
   if (bytes.length > LIMIT + 1024 * 1024) fail("package_size_limit");
   return new Promise((resolve, reject) =>
     fromBuffer(

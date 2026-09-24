@@ -66,6 +66,15 @@ const state: CanonicalState = {
       attributes: {}
     },
     {
+      id: "cause",
+      world_id: worldId,
+      type: "causes",
+      direction: "directed",
+      source_ref: { kind: "event", event_id: "coup" },
+      target_ref: { kind: "event", event_id: "abdication" },
+      attributes: {}
+    },
+    {
       id: "at-1453",
       world_id: worldId,
       type: "coincides",
@@ -217,6 +226,7 @@ describe("offline v5 World-owned geometry", () => {
     expect(
       layout.shapes.filter((item) => item.event_id === "coup")
     ).toHaveLength(1);
+    expect(layout.shapes).toHaveLength(3);
     expect(
       layout.shapes.find((item) => item.event_id === "process")?.kind
     ).toBe("region");

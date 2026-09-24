@@ -234,7 +234,16 @@ export function buildV5WorldLayout(
       }
   }
   const shapes = chart.entities
-    .filter((item) => included.has(item.eventId) && visible.has(item.eventId))
+    // The renderer also emits Relation line entities whose eventId points to
+    // an endpoint. A line is not a second World Event node: Relation detail
+    // and adjacency own its identity, while this index contains one Event
+    // geometry per World Event.
+    .filter(
+      (item) =>
+        item.id === item.eventId &&
+        included.has(item.eventId) &&
+        visible.has(item.eventId)
+    )
     .map(shape)
     .sort((a, b) =>
       a.event_id < b.event_id ? -1 : a.event_id > b.event_id ? 1 : 0

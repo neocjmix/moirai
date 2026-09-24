@@ -17,3 +17,4 @@ export type { V5StagedArtifacts } from "./v5-staging.js";
 export { readV5StagedCompositeChildren } from "./v5-staged-composite.js";
 export { readV5StagedSelectionPage } from "./v5-staged-selection.js";
 export type { V5SelectionCursor } from "./v5-staged-selection.js";
+export { readV5ServedRoot } from "./v5-serving.js";

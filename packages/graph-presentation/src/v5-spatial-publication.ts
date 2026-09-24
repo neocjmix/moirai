@@ -57,7 +57,9 @@ export async function readV5AuthenticatedViewport(
   if (
     root.world_id !== worldId ||
     root.revision !== revision ||
-    root.completeness !== "content-temporal-and-spatial-staged" ||
+    !["content-temporal-and-spatial-staged", "complete"].includes(
+      root.completeness
+    ) ||
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||
     root.index_depth > 8 ||

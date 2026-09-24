@@ -27,7 +27,8 @@ export async function readV5StagedAdjacencyPage(
     root.revision !== revision ||
     ![
       "content-and-temporal-detail-only",
-      "content-temporal-and-spatial-staged"
+      "content-temporal-and-spatial-staged",
+      "complete"
     ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(eventId) ||
     !Number.isSafeInteger(page) ||
@@ -109,7 +110,8 @@ export async function readV5StagedRelation(
     root.revision !== revision ||
     ![
       "content-and-temporal-detail-only",
-      "content-temporal-and-spatial-staged"
+      "content-temporal-and-spatial-staged",
+      "complete"
     ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(relationId)
   )

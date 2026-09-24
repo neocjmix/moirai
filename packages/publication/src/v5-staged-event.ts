@@ -53,7 +53,8 @@ export async function readV5StagedEvent(
     root.revision !== revision ||
     ![
       "content-and-temporal-detail-only",
-      "content-temporal-and-spatial-staged"
+      "content-temporal-and-spatial-staged",
+      "complete"
     ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(eventId)
   )

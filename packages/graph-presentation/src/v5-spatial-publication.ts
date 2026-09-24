@@ -4,6 +4,8 @@ import { createHash } from "node:crypto";
 import { projectV5WorldTemporal } from "@moirai/projections";
 import {
   buildV5SpatialStagedArtifacts,
+  finalizeV5VerifiedSpatialArtifacts,
+  verifyV5StagedIndex,
   readV5StagedDocument
 } from "@moirai/publication/v5";
 import type { V5StagedArtifacts } from "@moirai/publication/v5";
@@ -33,6 +35,124 @@ export function buildV5WorldSpatialStagedArtifacts(
         };
       })
   );
+}
+
+/** An offline, pointer-free serving-tree candidate. Completion is asserted
+ * only after the immutable index and every Collection × Time System viewport
+ * exhaust to the exact placed canonical membership set. No current.json write
+ * or production migration is performed here. */
+export async function buildV5WorldCompleteArtifacts(
+  state: CanonicalState,
+  revision: number
+): Promise<{
+  artifacts: V5StagedArtifacts;
+  proof: {
+    placed: number;
+    unplaced: number;
+    viewport_pages: number;
+    max_object_reads: number;
+  };
+}> {
+  const staged = buildV5WorldSpatialStagedArtifacts(state, revision);
+  verifyV5StagedIndex(staged);
+  const objects = new Map(
+    [...staged.documents, ...staged.index].map(({ key, body }) => [key, body])
+  );
+  const temporal = projectV5WorldTemporal(state, revision);
+  let placed = 0;
+  let unplaced = 0;
+  let viewportPages = 0;
+  let maxObjectReads = 0;
+  for (const system of state.timeSystems) {
+    const layout = buildV5WorldLayout(state, temporal, system.id);
+    const ids = new Set(layout.shapes.map((shape) => shape.event_id));
+    if (
+      ids.size !== layout.shapes.length ||
+      ids.size + layout.unplaced_event_ids.length !== state.events.length
+    )
+      throw Error("v5_complete_layout_incomplete");
+    placed += ids.size;
+    unplaced += layout.unplaced_event_ids.length;
+    const bounds = layout.shapes.reduce(
+      (box, shape) => {
+        const item =
+          shape.kind === "point"
+            ? {
+                minX: shape.position.x,
+                maxX: shape.position.x,
+                minY: shape.position.y,
+                maxY: shape.position.y
+              }
+            : shape.kind === "region"
+              ? shape.bounds
+              : {
+                  minX: Math.min(shape.start.x, shape.end.x),
+                  maxX: Math.max(shape.start.x, shape.end.x),
+                  minY: Math.min(shape.start.y, shape.end.y),
+                  maxY: Math.max(shape.start.y, shape.end.y)
+                };
+        return {
+          minX: Math.min(box.minX, item.minX),
+          maxX: Math.max(box.maxX, item.maxX),
+          minY: Math.min(box.minY, item.minY),
+          maxY: Math.max(box.maxY, item.maxY)
+        };
+      },
+      { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
+    );
+    const viewport = ids.size
+      ? bounds
+      : { minX: -1, maxX: 1, minY: -1, maxY: 1 };
+    for (const collection of state.collections) {
+      const expected = new Set(
+        state.eventCollectionMemberships
+          .filter(
+            (link) =>
+              link.collection_id === collection.id && ids.has(link.event_id)
+          )
+          .map((link) => link.event_id)
+      );
+      const found = new Set<string>();
+      let cursor: V5SelectedViewportCursor | null = null;
+      let pages = 0;
+      do {
+        const result = await readV5SelectedViewport(
+          staged.root.body,
+          state.world.id,
+          revision,
+          system.id,
+          viewport,
+          [collection.id],
+          cursor,
+          async (key) => objects.get(key) ?? null
+        );
+        maxObjectReads = Math.max(maxObjectReads, result.object_reads);
+        if (result.object_reads > 256 || ++pages > state.events.length + 1)
+          throw Error("v5_complete_read_unbounded");
+        for (const shape of result.shapes) {
+          if (found.has(shape.event_id))
+            throw Error("v5_complete_duplicate_event");
+          found.add(shape.event_id);
+        }
+        cursor = result.next_cursor;
+      } while (cursor);
+      viewportPages += pages;
+      if (
+        expected.size !== found.size ||
+        [...expected].some((id) => !found.has(id))
+      )
+        throw Error("v5_complete_selection_drift");
+    }
+  }
+  return {
+    artifacts: finalizeV5VerifiedSpatialArtifacts(state, staged),
+    proof: {
+      placed,
+      unplaced,
+      viewport_pages: viewportPages,
+      max_object_reads: maxObjectReads
+    }
+  };
 }
 
 /** Root-level spatial envelope for initial navigation. The manifest is

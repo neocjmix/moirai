@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
 import type { CanonicalState } from "@moirai/contracts/v5";
-import { rehearseV5Publication } from "./ip011-v5-publication-rehearsal.js";
+import {
+  rehearseV5CompletePublication,
+  rehearseV5Publication
+} from "./ip011-v5-publication-rehearsal.js";
 
 const state: CanonicalState = {
   world: {
@@ -111,5 +114,20 @@ describe("isolated v5 Publication rehearsal", () => {
     });
     expect(result.max_object_reads).toBeLessThanOrEqual(256);
     expect(result.tree_bytes).toBeGreaterThan(0);
+  });
+  it("proves a complete root on the isolated fixture without writing storage or pointer", async () => {
+    const result = await rehearseV5CompletePublication(state, 31);
+    expect(result).toMatchObject({
+      operation: "ip011_v5_complete_publication_rehearsal",
+      world_id: "world-1",
+      revision: 31,
+      pointer_written: false,
+      storage_written: false,
+      completeness: "complete",
+      placed: 1,
+      unplaced: 1,
+      viewport_pages: 2
+    });
+    expect(result.max_object_reads).toBeLessThanOrEqual(256);
   });
 });

@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { verifyV5StagedIndex } from "@moirai/publication/v5";
 import { readV5StagedEvent } from "@moirai/publication/v5";
 import {
+  buildV5WorldCompleteArtifacts,
   buildV5WorldSpatialStagedArtifacts,
   readV5AuthenticatedViewport,
   readV5SelectedViewport
@@ -108,6 +109,48 @@ const state: CanonicalState = {
 };
 
 describe("authenticated v5 World viewport rehearsal", () => {
+  it("finalizes only a verified full-selection tree under an independent complete namespace", async () => {
+    const { artifacts, proof } = await buildV5WorldCompleteArtifacts(state, 31);
+    verifyV5StagedIndex(artifacts);
+    expect(artifacts.root.key).toBe(
+      "worlds/world-1/revisions/31/v5/complete/manifest.json"
+    );
+    expect(JSON.parse(artifacts.root.body).completeness).toBe("complete");
+    expect(proof).toMatchObject({ placed: 1, unplaced: 1 });
+    const objects = new Map(
+      [...artifacts.documents, ...artifacts.index].map(({ key, body }) => [
+        key,
+        body
+      ])
+    );
+    const get = async (key: string) => objects.get(key) ?? null;
+    const event = await readV5StagedEvent(
+      artifacts.root.body,
+      "world-1",
+      31,
+      "coup",
+      get
+    );
+    expect(event?.narrative.body).toBe("Event");
+    const page = await readV5SelectedViewport(
+      artifacts.root.body,
+      "world-1",
+      31,
+      "gregorian",
+      { minX: -1e6, maxX: 1e6, minY: -1e6, maxY: 1e6 },
+      ["japan", "joseon"],
+      null,
+      get
+    );
+    expect(page.shapes.map((shape) => shape.event_id)).toEqual(["coup"]);
+    expect(page.object_reads).toBeLessThanOrEqual(256);
+    const key =
+      "worlds/world-1/revisions/31/v5/content/events/coup/detail.json";
+    objects.set(key, "tampered");
+    await expect(
+      readV5StagedEvent(artifacts.root.body, "world-1", 31, "coup", get)
+    ).rejects.toThrow("v5_index_digest_mismatch");
+  });
   it("pages a dense selection without skipping candidates or accepting a changed selection cursor", async () => {
     const ids = [
       "selected-1",

@@ -2,6 +2,7 @@
  * untouched; this tree cannot be served until all read shards are complete. */
 import { createHash } from "node:crypto";
 import type { ObjectStore } from "./index.js";
+import type { CanonicalState } from "@moirai/contracts/v5";
 import {
   buildV5ContentPages,
   buildV5TemporalDetailPages,
@@ -49,6 +50,93 @@ export interface V5StagedArtifacts {
   readonly documents: readonly V5StagedObject[];
   readonly index: readonly V5StagedObject[];
   readonly root: V5StagedObject;
+}
+
+/** Internal finalization primitive. Only the graph-presentation producer may
+ * call this after exhausting its canonical selection/viewport proof. It does
+ * not upload objects or change the serving pointer. */
+export function finalizeV5VerifiedSpatialArtifacts(
+  state: CanonicalState,
+  staged: V5StagedArtifacts
+): V5StagedArtifacts {
+  verifyV5StagedIndex(staged);
+  const root = JSON.parse(staged.root.body) as {
+    world_id: string;
+    revision: number;
+    completeness: string;
+  };
+  if (root.completeness !== "content-temporal-and-spatial-staged")
+    throw Error("v5_complete_spatial_proof_required");
+  if (root.world_id !== state.world.id)
+    throw Error("v5_complete_world_invalid");
+  const prefix = `worlds/${root.world_id}/revisions/${root.revision}/v5/`;
+  const documents = new Map(
+    staged.documents.map(({ key, body }) => [key, body])
+  );
+  const temporal = projectV5WorldTemporal(state, root.revision);
+  const expectedPages = [
+    ...buildV5ContentPages(state, root.revision),
+    ...buildV5TemporalDetailPages(temporal)
+  ];
+  const expectedKeys = new Set(expectedPages.map((page) => page.key));
+  for (const { key, value } of expectedPages) {
+    if (documents.get(key) !== JSON.stringify(value))
+      throw Error("v5_complete_content_invalid");
+  }
+  const eventIds = new Set(state.events.map((event) => event.id));
+  for (const system of state.timeSystems) {
+    const spatialPrefix = `${prefix}spatial/${system.id}/`;
+    const manifest = JSON.parse(
+      documents.get(`${spatialPrefix}manifest.json`) ?? "null"
+    ) as {
+      temporal_digest?: string;
+      shape_count?: number;
+      unplaced_count?: number;
+    } | null;
+    const seen = new Set<string>();
+    for (const { key, body } of staged.documents) {
+      if (!key.startsWith(`${spatialPrefix}nodes/0/`)) continue;
+      const leaf = JSON.parse(body) as {
+        kind: string;
+        entries: { shape: { event_id: string } }[];
+      };
+      if (leaf.kind !== "leaf" || !Array.isArray(leaf.entries))
+        throw Error("v5_complete_spatial_invalid");
+      for (const entry of leaf.entries) {
+        if (
+          !eventIds.has(entry.shape?.event_id) ||
+          seen.has(entry.shape.event_id)
+        )
+          throw Error("v5_complete_spatial_invalid");
+        seen.add(entry.shape.event_id);
+      }
+    }
+    if (
+      manifest?.temporal_digest !== temporal.semantic_digest ||
+      manifest.shape_count !== seen.size ||
+      seen.size + (manifest.unplaced_count ?? -1) !== eventIds.size
+    )
+      throw Error("v5_complete_spatial_invalid");
+  }
+  const expectedSpatial = new Set(state.timeSystems.map((system) => system.id));
+  if (
+    staged.documents.some((item) => {
+      if (!item.key.startsWith(`${prefix}spatial/`))
+        return !expectedKeys.has(item.key);
+      return !expectedSpatial.has(
+        item.key.slice(`${prefix}spatial/`.length).split("/")[0]!
+      );
+    })
+  )
+    throw Error("v5_complete_spatial_invalid");
+  const complete = buildV5Index(
+    root.world_id,
+    root.revision,
+    staged.documents,
+    "complete"
+  );
+  verifyV5StagedIndex(complete);
+  return complete;
 }
 
 /** Writes a verified immutable rehearsal tree. It never publishes current.json:
@@ -181,6 +269,15 @@ export function buildV5StagedIndex(
   input: readonly V5StagedObject[],
   completeness: StagedCompleteness = "content-only"
 ): V5StagedArtifacts {
+  return buildV5Index(worldId, revision, input, completeness);
+}
+
+function buildV5Index(
+  worldId: string,
+  revision: number,
+  input: readonly V5StagedObject[],
+  completeness: Completeness
+): V5StagedArtifacts {
   if (
     !/^[a-zA-Z0-9-]+$/.test(worldId) ||
     !Number.isSafeInteger(revision) ||
@@ -188,7 +285,10 @@ export function buildV5StagedIndex(
   )
     throw Error("v5_index_identity_invalid");
   const prefix = `worlds/${worldId}/revisions/${revision}/v5/`;
-  const stagingPrefix = `${prefix}staging/${completeness}/`;
+  const stagingPrefix =
+    completeness === "complete"
+      ? `${prefix}complete/`
+      : `${prefix}staging/${completeness}/`;
   // Use the same ordinal ordering as range checks and object-store keys;
   // locale collation can order uppercase/punctuation differently.
   const documents = [...input].sort((a, b) =>

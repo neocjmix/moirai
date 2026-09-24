@@ -7,7 +7,9 @@ import {
   readV5StagedCollectionCatalog,
   readV5StagedAdjacencyPage,
   readV5StagedRelation,
-  readV5StagedCompositeChildren
+  readV5StagedCompositeChildren,
+  readV5StagedSelectionPage,
+  type V5SelectionCursor
 } from "@moirai/publication/v5";
 
 export function createV5StagedAtroposReader(
@@ -55,6 +57,18 @@ export function createV5StagedAtroposReader(
         revision,
         eventId,
         page,
+        get
+      ),
+    selectedEvents: (
+      collectionIds: readonly string[],
+      cursor: V5SelectionCursor | null
+    ) =>
+      readV5StagedSelectionPage(
+        rootBody,
+        worldId,
+        revision,
+        collectionIds,
+        cursor,
         get
       )
   };

@@ -10,7 +10,7 @@ import {
   clothoInputSchema,
   type ClothoMethod
 } from "@moirai/contracts";
-import { callClotho, ClothoClientError } from "./client.js";
+import { callClotho, callV5Clotho, ClothoClientError } from "./client.js";
 
 async function main(): Promise<void> {
   const args = process.argv.slice(2);
@@ -59,9 +59,20 @@ async function main(): Promise<void> {
     process.stdout.write(JSON.stringify({ ...preview, validation }) + "\n");
     return;
   }
+  const v5 = args[0] === "v5";
+  const v5Method = args[1];
+  if (
+    v5 &&
+    (args.length !== 2 ||
+      (v5Method !== "authoring.policy.get" && v5Method !== "change.commit"))
+  )
+    throw new ClothoClientError("usage_v5_policy_or_commit");
   const schema = args[0] === "schema";
   const method = args[schema ? 1 : 0] as ClothoMethod;
-  if (!CLOTHO_METHODS.includes(method) || args.length !== (schema ? 2 : 1))
+  if (
+    !v5 &&
+    (!CLOTHO_METHODS.includes(method) || args.length !== (schema ? 2 : 1))
+  )
     throw new ClothoClientError(
       "usage_clotho_method_schema_export_or_import_preview"
     );
@@ -83,14 +94,13 @@ async function main(): Promise<void> {
   } catch {
     throw new ClothoClientError("invalid_json");
   }
-  const result = await callClotho(
-    {
-      baseUrl: process.env.CLOTHO_API_URL ?? "",
-      token: process.env.CLOTHO_TOKEN ?? ""
-    },
-    method,
-    input
-  );
+  const result = v5
+    ? await callV5Clotho(
+        config,
+        v5Method as "authoring.policy.get" | "change.commit",
+        input
+      )
+    : await callClotho(config, method, input);
   process.stdout.write(`${JSON.stringify(result)}\n`);
 }
 void main().catch((error: unknown) => {

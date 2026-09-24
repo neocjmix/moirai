@@ -18,7 +18,10 @@
       "@moirai/domain/v5-operations": [
         "./packages/domain/src/v5-operations.ts"
       ],
-      "@moirai/lachesis/v5": ["./packages/lachesis/src/v5.ts"]
+      "@moirai/lachesis/v5": ["./packages/lachesis/src/v5.ts"],
+      "@moirai/clotho-application/v5": [
+        "./packages/clotho-application/src/v5.ts"
+      ]
     }
   },
   "include": ["*.ts", "scripts/**/*.ts", "tests/**/*.ts", "types/**/*.d.ts"]

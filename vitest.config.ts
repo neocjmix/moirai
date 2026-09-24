@@ -37,6 +37,9 @@ export default defineConfig({
       "@moirai/lachesis": fileURLToPath(
         new URL("./packages/lachesis/src/index.ts", import.meta.url)
       ),
+      "@moirai/clotho-application/v5": fileURLToPath(
+        new URL("./packages/clotho-application/src/v5.ts", import.meta.url)
+      ),
       "@moirai/clotho-application": fileURLToPath(
         new URL("./packages/clotho-application/src/index.ts", import.meta.url)
       ),

@@ -30,6 +30,7 @@ import { createV5Clotho } from "@moirai/clotho-application/v5";
 import { databaseV5Lachesis } from "@moirai/lachesis/database";
 import type { ActorContext } from "@moirai/lachesis";
 import { registerV5ClothoRoutes } from "../apps/clotho-api/src/v5-routes.js";
+import { registerV5McpRoutes } from "../apps/clotho-api/src/v5-mcp.js";
 
 const sourceUrl = process.env.DATABASE_URL;
 describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
@@ -398,19 +399,17 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
     const app = createV5Clotho(databaseV5Lachesis(clone));
     const http = Fastify();
     const bearer = "ip011IsolatedTestBearerToken0123456789";
-    registerV5ClothoRoutes(
-      http,
-      [
-        {
-          token_sha256: createHash("sha256").update(bearer).digest("hex"),
-          actor_id: actor.actor_id,
-          scopes: actor.scopes,
-          world_ids: actor.world_ids,
-          expires_at: actor.expires_at
-        }
-      ],
-      app
-    );
+    const credentials = [
+      {
+        token_sha256: createHash("sha256").update(bearer).digest("hex"),
+        actor_id: actor.actor_id,
+        scopes: actor.scopes,
+        world_ids: actor.world_ids,
+        expires_at: actor.expires_at
+      }
+    ];
+    registerV5ClothoRoutes(http, credentials, app);
+    registerV5McpRoutes(http, credentials, app);
     const send = (body: unknown, authorized = true) =>
       http.inject({
         method: "POST",
@@ -497,6 +496,29 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         current_revision: 6,
         idempotent_replay: true,
         id_mapping: first.id_mapping
+      });
+      const mcpReplay = await http.inject({
+        method: "POST",
+        url: "/mcp-v5",
+        headers: {
+          authorization: `Bearer ${bearer}`,
+          accept: "application/json, text/event-stream"
+        },
+        payload: {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: { name: "change_commit", arguments: draft }
+        }
+      });
+      expect(mcpReplay.statusCode).toBe(200);
+      expect(mcpReplay.json().result.structuredContent).toMatchObject({
+        contract_version: 5,
+        result: {
+          current_revision: 6,
+          idempotent_replay: true,
+          id_mapping: first.id_mapping
+        }
       });
       const state = await readActiveV5State(clone, TEST_FIXTURE.worldId);
       expect(state.collections).toHaveLength(1);

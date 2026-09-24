@@ -1,4 +1,5 @@
-import { randomBytes } from "node:crypto";
+import { createHash, randomBytes } from "node:crypto";
+import Fastify from "fastify";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { sql } from "kysely";
 import type { CanonicalState, ResolvedV5Change } from "@moirai/contracts/v5";
@@ -28,6 +29,7 @@ import { readV5WorldAtRevision } from "../packages/persistence/src/v5-history-re
 import { createV5Clotho } from "@moirai/clotho-application/v5";
 import { databaseV5Lachesis } from "@moirai/lachesis/database";
 import type { ActorContext } from "@moirai/lachesis";
+import { registerV5ClothoRoutes } from "../apps/clotho-api/src/v5-routes.js";
 
 const sourceUrl = process.env.DATABASE_URL;
 describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
@@ -385,7 +387,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       await clone.destroy();
     }
   });
-  it("composes staged Clotho/Lachesis with the migrated database and stable retry", async () => {
+  it("commits over staged HTTP through Clotho/Lachesis on the migrated database", async () => {
     const clone = createDatabase(cloneUrl.toString());
     const actor: ActorContext = {
       actor_id: "019f5000-1100-7000-8000-000000000042",
@@ -394,6 +396,31 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       expires_at: "2099-01-01T00:00:00Z"
     };
     const app = createV5Clotho(databaseV5Lachesis(clone));
+    const http = Fastify();
+    const bearer = "ip011IsolatedTestBearerToken0123456789";
+    registerV5ClothoRoutes(
+      http,
+      [
+        {
+          token_sha256: createHash("sha256").update(bearer).digest("hex"),
+          actor_id: actor.actor_id,
+          scopes: actor.scopes,
+          world_ids: actor.world_ids,
+          expires_at: actor.expires_at
+        }
+      ],
+      app
+    );
+    const send = (body: unknown, authorized = true) =>
+      http.inject({
+        method: "POST",
+        url: "/v2/clotho/change.commit",
+        headers: {
+          "content-type": "application/json",
+          ...(authorized ? { authorization: `Bearer ${bearer}` } : {})
+        },
+        payload: JSON.stringify(body)
+      });
     const draft = {
       contract_version: 5,
       change_set_id: "019f5000-1100-7000-8000-000000000043",
@@ -441,7 +468,20 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       expect(() =>
         app.commit(draft, { ...actor, scopes: ["world:read"] })
       ).toThrowError(expect.objectContaining({ code: "forbidden" }));
-      const first = (await app.commit(draft, actor)) as {
+      expect((await send(draft, false)).statusCode).toBe(401);
+      expect((await send({ ...draft, contract_version: 4 })).statusCode).toBe(
+        422
+      );
+      const policy = await http.inject({
+        method: "POST",
+        url: "/v2/clotho/authoring.policy.get",
+        headers: { authorization: `Bearer ${bearer}` },
+        payload: { world_id: TEST_FIXTURE.worldId, contract_version: 5 }
+      });
+      expect(policy.json().result).toEqual(V5_AUTHORING_POLICY);
+      const created = await send(draft);
+      expect(created.statusCode).toBe(200);
+      const first = created.json().result as {
         current_revision: number;
         id_mapping: Record<string, string>;
         idempotent_replay: boolean;
@@ -451,7 +491,9 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         idempotent_replay: false
       });
       expect(first.id_mapping["new-collection"]).toMatch(/^[0-9a-f-]+$/);
-      expect(await app.commit(draft, actor)).toMatchObject({
+      const retried = await send(draft);
+      expect(retried.statusCode).toBe(200);
+      expect(retried.json().result).toMatchObject({
         current_revision: 6,
         idempotent_replay: true,
         id_mapping: first.id_mapping
@@ -470,6 +512,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         sourceDigest
       );
     } finally {
+      await http.close();
       await clone.destroy();
     }
   });

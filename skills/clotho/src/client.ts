@@ -29,7 +29,8 @@ export async function callClotho(
 /** Staged v5 endpoint; production's v4 server returns 404 until cutover. */
 export async function callV5Clotho(
   config: ClientConfig,
-  method: "authoring.policy.get" | "event.search" | "change.commit",
+  method:
+    "authoring.policy.get" | "event.search" | "event.get" | "change.commit",
   input: unknown
 ): Promise<unknown> {
   const result = await requestClotho(config, `/v2/clotho/${method}`, input);

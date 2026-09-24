@@ -21,6 +21,23 @@ export const V5_EVENT_SEARCH_SCHEMA: Schema = {
   required: ["contract_version", "world_id", "text"],
   additionalProperties: false
 };
+/** Inspect one candidate's owner Narrative, memberships and adjacent facts. */
+export const V5_EVENT_DETAIL_SCHEMA: Schema = {
+  type: "object",
+  properties: {
+    contract_version: { const: 5 },
+    world_id: id,
+    event_id: id,
+    at_revision: {
+      type: "integer",
+      minimum: 1,
+      maximum: Number.MAX_SAFE_INTEGER
+    },
+    cursor: { type: "string", minLength: 1, maxLength: 512 }
+  },
+  required: ["contract_version", "world_id", "event_id", "at_revision"],
+  additionalProperties: false
+};
 const clientRef: Schema = {
   type: "string",
   pattern: "^[a-z][a-z0-9_-]{0,63}$"

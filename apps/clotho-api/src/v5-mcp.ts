@@ -10,7 +10,8 @@ import { ChangeSetError } from "@moirai/domain";
 import { Ajv } from "ajv";
 import {
   V5_CHANGE_PLAN_SCHEMA,
-  V5_EVENT_SEARCH_SCHEMA
+  V5_EVENT_SEARCH_SCHEMA,
+  V5_EVENT_DETAIL_SCHEMA
 } from "@moirai/contracts/v5-wire";
 import type { createV5Clotho } from "@moirai/clotho-application/v5";
 import { authenticate, type Credential, type Principal } from "./auth.js";
@@ -125,6 +126,13 @@ export function registerV5McpRoutes(
               "Find World Event title candidates before creating or reusing an Event. Paged, revision-pinned, bounded results.",
             inputSchema: V5_EVENT_SEARCH_SCHEMA as typeof policySchema,
             annotations: { readOnlyHint: true }
+          },
+          {
+            name: "event_get",
+            description:
+              "Inspect a candidate's single owner Narrative, memberships and adjacent facts at a pinned World Revision; follow bounded pages.",
+            inputSchema: V5_EVENT_DETAIL_SCHEMA as typeof policySchema,
+            annotations: { readOnlyHint: true }
           }
         ]
       }));
@@ -147,7 +155,12 @@ export function registerV5McpRoutes(
                       input as Parameters<typeof service.search>[0],
                       actor
                     )
-                  : undefined;
+                  : params.name === "event_get"
+                    ? await service.detail(
+                        input as Parameters<typeof service.detail>[0],
+                        actor
+                      )
+                    : undefined;
           if (result === undefined) return errorResult("unknown_tool");
           const envelope = { contract_version: 5, result };
           const text = JSON.stringify(envelope);

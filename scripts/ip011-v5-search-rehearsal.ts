@@ -5,13 +5,17 @@ import { fileURLToPath } from "node:url";
 import { performance } from "node:perf_hooks";
 import { sql } from "kysely";
 import { createDatabase } from "@moirai/persistence";
-import { searchV5WorldEvents } from "@moirai/persistence/v5";
+import {
+  searchV5WorldEvents,
+  getV5EventEvidence
+} from "@moirai/persistence/v5";
 import { up } from "../packages/persistence/src/cutovers/011_ip011_authoring_search.js";
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   let phase = "configuration";
   try {
-    if (process.argv[2] !== "rehearse-search")
+    const mode = process.argv[2];
+    if (mode !== "rehearse-search" && mode !== "rehearse-detail")
       throw Error("explicit_mode_required");
     const sourceUrl = process.env.DATABASE_URL;
     const name = process.env.IP011_REHEARSAL_DB;
@@ -113,15 +117,55 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       }
       if (results.every((result) => result.examined === 0))
         throw Error("rehearsal_search_empty");
+      const details = [];
+      if (mode === "rehearse-detail") {
+        phase = "clone_detail";
+        for (const text of ["단종 폐위", "임진왜란"]) {
+          const candidate = await searchV5WorldEvents(clone, {
+            world_id: manifest.world_id,
+            text,
+            limit: 1
+          });
+          const eventId = candidate.events[0]?.id;
+          if (!eventId) throw Error("rehearsal_detail_candidate_missing");
+          let cursor: string | null = null;
+          let pages = 0,
+            memberships = 0,
+            relations = 0;
+          do {
+            const detail = await getV5EventEvidence(clone, {
+              world_id: manifest.world_id,
+              event_id: eventId,
+              at_revision: candidate.source_revision,
+              cursor
+            });
+            if (
+              detail.source_revision !== revision ||
+              detail.narrative.body.length === 0
+            )
+              throw Error("rehearsal_detail_invalid");
+            pages++;
+            memberships += detail.memberships.length;
+            relations += detail.relations.length;
+            cursor = detail.next_cursor;
+            if (pages > 100) throw Error("rehearsal_detail_page_budget");
+          } while (cursor);
+          details.push({ query: text, pages, memberships, relations });
+        }
+      }
       console.info(
         JSON.stringify({
-          operation: "ip011_v5_search_rehearsal",
+          operation:
+            mode === "rehearse-detail"
+              ? "ip011_v5_detail_rehearsal"
+              : "ip011_v5_search_rehearsal",
           clone: name,
           revision,
           index_present: true,
           source_written: false,
           pointer_written: false,
-          results
+          results,
+          ...(mode === "rehearse-detail" ? { details } : {})
         })
       );
     } finally {

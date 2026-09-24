@@ -10,6 +10,7 @@
       "@moirai/contracts/testing": ["./packages/contracts/src/testing.ts"],
       "@moirai/domain": ["./packages/domain/src/index.ts"],
       "@moirai/persistence": ["./packages/persistence/src/index.ts"],
+      "@moirai/persistence/v5": ["./packages/persistence/src/v5.ts"],
       "@moirai/projections": ["./packages/projections/src/index.ts"],
       "@moirai/publication": ["./packages/publication/src/index.ts"],
       "@moirai/contracts/v5": ["./packages/contracts/src/v5.ts"],

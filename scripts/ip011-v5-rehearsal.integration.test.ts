@@ -4,24 +4,27 @@ import { sql } from "kysely";
 import type { CanonicalState, ResolvedV5Change } from "@moirai/contracts/v5";
 import { V5_AUTHORING_POLICY } from "@moirai/contracts/v5";
 import type { LegacyV4RevisionView } from "@moirai/contracts/legacy-v4";
-import { createDatabase, commitCreateChangeSet } from "./index.js";
+import {
+  createDatabase,
+  commitCreateChangeSet
+} from "../packages/persistence/src/index.js";
 import {
   captureDatabaseImage,
   databaseImageDigest,
   restoreFreshRehearsal
-} from "./ip011-backup.js";
-import { migrateToVersion } from "./migrate.js";
+} from "../packages/persistence/src/ip011-backup.js";
+import { migrateToVersion } from "../packages/persistence/src/migrate.js";
 import {
   createTestChangeSet,
   createTestExpansionChangeSet
-} from "./test-fixture.js";
-import { rehearseV5Database } from "./ip011-v5-rehearsal.js";
-import { readLegacyV4WorldAtRevision } from "./legacy-v4-reader.js";
-import { readActiveV5State } from "./v5-read.js";
-import { commitV5Resolved } from "./v5-change.js";
+} from "../packages/persistence/src/test-fixture.js";
+import { rehearseV5Database } from "../packages/persistence/src/ip011-v5-rehearsal.js";
+import { readLegacyV4WorldAtRevision } from "../packages/persistence/src/legacy-v4-reader.js";
+import { readActiveV5State } from "../packages/persistence/src/v5-read.js";
+import { commitV5Resolved } from "../packages/persistence/src/v5-change.js";
 import { TEST_FIXTURE } from "@moirai/contracts/testing";
 import { orderedV5State } from "@moirai/domain/v5";
-import { readV5WorldAtRevision } from "./v5-history-reader.js";
+import { readV5WorldAtRevision } from "../packages/persistence/src/v5-history-reader.js";
 import { createV5Clotho } from "@moirai/clotho-application/v5";
 import { databaseV5Lachesis } from "@moirai/lachesis/database";
 import type { ActorContext } from "@moirai/lachesis";

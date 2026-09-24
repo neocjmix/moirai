@@ -20,6 +20,8 @@
         "./packages/domain/src/v5-operations.ts"
       ],
       "@moirai/lachesis/v5": ["./packages/lachesis/src/v5.ts"],
+      "@moirai/lachesis/database": ["./packages/lachesis/src/database.ts"],
+      "@moirai/lachesis": ["./packages/lachesis/src/index.ts"],
       "@moirai/clotho-application/v5": [
         "./packages/clotho-application/src/v5.ts"
       ]

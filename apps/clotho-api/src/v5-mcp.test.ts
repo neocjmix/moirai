@@ -1,5 +1,7 @@
 import { createHash } from "node:crypto";
 import Fastify from "fastify";
+import { Client } from "@modelcontextprotocol/sdk/client/index.js";
+import { StreamableHTTPClientTransport } from "@modelcontextprotocol/sdk/client/streamableHttp.js";
 import { generateKeyPair, SignJWT } from "jose";
 import { describe, expect, it, vi } from "vitest";
 import { V5_AUTHORING_POLICY } from "@moirai/contracts/v5";
@@ -116,9 +118,42 @@ describe("inactive v5 MCP transport", () => {
         }
       });
     try {
+      const publicList = await send("tools/list", undefined, undefined, false);
+      expect(publicList.statusCode).toBe(200);
+      expect(publicList.json().result.tools).toHaveLength(2);
       expect(
-        (await send("tools/list", undefined, undefined, false)).statusCode
+        (
+          await send(
+            "tools/call",
+            "authoring_policy_get",
+            { world_id: worldId, contract_version: 5 },
+            false
+          )
+        ).statusCode
       ).toBe(401);
+      expect(
+        (
+          await app.inject({
+            method: "POST",
+            url: "/mcp-v5",
+            headers: { "content-length": "0" }
+          })
+        ).statusCode
+      ).toBe(204);
+      const address = await app.listen({ port: 0, host: "127.0.0.1" });
+      const client = new Client({ name: "v5-discovery-test", version: "1" });
+      try {
+        await client.connect(
+          new StreamableHTTPClientTransport(
+            new URL(`${address}/mcp-v5`)
+          ) as Parameters<typeof client.connect>[0]
+        );
+        expect(
+          (await client.listTools()).tools.map((tool) => tool.name)
+        ).toEqual(["authoring_policy_get", "change_commit"]);
+      } finally {
+        await client.close();
+      }
       const listing = await send("tools/list");
       expect(listing.statusCode).toBe(200);
       expect(

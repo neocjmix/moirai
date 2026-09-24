@@ -117,6 +117,8 @@ describe("isolated v5 Publication rehearsal", () => {
   });
   it("proves a complete root on the isolated fixture without writing storage or pointer", async () => {
     const result = await rehearseV5CompletePublication(state, 31);
+    const staged = await rehearseV5Publication(state, 31);
+    const repeated = await rehearseV5CompletePublication(state, 31);
     expect(result).toMatchObject({
       operation: "ip011_v5_complete_publication_rehearsal",
       world_id: "world-1",
@@ -129,5 +131,9 @@ describe("isolated v5 Publication rehearsal", () => {
       viewport_pages: 2
     });
     expect(result.max_object_reads).toBeLessThanOrEqual(256);
+    expect(result.document_set_sha256).toMatch(/^[0-9a-f]{64}$/);
+    expect(result.document_set_sha256).toBe(staged.document_set_sha256);
+    expect(result.root_sha256).toBe(repeated.root_sha256);
+    expect(result.viewport_pages).toBe(repeated.viewport_pages);
   });
 });

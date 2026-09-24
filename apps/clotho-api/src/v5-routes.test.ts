@@ -61,6 +61,49 @@ const plan = {
 };
 
 describe("inactive v5 HTTP transport", () => {
+  it("serves bounded World candidate search with strict read authorization", async () => {
+    const search = vi.fn().mockResolvedValue({
+      source_revision: 31,
+      events: [],
+      next_cursor: null
+    });
+    const app = Fastify();
+    registerV5ClothoRoutes(
+      app,
+      credentials,
+      createV5Clotho(createV5Lachesis({ commit: vi.fn(), search }))
+    );
+    try {
+      const input = {
+        contract_version: 5,
+        world_id: worldId,
+        text: "Dan jong"
+      };
+      const send = (payload: unknown) =>
+        app.inject({
+          method: "POST",
+          url: "/v2/clotho/event.search",
+          headers: {
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json"
+          },
+          payload: JSON.stringify(payload)
+        });
+      expect((await send({ ...input, canon_id: worldId })).statusCode).toBe(
+        422
+      );
+      expect((await send({ ...input, world_id: actorId })).statusCode).toBe(
+        403
+      );
+      expect((await send(input)).json()).toEqual({
+        contract_version: 5,
+        result: { source_revision: 31, events: [], next_cursor: null }
+      });
+      expect(search).toHaveBeenCalledTimes(1);
+    } finally {
+      await app.close();
+    }
+  });
   it("authenticates before parsing and rejects v4, spoofed, stale-world writes", async () => {
     const commit = vi.fn().mockResolvedValue({ current_revision: 32 });
     // Fastify's default removeAdditional setting must not launder fields.

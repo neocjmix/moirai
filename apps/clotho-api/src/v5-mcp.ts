@@ -8,7 +8,10 @@ import {
 import type { FastifyInstance, FastifyRequest } from "fastify";
 import { ChangeSetError } from "@moirai/domain";
 import { Ajv } from "ajv";
-import { V5_CHANGE_PLAN_SCHEMA } from "@moirai/contracts/v5-wire";
+import {
+  V5_CHANGE_PLAN_SCHEMA,
+  V5_EVENT_SEARCH_SCHEMA
+} from "@moirai/contracts/v5-wire";
 import type { createV5Clotho } from "@moirai/clotho-application/v5";
 import { authenticate, type Credential, type Principal } from "./auth.js";
 import {
@@ -115,6 +118,13 @@ export function registerV5McpRoutes(
               "Commit strict v5 operations with policy identity and provenance.",
             inputSchema: V5_CHANGE_PLAN_SCHEMA as typeof policySchema,
             annotations: { destructiveHint: true, idempotentHint: true }
+          },
+          {
+            name: "event_search",
+            description:
+              "Find World Event title candidates before creating or reusing an Event. Paged, revision-pinned, bounded results.",
+            inputSchema: V5_EVENT_SEARCH_SCHEMA as typeof policySchema,
+            annotations: { readOnlyHint: true }
           }
         ]
       }));
@@ -132,7 +142,12 @@ export function registerV5McpRoutes(
                 )
               : params.name === "change_commit"
                 ? await service.commit(input, actor)
-                : undefined;
+                : params.name === "event_search"
+                  ? await service.search(
+                      input as Parameters<typeof service.search>[0],
+                      actor
+                    )
+                  : undefined;
           if (result === undefined) return errorResult("unknown_tool");
           const envelope = { contract_version: 5, result };
           const text = JSON.stringify(envelope);

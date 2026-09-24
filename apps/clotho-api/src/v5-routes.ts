@@ -27,7 +27,11 @@ export function registerV5ClothoRoutes(
   credentials: readonly Credential[],
   service: ReturnType<typeof createV5Clotho>
 ): void {
-  for (const kind of ["authoring.policy.get", "change.commit"] as const) {
+  for (const kind of [
+    "authoring.policy.get",
+    "event.search",
+    "change.commit"
+  ] as const) {
     const scope = kind === "change.commit" ? "world:write" : "world:read";
     app.post(
       `/v2/clotho/${kind}`,
@@ -97,7 +101,12 @@ export function registerV5ClothoRoutes(
         const result =
           kind === "change.commit"
             ? await service.commit(input, actor)
-            : service.policy(input.world_id, actor);
+            : kind === "event.search"
+              ? await service.search(
+                  input as Parameters<typeof service.search>[0],
+                  actor
+                )
+              : service.policy(input.world_id, actor);
         if (Buffer.byteLength(JSON.stringify(result)) > 4_000_000)
           throw new ChangeSetError(
             "response_budget_exceeded",

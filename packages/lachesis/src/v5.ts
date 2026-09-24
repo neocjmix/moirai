@@ -13,10 +13,55 @@ export type { V5DraftChange } from "./v5-client-resolver.js";
 
 export interface V5CanonicalStore {
   commit(input: ResolvedV5Change): Promise<unknown>;
+  search?(input: {
+    world_id: string;
+    text: string;
+    limit?: number;
+    cursor?: string | null;
+  }): Promise<unknown>;
 }
 
 export function createV5Lachesis(store: V5CanonicalStore) {
   return {
+    async search(
+      input: {
+        world_id: string;
+        text: string;
+        limit?: number;
+        cursor?: string | null;
+      },
+      actor: ActorContext
+    ) {
+      authorizeActor(actor, "world:read", input?.world_id);
+      if (!store.search)
+        throw new ChangeSetError(
+          "invalid_request",
+          "search",
+          "Search is unavailable"
+        );
+      try {
+        return await store.search(input);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "v5_search_revision_changed"
+        )
+          throw new ChangeSetError(
+            "revision_conflict",
+            "cursor",
+            "World Revision changed; restart search",
+            [],
+            true
+          );
+        if (error instanceof Error && error.message.startsWith("v5_search_"))
+          throw new ChangeSetError(
+            "invalid_request",
+            "search",
+            "Invalid or unavailable World search"
+          );
+        throw error;
+      }
+    },
     policy(worldId: string, actor: ActorContext) {
       authorizeActor(actor, "world:read", worldId);
       return V5_AUTHORING_POLICY;

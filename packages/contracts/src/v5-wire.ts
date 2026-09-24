@@ -8,6 +8,19 @@ const id: Schema = {
   pattern:
     "^[0-9a-f]{8}-[0-9a-f]{4}-7[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$"
 };
+/** Bounded, revision-pinned pre-write Event title candidate search. */
+export const V5_EVENT_SEARCH_SCHEMA: Schema = {
+  type: "object",
+  properties: {
+    contract_version: { const: 5 },
+    world_id: id,
+    text: { type: "string", minLength: 3, maxLength: 160 },
+    limit: { type: "integer", minimum: 1, maximum: 25 },
+    cursor: { type: "string", minLength: 1, maxLength: 512 }
+  },
+  required: ["contract_version", "world_id", "text"],
+  additionalProperties: false
+};
 const clientRef: Schema = {
   type: "string",
   pattern: "^[a-z][a-z0-9_-]{0,63}$"

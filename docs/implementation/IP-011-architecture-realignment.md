@@ -105,4 +105,6 @@ A0는 9개 질문에 대해 정의·근거·migration·다음 exit가 연결되�
 
 A2 변경 묶음: packages/contracts schemas·DTOs·export, domain validation·relation registry, persistence migrations/query/history/import, Lachesis commands, Clotho application/HTTP/MCP schemas·descriptions, skills/clotho client/CLI/SKILL.md, plugin discovery contract tests, projections/publication artifacts, graph-query/presentation, Atropos loader/URL/selectors/drawer, fixtures/goldens/mobile E2E. 단순 search/replace로 history contract나 canonical 문자열을 손상시키지 않는다. runtime SKILL/MCP inline instructions는 현 v4 동작을 설명하므로 이번 문서 PR에서 v5 행동으로 바꾸지 않았다. A1/A3에서 서버와 함께 전환하고 schema·instructions byte budget을 시험한다.
 
+A2 authoring 검색 계약은 World 전체 Event를 앱 메모리로 읽지 않고 World 범위의 활성 Event 제목 후보를 Revision 고정 cursor로 제한해 제공한다. 제목 검색만으로 동일성·부재를 판정하지 않는다. 후보의 Narrative·시공간 증거·graph neighborhood를 읽는 제한된 상세 조회와 실제 clone의 index rehearsal을 별도 검증한 뒤 작성 전 reuse workflow가 준비됐다고 판정한다. 활성 운영 v4 DB에는 격리된 v5 검색용 index migration을 등록하거나 실행하지 않고, A3의 write quiesce·migration 순서에 포함한다. A4에서 큰 World의 검색 query plan/latency를 측정하고 필요할 때만 구조를 조정한다.
+
 초기 policy artifact의 내용 기준은 TS-004.5다. 구현 시 artifact를 생성/서비스하고 문서가 artifact를 참조하게 하여 장기적으로 두 정책 사본을 유지하지 않는다. policy API 제공 실패 시 신규 write는 진행하지 않고 이미 성공한 요청의 조회·idempotent recovery는 유지한다.

@@ -145,6 +145,7 @@ export async function rehearseV5Publication(
 }
 
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
+  let phase = "configuration";
   try {
     if (process.argv[2] !== "rehearse-publication")
       throw Error("explicit_mode_required");
@@ -171,6 +172,7 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
     ) as { world_id: string; source_revision: number };
     const clone = createDatabase(cloneUrl.toString());
     try {
+      phase = "clone_identity";
       const name = (
         await sql<{ name: string }>`select current_database() as name`.execute(
           clone
@@ -178,26 +180,40 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
       ).rows[0]?.name;
       if (name !== cloneName) throw Error("rehearsal_database_mismatch");
       const revision = manifest.source_revision + 1;
+      phase = "revision_read";
       const replay = await readV5WorldAtRevision(
         clone,
         manifest.world_id,
         revision
       );
       const active = await readActiveV5State(clone, manifest.world_id);
+      phase = "revision_compare";
       if (
         v5ContentFingerprint(replay).digest !==
         v5ContentFingerprint(active).digest
       )
         throw Error("rehearsal_revision_drift");
+      phase = "publication_projection";
       console.info(
         JSON.stringify(await rehearseV5Publication(replay, revision))
       );
     } finally {
       await clone.destroy();
     }
-  } catch {
+  } catch (cause) {
+    const code =
+      cause instanceof Error &&
+      /^(?:v5_|publication_rehearsal_|world_temporal_|rehearsal_)[a-z0-9_]+$/.test(
+        cause.message
+      )
+        ? cause.message
+        : "rehearsal_failed";
     console.error(
-      '{"operation":"ip011_v5_publication_rehearsal","error_code":"rehearsal_failed"}'
+      JSON.stringify({
+        operation: "ip011_v5_publication_rehearsal",
+        error_code: code,
+        phase
+      })
     );
     process.exitCode = 1;
   }

@@ -1,6 +1,7 @@
 /** Inactive v5 artifact index. The v4 pointer and manifest are deliberately
  * untouched; this tree cannot be served until all read shards are complete. */
 import { createHash } from "node:crypto";
+import type { ObjectStore } from "./index.js";
 import {
   buildV5ContentPages,
   buildV5TemporalDetailPages,
@@ -35,6 +36,30 @@ export interface V5StagedArtifacts {
   readonly documents: readonly V5StagedObject[];
   readonly index: readonly V5StagedObject[];
   readonly root: V5StagedObject;
+}
+
+/** Writes a verified immutable rehearsal tree. It never publishes current.json:
+ * content-and-temporal-detail-only cannot yet serve a complete viewport. */
+export async function publishV5StagedArtifacts(
+  store: ObjectStore,
+  artifacts: V5StagedArtifacts
+): Promise<string> {
+  verifyV5StagedIndex(artifacts);
+  for (const { key, body } of [
+    ...artifacts.documents,
+    ...artifacts.index,
+    artifacts.root
+  ]) {
+    const written = await store.put(key, body, { immutable: true });
+    if (written.status === 412) {
+      const existing = await store.get(key);
+      if (existing.status !== 200 || existing.body !== body)
+        throw Error("v5_immutable_conflict");
+    } else if (written.status !== 200 && written.status !== 201) {
+      throw Error("v5_immutable_write_failed");
+    }
+  }
+  return artifacts.root.key;
 }
 
 /** The only current producer: validated v5 content, not a served Publication. */

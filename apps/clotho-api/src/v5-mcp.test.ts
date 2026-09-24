@@ -37,13 +37,11 @@ describe("inactive v5 MCP transport", () => {
       .sign(keys.privateKey);
     const app = Fastify();
     const commit = vi.fn().mockResolvedValue({ current_revision: 32 });
-    const search = vi
-      .fn()
-      .mockResolvedValue({
-        source_revision: 31,
-        events: [],
-        next_cursor: null
-      });
+    const search = vi.fn().mockResolvedValue({
+      source_revision: 31,
+      events: [],
+      next_cursor: null
+    });
     registerV5McpRoutes(
       app,
       [],

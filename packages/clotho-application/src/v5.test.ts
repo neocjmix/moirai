@@ -89,13 +89,11 @@ describe("inactive v5 Clotho → Lachesis boundary", () => {
     );
   });
   it("validates bounded World Event candidate search before reaching persistence", async () => {
-    const search = vi
-      .fn()
-      .mockResolvedValue({
-        source_revision: 31,
-        events: [],
-        next_cursor: null
-      });
+    const search = vi.fn().mockResolvedValue({
+      source_revision: 31,
+      events: [],
+      next_cursor: null
+    });
     const app = createV5Clotho(createV5Lachesis({ commit: vi.fn(), search }));
     const input = {
       contract_version: 5 as const,

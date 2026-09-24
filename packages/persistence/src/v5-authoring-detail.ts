@@ -11,6 +11,8 @@ type Cursor = {
   signature: string;
   relation: string;
   membership: string;
+  body_offset: number;
+  reference_offset: number;
 };
 
 export async function getV5EventEvidence(
@@ -39,7 +41,9 @@ export async function getV5EventEvidence(
     revision: input.at_revision,
     signature,
     relation: start,
-    membership: start
+    membership: start,
+    body_offset: 0,
+    reference_offset: 0
   };
   if (input.cursor) {
     try {
@@ -51,7 +55,13 @@ export async function getV5EventEvidence(
         cursor.signature !== signature ||
         cursor.revision !== input.at_revision ||
         !uuid.test(cursor.relation) ||
-        !uuid.test(cursor.membership)
+        !uuid.test(cursor.membership) ||
+        !Number.isSafeInteger(cursor.body_offset) ||
+        cursor.body_offset < 0 ||
+        cursor.body_offset > 100000 ||
+        !Number.isSafeInteger(cursor.reference_offset) ||
+        cursor.reference_offset < 0 ||
+        cursor.reference_offset > 100
       )
         throw Error();
     } catch {
@@ -93,14 +103,22 @@ export async function getV5EventEvidence(
           body: string;
           body_truncated: boolean;
         }>`
-      select id, title, locale, left(body, 12000) as body,
-             length(body) > 12000 as body_truncated from narratives
+      select id, title, locale, substring(body from ${cursor.body_offset + 1} for 12000) as body,
+             length(body) > ${cursor.body_offset + 12000} as body_truncated from narratives
       where world_id = ${input.world_id} and scope_type = 'event'
         and scope_id = ${input.event_id} and withdrawn_revision is null`.execute(
           tx
         )
       ).rows[0];
       if (!narrative) throw Error("v5_detail_narrative_missing");
+      const references = (
+        await sql<{ value: unknown }>`
+        select refs.value from narratives n,
+          jsonb_array_elements(n.public_references) with ordinality as refs(value, ordinal)
+        where n.id = ${narrative.id} and n.world_id = ${input.world_id}
+          and refs.ordinal > ${cursor.reference_offset}
+        order by refs.ordinal limit 9`.execute(tx)
+      ).rows;
       const memberships = (
         await sql<{ id: string; collection_id: string; title: string }>`
       select m.id, c.id as collection_id, c.title from collection_event_memberships m
@@ -158,14 +176,21 @@ export async function getV5EventEvidence(
         : [];
       const moreMemberships = memberships.length > 16;
       const moreRelations = relations.length > 16;
+      const moreReferences = references.length > 8;
       const next_cursor =
-        moreMemberships || moreRelations
+        moreMemberships ||
+        moreRelations ||
+        moreReferences ||
+        narrative.body_truncated
           ? Buffer.from(
               JSON.stringify({
                 revision: input.at_revision,
                 signature,
                 membership: membershipPage.at(-1)?.id ?? cursor.membership,
-                relation: relationPage.at(-1)?.id ?? cursor.relation
+                relation: relationPage.at(-1)?.id ?? cursor.relation,
+                body_offset: cursor.body_offset + narrative.body.length,
+                reference_offset:
+                  cursor.reference_offset + Math.min(references.length, 8)
               } satisfies Cursor)
             ).toString("base64url")
           : null;
@@ -173,6 +198,10 @@ export async function getV5EventEvidence(
         source_revision: world.current_revision,
         event,
         narrative,
+        narrative_body_offset: cursor.body_offset,
+        public_references: references
+          .slice(0, 8)
+          .map((reference) => reference.value),
         memberships: membershipPage,
         relations: relationPage,
         neighbors,

@@ -146,6 +146,30 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
         at_revision: 30
       })
     ).rejects.toThrow("v5_detail_revision_changed");
+    const refs = Array.from({ length: 9 }, (_, i) => ({
+      label: `Source ${i}`,
+      url: `https://example.test/${i}`
+    }));
+    await sql`update narratives set body = ${"e".repeat(13000)}, public_references = ${JSON.stringify(refs)}::jsonb where scope_type = 'event' and scope_id = ${first}`.execute(
+      db
+    );
+    const longFirst = await getV5EventEvidence(db, {
+      world_id: world,
+      event_id: first,
+      at_revision: 31
+    });
+    expect(longFirst.narrative.body).toHaveLength(12000);
+    expect(longFirst.narrative.body_truncated).toBe(true);
+    expect(longFirst.public_references).toHaveLength(8);
+    const longNext = await getV5EventEvidence(db, {
+      world_id: world,
+      event_id: first,
+      at_revision: 31,
+      cursor: longFirst.next_cursor
+    });
+    expect(longNext.narrative_body_offset).toBe(12000);
+    expect(longNext.narrative.body).toHaveLength(1000);
+    expect(longNext.public_references).toEqual([refs[8]]);
   });
   it("pages literal wildcard matches within one World without materializing its graph", async () => {
     const input = { world_id: world, text: "Dan%jong", limit: 1 };

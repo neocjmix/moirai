@@ -6,7 +6,8 @@ import {
   readV5StagedCollection,
   readV5StagedCollectionCatalog,
   readV5StagedAdjacencyPage,
-  readV5StagedRelation
+  readV5StagedRelation,
+  readV5StagedCompositeChildren
 } from "@moirai/publication/v5";
 
 export function createV5StagedAtroposReader(
@@ -46,6 +47,15 @@ export function createV5StagedAtroposReader(
         get
       ),
     relation: (relationId: string) =>
-      readV5StagedRelation(rootBody, worldId, revision, relationId, get)
+      readV5StagedRelation(rootBody, worldId, revision, relationId, get),
+    compositeChildren: (eventId: string, page: number) =>
+      readV5StagedCompositeChildren(
+        rootBody,
+        worldId,
+        revision,
+        eventId,
+        page,
+        get
+      )
   };
 }

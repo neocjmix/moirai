@@ -57,9 +57,16 @@ export function buildV5TemporalDetailPages(
     } = composite;
     const { evidence: durationEvidence, ...durationDetail } = duration;
     const { evidence: spanEvidence, ...spanDetail } = descendant_span;
+    // Multiple World assertions may name the same child. Preserve their
+    // evidence in Relations while projecting one navigable Event identity.
+    const uniqueChildren = [
+      ...new Map(
+        direct_children.map((ref) => [JSON.stringify(ref), ref])
+      ).values()
+    ];
     const lists = {
-      direct_children: direct_children.length,
-      direct_children_pages: writePages(key, "children", direct_children),
+      direct_children: uniqueChildren.length,
+      direct_children_pages: writePages(key, "children", uniqueChildren),
       descendant_count: descendant_event_ids.length,
       descendant_pages: writePages(key, "descendants", descendant_event_ids),
       during_count: during.length,

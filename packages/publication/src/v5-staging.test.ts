@@ -3,6 +3,7 @@ import {
   buildV5ContentAndTemporalStagedArtifacts,
   buildV5ContentStagedArtifacts,
   buildV5StagedIndex,
+  publishV5StagedArtifacts,
   readV5StagedDocument,
   verifyV5StagedIndex
 } from "./v5-staging.js";
@@ -15,6 +16,39 @@ const input = (count: number) =>
   }));
 
 describe("inactive v5 hierarchical integrity index", () => {
+  it("uploads a complete immutable rehearsal tree without changing the public pointer", async () => {
+    const built = buildV5StagedIndex("world-1", 31, input(129));
+    const objects = new Map<string, string>([
+      ["worlds/world-1/current.json", "v4-pointer"]
+    ]);
+    const store = {
+      get: async (key: string) => ({
+        status: objects.has(key) ? 200 : 404,
+        body: objects.get(key) ?? null,
+        etag: null
+      }),
+      put: async (
+        key: string,
+        body: string,
+        options?: { immutable?: boolean }
+      ) => {
+        expect(options?.immutable).toBe(true);
+        if (objects.has(key)) return { status: 412, etag: null };
+        objects.set(key, body);
+        return { status: 201, etag: null };
+      }
+    };
+    expect(await publishV5StagedArtifacts(store, built)).toBe(built.root.key);
+    expect(await publishV5StagedArtifacts(store, built)).toBe(built.root.key);
+    expect(objects.get("worlds/world-1/current.json")).toBe("v4-pointer");
+    objects.set(built.documents[0]!.key, "tampered");
+    await expect(publishV5StagedArtifacts(store, built)).rejects.toThrow(
+      "v5_immutable_conflict"
+    );
+    expect(() =>
+      verifyV5StagedIndex({ ...built, documents: built.documents.slice(1) })
+    ).toThrow();
+  });
   it("indexes actual World content without touching the served pointer", () => {
     const built = buildV5ContentStagedArtifacts(
       {

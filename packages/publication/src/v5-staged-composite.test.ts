@@ -18,7 +18,7 @@ const state: CanonicalState = {
     attributes: {}
   })),
   eventCollectionMemberships: [],
-  relations: ids.map((id, index) => ({
+  relations: [...ids, ids[0]!].map((id, index) => ({
     id: `contains-${index}`,
     world_id: worldId,
     type: "contains",

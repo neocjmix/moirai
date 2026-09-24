@@ -104,6 +104,49 @@ describe("inactive v5 HTTP transport", () => {
       await app.close();
     }
   });
+  it("reads candidate detail only for an authorized World and strict Revision", async () => {
+    const detail = vi.fn().mockResolvedValue({
+      source_revision: 31,
+      relations: [],
+      memberships: [],
+      next_cursor: null
+    });
+    const app = Fastify();
+    registerV5ClothoRoutes(
+      app,
+      credentials,
+      createV5Clotho(createV5Lachesis({ commit: vi.fn(), detail }))
+    );
+    try {
+      const input = {
+        contract_version: 5,
+        world_id: worldId,
+        event_id: actorId,
+        at_revision: 31
+      };
+      const send = (body: unknown) =>
+        app.inject({
+          method: "POST",
+          url: "/v2/clotho/event.get",
+          headers: {
+            authorization: `Bearer ${token}`,
+            "content-type": "application/json"
+          },
+          payload: JSON.stringify(body)
+        });
+      expect((await send({ ...input, canon_id: worldId })).statusCode).toBe(
+        422
+      );
+      expect((await send({ ...input, world_id: actorId })).statusCode).toBe(
+        403
+      );
+      expect((await send({ ...input, at_revision: 0 })).statusCode).toBe(422);
+      expect((await send(input)).json().result.source_revision).toBe(31);
+      expect(detail).toHaveBeenCalledTimes(1);
+    } finally {
+      await app.close();
+    }
+  });
   it("authenticates before parsing and rejects v4, spoofed, stale-world writes", async () => {
     const commit = vi.fn().mockResolvedValue({ current_revision: 32 });
     // Fastify's default removeAdditional setting must not launder fields.

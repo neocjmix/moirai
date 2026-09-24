@@ -2,7 +2,8 @@
  * active v4 writer or advertise it before the coordinated cutover. */
 import {
   V5_CHANGE_PLAN_SCHEMA,
-  V5_EVENT_SEARCH_SCHEMA
+  V5_EVENT_SEARCH_SCHEMA,
+  V5_EVENT_DETAIL_SCHEMA
 } from "@moirai/contracts/v5-wire";
 import { ChangeSetError } from "@moirai/domain";
 import { authorizeActor, type ActorContext } from "@moirai/lachesis";
@@ -18,6 +19,10 @@ const validSearch = new Ajv({
   coerceTypes: false,
   removeAdditional: false
 }).compile(V5_EVENT_SEARCH_SCHEMA);
+const validDetail = new Ajv({
+  coerceTypes: false,
+  removeAdditional: false
+}).compile(V5_EVENT_DETAIL_SCHEMA);
 export interface V5LachesisBoundary {
   policy(worldId: string, actor: ActorContext): unknown;
   commitDraft(plan: V5DraftChange, actor: ActorContext): Promise<unknown>;
@@ -30,10 +35,37 @@ export interface V5LachesisBoundary {
     },
     actor: ActorContext
   ): Promise<unknown>;
+  detail(
+    input: {
+      world_id: string;
+      event_id: string;
+      at_revision: number;
+      cursor?: string | null;
+    },
+    actor: ActorContext
+  ): Promise<unknown>;
 }
 
 export function createV5Clotho(boundary: V5LachesisBoundary) {
   return {
+    detail(
+      input: {
+        world_id: string;
+        event_id: string;
+        at_revision: number;
+        cursor?: string | null;
+      },
+      actor: ActorContext
+    ) {
+      authorizeActor(actor, "world:read", input?.world_id);
+      if (!validDetail(input))
+        throw new ChangeSetError(
+          "invalid_request",
+          "detail",
+          "Invalid v5 Event detail input"
+        );
+      return boundary.detail(input, actor);
+    },
     search(
       input: {
         world_id: string;

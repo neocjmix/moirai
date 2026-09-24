@@ -19,10 +19,55 @@ export interface V5CanonicalStore {
     limit?: number;
     cursor?: string | null;
   }): Promise<unknown>;
+  detail?(input: {
+    world_id: string;
+    event_id: string;
+    at_revision: number;
+    cursor?: string | null;
+  }): Promise<unknown>;
 }
 
 export function createV5Lachesis(store: V5CanonicalStore) {
   return {
+    async detail(
+      input: {
+        world_id: string;
+        event_id: string;
+        at_revision: number;
+        cursor?: string | null;
+      },
+      actor: ActorContext
+    ) {
+      authorizeActor(actor, "world:read", input?.world_id);
+      if (!store.detail)
+        throw new ChangeSetError(
+          "invalid_request",
+          "detail",
+          "Detail is unavailable"
+        );
+      try {
+        return await store.detail(input);
+      } catch (error) {
+        if (
+          error instanceof Error &&
+          error.message === "v5_detail_revision_changed"
+        )
+          throw new ChangeSetError(
+            "revision_conflict",
+            "at_revision",
+            "World Revision changed; restart inspection",
+            [],
+            true
+          );
+        if (error instanceof Error && error.message.startsWith("v5_detail_"))
+          throw new ChangeSetError(
+            "invalid_request",
+            "detail",
+            "Invalid or unavailable Event detail"
+          );
+        throw error;
+      }
+    },
     async search(
       input: {
         world_id: string;

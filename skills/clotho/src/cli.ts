@@ -66,6 +66,7 @@ async function main(): Promise<void> {
     (args.length !== 2 ||
       (v5Method !== "authoring.policy.get" &&
         v5Method !== "event.search" &&
+        v5Method !== "event.get" &&
         v5Method !== "change.commit"))
   )
     throw new ClothoClientError("usage_v5_policy_search_or_commit");
@@ -99,7 +100,11 @@ async function main(): Promise<void> {
   const result = v5
     ? await callV5Clotho(
         config,
-        v5Method as "authoring.policy.get" | "event.search" | "change.commit",
+        v5Method as
+          | "authoring.policy.get"
+          | "event.search"
+          | "event.get"
+          | "change.commit",
         input
       )
     : await callClotho(config, method, input);

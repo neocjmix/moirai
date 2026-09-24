@@ -6,6 +6,7 @@ import { migrateToVersion } from "./migrate.js";
 import { finalize, prepare } from "./cutovers/010_ip011_collections.js";
 import { up } from "./cutovers/011_ip011_authoring_search.js";
 import { searchV5WorldEvents } from "./v5-authoring-search.js";
+import { getV5EventEvidence } from "./v5-authoring-detail.js";
 
 const source = process.env.DATABASE_URL;
 const suite = source ? describe : describe.skip;
@@ -70,6 +71,105 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
         await admin.destroy();
       }
     }
+  });
+  it("inspects one World Event and its owner Narrative, Collection and neighbor at a pinned Revision", async () => {
+    const collection = "019f5000-1100-7000-8000-000000000021";
+    await db.transaction().execute(async (tx) => {
+      await sql`insert into collections(id,world_id,slug,title,created_revision,updated_revision)
+        values (${collection},${world},'joseon','Joseon',31,31)`.execute(tx);
+      await sql`insert into narratives(id,world_id,scope_type,scope_id,locale,body,public_references,notes,created_revision,updated_revision)
+        values (${collection},${world},'collection',${collection},'ko','Collection account','[]','[]',31,31)`.execute(
+        tx
+      );
+      await sql`insert into collection_event_memberships(id,world_id,collection_id,event_id,created_revision,updated_revision)
+        values ('019f5000-1100-7000-8000-000000000022',${world},${collection},${first},31,31)`.execute(
+        tx
+      );
+      await sql`insert into relations(id,world_id,type,source_ref,target_ref,direction,attributes,created_revision,updated_revision)
+        values ('019f5000-1100-7000-8000-000000000023',${world},'precedes',
+          ${JSON.stringify({ kind: "event", event_id: first })}::jsonb,
+          ${JSON.stringify({ kind: "event", event_id: second })}::jsonb,
+          'directed','{}',31,31)`.execute(tx);
+      for (let i = 0; i < 17; i++) {
+        const id = `019f5000-1100-7000-8000-0000000000${(100 + i).toString(16)}`;
+        await sql`insert into relations(id,world_id,type,source_ref,target_ref,direction,attributes,created_revision,updated_revision)
+          values (${id},${world},'influences',
+            ${JSON.stringify({ kind: "event", event_id: first })}::jsonb,
+            ${JSON.stringify({ kind: "event", event_id: second })}::jsonb,
+            'directed','{}',31,31)`.execute(tx);
+      }
+    });
+    const detail = await getV5EventEvidence(db, {
+      world_id: world,
+      event_id: first,
+      at_revision: 31
+    });
+    expect(detail.narrative.body).toBe("Reader account");
+    expect(detail.memberships.map((m) => m.collection_id)).toEqual([
+      collection
+    ]);
+    expect(detail.relations).toHaveLength(16);
+    expect(detail.relations[0]?.type).toBe("precedes");
+    expect(detail.neighbors.map((neighbor) => neighbor.id)).toEqual([second]);
+    expect(detail.next_cursor).toBeTruthy();
+    const next = await getV5EventEvidence(db, {
+      world_id: world,
+      event_id: first,
+      at_revision: 31,
+      cursor: detail.next_cursor
+    });
+    expect(next.relations).toHaveLength(2);
+    expect(next.memberships).toHaveLength(0);
+    expect(next.next_cursor).toBeNull();
+    expect(
+      new Set([...detail.relations, ...next.relations].map((r) => r.id)).size
+    ).toBe(18);
+    await expect(
+      getV5EventEvidence(db, {
+        world_id: world,
+        event_id: second,
+        at_revision: 31,
+        cursor: detail.next_cursor
+      })
+    ).rejects.toThrow("v5_detail_cursor_invalid");
+    await expect(
+      getV5EventEvidence(db, {
+        world_id: other,
+        event_id: first,
+        at_revision: 31
+      })
+    ).rejects.toThrow("v5_detail_event_missing");
+    await expect(
+      getV5EventEvidence(db, {
+        world_id: world,
+        event_id: first,
+        at_revision: 30
+      })
+    ).rejects.toThrow("v5_detail_revision_changed");
+    const refs = Array.from({ length: 9 }, (_, i) => ({
+      label: `Source ${i}`,
+      url: `https://example.test/${i}`
+    }));
+    await sql`update narratives set body = ${"😀".repeat(13000)}, public_references = ${JSON.stringify(refs)}::jsonb where scope_type = 'event' and scope_id = ${first}`.execute(
+      db
+    );
+    const longFirst = await getV5EventEvidence(db, {
+      world_id: world,
+      event_id: first,
+      at_revision: 31
+    });
+    expect([...longFirst.narrative.body]).toHaveLength(12000);
+    expect(longFirst.narrative.body_truncated).toBe(true);
+    expect(longFirst.public_references).toHaveLength(8);
+    const longNext = await getV5EventEvidence(db, {
+      world_id: world,
+      event_id: first,
+      at_revision: 31,
+      cursor: longFirst.next_cursor
+    });
+    expect(longNext.narrative_body_offset).toBe(12000);
+    expect([...longNext.narrative.body]).toHaveLength(1000);
+    expect(longNext.public_references).toEqual([refs[8]]);
   });
   it("pages literal wildcard matches within one World without materializing its graph", async () => {
     const input = { world_id: world, text: "Dan%jong", limit: 1 };

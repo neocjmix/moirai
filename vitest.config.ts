@@ -43,6 +43,9 @@ export default defineConfig({
       "@moirai/clotho-application": fileURLToPath(
         new URL("./packages/clotho-application/src/index.ts", import.meta.url)
       ),
+      "@moirai/persistence/v5": fileURLToPath(
+        new URL("./packages/persistence/src/v5.ts", import.meta.url)
+      ),
       "@moirai/persistence": fileURLToPath(
         new URL("./packages/persistence/src/index.ts", import.meta.url)
       ),

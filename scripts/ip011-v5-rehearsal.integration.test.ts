@@ -4,24 +4,30 @@ import { sql } from "kysely";
 import type { CanonicalState, ResolvedV5Change } from "@moirai/contracts/v5";
 import { V5_AUTHORING_POLICY } from "@moirai/contracts/v5";
 import type { LegacyV4RevisionView } from "@moirai/contracts/legacy-v4";
-import { createDatabase, commitCreateChangeSet } from "./index.js";
+import {
+  createDatabase,
+  commitCreateChangeSet
+} from "../packages/persistence/src/index.js";
 import {
   captureDatabaseImage,
   databaseImageDigest,
   restoreFreshRehearsal
-} from "./ip011-backup.js";
-import { migrateToVersion } from "./migrate.js";
+} from "../packages/persistence/src/ip011-backup.js";
+import { migrateToVersion } from "../packages/persistence/src/migrate.js";
 import {
   createTestChangeSet,
   createTestExpansionChangeSet
-} from "./test-fixture.js";
-import { rehearseV5Database } from "./ip011-v5-rehearsal.js";
-import { readLegacyV4WorldAtRevision } from "./legacy-v4-reader.js";
-import { readActiveV5State } from "./v5-read.js";
-import { commitV5Resolved } from "./v5-change.js";
+} from "../packages/persistence/src/test-fixture.js";
+import { rehearseV5Database } from "../packages/persistence/src/ip011-v5-rehearsal.js";
+import { readLegacyV4WorldAtRevision } from "../packages/persistence/src/legacy-v4-reader.js";
+import { readActiveV5State } from "../packages/persistence/src/v5-read.js";
+import { commitV5Resolved } from "../packages/persistence/src/v5-change.js";
 import { TEST_FIXTURE } from "@moirai/contracts/testing";
 import { orderedV5State } from "@moirai/domain/v5";
-import { readV5WorldAtRevision } from "./v5-history-reader.js";
+import { readV5WorldAtRevision } from "../packages/persistence/src/v5-history-reader.js";
+import { createV5Clotho } from "@moirai/clotho-application/v5";
+import { databaseV5Lachesis } from "@moirai/lachesis/database";
+import type { ActorContext } from "@moirai/lachesis";
 
 const sourceUrl = process.env.DATABASE_URL;
 describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
@@ -113,6 +119,32 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       source
     );
     await source.destroy();
+  });
+
+  it("rejects the staged writer against an unmigrated v4 database without mutation", async () => {
+    await expect(
+      commitV5Resolved(source, {
+        change_set_id: "019f5000-1100-7000-8000-000000000041",
+        world_id: TEST_FIXTURE.worldId,
+        expected_revision: 2,
+        actor: "019f5000-1100-7000-8000-000000000042",
+        intent: "Refuse a v5 write before cutover",
+        origins: [{ kind: "human_instruction", summary: "Synthetic test" }],
+        policy_version: V5_AUTHORING_POLICY.policy_version,
+        policy_digest: V5_AUTHORING_POLICY.policy_digest,
+        operations: [
+          {
+            kind: "withdraw",
+            entity_type: "collection",
+            entity_id: TEST_FIXTURE.canonId,
+            origin_refs: [{ field: "*", origin_index: 0 }]
+          }
+        ]
+      })
+    ).rejects.toMatchObject({ code: "v5_schema_not_ready" });
+    expect(databaseImageDigest(await captureDatabaseImage(source))).toBe(
+      sourceDigest
+    );
   });
 
   it("fails closed before schema changes when a candidate loses a required owner Narrative", async () => {
@@ -346,6 +378,94 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       );
       expect(Number(cascaded.rows[0]?.count)).toBeGreaterThan(1);
       expect(cascaded.rows[0]?.sourced).toBe(cascaded.rows[0]?.count);
+      expect(databaseImageDigest(await captureDatabaseImage(source))).toBe(
+        sourceDigest
+      );
+    } finally {
+      await clone.destroy();
+    }
+  });
+  it("composes staged Clotho/Lachesis with the migrated database and stable retry", async () => {
+    const clone = createDatabase(cloneUrl.toString());
+    const actor: ActorContext = {
+      actor_id: "019f5000-1100-7000-8000-000000000042",
+      world_ids: [TEST_FIXTURE.worldId],
+      scopes: ["world:read", "world:write"],
+      expires_at: "2099-01-01T00:00:00Z"
+    };
+    const app = createV5Clotho(databaseV5Lachesis(clone));
+    const draft = {
+      contract_version: 5,
+      change_set_id: "019f5000-1100-7000-8000-000000000043",
+      world_id: TEST_FIXTURE.worldId,
+      expected_revision: 5,
+      intent: "Add a synthetic Collection without owning Events",
+      origins: [{ kind: "human_instruction", summary: "Synthetic test" }],
+      policy_version: V5_AUTHORING_POLICY.policy_version,
+      policy_digest: V5_AUTHORING_POLICY.policy_digest,
+      operations: [
+        {
+          kind: "create",
+          entity_type: "collection",
+          client_ref: "new-collection",
+          origin_refs: [{ field: "*", origin_index: 0 }],
+          value: {
+            world_id: TEST_FIXTURE.worldId,
+            slug: "new-selection",
+            title: "New selection",
+            description: null
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "narrative",
+          client_ref: "new-narrative",
+          origin_refs: [{ field: "*", origin_index: 0 }],
+          value: {
+            world_id: TEST_FIXTURE.worldId,
+            scope_type: "collection",
+            scope_id: { client_ref: "new-collection" },
+            locale: "en",
+            title: null,
+            body: "A synthetic reader-facing Collection account.",
+            public_references: [],
+            notes: []
+          }
+        }
+      ]
+    };
+    try {
+      expect(app.policy(TEST_FIXTURE.worldId, actor)).toEqual(
+        V5_AUTHORING_POLICY
+      );
+      expect(() =>
+        app.commit(draft, { ...actor, scopes: ["world:read"] })
+      ).toThrowError(expect.objectContaining({ code: "forbidden" }));
+      const first = (await app.commit(draft, actor)) as {
+        current_revision: number;
+        id_mapping: Record<string, string>;
+        idempotent_replay: boolean;
+      };
+      expect(first).toMatchObject({
+        current_revision: 6,
+        idempotent_replay: false
+      });
+      expect(first.id_mapping["new-collection"]).toMatch(/^[0-9a-f-]+$/);
+      expect(await app.commit(draft, actor)).toMatchObject({
+        current_revision: 6,
+        idempotent_replay: true,
+        id_mapping: first.id_mapping
+      });
+      const state = await readActiveV5State(clone, TEST_FIXTURE.worldId);
+      expect(state.collections).toHaveLength(1);
+      expect(state.collections[0]?.id).toBe(first.id_mapping["new-collection"]);
+      expect(state.events).toHaveLength(4);
+      expect(state.eventCollectionMemberships).toHaveLength(0);
+      expect(
+        orderedV5State(
+          await readV5WorldAtRevision(clone, TEST_FIXTURE.worldId, 6)
+        )
+      ).toEqual(orderedV5State(state));
       expect(databaseImageDigest(await captureDatabaseImage(source))).toBe(
         sourceDigest
       );

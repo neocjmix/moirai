@@ -5,7 +5,9 @@ import {
   validateChangePlan,
   type MoiraiDatabase
 } from "@moirai/persistence";
+import { commitV5Resolved } from "@moirai/persistence/v5";
 import { createLachesis, type Lachesis } from "./index.js";
+import { createV5Lachesis } from "./v5.js";
 
 export function databaseLachesis(db: MoiraiDatabase): Lachesis {
   return createLachesis({
@@ -14,4 +16,9 @@ export function databaseLachesis(db: MoiraiDatabase): Lachesis {
     validate: (change) => validateChangePlan(db, change),
     commit: (change) => commitCreateChangeSet(db, change)
   });
+}
+
+/** Staged only. The active app still calls databaseLachesis (v4). */
+export function databaseV5Lachesis(db: MoiraiDatabase) {
+  return createV5Lachesis({ commit: (input) => commitV5Resolved(db, input) });
 }

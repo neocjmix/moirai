@@ -212,6 +212,21 @@ export async function commitV5Resolved(
   return db.transaction().execute(async (tx) => {
     await sql`set local lock_timeout = '5s'`.execute(tx);
     await sql`set local statement_timeout = '30s'`.execute(tx);
+    // The default production migrator stops at 009. Refuse a staged v5
+    // writer on that schema before reading or altering canonical rows.
+    const cutover = (
+      await sql<{
+        name: string;
+      }>`select name from kysely_migration where name = '010_ip011_collections'`.execute(
+        tx
+      )
+    ).rows[0];
+    if (!cutover)
+      throw new ChangeSetError(
+        "v5_schema_not_ready",
+        "contract_version",
+        "World schema has not completed v5 cutover"
+      );
     await sql`select pg_advisory_xact_lock(hashtextextended(${input.world_id},0))`.execute(
       tx
     );

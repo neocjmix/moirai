@@ -1,4 +1,10 @@
 import { createHash } from "node:crypto";
+export { buildV5WorldLayout } from "./v5-world-layout.js";
+export type { V5WorldLayout } from "./v5-world-layout.js";
+export { buildV5SpatialIndex, spatialIntersects } from "./v5-spatial-index.js";
+export type { V5SpatialIndex, V5SpatialNode } from "./v5-spatial-index.js";
+export { readV5WorldViewport } from "./v5-spatial-read.js";
+export type { V5ViewportCursor } from "./v5-spatial-read.js";
 import type { MoiraiGraphQueryResult } from "@moirai/contracts";
 import { projectPresentationInput, type PresentationScope } from "./index.js";
 import {
@@ -268,3 +274,7 @@ export async function publishSpatialArtifacts(
       throw new Error("spatial_write_failed");
   }
 }
+export {
+  buildV5WorldSpatialStagedArtifacts,
+  readV5AuthenticatedViewport
+} from "./v5-spatial-publication.js";

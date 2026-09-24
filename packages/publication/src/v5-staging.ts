@@ -30,7 +30,15 @@ interface Node {
   readonly entries: readonly Ref[];
 }
 
-type Completeness = "content-only" | "content-and-temporal-detail-only";
+type Completeness =
+  | "content-only"
+  | "content-and-temporal-detail-only"
+  | "content-temporal-and-spatial-staged";
+const COMPLETENESS: readonly string[] = [
+  "content-only",
+  "content-and-temporal-detail-only",
+  "content-temporal-and-spatial-staged"
+];
 
 export interface V5StagedArtifacts {
   readonly documents: readonly V5StagedObject[];
@@ -92,6 +100,71 @@ export function buildV5ContentAndTemporalStagedArtifacts(
     revision,
     documents.map(({ key, value }) => ({ key, body: JSON.stringify(value) })),
     "content-and-temporal-detail-only"
+  );
+}
+
+/** Offline composition seam: the presentation package produces spatial
+ * documents, while Publication owns the sole immutable digest tree. A
+ * complete serving pointer still requires scale/query and privacy gates. */
+export function buildV5SpatialStagedArtifacts(
+  state: Parameters<typeof buildV5ContentPages>[0],
+  revision: number,
+  spatial: readonly {
+    readonly time_system_id: string;
+    readonly temporal_digest: string;
+    readonly documents: readonly V5StagedObject[];
+    readonly manifest: V5StagedObject;
+  }[]
+): V5StagedArtifacts {
+  const temporal = projectV5WorldTemporal(state, revision);
+  const systems = state.timeSystems.map((system) => system.id).sort();
+  if (
+    JSON.stringify(spatial.map((item) => item.time_system_id).sort()) !==
+      JSON.stringify(systems) ||
+    new Set(spatial.map((item) => item.time_system_id)).size !== systems.length
+  )
+    throw Error("v5_spatial_system_coverage_invalid");
+  for (const item of spatial) {
+    const prefix = `worlds/${state.world.id}/revisions/${revision}/v5/spatial/${item.time_system_id}/`;
+    const manifest = JSON.parse(item.manifest.body) as {
+      format_version: string;
+      world_id: string;
+      revision: number;
+      time_system_id: string;
+      temporal_digest: string;
+      shape_count: number;
+      unplaced_count: number;
+    };
+    if (
+      !systems.includes(item.time_system_id) ||
+      item.temporal_digest !== temporal.semantic_digest ||
+      item.manifest.key !== `${prefix}manifest.json` ||
+      manifest.format_version !== "v5-world-spatial/1" ||
+      manifest.world_id !== state.world.id ||
+      manifest.revision !== revision ||
+      manifest.time_system_id !== item.time_system_id ||
+      manifest.temporal_digest !== temporal.semantic_digest ||
+      !Number.isSafeInteger(manifest.shape_count) ||
+      !Number.isSafeInteger(manifest.unplaced_count) ||
+      manifest.shape_count + manifest.unplaced_count !== state.events.length ||
+      item.documents.some(
+        (document) => !document.key.startsWith(`${prefix}nodes/`)
+      )
+    )
+      throw Error("v5_spatial_manifest_invalid");
+  }
+  const pages = [
+    ...buildV5ContentPages(state, revision),
+    ...buildV5TemporalDetailPages(temporal)
+  ].map(({ key, value }) => ({ key, body: JSON.stringify(value) }));
+  return buildV5StagedIndex(
+    state.world.id,
+    revision,
+    [
+      ...pages,
+      ...spatial.flatMap((item) => [...item.documents, item.manifest])
+    ],
+    "content-temporal-and-spatial-staged"
   );
 }
 
@@ -202,9 +275,7 @@ export async function readV5StagedDocument(
   if (
     !documentKey.startsWith(prefix) ||
     root.format_version !== "v5-staging-index/1" ||
-    !["content-only", "content-and-temporal-detail-only"].includes(
-      root.completeness
-    ) ||
+    !COMPLETENESS.includes(root.completeness) ||
     root.fanout !== FANOUT ||
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||
@@ -266,9 +337,7 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
   const prefix = `worlds/${root.world_id}/revisions/${root.revision}/v5/`;
   if (
     root.format_version !== "v5-staging-index/1" ||
-    !["content-only", "content-and-temporal-detail-only"].includes(
-      root.completeness
-    ) ||
+    !COMPLETENESS.includes(root.completeness) ||
     root.fanout !== FANOUT ||
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||

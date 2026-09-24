@@ -20,11 +20,11 @@
   "dependencies": {
     "@moirai/contracts": "workspace:*",
     "@moirai/domain": "workspace:*",
-    "@moirai/graph-query": "workspace:*"
+    "@moirai/graph-query": "workspace:*",
+    "@moirai/publication": "workspace:*",
+    "@moirai/projections": "workspace:*"
   },
   "devDependencies": {
     "typescript": "^5.9.0",
-    "@moirai/publication": "workspace:*",
-    "@moirai/projections": "workspace:*"
   }
 }

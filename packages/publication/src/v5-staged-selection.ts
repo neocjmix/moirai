@@ -32,7 +32,10 @@ export async function readV5StagedSelectionPage(
   if (
     root.world_id !== worldId ||
     root.revision !== revision ||
-    root.completeness !== "content-and-temporal-detail-only" ||
+    ![
+      "content-and-temporal-detail-only",
+      "content-temporal-and-spatial-staged"
+    ].includes(root.completeness) ||
     collectionIds.length < 1 ||
     collectionIds.length > 8 ||
     collectionIds.some(

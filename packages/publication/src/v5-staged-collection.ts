@@ -34,7 +34,10 @@ export async function readV5StagedCollectionCatalog(
   if (
     root.world_id !== worldId ||
     root.revision !== revision ||
-    root.completeness !== "content-and-temporal-detail-only" ||
+    ![
+      "content-and-temporal-detail-only",
+      "content-temporal-and-spatial-staged"
+    ].includes(root.completeness) ||
     !Number.isSafeInteger(page) ||
     page < 0
   )
@@ -134,7 +137,10 @@ export async function readV5StagedCollection(
   if (
     root.world_id !== worldId ||
     root.revision !== revision ||
-    root.completeness !== "content-and-temporal-detail-only" ||
+    ![
+      "content-and-temporal-detail-only",
+      "content-temporal-and-spatial-staged"
+    ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(collectionId) ||
     !Number.isSafeInteger(page) ||
     page < 0

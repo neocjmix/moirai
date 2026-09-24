@@ -180,6 +180,7 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
       to_revision: 3,
       history_unchanged: true,
       legacy_revision_unchanged: true,
+      v5_revision_replay_matches_active: true,
       operational_source_unchanged: true,
       events: 3,
       collections: 1,

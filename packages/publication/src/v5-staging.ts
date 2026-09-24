@@ -33,11 +33,16 @@ interface Node {
 type Completeness =
   | "content-only"
   | "content-and-temporal-detail-only"
-  | "content-temporal-and-spatial-staged";
+  | "content-temporal-and-spatial-staged"
+  | "complete";
+// The generic builder must never assert serving completeness; a future
+// dedicated builder has to prove every read/scale/privacy invariant first.
+type StagedCompleteness = Exclude<Completeness, "complete">;
 const COMPLETENESS: readonly string[] = [
   "content-only",
   "content-and-temporal-detail-only",
-  "content-temporal-and-spatial-staged"
+  "content-temporal-and-spatial-staged",
+  "complete"
 ];
 
 export interface V5StagedArtifacts {
@@ -174,7 +179,7 @@ export function buildV5StagedIndex(
   worldId: string,
   revision: number,
   input: readonly V5StagedObject[],
-  completeness: Completeness = "content-only"
+  completeness: StagedCompleteness = "content-only"
 ): V5StagedArtifacts {
   if (
     !/^[a-zA-Z0-9-]+$/.test(worldId) ||
@@ -183,6 +188,7 @@ export function buildV5StagedIndex(
   )
     throw Error("v5_index_identity_invalid");
   const prefix = `worlds/${worldId}/revisions/${revision}/v5/`;
+  const stagingPrefix = `${prefix}staging/${completeness}/`;
   // Use the same ordinal ordering as range checks and object-store keys;
   // locale collation can order uppercase/punctuation differently.
   const documents = [...input].sort((a, b) =>
@@ -193,6 +199,8 @@ export function buildV5StagedIndex(
     if (
       !document.key.startsWith(prefix) ||
       document.key.startsWith(`${prefix}index/`) ||
+      document.key.startsWith(`${prefix}staging/`) ||
+      document.key.startsWith(`${prefix}complete/`) ||
       document.key === `${prefix}manifest.json` ||
       (i > 0 && documents[i - 1]!.key === document.key)
     )
@@ -213,7 +221,7 @@ export function buildV5StagedIndex(
       offset < refs.length || offset === 0;
       offset += FANOUT
     ) {
-      const key = `${prefix}index/${level}/${next.length}.json`;
+      const key = `${stagingPrefix}index/${level}/${next.length}.json`;
       const node: Node = {
         kind: level === 0 ? "leaf" : "branch",
         world_id: worldId,
@@ -233,7 +241,7 @@ export function buildV5StagedIndex(
     level++;
   } while (refs.length > FANOUT);
   const root = {
-    key: `${prefix}manifest.json`,
+    key: `${stagingPrefix}manifest.json`,
     body: JSON.stringify({
       format_version: "v5-staging-index/1",
       world_id: worldId,
@@ -272,6 +280,7 @@ export async function readV5StagedDocument(
     entries: Ref[];
   };
   const prefix = `worlds/${root.world_id}/revisions/${root.revision}/v5/`;
+  const indexPrefix = `${prefix}${root.completeness === "complete" ? "complete/" : `staging/${root.completeness}/`}index/`;
   if (
     !documentKey.startsWith(prefix) ||
     root.format_version !== "v5-staging-index/1" ||
@@ -287,7 +296,7 @@ export async function readV5StagedDocument(
   for (let level = root.index_depth - 1; level >= 0; level--) {
     const selected = select(refs, documentKey);
     if (!selected) return null;
-    if (!selected.key.startsWith(`${prefix}index/${level}/`))
+    if (!selected.key.startsWith(`${indexPrefix}${level}/`))
       throw Error("v5_index_depth_invalid");
     const body = await get(selected.key);
     if (body === null || hash(body) !== selected.sha256)
@@ -335,6 +344,12 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
     entries: Ref[];
   };
   const prefix = `worlds/${root.world_id}/revisions/${root.revision}/v5/`;
+  const namespace =
+    root.completeness === "complete"
+      ? "complete/"
+      : `staging/${root.completeness}/`;
+  const indexPrefix = `${prefix}${namespace}index/`;
+  const rootKey = `${prefix}${namespace}manifest.json`;
   if (
     root.format_version !== "v5-staging-index/1" ||
     !COMPLETENESS.includes(root.completeness) ||
@@ -343,7 +358,7 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
     root.index_depth < 1 ||
     root.entries.length > FANOUT ||
     !orderedRanges(root.entries) ||
-    artifacts.root.key !== `${prefix}manifest.json`
+    artifacts.root.key !== rootKey
   )
     throw Error("v5_index_root_invalid");
   const objects = new Map(
@@ -365,12 +380,12 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
     if (body === undefined || hash(body) !== ref.sha256)
       throw Error("v5_index_digest_mismatch");
     visited.add(ref.key);
-    if (!ref.key.startsWith(`${prefix}index/`)) {
+    if (!ref.key.startsWith(indexPrefix)) {
       if (level !== -1) throw Error("v5_index_depth_invalid");
       checkedDocuments.add(ref.key);
       return;
     }
-    if (!ref.key.startsWith(`${prefix}index/${level}/`) || level < 0)
+    if (!ref.key.startsWith(`${indexPrefix}${level}/`) || level < 0)
       throw Error("v5_index_depth_invalid");
     const node = JSON.parse(body) as Node;
     if (
@@ -383,11 +398,9 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
       ref.first_key !== (node.entries[0]?.first_key ?? "") ||
       ref.last_key !== (node.entries.at(-1)?.last_key ?? "") ||
       (node.kind === "leaf" &&
-        node.entries.some((entry) =>
-          entry.key.startsWith(`${prefix}index/`)
-        )) ||
+        node.entries.some((entry) => entry.key.startsWith(indexPrefix))) ||
       (node.kind === "branch" &&
-        node.entries.some((entry) => !entry.key.startsWith(`${prefix}index/`)))
+        node.entries.some((entry) => !entry.key.startsWith(indexPrefix)))
     )
       throw Error("v5_index_node_invalid");
     for (const entry of node.entries) visit(entry, level - 1);

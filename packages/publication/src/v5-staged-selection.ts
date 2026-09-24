@@ -34,7 +34,8 @@ export async function readV5StagedSelectionPage(
     root.revision !== revision ||
     ![
       "content-and-temporal-detail-only",
-      "content-temporal-and-spatial-staged"
+      "content-temporal-and-spatial-staged",
+      "complete"
     ].includes(root.completeness) ||
     collectionIds.length < 1 ||
     collectionIds.length > 8 ||

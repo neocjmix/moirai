@@ -16,6 +16,41 @@ const input = (count: number) =>
   }));
 
 describe("inactive v5 hierarchical integrity index", () => {
+  it("isolates progressive rehearsal roots and reserves complete namespace for a separately proven tree", async () => {
+    const stages = [
+      buildV5StagedIndex("world-1", 31, input(1), "content-only"),
+      buildV5StagedIndex(
+        "world-1",
+        31,
+        input(1),
+        "content-and-temporal-detail-only"
+      ),
+      buildV5StagedIndex(
+        "world-1",
+        31,
+        input(1),
+        "content-temporal-and-spatial-staged"
+      )
+    ];
+    expect(new Set(stages.map((stage) => stage.root.key)).size).toBe(3);
+    expect(new Set(stages.map((stage) => stage.index[0]!.key)).size).toBe(3);
+    const objects = new Map<string, string>();
+    const store = {
+      get: async (key: string) => ({
+        status: objects.has(key) ? 200 : 404,
+        body: objects.get(key) ?? null,
+        etag: null
+      }),
+      put: async (key: string, body: string) => {
+        if (objects.has(key)) return { status: 412, etag: null };
+        objects.set(key, body);
+        return { status: 201, etag: null };
+      }
+    };
+    for (const stage of stages) await publishV5StagedArtifacts(store, stage);
+    expect(objects.has(`${prefix}complete/manifest.json`)).toBe(false);
+    expect(objects.get(input(1)[0]!.key)).toBe(input(1)[0]!.body);
+  });
   it("uploads a complete immutable rehearsal tree without changing the public pointer", async () => {
     const built = buildV5StagedIndex("world-1", 31, input(129));
     const objects = new Map<string, string>([

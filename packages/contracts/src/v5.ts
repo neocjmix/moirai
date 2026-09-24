@@ -68,6 +68,19 @@ export interface CanonicalState {
   readonly narratives: readonly Narrative[];
 }
 
+/** Target serving boundary; the current v4 pointer is unchanged until A3. */
+export interface V5PublicationPointer {
+  readonly format_version: "v5-publication/1";
+  readonly world_id: string;
+  readonly served_revision: number;
+  readonly current_revision: number;
+  readonly publication_target_revision: number;
+  readonly projection_status: "ready";
+  readonly manifest_key: string;
+  readonly manifest_sha256: string;
+  readonly generated_at: string;
+}
+
 /** Resolved internal operations. External client_ref resolution belongs at ingress. */
 export interface EntityRecords {
   readonly world: PublicWorld;

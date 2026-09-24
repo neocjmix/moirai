@@ -36,7 +36,8 @@ export async function readV5StagedCollectionCatalog(
     root.revision !== revision ||
     ![
       "content-and-temporal-detail-only",
-      "content-temporal-and-spatial-staged"
+      "content-temporal-and-spatial-staged",
+      "complete"
     ].includes(root.completeness) ||
     !Number.isSafeInteger(page) ||
     page < 0
@@ -139,7 +140,8 @@ export async function readV5StagedCollection(
     root.revision !== revision ||
     ![
       "content-and-temporal-detail-only",
-      "content-temporal-and-spatial-staged"
+      "content-temporal-and-spatial-staged",
+      "complete"
     ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(collectionId) ||
     !Number.isSafeInteger(page) ||

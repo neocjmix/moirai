@@ -23,6 +23,8 @@ active Collections의 합집합으로 Event를 선택하되 node를 복제하지
 
 Worker가 World-level temporal/contains/identity 결과와 안정된 layout을 생성한다. 공개 store에는 bounded root catalog, paged Collection summaries/membership posting lists, temporal/spatial/scale shards, adjacency pages, Event detail을 둔다. shard manifest도 계층화하여 root가 World 전체 문서 목록을 실어 나르지 않게 한다. 큰 Collection과 고차수 Event도 paging/budget을 적용한다. row/byte/object-read 상한을 넘으면 continuation 또는 명시적 partial을 반환한다.
 
+동일 Revision의 불완전한 rehearsal root/index는 `v5/staging/{completeness}/`에 append-only로 보관하고, 모든 읽기 shard를 검증한 serving root/index는 별도 `v5/complete/`에 둔다. `current.json`은 최종 root key와 digest를 명시하고 `complete`만 가리킨다. 단계별 index 확대를 같은 immutable key에 덮어쓰거나 staging root의 completeness 문자열만 바꿔 승격하지 않는다.
+
 Atropos query는 catalog → 필요한 index pages → intersecting shards → membership intersection/union → bounded neighbors 순으로 선택하며 전체 World/Collection materialization을 금지한다. storage는 기존 Publication store와 typed index seam을 우선 사용한다. 별도 graph DB/search service는 측정된 필요 없이 추가하지 않는다. offline full rebuild 비용은 별도 budget과 측정 대상이며 interactive path와 분리한다.
 
 ## TS-006.4 cache와 incremental UX

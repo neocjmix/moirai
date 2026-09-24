@@ -13,6 +13,7 @@
       "@moirai/persistence/v5": ["./packages/persistence/src/v5.ts"],
       "@moirai/projections": ["./packages/projections/src/index.ts"],
       "@moirai/publication": ["./packages/publication/src/index.ts"],
+      "@moirai/publication/v5": ["./packages/publication/src/v5.ts"],
       "@moirai/contracts/v5": ["./packages/contracts/src/v5.ts"],
       "@moirai/contracts/v5-wire": ["./packages/contracts/src/v5-wire.ts"],
       "@moirai/domain/v5": ["./packages/domain/src/v5.ts"],

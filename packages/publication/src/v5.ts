@@ -1,0 +1,11 @@
+/** Internal v5 read surface until a complete Publication can be served. */
+export { readV5StagedEvent } from "./v5-staged-event.js";
+export {
+  readV5StagedCollection,
+  readV5StagedCollectionCatalog
+} from "./v5-staged-collection.js";
+export {
+  readV5StagedAdjacencyPage,
+  readV5StagedRelation
+} from "./v5-staged-neighbors.js";
+export { readV5StagedDocument } from "./v5-staging.js";

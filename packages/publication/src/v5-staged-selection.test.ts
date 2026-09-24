@@ -123,6 +123,16 @@ describe("inactive v5 selected-Collection union", () => {
         artifacts.root.body,
         worldId,
         31,
+        chosen,
+        { ...firstCursor!, positions: [null, null] },
+        get
+      )
+    ).rejects.toThrow("v5_selection_cursor_invalid");
+    await expect(
+      readV5StagedSelectionPage(
+        artifacts.root.body,
+        worldId,
+        31,
         ["joseon", "japan"],
         null,
         get

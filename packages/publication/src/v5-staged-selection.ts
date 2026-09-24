@@ -45,7 +45,8 @@ export async function readV5StagedSelectionPage(
         cursor.revision !== revision ||
         !Array.isArray(cursor.positions) ||
         cursor.positions.length !== collectionIds.length ||
-        cursor.positions.some(
+        cursor.positions.every((position) => position === null) ||
+        Array.from(cursor.positions).some(
           (position, index) =>
             position === undefined ||
             (position !== null &&

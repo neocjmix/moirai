@@ -1,7 +1,10 @@
 import { describe, expect, it } from "vitest";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import { buildV5ContentAndTemporalStagedArtifacts } from "./v5-staging.js";
-import { readV5StagedCollection } from "./v5-staged-collection.js";
+import {
+  readV5StagedCollection,
+  readV5StagedCollectionCatalog
+} from "./v5-staged-collection.js";
 
 const state: CanonicalState = {
   world: {
@@ -75,6 +78,21 @@ describe("inactive v5 Collection reader", () => {
       reads.push(key);
       return objects.get(key) ?? null;
     };
+    const catalog = await readV5StagedCollectionCatalog(
+      artifacts.root.body,
+      "world-1",
+      31,
+      0,
+      get
+    );
+    expect(catalog).toMatchObject({ collection_count: 3, next_page: null });
+    expect(catalog.collections.map((collection) => collection.id)).toEqual([
+      "empty",
+      "japan",
+      "joseon"
+    ]);
+    expect(reads.length).toBeLessThanOrEqual(6);
+    reads.length = 0;
     const joseon = await readV5StagedCollection(
       artifacts.root.body,
       "world-1",

@@ -7,6 +7,51 @@ import { callClotho, callV5Clotho } from "./client.js";
 const token = randomBytes(32).toString("base64url");
 afterEach(() => vi.unstubAllGlobals());
 describe("Clotho JSON client", () => {
+  it("passes the v5 World search envelope through the same bounded client", async () => {
+    const input = {
+      contract_version: 5,
+      world_id: "01995c2a-7b00-7000-8000-000000000101",
+      text: "Dan jong",
+      limit: 5
+    };
+    const result = {
+      source_revision: 31,
+      events: [
+        {
+          id: "01995c2a-7b00-7000-8000-000000000102",
+          title: "Dan jong",
+          summary: null
+        }
+      ],
+      next_cursor: null
+    };
+    const server = createServer(async (request, response) => {
+      expect(request.url).toBe("/v2/clotho/event.search");
+      expect(request.headers.authorization).toBe(`Bearer ${token}`);
+      let body = "";
+      for await (const chunk of request) body += String(chunk);
+      expect(JSON.parse(body)).toEqual(input);
+      response.setHeader("content-type", "application/json");
+      response.end(JSON.stringify({ contract_version: 5, result }));
+    });
+    await new Promise<void>((resolve) =>
+      server.listen(0, "127.0.0.1", resolve)
+    );
+    try {
+      expect(
+        await callV5Clotho(
+          {
+            baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}`,
+            token
+          },
+          "event.search",
+          input
+        )
+      ).toEqual({ contract_version: 5, result });
+    } finally {
+      server.close();
+    }
+  });
   it("uses the isolated v5 endpoint and rejects a wrong-version response", async () => {
     let version = 5;
     const server = createServer(async (request, response) => {

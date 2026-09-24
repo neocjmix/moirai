@@ -52,6 +52,21 @@ function padded(bounds: Box | null): Box {
   };
 }
 
+/** Visual hit area only. A one-child Composite may have a zero-area factual
+ * envelope at its child's coordinate; its World geometry stays unchanged. */
+function displayRegion(bounds: Box, radius: number): Box {
+  const x = (bounds.minX + bounds.maxX) / 2;
+  const y = (bounds.minY + bounds.maxY) / 2;
+  const halfX = Math.max((bounds.maxX - bounds.minX) / 2, radius * 4);
+  const halfY = Math.max((bounds.maxY - bounds.minY) / 2, radius * 4);
+  return {
+    minX: x - halfX,
+    maxX: x + halfX,
+    minY: y - halfY,
+    maxY: y + halfY
+  };
+}
+
 async function read<T>(
   input: Record<string, unknown>,
   signal?: AbortSignal
@@ -472,54 +487,53 @@ export function V5Explorer({
                 drag.current = null;
               }}
             >
-              {shapes.map((shape) =>
-                shape.kind === "point" ? (
-                  <circle
-                    data-event-node=""
-                    key={shape.event_id}
-                    cx={shape.position.x}
-                    cy={shape.position.y}
-                    r={radius}
-                    className={styles.point}
-                    onClick={() => void openEvent(shape.event_id)}
-                  >
-                    <title>{shape.event_id}</title>
-                  </circle>
-                ) : shape.kind === "segment" ? (
-                  <line
-                    data-event-node=""
-                    key={shape.event_id}
-                    x1={shape.start.x}
-                    y1={shape.start.y}
-                    x2={shape.end.x}
-                    y2={shape.end.y}
-                    strokeWidth={radius * 1.5}
-                    className={styles.segment}
-                    onClick={() => void openEvent(shape.event_id)}
-                  >
-                    <title>{shape.event_id}</title>
-                  </line>
-                ) : (
+              {shapes.map((shape) => {
+                if (shape.kind === "point")
+                  return (
+                    <circle
+                      data-event-node=""
+                      key={shape.event_id}
+                      cx={shape.position.x}
+                      cy={shape.position.y}
+                      r={radius}
+                      className={styles.point}
+                      onClick={() => void openEvent(shape.event_id)}
+                    >
+                      <title>{shape.event_id}</title>
+                    </circle>
+                  );
+                if (shape.kind === "segment")
+                  return (
+                    <line
+                      data-event-node=""
+                      key={shape.event_id}
+                      x1={shape.start.x}
+                      y1={shape.start.y}
+                      x2={shape.end.x}
+                      y2={shape.end.y}
+                      strokeWidth={radius * 1.5}
+                      className={styles.segment}
+                      onClick={() => void openEvent(shape.event_id)}
+                    >
+                      <title>{shape.event_id}</title>
+                    </line>
+                  );
+                const box = displayRegion(shape.bounds, radius);
+                return (
                   <rect
                     data-event-node=""
                     key={shape.event_id}
-                    x={shape.bounds.minX}
-                    y={shape.bounds.minY}
-                    width={Math.max(
-                      shape.bounds.maxX - shape.bounds.minX,
-                      radius
-                    )}
-                    height={Math.max(
-                      shape.bounds.maxY - shape.bounds.minY,
-                      radius
-                    )}
+                    x={box.minX}
+                    y={box.minY}
+                    width={box.maxX - box.minX}
+                    height={box.maxY - box.minY}
                     className={styles.region}
                     onClick={() => void openEvent(shape.event_id)}
                   >
                     <title>{shape.event_id}</title>
                   </rect>
-                )
-              )}
+                );
+              })}
             </svg>
           </div>
           <div className={styles.footer} role="status">

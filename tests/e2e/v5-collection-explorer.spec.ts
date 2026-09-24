@@ -43,7 +43,9 @@ test("v5 World Composite remains a factual region while Collection selection is 
 }) => {
   await page.goto(`/graph/v5?world=${world}`);
   await expect(node(page, war)).toHaveCount(1);
-  await node(page, war).click();
+  // The child's point occupies the Composite center. Hit the visible region
+  // rim, not the shared center, so both independent Event targets remain usable.
+  await node(page, war).click({ position: { x: 2, y: 2 } });
   const detail = page.getByRole("complementary", { name: "선택된 본문" });
   await expect(detail).toContainText("복합 사건 · World의 contains 관계");
   await expect(detail).toContainText("임진왜란 서사");

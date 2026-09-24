@@ -236,20 +236,18 @@ describe("authenticated v5 World viewport rehearsal", () => {
         )
       ).shapes
     ).toEqual([]);
-    expect(
-      (
-        await readV5SelectedViewport(
-          artifacts.root.body,
-          "world-1",
-          31,
-          "gregorian",
-          viewport,
-          ["unknown"],
-          null,
-          get
-        )
-      ).shapes
-    ).toEqual([]);
+    await expect(
+      readV5SelectedViewport(
+        artifacts.root.body,
+        "world-1",
+        31,
+        "gregorian",
+        viewport,
+        ["unknown"],
+        null,
+        get
+      )
+    ).rejects.toThrow("v5_viewport_collection_missing");
     const marker =
       "worlds/world-1/revisions/31/v5/content/event-selection/coup/joseon.json";
     objects.set(marker, "altered");

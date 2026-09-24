@@ -6,6 +6,7 @@ import {
   buildV5SpatialStagedArtifacts,
   readV5StagedDocument
 } from "@moirai/publication/v5";
+import type { V5StagedArtifacts } from "@moirai/publication/v5";
 import { buildV5WorldLayout } from "./v5-world-layout.js";
 import { buildV5SpatialIndex } from "./v5-spatial-index.js";
 import {
@@ -16,7 +17,7 @@ import {
 export function buildV5WorldSpatialStagedArtifacts(
   state: CanonicalState,
   revision: number
-) {
+): V5StagedArtifacts {
   const temporal = projectV5WorldTemporal(state, revision);
   return buildV5SpatialStagedArtifacts(
     state,
@@ -134,7 +135,7 @@ export async function readV5SelectedViewport(
   const perLookup = root.index_depth + 1;
   const rawLimit = Math.max(
     1,
-    Math.min(4, Math.floor(120 / (collectionIds.length * perLookup)))
+    Math.min(4, Math.floor(80 / (collectionIds.length * perLookup)))
   );
   let reads = 0;
   const countedGet = async (key: string) => {
@@ -142,6 +143,23 @@ export async function readV5SelectedViewport(
     if (reads > 256) throw Error("v5_viewport_object_budget_exceeded");
     return get(key);
   };
+  for (const collectionId of collectionIds) {
+    const key = `worlds/${worldId}/revisions/${revision}/v5/content/collections/${collectionId}/detail.json`;
+    const body = await readV5StagedDocument(rootBody, key, countedGet);
+    if (body === null) throw Error("v5_viewport_collection_missing");
+    const detail = JSON.parse(body) as {
+      world_id: string;
+      revision: number;
+      collection: { id: string; world_id: string };
+    };
+    if (
+      detail.world_id !== worldId ||
+      detail.revision !== revision ||
+      detail.collection?.id !== collectionId ||
+      detail.collection.world_id !== worldId
+    )
+      throw Error("v5_viewport_collection_invalid");
+  }
   const spatial = await readV5AuthenticatedViewport(
     rootBody,
     worldId,
@@ -151,7 +169,7 @@ export async function readV5SelectedViewport(
     rawLimit,
     cursor?.spatial ?? null,
     countedGet,
-    120
+    96
   );
   const shapes: (typeof spatial.shapes)[number][] = [];
   for (const shape of spatial.shapes) {

@@ -1,6 +1,7 @@
 /** Operator-only read-only v5 Publication rehearsal on the migrated clone.
  * It constructs and walks an in-memory staged tree; never uploads a pointer. */
 import { performance } from "node:perf_hooks";
+import { createHash } from "node:crypto";
 import { readFile } from "node:fs/promises";
 import { fileURLToPath } from "node:url";
 import { sql } from "kysely";
@@ -20,6 +21,19 @@ import { projectV5WorldTemporal } from "@moirai/projections";
 import { verifyV5StagedIndex } from "@moirai/publication/v5";
 import { stableStringify } from "@moirai/domain";
 import { v5ContentFingerprint } from "../skills/clotho/src/portability-v5.js";
+
+const digest = (body: string) =>
+  createHash("sha256").update(body).digest("hex");
+const documentSetDigest = (
+  documents: readonly { readonly key: string; readonly body: string }[]
+) =>
+  digest(
+    JSON.stringify(
+      [...documents]
+        .sort((a, b) => (a.key < b.key ? -1 : a.key > b.key ? 1 : 0))
+        .map(({ key, body }) => [key, digest(body)])
+    )
+  );
 
 export async function rehearseV5Publication(
   state: CanonicalState,
@@ -137,6 +151,8 @@ export async function rehearseV5Publication(
     max_object_reads: maxObjectReads,
     build_ms: Math.round(buildMs),
     document_count: artifacts.documents.length,
+    document_set_sha256: documentSetDigest(artifacts.documents),
+    root_sha256: digest(artifacts.root.body),
     tree_bytes: [
       ...artifacts.documents,
       ...artifacts.index,
@@ -169,6 +185,8 @@ export async function rehearseV5CompletePublication(
     ...proof,
     build_and_proof_ms: Math.round(performance.now() - start),
     document_count: artifacts.documents.length,
+    document_set_sha256: documentSetDigest(artifacts.documents),
+    root_sha256: digest(artifacts.root.body),
     tree_bytes: [
       ...artifacts.documents,
       ...artifacts.index,

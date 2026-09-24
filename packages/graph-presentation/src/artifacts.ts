@@ -276,5 +276,7 @@ export async function publishSpatialArtifacts(
 }
 export {
   buildV5WorldSpatialStagedArtifacts,
-  readV5AuthenticatedViewport
+  readV5AuthenticatedViewport,
+  readV5SelectedViewport
 } from "./v5-spatial-publication.js";
+export type { V5SelectedViewportCursor } from "./v5-spatial-publication.js";

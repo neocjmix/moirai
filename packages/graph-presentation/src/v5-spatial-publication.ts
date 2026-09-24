@@ -1,5 +1,6 @@
 /** Offline composition at the permitted presentation -> Publication boundary. */
 import type { CanonicalState } from "@moirai/contracts/v5";
+import { createHash } from "node:crypto";
 import { projectV5WorldTemporal } from "@moirai/projections";
 import {
   buildV5SpatialStagedArtifacts,
@@ -43,7 +44,8 @@ export async function readV5AuthenticatedViewport(
   viewport: { minX: number; maxX: number; minY: number; maxY: number },
   limit: number,
   cursor: V5ViewportCursor | null,
-  get: (key: string) => Promise<string | null>
+  get: (key: string) => Promise<string | null>,
+  spatialObjectReserve = 208
 ) {
   const root = JSON.parse(rootBody) as {
     world_id: string;
@@ -58,6 +60,9 @@ export async function readV5AuthenticatedViewport(
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||
     root.index_depth > 8 ||
+    !Number.isSafeInteger(spatialObjectReserve) ||
+    spatialObjectReserve < 16 ||
+    spatialObjectReserve > 208 ||
     !/^[a-zA-Z0-9-]+$/.test(timeSystemId)
   )
     throw Error("v5_viewport_root_invalid");
@@ -76,7 +81,10 @@ export async function readV5AuthenticatedViewport(
   if (manifest === null) throw Error("v5_viewport_manifest_missing");
   // Reserve the outer index traversal for each spatial node and future
   // selected-content checks; this is a cap, not a latency SLO assertion.
-  const maxNodes = Math.min(48, Math.floor(208 / (root.index_depth + 1)));
+  const maxNodes = Math.min(
+    48,
+    Math.floor(spatialObjectReserve / (root.index_depth + 1)) - 1
+  );
   const result = await readV5WorldViewport(
     manifest,
     viewport,
@@ -86,4 +94,93 @@ export async function readV5AuthenticatedViewport(
     maxNodes
   );
   return { ...result, object_reads: objectReads };
+}
+
+export interface V5SelectedViewportCursor {
+  readonly selection_digest: string;
+  readonly spatial: V5ViewportCursor;
+}
+
+/** Exact selection against inverse membership postings. Work is bounded by
+ * raw spatial candidates, not by full World/Collection cardinality. An empty
+ * result with a continuation means this spatial page had no selected Events. */
+export async function readV5SelectedViewport(
+  rootBody: string,
+  worldId: string,
+  revision: number,
+  timeSystemId: string,
+  viewport: { minX: number; maxX: number; minY: number; maxY: number },
+  collectionIds: readonly string[],
+  cursor: V5SelectedViewportCursor | null,
+  get: (key: string) => Promise<string | null>
+) {
+  const root = JSON.parse(rootBody) as { index_depth: number };
+  if (
+    collectionIds.length > 8 ||
+    collectionIds.some(
+      (id, index) =>
+        !/^[a-zA-Z0-9-]+$/.test(id) ||
+        (index > 0 && collectionIds[index - 1]! >= id)
+    )
+  )
+    throw Error("v5_viewport_selection_invalid");
+  const digest = createHash("sha256")
+    .update(JSON.stringify([rootBody, timeSystemId, viewport, collectionIds]))
+    .digest("hex");
+  if (cursor && (cursor.selection_digest !== digest || !cursor.spatial))
+    throw Error("v5_viewport_selection_cursor_invalid");
+  if (collectionIds.length === 0)
+    return { shapes: [], next_cursor: null, object_reads: 0 };
+  const perLookup = root.index_depth + 1;
+  const rawLimit = Math.max(
+    1,
+    Math.min(4, Math.floor(120 / (collectionIds.length * perLookup)))
+  );
+  let reads = 0;
+  const countedGet = async (key: string) => {
+    reads++;
+    if (reads > 256) throw Error("v5_viewport_object_budget_exceeded");
+    return get(key);
+  };
+  const spatial = await readV5AuthenticatedViewport(
+    rootBody,
+    worldId,
+    revision,
+    timeSystemId,
+    viewport,
+    rawLimit,
+    cursor?.spatial ?? null,
+    countedGet,
+    120
+  );
+  const shapes: (typeof spatial.shapes)[number][] = [];
+  for (const shape of spatial.shapes) {
+    for (const collectionId of collectionIds) {
+      const key = `worlds/${worldId}/revisions/${revision}/v5/content/event-selection/${shape.event_id}/${collectionId}.json`;
+      const body = await readV5StagedDocument(rootBody, key, countedGet);
+      if (body === null) continue;
+      const membership = JSON.parse(body) as {
+        world_id: string;
+        revision: number;
+        event_id: string;
+        collection_id: string;
+      };
+      if (
+        membership.world_id !== worldId ||
+        membership.revision !== revision ||
+        membership.event_id !== shape.event_id ||
+        membership.collection_id !== collectionId
+      )
+        throw Error("v5_viewport_membership_invalid");
+      shapes.push(shape);
+      break;
+    }
+  }
+  return {
+    shapes,
+    next_cursor: spatial.next_cursor
+      ? { selection_digest: digest, spatial: spatial.next_cursor }
+      : null,
+    object_reads: reads
+  };
 }

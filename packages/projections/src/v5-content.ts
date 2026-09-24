@@ -49,6 +49,18 @@ export function buildV5ContentPages(
     const collectionIds = selectedBy.get(membership.event_id) ?? [];
     collectionIds.push(membership.collection_id);
     selectedBy.set(membership.event_id, collectionIds);
+    // Exact inverse posting for a viewport candidate. Absence is checked by
+    // the authenticated key-range index without scanning a Collection's
+    // entire membership list or embedding unbounded IDs in an Event detail.
+    documents.push({
+      key: `${prefix}/event-selection/${membership.event_id}/${membership.collection_id}.json`,
+      value: {
+        world_id: state.world.id,
+        revision,
+        event_id: membership.event_id,
+        collection_id: membership.collection_id
+      }
+    });
   }
   const childIds = new Map<string, Set<string>>();
   const adjacency = new Map<string, Set<string>>();

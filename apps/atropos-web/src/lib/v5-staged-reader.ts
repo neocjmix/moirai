@@ -1,8 +1,14 @@
 /** Inactive Atropos read adapter. A complete, verified v5 Publication pointer
  * must authenticate rootBody before this adapter can be exposed in a route. */
 import type { ObjectStore } from "@moirai/publication";
-import { readV5AuthenticatedViewport } from "@moirai/graph-presentation/server";
-import type { V5ViewportCursor } from "@moirai/graph-presentation/server";
+import {
+  readV5AuthenticatedViewport,
+  readV5SelectedViewport
+} from "@moirai/graph-presentation/server";
+import type {
+  V5ViewportCursor,
+  V5SelectedViewportCursor
+} from "@moirai/graph-presentation/server";
 import {
   readV5StagedEvent,
   readV5StagedCollection,
@@ -41,6 +47,22 @@ export function createV5StagedAtroposReader(
         timeSystemId,
         viewport,
         limit,
+        cursor,
+        get
+      ),
+    selectedViewport: (
+      timeSystemId: string,
+      viewport: { minX: number; maxX: number; minY: number; maxY: number },
+      collectionIds: readonly string[],
+      cursor: V5SelectedViewportCursor | null
+    ) =>
+      readV5SelectedViewport(
+        rootBody,
+        worldId,
+        revision,
+        timeSystemId,
+        viewport,
+        collectionIds,
         cursor,
         get
       ),

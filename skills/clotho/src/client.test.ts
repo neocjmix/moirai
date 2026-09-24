@@ -2,11 +2,45 @@ import { AUTHORING_POLICY, CONTRACT_VERSION } from "@moirai/contracts";
 import { randomBytes } from "node:crypto";
 import { createServer } from "node:http";
 import { describe, expect, it, vi, afterEach } from "vitest";
-import { callClotho } from "./client.js";
+import { callClotho, callV5Clotho } from "./client.js";
 
 const token = randomBytes(32).toString("base64url");
 afterEach(() => vi.unstubAllGlobals());
 describe("Clotho JSON client", () => {
+  it("uses the isolated v5 endpoint and rejects a wrong-version response", async () => {
+    let version = 5;
+    const server = createServer(async (request, response) => {
+      expect(request.url).toBe("/v2/clotho/authoring.policy.get");
+      expect(request.headers.authorization).toBe(`Bearer ${token}`);
+      response.setHeader("content-type", "application/json");
+      response.end(
+        JSON.stringify({
+          contract_version: version,
+          result: { policy_version: "v5" }
+        })
+      );
+    });
+    await new Promise<void>((resolve) =>
+      server.listen(0, "127.0.0.1", resolve)
+    );
+    try {
+      const config = {
+        baseUrl: `http://127.0.0.1:${(server.address() as { port: number }).port}`,
+        token
+      };
+      expect(
+        await callV5Clotho(config, "authoring.policy.get", {
+          contract_version: 5
+        })
+      ).toMatchObject({ contract_version: 5 });
+      version = 4;
+      await expect(
+        callV5Clotho(config, "authoring.policy.get", { contract_version: 5 })
+      ).rejects.toMatchObject({ code: "invalid_response" });
+    } finally {
+      server.close();
+    }
+  });
   it("preserves the complete policy envelope through the CLI HTTP client", async () => {
     const envelope = {
       contract_version: CONTRACT_VERSION,

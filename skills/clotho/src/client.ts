@@ -23,6 +23,30 @@ export async function callClotho(
   method: ClothoMethod,
   input: unknown
 ): Promise<unknown> {
+  return requestClotho(config, `/v1/clotho/${method}`, input);
+}
+
+/** Staged v5 endpoint; production's v4 server returns 404 until cutover. */
+export async function callV5Clotho(
+  config: ClientConfig,
+  method: "authoring.policy.get" | "change.commit",
+  input: unknown
+): Promise<unknown> {
+  const result = await requestClotho(config, `/v2/clotho/${method}`, input);
+  if (
+    !result ||
+    typeof result !== "object" ||
+    (result as { contract_version?: unknown }).contract_version !== 5
+  )
+    throw new ClothoClientError("invalid_response");
+  return result;
+}
+
+async function requestClotho(
+  config: ClientConfig,
+  path: string,
+  input: unknown
+): Promise<unknown> {
   let url: URL;
   try {
     url = new URL(config.baseUrl);
@@ -52,7 +76,7 @@ export async function callClotho(
   )
     throw new ClothoClientError("invalid_input");
   try {
-    const response = await fetch(new URL(`/v1/clotho/${method}`, url), {
+    const response = await fetch(new URL(path, url), {
       method: "POST",
       headers: {
         authorization: `Bearer ${config.token}`,

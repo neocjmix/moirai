@@ -9,3 +9,4 @@ export {
   readV5StagedRelation
 } from "./v5-staged-neighbors.js";
 export { readV5StagedDocument } from "./v5-staging.js";
+export { readV5StagedCompositeChildren } from "./v5-staged-composite.js";

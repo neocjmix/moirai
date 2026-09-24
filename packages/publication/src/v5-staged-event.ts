@@ -21,7 +21,10 @@ interface TemporalDetail {
 interface CompositeDetail {
   readonly world_id: string;
   readonly revision: number;
-  readonly composite: { readonly event_id: string };
+  readonly composite: {
+    readonly event_id: string;
+    readonly direct_children_pages: number;
+  };
 }
 export interface V5StagedEventRead {
   readonly event: Event;

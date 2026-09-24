@@ -188,7 +188,7 @@ export async function getV5EventEvidence(
                 signature,
                 membership: membershipPage.at(-1)?.id ?? cursor.membership,
                 relation: relationPage.at(-1)?.id ?? cursor.relation,
-                body_offset: cursor.body_offset + narrative.body.length,
+                body_offset: cursor.body_offset + [...narrative.body].length,
                 reference_offset:
                   cursor.reference_offset + Math.min(references.length, 8)
               } satisfies Cursor)

@@ -150,7 +150,7 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
       label: `Source ${i}`,
       url: `https://example.test/${i}`
     }));
-    await sql`update narratives set body = ${"e".repeat(13000)}, public_references = ${JSON.stringify(refs)}::jsonb where scope_type = 'event' and scope_id = ${first}`.execute(
+    await sql`update narratives set body = ${"😀".repeat(13000)}, public_references = ${JSON.stringify(refs)}::jsonb where scope_type = 'event' and scope_id = ${first}`.execute(
       db
     );
     const longFirst = await getV5EventEvidence(db, {
@@ -158,7 +158,7 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
       event_id: first,
       at_revision: 31
     });
-    expect(longFirst.narrative.body).toHaveLength(12000);
+    expect([...longFirst.narrative.body]).toHaveLength(12000);
     expect(longFirst.narrative.body_truncated).toBe(true);
     expect(longFirst.public_references).toHaveLength(8);
     const longNext = await getV5EventEvidence(db, {
@@ -168,7 +168,7 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
       cursor: longFirst.next_cursor
     });
     expect(longNext.narrative_body_offset).toBe(12000);
-    expect(longNext.narrative.body).toHaveLength(1000);
+    expect([...longNext.narrative.body]).toHaveLength(1000);
     expect(longNext.public_references).toEqual([refs[8]]);
   });
   it("pages literal wildcard matches within one World without materializing its graph", async () => {

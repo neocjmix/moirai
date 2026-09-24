@@ -221,13 +221,13 @@ importers:
       '@moirai/domain':
         specifier: workspace:*
         version: link:../domain
-    devDependencies:
       '@moirai/publication':
         specifier: workspace:*
         version: link:../publication
       '@moirai/projections':
         specifier: workspace:*
         version: link:../projections
+    devDependencies:
       typescript:
         specifier: ^5.9.0
         version: 5.9.3

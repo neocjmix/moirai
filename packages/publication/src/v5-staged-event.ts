@@ -51,7 +51,10 @@ export async function readV5StagedEvent(
   if (
     root.world_id !== worldId ||
     root.revision !== revision ||
-    root.completeness !== "content-and-temporal-detail-only" ||
+    ![
+      "content-and-temporal-detail-only",
+      "content-temporal-and-spatial-staged"
+    ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(eventId)
   )
     throw Error("v5_event_root_invalid");

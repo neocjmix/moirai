@@ -25,7 +25,10 @@ export async function readV5StagedAdjacencyPage(
   if (
     root.world_id !== worldId ||
     root.revision !== revision ||
-    root.completeness !== "content-and-temporal-detail-only" ||
+    ![
+      "content-and-temporal-detail-only",
+      "content-temporal-and-spatial-staged"
+    ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(eventId) ||
     !Number.isSafeInteger(page) ||
     page < 0
@@ -104,7 +107,10 @@ export async function readV5StagedRelation(
   if (
     root.world_id !== worldId ||
     root.revision !== revision ||
-    root.completeness !== "content-and-temporal-detail-only" ||
+    ![
+      "content-and-temporal-detail-only",
+      "content-temporal-and-spatial-staged"
+    ].includes(root.completeness) ||
     !/^[a-zA-Z0-9-]+$/.test(relationId)
   )
     throw Error("v5_relation_root_invalid");

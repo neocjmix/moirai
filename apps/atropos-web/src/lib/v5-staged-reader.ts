@@ -2,6 +2,14 @@
  * must authenticate rootBody before this adapter can be exposed in a route. */
 import type { ObjectStore } from "@moirai/publication";
 import {
+  readV5AuthenticatedViewport,
+  readV5SelectedViewport
+} from "@moirai/graph-presentation/server";
+import type {
+  V5ViewportCursor,
+  V5SelectedViewportCursor
+} from "@moirai/graph-presentation/server";
+import {
   readV5StagedEvent,
   readV5StagedCollection,
   readV5StagedCollectionCatalog,
@@ -26,6 +34,38 @@ export function createV5StagedAtroposReader(
     return response.body;
   };
   return {
+    viewport: (
+      timeSystemId: string,
+      viewport: { minX: number; maxX: number; minY: number; maxY: number },
+      limit: number,
+      cursor: V5ViewportCursor | null
+    ) =>
+      readV5AuthenticatedViewport(
+        rootBody,
+        worldId,
+        revision,
+        timeSystemId,
+        viewport,
+        limit,
+        cursor,
+        get
+      ),
+    selectedViewport: (
+      timeSystemId: string,
+      viewport: { minX: number; maxX: number; minY: number; maxY: number },
+      collectionIds: readonly string[],
+      cursor: V5SelectedViewportCursor | null
+    ) =>
+      readV5SelectedViewport(
+        rootBody,
+        worldId,
+        revision,
+        timeSystemId,
+        viewport,
+        collectionIds,
+        cursor,
+        get
+      ),
     event: (eventId: string) =>
       readV5StagedEvent(rootBody, worldId, revision, eventId, get),
     collection: (collectionId: string, page: number) =>

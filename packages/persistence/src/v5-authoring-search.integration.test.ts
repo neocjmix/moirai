@@ -54,6 +54,9 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
         );
       }
     });
+    await sql`update events set summary = ${"s".repeat(5000)} where id = ${first}`.execute(
+      db
+    );
   });
   afterAll(async () => {
     await db?.destroy();
@@ -72,6 +75,7 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
     const input = { world_id: world, text: "Dan%jong", limit: 1 };
     const page1 = await searchV5WorldEvents(db, input);
     expect(page1.events.map((event) => event.id)).toEqual([first]);
+    expect(page1.events[0]?.summary).toHaveLength(1000);
     expect(page1.source_revision).toBe(31);
     expect(page1.next_cursor).toBeTruthy();
     const page2 = await searchV5WorldEvents(db, {

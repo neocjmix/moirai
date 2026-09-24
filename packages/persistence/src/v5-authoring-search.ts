@@ -91,7 +91,7 @@ export async function searchV5WorldEvents(
         id: string;
         title: string;
         summary: string | null;
-      }>`select id, title, summary from events
+      }>`select id, title, left(summary, 1000) as summary from events
          where world_id = ${input.world_id} and withdrawn_revision is null
            and title ilike ${pattern} escape '!'
            and id > ${afterId}::uuid

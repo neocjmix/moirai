@@ -146,11 +146,11 @@ export function buildV5WorldLayout(
         : position.upper?.time_event;
     const lo = lower ? scalar(lower, timeSystemId, registry, gregorian) : null;
     const hi = upper ? scalar(upper, timeSystemId, registry, gregorian) : null;
-    if (lo !== null || hi !== null)
-      extents.set(position.event_id, {
-        minYear: lo ?? Number.NEGATIVE_INFINITY,
-        maxYear: hi ?? Number.POSITIVE_INFINITY
-      });
+    // A one-sided fact has no finite span in the chart plane. Do not pass an
+    // infinite renderer extent or invent its missing boundary; it stays
+    // navigable by direct Event/adjacency reads but unplaced on this axis.
+    if (lo !== null && hi !== null)
+      extents.set(position.event_id, { minYear: lo, maxYear: hi });
   }
   const constraints = relations.flatMap((relation) => {
     if (

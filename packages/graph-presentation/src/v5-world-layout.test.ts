@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import { projectV5WorldTemporal } from "@moirai/projections";
 import { buildV5WorldLayout } from "./v5-world-layout.js";
+import { buildV5SpatialIndex } from "./v5-spatial-index.js";
 
 const worldId = "world-1";
 const systemId = "gregorian";
@@ -136,6 +137,45 @@ const state: CanonicalState = {
 };
 
 describe("offline v5 World-owned geometry", () => {
+  it("keeps a one-sided temporal bound unplaced rather than indexing infinity", () => {
+    const oneSided: CanonicalState = {
+      ...state,
+      events: [...state.events, event("before")],
+      relations: [
+        ...state.relations,
+        {
+          id: "before-1453",
+          world_id: worldId,
+          type: "not_after",
+          direction: "directed",
+          source_ref: { kind: "event", event_id: "before" },
+          target_ref: time(1453),
+          attributes: {}
+        }
+      ],
+      narratives: [
+        ...state.narratives,
+        {
+          id: "n-before",
+          world_id: worldId,
+          scope_type: "event",
+          scope_id: "before",
+          locale: "ko",
+          title: null,
+          body: "Uncertain earlier event",
+          public_references: [],
+          notes: []
+        }
+      ]
+    };
+    const layout = buildV5WorldLayout(
+      oneSided,
+      projectV5WorldTemporal(oneSided, 31),
+      systemId
+    );
+    expect(layout.unplaced_event_ids).toContain("before");
+    expect(() => buildV5SpatialIndex(layout)).not.toThrow();
+  });
   it("preserves shared Event coordinates when Collections toggle", () => {
     const temporal = projectV5WorldTemporal(state, 31);
     const layout = buildV5WorldLayout(state, temporal, systemId);

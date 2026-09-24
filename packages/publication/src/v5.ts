@@ -18,3 +18,4 @@ export { readV5StagedCompositeChildren } from "./v5-staged-composite.js";
 export { readV5StagedSelectionPage } from "./v5-staged-selection.js";
 export type { V5SelectionCursor } from "./v5-staged-selection.js";
 export { readV5ServedRoot } from "./v5-serving.js";
+export { readV5StagedTimeSystemCatalog } from "./v5-staged-time-systems.js";

@@ -19,6 +19,14 @@ const input = z.discriminatedUnion("kind", [
     })
     .strict(),
   z.object({ ...common, kind: z.literal("collections"), page }).strict(),
+  z.object({ ...common, kind: z.literal("time_systems"), page }).strict(),
+  z
+    .object({
+      ...common,
+      kind: z.literal("spatial_summary"),
+      time_system_id: id
+    })
+    .strict(),
   z
     .object({ ...common, kind: z.literal("adjacency"), event_id: id, page })
     .strict(),
@@ -87,11 +95,18 @@ export async function POST(request: Request): Promise<Response> {
           ? await reader.collection(query.collection_id, query.page)
           : query.kind === "collections"
             ? await reader.collections(query.page)
-            : query.kind === "adjacency"
-              ? await reader.adjacency(query.event_id, query.page)
-              : query.kind === "relation"
-                ? await reader.relation(query.relation_id)
-                : await reader.compositeChildren(query.event_id, query.page);
+            : query.kind === "time_systems"
+              ? await reader.timeSystems(query.page)
+              : query.kind === "spatial_summary"
+                ? await reader.spatialSummary(query.time_system_id)
+                : query.kind === "adjacency"
+                  ? await reader.adjacency(query.event_id, query.page)
+                  : query.kind === "relation"
+                    ? await reader.relation(query.relation_id)
+                    : await reader.compositeChildren(
+                        query.event_id,
+                        query.page
+                      );
     if (data === null)
       return Response.json({ error: "not_found" }, { status: 404 });
     const response = JSON.stringify({

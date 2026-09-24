@@ -47,7 +47,31 @@ const state: CanonicalState = {
     collection_id
   })),
   relations: [],
-  timeSystems: [],
+  timeSystems: [
+    {
+      id: id("08"),
+      world_id: worldId,
+      slug: "gregorian",
+      title: "Gregorian",
+      kind: "calendar",
+      definition_version: "1",
+      definition: {
+        coordinate_codec: "yyyy-iso-fields-fraction12-z-v1",
+        calendar: "proleptic-gregorian",
+        timezone: "UTC",
+        fractional_digits: 12,
+        leap_second_policy: "reject",
+        interval_policy: "half-open",
+        capabilities: [
+          "canonicalize",
+          "equality",
+          "compare",
+          "boundary",
+          "difference"
+        ]
+      }
+    }
+  ],
   collectionTimeSystems: [],
   narratives: [
     {
@@ -168,6 +192,28 @@ describe("v5 bounded detail route", () => {
         narrative: { body: "Selection" }
       });
     }
+    const systems = await POST(
+      request({ world_id: worldId, kind: "time_systems", page: 0 })
+    );
+    expect(systems.status).toBe(200);
+    expect((await systems.json()).data).toMatchObject({
+      time_system_count: 1,
+      time_systems: [{ id: id("08") }],
+      next_page: null
+    });
+    const summary = await POST(
+      request({
+        world_id: worldId,
+        kind: "spatial_summary",
+        time_system_id: id("08")
+      })
+    );
+    expect(summary.status).toBe(200);
+    expect((await summary.json()).data).toMatchObject({
+      shape_count: 0,
+      unplaced_count: 1,
+      bounds: null
+    });
     expect(
       (
         await POST(

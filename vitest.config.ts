@@ -72,6 +72,7 @@ export default defineConfig({
   test: {
     include: [
       "apps/**/*.test.ts",
+      "apps/**/*.test.tsx",
       "packages/**/*.test.ts",
       "skills/**/*.test.ts",
       "scripts/**/*.test.ts"

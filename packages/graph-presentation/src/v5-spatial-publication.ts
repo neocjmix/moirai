@@ -35,6 +35,101 @@ export function buildV5WorldSpatialStagedArtifacts(
   );
 }
 
+/** Root-level spatial envelope for initial navigation. The manifest is
+ * digest-authenticated without walking or materializing the World. */
+export async function readV5SpatialSummary(
+  rootBody: string,
+  worldId: string,
+  revision: number,
+  timeSystemId: string,
+  get: (key: string) => Promise<string | null>
+) {
+  const root = JSON.parse(rootBody) as {
+    world_id: string;
+    revision: number;
+    completeness: string;
+  };
+  if (
+    root.world_id !== worldId ||
+    root.revision !== revision ||
+    !["content-temporal-and-spatial-staged", "complete"].includes(
+      root.completeness
+    ) ||
+    !/^[a-zA-Z0-9-]+$/.test(timeSystemId)
+  )
+    throw Error("v5_spatial_summary_root_invalid");
+  const prefix = `worlds/${worldId}/revisions/${revision}/v5/spatial/${timeSystemId}/`;
+  const body = await readV5StagedDocument(
+    rootBody,
+    `${prefix}manifest.json`,
+    get
+  );
+  if (body === null) throw Error("v5_spatial_summary_missing");
+  const manifest = JSON.parse(body) as {
+    format_version: string;
+    world_id: string;
+    revision: number;
+    time_system_id: string;
+    shape_count: number;
+    unplaced_count: number;
+    depth: number;
+    fanout: number;
+    entries: {
+      key: string;
+      bounds: { minX: number; maxX: number; minY: number; maxY: number };
+    }[];
+  };
+  if (
+    manifest.format_version !== "v5-world-spatial/1" ||
+    manifest.world_id !== worldId ||
+    manifest.revision !== revision ||
+    manifest.time_system_id !== timeSystemId ||
+    !Number.isSafeInteger(manifest.shape_count) ||
+    manifest.shape_count < 0 ||
+    !Number.isSafeInteger(manifest.unplaced_count) ||
+    manifest.unplaced_count < 0 ||
+    !Number.isSafeInteger(manifest.depth) ||
+    manifest.depth < 0 ||
+    manifest.depth > 8 ||
+    manifest.fanout !== 128 ||
+    !Array.isArray(manifest.entries) ||
+    manifest.entries.length > 128 ||
+    (manifest.shape_count === 0) !== (manifest.entries.length === 0) ||
+    manifest.entries.some(
+      (entry) =>
+        !entry.key.startsWith(`${prefix}nodes/${manifest.depth}/`) ||
+        ![
+          entry.bounds?.minX,
+          entry.bounds?.maxX,
+          entry.bounds?.minY,
+          entry.bounds?.maxY
+        ].every(Number.isFinite) ||
+        entry.bounds.minX > entry.bounds.maxX ||
+        entry.bounds.minY > entry.bounds.maxY
+    )
+  )
+    throw Error("v5_spatial_summary_invalid");
+  const bounds = manifest.entries.length
+    ? manifest.entries.reduce(
+        (all, entry) => ({
+          minX: Math.min(all.minX, entry.bounds.minX),
+          maxX: Math.max(all.maxX, entry.bounds.maxX),
+          minY: Math.min(all.minY, entry.bounds.minY),
+          maxY: Math.max(all.maxY, entry.bounds.maxY)
+        }),
+        { minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity }
+      )
+    : null;
+  return {
+    world_id: worldId,
+    revision,
+    time_system_id: timeSystemId,
+    shape_count: manifest.shape_count,
+    unplaced_count: manifest.unplaced_count,
+    bounds
+  };
+}
+
 /** The root must itself be authenticated by a future serving pointer. Each
  * node is fetched via the outer digest index; stop before the object budget. */
 export async function readV5AuthenticatedViewport(
@@ -137,7 +232,7 @@ export async function readV5SelectedViewport(
   const perLookup = root.index_depth + 1;
   const rawLimit = Math.max(
     1,
-    Math.min(4, Math.floor(80 / (collectionIds.length * perLookup)))
+    Math.min(16, Math.floor(80 / (collectionIds.length * perLookup)))
   );
   let reads = 0;
   const countedGet = async (key: string) => {

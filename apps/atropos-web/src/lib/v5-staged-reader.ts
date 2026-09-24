@@ -3,7 +3,8 @@
 import type { ObjectStore } from "@moirai/publication";
 import {
   readV5AuthenticatedViewport,
-  readV5SelectedViewport
+  readV5SelectedViewport,
+  readV5SpatialSummary
 } from "@moirai/graph-presentation/server";
 import type {
   V5ViewportCursor,
@@ -17,6 +18,7 @@ import {
   readV5StagedRelation,
   readV5StagedCompositeChildren,
   readV5StagedSelectionPage,
+  readV5StagedTimeSystemCatalog,
   type V5SelectionCursor
 } from "@moirai/publication/v5";
 
@@ -79,6 +81,10 @@ export function createV5StagedAtroposReader(
       ),
     collections: (page: number) =>
       readV5StagedCollectionCatalog(rootBody, worldId, revision, page, get),
+    timeSystems: (page: number) =>
+      readV5StagedTimeSystemCatalog(rootBody, worldId, revision, page, get),
+    spatialSummary: (timeSystemId: string) =>
+      readV5SpatialSummary(rootBody, worldId, revision, timeSystemId, get),
     adjacency: (eventId: string, page: number) =>
       readV5StagedAdjacencyPage(
         rootBody,

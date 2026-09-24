@@ -5,12 +5,17 @@ import {
   CallToolRequestSchema,
   ListToolsRequestSchema
 } from "@modelcontextprotocol/sdk/types.js";
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import { ChangeSetError } from "@moirai/domain";
 import { Ajv } from "ajv";
 import { V5_CHANGE_PLAN_SCHEMA } from "@moirai/contracts/v5-wire";
 import type { createV5Clotho } from "@moirai/clotho-application/v5";
-import { authenticate, type Credential } from "./auth.js";
+import { authenticate, type Credential, type Principal } from "./auth.js";
+import {
+  oidcAuthenticator,
+  type OidcAuthenticator,
+  type OidcConfig
+} from "./oidc.js";
 
 const policySchema = {
   type: "object" as const,
@@ -39,8 +44,11 @@ const errorResult = (code: string) => ({
 export function registerV5McpRoutes(
   app: FastifyInstance,
   credentials: readonly Credential[],
-  service: ReturnType<typeof createV5Clotho>
+  service: ReturnType<typeof createV5Clotho>,
+  oidc?: OidcConfig,
+  verify: OidcAuthenticator = oidcAuthenticator(oidc)
 ): void {
+  const principals = new WeakMap<FastifyRequest, Principal>();
   app.post(
     "/mcp-v5",
     {
@@ -49,15 +57,19 @@ export function registerV5McpRoutes(
         reply.header("cache-control", "no-store");
         if (request.headers.origin)
           return reply.code(403).send({ error: "origin_not_allowed" });
-        if (!authenticate(request.headers.authorization, credentials))
+        const principal =
+          authenticate(request.headers.authorization, credentials) ??
+          (await verify(request.headers.authorization).catch(() => undefined));
+        if (!principal)
           return reply
             .header("www-authenticate", "Bearer")
             .code(401)
             .send({ error: "unauthorized" });
+        principals.set(request, principal);
       }
     },
     async (request, reply) => {
-      const actor = authenticate(request.headers.authorization, credentials);
+      const actor = principals.get(request);
       if (!actor) return reply.code(401).send({ error: "unauthorized" });
       const server = new Server(
         { name: "moirai-clotho-v5-stage", version: "5" },

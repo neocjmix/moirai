@@ -42,14 +42,12 @@ describe("inactive v5 MCP transport", () => {
       events: [],
       next_cursor: null
     });
-    const detail = vi
-      .fn()
-      .mockResolvedValue({
-        source_revision: 31,
-        memberships: [],
-        relations: [],
-        next_cursor: null
-      });
+    const detail = vi.fn().mockResolvedValue({
+      source_revision: 31,
+      memberships: [],
+      relations: [],
+      next_cursor: null
+    });
     registerV5McpRoutes(
       app,
       [],

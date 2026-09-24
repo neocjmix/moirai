@@ -37,10 +37,15 @@ describe("inactive v5 MCP transport", () => {
       .sign(keys.privateKey);
     const app = Fastify();
     const commit = vi.fn().mockResolvedValue({ current_revision: 32 });
+    const search = vi.fn().mockResolvedValue({
+      source_revision: 31,
+      events: [],
+      next_cursor: null
+    });
     registerV5McpRoutes(
       app,
       [],
-      createV5Clotho(createV5Lachesis({ commit })),
+      createV5Clotho(createV5Lachesis({ commit, search })),
       oidc,
       oidcAuthenticator(oidc, async () => keys.publicKey)
     );
@@ -76,6 +81,17 @@ describe("inactive v5 MCP transport", () => {
         ).json().result.isError
       ).toBe(true);
       expect(commit).not.toHaveBeenCalled();
+      const candidates = await send("event_search", {
+        contract_version: 5,
+        world_id: CLOTHO_CONNECTION_WORLD,
+        text: "Dan jong"
+      });
+      expect(candidates.json().result.structuredContent.result).toEqual({
+        source_revision: 31,
+        events: [],
+        next_cursor: null
+      });
+      expect(search).toHaveBeenCalledTimes(1);
       expect(policy.body).not.toContain(accessToken);
     } finally {
       await app.close();
@@ -120,7 +136,7 @@ describe("inactive v5 MCP transport", () => {
     try {
       const publicList = await send("tools/list", undefined, undefined, false);
       expect(publicList.statusCode).toBe(200);
-      expect(publicList.json().result.tools).toHaveLength(2);
+      expect(publicList.json().result.tools).toHaveLength(3);
       expect(
         (
           await send(
@@ -150,7 +166,7 @@ describe("inactive v5 MCP transport", () => {
         );
         expect(
           (await client.listTools()).tools.map((tool) => tool.name)
-        ).toEqual(["authoring_policy_get", "change_commit"]);
+        ).toEqual(["authoring_policy_get", "change_commit", "event_search"]);
       } finally {
         await client.close();
       }
@@ -158,7 +174,7 @@ describe("inactive v5 MCP transport", () => {
       expect(listing.statusCode).toBe(200);
       expect(
         listing.json().result.tools.map((tool: { name: string }) => tool.name)
-      ).toEqual(["authoring_policy_get", "change_commit"]);
+      ).toEqual(["authoring_policy_get", "change_commit", "event_search"]);
       const policy = await send("tools/call", "authoring_policy_get", {
         world_id: worldId,
         contract_version: 5

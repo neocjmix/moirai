@@ -88,4 +88,28 @@ describe("inactive v5 Clotho → Lachesis boundary", () => {
       expect.objectContaining({ code: "forbidden" })
     );
   });
+  it("validates bounded World Event candidate search before reaching persistence", async () => {
+    const search = vi.fn().mockResolvedValue({
+      source_revision: 31,
+      events: [],
+      next_cursor: null
+    });
+    const app = createV5Clotho(createV5Lachesis({ commit: vi.fn(), search }));
+    const input = {
+      contract_version: 5 as const,
+      world_id: worldId,
+      text: "Dan jong",
+      limit: 10
+    };
+    expect(await app.search(input, actor)).toMatchObject({
+      source_revision: 31
+    });
+    expect(search).toHaveBeenCalledWith(input);
+    expect(() =>
+      app.search({ ...input, canon_id: worldId } as typeof input, actor)
+    ).toThrowError(expect.objectContaining({ code: "invalid_request" }));
+    expect(() => app.search(input, { ...actor, scopes: [] })).toThrowError(
+      expect.objectContaining({ code: "forbidden" })
+    );
+  });
 });

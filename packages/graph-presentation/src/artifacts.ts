@@ -275,6 +275,7 @@ export async function publishSpatialArtifacts(
   }
 }
 export {
+  buildV5WorldCompleteArtifacts,
   buildV5WorldSpatialStagedArtifacts,
   readV5AuthenticatedViewport,
   readV5SelectedViewport,

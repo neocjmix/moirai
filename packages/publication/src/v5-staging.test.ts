@@ -3,6 +3,7 @@ import {
   buildV5ContentAndTemporalStagedArtifacts,
   buildV5ContentStagedArtifacts,
   buildV5StagedIndex,
+  finalizeV5VerifiedSpatialArtifacts,
   publishV5StagedArtifacts,
   readV5StagedDocument,
   verifyV5StagedIndex
@@ -16,6 +17,40 @@ const input = (count: number) =>
   }));
 
 describe("inactive v5 hierarchical integrity index", () => {
+  it("refuses to relabel an arbitrary staged index as a complete serving root", () => {
+    const state = {
+      world: {
+        id: "world-1",
+        slug: "history",
+        title: "Actual history",
+        description: null
+      },
+      collections: [],
+      events: [],
+      relations: [],
+      narratives: [],
+      eventCollectionMemberships: [],
+      timeSystems: [],
+      collectionTimeSystems: []
+    };
+    expect(() =>
+      finalizeV5VerifiedSpatialArtifacts(
+        state,
+        buildV5StagedIndex(
+          "world-1",
+          31,
+          input(1),
+          "content-temporal-and-spatial-staged"
+        )
+      )
+    ).toThrow("v5_complete_content_invalid");
+    expect(() =>
+      finalizeV5VerifiedSpatialArtifacts(
+        state,
+        buildV5ContentStagedArtifacts(state, 31)
+      )
+    ).toThrow("v5_complete_spatial_proof_required");
+  });
   it("isolates progressive rehearsal roots and reserves complete namespace for a separately proven tree", async () => {
     const stages = [
       buildV5StagedIndex("world-1", 31, input(1), "content-only"),

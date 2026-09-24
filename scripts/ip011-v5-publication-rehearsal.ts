@@ -11,6 +11,7 @@ import {
   readV5WorldAtRevision
 } from "@moirai/persistence/v5";
 import {
+  buildV5WorldCompleteArtifacts,
   buildV5WorldSpatialStagedArtifacts,
   buildV5WorldLayout,
   readV5SelectedViewport
@@ -144,10 +145,45 @@ export async function rehearseV5Publication(
   };
 }
 
+/** Final-root proof on the clone remains in memory. This does not upload
+ * documents, issue a serving pointer or start a worker on the clone. */
+export async function rehearseV5CompletePublication(
+  state: CanonicalState,
+  revision: number
+) {
+  const start = performance.now();
+  const { artifacts, proof } = await buildV5WorldCompleteArtifacts(
+    state,
+    revision
+  );
+  verifyV5StagedIndex(artifacts);
+  if (JSON.parse(artifacts.root.body).completeness !== "complete")
+    throw Error("v5_complete_root_invalid");
+  return {
+    operation: "ip011_v5_complete_publication_rehearsal",
+    world_id: state.world.id,
+    revision,
+    pointer_written: false,
+    storage_written: false,
+    completeness: "complete",
+    ...proof,
+    build_and_proof_ms: Math.round(performance.now() - start),
+    document_count: artifacts.documents.length,
+    tree_bytes: [
+      ...artifacts.documents,
+      ...artifacts.index,
+      artifacts.root
+    ].reduce((sum, item) => sum + Buffer.byteLength(item.body), 0)
+  };
+}
+
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   let phase = "configuration";
   try {
-    if (process.argv[2] !== "rehearse-publication")
+    if (
+      process.argv[2] !== "rehearse-publication" &&
+      process.argv[2] !== "rehearse-complete"
+    )
       throw Error("explicit_mode_required");
     const sourceUrl = process.env.DATABASE_URL;
     const cloneName = process.env.IP011_REHEARSAL_DB;
@@ -195,7 +231,11 @@ if (process.argv[1] === fileURLToPath(import.meta.url)) {
         throw Error("rehearsal_revision_drift");
       phase = "publication_projection";
       console.info(
-        JSON.stringify(await rehearseV5Publication(replay, revision))
+        JSON.stringify(
+          process.argv[2] === "rehearse-complete"
+            ? await rehearseV5CompletePublication(replay, revision)
+            : await rehearseV5Publication(replay, revision)
+        )
       );
     } finally {
       await clone.destroy();

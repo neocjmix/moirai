@@ -9,13 +9,19 @@ import type { AtroposScreenId } from "../lib/atropos-screen-registry";
 
 export default async function V5GraphPage({
   searchParams,
-  screen = "graph"
+  screen = "graph",
+  fullEvent = false
 }: Readonly<{
   screen?: AtroposScreenId;
+  fullEvent?: boolean;
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }>) {
   const params = await searchParams;
   const worldId = params.world;
+  const readPage =
+    typeof params.readPage === "string" ? Number(params.readPage) : 0;
+  if (!Number.isSafeInteger(readPage) || readPage < 0 || readPage > 1000000)
+    notFound();
   if (typeof worldId !== "string") notFound();
   try {
     assertPublicId(worldId);
@@ -101,6 +107,8 @@ export default async function V5GraphPage({
                 )
             : catalog.collections.map((collection) => collection.id)
         }
+        readPage={readPage}
+        fullEvent={fullEvent}
         screen={screen}
         center={center}
         {...(collectionId

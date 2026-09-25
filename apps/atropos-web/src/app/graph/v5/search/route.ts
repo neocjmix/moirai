@@ -50,6 +50,17 @@ export async function POST(request: Request) {
       }
       skipped += page.event_ids.length;
     } while (cursor);
+    if (ids.length > 0 && ids.length < 20 && cursor) {
+      const following = await shell.reader.selectedEvents(collections, cursor);
+      const take = 20 - ids.length;
+      ids = [...ids, ...following.event_ids.slice(0, take)];
+      hasMore =
+        following.event_ids.length > take || following.next_cursor !== null;
+    }
+    const catalog = await shell.reader.collections(0);
+    const allCollections = catalog.collections.map(
+      (collection) => collection.id
+    );
     const term = query.term.trim().toLocaleLowerCase();
     const matches: GraphSearchMatch[] = [];
     for (const id of ids) {
@@ -62,7 +73,7 @@ export async function POST(request: Request) {
           .includes(term)
       )
         continue;
-      const memberships = await shell.memberships(id, collections);
+      const memberships = await shell.memberships(id, allCollections);
       matches.push({
         identity: id,
         kind: "event",
@@ -73,7 +84,7 @@ export async function POST(request: Request) {
           en: item.event.summary ?? ""
         },
         canonMemberships: memberships,
-        matchedCanonIds: memberships,
+        matchedCanonIds: memberships.filter((id) => collections.includes(id)),
         persisted: true,
         eventKind: item.composite ? "composite" : "atomic",
         roles: item.event.roles,
@@ -81,7 +92,7 @@ export async function POST(request: Request) {
           kind: "event",
           world_id: source.world_id,
           served_revision: source.served_revision,
-          canon_id: memberships[0]!,
+          canon_id: memberships.find((id) => collections.includes(id))!,
           event_ref: { kind: "event", event_id: id }
         }
       });

@@ -19,6 +19,8 @@ export interface V5AtroposBootstrap {
   workspace: GraphShellWorkspaceShell;
   center: { x: number; y: number } | null;
   eventId?: string;
+  readPage?: number;
+  fullEvent?: boolean;
   collectionIds?: string[];
   screen?: AtroposScreenId;
 }
@@ -42,7 +44,8 @@ export function V5AtroposRoot(props: V5AtroposBootstrap) {
             served_revision: props.revision,
             canon_id:
               props.collectionIds?.[0] ??
-              props.catalog.worlds[0]!.canons[0]!.id,
+              props.catalog.worlds[0]?.canons[0]?.id ??
+              props.worldId,
             event_ref: { kind: "event" as const, event_id: props.eventId }
           }
         : null
@@ -107,14 +110,19 @@ function V5GraphApp(props: V5AtroposBootstrap) {
         }),
       loadEventDetail: async (_locale, event_id) =>
         event_id.startsWith("collection:")
-          ? call({ kind: "collection", collection_id: event_id.slice(11) })
-          : call({ kind: "detail", event_id })
+          ? call({
+              kind: "collection",
+              collection_id: event_id.slice(11),
+              page: props.readPage ?? 0
+            })
+          : call({ kind: "detail", event_id, page: props.readPage ?? 0 })
     };
   }, [
     props.worldId,
     props.revision,
     props.timeSystemId,
     props.workspace,
+    props.readPage,
     selection
   ]);
   const focus =
@@ -124,6 +132,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
   return (
     <App
       initialScreen={props.screen ?? "graph"}
+      initialDrawerStage={props.fullEvent ? "full" : "peek"}
       loader={loader}
       initialViewportCenter={props.center}
       externalFocus={focus ? { id: focus, label: focus } : null}
@@ -137,7 +146,8 @@ function V5GraphApp(props: V5AtroposBootstrap) {
                 served_revision: props.revision,
                 canon_id:
                   current.query.sources[0]?.canon_ids[0] ??
-                  props.catalog.worlds[0]!.canons[0]!.id,
+                  props.catalog.worlds[0]?.canons[0]?.id ??
+                  props.worldId,
                 event_ref: { kind: "event", event_id: id }
               }
             : null

@@ -33,14 +33,15 @@ export default async function GraphScreenPage({
 }>) {
   const { screen } = await params;
   const queryParams = await searchParams;
-  if (
-    process.env.ATROPOS_CUTOVER_WORLD_ID &&
-    RELOADABLE_SCREENS.has(screen as AtroposScreenId)
-  )
+  const v5World =
+    typeof queryParams.world === "string"
+      ? queryParams.world
+      : process.env.ATROPOS_CUTOVER_WORLD_ID;
+  if (v5World && RELOADABLE_SCREENS.has(screen as AtroposScreenId))
     return V5GraphPage({
       searchParams: Promise.resolve({
         ...queryParams,
-        world: process.env.ATROPOS_CUTOVER_WORLD_ID
+        world: v5World
       }),
       screen: screen as AtroposScreenId
     });

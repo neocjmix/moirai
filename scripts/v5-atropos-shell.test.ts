@@ -1,3 +1,4 @@
+import { withGraphReturnContext } from "../apps/atropos-web/src/lib/event-reading-navigation";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
 import { mkdtemp, readFile, rm } from "node:fs/promises";
 import { tmpdir } from "node:os";
@@ -80,6 +81,9 @@ describe("v5 adapter into the original Atropos shell", () => {
     );
     expect(detail.readingLinks?.items[0]?.href).toContain(ids.battle);
     expect(detail.placeEvents).toEqual([]);
+    expect(() =>
+      withGraphReturnContext(detail.readingContext!.stableEventHref!, "")
+    ).not.toThrow();
     const collection = eventDetailResponseSchema.parse(
       await shell.collectionDetail(ids.japan)
     );

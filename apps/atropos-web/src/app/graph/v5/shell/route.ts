@@ -9,7 +9,8 @@ const input = z.discriminatedUnion("kind", [
       kind: z.literal("collection"),
       world_id: z.string().uuid(),
       revision: z.number().int(),
-      collection_id: z.string().uuid()
+      collection_id: z.string().uuid(),
+      page: z.number().int().min(0).max(1000000).default(0)
     })
     .strict(),
   z
@@ -17,7 +18,8 @@ const input = z.discriminatedUnion("kind", [
       kind: z.literal("detail"),
       world_id: z.string().uuid(),
       revision: z.number().int(),
-      event_id: z.string().uuid()
+      event_id: z.string().uuid(),
+      page: z.number().int().min(0).max(1000000).default(0)
     })
     .strict(),
   z
@@ -50,11 +52,14 @@ export async function POST(request: Request) {
     if (shell.pointer.served_revision !== query.revision)
       return Response.json({ error: "revision_changed" }, { status: 409 });
     if (query.kind === "collection")
-      return Response.json(await shell.collectionDetail(query.collection_id), {
-        headers: { "cache-control": "no-store" }
-      });
+      return Response.json(
+        await shell.collectionDetail(query.collection_id, query.page),
+        {
+          headers: { "cache-control": "no-store" }
+        }
+      );
     if (query.kind === "detail")
-      return Response.json(await shell.detail(query.event_id), {
+      return Response.json(await shell.detail(query.event_id, query.page), {
         headers: { "cache-control": "no-store" }
       });
     const shapes: Awaited<

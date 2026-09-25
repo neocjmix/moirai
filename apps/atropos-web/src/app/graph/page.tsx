@@ -21,7 +21,11 @@ export default async function GraphPage({
 }: Readonly<{
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }>) {
-  const cutoverWorld = process.env.ATROPOS_CUTOVER_WORLD_ID;
+  const params = await searchParams;
+  const cutoverWorld =
+    typeof params.world === "string"
+      ? params.world
+      : process.env.ATROPOS_CUTOVER_WORLD_ID;
   if (cutoverWorld) {
     let v5Served = false;
     try {
@@ -39,7 +43,6 @@ export default async function GraphPage({
         })
       });
   }
-  const params = await searchParams;
   const raw = typeof params.mq === "string" ? params.mq : null;
   const pins = graphRevisionPins(raw);
   const { catalog, snapshots, failures } =

@@ -385,13 +385,14 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
             ? selectedSource.canon_ids.filter((id) => id !== canonId)
             : [...selectedSource.canon_ids, canonId]
         };
-        return replaceGraphSources(
+        const next = replaceGraphSources(
           current,
           current.query.temporal_frame.target,
           current.query.sources.map((source) =>
             source.world_id === world.id ? nextSource : source
           )
         );
+        return v5 ? { ...next, focus: current.focus } : next;
       });
     },
     [setSourceState, v5]
@@ -533,7 +534,9 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
               type="button"
             >
               <span className={inheritedStyles.statusIslandCanon}>
-                {copy.summary(state.query.sources.length, canonCount)}
+                {copy
+                  .summary(state.query.sources.length, canonCount)
+                  .replaceAll(v5 ? "Canon" : "__unused__", "Collection")}
               </span>
             </button>
           </div>

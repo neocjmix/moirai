@@ -37,11 +37,11 @@ export async function v5ShellReader(worldId: string) {
     }
     return value;
   };
-  const detail = async (id: string): Promise<EventDetailResponse> => {
+  const detail = async (id: string, page = 0): Promise<EventDetailResponse> => {
     const item = await event(id);
     if (!item) throw Error("v5_event_missing");
     const children = item.composite
-      ? await reader.compositeChildren(id, 0)
+      ? await reader.compositeChildren(id, page)
       : null;
     const related = await Promise.all(
       (children?.child_event_ids ?? []).map(async (child) => ({
@@ -50,12 +50,66 @@ export async function v5ShellReader(worldId: string) {
         sourceKind: "structural" as const
       }))
     );
+    const position = item.position as typeof item.position & {
+      display_label?: string;
+      time_event?: { coordinate: string };
+    };
     const narrative = item.narrative;
+    const childLinks = related.map((child) => ({
+      label: child.label,
+      href: `/graph/v5?world=${worldId}&event=${child.id}`
+    }));
+    if (children && page + 1 < children.page_count)
+      childLinks.push({
+        label: "다음 하위 사건",
+        href: `/graph/v5?world=${worldId}&event=${id}&readPage=${page + 1}`
+      });
+    if (children && page > 0)
+      childLinks.unshift({
+        label: "이전 하위 사건",
+        href: `/graph/v5?world=${worldId}&event=${id}&readPage=${page - 1}`
+      });
+    const adjacency =
+      page < item.adjacency_page_count
+        ? await reader.adjacency(id, page)
+        : null;
+    const relations = await Promise.all(
+      (adjacency?.relation_ids ?? []).map(reader.relation)
+    );
+    const existingLinks = new Set(childLinks.map((link) => link.href));
+    for (const relation of relations) {
+      if (!relation || relation.type === "contains") continue;
+      const outgoing =
+        relation.source_ref.kind === "event" &&
+        relation.source_ref.event_id === id;
+      const other = outgoing ? relation.target_ref : relation.source_ref;
+      if (other.kind !== "event") continue;
+      const href = `/graph/v5?world=${worldId}&event=${other.event_id}`;
+      if (existingLinks.has(href)) continue;
+      existingLinks.add(href);
+      const neighbor = await event(other.event_id);
+      if (neighbor)
+        childLinks.push({
+          label: `${relation.type} ${outgoing ? "→" : "←"} ${neighbor.event.title}`,
+          href
+        });
+    }
+    if (
+      adjacency?.next_page !== null &&
+      adjacency?.next_page !== undefined &&
+      !children
+    )
+      childLinks.push({
+        label: "다음 연결",
+        href: `/graph/v5?world=${worldId}&event=${id}&readPage=${adjacency.next_page}`
+      });
     return {
       id,
       canonId: worldId,
       type: item.composite ? "composite-event" : "historical-event",
       title: item.event.title,
+      chronologySummary:
+        position.time_event?.coordinate ?? position.display_label ?? "",
       notes: "",
       participantEventIds: related.map((child) => child.id),
       figureHandleIds: [],
@@ -64,14 +118,11 @@ export async function v5ShellReader(worldId: string) {
       people: [],
       causeEvents: [],
       resultEvents: [],
-      ...(related.length
+      ...(childLinks.length
         ? {
             readingLinks: {
-              label: "하위 사건",
-              items: related.map((child) => ({
-                label: child.label,
-                href: `/graph/v5?world=${worldId}&event=${child.id}`
-              }))
+              label: item.composite ? "하위 사건과 연결" : "연결된 사건",
+              items: childLinks
             }
           }
         : {}),
@@ -107,7 +158,7 @@ export async function v5ShellReader(worldId: string) {
       ],
       readingContext: {
         scopeLabel: "World",
-        stableEventHref: `/graph/v5?world=${worldId}&event=${id}`,
+        stableEventHref: `/graph/events/${worldId}/${id}?revision=${pointer.served_revision}`,
         observation: item.position.kind === "unplaced" ? "미배치 사건" : ""
       }
     };
@@ -144,8 +195,11 @@ export async function v5ShellReader(worldId: string) {
       worldBounds: value.bounds
     };
   };
-  const collectionDetail = async (id: string): Promise<EventDetailResponse> => {
-    const item = await reader.collection(id, 0);
+  const collectionDetail = async (
+    id: string,
+    page = 0
+  ): Promise<EventDetailResponse> => {
+    const item = await reader.collection(id, page);
     if (!item) throw Error("v5_collection_missing");
     const members = await Promise.all(
       item.event_ids.map(async (eventId) => ({
@@ -153,6 +207,16 @@ export async function v5ShellReader(worldId: string) {
         href: `/graph/v5?world=${worldId}&event=${eventId}&collections=${id}`
       }))
     );
+    if (item.next_page !== null)
+      members.push({
+        label: "다음 사건",
+        href: `/graph/v5?world=${worldId}&collection=${id}&readPage=${item.next_page}`
+      });
+    if (page > 0)
+      members.unshift({
+        label: "이전 사건",
+        href: `/graph/v5?world=${worldId}&collection=${id}&readPage=${page - 1}`
+      });
     return {
       id: `collection:${id}`,
       canonId: worldId,
@@ -178,7 +242,15 @@ export async function v5ShellReader(worldId: string) {
               body: item.narrative.body,
               kind: "primary",
               publicReferences: [...item.narrative.public_references]
-            }
+            },
+            ...item.narrative.notes.map((note, index) => ({
+              id: `${item.narrative.id}:note:${index}`,
+              locale: item.narrative.locale,
+              title: note.title,
+              body: note.body,
+              kind: "annotation" as const,
+              publicReferences: [...note.public_references]
+            }))
           ]
         }
       ],

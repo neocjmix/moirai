@@ -82,17 +82,15 @@ describe("v5 adapter into the original Atropos shell", () => {
         relation_ids: ["synthetic-cause"],
         next_page: null
       }));
-    const relation = vi
-      .spyOn(shell.reader, "relation")
-      .mockResolvedValue({
-        id: "synthetic-cause",
-        world_id: world,
-        type: "causes",
-        source_ref: { kind: "event", event_id: ids.battle },
-        target_ref: { kind: "event", event_id: ids.war },
-        direction: "directed",
-        attributes: {}
-      });
+    const relation = vi.spyOn(shell.reader, "relation").mockResolvedValue({
+      id: "synthetic-cause",
+      world_id: world,
+      type: "causes",
+      source_ref: { kind: "event", event_id: ids.battle },
+      target_ref: { kind: "event", event_id: ids.war },
+      direction: "directed",
+      attributes: {}
+    });
     const base = {
       canonId: world,
       geometryKind: "point" as const,

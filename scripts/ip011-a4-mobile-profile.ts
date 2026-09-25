@@ -43,9 +43,7 @@ try {
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("response", (response) => {
       const path = new URL(response.url()).pathname;
-      if (
-        ["/graph/detail", "/graph/v5/read", "/graph/v5/viewport"].includes(path)
-      )
+      if (["/graph/detail", "/graph/spatial"].includes(path))
         graphResponses.push(response.body().then((body) => body.byteLength));
     });
     const started = performance.now();
@@ -82,8 +80,7 @@ try {
       const pending = page.evaluate(async () => {
         // Let the sampler's evaluation and the previous UI action settle
         // before counting frames. Gesture work remains inside the 600 samples.
-        for (let i = 0; i < 5; i++)
-          await new Promise(requestAnimationFrame);
+        for (let i = 0; i < 5; i++) await new Promise(requestAnimationFrame);
         const intervals: number[] = [];
         let last = performance.now();
         for (let i = 0; i < 600; i++) {

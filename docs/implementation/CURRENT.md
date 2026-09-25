@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-**IP-011 A3 UI 복구 완료; A4는 보류한다.** 사용자 지시에 따라 별도 V5Explorer UI를 제거하고 A3 직전 `b2dbc64`의 App·그래프·스타일·드로어를 복원했다. v5 데이터 연결만 어댑터로 적용했다. PR #196의 운영 배포 `9ff100d`와 최종 CI `36114960810`, 운영 모바일·공개·인증 smoke `36115276269`가 통과했다. [UI 복구 기록](../evidence/ip011/a3-ui-restoration.md)에 변경 경계와 증거를 기록한다. A4 성능/규모 작업은 이번 복구에 포함하지 않았다. 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22)은 유지한다. M5는 별도 후속 범위다.
+**IP-011 A3 완료 기준선; A4 구현은 다음 세션 시작 대기.** v5 운영 전환과 아홉 시나리오, 기존 Atropos UI 복구가 완료됐다. UI 기능 배포 `9ff100d`(PR #196), 증거 병합 `9dbdd99`(PR #197)가 기준선이다. 기존 App·그래프·스타일·드로어를 유지하고 v5 데이터만 어댑터로 연결했다. CI `36114960810`과 기능 배포 smoke `36115276269`가 통과했고, `9dbdd99` 배포의 smoke `36115869450`도 통과했다. [A3 UI 복구](../evidence/ip011/a3-ui-restoration.md)와 [A4 인계](IP-011-A4-handoff.md)에 근거와 시작 조건을 기록한다. A4의 성능/규모 exit는 아직 검증되지 않았다. 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22)은 유지한다. M5는 별도 후속 범위다.
 
 2026-09-25 운영 World는 Revision 30→31의 v5 schema/content로 이전됐고 새 암호화 owner-full 백업·격리 복원·clone migration 재현을 통과했다. 인증된 v5 정책 기반 운영 쓰기와 동일 Change Set 재생으로 Revision 32가 됐으며 공개 완전 Publication 포인터는 v5 served/current/target 32다. 127 Event·6 Collection·415 Relation·133 Narrative가 보존됐다. API·worker·web은 v5로 동작하고 구형 v4 변경 경로는 404, 미인증 v5 commit은 401이다. v5 공개·인증 배포 smoke 36093424585와 운영 iPhone WebKit 미배치 Event·Collection·Composite 탐색이 통과해 A3의 아홉 시나리오를 충족했다. IP-004~010 완료 이력은 유지한다.
 

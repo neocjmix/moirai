@@ -10,7 +10,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 ## 현재 authoritative baseline — IP-011
 
-[IP-011 architecture realignment](implementation/IP-011-architecture-realignment.md)이 현재 planning과 남은 milestone 순서를 소유한다. 개정 CON-003/BR/TS는 목표 계약이며 배포는 v4다. [CURRENT](implementation/CURRENT.md)가 실행 활성 상태를 구분한다.
+[IP-011 architecture realignment](implementation/IP-011-architecture-realignment.md)이 현재 planning과 남은 milestone 순서를 소유한다. 개정 CON-003/BR/TS는 목표 계약이며 운영 배포는 A3를 거쳐 v5로 전환됐다. [CURRENT](implementation/CURRENT.md)가 실행 활성 상태를 구분한다. [A4 인계](implementation/IP-011-A4-handoff.md)는 다음 세션의 시작점이다.
 
 - [Domain glossary](business-requirements/entities/INDEX.md), [관계·ownership](business-requirements/entities/CORE-MODEL.md)
 - [Authoring policy](technical-specifications/TS-004-clotho-contract.md), [read scalability·discovery](technical-specifications/TS-006-atropos-publication.md)

@@ -574,41 +574,43 @@ function intervalsOverlap(left: PlacementCandidate, right: PlacementCandidate) {
   return left.minYear < right.maxYear && right.minYear < left.maxYear;
 }
 
-function hasDirectConstraint(
-  beforeId: string,
-  afterId: string,
-  constraintsByBeforeId: Map<string, TemporalConstraint[]>
-) {
-  return (constraintsByBeforeId.get(beforeId) ?? []).some(
-    (constraint) => constraint.afterId === afterId
-  );
-}
-
-function shouldClusterCandidates(
-  left: PlacementCandidate,
-  right: PlacementCandidate,
-  constraintsByBeforeId: Map<string, TemporalConstraint[]>
-) {
-  if (buildPlacementIntervalKey(left) === buildPlacementIntervalKey(right)) {
-    return true;
-  }
-
-  if (!intervalsOverlap(left, right)) {
-    return false;
-  }
-
-  return (
-    hasDirectConstraint(left.eventId, right.eventId, constraintsByBeforeId) ||
-    hasDirectConstraint(right.eventId, left.eventId, constraintsByBeforeId)
-  );
-}
-
 function buildCandidateClusters(
   candidates: PlacementCandidate[],
   constraintsByBeforeId: Map<string, TemporalConstraint[]>
 ) {
   const clusters: PlacementCandidate[][] = [];
   const visited = new Set<string>();
+  const position = new Map(
+    candidates.map((candidate, index) => [candidate.eventId, index])
+  );
+  const candidateById = new Map(
+    candidates.map((candidate) => [candidate.eventId, candidate])
+  );
+  const byInterval = new Map<string, PlacementCandidate[]>();
+  const constrained = new Map<string, Set<string>>();
+  for (const candidate of candidates) {
+    const key = buildPlacementIntervalKey(candidate);
+    const peers = byInterval.get(key) ?? [];
+    peers.push(candidate);
+    byInterval.set(key, peers);
+  }
+  for (const [beforeId, links] of constraintsByBeforeId) {
+    const before = candidateById.get(beforeId);
+    if (!before) continue;
+    for (const link of links) {
+      const after = candidateById.get(link.afterId);
+      if (!after || !intervalsOverlap(before, after)) continue;
+      for (const [id, neighbor] of [
+        [beforeId, after.eventId],
+        [after.eventId, beforeId]
+      ] as const) {
+        const peers = constrained.get(id) ?? new Set<string>();
+        peers.add(neighbor);
+        constrained.set(id, peers);
+      }
+    }
+  }
+  const expandedIntervals = new Set<string>();
 
   for (const candidate of candidates) {
     if (visited.has(candidate.eventId)) {
@@ -619,16 +621,26 @@ function buildCandidateClusters(
     const queue = [candidate];
     visited.add(candidate.eventId);
 
-    while (queue.length > 0) {
-      const current = queue.shift()!;
+    for (let cursor = 0; cursor < queue.length; cursor++) {
+      const current = queue[cursor]!;
       cluster.push(current);
 
-      for (const other of candidates) {
+      const key = buildPlacementIntervalKey(current);
+      const peers = expandedIntervals.has(key)
+        ? []
+        : (byInterval.get(key) ?? []);
+      expandedIntervals.add(key);
+      const neighbors = [
+        ...peers,
+        ...[...(constrained.get(current.eventId) ?? [])].map((id) =>
+          candidateById.get(id)!
+        )
+      ].sort(
+        (left, right) =>
+          position.get(left.eventId)! - position.get(right.eventId)!
+      );
+      for (const other of neighbors) {
         if (visited.has(other.eventId)) {
-          continue;
-        }
-
-        if (!shouldClusterCandidates(current, other, constraintsByBeforeId)) {
           continue;
         }
 
@@ -842,14 +854,13 @@ function redistributePlacedPointClusters(
     pointCandidates.map((candidate) => candidate.candidate),
     context.constraintsByBeforeId
   );
+  const pointById = new Map(
+    pointCandidates.map((entry) => [entry.candidate.eventId, entry])
+  );
 
   for (const redistributedClusterCandidates of candidateClusters) {
     const cluster = redistributedClusterCandidates
-      .map((candidate) =>
-        pointCandidates.find(
-          (entry) => entry.candidate.eventId === candidate.eventId
-        )
-      )
+      .map((candidate) => pointById.get(candidate.eventId))
       .filter((candidate): candidate is NonNullable<typeof candidate> =>
         Boolean(candidate)
       );
@@ -862,11 +873,12 @@ function redistributePlacedPointClusters(
       cluster.map((candidate) => candidate.candidate),
       context.constraintsByAfterId
     );
+    const clusterById = new Map(
+      cluster.map((entry) => [entry.candidate.eventId, entry])
+    );
 
     for (const candidate of redistributed) {
-      const original = cluster.find(
-        (entry) => entry.candidate.eventId === candidate.eventId
-      );
+      const original = clusterById.get(candidate.eventId);
       if (!original) {
         continue;
       }

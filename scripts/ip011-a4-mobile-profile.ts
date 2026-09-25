@@ -80,7 +80,10 @@ try {
     const cy = bounds.y + bounds.height / 2;
     const frameSample = async (name: string, gesture: () => Promise<void>) => {
       const pending = page.evaluate(async () => {
-        await new Promise(requestAnimationFrame);
+        // Let the sampler's evaluation and the previous UI action settle
+        // before counting frames. Gesture work remains inside the 600 samples.
+        for (let i = 0; i < 5; i++)
+          await new Promise(requestAnimationFrame);
         const intervals: number[] = [];
         let last = performance.now();
         for (let i = 0; i < 600; i++) {
@@ -100,7 +103,7 @@ try {
           long_frames: longFrames.slice(0, 30)
         };
       });
-      await page.waitForTimeout(40);
+      await page.waitForTimeout(250);
       try {
         await gesture();
       } catch (error) {
@@ -142,12 +145,12 @@ try {
               })
             );
           },
-          { once: true }
+          { once: false }
         );
       });
-      await page.mouse.move(cx - 50, cy);
+      await page.mouse.move(25, 350);
       await page.mouse.down();
-      await page.touchscreen.tap(cx + 50, cy);
+      await page.touchscreen.tap(290, 550);
       await page.mouse.up();
     });
     if (new URL(page.url()).searchParams.get("gsViewport") === zoomBefore)

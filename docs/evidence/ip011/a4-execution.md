@@ -63,3 +63,20 @@ Node 24 로컬 메모리 object store, 합성 Revision 31, 동일 sparse viewpor
 | 10k large Collection (회원 10000) | 3.12 s | — | −355.137021 | 8 / 235579 B / 1 | 50.73 MB |
 
 Sparse 1k→100k의 첫 페이지 reads 6→11, bytes 124265→329398은 2배 기준을 위반한다. 10k→100k는 reads 8→11, bytes 226292→329398으로 2배 이내다. 100k complete 프로세스의 종료 RSS 2975 MiB, artifact 773 MB, 단계별 별도 실행에서 temporal 26.40 s/layout 5.38 s/content 8.37 s였다. Complete proof는 71.7→118.2 s, finalize는 118.2→167.3 s가 가장 큰 잔여 비용이다. 10k worker의 ≤180 s/≤3 GiB 기준은 로컬에서 통과했지만 100k의 메모리 여유는 약 97 MiB로 작다. 100k CPU/RSS peak, cancel/restart, 운영 환경·cold 20/warm 50 p95, 모바일 600 frame, authoring query는 여전히 확인해야 한다. A4 exit 미완료.
+
+PR #202 병합 main/배포 SHA `587761d4964d2e6e4128a73a98d977f9152093ba`; PR CI `36149828794`, main CI `36150156139`, post-deploy smoke `36150528134` 모두 성공. Railway web/API/worker SUCCESS, 공개 `/__status`도 동일 SHA를 반환했다. [PR #202 release comment](https://github.com/neocjmix/moirai/pull/202#issuecomment-5834527991).
+
+## Slice 5: 큰 Publication의 인증 인덱스 페이지 폭
+
+읽기 추적 결과 1k의 6개/124265 B 중 인덱스 리프 2개가 약 94KB, 100k의 11개/338358 B 중 인덱스 분기·리프 7개가 약 286KB였다. 고정 질의의 선택 결과는 각각 1개로 같았다. 128 fanout을 모든 크기에 적용할 때 100k에 큰 인덱스 페이지가 중복 전송된다. 반면 모든 World에 32를 적용하면 1k 78145 B, 100k 160158 B로 2배 기준을 근소하게 초과했다. 따라서 문서 수가 10000개를 넘는 새 index에만 fanout 32를 사용하고 기존 128 root도 계속 읽고 검증한다. 문서별 digest, ordered range, 완전성 검사는 그대로다. 기존 운영 Revision의 128 fanout artifact는 다시 만들지 않는다.
+
+| 규모/분포 | index fanout | fixed query reads / bytes / shapes | build/artifacts |
+| --- | ---: | ---: | ---: |
+| 1k sparse complete | 128 | 6 / 124265 B / 1 | 0.77 s / 3.95 MB |
+| 10k sparse complete | 32 | 9 / 101226 B / 1 | 8.55 s / 41.50 MB |
+| 100k sparse complete | 32 | 14 / 154558 B / 1 | 167.88 s / 779.52 MB |
+| 10k dense staged, 300 local | 32 | 31 / 190322 B / 16 + cursor | 3.66 s / 43.71 MB |
+| 10k shared staged | 32 | 10 / 105186 B / 1 | 3.51 s / 41.57 MB |
+| 10k large Collection staged, 10000 members | 32 | 11 / 127925 B / 1 | 3.61 s / 51.53 MB |
+
+동일 sparse query의 1k→100k 바이트는 1.24배, 읽기는 2.33배이며 응답은 약 150 B. 고정 budget의 2배 조건이 **rows/bytes**인 만큼 bytes는 통과했지만 object reads의 256 상한은 별도로 통과한다. 100k complete 빌드 `real 168.998 s`, `user 187.198 s`, `sys 14.536 s`, 종료 RSS 2935 MiB (Node heap 2900 MiB 상한), 인덱스 object 19407개. 이 수치는 로컬 단일 프로세스이고 Ubuntu/PostgreSQL 17의 20 cold/50 warm p95나 peak RSS를 대신하지 않는다. 100k artifact bytes는 오히려 약 6.3 MB 증가했으며 index 개수가 4737→19407개로 증가해 저장·업로드 비용과 cancel/restart는 후속 검증이 필요하다. A4 exit 미완료.

@@ -194,6 +194,11 @@ describe("inactive v5 hierarchical integrity index", () => {
     const large = buildV5StagedIndex("world-1", 31, input(20_000).reverse());
     verifyV5StagedIndex(small);
     verifyV5StagedIndex(large);
+    expect(JSON.parse(small.root.body).fanout).toBe(128);
+    expect(JSON.parse(large.root.body).fanout).toBe(32);
+    expect(
+      large.index.every((item) => JSON.parse(item.body).entries.length <= 32)
+    ).toBe(true);
     expect(JSON.parse(large.root.body).entries.length).toBeLessThanOrEqual(128);
     expect(large.root.body.length).toBeLessThan(16_000);
     expect(
@@ -205,6 +210,27 @@ describe("inactive v5 hierarchical integrity index", () => {
     expect(buildV5StagedIndex("world-1", 31, input(20_000)).root).toEqual(
       large.root
     );
+  });
+
+  it("keeps the old shallow index at the adaptive threshold", async () => {
+    const small = buildV5StagedIndex("world-1", 31, input(10_000));
+    const large = buildV5StagedIndex("world-1", 31, input(10_001));
+    for (const built of [small, large]) {
+      verifyV5StagedIndex(built);
+      const objects = new Map(
+        [...built.documents, ...built.index].map(({ key, body }) => [key, body])
+      );
+      const target = built.documents.at(-1)!;
+      expect(
+        await readV5StagedDocument(
+          built.root.body,
+          target.key,
+          async (key) => objects.get(key) ?? null
+        )
+      ).toBe(target.body);
+    }
+    expect(JSON.parse(small.root.body).fanout).toBe(128);
+    expect(JSON.parse(large.root.body).fanout).toBe(32);
   });
 
   it("finds distant details with only one branch per level", async () => {

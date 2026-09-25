@@ -56,13 +56,23 @@ export async function runA3Acceptance(environment: NodeJS.ProcessEnv) {
       policy_digest: string;
     };
     const search = (await app.search(
-      { world_id: worldId, text: "계유정난", limit: 10 },
+      {
+        contract_version: 5,
+        world_id: worldId,
+        text: "계유정난",
+        limit: 10
+      } as Parameters<typeof app.search>[0],
       actor
     )) as { events: Array<{ id: string }> };
     if (!search.events.some((event) => event.id === eventId))
       throw Error("a3_acceptance_search_missing");
     const detail = (await app.detail(
-      { world_id: worldId, event_id: eventId, at_revision: 31 },
+      {
+        contract_version: 5,
+        world_id: worldId,
+        event_id: eventId,
+        at_revision: 31
+      } as Parameters<typeof app.detail>[0],
       actor
     )) as { event: { id: string }; narrative: { body: string } };
     if (detail.event.id !== eventId || !detail.narrative.body)

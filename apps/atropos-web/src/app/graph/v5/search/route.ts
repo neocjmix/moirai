@@ -1,3 +1,7 @@
+import {
+  readV5ShellRequest,
+  v5ShellResponse
+} from "../../../../lib/v5-shell-request";
 import { z } from "zod";
 import { v5ShellReader } from "../../../../lib/v5-shell-reader";
 import type { GraphSearchMatch } from "../../../../lib/moirai-graph-source-query";
@@ -8,6 +12,13 @@ const input = z.object({
   cursor: z.number().int().min(0).max(4096),
   state: z.object({
     query: z.object({
+      entity_filter: z
+        .object({
+          event_kinds: z.array(z.enum(["atomic", "composite"])),
+          roles: z.array(z.string()),
+          include_narratives: z.boolean()
+        })
+        .optional(),
       sources: z
         .array(
           z.object({
@@ -23,10 +34,7 @@ const input = z.object({
 
 export async function POST(request: Request) {
   try {
-    const body = await request.text();
-    if (body.length > 16384)
-      return Response.json({ error: "query_too_large" }, { status: 413 });
-    const query = input.parse(JSON.parse(body));
+    const query = input.parse(await readV5ShellRequest(request));
     const source = query.state.query.sources[0];
     if (!source?.canon_ids.length)
       return Response.json({ matches: [], nextCursor: null });
@@ -66,9 +74,19 @@ export async function POST(request: Request) {
     for (const id of ids) {
       const item = await shell.event(id);
       if (!item) throw Error("event_missing");
+      const filter = query.state.query.entity_filter;
+      if (
+        filter &&
+        (!filter.event_kinds.includes(
+          item.composite ? "composite" : "atomic"
+        ) ||
+          (filter.roles.length &&
+            !filter.roles.some((role) => item.event.roles.includes(role))))
+      )
+        continue;
       if (
         term &&
-        !`${item.event.title} ${item.event.summary ?? ""} ${item.narrative.body}`
+        !`${item.event.title} ${item.event.summary ?? ""} ${filter?.include_narratives === false ? "" : item.narrative.body}`
           .toLocaleLowerCase()
           .includes(term)
       )
@@ -97,10 +115,10 @@ export async function POST(request: Request) {
         }
       });
     }
-    return Response.json(
-      { matches, nextCursor: hasMore ? query.cursor + ids.length : null },
-      { headers: { "cache-control": "no-store" } }
-    );
+    return v5ShellResponse({
+      matches,
+      nextCursor: hasMore ? query.cursor + ids.length : null
+    });
   } catch {
     return Response.json({ error: "v5_search_unavailable" }, { status: 400 });
   }

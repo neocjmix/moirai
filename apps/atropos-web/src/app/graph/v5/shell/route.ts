@@ -1,3 +1,7 @@
+import {
+  readV5ShellRequest,
+  v5ShellResponse
+} from "../../../../lib/v5-shell-request";
 import { z } from "zod";
 import { v5ShellReader } from "../../../../lib/v5-shell-reader";
 import { graphShellViewportQuerySchema } from "../../../../urdr-port/shared/contracts";
@@ -29,18 +33,16 @@ const input = z.discriminatedUnion("kind", [
       revision: z.number().int(),
       time_system_id: z.string().uuid(),
       collection_ids: z.array(z.string().uuid()).max(8),
+      relation_types: z.array(z.string().max(64)).max(32).optional(),
       viewport: graphShellViewportQuerySchema
     })
     .strict()
 ]);
 
 export async function POST(request: Request) {
-  const body = await request.text();
-  if (body.length > 16384)
-    return Response.json({ error: "query_too_large" }, { status: 413 });
   let parsed;
   try {
-    parsed = input.safeParse(JSON.parse(body));
+    parsed = input.safeParse(await readV5ShellRequest(request));
   } catch {
     return Response.json({ error: "invalid_query" }, { status: 400 });
   }
@@ -59,9 +61,7 @@ export async function POST(request: Request) {
         }
       );
     if (query.kind === "detail")
-      return Response.json(await shell.detail(query.event_id, query.page), {
-        headers: { "cache-control": "no-store" }
-      });
+      return v5ShellResponse(await shell.detail(query.event_id, query.page));
     const shapes: Awaited<
       ReturnType<typeof shell.reader.viewport>
     >["shapes"][number][] = [];
@@ -80,20 +80,22 @@ export async function POST(request: Request) {
       }
     }
     const mapped = await Promise.all(shapes.map(shell.shape));
-    return Response.json(
-      {
-        revision: query.revision,
-        canonicalRevision: query.revision,
-        lodLevel: 0,
-        entities: mapped.filter((item) => item.geometryKind !== "region"),
-        regions: mapped.filter((item) => item.geometryKind === "region"),
-        edges: [],
-        diagnostics: [],
-        truncated: cursor !== null,
-        cache: { stale: false }
-      },
-      { headers: { "cache-control": "no-store" } }
-    );
+    const connections = await shell.edges(mapped);
+    return v5ShellResponse({
+      revision: query.revision,
+      canonicalRevision: query.revision,
+      lodLevel: 0,
+      entities: mapped.filter((item) => item.geometryKind !== "region"),
+      regions: mapped.filter((item) => item.geometryKind === "region"),
+      edges: query.relation_types
+        ? connections.edges.filter((edge) =>
+            query.relation_types!.includes(edge.label)
+          )
+        : connections.edges,
+      diagnostics: [],
+      truncated: cursor !== null || connections.truncated,
+      cache: { stale: false }
+    });
   } catch {
     return Response.json(
       { error: "v5_publication_unavailable" },

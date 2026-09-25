@@ -195,6 +195,54 @@ export async function v5ShellReader(worldId: string) {
       worldBounds: value.bounds
     };
   };
+  const edges = async (entities: readonly GraphShellChartPlaneEntity[]) => {
+    const points = new Map(
+      entities
+        .filter((item) => item.geometryKind === "point")
+        .map((item) => [item.eventId, item])
+    );
+    const ids = [...points.keys()].slice(0, 64);
+    let truncated = points.size > ids.length;
+    const relationIds = new Set<string>();
+    for (const id of ids) {
+      const page = await reader.adjacency(id, 0);
+      if (page?.next_page !== null && page?.next_page !== undefined)
+        truncated = true;
+      for (const relationId of page?.relation_ids ?? [])
+        relationIds.add(relationId);
+    }
+    const selectedIds = [...relationIds].sort().slice(0, 256);
+    if (selectedIds.length < relationIds.size) truncated = true;
+    const result: GraphShellChartPlaneEntity[] = [];
+    for (const id of selectedIds) {
+      const relation = await reader.relation(id);
+      if (
+        !relation ||
+        relation.type === "contains" ||
+        relation.source_ref.kind !== "event" ||
+        relation.target_ref.kind !== "event"
+      )
+        continue;
+      const source = points.get(relation.source_ref.event_id);
+      const target = points.get(relation.target_ref.event_id);
+      if (source?.geometryKind !== "point" || target?.geometryKind !== "point")
+        continue;
+      result.push({
+        id: relation.id,
+        eventId: source.eventId,
+        canonId: worldId,
+        label: relation.type,
+        geometryKind: "segment",
+        validationState: "ok",
+        contains: [source.id, target.id],
+        diagnostics: [],
+        viewportClass: "visible",
+        start: source.position,
+        end: target.position
+      });
+    }
+    return { edges: result, truncated };
+  };
   const collectionDetail = async (
     id: string,
     page = 0
@@ -284,6 +332,7 @@ export async function v5ShellReader(worldId: string) {
     detail,
     shape,
     memberships,
-    collectionDetail
+    collectionDetail,
+    edges
   };
 }

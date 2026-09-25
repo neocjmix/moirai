@@ -60,9 +60,18 @@ export function GraphRelationPanel({
     entities,
     catalog,
     relations: sourceRelations,
-    diagnostics: sourceDiagnostics
+    diagnostics: sourceDiagnostics,
+    v5
   } = useGraphQuery();
-  const copy = COPY[locale];
+  const copy = v5
+    ? {
+        ...COPY[locale],
+        relationHint:
+          locale === "ko"
+            ? "연결은 World의 사실입니다. 사건 드로어에서 해당 사건의 연결을 읽을 수 있습니다."
+            : "Connections are World facts. Open an Event drawer to read its connections."
+      }
+    : COPY[locale];
   const entityTitles = useMemo(
     () =>
       new Map(

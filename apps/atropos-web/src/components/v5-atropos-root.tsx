@@ -82,9 +82,12 @@ export function V5AtroposRoot(props: V5AtroposBootstrap) {
 
 function V5GraphApp(props: V5AtroposBootstrap) {
   const { state, setState } = useGraphQuery();
-  const selection = JSON.stringify(
-    state.query.sources.flatMap((source) => source.canon_ids).sort()
-  );
+  const selection = JSON.stringify({
+    collections: state.query.sources
+      .flatMap((source) => source.canon_ids)
+      .sort(),
+    relationTypes: state.query.relation_filter.types
+  });
   const loader = useMemo<GraphReadLoader>(() => {
     const call = async (query: Record<string, unknown>) => {
       const response = await fetch("/graph/v5/shell", {
@@ -105,7 +108,8 @@ function V5GraphApp(props: V5AtroposBootstrap) {
         call({
           kind: "viewport",
           time_system_id: props.timeSystemId,
-          collection_ids: JSON.parse(selection),
+          collection_ids: JSON.parse(selection).collections,
+          relation_types: JSON.parse(selection).relationTypes,
           viewport
         }),
       loadEventDetail: async (_locale, event_id) =>

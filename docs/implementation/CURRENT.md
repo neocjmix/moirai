@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-**IP-011 A3 UI 복구 진행 중; A4는 보류한다.** A3에서 도입한 별도 V5Explorer가 기존 URDR UI를 대체한 회귀를 복구한다. 사용자 지시에 따라 A3 직전 `b2dbc64`의 App·GraphShell·스타일을 그대로 재사용하고 v5 데이터 연결만 수정한다. 화면·동작 재검증 전까지 UI exit는 미충족이다. 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22)은 dependency gate 순서를 따른다. M5는 별도 후속 범위다. [A3 실행 기록](../evidence/ip011/a3-execution.md)에 운영 전환과 아홉 시나리오의 실제 증거를 기록했다.
+**IP-011 A3 UI 복구 진행 중; A4는 보류한다.** A3에서 도입한 별도 V5Explorer가 기존 URDR UI를 대체한 회귀를 복구한다. 사용자 지시에 따라 A3 직전 `b2dbc64`의 App·GraphShell·스타일을 그대로 재사용하고 v5 데이터 연결만 수정한다. 화면·동작 재검증 전까지 UI exit는 미충족이다. [UI 복구 기록](../evidence/ip011/a3-ui-restoration.md)에 기준과 검증을 기록한다. 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22)은 dependency gate 순서를 따른다. M5는 별도 후속 범위다. [A3 실행 기록](../evidence/ip011/a3-execution.md)에 운영 전환과 아홉 시나리오의 실제 증거를 기록했다.
 
 2026-09-25 운영 World는 Revision 30→31의 v5 schema/content로 이전됐고 새 암호화 owner-full 백업·격리 복원·clone migration 재현을 통과했다. 인증된 v5 정책 기반 운영 쓰기와 동일 Change Set 재생으로 Revision 32가 됐으며 공개 완전 Publication 포인터는 v5 served/current/target 32다. 127 Event·6 Collection·415 Relation·133 Narrative가 보존됐다. API·worker·web은 v5로 동작하고 구형 v4 변경 경로는 404, 미인증 v5 commit은 401이다. v5 공개·인증 배포 smoke 36093424585와 운영 iPhone WebKit 미배치 Event·Collection·Composite 탐색이 통과해 A3의 아홉 시나리오를 충족했다. IP-004~010 완료 이력은 유지한다.
 

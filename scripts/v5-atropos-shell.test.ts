@@ -73,6 +73,64 @@ describe("v5 adapter into the original Atropos shell", () => {
     const off = await read([]);
     expect([...off.entities, ...off.regions, ...off.edges]).toEqual([]);
   });
+  it("maps one World relation to the existing line geometry without duplicating it", async () => {
+    const shell = await v5ShellReader(world);
+    const adjacency = vi
+      .spyOn(shell.reader, "adjacency")
+      .mockImplementation(async (eventId) => ({
+        event_id: eventId,
+        relation_ids: ["synthetic-cause"],
+        next_page: null
+      }));
+    const relation = vi
+      .spyOn(shell.reader, "relation")
+      .mockResolvedValue({
+        id: "synthetic-cause",
+        world_id: world,
+        type: "causes",
+        source_ref: { kind: "event", event_id: ids.battle },
+        target_ref: { kind: "event", event_id: ids.war },
+        direction: "directed",
+        attributes: {}
+      });
+    const base = {
+      canonId: world,
+      geometryKind: "point" as const,
+      validationState: "ok" as const,
+      contains: [],
+      diagnostics: [],
+      viewportClass: "visible" as const
+    };
+    const result = await shell.edges([
+      {
+        ...base,
+        id: ids.battle,
+        eventId: ids.battle,
+        label: "A",
+        position: { x: 1, y: 2 }
+      },
+      {
+        ...base,
+        id: ids.war,
+        eventId: ids.war,
+        label: "B",
+        position: { x: 3, y: 4 }
+      }
+    ]);
+    expect(result.truncated).toBe(false);
+    expect(result.edges).toMatchObject([
+      {
+        id: "synthetic-cause",
+        label: "causes",
+        contains: [ids.battle, ids.war],
+        start: { x: 1, y: 2 },
+        end: { x: 3, y: 4 }
+      }
+    ]);
+    expect(result.edges).toHaveLength(1);
+    adjacency.mockRestore();
+    relation.mockRestore();
+  });
   it("preserves separate Collection and Event Narratives, unplaced detail and child navigation", async () => {
     const shell = await v5ShellReader(world);
     const detail = eventDetailResponseSchema.parse(await shell.detail(ids.war));

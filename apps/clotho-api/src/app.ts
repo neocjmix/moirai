@@ -16,6 +16,20 @@ import { databaseV5Lachesis } from "@moirai/lachesis/database";
 import { registerV5ClothoRoutes } from "./v5-routes.js";
 import { registerV5McpRoutes } from "./v5-mcp.js";
 import { ChangeSetError } from "@moirai/domain";
+import { assertV5SchemaReady } from "@moirai/persistence/v5";
+
+export async function assertV5DeploymentReady(
+  config: RuntimeConfig
+): Promise<void> {
+  if (config.contractMode !== "v5" && config.contractMode !== "v5-readonly")
+    return;
+  const db = createDatabase(config.databaseUrl);
+  try {
+    await assertV5SchemaReady(db);
+  } finally {
+    await db.destroy();
+  }
+}
 
 export function buildApp(
   config: RuntimeConfig,

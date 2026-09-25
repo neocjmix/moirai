@@ -1,0 +1,41 @@
+name: IP-011 A4 live mobile performance profile
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ip011-a4-mobile-profile.yml"
+      - "scripts/ip011-a4-mobile-profile.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  mobile-profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      PUBLIC_INTEGRATION_URL: >-
+        ${{ vars.PUBLIC_INTEGRATION_URL || 'https://moirai-production-8ed1.up.railway.app' }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec playwright install --with-deps webkit
+      - name: Measure 20 navigations and 600 frames per gesture
+        run: |
+          set -o pipefail
+          node --import tsx scripts/ip011-a4-mobile-profile.ts \
+            | tee /tmp/ip011-a4-mobile-profile.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ip011-a4-mobile-profile
+          path: /tmp/ip011-a4-mobile-profile.json
+          retention-days: 14

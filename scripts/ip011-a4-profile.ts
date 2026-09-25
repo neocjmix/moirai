@@ -1,6 +1,8 @@
 /** Synthetic v5 read profile. No production store or credentials. */
 import { performance } from "node:perf_hooks";
 import { createHash } from "node:crypto";
+import { mkdirSync, writeFileSync } from "node:fs";
+import { join } from "node:path";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import {
   buildV5WorldSpatialStagedArtifacts,
@@ -198,6 +200,7 @@ const viewport =
       };
 const collectionIds = density === "shared" ? ["a", "b"] : ["a"];
 const samples = [];
+const selectedObjects = new Map<string, string | null>();
 for (let n = 0; n < 3; n++) {
   let reads = 0,
     bytes = 0;
@@ -212,6 +215,7 @@ for (let n = 0; n < 3; n++) {
     null,
     async (key) => {
       const body = objects.get(key) ?? null;
+      if (n === 0 && process.env.A4_CAPTURE_DIR) selectedObjects.set(key, body);
       reads++;
       bytes += body ? Buffer.byteLength(body) : 0;
       return body;
@@ -225,6 +229,29 @@ for (let n = 0; n < 3; n++) {
     continuation: result.next_cursor !== null,
     response_bytes: Buffer.byteLength(JSON.stringify(result))
   });
+}
+if (process.env.A4_CAPTURE_DIR) {
+  const directory = process.env.A4_CAPTURE_DIR;
+  mkdirSync(join(directory, "objects"), { recursive: true });
+  const paths: Record<string, string | null> = {};
+  for (const [key, body] of selectedObjects) {
+    const file = createHash("sha256").update(key).digest("hex");
+    paths[key] = body === null ? null : file;
+    if (body !== null) writeFileSync(join(directory, "objects", file), body);
+  }
+  writeFileSync(
+    join(directory, "fixture.json"),
+    JSON.stringify({
+      root: artifacts.root.body,
+      world_id: worldId,
+      revision: 31,
+      time_system_id: "gregorian",
+      viewport,
+      collection_ids: collectionIds,
+      paths,
+      expected: samples[0]
+    })
+  );
 }
 process.stdout.write(
   JSON.stringify({

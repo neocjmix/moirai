@@ -1,0 +1,44 @@
+name: IP-011 A4 v5 process query profile
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ip011-a4-query-process.yml"
+      - "scripts/ip011-a4-profile.ts"
+      - "scripts/ip011-a4-process-benchmark.ts"
+      - "scripts/ip011-a4-read-sample.ts"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  query:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    strategy:
+      fail-fast: false
+      matrix:
+        scale: [1000, 10000, 100000]
+        density: [sparse, dense, shared, large]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Fresh process and warm viewport measurements
+        run: |
+          set -o pipefail
+          node --import tsx scripts/ip011-a4-process-benchmark.ts ${{ matrix.scale }} ${{ matrix.density }} \
+            | tee /tmp/ip011-a4-${{ matrix.scale }}-${{ matrix.density }}.json
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ip011-a4-${{ matrix.scale }}-${{ matrix.density }}
+          path: /tmp/ip011-a4-${{ matrix.scale }}-${{ matrix.density }}.json
+          retention-days: 14

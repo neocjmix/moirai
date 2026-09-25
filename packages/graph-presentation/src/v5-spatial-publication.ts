@@ -362,10 +362,17 @@ export async function readV5SelectedViewport(
     Math.min(16, Math.floor(80 / (collectionIds.length * perLookup)))
   );
   let reads = 0;
-  const countedGet = async (key: string) => {
+  // One immutable object may authenticate many candidate membership lookups.
+  // Count and transfer it once per query, including an absent posting.
+  const objects = new Map<string, Promise<string | null>>();
+  const countedGet = (key: string): Promise<string | null> => {
+    const cached = objects.get(key);
+    if (cached) return cached;
     reads++;
     if (reads > 256) throw Error("v5_viewport_object_budget_exceeded");
-    return get(key);
+    const pending = get(key);
+    objects.set(key, pending);
+    return pending;
   };
   for (const collectionId of collectionIds) {
     const key = `worlds/${worldId}/revisions/${revision}/v5/content/collections/${collectionId}/detail.json`;

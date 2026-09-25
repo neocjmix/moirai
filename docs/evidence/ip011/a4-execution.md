@@ -31,3 +31,17 @@
 다음 slice는 X force의 제곱 비용과 국소 좌표 드리프트를 해결해야 한다. 100k, 20 cold/50 warm, dense/large Collection, 모바일 600 frame, authoring query 및 worker cancel/restart는 여전히 A4 exit에 필요한 미검증 영역이다.
 
 Dense 1k 첫 페이지는 16 Event·continuation, 38 object reads·935367 B였다. 같은 300개 국소 Event와 viewport를 유지한 10k dense 첫 페이지는 16 Event·continuation이지만 57 reads·1793805 B로 **1 MiB 예산을 위반**했다. 중복 digest-index page 조회가 누적된다. 별도 shared-membership/large-Collection 1k 첫 페이지는 각각 10 reads·264488 B, 8 reads·220749 B. 이 수치들은 로컬 메모리 store의 첫 읽기 3회 중 첫 시료이며 20 cold/50 warm p95 gate가 아니다.
+
+PR #200 병합 main/배포 SHA `1641c63426eba812d284adee7d495d077082b399`; PR CI `36146100222`, main CI `36146498579`, post-deploy smoke `36146869881` 모두 성공. Railway web/API/worker 정상이고 운영 iPhone WebKit·인증 v5 authoring smoke가 통과했다. [PR #200 release comment](https://github.com/neocjmix/moirai/pull/200#issuecomment-5833999838).
+
+## Slice 3: 요청 범위 immutable object 재사용
+
+한 viewport 조회에서 digest-index page, Collection detail, spatial shard 및 membership posting의 동일 object key를 다시 요청하지 않도록 Promise를 한 query 범위에 저장한다. 실패·404도 해당 요청에서만 공유하고 각 참조의 digest 검증은 계속 수행한다. 응답의 Event/continuation/Revision은 변경하지 않는다.
+
+| Synthetic fixed query | 수정 전 reads/bytes | 수정 후 reads/bytes | 결과 |
+| --- | ---: | ---: | --- |
+| 1k dense, 300 local | 38 / 935367 B | 21 / 127892 B | 16 Event, continuation |
+| 10k dense, 같은 local | 57 / 1793805 B | 23 / 228464 B | 16 Event, continuation |
+| 10k very large Collection, 10000 members | 미측정 | 7 / 225830 B | 좌표 드리프트로 0 Event |
+
+이 결과는 로컬 메모리 store 측정이다. 동일 query의 index+artifact 1 MiB 기준은 dense 1k/10k 첫 페이지에서 통과하지만, 운영 cold 20회와 100k는 아직 측정하지 못했다. 큰 Collection의 0 Event는 성공 증거가 아니라 레이아웃 좌표 이동의 재현이다. A4 exit는 미완료다.

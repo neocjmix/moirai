@@ -198,11 +198,16 @@ describe("authenticated v5 World viewport rehearsal", () => {
         body
       ])
     );
-    const get = async (key: string) => objects.get(key) ?? null;
+    const fetched: string[] = [];
+    const get = async (key: string) => {
+      fetched.push(key);
+      return objects.get(key) ?? null;
+    };
     const viewport = { minX: -1e6, maxX: 1e6, minY: -1e6, maxY: 1e6 };
     let cursor = null;
     const seen: string[] = [];
     do {
+      fetched.length = 0;
       const page = await readV5SelectedViewport(
         artifacts.root.body,
         "world-1",
@@ -214,6 +219,8 @@ describe("authenticated v5 World viewport rehearsal", () => {
         get
       );
       expect(page.object_reads).toBeLessThanOrEqual(256);
+      expect(fetched.length).toBe(page.object_reads);
+      expect(new Set(fetched).size).toBe(fetched.length);
       seen.push(...page.shapes.map((shape) => shape.event_id));
       cursor = page.next_cursor;
       if (cursor)

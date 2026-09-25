@@ -12,6 +12,15 @@ import {
   publishArtifacts,
   S3ObjectStore
 } from "@moirai/publication";
+import {
+  assertV5SchemaReady,
+  readV5WorldAtRevision
+} from "@moirai/persistence/v5";
+import { buildV5WorldCompleteArtifacts } from "@moirai/graph-presentation/server";
+import {
+  publishV5CompleteArtifacts,
+  readV5ServedRoot
+} from "@moirai/publication/v5";
 import { createServer } from "node:http";
 import {
   publishPresentation,
@@ -29,12 +38,49 @@ const commitSha =
 const port = Number(process.env.PORT ?? "3002");
 const database = createDatabase(databaseUrl);
 const publicationStore = new S3ObjectStore();
+const publicationMode = process.env.PUBLICATION_CONTRACT_MODE ?? "v4";
+if (!["v4", "quiesced", "v5-hold", "v5"].includes(publicationMode))
+  throw Error("invalid_publication_contract_mode");
 let stopping = false;
 
 async function processNextJob(): Promise<boolean> {
   const job = await claimPublicationJob(database);
   if (!job) return false;
   try {
+    if (publicationMode === "v5") {
+      const state = await readV5WorldAtRevision(
+        database,
+        job.worldId,
+        job.targetRevision
+      );
+      const { artifacts } = await buildV5WorldCompleteArtifacts(
+        state,
+        job.targetRevision
+      );
+      const pointer = await publishV5CompleteArtifacts(
+        publicationStore,
+        artifacts,
+        new Date().toISOString()
+      );
+      const served = await readV5ServedRoot(publicationStore, job.worldId);
+      if (
+        served.pointer.served_revision !== job.targetRevision ||
+        served.pointer.manifest_sha256 !== pointer.manifest_sha256
+      )
+        throw Error("v5_publication_readback_mismatch");
+      await completePublicationJob(database, job, job.targetRevision);
+      process.stdout.write(
+        JSON.stringify({
+          level: "info",
+          service: "lachesis-worker",
+          operation: "publication_v5",
+          world_id: job.worldId,
+          revision: job.targetRevision,
+          result_code: "served"
+        }) + "\n"
+      );
+      return true;
+    }
     const view = await readWorldAtRevision(
       database,
       job.worldId,
@@ -93,20 +139,27 @@ async function processNextJob(): Promise<boolean> {
 }
 
 async function workerLoop(): Promise<void> {
-  try {
-    await backfillPresentation(publicationStore);
-  } catch {
-    process.stderr.write(
-      JSON.stringify({
-        level: "error",
-        service: "lachesis-worker",
-        operation: "spatial_backfill",
-        result_code: "backfill_failed"
-      }) + "\n"
-    );
+  if (publicationMode === "v5" || publicationMode === "v5-hold")
+    await assertV5SchemaReady(database);
+  if (publicationMode === "v4") {
+    try {
+      await backfillPresentation(publicationStore);
+    } catch {
+      process.stderr.write(
+        JSON.stringify({
+          level: "error",
+          service: "lachesis-worker",
+          operation: "spatial_backfill",
+          result_code: "backfill_failed"
+        }) + "\n"
+      );
+    }
   }
   while (!stopping) {
-    const processed = await processNextJob();
+    const processed =
+      publicationMode === "quiesced" || publicationMode === "v5-hold"
+        ? false
+        : await processNextJob();
     if (!processed) await new Promise((resolve) => setTimeout(resolve, 1_000));
   }
 }

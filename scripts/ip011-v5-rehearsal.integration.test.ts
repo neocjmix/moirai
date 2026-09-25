@@ -26,6 +26,8 @@ import { commitV5Resolved } from "../packages/persistence/src/v5-change.js";
 import { TEST_FIXTURE } from "@moirai/contracts/testing";
 import { orderedV5State } from "@moirai/domain/v5";
 import { readV5WorldAtRevision } from "../packages/persistence/src/v5-history-reader.js";
+import { assertV5SchemaReady } from "../packages/persistence/src/v5-readiness.js";
+import { up as installSearchIndex } from "../packages/persistence/src/cutovers/011_ip011_authoring_search.js";
 import { createV5Clotho } from "@moirai/clotho-application/v5";
 import { databaseV5Lachesis } from "@moirai/lachesis/database";
 import type { ActorContext } from "@moirai/lachesis";
@@ -125,6 +127,9 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
   });
 
   it("rejects the staged writer against an unmigrated v4 database without mutation", async () => {
+    await expect(assertV5SchemaReady(source)).rejects.toThrow(
+      "v5_schema_not_ready"
+    );
     await expect(
       commitV5Resolved(source, {
         change_set_id: "019f5000-1100-7000-8000-000000000041",
@@ -206,6 +211,11 @@ describe.skipIf(!sourceUrl)("IP-011 isolated full-content transaction", () => {
         clone
       );
       expect(ledger.rows[0]?.name).toBe("010_ip011_collections");
+      await expect(assertV5SchemaReady(clone)).rejects.toThrow(
+        "v5_schema_not_ready"
+      );
+      await clone.transaction().execute(async (tx) => installSearchIndex(tx));
+      await assertV5SchemaReady(clone);
       const archived = await sql<{
         count: string;
       }>`select count(*)::text as count from change_operations where entity_type='relation_canon_membership' and operation_kind='retire_applicability'`.execute(

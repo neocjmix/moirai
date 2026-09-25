@@ -91,7 +91,8 @@ export function V5Explorer({
   nextCollectionPage,
   initialTimeSystems,
   nextTimeSystemPage,
-  initialSpatial
+  initialSpatial,
+  initialEventId
 }: {
   worldId: string;
   revision: number;
@@ -101,6 +102,7 @@ export function V5Explorer({
   initialTimeSystems: readonly TimeSystem[];
   nextTimeSystemPage: number | null;
   initialSpatial: Spatial | null;
+  initialEventId?: string;
 }) {
   const [collections, setCollections] = useState([...initialCollections]);
   const [collectionPage, setCollectionPage] = useState(nextCollectionPage);
@@ -262,10 +264,17 @@ export function V5Explorer({
             }
           : {})
       });
+      const url = new URL(window.location.href);
+      url.searchParams.set("event", id);
+      window.history.replaceState(null, "", url);
     } catch {
       setError("사건 본문을 불러오지 못했습니다.");
     }
   };
+  useEffect(() => {
+    if (initialEventId) void openEvent(initialEventId);
+    // The deep link is consumed once; subsequent Event clicks use the same read.
+  }, [initialEventId]);
   const openCollection = async (id: string) => {
     try {
       const data = await read<{
@@ -284,6 +293,9 @@ export function V5Explorer({
         memberNextPage: data.next_page,
         collectionId: id
       });
+      const url = new URL(window.location.href);
+      url.searchParams.delete("event");
+      window.history.replaceState(null, "", url);
     } catch {
       setError("컬렉션 본문을 불러오지 못했습니다.");
     }
@@ -299,7 +311,7 @@ export function V5Explorer({
           <p className={styles.eyebrow}>Moirai · World Revision {revision}</p>
           <h1>{worldTitle}</h1>
         </div>
-        <a href="/graph">기존 탐색 화면</a>
+        <a href="/graph">탐색 홈</a>
       </header>
       <div className={styles.grid}>
         <aside className={styles.sidebar} aria-label="컬렉션과 시간 체계">
@@ -691,7 +703,15 @@ export function V5Explorer({
                     )}
                 </div>
               )}
-              <button type="button" onClick={() => setDetail(null)}>
+              <button
+                type="button"
+                onClick={() => {
+                  setDetail(null);
+                  const url = new URL(window.location.href);
+                  url.searchParams.delete("event");
+                  window.history.replaceState(null, "", url);
+                }}
+              >
                 닫기
               </button>
             </>

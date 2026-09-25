@@ -17,6 +17,69 @@ import {
 const worldId = "019f5000-1100-7000-8000-000000000001";
 const token = "stageOnlyBearerToken0123456789abcd";
 describe("inactive v5 MCP transport", () => {
+  it("serves the existing OAuth MCP URL with v5 discovery after cutover", async () => {
+    const oidc: OidcConfig = {
+      issuer: "https://identity.example.test/",
+      jwks_uri: "https://identity.example.test/keys",
+      resource: "https://api.example.test/mcp",
+      operator_subject: "synthetic-operator",
+      actor_id: "019f5000-1100-7000-8000-000000000002"
+    };
+    const app = Fastify();
+    registerV5McpRoutes(
+      app,
+      [
+        {
+          token_sha256: createHash("sha256").update(token).digest("hex"),
+          actor_id: oidc.actor_id,
+          world_ids: [CLOTHO_CONNECTION_WORLD],
+          scopes: ["world:read", "world:write"],
+          expires_at: "2099-01-01T00:00:00Z"
+        }
+      ],
+      createV5Clotho(createV5Lachesis({ commit: vi.fn() })),
+      oidc,
+      undefined,
+      "/mcp"
+    );
+    try {
+      const metadata = await app.inject({
+        method: "GET",
+        url: "/.well-known/oauth-protected-resource/mcp"
+      });
+      expect(metadata.json().resource).toBe(oidc.resource);
+      const discovered = await app.inject({
+        method: "POST",
+        url: "/mcp",
+        headers: { accept: "application/json, text/event-stream" },
+        payload: {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/list"
+        }
+      });
+      expect(
+        discovered
+          .json()
+          .result.tools.map((tool: { name: string }) => tool.name)
+      ).toContain("change_commit");
+      const denied = await app.inject({
+        method: "POST",
+        url: "/mcp",
+        headers: { accept: "application/json, text/event-stream" },
+        payload: {
+          jsonrpc: "2.0",
+          id: 2,
+          method: "tools/call",
+          params: { name: "change_commit", arguments: {} }
+        }
+      });
+      expect(denied.statusCode).toBe(401);
+      expect(denied.headers["www-authenticate"]).toContain("resource_metadata");
+    } finally {
+      await app.close();
+    }
+  });
   it("accepts a scoped Auth0-style access token and denies write with read-only scope", async () => {
     const keys = await generateKeyPair("RS256");
     const oidc: OidcConfig = {

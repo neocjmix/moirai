@@ -2,6 +2,7 @@ import { parseCredentials, type Credential } from "./auth.js";
 import { parseOidcConfig, type OidcConfig } from "./oidc.js";
 
 export interface RuntimeConfig {
+  readonly contractMode?: "v4" | "quiesced" | "v5-readonly" | "v5";
   readonly credentials?: readonly Credential[];
   readonly oidc?: OidcConfig | undefined;
   readonly appVersion: string;
@@ -15,8 +16,13 @@ export function loadConfig(environment: NodeJS.ProcessEnv): RuntimeConfig {
   if (!databaseUrl) {
     throw new Error("DATABASE_URL is required");
   }
+  const contractMode = environment.CLOTHO_CONTRACT_MODE ?? "v4";
+  if (!["v4", "quiesced", "v5-readonly", "v5"].includes(contractMode)) {
+    throw new Error("Invalid Clotho contract mode");
+  }
 
   return {
+    contractMode: contractMode as NonNullable<RuntimeConfig["contractMode"]>,
     credentials: parseCredentials(environment.CLOTHO_CREDENTIALS_JSON),
     oidc: parseOidcConfig(environment.CLOTHO_OIDC_JSON),
     appVersion: environment.APP_VERSION ?? "0.0.0-dev",

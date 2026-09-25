@@ -11,6 +11,11 @@ import { registerClotho } from "./clotho.js";
 import { createClotho } from "@moirai/clotho-application";
 import { databaseLachesis } from "@moirai/lachesis/database";
 import { registerMcp } from "./mcp.js";
+import { createV5Clotho } from "@moirai/clotho-application/v5";
+import { databaseV5Lachesis } from "@moirai/lachesis/database";
+import { registerV5ClothoRoutes } from "./v5-routes.js";
+import { registerV5McpRoutes } from "./v5-mcp.js";
+import { ChangeSetError } from "@moirai/domain";
 
 export function buildApp(
   config: RuntimeConfig,
@@ -21,17 +26,61 @@ export function buildApp(
     disableRequestLogging: true,
     ajv: { customOptions: { removeAdditional: false, coerceTypes: false } }
   });
-  const execute = createClotho(databaseLachesis(database));
-  registerClotho(app, config.credentials ?? [], execute);
-  registerMcp(
-    app,
-    {
-      credentials: config.credentials ?? [],
-      oidc: config.oidc,
-      version: config.appVersion
-    },
-    execute
-  );
+  const mode = config.contractMode ?? "v4";
+  if (mode === "quiesced")
+    app.addHook("onRequest", async (request, reply) => {
+      if (/^\/v1\/clotho\/change\./.test(request.url))
+        return reply
+          .header("cache-control", "no-store")
+          .code(503)
+          .send({ error: { code: "writes_quiesced" } });
+    });
+  if (mode === "v5" || mode === "v5-readonly") {
+    const activeService = createV5Clotho(databaseV5Lachesis(database));
+    const service =
+      mode === "v5-readonly"
+        ? {
+            ...activeService,
+            commit: (() => {
+              throw new ChangeSetError(
+                "writes_quiesced",
+                "method",
+                "Writes are paused for IP-011 cutover"
+              );
+            }) as typeof activeService.commit
+          }
+        : activeService;
+    registerV5ClothoRoutes(app, config.credentials ?? [], service);
+    registerV5McpRoutes(
+      app,
+      config.credentials ?? [],
+      service,
+      config.oidc,
+      undefined,
+      "/mcp"
+    );
+  } else {
+    const execute = createClotho(databaseLachesis(database));
+    const guardedExecute: typeof execute = (method, input, actor) => {
+      if (mode === "quiesced" && method.startsWith("change."))
+        throw new ChangeSetError(
+          "writes_quiesced",
+          "method",
+          "Writes are paused for IP-011 cutover"
+        );
+      return execute(method, input, actor);
+    };
+    registerClotho(app, config.credentials ?? [], guardedExecute);
+    registerMcp(
+      app,
+      {
+        credentials: config.credentials ?? [],
+        oidc: config.oidc,
+        version: config.appVersion
+      },
+      guardedExecute
+    );
+  }
   app.addHook("onResponse", async (request, reply) => {
     app.log.info(
       {

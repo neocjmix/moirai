@@ -74,8 +74,8 @@ try {
     const stage = page.getByTestId("graph-stage");
     const bounds = await stage.boundingBox();
     if (!bounds) throw Error("a4_mobile_graph_bounds_missing");
-    const cx = bounds.x + bounds.width / 2;
-    const cy = bounds.y + bounds.height / 2;
+    const pointBefore = await first.boundingBox();
+    if (!pointBefore) throw Error("a4_mobile_point_bounds_missing");
     const frameSample = async (name: string, gesture: () => Promise<void>) => {
       const pending = page.evaluate(async () => {
         // Let the sampler's evaluation and the previous UI action settle
@@ -112,14 +112,15 @@ try {
         failures.push(`${name}_frame_error:${String(error)}`);
       }
     };
-    const panBefore = new URL(page.url()).searchParams.get("gsViewport");
     await frameSample("pan", async () => {
-      await page.mouse.move(cx, cy);
+      // Match the empty-canvas drag used by the URDR mobile regression.
+      await page.mouse.move(25, 450);
       await page.mouse.down();
-      await page.mouse.move(cx + 80, cy + 50, { steps: 100 });
+      await page.mouse.move(65, 510, { steps: 20 });
       await page.mouse.up();
     });
-    if (new URL(page.url()).searchParams.get("gsViewport") === panBefore)
+    const pointAfter = await first.boundingBox();
+    if (!pointAfter || pointAfter.x < pointBefore.x + 30)
       failures.push("pan_ineffective");
     const zoomBefore = new URL(page.url()).searchParams.get("gsViewport");
     await frameSample("zoom", async () => {

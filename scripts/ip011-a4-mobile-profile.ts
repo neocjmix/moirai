@@ -43,7 +43,7 @@ try {
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("response", (response) => {
       const path = new URL(response.url()).pathname;
-      if (["/graph/detail", "/graph/spatial"].includes(path))
+      if (path === "/graph/v5/shell")
         graphResponses.push(response.body().then((body) => body.byteLength));
     });
     const started = performance.now();

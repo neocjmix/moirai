@@ -1,10 +1,11 @@
 # IP-011 A3 controlled cutover — execution ledger
 
 Status: **live cutover executed; acceptance in progress**. The operational
-World moved from Revision 30 to 31 on 2026-09-25. The v5 complete Publication
-pointer serves Revision 31 and API/worker/web are on the merged A3 SHA. The
-authenticated production v5 write/replay and the full nine served scenario
-gate are not yet evidenced, so A3 exit is not claimed.
+World moved from Revision 30 to 31 on 2026-09-25. A policy-bound production
+write and exact replay advanced it to Revision 32; the v5 complete Publication
+pointer serves Revision 32. The nine served scenario gate still requires
+production unplaced Event and mobile navigation evidence, so A3 exit is not yet
+claimed.
 
 ## Ordered cutover gates
 
@@ -79,24 +80,48 @@ gate are not yet evidenced, so A3 exit is not claimed.
   redirect marker. API `v5` deployment
   `d3a52ba2-b9f6-4cb9-af73-c78524e0f223` was SUCCESS. The web deployment
   was `c1940d31-fa67-47fa-99b4-ab8b6d452e33`; all run at `dfae64fb`.
+- PR #191 (`63afab88b12e9e671ef6c091424f0f693e13d6fe`, CI 36090333763)
+  introduced a one-shot production acceptance action under the v5 API mode.
+  Its first attempt failed before any write because the search request lacked
+  `contract_version: 5`. PR #192
+  (`0af67ec17ec65deb5eff6dac17579d95981420da`, CI 36091165137)
+  corrected that DTO; the subsequent API deployment
+  `bf83a9c9-9137-4bfb-b70b-5bf36286d60a` reported
+  `policy_write_replay_preserved`, `stale_policy_rejected=true`,
+  `idempotent_replay=true`, Change Set
+  `01996a80-0000-7000-8000-000000000001`, Revision 32, and unchanged
+  127/6/415/133 entity counts. It performed an authorized same-content World
+  update, then replayed the exact request. The operator action was cleared;
+  final API deployment `ad2d5a14-aaba-479a-b4a0-9a18ad8d5aa0` succeeded.
+  Worker deployment `eb557412-1faf-4d19-a9d0-f3539b57092e` served Revision
+  32, and web deployment `9f7966af-15f5-4de6-9cfb-6778bc9f0cce`
+  succeeded. Public v5 pointer served/current/target are all 32 with manifest
+  digest `8ed8a73bac3d920b218c38b44846a6d98a025d0f167ea4f8c9b4e9d54e316f56`.
+- PR #193 (`196a9f7a56ad795149bc46477a1c12d014a892dc`, CI 36092253026)
+  updated the post-deploy smoke to inspect the v5 pointer, membership identity,
+  Event/Composite/spatial readback and authorized v5 policy/search/detail,
+  stale-policy rejection and MCP tool discovery. Post-deploy smoke run
+  36092738608 passed public readiness and authenticated v5 authoring checks
+  for this SHA. The preceding v4-only smoke run 36091587320 failed at public
+  readiness after the contract switched, before the authenticated stage.
 
 ## Served scenario review
 
 | Scenario | Live observation | Status |
 | --- | --- | --- |
-| Shared Event | `019f5b00-0000-7000-8000-000000000115` reads at 31 with one owner Narrative and appears in the served Collection member list | Passed |
+| Shared Event | `019f5b00-0000-7000-8000-000000000115` reads at 32 with one owner Narrative and appears in two served Collection memberships | Passed |
 | Collection toggle | Browser switched from `조선 전기 연표` to `단종 폐위` while the same Event detail remained open | Passed |
-| Composite child | Served `composite_children` for `01a0c40a-a761-7fc7-aef2-10211e0ecb0e` returned 14 child IDs | API passed; browser child click pending |
+| Composite child | Served `composite_children` for `01a0c40a-a761-7fc7-aef2-10211e0ecb0e` returned 14 child IDs; browser clicked child `019f5b00-0000-7000-8000-000000000116`, changing URL and drawer to `세조 즉위` at Revision 32 | Passed |
 | Unplaced Event | Served spatial summary reports 125 placed and 2 unplaced; Collection union contains all 127 Events | Count passed; direct unplaced Event navigation pending |
 | Direct Event URL | Browser loaded `계유정난` by exact World/Event URL and rendered its Narrative | Passed |
-| Old history | Public Revision 30 immutable manifest remained 200 after v5 handoff | Artifact passed; authenticated v5 historical detail pending |
-| Authorization | Unauthenticated `/v2/clotho/change.commit` returned 401; old v4 change route returned 404 | Passed for public ingress |
-| Stale policy | Synthetic PostgreSQL integration in the green CI suite rejects stale policy | Production authenticated path pending |
-| Mobile navigation | Green CI mobile WebKit covers the synthetic complete-root journey; live browser loaded Revision 31 and toggled Collections | Production mobile journey pending |
+| Old history | Public Revision 30 immutable manifest remained 200 after v5 handoff; the guarded API acceptance read historical Event detail at Revision 31 | Passed |
+| Authorization | Unauthenticated `/v2/clotho/change.commit` returned 401; old v4 change route returned 404; production smoke 36092738608 passed authenticated policy/search/detail and MCP discovery | Passed |
+| Stale policy | Guarded API production acceptance rejected a stale policy digest before the Revision 32 write and replayed the same Change Set idempotently | Passed |
+| Mobile navigation | Green CI mobile WebKit covers the synthetic complete-root journey; live desktop browser loaded Revision 32 and navigated Collections and a Composite child | Production mobile journey pending |
 
-The connected Moirai Live tool catalog still advertises v4 input and cannot
-exercise an authenticated v5 write. A policy-bound production write and exact
-retry must be observed before declaring A3 exit. Do not substitute the A2
-clone or synthetic mobile run for the pending production scenarios. Recovery
+The connected Moirai Live tool catalog still advertises v4 input; the guarded
+production API action supplied the authenticated v5 write/replay evidence.
+Do not substitute the A2 clone or synthetic mobile run for the pending live
+mobile and unplaced Event scenarios. Recovery
 remains the fresh encrypted owner-full backup and isolated restored clone
 above; forward repair is required for any post-migration defect.

@@ -102,7 +102,7 @@ export function V5Explorer({
   initialTimeSystems: readonly TimeSystem[];
   nextTimeSystemPage: number | null;
   initialSpatial: Spatial | null;
-  initialEventId?: string;
+  initialEventId?: string | undefined;
 }) {
   const [collections, setCollections] = useState([...initialCollections]);
   const [collectionPage, setCollectionPage] = useState(nextCollectionPage);

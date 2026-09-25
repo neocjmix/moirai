@@ -183,12 +183,19 @@ if (!localLeaf) throw Error("local_shape_missing");
 const example = localLeaf.entries.find(
   (entry: { shape: { event_id: string } }) => entry.shape.event_id === id(0)
 ).bounds;
-// The renderer may use a normalized axis rather than calendar years. Derive
-// the local viewport from the first synthetic Event, then keep it fixed for N.
+// Pin the same local query across scales; a new layout version can be probed
+// with A4_QUERY_CENTER_X without adapting the query separately to each N.
+const queryCenterX = Number(process.env.A4_QUERY_CENTER_X ?? -722.5);
+if (!Number.isFinite(queryCenterX)) throw Error("invalid_a4_query_center");
 const viewport =
   density === "dense"
     ? { minX: -100000, maxX: 100000, minY: 203419, maxY: 203422 }
-    : { minX: -724, maxX: -721, minY: 203419, maxY: 203422 };
+    : {
+        minX: queryCenterX - 1.5,
+        maxX: queryCenterX + 1.5,
+        minY: 203419,
+        maxY: 203422
+      };
 const collectionIds = density === "shared" ? ["a", "b"] : ["a"];
 const samples = [];
 for (let n = 0; n < 3; n++) {

@@ -74,7 +74,7 @@ test("original drawer reads Collection, unplaced Event and Composite children", 
   await expect(drawer).toContainText("일본사 컬렉션 서사");
   await page.getByTestId("event-drawer-stage-toggle").click();
   await drawer
-    .getByRole("link", { name: "연대 미상 사건", exact: true })
+    .getByRole("link", { name: "연대 미상 기록", exact: true })
     .click();
   await expect(drawer).toContainText("연대 미상 사건 서사");
   await page.goto(`${graph}&event=${war}`);

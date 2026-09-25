@@ -77,7 +77,7 @@ export async function POST(request: Request) {
     const mapped = await Promise.all(shapes.map(shell.shape));
     return Response.json(
       {
-        revision: `v5:${query.world_id}:${query.revision}`,
+        revision: query.revision,
         canonicalRevision: query.revision,
         lodLevel: 0,
         entities: mapped.filter((item) => item.geometryKind !== "region"),

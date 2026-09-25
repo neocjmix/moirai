@@ -1,7 +1,8 @@
 import { notFound } from "next/navigation";
-import { readV5ServedRoot, readV5StagedDocument } from "@moirai/publication/v5";
-import { readPublicationObject, assertPublicId } from "../lib/publication";
-import { createV5StagedAtroposReader } from "../lib/v5-staged-reader";
+import { readV5StagedDocument } from "@moirai/publication/v5";
+import { assertPublicId } from "../lib/publication";
+import { publicTimeSystemIdentity } from "@moirai/graph-query";
+import type { PublicTimeSystem } from "@moirai/contracts";
 import { V5AtroposRoot } from "./v5-atropos-root";
 import { v5ShellReader } from "../lib/v5-shell-reader";
 import type { AtroposScreenId } from "../lib/atropos-screen-registry";
@@ -18,14 +19,8 @@ export default async function V5GraphPage({
   if (typeof worldId !== "string") notFound();
   try {
     assertPublicId(worldId);
-    const store = { get: readPublicationObject };
-    const { pointer, rootBody } = await readV5ServedRoot(store, worldId);
-    const reader = createV5StagedAtroposReader(
-      store,
-      rootBody,
-      worldId,
-      pointer.served_revision
-    );
+    const shell = await v5ShellReader(worldId);
+    const { store, pointer, rootBody, reader } = shell;
     const [catalog, systems, summaryBody] = await Promise.all([
       reader.collections(0),
       reader.timeSystems(0),
@@ -62,15 +57,21 @@ export default async function V5GraphPage({
       ? await reader.spatialSummary(timeSystemId)
       : null;
     if (!timeSystemId) notFound();
-    const system = {
-      time_system_id: timeSystemId,
-      definition_version: "1",
-      adapter_identity: "yyyy-iso-fields-fraction12-z-v1",
-      comparison_domain: "yyyy-iso-fields-fraction12-z-v1"
-    };
+    const systemBody = await readV5StagedDocument(
+      rootBody,
+      `worlds/${worldId}/revisions/${pointer.served_revision}/v5/content/time-systems/${timeSystemId}.json`,
+      async (key) => (await store.get(key)).body
+    );
+    if (!systemBody) notFound();
+    const publishedSystem = (
+      JSON.parse(systemBody) as { time_system: PublicTimeSystem }
+    ).time_system;
+    const system = publicTimeSystemIdentity(publishedSystem);
+    const gregorian =
+      publishedSystem.definition.coordinate_codec ===
+      "yyyy-iso-fields-fraction12-z-v1";
     const label = { ko: summary.world.title, en: summary.world.title };
     const timeLabel = systems.time_systems[0]!.title;
-    const shell = await v5ShellReader(worldId);
     const initial = spatial?.bounds
       ? await shell.reader.viewport(timeSystemId, spatial.bounds, 1, null)
       : null;
@@ -168,21 +169,25 @@ export default async function V5GraphPage({
               ready: true
             }
           ],
-          chronologyBoard: {
-            mode: "gregorian",
-            axis: {
-              scheme: "gregorian_utc",
-              coordinateScale: "elapsed-gregorian",
-              timeSystemId,
-              compatibilityKey: timeSystemId,
-              startYear: 0,
-              endYear: 0,
-              tickYears: []
-            },
-            columns: [],
-            placements: [],
-            unplaced: []
-          }
+          ...(gregorian
+            ? {
+                chronologyBoard: {
+                  mode: "gregorian",
+                  axis: {
+                    scheme: "gregorian_utc",
+                    coordinateScale: "elapsed-gregorian",
+                    timeSystemId,
+                    compatibilityKey: timeSystemId,
+                    startYear: 0,
+                    endYear: 0,
+                    tickYears: []
+                  },
+                  columns: [],
+                  placements: [],
+                  unplaced: []
+                }
+              }
+            : {})
         }}
       />
     );

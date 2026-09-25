@@ -80,3 +80,28 @@ PR #202 병합 main/배포 SHA `587761d4964d2e6e4128a73a98d977f9152093ba`; PR CI
 | 10k large Collection staged, 10000 members | 32 | 11 / 127925 B / 1 | 3.61 s / 51.53 MB |
 
 동일 sparse query의 1k→100k 바이트는 1.24배, 읽기는 2.33배이며 응답은 약 150 B. 고정 budget의 2배 조건이 **rows/bytes**인 만큼 bytes는 통과했지만 object reads의 256 상한은 별도로 통과한다. 100k complete 빌드 `real 168.998 s`, `user 187.198 s`, `sys 14.536 s`, 종료 RSS 2935 MiB (Node heap 2900 MiB 상한), 인덱스 object 19407개. 이 수치는 로컬 단일 프로세스이고 Ubuntu/PostgreSQL 17의 20 cold/50 warm p95나 peak RSS를 대신하지 않는다. 100k artifact bytes는 오히려 약 6.3 MB 증가했으며 index 개수가 4737→19407개로 증가해 저장·업로드 비용과 cancel/restart는 후속 검증이 필요하다. A4 exit 미완료.
+
+PR #203 병합 main/배포 SHA `ba69adc44c5a6410f025bfcbb9683ec05e70d62d`; PR CI `36151949466`, main CI `36152315868`, post-deploy smoke `36152672004` 성공. Railway web/API/worker 모두 SUCCESS이며 공개 `/__status`는 동일 SHA, 그래프 SSR의 served Revision 32를 반환했다. [PR #203 release comment](https://github.com/neocjmix/moirai/pull/203#issuecomment-5834794528)에는 1k/100k dense·shared·100000 회원 대형 Collection의 추가 고정 질의 결과를 남겼다.
+
+## Slice 6: 프로세스 단위 cold/warm v5 질의 계측
+
+`scripts/ip011-a4-process-benchmark.ts`는 합성 v5 artifact를 한 번 만들고 고정 viewport에 실제로 필요한 digest 검증 object만 파일 store에 저장한다. 별도 Node 프로세스 20개에서 각각 첫 조회를, 같은 프로세스에서 50회 연속 조회를 측정한다. 모든 시료의 결과·continuation·object 수·바이트를 최초 빌드 질의와 비교하고 raw JSON 시료를 출력한다. `ip011-a4-query-process.yml`은 Ubuntu runner에서 sparse/dense/shared/large × 1k/10k/100k를 각각 실행·보존한다. 기존 v4 `ip004-scale.yml` 대신 v5 경로를 측정한다.
+
+| 로컬 Node 24, sparse | cold 20 p95 | warm 50 p95 | 첫 페이지 reads / bytes | 결과 |
+| --- | ---: | ---: | ---: | --- |
+| 1k | 20.886 ms | 29.906 ms | 6 / 124265 B | 1 Event |
+| 10k | 10.551 ms | 6.268 ms | 9 / 104586 B | 1 Event |
+| 100k | 15.386 ms | 15.841 ms | 14 / 160158 B | 1 Event |
+
+로컬 수치는 synthetic filesystem object store와 새 애플리케이션 프로세스의 **query body만** 측정한다. 빌드 및 모듈 로딩 시간은 cold query에 포함하지 않으며 OS page cache는 비우지 않는다. 100k staged artifact 생성은 이 실행에서 108.97초였고 이전 complete worker 167.88초와 같은 단계가 아니다. Ubuntu runner의 원시 시료와 PostgreSQL 17 row/history read, 모바일 HTML/graph/navigation/frame, authoring 및 worker cancel/restart가 없으므로 A4 exit를 완료로 판정하지 않는다.
+
+Ubuntu Actions run [36195166578](https://github.com/neocjmix/moirai/actions/runs/36195166578)의 Node 22.23.2 / AMD EPYC 9V74 (16 GB host) 12개 잡 결과. 각 칸은 **20개 별도 프로세스 첫 질의 p95 / 동일 프로세스 50회 warm p95**, 단위 ms다. `[a4-process-samples.json](a4-process-samples.json)`에 840개 원시 시료·host·fixture·각 query의 reads/bytes/결과를 저장했다. 빌드도 해당 run의 Ubuntu에서 분포별로 새로 수행했다.
+
+| 분포 | 1k cold / warm | 10k cold / warm | 100k cold / warm | 100k reads / bytes | 1k→100k bytes |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| sparse | 5.916 / 2.974 | 9.772 / 4.709 | 11.896 / 6.226 | 14 / 160158 B | 1.29× |
+| dense, 국소 300 Event | 9.908 / 12.781 | 19.257 / 12.616 | 18.922 / 13.360 | 35 / 238102 B | 1.06× |
+| shared membership | 10.394 / 5.800 | 9.138 / 4.226 | 10.912 / 5.444 | 13 / 136311 B | 1.10× |
+| large Collection | 6.183 / 2.132 | 9.830 / 4.226 | 11.149 / 4.156 | 13 / 148101 B | 1.18× |
+
+이 측정 범위의 cold <=500ms, warm <=100ms, <=1MiB, <=256 object 및 1k→100k bytes <=2배는 12개 잡 모두 통과했다. Dense는 16 Event와 continuation을 반환한다. 매 요청에서 root body는 fixture metadata로 이미 전달돼 읽기 바이트에 **포함되지 않는다**. 로컬 파일 객체 저장소의 OS cache를 강제로 비우지 않았고 DB·HTTP·HTML·모바일 렌더링은 이 잡에 포함되지 않는다. 따라서 A1 고정 환경의 **전체** cold/warm gate 통과라고 확대하지 않으며 PostgreSQL rows/history, 실제 API 응답, 모바일 20 navigation/600 frame, authoring 및 worker cancel/restart를 계속 검증해야 한다.

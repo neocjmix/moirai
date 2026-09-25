@@ -26,6 +26,7 @@ const gestures: Record<
     p95_ms: number;
     max_ms: number;
     dom_nodes: number;
+    long_frames: { index: number; ms: number }[];
   }
 > = {};
 const failures: string[] = [];
@@ -42,7 +43,9 @@ try {
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("response", (response) => {
       const path = new URL(response.url()).pathname;
-      if (path === "/graph/v5/read" || path === "/graph/v5/viewport")
+      if (
+        ["/graph/detail", "/graph/v5/read", "/graph/v5/viewport"].includes(path)
+      )
         graphResponses.push(response.body().then((body) => body.byteLength));
     });
     const started = performance.now();
@@ -85,12 +88,16 @@ try {
           intervals.push(now - last);
           last = now;
         }
+        const longFrames = intervals.flatMap((ms, index) =>
+          ms > 33.4 ? [{ index, ms }] : []
+        );
         intervals.sort((a, b) => a - b);
         return {
           samples: intervals.length,
           p95_ms: intervals[Math.ceil(intervals.length * 0.95) - 1]!,
           max_ms: intervals.at(-1)!,
-          dom_nodes: document.querySelectorAll("*").length
+          dom_nodes: document.querySelectorAll("*").length,
+          long_frames: longFrames.slice(0, 30)
         };
       });
       await page.waitForTimeout(40);
@@ -105,26 +112,53 @@ try {
         failures.push(`${name}_frame_error:${String(error)}`);
       }
     };
+    const panBefore = new URL(page.url()).searchParams.get("gsViewport");
     await frameSample("pan", async () => {
       await page.mouse.move(cx, cy);
       await page.mouse.down();
       await page.mouse.move(cx + 80, cy + 50, { steps: 100 });
       await page.mouse.up();
     });
+    if (new URL(page.url()).searchParams.get("gsViewport") === panBefore)
+      failures.push("pan_ineffective");
+    const zoomBefore = new URL(page.url()).searchParams.get("gsViewport");
     await frameSample("zoom", async () => {
-      await page.mouse.move(cx, cy);
-      await page.mouse.wheel(0, -380);
+      // iPhone WebKit automation has one native touch. Combine it with a
+      // held pointer, using the established pinch regression path.
+      await page.evaluate(() => {
+        document.addEventListener(
+          "pointerdown",
+          (event) => {
+            if (event.pointerType !== "touch") return;
+            (event.target as Element).dispatchEvent(
+              new PointerEvent("pointermove", {
+                bubbles: true,
+                pointerId: event.pointerId,
+                pointerType: "touch",
+                clientX: event.clientX + 70,
+                clientY: event.clientY + 70,
+                buttons: 1,
+                isPrimary: event.isPrimary
+              })
+            );
+          },
+          { once: true }
+        );
+      });
+      await page.mouse.move(cx - 50, cy);
+      await page.mouse.down();
+      await page.touchscreen.tap(cx + 50, cy);
+      await page.mouse.up();
+    });
+    if (new URL(page.url()).searchParams.get("gsViewport") === zoomBefore)
+      failures.push("zoom_ineffective");
+    await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
+    await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
+    const checkbox = page.getByRole("checkbox", {
+      name: "조선 전기 연표",
+      exact: true
     });
     await frameSample("collection_toggle", async () => {
-      await page
-        .getByRole("button", { name: "소스 쿼리 열기" })
-        .first()
-        .click();
-      await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
-      const checkbox = page.getByRole("checkbox", {
-        name: "조선 전기 연표",
-        exact: true
-      });
       await checkbox.uncheck();
       await checkbox.check();
     });

@@ -20,21 +20,27 @@ export function buildV5WorldSpatialStagedArtifacts(
   state: CanonicalState,
   revision: number
 ): V5StagedArtifacts {
+  return buildV5WorldSpatialStagedArtifactsWithLayouts(state, revision).staged;
+}
+
+function buildV5WorldSpatialStagedArtifactsWithLayouts(
+  state: CanonicalState,
+  revision: number
+) {
   const temporal = projectV5WorldTemporal(state, revision);
-  return buildV5SpatialStagedArtifacts(
+  const layouts = [...state.timeSystems]
+    .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
+    .map((system) => buildV5WorldLayout(state, temporal, system.id));
+  const staged = buildV5SpatialStagedArtifacts(
     state,
     revision,
-    [...state.timeSystems]
-      .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-      .map((system) => {
-        const layout = buildV5WorldLayout(state, temporal, system.id);
-        return {
-          time_system_id: system.id,
-          temporal_digest: temporal.semantic_digest,
-          ...buildV5SpatialIndex(layout)
-        };
-      })
+    layouts.map((layout) => ({
+      time_system_id: layout.time_system_id,
+      temporal_digest: temporal.semantic_digest,
+      ...buildV5SpatialIndex(layout)
+    }))
   );
+  return { staged, layouts };
 }
 
 /** An offline, pointer-free serving-tree candidate. Completion is asserted
@@ -53,18 +59,19 @@ export async function buildV5WorldCompleteArtifacts(
     max_object_reads: number;
   };
 }> {
-  const staged = buildV5WorldSpatialStagedArtifacts(state, revision);
+  const { staged, layouts } = buildV5WorldSpatialStagedArtifactsWithLayouts(
+    state,
+    revision
+  );
   verifyV5StagedIndex(staged);
   const objects = new Map(
     [...staged.documents, ...staged.index].map(({ key, body }) => [key, body])
   );
-  const temporal = projectV5WorldTemporal(state, revision);
   let placed = 0;
   let unplaced = 0;
   let viewportPages = 0;
   let maxObjectReads = 0;
-  for (const system of state.timeSystems) {
-    const layout = buildV5WorldLayout(state, temporal, system.id);
+  for (const layout of layouts) {
     const ids = new Set(layout.shapes.map((shape) => shape.event_id));
     if (
       ids.size !== layout.shapes.length ||
@@ -120,7 +127,7 @@ export async function buildV5WorldCompleteArtifacts(
           staged.root.body,
           state.world.id,
           revision,
-          system.id,
+          layout.time_system_id,
           viewport,
           [collection.id],
           cursor,

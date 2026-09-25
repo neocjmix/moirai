@@ -22,4 +22,12 @@
 
 `buildV5WorldCompleteArtifacts`가 공간 staged tree 생성에 사용한 시간 projection과 레이아웃을 completeness proof에 다시 계산하지 않고 재사용한다. 원래 동일 `state`, `revision`, `time_system_id`에 대해 호출했던 함수의 반환값만 공유하며, artifact key·digest·레이아웃 좌표·검증 반복 및 served pointer 조건은 그대로다. 10k의 단계별 계측에서 layout 한 회가 39.5초로 가장 컸다. 이 slice는 worker CPU의 반복 계산을 제거한다. 완전 10k build ≤180s/≤3GiB는 이번 실행에서 통과했다. 100k, 20 cold/50 warm, dense/large Collection, 모바일 600 frame, authoring query 및 restart/cancel은 **미검증**, A4 exit 미완료다.
 
-다음 slice는 대형 World에서 레이아웃의 제곱 비용과 국소 좌표 드리프트를 원인별로 줄이고, 1k/10k/100k의 고정 질의를 동일 좌표/선택으로 검증해야 한다. 원격 push는 자동 승인 검토에서 두 차례 거부됐다. 두 번째 거부 전 사용자 지정 URL과 Git remote 일치, 연결된 GitHub 저장소의 관리자·push 권한을 확인했지만 검토기는 공개 목적지로의 코드·증거 게시가 승인되지 않았다고 판단했다. 따라서 이 변경은 로컬 commit에만 있고, CI·모바일 회귀·배포 후 smoke는 아직 실행되지 않았다. 해당 gate를 완료 증거로 사용하지 않는다.
+사용자의 명시적 공개 게시 승인 후 PR #199를 병합했다. main·web/API/worker 배포 SHA `50ca35b6bf1edd0fb2cd1210c0c896f79cfb012e`; CI `36143207267`의 quality/PostgreSQL/build/audit, 모바일 WebKit, secret scan 모두 성공. main CI `36143570996`와 post-deploy smoke `36143860264`도 성공했다. 공개 readiness·운영 iPhone WebKit·인증 v5 authoring/policy probe를 포함한다. [PR #199 release comment](https://github.com/neocjmix/moirai/pull/199#issuecomment-5833684995)에 배포 증거를 남겼다. 이전 push 차단은 승인 후 해소됐다.
+
+## Slice 2: 동등한 후보 군집 탐색
+
+10k 레이아웃 단계별 계측에서 후보 군집화 21.96초, X force 17.01초였다. 전체 후보를 매번 다시 훑는 군집 BFS를 동일 interval-key와 직접 제약의 이웃 인덱스로 교체한다. 동일 입력 순서의 방문 및 결과는 유지한다. 후보 상세 조회도 ID Map으로 바꾼다. 1k·10k sparse에서 수정 전후 **전체 레이아웃 digest** 각각 `8b87de4f…d80540e2c`, `b53c16ab…4d65428e769`로 일치했다. 10k 레이아웃 39.47→18.59초, 완전 Publication 빌드 49.12→27.65초 (RSS 534 MiB). 10k의 fixed viewport 9 object reads/315635 B와 좌표 이동 문제는 그대로다. 기존 URDR 화면과 v5 geometry는 변경되지 않았다.
+
+다음 slice는 X force의 제곱 비용과 국소 좌표 드리프트를 해결해야 한다. 100k, 20 cold/50 warm, dense/large Collection, 모바일 600 frame, authoring query 및 worker cancel/restart는 여전히 A4 exit에 필요한 미검증 영역이다.
+
+Dense 1k 첫 페이지는 16 Event·continuation, 38 object reads·935367 B였다. 같은 300개 국소 Event와 viewport를 유지한 10k dense 첫 페이지는 16 Event·continuation이지만 57 reads·1793805 B로 **1 MiB 예산을 위반**했다. 중복 digest-index page 조회가 누적된다. 별도 shared-membership/large-Collection 1k 첫 페이지는 각각 10 reads·264488 B, 8 reads·220749 B. 이 수치들은 로컬 메모리 store의 첫 읽기 3회 중 첫 시료이며 20 cold/50 warm p95 gate가 아니다.

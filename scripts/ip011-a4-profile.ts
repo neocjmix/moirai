@@ -1,5 +1,6 @@
 /** Synthetic v5 read profile. No production store or credentials. */
 import { performance } from "node:perf_hooks";
+import { createHash } from "node:crypto";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import {
   buildV5WorldSpatialStagedArtifacts,
@@ -28,7 +29,8 @@ const local = density === "dense" ? 300 : 12;
 const members = density === "large" ? count : local;
 const coordinate = (i: number) => {
   const year = i < local ? 1453 : 2000 + (Math.floor((i - local) / 366) % 20);
-  const day = i < local ? i + 1 : ((i - local) % 28) + 1;
+  const day =
+    i < local ? (density === "dense" ? 1 : i + 1) : ((i - local) % 28) + 1;
   return `${year}-01-${String(day).padStart(2, "0")}T00:00:00.000000000000Z`;
 };
 const events = Array.from({ length: count }, (_, i) => ({
@@ -126,7 +128,7 @@ const state: CanonicalState = {
   collectionTimeSystems: []
 };
 const started = performance.now();
-const phases: Record<string, number> = {};
+const phases: Record<string, number | string> = {};
 if (process.env.A4_PHASES === "1") {
   let phaseStart = performance.now();
   const temporal = projectV5WorldTemporal(state, 31);
@@ -134,12 +136,24 @@ if (process.env.A4_PHASES === "1") {
   phaseStart = performance.now();
   const layout = buildV5WorldLayout(state, temporal, "gregorian");
   phases.layout_ms = +(performance.now() - phaseStart).toFixed(2);
+  phases.layout_digest = createHash("sha256")
+    .update(JSON.stringify(layout))
+    .digest("hex");
+  if (
+    process.env.A4_EXPECT_LAYOUT_SHA &&
+    phases.layout_digest !== process.env.A4_EXPECT_LAYOUT_SHA
+  )
+    throw Error("a4_layout_regression");
   phaseStart = performance.now();
   buildV5SpatialIndex(layout);
   phases.spatial_index_ms = +(performance.now() - phaseStart).toFixed(2);
   phaseStart = performance.now();
   buildV5ContentPages(state, 31);
   phases.content_ms = +(performance.now() - phaseStart).toFixed(2);
+  if (process.env.A4_ONLY_PHASES === "1") {
+    process.stdout.write(JSON.stringify({ count, density, phases }) + "\n");
+    process.exit(0);
+  }
 }
 const artifacts =
   process.env.A4_COMPLETE === "1"
@@ -171,7 +185,10 @@ const example = localLeaf.entries.find(
 ).bounds;
 // The renderer may use a normalized axis rather than calendar years. Derive
 // the local viewport from the first synthetic Event, then keep it fixed for N.
-const viewport = { minX: -724, maxX: -721, minY: 203419, maxY: 203422 };
+const viewport =
+  density === "dense"
+    ? { minX: -100000, maxX: 100000, minY: 203419, maxY: 203422 }
+    : { minX: -724, maxX: -721, minY: 203419, maxY: 203422 };
 const collectionIds = density === "shared" ? ["a", "b"] : ["a"];
 const samples = [];
 for (let n = 0; n < 3; n++) {

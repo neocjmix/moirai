@@ -49,6 +49,11 @@ export default async function V5GraphPage({
     )
       notFound();
     const timeSystemId = systems.time_systems[0]?.id ?? null;
+    const eventId = params.event;
+    if (eventId !== undefined) {
+      if (typeof eventId !== "string") notFound();
+      assertPublicId(eventId);
+    }
     const spatial = timeSystemId
       ? await reader.spatialSummary(timeSystemId)
       : null;
@@ -62,6 +67,7 @@ export default async function V5GraphPage({
         initialTimeSystems={systems.time_systems}
         nextTimeSystemPage={systems.next_page}
         initialSpatial={spatial}
+        initialEventId={eventId}
       />
     );
   } catch {

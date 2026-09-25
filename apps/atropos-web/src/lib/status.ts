@@ -7,6 +7,8 @@ import {
 } from "@moirai/contracts";
 
 import { getPublicRuntimeMetadata } from "./runtime";
+import { readV5ServedRoot } from "@moirai/publication/v5";
+import { assertPublicId, readPublicationObject } from "./publication";
 
 interface WorkflowRun {
   readonly conclusion: string | null;
@@ -48,6 +50,17 @@ export async function getLatestSmoke(): Promise<PublicStatusResponse["smoke"]> {
 export async function getPublicStatus(): Promise<PublicStatusResponse> {
   const runtime = getPublicRuntimeMetadata();
   const smoke = await getLatestSmoke();
+  let v5Served = false;
+  const worldId = process.env.ATROPOS_CUTOVER_WORLD_ID;
+  if (worldId) {
+    try {
+      assertPublicId(worldId);
+      await readV5ServedRoot({ get: readPublicationObject }, worldId);
+      v5Served = true;
+    } catch {
+      // Report v4 until the complete v5 pointer passes readback.
+    }
+  }
   return {
     application: {
       service: "atropos-web",
@@ -56,9 +69,11 @@ export async function getPublicStatus(): Promise<PublicStatusResponse> {
       deployed_at: runtime.deployedAt
     },
     versions: {
-      contract: String(CONTRACT_VERSION),
-      schema: SCHEMA_VERSION,
-      publication_format: PUBLICATION_FORMAT_VERSION
+      contract: v5Served ? "5" : String(CONTRACT_VERSION),
+      schema: v5Served ? "011_ip011_authoring_search" : SCHEMA_VERSION,
+      publication_format: v5Served
+        ? "v5-publication/1"
+        : PUBLICATION_FORMAT_VERSION
     },
     smoke,
     surfaces: { atropos: "ok", health: "ok", status: "ok" }

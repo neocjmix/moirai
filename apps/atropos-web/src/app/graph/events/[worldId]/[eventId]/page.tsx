@@ -1,5 +1,6 @@
 import { presentationNodeId } from "@moirai/graph-presentation";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { readV5ServedRoot } from "@moirai/publication/v5";
 import { AtroposGraphRoot } from "../../../../../components/atropos-graph-root";
 import { GraphQueryFallback } from "../../../../../components/graph-query-fallback";
 import { graphReaderState } from "../../../../../lib/event-reading-navigation";
@@ -16,6 +17,8 @@ import {
   parseGraphUrlState
 } from "../../../../../lib/moirai-graph-source-query";
 import {
+  assertPublicId,
+  readPublicationObject,
   readWorldEvent,
   selectPublication,
   selectPublicationRevision
@@ -34,6 +37,21 @@ export default async function GraphEventPage({
     params,
     searchParams
   ]);
+  if (query.revision === undefined) {
+    let v5Served = false;
+    try {
+      assertPublicId(worldId);
+      assertPublicId(eventId);
+      await readV5ServedRoot({ get: readPublicationObject }, worldId);
+      v5Served = true;
+    } catch {
+      // A historical v4 link continues using the older read path.
+    }
+    if (v5Served)
+      redirect(
+        `/graph/v5?world=${encodeURIComponent(worldId)}&event=${encodeURIComponent(eventId)}`
+      );
+  }
   try {
     const requestedRevision =
       typeof query.revision === "string" ? Number(query.revision) : null;

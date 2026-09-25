@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-**IP-011 A2 exit passed on the isolated clone; A3 controlled cutover is next and has not begun.** 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22)은 dependency gate 순서를 따른다. M5는 별도 후속 범위다.
+**IP-011 A2 exit passed on the isolated clone; A3 controlled cutover is active.** 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22)은 dependency gate 순서를 따른다. M5는 별도 후속 범위다. [A3 실행 기록](../evidence/ip011/a3-execution.md)은 gate별 실제 증거와 남은 작업을 구분한다.
 
 현재 배포의 공개 계약과 운영 DB는 v4 Canon 모델이다. PR #186의 커밋 `b2dbc64e07f0085ce330caf2ec3c6d6f7e93702d`까지 main에 병합됐고 CI run 36073589105가 성공했다. 해당 SHA의 web/API/worker가 모두 SUCCESS였고 worker는 격리 clone Revision 31을 검증했다. 운영 v4 DB와 `current.json`은 변경되지 않았다. v5 writer/reader는 live ingress에 연결되지 않았고 역사 운영 World의 마지막 확인 Revision은 30이다. IP-004~010 완료 이력은 유지한다.
 

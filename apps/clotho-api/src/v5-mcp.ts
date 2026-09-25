@@ -16,6 +16,7 @@ import {
 import type { createV5Clotho } from "@moirai/clotho-application/v5";
 import { authenticate, type Credential, type Principal } from "./auth.js";
 import {
+  CLOTHO_CONNECTION_WORLD,
   oidcAuthenticator,
   type OidcAuthenticator,
   type OidcConfig
@@ -55,17 +56,65 @@ export function registerV5McpRoutes(
   credentials: readonly Credential[],
   service: ReturnType<typeof createV5Clotho>,
   oidc?: OidcConfig,
-  verify: OidcAuthenticator = oidcAuthenticator(oidc)
+  verify: OidcAuthenticator = oidcAuthenticator(oidc),
+  endpoint = "/mcp-v5"
 ): void {
+  if (endpoint !== "/mcp-v5" && endpoint !== "/mcp")
+    throw Error("invalid_v5_mcp_endpoint");
   const principals = new WeakMap<FastifyRequest, Principal>();
+  const metadataUrl = oidc
+    ? `${new URL(oidc.resource).origin}/.well-known/oauth-protected-resource/mcp`
+    : undefined;
+  const challenge = metadataUrl
+    ? `Bearer resource_metadata="${metadataUrl}", scope="world:read world:write offline_access"`
+    : "Bearer";
+  if (endpoint === "/mcp") {
+    for (const url of [
+      "/.well-known/oauth-protected-resource/mcp",
+      "/.well-known/oauth-protected-resource"
+    ])
+      app.get(url, async (_request, reply) => {
+        reply.header("cache-control", "no-store");
+        if (!oidc)
+          return reply.code(503).send({ error: "oauth_not_configured" });
+        return {
+          resource: oidc.resource,
+          authorization_servers: [oidc.issuer],
+          scopes_supported: ["world:read", "world:write", "offline_access"],
+          bearer_methods_supported: ["header"]
+        };
+      });
+    app.addContentTypeParser(
+      "application/octet-stream",
+      { parseAs: "string" },
+      (_request, body, done) => {
+        if (!body.length) return done(null, undefined);
+        try {
+          done(null, JSON.parse(body.toString()));
+        } catch (error) {
+          done(error as Error, undefined);
+        }
+      }
+    );
+  }
   app.post(
-    "/mcp-v5",
+    endpoint,
     {
       bodyLimit: 1_048_576,
       onRequest: async (request, reply) => {
         reply.header("cache-control", "no-store");
-        if (request.headers.origin)
+        if (
+          request.headers.origin &&
+          (!oidc || request.headers.origin !== new URL(oidc.resource).origin)
+        )
           return reply.code(403).send({ error: "origin_not_allowed" });
+        if (request.headers["content-type"] === "application/octet-stream") {
+          request.headers["content-type"] = "application/json";
+          request.raw.headers["content-type"] = "application/json";
+          for (let index = 0; index < request.raw.rawHeaders.length; index += 2)
+            if (request.raw.rawHeaders[index]?.toLowerCase() === "content-type")
+              request.raw.rawHeaders[index + 1] = "application/json";
+        }
       },
       preHandler: async (request, reply) => {
         if (
@@ -76,7 +125,11 @@ export function registerV5McpRoutes(
         const principal =
           authenticate(request.headers.authorization, credentials) ??
           (await verify(request.headers.authorization).catch(() => undefined));
-        if (principal) {
+        if (
+          principal &&
+          (endpoint !== "/mcp" ||
+            principal.world_ids.includes(CLOTHO_CONNECTION_WORLD))
+        ) {
           principals.set(request, principal);
           return;
         }
@@ -90,7 +143,7 @@ export function registerV5McpRoutes(
         )
           return;
         return reply
-          .header("www-authenticate", "Bearer")
+          .header("www-authenticate", challenge)
           .code(401)
           .send({ error: "unauthorized" });
       }
@@ -98,11 +151,11 @@ export function registerV5McpRoutes(
     async (request, reply) => {
       const actor = principals.get(request);
       const server = new Server(
-        { name: "moirai-clotho-v5-stage", version: "5" },
+        { name: "moirai-clotho", version: "5" },
         {
           capabilities: { tools: {} },
           instructions:
-            "Call authoring_policy_get before every write. The policy is versioned and authoritative. This staged endpoint uses contract_version=5."
+            "Call authoring_policy_get before every write. The policy is versioned and authoritative. This endpoint uses contract_version=5."
         }
       );
       server.setRequestHandler(ListToolsRequestSchema, async () => ({

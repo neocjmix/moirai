@@ -1,9 +1,10 @@
 # IP-011 A3 controlled cutover — execution ledger
 
-Status: **in progress**. A2 passed on the isolated Revision 31 clone. The
-operational World was last observed at v4 Revision 30. No production v5
-schema/content migration or Publication pointer handoff is claimed by this
-document.
+Status: **live cutover executed; acceptance in progress**. The operational
+World moved from Revision 30 to 31 on 2026-09-25. The v5 complete Publication
+pointer serves Revision 31 and API/worker/web are on the merged A3 SHA. The
+authenticated production v5 write/replay and the full nine served scenario
+gate are not yet evidenced, so A3 exit is not claimed.
 
 ## Ordered cutover gates
 
@@ -37,17 +38,65 @@ document.
    API from `v5-readonly` to `v5`. Keep v4 write routes absent. Capture CI,
    Railway deploy IDs, public SHA/status/smoke, and recovery evidence here.
 
-## Evidence pending
+## Live execution evidence — 2026-09-25 UTC
 
-- Fresh source backup digest/object and isolated restore equality at the
-  frozen Revision.
-- Live migration ledger 010/011, 127 Event, six Collection, 415 Relation,
-  153 memberships, 133 owner Narrative or an explicitly reviewed mapping.
-- V5 target/served pointer and complete-root readback; old writer denial on
-  the deployed public API and policy-bound v5 write/replay after reopening.
-- Nine served E2E scenarios, including shared Event, Collection toggle,
-  Composite child, unplaced Event, direct URL, old history, authorization,
-  stale policy and mobile navigation.
+- PR #188 merged as `eb13481147df6436da98c93831c29f21fec81787` after CI
+  run 36077259000 passed all three jobs. PR #189 supplied a quiesced-only,
+  explicit startup operator gate when Railway's edited pre-deploy/start command
+  did not execute on redeploy; it merged as
+  `dfae64fb5f089ac8c384a12bba12f961fadf275d` after CI run 36079404944
+  passed typecheck/integration/build/audit, mobile WebKit and secret scan.
+  The worker gate requires `PUBLICATION_CONTRACT_MODE=quiesced` and
+  `IP011_WRITE_QUIESCED=1`; its action variable was cleared after execution.
+- API quiescence deployment `d7993536-3bce-4444-9945-2e80e75a2109` was
+  SUCCESS. A public POST to old `/v1/clotho/change.validate` returned 503
+  `writes_quiesced`. Worker quiescence deployment
+  `8d24ec8e-d10e-4e08-938c-ea9bc735d2ec` was SUCCESS. The read-only
+  operator preflight on deployment `09f23003-fb4e-4d13-bbc0-aacb6715efae`
+  reported database `railway`, sole World Revision/target 30 and zero pending
+  Publication jobs. Web cutover World ID was set before pointer handoff.
+- Operator deployment `38330e5a-62be-49ce-b5a4-289fce1c15b6` reported
+  `canonical_migrated_pointer_unchanged`, fresh AES-256-GCM object
+  `operational-backups/ip011/48348dda66daf652.aes256gcm.json`, source/restore
+  image digest `54de490a2a68bde58aafc1b1804cc06ded188404c2fa0f06bedd59212a3e4950`,
+  restored DB `ip011_rehearsal_48348dda66daf652`, and clone/source candidate
+  digest `fb2b56ce16d01c7e064f24e0c4ca02d4f05478d7a3e5deb2de0c3344045be371`.
+  Its guarded command did backup readback/decryption/digest equality, fresh
+  restore equality, clone migration/history replay and unchanged source digest
+  before live migration. It installed migrations 010 and 011, verified v5
+  schema/history, then reported Revision 30→31, 127 Events, 6 Collections,
+  415 Relations and 133 Narratives. The six served Collection member counts
+  sum to 153; their union is 127 Event IDs. The v4 pointer still served
+  Revision 30 immediately after migration.
+- API `v5-readonly` deployment `49eb3ec0-d60c-481f-9e4d-5746c92d1e4f`
+  was ready with merged SHA, and old v4 change route returned 404. Worker
+  `v5-hold` deployment `4dc39fca-19ba-41b7-889a-8160b8645009` was ready.
+  Worker `v5` deployment `8b81a449-6b64-4d28-a47a-612ab60f9513`
+  recorded `publication_v5` result `served` for Revision 31. Public pointer
+  now reports `v5-publication/1`, served/current/target 31, ready, manifest
+  digest `1fe6c4485cb4d1cdaf1f8d2cf7841b91bab181610c718f24f40dcb583273bb8f`.
+  The complete-root reader returns 200 for `/graph/v5`; `/graph` emits its v5
+  redirect marker. API `v5` deployment
+  `d3a52ba2-b9f6-4cb9-af73-c78524e0f223` was SUCCESS. The web deployment
+  was `c1940d31-fa67-47fa-99b4-ab8b6d452e33`; all run at `dfae64fb`.
 
-The existing A2 clone evidence remains a rehearsal, not evidence for any
-unchecked item above.
+## Served scenario review
+
+| Scenario | Live observation | Status |
+| --- | --- | --- |
+| Shared Event | `019f5b00-0000-7000-8000-000000000115` reads at 31 with one owner Narrative and appears in the served Collection member list | Passed |
+| Collection toggle | Browser switched from `조선 전기 연표` to `단종 폐위` while the same Event detail remained open | Passed |
+| Composite child | Served `composite_children` for `01a0c40a-a761-7fc7-aef2-10211e0ecb0e` returned 14 child IDs | API passed; browser child click pending |
+| Unplaced Event | Served spatial summary reports 125 placed and 2 unplaced; Collection union contains all 127 Events | Count passed; direct unplaced Event navigation pending |
+| Direct Event URL | Browser loaded `계유정난` by exact World/Event URL and rendered its Narrative | Passed |
+| Old history | Public Revision 30 immutable manifest remained 200 after v5 handoff | Artifact passed; authenticated v5 historical detail pending |
+| Authorization | Unauthenticated `/v2/clotho/change.commit` returned 401; old v4 change route returned 404 | Passed for public ingress |
+| Stale policy | Synthetic PostgreSQL integration in the green CI suite rejects stale policy | Production authenticated path pending |
+| Mobile navigation | Green CI mobile WebKit covers the synthetic complete-root journey; live browser loaded Revision 31 and toggled Collections | Production mobile journey pending |
+
+The connected Moirai Live tool catalog still advertises v4 input and cannot
+exercise an authenticated v5 write. A policy-bound production write and exact
+retry must be observed before declaring A3 exit. Do not substitute the A2
+clone or synthetic mobile run for the pending production scenarios. Recovery
+remains the fresh encrypted owner-full backup and isolated restored clone
+above; forward repair is required for any post-migration defect.

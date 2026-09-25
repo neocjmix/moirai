@@ -94,8 +94,16 @@ try {
         };
       });
       await page.waitForTimeout(40);
-      await gesture();
-      gestures[name] = await pending;
+      try {
+        await gesture();
+      } catch (error) {
+        failures.push(`${name}_gesture_error:${String(error)}`);
+      }
+      try {
+        gestures[name] = await pending;
+      } catch (error) {
+        failures.push(`${name}_frame_error:${String(error)}`);
+      }
     };
     await frameSample("pan", async () => {
       await page.mouse.move(cx, cy);

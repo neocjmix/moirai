@@ -1,6 +1,5 @@
-import { assertV5DeploymentReady, buildApp } from "./app.js";
+import { assertV5DeploymentReady, buildApp, runA3Acceptance } from "./app.js";
 import { loadConfig } from "./config.js";
-import { runA3Acceptance } from "./a3-acceptance.js";
 
 const config = loadConfig(process.env);
 await assertV5DeploymentReady(config);

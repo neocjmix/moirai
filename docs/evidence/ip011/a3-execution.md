@@ -1,11 +1,10 @@
 # IP-011 A3 controlled cutover — execution ledger
 
-Status: **live cutover executed; acceptance in progress**. The operational
+Status: **A3 exit passed on 2026-09-25 UTC**. The operational
 World moved from Revision 30 to 31 on 2026-09-25. A policy-bound production
 write and exact replay advanced it to Revision 32; the v5 complete Publication
-pointer serves Revision 32. The nine served scenario gate still requires
-production unplaced Event and mobile navigation evidence, so A3 exit is not yet
-claimed.
+pointer serves Revision 32. All nine served scenarios below passed, including
+production iPhone WebKit navigation and authenticated v5 read/write guards.
 
 ## Ordered cutover gates
 
@@ -104,6 +103,17 @@ claimed.
   36092738608 passed public readiness and authenticated v5 authoring checks
   for this SHA. The preceding v4-only smoke run 36091587320 failed at public
   readiness after the contract switched, before the authenticated stage.
+- PR #194 (`337455e7297d61bbd9c5ab6dd918c805fa13b8db`, CI 36092953079)
+  added a production iPhone WebKit acceptance. Web, API and worker Railway
+  deployments `deee4fdb-92ac-4d5f-840c-d5239772081f`,
+  `a3ed4e03-be30-4227-b7f9-b2b38ee28cd2`, and
+  `6d30c519-a5e6-4420-9dae-a290e70eb851` succeeded. Post-deploy run
+  36093424585 passed public v5 smoke, one iPhone 14 live journey (17.4 s),
+  and authenticated v5 policy/search/detail, stale-policy rejection and MCP
+  discovery for this SHA. The mobile journey compared all 127 Collection Event
+  IDs with 125 paged spatial shapes and identified exactly two unplaced Events:
+  `01a0c738-42d5-73f6-9477-c8f91cc187b8` and
+  `01a0c738-42d5-7f28-9f85-2be5c9e1916e`.
 
 ## Served scenario review
 
@@ -112,16 +122,18 @@ claimed.
 | Shared Event | `019f5b00-0000-7000-8000-000000000115` reads at 32 with one owner Narrative and appears in two served Collection memberships | Passed |
 | Collection toggle | Browser switched from `조선 전기 연표` to `단종 폐위` while the same Event detail remained open | Passed |
 | Composite child | Served `composite_children` for `01a0c40a-a761-7fc7-aef2-10211e0ecb0e` returned 14 child IDs; browser clicked child `019f5b00-0000-7000-8000-000000000116`, changing URL and drawer to `세조 즉위` at Revision 32 | Passed |
-| Unplaced Event | Served spatial summary reports 125 placed and 2 unplaced; Collection union contains all 127 Events | Count passed; direct unplaced Event navigation pending |
+| Unplaced Event | iPhone WebKit found the two IDs above by paged spatial/Collection comparison, opened the first through its Collection detail, and verified title, Narrative and URL | Passed |
 | Direct Event URL | Browser loaded `계유정난` by exact World/Event URL and rendered its Narrative | Passed |
 | Old history | Public Revision 30 immutable manifest remained 200 after v5 handoff; the guarded API acceptance read historical Event detail at Revision 31 | Passed |
-| Authorization | Unauthenticated `/v2/clotho/change.commit` returned 401; old v4 change route returned 404; production smoke 36092738608 passed authenticated policy/search/detail and MCP discovery | Passed |
+| Authorization | Unauthenticated `/v2/clotho/change.commit` returned 401; old v4 change route returned 404; production smoke 36093424585 passed authenticated policy/search/detail and MCP discovery | Passed |
 | Stale policy | Guarded API production acceptance rejected a stale policy digest before the Revision 32 write and replayed the same Change Set idempotently | Passed |
-| Mobile navigation | Green CI mobile WebKit covers the synthetic complete-root journey; live desktop browser loaded Revision 32 and navigated Collections and a Composite child | Production mobile journey pending |
+| Mobile navigation | Production iPhone 14 WebKit opened unplaced Collection Event, toggled a shared Event across Collections and navigated Composite→child at Revision 32 in run 36093424585 | Passed |
 
-The connected Moirai Live tool catalog still advertises v4 input; the guarded
-production API action supplied the authenticated v5 write/replay evidence.
-Do not substitute the A2 clone or synthetic mobile run for the pending live
-mobile and unplaced Event scenarios. Recovery
-remains the fresh encrypted owner-full backup and isolated restored clone
-above; forward repair is required for any post-migration defect.
+A3 exit: old writer refused, fresh backup and restore rehearsal passed,
+target/current/served Revision 32 agree, 127 Events and 6 Collections are
+preserved, and all nine scenarios are evidenced by the production action,
+public reads and live mobile run. A4 bounded read scalability is the next
+dependency gate. The connected Moirai Live catalog still advertises v4 input;
+the authenticated v5 API action and CI smoke provided the policy/write/read
+evidence. Recovery remains the fresh encrypted owner-full backup and isolated
+restored clone above; forward repair is required for any post-migration defect.

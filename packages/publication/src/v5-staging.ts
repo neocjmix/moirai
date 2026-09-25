@@ -9,7 +9,11 @@ import {
   projectV5WorldTemporal
 } from "@moirai/projections";
 
-const FANOUT = 128;
+const SMALL_FANOUT = 128;
+const LARGE_FANOUT = 32;
+const LARGE_INDEX_DOCUMENTS = 10_000;
+const validFanout = (fanout: number) =>
+  fanout === SMALL_FANOUT || fanout === LARGE_FANOUT;
 const hash = (body: string) => createHash("sha256").update(body).digest("hex");
 
 export interface V5StagedObject {
@@ -294,6 +298,10 @@ function buildV5Index(
   const documents = [...input].sort((a, b) =>
     a.key < b.key ? -1 : a.key > b.key ? 1 : 0
   );
+  // Shallow pages serve small Worlds cheaply. Narrow pages keep the extra
+  // branch levels of a large World within the same local read-byte budget.
+  const fanout =
+    documents.length > LARGE_INDEX_DOCUMENTS ? LARGE_FANOUT : SMALL_FANOUT;
   for (let i = 0; i < documents.length; i++) {
     const document = documents[i]!;
     if (
@@ -319,14 +327,14 @@ function buildV5Index(
     for (
       let offset = 0;
       offset < refs.length || offset === 0;
-      offset += FANOUT
+      offset += fanout
     ) {
       const key = `${stagingPrefix}index/${level}/${next.length}.json`;
       const node: Node = {
         kind: level === 0 ? "leaf" : "branch",
         world_id: worldId,
         revision,
-        entries: refs.slice(offset, offset + FANOUT)
+        entries: refs.slice(offset, offset + fanout)
       };
       const body = JSON.stringify(node);
       index.push({ key, body });
@@ -339,7 +347,7 @@ function buildV5Index(
     }
     refs = next;
     level++;
-  } while (refs.length > FANOUT);
+  } while (refs.length > fanout);
   const root = {
     key: `${stagingPrefix}manifest.json`,
     body: JSON.stringify({
@@ -347,7 +355,7 @@ function buildV5Index(
       world_id: worldId,
       revision,
       completeness,
-      fanout: FANOUT,
+      fanout,
       document_count: documents.length,
       index_depth: level,
       entries: refs
@@ -385,10 +393,10 @@ export async function readV5StagedDocument(
     !documentKey.startsWith(prefix) ||
     root.format_version !== "v5-staging-index/1" ||
     !COMPLETENESS.includes(root.completeness) ||
-    root.fanout !== FANOUT ||
+    !validFanout(root.fanout) ||
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||
-    root.entries.length > FANOUT ||
+    root.entries.length > root.fanout ||
     !orderedRanges(root.entries)
   )
     throw Error("v5_index_lookup_invalid");
@@ -406,7 +414,7 @@ export async function readV5StagedDocument(
       node.world_id !== root.world_id ||
       node.revision !== root.revision ||
       node.kind !== (level === 0 ? "leaf" : "branch") ||
-      node.entries.length > FANOUT ||
+      node.entries.length > root.fanout ||
       !orderedRanges(node.entries) ||
       selected.first_key !== (node.entries[0]?.first_key ?? "") ||
       selected.last_key !== (node.entries.at(-1)?.last_key ?? "")
@@ -453,10 +461,10 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
   if (
     root.format_version !== "v5-staging-index/1" ||
     !COMPLETENESS.includes(root.completeness) ||
-    root.fanout !== FANOUT ||
+    !validFanout(root.fanout) ||
     !Number.isSafeInteger(root.index_depth) ||
     root.index_depth < 1 ||
-    root.entries.length > FANOUT ||
+    root.entries.length > root.fanout ||
     !orderedRanges(root.entries) ||
     artifacts.root.key !== rootKey
   )
@@ -493,7 +501,7 @@ export function verifyV5StagedIndex(artifacts: V5StagedArtifacts): void {
       node.revision !== root.revision ||
       node.kind !== (level === 0 ? "leaf" : "branch") ||
       !["leaf", "branch"].includes(node.kind) ||
-      node.entries.length > FANOUT ||
+      node.entries.length > root.fanout ||
       !orderedRanges(node.entries) ||
       ref.first_key !== (node.entries[0]?.first_key ?? "") ||
       ref.last_key !== (node.entries.at(-1)?.last_key ?? "") ||

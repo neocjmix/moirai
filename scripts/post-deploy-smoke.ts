@@ -11,6 +11,10 @@ interface HealthPayload {
 
 interface StatusPayload {
   readonly application: { readonly commit_sha: string };
+  readonly versions?: {
+    readonly contract: string;
+    readonly publication_format: string;
+  };
   readonly surfaces: {
     readonly atropos: string;
     readonly health: string;
@@ -39,6 +43,8 @@ interface GraphQueryPayload {
 }
 
 const graphWorldId = "01995c2a-7b00-7000-8000-000000000101";
+const sharedEventId = "019f5b00-0000-7000-8000-000000000115";
+const compositeEventId = "01a0c40a-a761-7fc7-aef2-10211e0ecb0e";
 // Public dogfood corpus; pin one published Revision, including additive refinements.
 const graphCanon = "019f5b00-0000-7000-8000-000000000002";
 const graphTimeSystem = "019f5b00-0000-7000-8000-000000000003";
@@ -134,13 +140,139 @@ async function fetchGraphQuery(revision: number): Promise<GraphQueryPayload> {
   return (await response.json()) as GraphQueryPayload;
 }
 
+async function readV5<T>(input: Record<string, unknown>): Promise<T> {
+  const response = await fetch(new URL("/graph/v5/read", baseUrl), {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ world_id: graphWorldId, ...input }),
+    signal: AbortSignal.timeout(20_000)
+  });
+  if (!response.ok)
+    throw Error(`v5 ${input.kind} read returned ${response.status}`);
+  return (await response.json()) as T;
+}
+
+async function verifyV5(pointer: {
+  world_id: string;
+  served_revision: number;
+  current_revision: number;
+  publication_target_revision: number;
+  format_version: string;
+  manifest_sha256: string;
+}): Promise<void> {
+  const [
+    health,
+    ready,
+    status,
+    landing,
+    graph,
+    root,
+    old,
+    catalog,
+    event,
+    children,
+    spatial
+  ] = await Promise.all([
+    fetchJson<HealthPayload>("/health/live"),
+    fetchJson<HealthPayload>("/health/ready"),
+    fetchJson<StatusPayload>("/status-public"),
+    fetch(new URL("/", baseUrl), { signal: AbortSignal.timeout(10_000) }),
+    fetch(new URL(`/graph/v5?world=${graphWorldId}`, baseUrl), {
+      signal: AbortSignal.timeout(20_000)
+    }),
+    fetch(new URL("/graph", baseUrl), { signal: AbortSignal.timeout(20_000) }),
+    fetch(
+      new URL(`/worlds/${graphWorldId}/revisions/30/manifest.json`, baseUrl),
+      { signal: AbortSignal.timeout(10_000) }
+    ),
+    readV5<{
+      served_revision: number;
+      data: {
+        collection_count: number;
+        collections: { id: string; member_count: number }[];
+      };
+    }>({ kind: "collections", page: 0 }),
+    readV5<{
+      served_revision: number;
+      data: { event: { id: string }; narrative: { body: string } };
+    }>({ kind: "event", event_id: sharedEventId }),
+    readV5<{ served_revision: number; data: { child_event_ids: string[] } }>({
+      kind: "composite_children",
+      event_id: compositeEventId,
+      page: 0
+    }),
+    readV5<{
+      served_revision: number;
+      data: { shape_count: number; unplaced_count: number };
+    }>({ kind: "spatial_summary", time_system_id: graphTimeSystem })
+  ]);
+  const collections = await Promise.all(
+    catalog.data.collections.map((collection) =>
+      readV5<{ served_revision: number; data: { event_ids: string[] } }>({
+        kind: "collection",
+        collection_id: collection.id,
+        page: 0
+      })
+    )
+  );
+  const allIds = collections.flatMap((collection) => collection.data.event_ids);
+  if (
+    pointer.format_version !== "v5-publication/1" ||
+    pointer.served_revision < 31 ||
+    pointer.served_revision !== pointer.current_revision ||
+    pointer.served_revision !== pointer.publication_target_revision ||
+    !/^[0-9a-f]{64}$/.test(pointer.manifest_sha256) ||
+    health.status !== "ok" ||
+    ready.status !== "ok" ||
+    health.service !== "atropos-web" ||
+    ready.service !== "atropos-web" ||
+    health.commit_sha !== expectedSha ||
+    ready.commit_sha !== expectedSha ||
+    status.application.commit_sha !== expectedSha ||
+    status.versions?.contract !== "5" ||
+    status.versions.publication_format !== "v5-publication/1" ||
+    Object.values(status.surfaces).some((value) => value !== "ok") ||
+    !landing.ok ||
+    !graph.ok ||
+    !root.ok ||
+    !old.ok ||
+    !(await graph.text()).includes("실제 세계사") ||
+    !(await root.text()).includes("/graph/v5?world=") ||
+    catalog.served_revision !== pointer.served_revision ||
+    catalog.data.collection_count !== 6 ||
+    event.served_revision !== pointer.served_revision ||
+    event.data.event.id !== sharedEventId ||
+    !event.data.narrative.body ||
+    children.served_revision !== pointer.served_revision ||
+    children.data.child_event_ids.length !== 14 ||
+    spatial.served_revision !== pointer.served_revision ||
+    spatial.data.shape_count !== 125 ||
+    spatial.data.unplaced_count !== 2 ||
+    collections.some(
+      (collection) => collection.served_revision !== pointer.served_revision
+    ) ||
+    allIds.length !== 153 ||
+    new Set(allIds).size !== 127 ||
+    allIds.filter((id) => id === sharedEventId).length !== 2
+  )
+    throw Error("v5 public deployment does not match the expected build");
+}
+
 async function verify(): Promise<void> {
   const pointer = await fetchJson<{
     world_id: string;
     served_revision: number;
+    current_revision?: number;
+    publication_target_revision?: number;
+    format_version?: string;
+    manifest_sha256?: string;
   }>(`/worlds/${graphWorldId}/current.json`);
   const revision = pointer.served_revision;
   assertReadbackRevision(graphWorldId, revision, pointer);
+  if (pointer.format_version === "v5-publication/1") {
+    await verifyV5(pointer as Parameters<typeof verifyV5>[0]);
+    return;
+  }
   const prefix = `/worlds/${graphWorldId}/revisions/${revision}`;
   const [health, ready, status, landing, graph, canon, temporal] =
     await Promise.all([

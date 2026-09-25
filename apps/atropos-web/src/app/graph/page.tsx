@@ -12,7 +12,7 @@ import {
 } from "../../lib/graph-publication-loader";
 import { composeCachedGraphPublicationQuery as composeGraphPublicationQuery } from "../../lib/graph-publication-composer";
 import { graphPresentationFromResult } from "../../lib/graph-query-presentation";
-import { redirect } from "next/navigation";
+import V5GraphPage from "../../components/v5-graph-page";
 import { readV5ServedRoot } from "@moirai/publication/v5";
 import { assertPublicId, readPublicationObject } from "../../lib/publication";
 
@@ -21,7 +21,11 @@ export default async function GraphPage({
 }: Readonly<{
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }>) {
-  const cutoverWorld = process.env.ATROPOS_CUTOVER_WORLD_ID;
+  const params = await searchParams;
+  const cutoverWorld =
+    typeof params.world === "string"
+      ? params.world
+      : process.env.ATROPOS_CUTOVER_WORLD_ID;
   if (cutoverWorld) {
     let v5Served = false;
     try {
@@ -32,9 +36,13 @@ export default async function GraphPage({
       // The established graph serves until the complete v5 pointer is verified.
     }
     if (v5Served)
-      redirect(`/graph/v5?world=${encodeURIComponent(cutoverWorld)}`);
+      return V5GraphPage({
+        searchParams: Promise.resolve({
+          ...(await searchParams),
+          world: cutoverWorld
+        })
+      });
   }
-  const params = await searchParams;
   const raw = typeof params.mq === "string" ? params.mq : null;
   const pins = graphRevisionPins(raw);
   const { catalog, snapshots, failures } =

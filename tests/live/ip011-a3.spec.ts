@@ -80,34 +80,54 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
     narrative: { body: string };
   }>({ kind: "event", event_id: unplaced[0] });
 
-  await page.goto(graph);
-  await expect(page.getByText("Moirai · World Revision 32")).toBeVisible();
-  await expect(page.getByText("배치 125 · 미배치 2")).toBeVisible();
+  await page.addInitScript(() =>
+    localStorage.setItem("urdr:app-language-override", "ko")
+  );
+  await page.goto("/graph");
+  await expect(page.getByTestId("graph-stage")).toBeVisible();
+  await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
+  await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
+  await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
   await page
-    .getByRole("button", { name: `${owner!.collection.title} 설명` })
+    .getByRole("button", {
+      name: `${owner!.collection.title} 설명`,
+      exact: true
+    })
     .click();
-  const detail = page.getByRole("complementary", { name: "선택된 본문" });
-  await detail.getByRole("button", { name: unplaced[0]! }).click();
-  await expect(
-    detail.getByRole("heading", { name: unplacedDetail.event.title })
-  ).toBeVisible();
+  const detail = page.getByTestId("event-drawer-sheet");
+  await expect(detail).toContainText(owner!.collection.title);
+  await page.getByTestId("event-drawer-stage-toggle").click();
+  await detail
+    .getByRole("link", { name: unplacedDetail.event.title, exact: true })
+    .click();
+  await expect(detail).toContainText(unplacedDetail.event.title);
   await expect(detail).toContainText(unplacedDetail.narrative.body);
   await expect(page).toHaveURL(new RegExp(`event=${unplaced[0]}`));
 
   await page.goto(`${graph}&event=${sharedId}`);
-  await expect(detail.getByRole("heading", { name: "계유정난" })).toBeVisible();
-  await page.getByRole("checkbox", { name: "조선 전기 연표" }).uncheck();
+  await expect(detail).toContainText("계유정난");
+  await page.getByTestId("event-drawer-close").click();
+  await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
+  await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
   await page
-    .getByRole("checkbox", { name: "단종 폐위 — 정변에서 죽음까지" })
+    .getByRole("checkbox", { name: "조선 전기 연표", exact: true })
+    .uncheck();
+  await page
+    .getByRole("checkbox", {
+      name: "단종 폐위 — 정변에서 죽음까지",
+      exact: true
+    })
     .check();
-  await expect(detail.getByRole("heading", { name: "계유정난" })).toBeVisible();
 
   await page.goto(`${graph}&event=${compositeId}`);
-  await expect(detail).toContainText("복합 사건 · World의 contains 관계");
-  await detail.getByRole("button", { name: childId }).click();
-  await expect(
-    detail.getByRole("heading", { name: "세조 즉위" })
-  ).toBeVisible();
+  await expect(detail).toContainText("단종 폐위와 몰락");
+  await page.getByTestId("event-drawer-stage-toggle").click();
+  await detail.getByRole("link", { name: "세조 즉위", exact: true }).click();
+  await expect(detail).toContainText("세조 즉위");
   await expect(page).toHaveURL(new RegExp(`event=${childId}`));
+  await page.screenshot({
+    path: "test-results/ip011-restored-mobile.png",
+    animations: "disabled"
+  });
   console.log(`live mobile unplaced Event IDs: ${unplaced.join(", ")}`);
 });

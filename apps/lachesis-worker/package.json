@@ -13,7 +13,8 @@
     "@moirai/persistence": "workspace:*",
     "@moirai/publication": "workspace:*",
     "@moirai/graph-query": "workspace:*",
-    "@moirai/graph-presentation": "workspace:*"
+    "@moirai/graph-presentation": "workspace:*",
+    "kysely": "^0.28.0"
   },
   "devDependencies": {
     "typescript": "^5.9.0"

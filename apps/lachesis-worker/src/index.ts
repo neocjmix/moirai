@@ -22,6 +22,9 @@ import {
   readV5ServedRoot
 } from "@moirai/publication/v5";
 import { createServer } from "node:http";
+import { spawn } from "node:child_process";
+import { fileURLToPath } from "node:url";
+import { sql } from "kysely";
 import {
   publishPresentation,
   backfillPresentation
@@ -42,6 +45,62 @@ const publicationMode = process.env.PUBLICATION_CONTRACT_MODE ?? "v4";
 if (!["v4", "quiesced", "v5-hold", "v5"].includes(publicationMode))
   throw Error("invalid_publication_contract_mode");
 let stopping = false;
+
+const operatorAction = process.env.IP011_A3_OPERATOR_ACTION;
+if (operatorAction) {
+  if (
+    publicationMode !== "quiesced" ||
+    process.env.IP011_WRITE_QUIESCED !== "1"
+  )
+    throw Error("ip011_operator_requires_quiescence");
+  if (operatorAction === "preflight") {
+    const name = (
+      await sql<{ name: string }>`select current_database() as name`.execute(
+        database
+      )
+    ).rows[0]?.name;
+    const worlds = (
+      await sql<{
+        id: string;
+        current_revision: number;
+        publication_target_revision: number;
+      }>`
+        select id, current_revision, publication_target_revision from worlds order by id
+      `.execute(database)
+    ).rows;
+    const pending = (
+      await sql<{ count: number }>`
+        select count(*)::int as count from publication_outbox where status <> 'completed'
+      `.execute(database)
+    ).rows[0]?.count;
+    process.stdout.write(
+      JSON.stringify({
+        operation: "ip011_a3_preflight",
+        database_name: name,
+        worlds,
+        pending_publication: pending
+      }) + "\n"
+    );
+  } else if (operatorAction === "cutover-v5") {
+    const exit = await new Promise<number>((resolve, reject) => {
+      const child = spawn(
+        "pnpm",
+        ["exec", "tsx", "scripts/ip011-a3-cutover.ts", "cutover-v5"],
+        {
+          cwd: fileURLToPath(new URL("../../../", import.meta.url)),
+          env: process.env,
+          stdio: "inherit"
+        }
+      );
+      child.once("error", reject);
+      child.once("exit", (code) => resolve(code ?? 1));
+    });
+    if (exit !== 0)
+      throw Error("ip011_a3_cutover_failed_writes_must_remain_quiesced");
+  } else {
+    throw Error("invalid_ip011_operator_action");
+  }
+}
 
 async function processNextJob(): Promise<boolean> {
   const job = await claimPublicationJob(database);

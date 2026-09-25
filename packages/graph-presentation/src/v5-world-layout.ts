@@ -39,7 +39,7 @@ export interface V5WorldLayout {
   readonly world_id: string;
   readonly revision: number;
   readonly time_system_id: string;
-  readonly algorithm_version: "v5-world-layout/1";
+  readonly algorithm_version: "v5-world-layout/1" | "v5-world-layout/2";
   readonly temporal_digest: string;
   readonly shapes: readonly Shape[];
   readonly unplaced_event_ids: readonly string[];
@@ -214,7 +214,13 @@ export function buildV5WorldLayout(
         compatibilityKey: String(system.definition.coordinate_codec)
       }
     },
-    { explicitExtents: extents, temporalConstraints: constraints }
+    {
+      explicitExtents: extents,
+      temporalConstraints: constraints,
+      ...(state.events.length > 500
+        ? { boundedRepulsion: { neighborsPerSide: 24, windowYears: 10 } }
+        : {})
+    }
   );
   // The renderer can invent fallback positions for unconstrained records.
   // Never present these as Gregorian facts: only anchored Events and regions
@@ -253,7 +259,8 @@ export function buildV5WorldLayout(
     world_id: state.world.id,
     revision: temporal.source_revision,
     time_system_id: timeSystemId,
-    algorithm_version: "v5-world-layout/1",
+    algorithm_version:
+      state.events.length > 500 ? "v5-world-layout/2" : "v5-world-layout/1",
     temporal_digest: temporal.semantic_digest,
     shapes,
     unplaced_event_ids: events

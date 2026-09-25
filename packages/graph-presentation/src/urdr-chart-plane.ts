@@ -931,6 +931,9 @@ type BuildGraphShellChartPlaneOptions = {
   strategy?: ProcessRegionDerivationStrategy;
   getValidationState?: (recordId: string) => "ok" | "warning" | "error";
   xForceLayout?: Partial<ChartPlaneXForceLayoutOptions>;
+  /** A bounded World projection may restrict pairwise repulsion to nearby
+   * temporal peers. The inherited small-World renderer keeps its exact path. */
+  boundedRepulsion?: { neighborsPerSide: number; windowYears: number };
   /** Moirai resolves lossless Canon semantics before entering legacy layout. */
   explicitExtents?: ReadonlyMap<string, { minYear: number; maxYear: number }>;
   temporalConstraints?: TemporalConstraint[];
@@ -938,6 +941,7 @@ type BuildGraphShellChartPlaneOptions = {
 
 type ForceLayoutPointNode = {
   eventId: string;
+  year: number;
   x: number;
   fixed: boolean;
   tieRank: number;
@@ -1213,7 +1217,8 @@ function buildXForceEdges(
 function optimizePointXPositions(
   context: ProjectionPreparedContext,
   state: ProjectionMutableState,
-  options: ChartPlaneXForceLayoutOptions
+  options: ChartPlaneXForceLayoutOptions,
+  boundedRepulsion?: { neighborsPerSide: number; windowYears: number }
 ) {
   const nodes = context.scopedEvents
     .map((event) => {
@@ -1231,6 +1236,7 @@ function optimizePointXPositions(
 
       return {
         eventId: event.id,
+        year,
         x: kind === "anchor" ? 0 : geometry.position.x / LANE_SPACING,
         fixed: kind === "anchor",
         tieRank: 0
@@ -1277,6 +1283,35 @@ function optimizePointXPositions(
   if (movableNodes.length === 0) {
     return;
   }
+  const peers = new Map<
+    ForceLayoutPointNode,
+    readonly ForceLayoutPointNode[]
+  >();
+  if (boundedRepulsion) {
+    const { neighborsPerSide, windowYears } = boundedRepulsion;
+    if (
+      !Number.isSafeInteger(neighborsPerSide) ||
+      neighborsPerSide < 1 ||
+      neighborsPerSide > 128 ||
+      !Number.isFinite(windowYears) ||
+      windowYears < 0
+    )
+      throw Error("v5_layout_repulsion_budget_invalid");
+    const ordered = [...movableNodes].sort(
+      (a, b) => a.year - b.year || a.eventId.localeCompare(b.eventId)
+    );
+    for (let index = 0; index < ordered.length; index++) {
+      const node = ordered[index]!;
+      const nearby: ForceLayoutPointNode[] = [];
+      for (let offset = 1; offset <= neighborsPerSide; offset++) {
+        const left = ordered[index - offset];
+        const right = ordered[index + offset];
+        if (left && node.year - left.year <= windowYears) nearby.push(left);
+        if (right && right.year - node.year <= windowYears) nearby.push(right);
+      }
+      peers.set(node, nearby);
+    }
+  }
 
   for (let iteration = 0; iteration < options.iterations; iteration += 1) {
     const cooling = 1 - iteration / Math.max(options.iterations, 1);
@@ -1289,7 +1324,7 @@ function optimizePointXPositions(
       }
 
       let force = 0;
-      for (const other of nodes) {
+      for (const other of peers.get(node) ?? nodes) {
         if (other === node || other.fixed) {
           continue;
         }
@@ -2012,7 +2047,12 @@ export function buildGraphShellChartPlane(
   placePropagatedInstantEvents(context, chronologyBoard, state);
   redistributePlacedPointClusters(context, chronologyBoard, state);
   repairPointTemporalPlacement(context, chronologyBoard, state);
-  optimizePointXPositions(context, state, xForceLayout);
+  optimizePointXPositions(
+    context,
+    state,
+    xForceLayout,
+    options?.boundedRepulsion
+  );
   deriveCompositeRegions(context, state);
   normalizeContainedByAssignments(context, state);
 

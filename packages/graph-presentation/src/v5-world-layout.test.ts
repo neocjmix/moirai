@@ -233,4 +233,66 @@ describe("offline v5 World-owned geometry", () => {
     expect(layout.unplaced_event_ids).toContain("unresolved");
     expect(JSON.stringify(layout)).not.toContain("canon_id");
   });
+  it("keeps local geometry fixed as distant World events grow beyond the bounded layout threshold", () => {
+    const grown = (size: number): CanonicalState => {
+      const remote = Array.from(
+        { length: size - state.events.length },
+        (_, i) => event(`remote-${String(i).padStart(4, "0")}`)
+      );
+      return {
+        ...state,
+        events: [...state.events, ...remote],
+        relations: [
+          ...state.relations,
+          ...remote.map((item, i) => ({
+            id: `date-${item.id}`,
+            world_id: worldId,
+            type: "coincides" as const,
+            direction: "undirected" as const,
+            source_ref: { kind: "event" as const, event_id: item.id },
+            target_ref: time(2000 + (i % 20)),
+            attributes: {}
+          }))
+        ],
+        narratives: [
+          ...state.narratives,
+          ...remote.map((item) => ({
+            id: `n-${item.id}`,
+            world_id: worldId,
+            scope_type: "event" as const,
+            scope_id: item.id,
+            locale: "ko",
+            title: null,
+            body: "Synthetic remote event",
+            public_references: [],
+            notes: []
+          }))
+        ]
+      };
+    };
+    const a = grown(600);
+    const b = grown(1200);
+    const smaller = buildV5WorldLayout(
+      a,
+      projectV5WorldTemporal(a, 31),
+      systemId
+    );
+    const larger = buildV5WorldLayout(
+      b,
+      projectV5WorldTemporal(b, 31),
+      systemId
+    );
+    expect(
+      buildV5WorldLayout(state, projectV5WorldTemporal(state, 31), systemId)
+        .algorithm_version
+    ).toBe("v5-world-layout/1");
+    expect(smaller.algorithm_version).toBe("v5-world-layout/2");
+    expect(larger.algorithm_version).toBe("v5-world-layout/2");
+    expect(larger.shapes.find((shape) => shape.event_id === "coup")).toEqual(
+      smaller.shapes.find((shape) => shape.event_id === "coup")
+    );
+    expect(
+      larger.shapes.find((shape) => shape.event_id === "abdication")
+    ).toEqual(smaller.shapes.find((shape) => shape.event_id === "abdication"));
+  });
 });

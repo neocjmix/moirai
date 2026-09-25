@@ -1,3 +1,4 @@
+import V5GraphPage from "../../../components/v5-graph-page";
 import { graphSpatialBootstrap } from "../../../lib/graph-spatial-bootstrap";
 import { notFound } from "next/navigation";
 
@@ -32,6 +33,17 @@ export default async function GraphScreenPage({
 }>) {
   const { screen } = await params;
   const queryParams = await searchParams;
+  if (
+    process.env.ATROPOS_CUTOVER_WORLD_ID &&
+    RELOADABLE_SCREENS.has(screen as AtroposScreenId)
+  )
+    return V5GraphPage({
+      searchParams: Promise.resolve({
+        ...queryParams,
+        world: process.env.ATROPOS_CUTOVER_WORLD_ID
+      }),
+      screen: screen as AtroposScreenId
+    });
   const raw = typeof queryParams.mq === "string" ? queryParams.mq : null;
   const pins = graphRevisionPins(raw);
   const { catalog, snapshots, failures } =

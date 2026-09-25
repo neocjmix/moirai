@@ -12,7 +12,7 @@ import {
 } from "../../lib/graph-publication-loader";
 import { composeCachedGraphPublicationQuery as composeGraphPublicationQuery } from "../../lib/graph-publication-composer";
 import { graphPresentationFromResult } from "../../lib/graph-query-presentation";
-import { redirect } from "next/navigation";
+import V5GraphPage from "../../components/v5-graph-page";
 import { readV5ServedRoot } from "@moirai/publication/v5";
 import { assertPublicId, readPublicationObject } from "../../lib/publication";
 
@@ -32,7 +32,12 @@ export default async function GraphPage({
       // The established graph serves until the complete v5 pointer is verified.
     }
     if (v5Served)
-      redirect(`/graph/v5?world=${encodeURIComponent(cutoverWorld)}`);
+      return V5GraphPage({
+        searchParams: Promise.resolve({
+          ...(await searchParams),
+          world: cutoverWorld
+        })
+      });
   }
   const params = await searchParams;
   const raw = typeof params.mq === "string" ? params.mq : null;

@@ -15,10 +15,11 @@ type Result = Page & {
 export function useGraphReaderSearch(
   state: MoiraiGraphUrlState,
   term: string,
-  enabled: boolean
+  enabled: boolean,
+  v5 = false
 ) {
   const key =
-    enabled && term.trim()
+    enabled && (v5 || term.trim())
       ? JSON.stringify({ state: { ...state, focus: null }, term: term.trim() })
       : "";
   const [request, setRequest] = useState({ key: "", cursor: 0, attempt: 0 });
@@ -45,12 +46,15 @@ export function useGraphReaderSearch(
         failed: false
       }));
       try {
-        const response = await fetch("/graph/search", {
-          method: "POST",
-          headers: { "content-type": "application/json" },
-          body: JSON.stringify({ ...JSON.parse(key), cursor }),
-          signal: controller.signal
-        });
+        const response = await fetch(
+          v5 ? "/graph/v5/search" : "/graph/search",
+          {
+            method: "POST",
+            headers: { "content-type": "application/json" },
+            body: JSON.stringify({ ...JSON.parse(key), cursor }),
+            signal: controller.signal
+          }
+        );
         if (!response.ok) throw Error("search_unavailable");
         const page = (await response.json()) as Page;
         if (controller.signal.aborted) return;
@@ -85,7 +89,7 @@ export function useGraphReaderSearch(
       clearTimeout(timeout);
       controller.abort();
     };
-  }, [key, cursor, request.attempt]);
+  }, [key, cursor, request.attempt, v5]);
   const current = result.key === key ? result : null;
   return {
     matches: key ? (current?.matches ?? []) : [],

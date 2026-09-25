@@ -1,7 +1,7 @@
 "use client";
 
 import { Cross2Icon } from "@radix-ui/react-icons";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 
 import type { MoiraiGraphSource, MoiraiGraphUrlState } from "@moirai/contracts";
 
@@ -213,9 +213,20 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
     catalog,
     entities,
     completeness,
-    pending
+    pending,
+    v5
   } = useGraphQuery();
-  const copy = COPY[locale];
+  const baseCopy = COPY[locale];
+  const copy = v5
+    ? (Object.fromEntries(
+        Object.entries(baseCopy).map(([key, value]) => [
+          key,
+          typeof value === "string"
+            ? value.replaceAll("Canon", "Collection")
+            : value
+        ])
+      ) as typeof baseCopy)
+    : baseCopy;
   const [open, setOpen] = useState(false);
   const [activeTab, setLocalTab] = useState<
     "sources" | "entities" | "search" | "relations"
@@ -287,10 +298,13 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
       ?.canons.find((canon) => canon.id === canonId)?.label[locale] ?? canonId;
   const narrativeSearch = useGraphReaderSearch(
     state,
-    searchTerm,
+    activeTab === "search" ? searchTerm : "",
     open &&
-      activeTab === "search" &&
-      state.query.entity_filter.include_narratives
+      (v5
+        ? activeTab === "search" || activeTab === "entities"
+        : activeTab === "search" &&
+          state.query.entity_filter.include_narratives),
+    v5
   );
   const localResults = useMemo(
     () =>
@@ -362,7 +376,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
           return current;
         }
         const selected = selectedSource.canon_ids.includes(canonId);
-        if (selected && selectedSource.canon_ids.length === 1) {
+        if (!v5 && selected && selectedSource.canon_ids.length === 1) {
           return current;
         }
         const nextSource: MoiraiGraphSource = {
@@ -380,7 +394,7 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
         );
       });
     },
-    [setSourceState]
+    [setSourceState, v5]
   );
 
   const applyDraftFrame = useCallback(() => {
@@ -1057,25 +1071,50 @@ export function GraphSourceIsland({ locale }: Readonly<{ locale: AppLocale }>) {
                                       canon.id
                                     );
                                     return (
-                                      <label
-                                        className={styles.canonRow}
-                                        key={canon.id}
-                                      >
-                                        <input
-                                          checked={selected}
-                                          onChange={() =>
-                                            toggleCanon(world, canon.id)
-                                          }
-                                          type="checkbox"
-                                        />
-                                        <span
-                                          aria-hidden="true"
-                                          className={styles.compactCheck}
+                                      <Fragment key={canon.id}>
+                                        <label
+                                          className={styles.canonRow}
+                                          key={canon.id}
                                         >
-                                          {selected ? "✓" : ""}
-                                        </span>
-                                        <span>{canon.label[locale]}</span>
-                                      </label>
+                                          <input
+                                            checked={selected}
+                                            onChange={() =>
+                                              toggleCanon(world, canon.id)
+                                            }
+                                            type="checkbox"
+                                          />
+                                          <span
+                                            aria-hidden="true"
+                                            className={styles.compactCheck}
+                                          >
+                                            {selected ? "✓" : ""}
+                                          </span>
+                                          <span>{canon.label[locale]}</span>
+                                        </label>
+                                        {v5 ? (
+                                          <button
+                                            type="button"
+                                            onClick={() => {
+                                              setState((current) =>
+                                                focusGraphEntity(current, {
+                                                  kind: "event",
+                                                  world_id: world.id,
+                                                  served_revision:
+                                                    world.servedRevision,
+                                                  canon_id: canon.id,
+                                                  event_ref: {
+                                                    kind: "event",
+                                                    event_id: `collection:${canon.id}`
+                                                  }
+                                                })
+                                              );
+                                              setOpen(false);
+                                            }}
+                                          >
+                                            {canon.label[locale]} 설명
+                                          </button>
+                                        ) : null}
+                                      </Fragment>
                                     );
                                   })}
                                 </fieldset>

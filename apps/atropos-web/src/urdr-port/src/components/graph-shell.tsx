@@ -1092,6 +1092,7 @@ const GRAPH_SHELL_COPY: Record<AppLocale, GraphShellCopy> = {
 };
 
 type EventDrawerContentProps = {
+  readingLinks?: EventDetailResponse["readingLinks"];
   locale: AppLocale;
   readingContext?: EventDetailResponse["readingContext"];
   copy: GraphShellCopy;
@@ -1991,6 +1992,7 @@ export function formatXForceValue(value: number, step: number) {
 }
 
 function EventDrawerContent({
+  readingLinks,
   locale,
   readingContext,
   copy,
@@ -2148,6 +2150,7 @@ function EventDrawerContent({
                 ) : loadState === "ready" ? (
                   <div className={styles.eventDrawerEmptyCopy}>{copy.eventNotesEmptyLabel}</div>
                 ) : null}
+                {readingLinks ? <section className={styles.eventMarkdown} data-testid="reading-links"><h2>{readingLinks.label}</h2><ul>{readingLinks.items.map((item) => <li key={item.href}><a href={item.href} onPointerDown={(event) => event.stopPropagation()}>{item.label}</a></li>)}</ul></section> : null}
                 {stableEventHref ? <p><a data-testid="read-stable-event" href={stableEventHref} onPointerDown={(event) => event.stopPropagation()}>{readEventLabel} →</a></p> : null}
                 {readingContext ? <details><summary>{observationLabel}</summary><pre data-testid="event-observation" style={{whiteSpace:"pre-wrap",overflowWrap:"anywhere"}}>{readingContext.observation}</pre></details> : null}
               </section>
@@ -4072,6 +4075,7 @@ export function GraphShell({
             } as CSSProperties}
           >
             <EventDrawerContent
+              readingLinks={selectedEventRecord?.readingLinks}
               copy={copy}
               eventCauseLabels={selectedEventCauseLabels}
               eventChronologySummary={selectedEventChronologySummary}

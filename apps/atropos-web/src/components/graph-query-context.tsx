@@ -34,6 +34,7 @@ import {
 } from "../lib/moirai-graph-source-query";
 
 type GraphQueryContextValue = {
+  readonly v5: boolean;
   readonly initialReader: GraphReaderState;
   readonly state: MoiraiGraphUrlState;
   readonly setState: Dispatch<SetStateAction<MoiraiGraphUrlState>>;
@@ -56,7 +57,8 @@ export function GraphQueryProvider({
   entities,
   relations,
   diagnostics,
-  completeness
+  completeness,
+  v5 = false
 }: Readonly<{
   children: ReactNode;
   initialState: MoiraiGraphUrlState;
@@ -66,6 +68,7 @@ export function GraphQueryProvider({
   relations: readonly GraphRelationMatch[];
   diagnostics: readonly GraphDiagnostic[];
   completeness: MoiraiGraphQueryResult["completeness"];
+  v5?: boolean;
 }>) {
   const [state, setLocalState] = useState(initialState);
   const router = useRouter();
@@ -76,6 +79,29 @@ export function GraphQueryProvider({
     (update) => {
       const next = typeof update === "function" ? update(state) : update;
       setLocalState(next);
+      if (v5) {
+        const url = new URL(window.location.href);
+        url.searchParams.set(
+          "collections",
+          next.query.sources
+            .flatMap((source) => source.canon_ids)
+            .sort()
+            .join(",")
+        );
+        url.searchParams.delete("collection");
+        if (
+          next.focus?.kind === "event" &&
+          next.focus.event_ref.kind === "event"
+        ) {
+          const id = next.focus.event_ref.event_id;
+          if (id.startsWith("collection:")) {
+            url.searchParams.delete("event");
+            url.searchParams.set("collection", id.slice(11));
+          } else url.searchParams.set("event", id);
+        } else url.searchParams.delete("event");
+        window.history.replaceState(window.history.state, "", url);
+        return;
+      }
       if (JSON.stringify(next.query) === JSON.stringify(state.query)) return;
       const base = new URLSearchParams(window.location.search);
       if (
@@ -99,18 +125,19 @@ export function GraphQueryProvider({
         )
       );
     },
-    [router, state]
+    [router, state, v5]
   );
 
   const setState = setSourceState;
   useEffect(() => setLocalState(initialState), [initialState]);
 
   const restoreFromLocation = useCallback(() => {
+    if (v5) return;
     setLocalState(
       parseGraphUrlState(window.location.search, catalog) ??
         createDefaultGraphUrlState(catalog)
     );
-  }, [catalog]);
+  }, [catalog, v5]);
 
   useEffect(() => {
     window.addEventListener("popstate", restoreFromLocation);
@@ -118,6 +145,7 @@ export function GraphQueryProvider({
   }, [restoreFromLocation]);
 
   useEffect(() => {
+    if (v5) return;
     const nextSearch = buildGraphUrlSearch(window.location.search, state);
     if (nextSearch !== window.location.search) {
       window.history.replaceState(
@@ -126,10 +154,11 @@ export function GraphQueryProvider({
         `${window.location.pathname}${nextSearch}${window.location.hash}`
       );
     }
-  }, [state]);
+  }, [state, v5]);
 
   const value = useMemo(
     () => ({
+      v5,
       initialReader,
       state,
       setState,
@@ -142,6 +171,7 @@ export function GraphQueryProvider({
       pending
     }),
     [
+      v5,
       initialReader,
       catalog,
       diagnostics,

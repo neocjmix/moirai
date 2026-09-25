@@ -624,6 +624,7 @@ export const eventNarrativeSectionSchema = z.object({
 export type EventNarrativeSection = z.infer<typeof eventNarrativeSectionSchema>;
 
 export const eventDetailResponseSchema = eventSchema.extend({
+  readingLinks: z.object({label: z.string(), items: z.array(z.object({label: z.string(), href: z.string()}))}).optional(),
   // Reader-only grouping: one Event drawer, Canon-labelled Narrative sections.
   narrativeSections: z.array(eventNarrativeSectionSchema).default([]),
   // Moirai reader presentation only; never an authored URDR/Moirai entity model.

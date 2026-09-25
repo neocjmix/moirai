@@ -237,7 +237,7 @@ async function verifyV5(pointer: {
     !root.ok ||
     !old.ok ||
     !(await graph.text()).includes("실제 세계사") ||
-    !(await root.text()).includes("/graph/v5?world=") ||
+    !(await root.text()).includes("실제 세계사") ||
     catalog.served_revision !== pointer.served_revision ||
     catalog.data.collection_count !== 6 ||
     event.served_revision !== pointer.served_revision ||

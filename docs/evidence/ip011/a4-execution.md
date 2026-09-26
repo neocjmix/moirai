@@ -218,3 +218,15 @@ Pan 실제 점 이동과 zoom URL 변화 검사도 기존대로 유지한다. �
 ## Slice 15: 모바일 profiler 실패를 CI 실패로 승격
 
 [PR #214](https://github.com/neocjmix/moirai/pull/214)은 `failures`가 있으면 JSON 출력과 artifact 업로드는 유지하되 profiler를 비정상 종료하게 만든다. 이제 `zoom_ineffective`, 상태·URL·trusted touch 실패 또는 예산 위반을 녹색 workflow로 오인하지 않는다. 운영 SHA `529d18d771cfa5e3b80aed0a8cc0141dcdaa9853`에 고정된 post-deploy 공개 smoke를 먼저 통과한 [Actions run 36261346762](https://github.com/neocjmix/moirai/actions/runs/36261346762)의 [raw](a4-mobile-budget-gate.json): 20 navigation graph-ready p95 1436.34ms, drawer 120.73ms, 600 frame pan p95/max 18/41ms, zoom 20/32ms, Collection trusted touch 20/26ms, HTML/graph <=1MiB, page error 0, touch trusted click 2회, `failures:[]`. 이 run은 고정 모바일 수치와 조작 유효성 gate를 모두 통과했다. 그러나 Slice 13의 별도 touch max 132~141ms와 Slice 14의 zoom 무효 반복은 제거되지 않았으므로 운영 127 Event에서의 안정적 재현 및 1k/10k/100k fixture 모바일 시험은 후속 검증이다. A4 전체 exit 미완료.
+
+## Slice 16: PG17 v5 authoring search 기준 계측
+
+[PR #215](https://github.com/neocjmix/moirai/pull/215)의 [Actions run 36279059315](https://github.com/neocjmix/moirai/actions/runs/36279059315), [원시 20 cold·50 warm 시료](a4-authoring-query.json). Ubuntu hosted runner, PostgreSQL 17 Alpine, Node v22.23.2 x64. 임시 DB를 규모별로 만들고 migration 009→011을 적용했다. World Revision 31의 제목 `DanJong`인 21 Event를 높은 UUID ID에 고정하고, 그보다 낮은 ID의 원격 Event만 1k/10k/100k로 증가시켰다. 동일한 첫 페이지 20 Event와 continuation cursor를 각 시료에서 검증했다. 각 Event에는 Narrative가 있다. fixture 적재용 `narratives(scope_type,scope_id)` 인덱스는 검색·EXPLAIN 전에 삭제했다. 20 cold는 새 Node 프로세스 각각 첫 검색이고 PostgreSQL buffer 및 OS 캐시는 비우지 않았다. warm은 한 프로세스 50회다.
+
+| Event | fixture 적재 | cold app p95 | warm app p95 | cold query p95 | warm query p95 | response | history rows | EXPLAIN |
+| ---: | ---: | ---: | ---: | ---: | ---: | ---: | ---: | --- |
+| 1k | 0.22 s | 31.28 ms | 3.60 ms | 12.88 ms | 3.34 ms | 2113 B | 0 | Seq Scan, 979 rows filtered |
+| 10k | 2.21 s | 38.62 ms | 9.03 ms | 21.27 ms | 8.36 ms | 2113 B | 0 | Seq Scan, 9979 rows filtered |
+| 100k | 23.26 s | 32.12 ms | 4.35 ms | 14.17 ms | 3.67 ms | 2113 B | 0 | Bitmap Index Scan `events_active_title_trgm`, 21 rows |
+
+실제 검색에서 10k의 순차 스캔이 가장 비싼 DB 단계였지만 100k에서는 제목 인덱스를 사용한다. 세 규모의 cold ≤500 ms, warm ≤100 ms, 응답 bytes 증가 1배, history replay 0으로 이 국소 제목 질의는 통과한다. EXPLAIN의 shared buffers는 순서대로 17/137/126 hit, 0 read이며 물리 디스크 cold 증거가 아니다. 첫 페이지 쿼리만 측정했고 다른 검색어·dense/discovery 후보 500·후속 페이지와 운영 데이터 분포를 대표하지 않는다. 코드 최적화는 이 수치만으로 정당화되지 않는다. A4 전체 exit는 dense·100k viewport의 충분한 cold/warm 수, 모바일 규모/반복, worker peak/cancel/restart가 남아 있다.

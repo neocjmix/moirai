@@ -162,3 +162,14 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 | 다음 warm | 18 / 168 ms | 168, 129 ms | 238 / 147 ms | off 2505/2514ms, on 2731/2899ms 등 |
 
 수치는 페이지 navigation 이후 `performance.now()` 기준의 시점이며, 첫 context의 가장 긴 RAF 간격은 약 4819~5762ms, off shell의 resource 응답 종료는 5042ms였다. 따라서 shell 응답 215ms **만으로** 943ms 간격을 설명할 수 없다. 그래프 SVG mutation 관측도 이 구간에 있으나 RAF 간격 사이에 Playwright action 완료 timestamp가 있으므로 943ms를 단일 연속 JS/React long task로 단정할 수 없다. 브라우저 scheduling, paint/compositing, graph update 작업을 더 분리해야 한다. 정상 URL 변경은 각 context 두 번, page error 0, off/on 결과 정상이다. 두 context 모두 최대 100ms 고정 예산 **실패**이며 A4 exit는 미완료다. 이 진단 workflow의 success는 성능 예산 통과가 아니다.
+
+## Slice 11: 긴 RAF 간격 중 JS timer 진행 여부
+
+[PR #210](https://github.com/neocjmix/moirai/pull/210)은 운영 SHA `d4ac46bb03b52d3f7f633e82e8e94b68026cee38`에 대한 공개 post-deploy `pnpm smoke`를 선행 통과했다. 앞선 WebKit 진단에 10ms JS timer를 **테스트에서만** 병행하고 동일한 off/on, 각 600 RAF frame을 기록했다. [Actions run 36258954895](https://github.com/neocjmix/moirai/actions/runs/36258954895), [원시 시료](a4-collection-timer.json). 운영 web/API/worker는 모두 해당 SHA로 SUCCESS였다.
+
+| 새 iPhone 14 WebKit context | RAF p95/max | >100ms RAF 안의 timer tick | 전체 timer tick / 최대 timer 간격 | shell off/on |
+| --- | ---: | --- | ---: | ---: |
+| 첫 cold | 19/969 ms | 969ms 중 71회; 111ms 중 8회; 125ms 중 8회 | 782회 / 31ms | 138/134ms |
+| 다음 warm | 18/147 ms | 147ms 중 10회; 114ms 중 9회 | 749회 / 20ms | 145/225ms |
+
+첫 navigation의 shell 응답은 1944ms로 해당 조작 전이며 첫 조작 결과와 혼동하지 않는다. 두 context의 체크박스 off/on 및 URL 변경은 정상, page error 0이다. 969ms RAF 공백 중 timer가 계속 동작했으므로 **연속적인 969ms JS main-thread block은 관측되지 않았다**. 이는 RAF/presentation 스케줄링 또는 테스트 실행 조건의 영향을 강하게 시사하지만 paint/compositor 원인이라고 확정할 근거는 아니다. 진단용 timer 자체가 샘플링 조건을 바꾸므로 timer 없는 Slice 10과 최대치 개선 비교도 하지 않는다. 두 context 모두 max <=100ms 고정 예산 **실패**; 별도 화면 녹화/visibility/RAF 원인 분리와 1k/10k/100k 규모의 실제 브라우저 검증이 남았다. A4 exit 미완료.

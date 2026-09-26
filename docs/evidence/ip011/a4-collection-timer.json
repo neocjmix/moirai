@@ -1,0 +1,204 @@
+{
+  "device": "iPhone 14 WebKit emulation, no throttling",
+  "production_sha": "d4ac46bb03b52d3f7f633e82e8e94b68026cee38",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "order": "normal cold then normal warm",
+  "intervention": "none; passive graph DOM/resource timing and 10ms JS timer alongside RAF after graph ready",
+  "results": [
+    {
+      "timeline": [
+        {
+          "label": "off_start",
+          "at_ms": 6345
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 6583,
+          "count": 1
+        },
+        {
+          "label": "off_done",
+          "at_ms": 6605
+        },
+        {
+          "label": "on_start",
+          "at_ms": 6618
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 7538,
+          "count": 3
+        },
+        {
+          "label": "on_done",
+          "at_ms": 7703
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 7837,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 7848,
+          "count": 3
+        }
+      ],
+      "shell_resources": [
+        {
+          "start_ms": 1848,
+          "response_end_ms": 3792,
+          "duration_ms": 1944
+        },
+        {
+          "start_ms": 6583,
+          "response_end_ms": 6721,
+          "duration_ms": 138
+        },
+        {
+          "start_ms": 7680,
+          "response_end_ms": 7814,
+          "duration_ms": 134
+        }
+      ],
+      "mode": "normal",
+      "samples": 600,
+      "p95_ms": 19,
+      "max_ms": 969,
+      "frames_over_100_ms": [
+        {
+          "index": 1,
+          "ms": 969,
+          "end_ms": 7529,
+          "timer_ticks": 71
+        },
+        {
+          "index": 2,
+          "ms": 111,
+          "end_ms": 7640,
+          "timer_ticks": 8
+        },
+        {
+          "index": 8,
+          "ms": 125,
+          "end_ms": 7812,
+          "timer_ticks": 8
+        }
+      ],
+      "timer_ticks_total": 782,
+      "max_timer_gap_ms": 31,
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    },
+    {
+      "timeline": [
+        {
+          "label": "off_start",
+          "at_ms": 2579
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2632,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2641,
+          "count": 3
+        },
+        {
+          "label": "off_done",
+          "at_ms": 2646
+        },
+        {
+          "label": "on_start",
+          "at_ms": 2659
+        },
+        {
+          "label": "on_done",
+          "at_ms": 2853
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 3064,
+          "count": 4
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 3071,
+          "count": 3
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 3080,
+          "count": 3
+        }
+      ],
+      "shell_resources": [
+        {
+          "start_ms": 479,
+          "response_end_ms": 632,
+          "duration_ms": 153
+        },
+        {
+          "start_ms": 2633,
+          "response_end_ms": 2778,
+          "duration_ms": 145
+        },
+        {
+          "start_ms": 2834,
+          "response_end_ms": 3059,
+          "duration_ms": 225
+        }
+      ],
+      "mode": "normal",
+      "samples": 600,
+      "p95_ms": 18,
+      "max_ms": 147,
+      "frames_over_100_ms": [
+        {
+          "index": 13,
+          "ms": 147,
+          "end_ms": 2784,
+          "timer_ticks": 10
+        },
+        {
+          "index": 19,
+          "ms": 114,
+          "end_ms": 2958,
+          "timer_ticks": 9
+        }
+      ],
+      "timer_ticks_total": 749,
+      "max_timer_gap_ms": 20,
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    }
+  ]
+}

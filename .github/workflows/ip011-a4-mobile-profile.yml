@@ -17,6 +17,7 @@ jobs:
     env:
       PUBLIC_INTEGRATION_URL: >-
         ${{ vars.PUBLIC_INTEGRATION_URL || 'https://moirai-production-8ed1.up.railway.app' }}
+      EXPECTED_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -27,6 +28,9 @@ jobs:
           node-version: 22
           cache: pnpm
       - run: pnpm install --frozen-lockfile
+      - name: Verify deployed base SHA and public v5 smoke
+        if: github.event_name == 'pull_request'
+        run: pnpm smoke
       - run: pnpm exec playwright install --with-deps webkit
       - name: Measure 20 navigations and 600 frames per gesture
         run: |

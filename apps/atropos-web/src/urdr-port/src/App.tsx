@@ -156,10 +156,12 @@ export function App({ initialScreen = "graph", loader, preserveWorkspaceOnLoader
   }, []);
 
   useEffect(() => {
-    setWorkspaceStatus("loading");
     // V5 source changes keep the same immutable workspace shell. Retaining it
-    // avoids a loading-workspace swap and a full graph re-hydration per toggle.
-    if (!preserveWorkspaceOnLoaderChange) setWorkspace(null);
+    // avoids loading/ready renders and graph re-hydration on every toggle.
+    if (!preserveWorkspaceOnLoaderChange) {
+      setWorkspaceStatus("loading");
+      setWorkspace(null);
+    }
 
     const abortController = new AbortController();
     let active = true;

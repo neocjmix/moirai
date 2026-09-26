@@ -154,11 +154,11 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 
 ## Slice 10: Collection 응답·DOM·RAF 시점 분리 (진단)
 
-[PR #209](https://github.com/neocjmix/moirai/pull/209)의 테스트 전용 타임라인은 운영 SHA `d9ef65bd7d4f5927fb0b365f3a030b3d640d07ee`에 대한 공개 smoke를 먼저 통과했다. Ubuntu hosted runner의 iPhone 14 WebKit, no throttling에서 새 context 2개를 순서대로 열어 각 600 RAF frame과 실제 체크박스 off/on을 측정했다. [Actions run 36258233939](https://github.com/neocjmix/moirai/actions/runs/36258233939), [원시 시료](a4-collection-timeline.json). 제품 런타임·화면·URL 동작은 변경하지 않았다.
+[PR #209](https://github.com/neocjmix/moirai/pull/209)의 테스트 전용 타임라인은 운영 SHA `d9ef65bd7d4f5927fb0b365f3a030b3d640d07ee`에 대한 공개 smoke를 먼저 통과했다. Ubuntu hosted runner의 iPhone 14 WebKit, no throttling에서 새 context 2개를 순서대로 열어 각 600 RAF frame과 실제 체크박스 off/on을 측정했다. [final-head Actions run 36258405742](https://github.com/neocjmix/moirai/actions/runs/36258233939), [원시 시료](a4-collection-timeline.json). 제품 런타임·화면·URL 동작은 변경하지 않았다.
 
 | Context | p95 / max (600 frame) | >100ms frame | off/on shell 응답 소요 | 그래프 DOM 변경 |
 | --- | ---: | --- | --- | --- |
-| 첫 cold | 20 / 950 ms | 950, 111, 122 ms | 199 / 219 ms | off 4822ms, on 5775ms 등 |
-| 다음 warm | 18 / 163 ms | 163, 112 ms | 201 / 211 ms | off 2513/2525ms, on 2952/2963ms |
+| 첫 cold | 19 / 943 ms | 943, 108, 123 ms | 215 / 234 ms | off 4827ms, on 5771ms 등 |
+| 다음 warm | 18 / 168 ms | 168, 129 ms | 238 / 147 ms | off 2505/2514ms, on 2731/2899ms 등 |
 
-수치는 페이지 navigation 이후 `performance.now()` 기준의 시점이며, 첫 context의 가장 긴 RAF 간격은 약 4814~5764ms, off shell의 resource 응답 종료는 5021ms였다. 따라서 shell 응답 199ms **만으로** 950ms 간격을 설명할 수 없다. 그래프 SVG mutation 관측도 이 구간에 있으나 RAF 간격 사이에 Playwright action 완료 timestamp가 있으므로 950ms를 단일 연속 JS/React long task로 단정할 수 없다. 브라우저 scheduling, paint/compositing, graph update 작업을 더 분리해야 한다. 정상 URL 변경은 각 context 두 번, page error 0, off/on 결과 정상이다. 두 context 모두 최대 100ms 고정 예산 **실패**이며 A4 exit는 미완료다. 이 진단 workflow의 success는 성능 예산 통과가 아니다.
+수치는 페이지 navigation 이후 `performance.now()` 기준의 시점이며, 첫 context의 가장 긴 RAF 간격은 약 4819~5762ms, off shell의 resource 응답 종료는 5042ms였다. 따라서 shell 응답 215ms **만으로** 943ms 간격을 설명할 수 없다. 그래프 SVG mutation 관측도 이 구간에 있으나 RAF 간격 사이에 Playwright action 완료 timestamp가 있으므로 943ms를 단일 연속 JS/React long task로 단정할 수 없다. 브라우저 scheduling, paint/compositing, graph update 작업을 더 분리해야 한다. 정상 URL 변경은 각 context 두 번, page error 0, off/on 결과 정상이다. 두 context 모두 최대 100ms 고정 예산 **실패**이며 A4 exit는 미완료다. 이 진단 workflow의 success는 성능 예산 통과가 아니다.

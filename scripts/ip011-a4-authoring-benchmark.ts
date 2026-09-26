@@ -37,7 +37,7 @@ async function sample() {
         !value.next_cursor ||
         ids.some(
           (id, index) =>
-            !id.endsWith((index + 1).toString(16).padStart(12, "0"))
+            !id.endsWith((200001 + index).toString(16).padStart(12, "0"))
         )
       )
         throw Error("a4_pg17_search_identity_or_cursor_changed");
@@ -101,6 +101,7 @@ async function benchmark() {
       try {
         await migrateToVersion(targetUrl, "009_ip003_relation_memberships");
         const db = createDatabase(targetUrl);
+        let fixtureSeedMs = 0;
         try {
           await db.transaction().execute(async (tx) => {
             await prepare(tx);
@@ -110,10 +111,19 @@ async function benchmark() {
           await sql`insert into worlds
             (id,slug,title,current_revision,publication_target_revision,created_revision,updated_revision)
             values (${worldId},'history','History',31,31,1,31)`.execute(db);
+          // The deferred owner trigger searches scope_type/scope_id without
+          // world_id. This temporary index helps load the fixture; it is
+          // removed before any search or EXPLAIN measurement.
+          await sql`create index a4_fixture_narrative_scope on narratives(scope_type,scope_id)`.execute(
+            db
+          );
+          const fixtureStarted = performance.now();
           await db.transaction().execute(async (tx) => {
             await sql`insert into events
               (id,world_id,slug,title,summary,roles,attributes,created_revision,updated_revision)
-              select ('019f5000-1100-7000-8000-' || lpad(to_hex(i),12,'0'))::uuid,
+              select ('019f5000-1100-7000-8000-' || lpad(to_hex(
+                case when i <= ${localCount} then 200000 + i else i end
+              ),12,'0'))::uuid,
                 ${worldId}::uuid, null,
                 case when i <= ${localCount} then 'DanJong local event ' || i
                      else 'Remote event ' || i end,
@@ -125,6 +135,8 @@ async function benchmark() {
                 'Synthetic authoring profile', '[]'::jsonb, '[]'::jsonb, 31, 31
               from events where world_id = ${worldId}`.execute(tx);
           });
+          fixtureSeedMs = performance.now() - fixtureStarted;
+          await sql`drop index a4_fixture_narrative_scope`.execute(db);
           await sql`analyze events`.execute(db);
         } finally {
           await db.destroy();
@@ -140,6 +152,9 @@ async function benchmark() {
           page_size: pageSize,
           cache:
             "new application process per cold sample; PG buffer/OS cache not flushed",
+          fixture_seed_ms: fixtureSeedMs,
+          fixture_loading_only_index:
+            "narratives(scope_type,scope_id), dropped before measurement",
           cold,
           warm,
           cold_p95_ms: p95(cold.map((s) => s.app_ms)),
@@ -164,7 +179,8 @@ async function benchmark() {
       },
       postgres: "17-alpine",
       world_revision: 31,
-      fixture: "21 identical local title matches; only remote Events added",
+      fixture:
+        "21 identical local title matches at high UUID IDs; only lower-ID remote Events added",
       results
     }) + "\n"
   );

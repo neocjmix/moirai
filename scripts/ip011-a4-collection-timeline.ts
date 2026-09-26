@@ -7,7 +7,7 @@ const baseURL =
 const worldId = "01995c2a-7b00-7000-8000-000000000101";
 const browser = await webkit.launch();
 const results: Array<{
-  mode: "idle_first" | "toggle_first";
+  mode: "dom_click_first" | "locator_second";
   idle_frames: {
     samples: number;
     p95_ms: number;
@@ -42,7 +42,7 @@ const results: Array<{
 }> = [];
 
 try {
-  for (const mode of ["idle_first", "toggle_first"] as const) {
+  for (const mode of ["dom_click_first", "locator_second"] as const) {
     const context = await browser.newContext({
       ...devices["iPhone 14"],
       baseURL
@@ -125,25 +125,7 @@ try {
         attributeFilter: ["style", "class", "transform"]
       });
     });
-    const idleFrames =
-      mode === "idle_first"
-        ? await page.evaluate(async () => {
-            const intervals: number[] = [];
-            let last = performance.now();
-            for (let i = 0; i < 600; i++) {
-              const now = await new Promise<number>(requestAnimationFrame);
-              intervals.push(now - last);
-              last = now;
-            }
-            intervals.sort((a, b) => a - b);
-            return {
-              samples: intervals.length,
-              p95_ms: intervals[Math.ceil(intervals.length * 0.95) - 1]!,
-              max_ms: intervals.at(-1)!,
-              visibility: document.visibilityState
-            };
-          })
-        : null;
+    const idleFrames = null;
     const frames = page.evaluate(async () => {
       for (let i = 0; i < 5; i++) await new Promise(requestAnimationFrame);
       const ticks: number[] = [];
@@ -195,7 +177,11 @@ try {
         }
       ).__a4Trace?.push({ label: "off_start", at_ms: performance.now() })
     );
-    await checkbox.uncheck();
+    if (mode === "dom_click_first")
+      await checkbox.evaluate((element) =>
+        (element as HTMLInputElement).click()
+      );
+    else await checkbox.uncheck();
     await page.evaluate(() =>
       (
         window as typeof window & {
@@ -211,7 +197,11 @@ try {
         }
       ).__a4Trace?.push({ label: "on_start", at_ms: performance.now() })
     );
-    await checkbox.check();
+    if (mode === "dom_click_first")
+      await checkbox.evaluate((element) =>
+        (element as HTMLInputElement).click()
+      );
+    else await checkbox.check();
     await page.evaluate(() =>
       (
         window as typeof window & {
@@ -270,9 +260,9 @@ process.stdout.write(
     device: "iPhone 14 WebKit emulation, no throttling",
     production_sha: process.env.EXPECTED_COMMIT_SHA,
     world_id: worldId,
-    order: "cold idle-before-toggle then warm toggle-without-idle",
+    order: "cold DOM click then warm Playwright locator input",
     intervention:
-      "none; passive graph DOM/resource timing and 10ms JS timer alongside RAF after graph ready",
+      "untrusted DOM click in first context versus Playwright trusted locator uncheck/check in second",
     results
   }) + "\n"
 );
@@ -281,7 +271,6 @@ if (
   results.some(
     (r) =>
       r.samples !== 600 ||
-      (r.mode === "idle_first" && r.idle_frames?.samples !== 600) ||
       r.checked_after_off ||
       !r.checked_after_on ||
       r.page_errors.length

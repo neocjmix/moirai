@@ -9,77 +9,87 @@
       "timeline": [
         {
           "label": "off_start",
-          "at_ms": 4756
+          "at_ms": 4758
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 4822,
+          "at_ms": 4827,
           "count": 1
         },
         {
           "label": "off_done",
-          "at_ms": 4851
+          "at_ms": 4850
         },
         {
           "label": "on_start",
-          "at_ms": 4861
+          "at_ms": 4859
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 5775,
+          "at_ms": 5771,
           "count": 3
         },
         {
           "label": "on_done",
-          "at_ms": 5947
+          "at_ms": 5932
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 6157,
+          "at_ms": 6135,
+          "count": 3
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 6155,
           "count": 1
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 6166,
+          "at_ms": 6162,
+          "count": 3
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 6180,
           "count": 3
         }
       ],
       "shell_resources": [
         {
-          "start_ms": 1779,
-          "response_end_ms": 1911,
-          "duration_ms": 132
+          "start_ms": 1822,
+          "response_end_ms": 2064,
+          "duration_ms": 242
         },
         {
-          "start_ms": 4822,
-          "response_end_ms": 5021,
-          "duration_ms": 199
+          "start_ms": 4827,
+          "response_end_ms": 5042,
+          "duration_ms": 215
         },
         {
-          "start_ms": 5931,
-          "response_end_ms": 6150,
-          "duration_ms": 219
+          "start_ms": 5906,
+          "response_end_ms": 6140,
+          "duration_ms": 234
         }
       ],
       "mode": "normal",
       "samples": 600,
-      "p95_ms": 20,
-      "max_ms": 950,
+      "p95_ms": 19,
+      "max_ms": 943,
       "frames_over_100_ms": [
         {
+          "index": 6,
+          "ms": 943,
+          "end_ms": 5762
+        },
+        {
           "index": 7,
-          "ms": 950,
-          "end_ms": 5764
+          "ms": 108,
+          "end_ms": 5870
         },
         {
-          "index": 8,
-          "ms": 111,
-          "end_ms": 5875
-        },
-        {
-          "index": 13,
-          "ms": 122,
-          "end_ms": 6059
+          "index": 12,
+          "ms": 123,
+          "end_ms": 6036
         }
       ],
       "history_calls": [
@@ -102,72 +112,82 @@
       "timeline": [
         {
           "label": "off_start",
-          "at_ms": 2462
+          "at_ms": 2450
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 2513,
+          "at_ms": 2505,
           "count": 1
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 2525,
+          "at_ms": 2514,
           "count": 3
         },
         {
           "label": "off_done",
-          "at_ms": 2528
+          "at_ms": 2517
         },
         {
           "label": "on_start",
-          "at_ms": 2543
-        },
-        {
-          "label": "on_done",
-          "at_ms": 2757
+          "at_ms": 2530
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 2952,
+          "at_ms": 2731,
+          "count": 3
+        },
+        {
+          "label": "on_done",
+          "at_ms": 2760
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2899,
           "count": 1
         },
         {
           "label": "graph_dom_mutation",
-          "at_ms": 2963,
+          "at_ms": 2903,
+          "count": 3
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2922,
           "count": 3
         }
       ],
       "shell_resources": [
         {
-          "start_ms": 471,
-          "response_end_ms": 588,
-          "duration_ms": 117
+          "start_ms": 512,
+          "response_end_ms": 732,
+          "duration_ms": 220
         },
         {
-          "start_ms": 2514,
-          "response_end_ms": 2715,
-          "duration_ms": 201
+          "start_ms": 2505,
+          "response_end_ms": 2743,
+          "duration_ms": 238
         },
         {
-          "start_ms": 2735,
-          "response_end_ms": 2946,
-          "duration_ms": 211
+          "start_ms": 2739,
+          "response_end_ms": 2886,
+          "duration_ms": 147
         }
       ],
       "mode": "normal",
       "samples": 600,
       "p95_ms": 18,
-      "max_ms": 163,
+      "max_ms": 168,
       "frames_over_100_ms": [
         {
           "index": 13,
-          "ms": 163,
-          "end_ms": 2683
+          "ms": 168,
+          "end_ms": 2678
         },
         {
           "index": 19,
-          "ms": 112,
-          "end_ms": 2849
+          "ms": 129,
+          "end_ms": 2882
         }
       ],
       "history_calls": [
@@ -179,7 +199,7 @@
         {
           "changed_collection": true,
           "suppressed": false,
-          "duration_ms": 0
+          "duration_ms": 1
         }
       ],
       "checked_after_off": false,

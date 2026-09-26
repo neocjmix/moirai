@@ -121,3 +121,18 @@ Ubuntu Actions run [36195166578](https://github.com/neocjmix/moirai/actions/runs
 | Collection 토글 600 frame p95 / max | 21 / 926 ms | <=33.4 / <=100 ms | **실패** |
 
 Pan 자동화는 빈 캔버스 드래그 후 점 위치가 30px 이상 변하지 않아 유효한 조작으로 인정할 수 없다. 이를 frame 통과로 계산하지 않는다. Zoom은 URL viewport 변화까지 확인했다. Collection 토글은 패널 열기를 측정에서 제외했는데도 최대 926ms, 다음 frame 124ms 및 재선택 시 129ms를 기록했다. 첫 화면은 단일 실제 World/127 Event이므로 1k/10k/100k 합성 규모의 브라우저 비용을 대체하지 않는다. CI 모바일 회귀·secret scan과 배포 smoke는 별도로 판정한다. A4 exit 미완료.
+
+## Slice 8: workspace 재사용 후 운영 v5 재계측
+
+[PR #206](https://github.com/neocjmix/moirai/pull/206)의 v5 App은 Collection 쿼리 변경 시 동일 `buildRevision` workspace를 loading shell로 교체하거나 재파싱 객체로 다시 hydrate하지 않는다. UI·그래프·드로어 마크업과 v4 경로는 변경하지 않았다. PR CI `36255914798`의 mobile Playwright/secret scan 포함 전체 통과, 운영 배포 `4cb379a6c3346b1e7974f53877f82a3aaa3f1e9c` Railway web/API/worker SUCCESS. [PR #207의 공개 smoke와 재계측 run 36256388503](https://github.com/neocjmix/moirai/actions/runs/36256388503)은 먼저 이 운영 SHA의 `pnpm smoke`를 통과한 뒤 같은 World Revision 32를 20 navigation과 각 600 frame으로 측정했다. [원시 시료](a4-mobile-post206.json)를 보존한다.
+
+| 운영 v5 127 Event | 이전 Slice 7 | workspace 재사용 후 | A1 예산 | 판정 |
+| --- | ---: | ---: | ---: | --- |
+| graph-ready p95 | 1248.88 ms | 1793.51 ms | <=3000 ms | 통과 |
+| drawer p95 | 222.52 ms | 120.53 ms | <=1000 ms | 통과 |
+| 최대 v5 shell response | 1392 B | 1392 B | <=1 MiB | 통과 |
+| pan p95/max | 동작 불확인 | 19/25 ms | <=33.4/100 ms | **유효 pan 통과** |
+| zoom p95/max | 20/38 ms | 20/34 ms | <=33.4/100 ms | 통과 |
+| Collection 토글 p95/max | 21/926 ms | 21/903 ms | <=33.4/100 ms | **실패** |
+
+Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 확인했다. 이전 pan 실패는 한 방향의 경계/조작 문제를 구별하지 못한 계측 결함이었다. Collection 토글은 패널 열기를 제외했음에도 최대 903ms로 통과하지 못했다. 단일 실행의 최대값 비교만으로 개선을 주장할 수 없으며, 다음 slice는 JS/render/URL 갱신 구간을 분리해 실제 장시간 frame 원인을 찾아야 한다. 1k/10k/100k 모바일 fixture 및 PostgreSQL authoring cold/warm, 100k worker peak/cancel/restart는 별개 미검증이다. A4 exit 미완료.

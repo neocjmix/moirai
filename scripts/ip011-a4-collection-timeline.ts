@@ -7,7 +7,7 @@ const baseURL =
 const worldId = "01995c2a-7b00-7000-8000-000000000101";
 const browser = await webkit.launch();
 const results: Array<{
-  mode: "dom_click_first" | "locator_second";
+  mode: "dom_click_first" | "locator_second" | "touch_third";
   idle_frames: {
     samples: number;
     p95_ms: number;
@@ -33,7 +33,12 @@ const results: Array<{
   checked_after_off: boolean;
   checked_after_on: boolean;
   page_errors: string[];
-  timeline: Array<{ label: string; at_ms: number; count?: number }>;
+  timeline: Array<{
+    label: string;
+    at_ms: number;
+    count?: number;
+    trusted?: boolean;
+  }>;
   shell_resources: Array<{
     start_ms: number;
     response_end_ms: number;
@@ -42,7 +47,11 @@ const results: Array<{
 }> = [];
 
 try {
-  for (const mode of ["dom_click_first", "locator_second"] as const) {
+  for (const mode of [
+    "dom_click_first",
+    "locator_second",
+    "touch_third"
+  ] as const) {
     const context = await browser.newContext({
       ...devices["iPhone 14"],
       baseURL
@@ -105,7 +114,12 @@ try {
     }, false);
 
     await page.evaluate(() => {
-      const trace: Array<{ label: string; at_ms: number; count?: number }> = [];
+      const trace: Array<{
+        label: string;
+        at_ms: number;
+        count?: number;
+        trusted?: boolean;
+      }> = [];
       (window as typeof window & { __a4Trace?: typeof trace }).__a4Trace =
         trace;
       const point = document.querySelector("[data-event-point-id]");
@@ -123,6 +137,24 @@ try {
         childList: true,
         attributes: true,
         attributeFilter: ["style", "class", "transform"]
+      });
+    });
+    await checkbox.evaluate((element) => {
+      element.addEventListener("click", (event) => {
+        const trace = (
+          window as typeof window & {
+            __a4Trace?: Array<{
+              label: string;
+              at_ms: number;
+              trusted?: boolean;
+            }>;
+          }
+        ).__a4Trace;
+        trace?.push({
+          label: "checkbox_click",
+          at_ms: performance.now(),
+          trusted: event.isTrusted
+        });
       });
     });
     const idleFrames = null;
@@ -181,7 +213,11 @@ try {
       await checkbox.evaluate((element) =>
         (element as HTMLInputElement).click()
       );
-    else await checkbox.uncheck();
+    else if (mode === "touch_third") {
+      const box = await checkbox.boundingBox();
+      if (!box) throw Error("checkbox_touch_target_missing");
+      await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    } else await checkbox.uncheck();
     await page.evaluate(() =>
       (
         window as typeof window & {
@@ -201,7 +237,11 @@ try {
       await checkbox.evaluate((element) =>
         (element as HTMLInputElement).click()
       );
-    else await checkbox.check();
+    else if (mode === "touch_third") {
+      const box = await checkbox.boundingBox();
+      if (!box) throw Error("checkbox_touch_target_missing");
+      await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+    } else await checkbox.check();
     await page.evaluate(() =>
       (
         window as typeof window & {
@@ -260,14 +300,14 @@ process.stdout.write(
     device: "iPhone 14 WebKit emulation, no throttling",
     production_sha: process.env.EXPECTED_COMMIT_SHA,
     world_id: worldId,
-    order: "cold DOM click then warm Playwright locator input",
+    order: "cold DOM click, warm locator input, warm trusted touchscreen tap",
     intervention:
-      "untrusted DOM click in first context versus Playwright trusted locator uncheck/check in second",
+      "untrusted DOM click, trusted Playwright locator input and touchscreen tap in fresh contexts",
     results
   }) + "\n"
 );
 if (
-  results.length !== 2 ||
+  results.length !== 3 ||
   results.some(
     (r) =>
       r.samples !== 600 ||

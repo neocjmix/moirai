@@ -72,6 +72,7 @@ try {
       name: "조선 전기 연표",
       exact: true
     });
+    if (mode === "touch_third") await checkbox.scrollIntoViewIfNeeded();
     if (!(await checkbox.isChecked()))
       throw Error("initial_collection_unchecked");
 

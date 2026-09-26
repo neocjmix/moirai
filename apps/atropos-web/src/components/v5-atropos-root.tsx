@@ -135,6 +135,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       : null;
   return (
     <App
+      preserveWorkspaceOnLoaderChange
       initialScreen={props.screen ?? "graph"}
       initialDrawerStage={props.fullEvent ? "full" : "peek"}
       loader={loader}

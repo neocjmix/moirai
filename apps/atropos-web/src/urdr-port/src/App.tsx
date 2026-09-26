@@ -29,6 +29,7 @@ import {
 type AppProps = {
   initialScreen?: AtroposScreenId;
   loader: GraphReadLoader;
+  preserveWorkspaceOnLoaderChange?: boolean;
   initialViewportCenter?: {x:number;y:number}|null;
   externalFocus?: {id:string;label:string}|null;
   initialEventDetail?: EventDetailResponse;
@@ -112,7 +113,7 @@ const SCREEN_ICONS = {
   settings: GearIcon,
 } as const;
 
-export function App({ initialScreen = "graph", loader, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
+export function App({ initialScreen = "graph", loader, preserveWorkspaceOnLoaderChange = false, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
@@ -155,8 +156,12 @@ export function App({ initialScreen = "graph", loader, renderGraphPage, initialV
   }, []);
 
   useEffect(() => {
-    setWorkspaceStatus("loading");
-    setWorkspace(null);
+    // V5 source changes keep the same immutable workspace shell. Retaining it
+    // avoids loading/ready renders and graph re-hydration on every toggle.
+    if (!preserveWorkspaceOnLoaderChange) {
+      setWorkspaceStatus("loading");
+      setWorkspace(null);
+    }
 
     const abortController = new AbortController();
     let active = true;
@@ -165,7 +170,11 @@ export function App({ initialScreen = "graph", loader, renderGraphPage, initialV
       try {
         const parsed = graphShellWorkspaceShellSchema.parse(await loader.loadWorkspace(locale));
         if (active) {
-          setWorkspace(parsed);
+          setWorkspace((current) =>
+            preserveWorkspaceOnLoaderChange && current?.buildRevision === parsed.buildRevision
+              ? current
+              : parsed
+          );
           setWorkspaceStatus("ready");
         }
       } catch (error) {
@@ -183,7 +192,7 @@ export function App({ initialScreen = "graph", loader, renderGraphPage, initialV
       active = false;
       abortController.abort();
     };
-  }, [loader, locale]);
+  }, [loader, locale, preserveWorkspaceOnLoaderChange]);
 
   useEffect(() => {
     if (localePreferenceLoaded) {

@@ -29,6 +29,7 @@ import {
 type AppProps = {
   initialScreen?: AtroposScreenId;
   loader: GraphReadLoader;
+  preserveWorkspaceOnLoaderChange?: boolean;
   initialViewportCenter?: {x:number;y:number}|null;
   externalFocus?: {id:string;label:string}|null;
   initialEventDetail?: EventDetailResponse;
@@ -112,7 +113,7 @@ const SCREEN_ICONS = {
   settings: GearIcon,
 } as const;
 
-export function App({ initialScreen = "graph", loader, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
+export function App({ initialScreen = "graph", loader, preserveWorkspaceOnLoaderChange = false, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
@@ -156,7 +157,9 @@ export function App({ initialScreen = "graph", loader, renderGraphPage, initialV
 
   useEffect(() => {
     setWorkspaceStatus("loading");
-    setWorkspace(null);
+    // V5 source changes keep the same immutable workspace shell. Retaining it
+    // avoids a loading-workspace swap and a full graph re-hydration per toggle.
+    if (!preserveWorkspaceOnLoaderChange) setWorkspace(null);
 
     const abortController = new AbortController();
     let active = true;
@@ -183,7 +186,7 @@ export function App({ initialScreen = "graph", loader, renderGraphPage, initialV
       active = false;
       abortController.abort();
     };
-  }, [loader, locale]);
+  }, [loader, locale, preserveWorkspaceOnLoaderChange]);
 
   useEffect(() => {
     if (localePreferenceLoaded) {

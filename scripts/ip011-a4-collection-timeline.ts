@@ -11,7 +11,14 @@ const results: Array<{
   samples: number;
   p95_ms: number;
   max_ms: number;
-  frames_over_100_ms: Array<{ index: number; ms: number; end_ms: number }>;
+  frames_over_100_ms: Array<{
+    index: number;
+    ms: number;
+    end_ms: number;
+    timer_ticks: number;
+  }>;
+  timer_ticks_total: number;
+  max_timer_gap_ms: number;
   history_calls: Array<{
     changed_collection: boolean;
     suppressed: boolean;
@@ -114,6 +121,8 @@ try {
     });
     const frames = page.evaluate(async () => {
       for (let i = 0; i < 5; i++) await new Promise(requestAnimationFrame);
+      const ticks: number[] = [];
+      const timer = setInterval(() => ticks.push(performance.now()), 10);
       const intervals: number[] = [];
       const ends: number[] = [];
       let last = performance.now();
@@ -123,15 +132,34 @@ try {
         ends.push(now);
         last = now;
       }
+      clearInterval(timer);
       const longFrames = intervals.flatMap((ms, index) =>
-        ms > 100 ? [{ index, ms, end_ms: ends[index]! }] : []
+        ms > 100
+          ? [
+              {
+                index,
+                ms,
+                end_ms: ends[index]!,
+                timer_ticks: ticks.filter(
+                  (tick) => tick > ends[index]! - ms && tick <= ends[index]!
+                ).length
+              }
+            ]
+          : []
+      );
+      const maxTimerGap = ticks.reduce(
+        (max, tick, index) =>
+          index === 0 ? max : Math.max(max, tick - ticks[index - 1]!),
+        0
       );
       intervals.sort((a, b) => a - b);
       return {
         samples: intervals.length,
         p95_ms: intervals[Math.ceil(intervals.length * 0.95) - 1]!,
         max_ms: intervals.at(-1)!,
-        frames_over_100_ms: longFrames
+        frames_over_100_ms: longFrames,
+        timer_ticks_total: ticks.length,
+        max_timer_gap_ms: maxTimerGap
       };
     });
     await page.waitForTimeout(250);
@@ -218,7 +246,7 @@ process.stdout.write(
     world_id: worldId,
     order: "normal cold then normal warm",
     intervention:
-      "none; passive graph DOM MutationObserver and resource timing after graph ready",
+      "none; passive graph DOM/resource timing and 10ms JS timer alongside RAF after graph ready",
     results
   }) + "\n"
 );

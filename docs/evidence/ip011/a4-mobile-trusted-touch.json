@@ -1,0 +1,222 @@
+{
+  "device": "iPhone 14 WebKit emulation, no throttling",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "navigations": [
+    {
+      "graph_ready_ms": 3772.73,
+      "drawer_ms": 410.28,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 760.98,
+      "drawer_ms": 212.09,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 674.88,
+      "drawer_ms": 202.69,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 670.06,
+      "drawer_ms": 200.5,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1170.2,
+      "drawer_ms": 126.19,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 678.02,
+      "drawer_ms": 178.45,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 665.31,
+      "drawer_ms": 188.61,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 590.62,
+      "drawer_ms": 244.75,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 683.1,
+      "drawer_ms": 201.28,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 673.18,
+      "drawer_ms": 209.54,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 596.26,
+      "drawer_ms": 246.63,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392,
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 586.29,
+      "drawer_ms": 205.14,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 612.71,
+      "drawer_ms": 169.28,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392,
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 654.94,
+      "drawer_ms": 189.66,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 694.78,
+      "drawer_ms": 224.63,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392,
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 604.58,
+      "drawer_ms": 259.87,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392,
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 660.71,
+      "drawer_ms": 168.45,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 589.25,
+      "drawer_ms": 207.2,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392,
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 715.33,
+      "drawer_ms": 217.65,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 716.56,
+      "drawer_ms": 166.85,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    }
+  ],
+  "gestures": {
+    "pan": {
+      "samples": 600,
+      "p95_ms": 18,
+      "max_ms": 25,
+      "dom_nodes": 176,
+      "long_frames": []
+    },
+    "zoom": {
+      "samples": 600,
+      "p95_ms": 20,
+      "max_ms": 32,
+      "dom_nodes": 157,
+      "long_frames": []
+    },
+    "collection_toggle": {
+      "samples": 600,
+      "p95_ms": 20,
+      "max_ms": 25,
+      "dom_nodes": 259,
+      "long_frames": []
+    }
+  },
+  "pan_displacement": {
+    "x": -40,
+    "y": -60
+  },
+  "collection_touch_trusted_clicks": 2,
+  "graph_ready_p95_ms": 1170.2,
+  "drawer_p95_ms": 259.87,
+  "failures": []
+}

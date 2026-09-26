@@ -31,6 +31,7 @@ const gestures: Record<
 > = {};
 const failures: string[] = [];
 let panDisplacement: { x: number; y: number } | null = null;
+let trustedTouchClicks = 0;
 
 try {
   for (let index = 0; index < 20; index++) {
@@ -175,10 +176,39 @@ try {
       name: "조선 전기 연표",
       exact: true
     });
-    await frameSample("collection_toggle", async () => {
-      await checkbox.uncheck();
-      await checkbox.check();
+    await checkbox.scrollIntoViewIfNeeded();
+    await checkbox.evaluate((element) => {
+      element.addEventListener("click", (event) => {
+        const w = window as typeof window & { __a4TrustedClicks?: number };
+        if (event.isTrusted)
+          w.__a4TrustedClicks = (w.__a4TrustedClicks ?? 0) + 1;
+      });
     });
+    await frameSample("collection_toggle", async () => {
+      const label = checkbox.locator("..");
+      const box = await label.boundingBox();
+      if (!box) throw Error("collection_touch_target_missing");
+      const tap = () =>
+        page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
+      const initialUrl = page.url();
+      await tap();
+      if (await checkbox.isChecked())
+        throw Error("collection_touch_off_ineffective");
+      await page.waitForFunction(
+        (previous) => location.href !== previous,
+        initialUrl,
+        { timeout: 2000 }
+      );
+      await tap();
+      if (!(await checkbox.isChecked()))
+        throw Error("collection_touch_on_ineffective");
+    });
+    trustedTouchClicks = await page.evaluate(
+      () =>
+        (window as typeof window & { __a4TrustedClicks?: number })
+          .__a4TrustedClicks ?? 0
+    );
+    if (trustedTouchClicks !== 2) failures.push("collection_touch_not_trusted");
     await context.close();
   }
 } catch (error) {
@@ -209,6 +239,7 @@ process.stdout.write(
     navigations,
     gestures,
     pan_displacement: panDisplacement,
+    collection_touch_trusted_clicks: trustedTouchClicks,
     graph_ready_p95_ms: graphP95,
     drawer_p95_ms: drawerP95,
     failures

@@ -149,3 +149,5 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 | A2 | 정상 | 19/154 ms | 154, 120 ms | 0, 0 ms | 정상 |
 
 모든 조건에서 100ms 최대 예산을 넘었고 page error 0이다. 첫 A의 968ms와 뒤 세 context 151~160ms 차이는 첫 실행/JIT/캐시 등 순서 효과를 포함하므로 URL 갱신만이 병목이라고 결론 내릴 수 없다. 실제 `replaceState` 호출 자체는 A에서 0~6ms였지만 비동기 후속 라우팅 비용은 별도 분리되지 않았다. 실험 조건은 URL을 영속적으로 갱신하지 않아 제품 대안도 아니다. 첫 context cold와 후속 warm, 네트워크/React commit을 더 분리하고 기존 UI·조작·드로어를 그대로 유지해야 한다. A4 exit 미완료.
+
+순서를 뒤집은 [BAAB run 36257435680](https://github.com/neocjmix/moirai/actions/runs/36257435680)에서는 첫 B(컬렉션 URL 억제) 자체가 **598ms**, 이후 A/A/B는 117/111/130ms였다. [BAAB 원시 시료](a4-collection-baab.json)의 각 mode도 600 frame·checkbox off/on·page error 0을 충족한다. 따라서 큰 냉간 첫 조작 지연은 Collection URL 쓰기가 없어도 재현된다. URL 갱신은 이 장시간 frame의 필요조건이 아니며, 후속 세 warm context도 모두 max 100ms 예산을 넘는다. 이 순서 실험은 renderer/JIT/네트워크 중 어느 하나를 아직 특정하지 못하며 제품 URL 동작을 변경하지 않는다.

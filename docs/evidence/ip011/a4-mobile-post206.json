@@ -1,0 +1,239 @@
+{
+  "source": "https://github.com/neocjmix/moirai/actions/runs/36256388503",
+  "production_sha": "4cb379a6c3346b1e7974f53877f82a3aaa3f1e9c",
+  "world_revision": 32,
+  "device": "iPhone 14 WebKit emulation, no throttling",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "navigations": [
+    {
+      "graph_ready_ms": 2391.06,
+      "drawer_ms": 333.21,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1319.53,
+      "drawer_ms": 116.49,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1422.17,
+      "drawer_ms": 118.75,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1360.95,
+      "drawer_ms": 117.07,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1357.92,
+      "drawer_ms": 115.33,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1793.51,
+      "drawer_ms": 108.65,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1374.7,
+      "drawer_ms": 110.56,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1337.11,
+      "drawer_ms": 112.32,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1395.72,
+      "drawer_ms": 105.91,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1341.77,
+      "drawer_ms": 108.2,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1327.18,
+      "drawer_ms": 109.02,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1318.05,
+      "drawer_ms": 112.69,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1335.4,
+      "drawer_ms": 104.53,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1388.99,
+      "drawer_ms": 107.58,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1393.18,
+      "drawer_ms": 118.89,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1379.7,
+      "drawer_ms": 120.53,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1367.42,
+      "drawer_ms": 108.5,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1345.37,
+      "drawer_ms": 111.62,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1356.27,
+      "drawer_ms": 110.25,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    },
+    {
+      "graph_ready_ms": 1314.99,
+      "drawer_ms": 117.82,
+      "html_bytes": 23877,
+      "graph_response_bytes": [
+        1392
+      ],
+      "errors": []
+    }
+  ],
+  "gestures": {
+    "pan": {
+      "samples": 600,
+      "p95_ms": 19,
+      "max_ms": 25,
+      "dom_nodes": 177,
+      "long_frames": []
+    },
+    "zoom": {
+      "samples": 600,
+      "p95_ms": 20,
+      "max_ms": 34,
+      "dom_nodes": 160,
+      "long_frames": [
+        {
+          "index": 14,
+          "ms": 34
+        }
+      ]
+    },
+    "collection_toggle": {
+      "samples": 600,
+      "p95_ms": 21,
+      "max_ms": 903,
+      "dom_nodes": 262,
+      "long_frames": [
+        {
+          "index": 7,
+          "ms": 903
+        },
+        {
+          "index": 8,
+          "ms": 109
+        },
+        {
+          "index": 16,
+          "ms": 111
+        }
+      ]
+    }
+  },
+  "pan_displacement": {
+    "x": -40,
+    "y": -60
+  },
+  "graph_ready_p95_ms": 1793.51,
+  "drawer_p95_ms": 120.53,
+  "failures": [
+    "collection_toggle_frames"
+  ]
+}

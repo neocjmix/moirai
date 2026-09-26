@@ -105,3 +105,19 @@ Ubuntu Actions run [36195166578](https://github.com/neocjmix/moirai/actions/runs
 | large Collection | 6.183 / 2.132 | 9.830 / 4.226 | 11.149 / 4.156 | 13 / 148101 B | 1.18× |
 
 이 측정 범위의 cold <=500ms, warm <=100ms, <=1MiB, <=256 object 및 1k→100k bytes <=2배는 12개 잡 모두 통과했다. Dense는 16 Event와 continuation을 반환한다. 매 요청에서 root body는 fixture metadata로 이미 전달돼 읽기 바이트에 **포함되지 않는다**. 로컬 파일 객체 저장소의 OS cache를 강제로 비우지 않았고 DB·HTTP·HTML·모바일 렌더링은 이 잡에 포함되지 않는다. 따라서 A1 고정 환경의 **전체** cold/warm gate 통과라고 확대하지 않으며 PostgreSQL rows/history, 실제 API 응답, 모바일 20 navigation/600 frame, authoring 및 worker cancel/restart를 계속 검증해야 한다.
+
+## Slice 7: 운영 v5 모바일 프레임 계측 (진단, 예산 미통과)
+
+[PR #205](https://github.com/neocjmix/moirai/pull/205)의 iPhone 14 WebKit/Ubuntu hosted runner/no throttling 계측은 운영 SHA `e95b9d3b71a21b9cf81f6487411fdd3fc0f576d0`의 World Revision 32 경로 `/graph/v5`를 20개 새 browser context에서 열었다. [Actions run 36198164197](https://github.com/neocjmix/moirai/actions/runs/36198164197)의 [원시 20 navigation·각 600 frame](a4-mobile-samples.json)을 보존했다. profile 잡의 success는 스크립트가 실패를 JSON으로 보고한 결과이며 성능 gate 통과를 의미하지 않는다.
+
+| 운영 v5, 127 Event | 실측 | A1 고정 예산 | 판정 |
+| --- | ---: | ---: | --- |
+| graph-ready p95 (20 navigation) | 1248.88 ms | <=3000 ms | 통과 |
+| drawer p95 | 222.52 ms | <=1000 ms | 통과 |
+| 첫 decoded HTML / 후속 graph response 최대 | 23877 / 1392 B | 각각 <=1 MiB | 통과 |
+| page error | 0 | 0 | 통과 |
+| pan 600 frame p95 / max | 18 / 36 ms | <=33.4 / <=100 ms | **동작 불확인** |
+| zoom 600 frame p95 / max | 20 / 38 ms | <=33.4 / <=100 ms | 통과 |
+| Collection 토글 600 frame p95 / max | 21 / 926 ms | <=33.4 / <=100 ms | **실패** |
+
+Pan 자동화는 빈 캔버스 드래그 후 점 위치가 30px 이상 변하지 않아 유효한 조작으로 인정할 수 없다. 이를 frame 통과로 계산하지 않는다. Zoom은 URL viewport 변화까지 확인했다. Collection 토글은 패널 열기를 측정에서 제외했는데도 최대 926ms, 다음 frame 124ms 및 재선택 시 129ms를 기록했다. 첫 화면은 단일 실제 World/127 Event이므로 1k/10k/100k 합성 규모의 브라우저 비용을 대체하지 않는다. CI 모바일 회귀·secret scan과 배포 smoke는 별도로 판정한다. A4 exit 미완료.

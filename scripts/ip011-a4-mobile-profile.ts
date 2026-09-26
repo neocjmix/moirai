@@ -245,3 +245,6 @@ process.stdout.write(
     failures
   }) + "\n"
 );
+
+// Keep the JSON artifact even when a fixed mobile budget or gesture check fails.
+if (failures.length > 0) process.exitCode = 1;

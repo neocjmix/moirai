@@ -173,3 +173,14 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 | 다음 warm | 18/147 ms | 147ms 중 10회; 114ms 중 9회 | 749회 / 20ms | 145/225ms |
 
 첫 navigation의 shell 응답은 1944ms로 해당 조작 전이며 첫 조작 결과와 혼동하지 않는다. 두 context의 체크박스 off/on 및 URL 변경은 정상, page error 0이다. 969ms RAF 공백 중 timer가 계속 동작했으므로 **연속적인 969ms JS main-thread block은 관측되지 않았다**. 이는 RAF/presentation 스케줄링 또는 테스트 실행 조건의 영향을 강하게 시사하지만 paint/compositor 원인이라고 확정할 근거는 아니다. 진단용 timer 자체가 샘플링 조건을 바꾸므로 timer 없는 Slice 10과 최대치 개선 비교도 하지 않는다. 두 context 모두 max <=100ms 고정 예산 **실패**; 별도 화면 녹화/visibility/RAF 원인 분리와 1k/10k/100k 규모의 실제 브라우저 검증이 남았다. A4 exit 미완료.
+
+## Slice 12: cold idle RAF 대조군
+
+[PR #211](https://github.com/neocjmix/moirai/pull/211)의 제품 변경 없는 대조 실험은 배포 web SHA `911e603b39683564fc7592d07fdfc56186490931`의 공개 smoke를 선행 통과했다. 첫 새 WebKit context의 그래프 준비·패널 개방 뒤 **토글 전 idle 600 RAF**를 측정하고 같은 context에서 Collection off/on 600 frame을 기록했다. 다음 새 context는 idle 없이 off/on했다. [Actions run 36259337428](https://github.com/neocjmix/moirai/actions/runs/36259337428), [원시 시료](a4-collection-idle-control.json).
+
+| 순서 | idle 600 frame p95/max | 토글 600 frame p95/max | 토글 최대 간격 중 10ms timer tick | page error |
+| --- | ---: | ---: | ---: | ---: |
+| 첫 context, idle 먼저 | 19/182 ms (visible) | 21/905 ms | 59회 | 0 |
+| 다음 context, 토글 먼저 | 없음 | 19/158 ms | 11회 | 0 |
+
+첫 context에서 idle의 최대 182ms도 100ms gate를 넘지만, 약 10초의 idle 후에도 토글의 905ms 공백이 남았다. 즉 단순한 첫 RAF 시작/몇 프레임 warm-up만으로 설명되지 않는다. 타이머는 해당 공백 중 계속 진행해 연속 JS block과도 일치하지 않는다. 네트워크 응답·SVG 변경·브라우저 RAF presentation의 관계는 남아 있고, idle-first와 toggle-first는 서로 다른 context 및 순서 조건이라 원인 확정 실험은 아니다. 제품 URL·그래프·드로어를 변경하지 않았다. Collection max gate는 여전히 **실패**, A4 exit 미완료다.

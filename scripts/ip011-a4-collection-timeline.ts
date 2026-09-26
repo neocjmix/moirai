@@ -7,7 +7,13 @@ const baseURL =
 const worldId = "01995c2a-7b00-7000-8000-000000000101";
 const browser = await webkit.launch();
 const results: Array<{
-  mode: "normal" | "suppress_collection_history";
+  mode: "idle_first" | "toggle_first";
+  idle_frames: {
+    samples: number;
+    p95_ms: number;
+    max_ms: number;
+    visibility: DocumentVisibilityState;
+  } | null;
   samples: number;
   p95_ms: number;
   max_ms: number;
@@ -36,7 +42,7 @@ const results: Array<{
 }> = [];
 
 try {
-  for (const mode of ["normal", "normal"] as const) {
+  for (const mode of ["idle_first", "toggle_first"] as const) {
     const context = await browser.newContext({
       ...devices["iPhone 14"],
       baseURL
@@ -119,6 +125,25 @@ try {
         attributeFilter: ["style", "class", "transform"]
       });
     });
+    const idleFrames =
+      mode === "idle_first"
+        ? await page.evaluate(async () => {
+            const intervals: number[] = [];
+            let last = performance.now();
+            for (let i = 0; i < 600; i++) {
+              const now = await new Promise<number>(requestAnimationFrame);
+              intervals.push(now - last);
+              last = now;
+            }
+            intervals.sort((a, b) => a - b);
+            return {
+              samples: intervals.length,
+              p95_ms: intervals[Math.ceil(intervals.length * 0.95) - 1]!,
+              max_ms: intervals.at(-1)!,
+              visibility: document.visibilityState
+            };
+          })
+        : null;
     const frames = page.evaluate(async () => {
       for (let i = 0; i < 5; i++) await new Promise(requestAnimationFrame);
       const ticks: number[] = [];
@@ -227,6 +252,7 @@ try {
     results.push({
       ...timing,
       mode,
+      idle_frames: idleFrames,
       ...sample,
       history_calls: historyCalls,
       checked_after_off: checkedAfterOff,
@@ -244,7 +270,7 @@ process.stdout.write(
     device: "iPhone 14 WebKit emulation, no throttling",
     production_sha: process.env.EXPECTED_COMMIT_SHA,
     world_id: worldId,
-    order: "normal cold then normal warm",
+    order: "cold idle-before-toggle then warm toggle-without-idle",
     intervention:
       "none; passive graph DOM/resource timing and 10ms JS timer alongside RAF after graph ready",
     results
@@ -255,6 +281,7 @@ if (
   results.some(
     (r) =>
       r.samples !== 600 ||
+      (r.mode === "idle_first" && r.idle_frames?.samples !== 600) ||
       r.checked_after_off ||
       !r.checked_after_on ||
       r.page_errors.length

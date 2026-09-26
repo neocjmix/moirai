@@ -151,3 +151,14 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 모든 조건에서 100ms 최대 예산을 넘었고 page error 0이다. 첫 A의 968ms와 뒤 세 context 151~160ms 차이는 첫 실행/JIT/캐시 등 순서 효과를 포함하므로 URL 갱신만이 병목이라고 결론 내릴 수 없다. 실제 `replaceState` 호출 자체는 A에서 0~6ms였지만 비동기 후속 라우팅 비용은 별도 분리되지 않았다. 실험 조건은 URL을 영속적으로 갱신하지 않아 제품 대안도 아니다. 첫 context cold와 후속 warm, 네트워크/React commit을 더 분리하고 기존 UI·조작·드로어를 그대로 유지해야 한다. A4 exit 미완료.
 
 순서를 뒤집은 [BAAB run 36257435680](https://github.com/neocjmix/moirai/actions/runs/36257435680)에서는 첫 B(컬렉션 URL 억제) 자체가 **598ms**, 이후 A/A/B는 117/111/130ms였다. [BAAB 원시 시료](a4-collection-baab.json)의 각 mode도 600 frame·checkbox off/on·page error 0을 충족한다. 따라서 큰 냉간 첫 조작 지연은 Collection URL 쓰기가 없어도 재현된다. URL 갱신은 이 장시간 frame의 필요조건이 아니며, 후속 세 warm context도 모두 max 100ms 예산을 넘는다. 이 순서 실험은 renderer/JIT/네트워크 중 어느 하나를 아직 특정하지 못하며 제품 URL 동작을 변경하지 않는다.
+
+## Slice 10: Collection 응답·DOM·RAF 시점 분리 (진단)
+
+[PR #209](https://github.com/neocjmix/moirai/pull/209)의 테스트 전용 타임라인은 운영 SHA `d9ef65bd7d4f5927fb0b365f3a030b3d640d07ee`에 대한 공개 smoke를 먼저 통과했다. Ubuntu hosted runner의 iPhone 14 WebKit, no throttling에서 새 context 2개를 순서대로 열어 각 600 RAF frame과 실제 체크박스 off/on을 측정했다. [Actions run 36258233939](https://github.com/neocjmix/moirai/actions/runs/36258233939), [원시 시료](a4-collection-timeline.json). 제품 런타임·화면·URL 동작은 변경하지 않았다.
+
+| Context | p95 / max (600 frame) | >100ms frame | off/on shell 응답 소요 | 그래프 DOM 변경 |
+| --- | ---: | --- | --- | --- |
+| 첫 cold | 20 / 950 ms | 950, 111, 122 ms | 199 / 219 ms | off 4822ms, on 5775ms 등 |
+| 다음 warm | 18 / 163 ms | 163, 112 ms | 201 / 211 ms | off 2513/2525ms, on 2952/2963ms |
+
+수치는 페이지 navigation 이후 `performance.now()` 기준의 시점이며, 첫 context의 가장 긴 RAF 간격은 약 4814~5764ms, off shell의 resource 응답 종료는 5021ms였다. 따라서 shell 응답 199ms **만으로** 950ms 간격을 설명할 수 없다. 그래프 SVG mutation 관측도 이 구간에 있으나 RAF 간격 사이에 Playwright action 완료 timestamp가 있으므로 950ms를 단일 연속 JS/React long task로 단정할 수 없다. 브라우저 scheduling, paint/compositing, graph update 작업을 더 분리해야 한다. 정상 URL 변경은 각 context 두 번, page error 0, off/on 결과 정상이다. 두 context 모두 최대 100ms 고정 예산 **실패**이며 A4 exit는 미완료다. 이 진단 workflow의 success는 성능 예산 통과가 아니다.

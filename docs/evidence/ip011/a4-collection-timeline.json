@@ -1,0 +1,190 @@
+{
+  "device": "iPhone 14 WebKit emulation, no throttling",
+  "production_sha": "d9ef65bd7d4f5927fb0b365f3a030b3d640d07ee",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "order": "normal cold then normal warm",
+  "intervention": "none; passive graph DOM MutationObserver and resource timing after graph ready",
+  "results": [
+    {
+      "timeline": [
+        {
+          "label": "off_start",
+          "at_ms": 4756
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 4822,
+          "count": 1
+        },
+        {
+          "label": "off_done",
+          "at_ms": 4851
+        },
+        {
+          "label": "on_start",
+          "at_ms": 4861
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 5775,
+          "count": 3
+        },
+        {
+          "label": "on_done",
+          "at_ms": 5947
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 6157,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 6166,
+          "count": 3
+        }
+      ],
+      "shell_resources": [
+        {
+          "start_ms": 1779,
+          "response_end_ms": 1911,
+          "duration_ms": 132
+        },
+        {
+          "start_ms": 4822,
+          "response_end_ms": 5021,
+          "duration_ms": 199
+        },
+        {
+          "start_ms": 5931,
+          "response_end_ms": 6150,
+          "duration_ms": 219
+        }
+      ],
+      "mode": "normal",
+      "samples": 600,
+      "p95_ms": 20,
+      "max_ms": 950,
+      "frames_over_100_ms": [
+        {
+          "index": 7,
+          "ms": 950,
+          "end_ms": 5764
+        },
+        {
+          "index": 8,
+          "ms": 111,
+          "end_ms": 5875
+        },
+        {
+          "index": 13,
+          "ms": 122,
+          "end_ms": 6059
+        }
+      ],
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    },
+    {
+      "timeline": [
+        {
+          "label": "off_start",
+          "at_ms": 2462
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2513,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2525,
+          "count": 3
+        },
+        {
+          "label": "off_done",
+          "at_ms": 2528
+        },
+        {
+          "label": "on_start",
+          "at_ms": 2543
+        },
+        {
+          "label": "on_done",
+          "at_ms": 2757
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2952,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2963,
+          "count": 3
+        }
+      ],
+      "shell_resources": [
+        {
+          "start_ms": 471,
+          "response_end_ms": 588,
+          "duration_ms": 117
+        },
+        {
+          "start_ms": 2514,
+          "response_end_ms": 2715,
+          "duration_ms": 201
+        },
+        {
+          "start_ms": 2735,
+          "response_end_ms": 2946,
+          "duration_ms": 211
+        }
+      ],
+      "mode": "normal",
+      "samples": 600,
+      "p95_ms": 18,
+      "max_ms": 163,
+      "frames_over_100_ms": [
+        {
+          "index": 13,
+          "ms": 163,
+          "end_ms": 2683
+        },
+        {
+          "index": 19,
+          "ms": 112,
+          "end_ms": 2849
+        }
+      ],
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    }
+  ]
+}

@@ -184,3 +184,15 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 | 다음 context, 토글 먼저 | 없음 | 19/158 ms | 11회 | 0 |
 
 첫 context에서 idle의 최대 182ms도 100ms gate를 넘지만, 약 10초의 idle 후에도 토글의 905ms 공백이 남았다. 즉 단순한 첫 RAF 시작/몇 프레임 warm-up만으로 설명되지 않는다. 타이머는 해당 공백 중 계속 진행해 연속 JS block과도 일치하지 않는다. 네트워크 응답·SVG 변경·브라우저 RAF presentation의 관계는 남아 있고, idle-first와 toggle-first는 서로 다른 context 및 순서 조건이라 원인 확정 실험은 아니다. 제품 URL·그래프·드로어를 변경하지 않았다. Collection max gate는 여전히 **실패**, A4 exit 미완료다.
+
+## Slice 13: 모바일 Collection 입력 자동화 대조
+
+[PR #212](https://github.com/neocjmix/moirai/pull/212)의 테스트 전용 진단은 운영 SHA `0c4a87760bfe8a97cfa3815e00637ed92c9ac8ee`에 고정된 공개 smoke를 선행 통과했다. 새 iPhone 14 WebKit context에서 각각 DOM `.click()` (untrusted), Playwright locator `uncheck/check` (trusted), 가시 label 행에 `touchscreen.tap` (trusted)을 순서대로 실행했다. 각 600 RAF frame, JS timer, 실제 input click의 `isTrusted`, 체크박스 off/on, URL 변경 및 page error를 확인했다. [Actions run 36260325116](https://github.com/neocjmix/moirai/actions/runs/36260325116), [원시 시료](a4-collection-input-method.json). 앞선 두 touch 시도는 input/행이 viewport 안에 없는 좌표를 탭하여 상태가 바뀌지 않았고 workflow가 실패했다. 최종 실험은 측정 **전에** 대상 input을 scrollIntoViewIfNeeded로 노출했다.
+
+| 새 context 순서 | 입력 | 600 frame p95/max | >100ms | 실제 click 신뢰 여부 | off/on·URL·error |
+| --- | --- | ---: | --- | --- | --- |
+| 첫 | DOM click | 19/112 ms | 112 | false, false | 정상·2회·0 |
+| 두 번째 | locator | 19/950 ms | 950, 127 | true, true | 정상·2회·0 |
+| 세 번째 | touch | 18/141 ms | 141 | true, true | 정상·2회·0 |
+
+Locator 950ms 동안 JS timer는 78회 진행했다. 이 조건에서 locator의 actionability/자동 스크롤/입력 대기 과정이 RAF 공백에 영향을 줄 가능성이 있다. 다만 순서가 고정이고 DOM click은 유저 입력이 아니며, 별도 context 간 네트워크/캐시 차이가 있어 **원인과 개선량을 확정하지 않는다**. 실제 모바일 조작을 대표하는 trusted touch조차 max 141ms로 고정 100ms gate **실패**다. 기존 20 navigation Collection 계측은 locator 입력이었으므로 터치 기준 20회 재측정이 필요하다. 제품 화면·그래프·드로어와 URL 코드는 바꾸지 않았다. A4 exit 미완료.

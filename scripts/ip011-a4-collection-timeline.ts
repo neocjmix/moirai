@@ -89,7 +89,7 @@ try {
         });
         return returned;
       };
-    }, mode === "suppress_collection_history");
+    }, false);
 
     await page.evaluate(() => {
       const trace: Array<{ label: string; at_ms: number; count?: number }> = [];

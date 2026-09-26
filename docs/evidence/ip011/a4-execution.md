@@ -196,3 +196,19 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 | 세 번째 | touch | 18/141 ms | 141 | true, true | 정상·2회·0 |
 
 Locator 950ms 동안 JS timer는 78회 진행했다. 이 조건에서 locator의 actionability/자동 스크롤/입력 대기 과정이 RAF 공백에 영향을 줄 가능성이 있다. 다만 순서가 고정이고 DOM click은 유저 입력이 아니며, 별도 context 간 네트워크/캐시 차이가 있어 **원인과 개선량을 확정하지 않는다**. 실제 모바일 조작을 대표하는 trusted touch조차 max 141ms로 고정 100ms gate **실패**다. 기존 20 navigation Collection 계측은 locator 입력이었으므로 터치 기준 20회 재측정이 필요하다. 제품 화면·그래프·드로어와 URL 코드는 바꾸지 않았다. A4 exit 미완료.
+
+## Slice 14: 20 navigation 모바일 고정 예산의 trusted touch 재계측
+
+[PR #213](https://github.com/neocjmix/moirai/pull/213)의 profiler-only 수정은 운영 SHA `3b024904def2cbddde9c9257e7323a94a1a4a7c6`에 대한 공개 `pnpm smoke`를 선행 통과했다. 기존 20개의 새 iPhone 14 WebKit context, no throttling, 각 pan/zoom/Collection 600 RAF sample 조건을 유지하고 마지막 Collection의 locator `uncheck/check`만 가시 label의 `touchscreen.tap` 두 번으로 대체했다. 상태 off/on·URL 변경·실제 `isTrusted=true` click 두 번을 요구한다. [Actions run 36260768760](https://github.com/neocjmix/moirai/actions/runs/36260768760), [원시 20 navigation 및 프레임 시료](a4-mobile-trusted-touch.json).
+
+| 운영 v5, World Revision 32 | 결과 | 고정 예산 | 이 실행 판정 |
+| --- | ---: | ---: | --- |
+| graph-ready p95, 20 navigation | 1170.2 ms | <=3000 ms | 통과 |
+| drawer p95 | 259.87 ms | <=1000 ms | 통과 |
+| 최대 HTML / graph response | 23877 / 1392 B | 각각 <=1MiB | 통과 |
+| page error | 0 | 0 | 통과 |
+| pan p95/max, 600 frame | 18/25 ms | <=33.4/100 ms | 통과 |
+| zoom p95/max, 600 frame | 20/32 ms | <=33.4/100 ms | 통과 |
+| Collection touch p95/max, 600 frame | 20/25 ms | <=33.4/100 ms | **이 실행 통과** |
+
+Pan 실제 점 이동과 zoom URL 변화 검사도 기존대로 유지한다. 이 한 실행의 Collection은 이전 locator 903ms보다 작지만 입력 방식이 달라 **제품 성능 개선치가 아니다**. 별도 유효 trusted touch 두 context에서는 max 141/132ms로 실패했으므로 재현성 검증 없이는 모바일 gate를 최종 완료로 선언할 수 없다. 1k/10k/100k 규모 모바일, PG17 authoring, worker peak/cancel/restart 등도 남아 있으며 A4 exit 미완료다.

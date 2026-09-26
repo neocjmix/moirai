@@ -1,0 +1,316 @@
+{
+  "device": "iPhone 14 WebKit emulation, no throttling",
+  "production_sha": "0c4a87760bfe8a97cfa3815e00637ed92c9ac8ee",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "order": "cold DOM click, warm locator input, warm trusted touchscreen tap",
+  "intervention": "untrusted DOM click, trusted Playwright locator input and touchscreen tap in fresh contexts",
+  "results": [
+    {
+      "timeline": [
+        {
+          "label": "off_start",
+          "at_ms": 5265
+        },
+        {
+          "label": "checkbox_click",
+          "at_ms": 5288,
+          "trusted": false
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 5295,
+          "count": 1
+        },
+        {
+          "label": "off_done",
+          "at_ms": 5299
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 5305,
+          "count": 3
+        },
+        {
+          "label": "on_start",
+          "at_ms": 5314
+        },
+        {
+          "label": "checkbox_click",
+          "at_ms": 5350,
+          "trusted": false
+        },
+        {
+          "label": "on_done",
+          "at_ms": 5371
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 5481,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 5509,
+          "count": 3
+        }
+      ],
+      "shell_resources": [
+        {
+          "start_ms": 1903,
+          "response_end_ms": 2276,
+          "duration_ms": 373
+        },
+        {
+          "start_ms": 5294,
+          "response_end_ms": 5429,
+          "duration_ms": 135
+        },
+        {
+          "start_ms": 5361,
+          "response_end_ms": 5466,
+          "duration_ms": 105
+        }
+      ],
+      "mode": "dom_click_first",
+      "idle_frames": null,
+      "samples": 600,
+      "p95_ms": 19,
+      "max_ms": 112,
+      "frames_over_100_ms": [
+        {
+          "index": 7,
+          "ms": 112,
+          "end_ms": 5502,
+          "timer_ticks": 8
+        }
+      ],
+      "timer_ticks_total": 704,
+      "max_timer_gap_ms": 28,
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    },
+    {
+      "timeline": [
+        {
+          "label": "off_start",
+          "at_ms": 1816
+        },
+        {
+          "label": "checkbox_click",
+          "at_ms": 1874,
+          "trusted": true
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 1879,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 1890,
+          "count": 3
+        },
+        {
+          "label": "off_done",
+          "at_ms": 1893
+        },
+        {
+          "label": "on_start",
+          "at_ms": 1903
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2191,
+          "count": 3
+        },
+        {
+          "label": "checkbox_click",
+          "at_ms": 2879,
+          "trusted": true
+        },
+        {
+          "label": "on_done",
+          "at_ms": 2903
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2995,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2998,
+          "count": 3
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 3022,
+          "count": 3
+        }
+      ],
+      "shell_resources": [
+        {
+          "start_ms": 461,
+          "response_end_ms": 551,
+          "duration_ms": 90
+        },
+        {
+          "start_ms": 1879,
+          "response_end_ms": 1966,
+          "duration_ms": 87
+        },
+        {
+          "start_ms": 2883,
+          "response_end_ms": 2973,
+          "duration_ms": 90
+        }
+      ],
+      "mode": "locator_second",
+      "idle_frames": null,
+      "samples": 600,
+      "p95_ms": 19,
+      "max_ms": 950,
+      "frames_over_100_ms": [
+        {
+          "index": 15,
+          "ms": 950,
+          "end_ms": 2835,
+          "timer_ticks": 78
+        },
+        {
+          "index": 20,
+          "ms": 127,
+          "end_ms": 3017,
+          "timer_ticks": 9
+        }
+      ],
+      "timer_ticks_total": 812,
+      "max_timer_gap_ms": 25,
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 1
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    },
+    {
+      "timeline": [
+        {
+          "label": "off_start",
+          "at_ms": 2063
+        },
+        {
+          "label": "checkbox_click",
+          "at_ms": 2082,
+          "trusted": true
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2086,
+          "count": 1
+        },
+        {
+          "label": "off_done",
+          "at_ms": 2096
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2099,
+          "count": 3
+        },
+        {
+          "label": "on_start",
+          "at_ms": 2109
+        },
+        {
+          "label": "checkbox_click",
+          "at_ms": 2141,
+          "trusted": true
+        },
+        {
+          "label": "on_done",
+          "at_ms": 2162
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2252,
+          "count": 1
+        },
+        {
+          "label": "graph_dom_mutation",
+          "at_ms": 2371,
+          "count": 3
+        }
+      ],
+      "shell_resources": [
+        {
+          "start_ms": 473,
+          "response_end_ms": 563,
+          "duration_ms": 90
+        },
+        {
+          "start_ms": 2086,
+          "response_end_ms": 2183,
+          "duration_ms": 97
+        },
+        {
+          "start_ms": 2149,
+          "response_end_ms": 2247,
+          "duration_ms": 98
+        }
+      ],
+      "mode": "touch_third",
+      "idle_frames": null,
+      "samples": 600,
+      "p95_ms": 18,
+      "max_ms": 141,
+      "frames_over_100_ms": [
+        {
+          "index": 8,
+          "ms": 141,
+          "end_ms": 2367,
+          "timer_ticks": 11
+        }
+      ],
+      "timer_ticks_total": 747,
+      "max_timer_gap_ms": 31,
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    }
+  ]
+}

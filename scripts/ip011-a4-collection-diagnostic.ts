@@ -24,10 +24,10 @@ const results: Array<{
 
 try {
   for (const mode of [
+    "suppress_collection_history",
     "normal",
-    "suppress_collection_history",
-    "suppress_collection_history",
-    "normal"
+    "normal",
+    "suppress_collection_history"
   ] as const) {
     const context = await browser.newContext({
       ...devices["iPhone 14"],
@@ -147,7 +147,7 @@ process.stdout.write(
     device: "iPhone 14 WebKit emulation, no throttling",
     production_sha: process.env.EXPECTED_COMMIT_SHA,
     world_id: worldId,
-    order: "ABBA",
+    order: "BAAB",
     intervention:
       "only suppress history.replaceState when the collections query parameter changes; local React state and graph loading are otherwise untouched",
     results

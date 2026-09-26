@@ -1,6 +1,6 @@
 /** Live iPhone 14 WebKit observations for the restored Atropos graph. */
 import { performance } from "node:perf_hooks";
-import { devices, webkit } from "@playwright/test";
+import { devices, webkit, type Response } from "@playwright/test";
 
 const baseURL =
   process.env.PUBLIC_INTEGRATION_URL ??
@@ -39,12 +39,12 @@ try {
     });
     const page = await context.newPage();
     const errors: string[] = [];
-    const graphResponses: Promise<number>[] = [];
+    const graphResponses: Response[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("response", (response) => {
       const path = new URL(response.url()).pathname;
       if (path === "/graph/v5/shell")
-        graphResponses.push(response.body().then((body) => body.byteLength));
+        graphResponses.push(response);
     });
     const started = performance.now();
     const response = await page.goto(url, { waitUntil: "domcontentloaded" });
@@ -62,7 +62,16 @@ try {
       graph_ready_ms: +graphReadyMs.toFixed(2),
       drawer_ms: +drawerMs.toFixed(2),
       html_bytes: htmlBytes,
-      graph_response_bytes: await Promise.all(graphResponses),
+      graph_response_bytes: await Promise.all(
+        graphResponses.map(async (graphResponse) => {
+          try {
+            return (await graphResponse.body()).byteLength;
+          } catch (error) {
+            errors.push(`graph_response_unreadable:${String(error)}`);
+            return 0;
+          }
+        })
+      ),
       errors
     });
 

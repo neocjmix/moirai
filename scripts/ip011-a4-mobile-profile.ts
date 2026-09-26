@@ -43,8 +43,7 @@ try {
     page.on("pageerror", (error) => errors.push(error.message));
     page.on("response", (response) => {
       const path = new URL(response.url()).pathname;
-      if (path === "/graph/v5/shell")
-        graphResponses.push(response);
+      if (path === "/graph/v5/shell") graphResponses.push(response);
     });
     const started = performance.now();
     const response = await page.goto(url, { waitUntil: "domcontentloaded" });

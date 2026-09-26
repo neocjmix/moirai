@@ -30,6 +30,7 @@ const gestures: Record<
   }
 > = {};
 const failures: string[] = [];
+let panDisplacement: { x: number; y: number } | null = null;
 
 try {
   for (let index = 0; index < 20; index++) {
@@ -121,14 +122,21 @@ try {
       }
     };
     await frameSample("pan", async () => {
-      // Match the empty-canvas drag used by the URDR mobile regression.
-      await page.mouse.move(25, 450);
+      // Drag the same empty-canvas area in the opposite direction to
+      // distinguish a navigation bound from an inert pan gesture.
+      await page.mouse.move(65, 510);
       await page.mouse.down();
-      await page.mouse.move(65, 510, { steps: 20 });
+      await page.mouse.move(25, 450, { steps: 20 });
       await page.mouse.up();
     });
     const pointAfter = await first.boundingBox();
-    if (!pointAfter || pointAfter.x < pointBefore.x + 30)
+    panDisplacement = pointAfter
+      ? { x: pointAfter.x - pointBefore.x, y: pointAfter.y - pointBefore.y }
+      : null;
+    if (
+      !panDisplacement ||
+      (Math.abs(panDisplacement.x) < 25 && Math.abs(panDisplacement.y) < 25)
+    )
       failures.push("pan_ineffective");
     const zoomBefore = new URL(page.url()).searchParams.get("gsViewport");
     await frameSample("zoom", async () => {
@@ -200,6 +208,7 @@ process.stdout.write(
     world_id: worldId,
     navigations,
     gestures,
+    pan_displacement: panDisplacement,
     graph_ready_p95_ms: graphP95,
     drawer_p95_ms: drawerP95,
     failures

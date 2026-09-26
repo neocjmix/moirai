@@ -154,7 +154,7 @@ Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 �
 
 ## Slice 10: Collection 응답·DOM·RAF 시점 분리 (진단)
 
-[PR #209](https://github.com/neocjmix/moirai/pull/209)의 테스트 전용 타임라인은 운영 SHA `d9ef65bd7d4f5927fb0b365f3a030b3d640d07ee`에 대한 공개 smoke를 먼저 통과했다. Ubuntu hosted runner의 iPhone 14 WebKit, no throttling에서 새 context 2개를 순서대로 열어 각 600 RAF frame과 실제 체크박스 off/on을 측정했다. [final-head Actions run 36258405742](https://github.com/neocjmix/moirai/actions/runs/36258233939), [원시 시료](a4-collection-timeline.json). 제품 런타임·화면·URL 동작은 변경하지 않았다.
+[PR #209](https://github.com/neocjmix/moirai/pull/209)의 테스트 전용 타임라인은 운영 SHA `d9ef65bd7d4f5927fb0b365f3a030b3d640d07ee`에 대한 공개 smoke를 먼저 통과했다. Ubuntu hosted runner의 iPhone 14 WebKit, no throttling에서 새 context 2개를 순서대로 열어 각 600 RAF frame과 실제 체크박스 off/on을 측정했다. [동일 진단 스크립트의 Actions run 36258405742](https://github.com/neocjmix/moirai/actions/runs/36258233939), [원시 시료](a4-collection-timeline.json). 제품 런타임·화면·URL 동작은 변경하지 않았다.
 
 | Context | p95 / max (600 frame) | >100ms frame | off/on shell 응답 소요 | 그래프 DOM 변경 |
 | --- | ---: | --- | --- | --- |

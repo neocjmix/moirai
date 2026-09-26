@@ -212,3 +212,5 @@ Locator 950ms 동안 JS timer는 78회 진행했다. 이 조건에서 locator의
 | Collection touch p95/max, 600 frame | 20/25 ms | <=33.4/100 ms | **이 실행 통과** |
 
 Pan 실제 점 이동과 zoom URL 변화 검사도 기존대로 유지한다. 이 한 실행의 Collection은 이전 locator 903ms보다 작지만 입력 방식이 달라 **제품 성능 개선치가 아니다**. 별도 유효 trusted touch 두 context에서는 max 141/132ms로 실패했으므로 재현성 검증 없이는 모바일 gate를 최종 완료로 선언할 수 없다. 1k/10k/100k 규모 모바일, PG17 authoring, worker peak/cancel/restart 등도 남아 있으며 A4 exit 미완료다.
+
+동일 profiler의 최종 헤드 반복 [Actions run 36260933629](https://github.com/neocjmix/moirai/actions/runs/36260933629)은 graph-ready p95 1088.27ms, drawer 165.75ms, pan p95/max 18/55ms, zoom 19/32ms, Collection trusted touch 20/29ms였다. 그러나 [반복 원시 시료](a4-mobile-trusted-touch-repeat.json)의 `failures: ["zoom_ineffective"]`는 zoom 후 URL viewport 변화가 없었음을 뜻한다. Workflow success는 진단 결과의 실패를 exit로 승격하지 않는다. 첫 run은 zoom 동작 유효, 두 번째는 무효이므로 모바일 pan/zoom/Collection **통합 gate는 재현성 미확보**로 남는다.

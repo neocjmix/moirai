@@ -96,7 +96,7 @@ try {
       (window as typeof window & { __a4Trace?: typeof trace }).__a4Trace =
         trace;
       const point = document.querySelector("[data-event-point-id]");
-      const graph = point?.parentElement?.parentElement;
+      const graph = point?.closest("svg");
       if (!graph) throw Error("graph_observer_target_missing");
       new MutationObserver((records) => {
         if (trace.length < 200)

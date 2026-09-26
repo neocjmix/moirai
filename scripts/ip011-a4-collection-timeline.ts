@@ -214,7 +214,7 @@ try {
         (element as HTMLInputElement).click()
       );
     else if (mode === "touch_third") {
-      const box = await checkbox.boundingBox();
+      const box = await checkbox.locator("..").boundingBox();
       if (!box) throw Error("checkbox_touch_target_missing");
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
     } else await checkbox.uncheck();
@@ -238,7 +238,7 @@ try {
         (element as HTMLInputElement).click()
       );
     else if (mode === "touch_third") {
-      const box = await checkbox.boundingBox();
+      const box = await checkbox.locator("..").boundingBox();
       if (!box) throw Error("checkbox_touch_target_missing");
       await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
     } else await checkbox.check();

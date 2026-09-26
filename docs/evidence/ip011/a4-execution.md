@@ -136,3 +136,18 @@ Pan 자동화는 빈 캔버스 드래그 후 점 위치가 30px 이상 변하지
 | Collection 토글 p95/max | 21/926 ms | 21/903 ms | <=33.4/100 ms | **실패** |
 
 Pan은 빈 캔버스를 반대로 끌어 점이 x -40, y -60px 이동했음을 확인했다. 이전 pan 실패는 한 방향의 경계/조작 문제를 구별하지 못한 계측 결함이었다. Collection 토글은 패널 열기를 제외했음에도 최대 903ms로 통과하지 못했다. 단일 실행의 최대값 비교만으로 개선을 주장할 수 없으며, 다음 slice는 JS/render/URL 갱신 구간을 분리해 실제 장시간 frame 원인을 찾아야 한다. 1k/10k/100k 모바일 fixture 및 PostgreSQL authoring cold/warm, 100k worker peak/cancel/restart는 별개 미검증이다. A4 exit 미완료.
+
+## Slice 9: Collection 프레임 원인 분리 실험
+
+[PR #208](https://github.com/neocjmix/moirai/pull/208)의 테스트 전용 진단은 배포 SHA `d4dad95a8d44c6636ae5acd7db91d297903235a8`에 대한 공개 `pnpm smoke`를 선행 통과하고, 동일한 운영 v5 World Revision 32를 새 iPhone 14 WebKit context 네 개에서 ABBA 순서로 측정했다. 각 context는 동일 Collection을 off/on하고 600 RAF 간격을 기록한다. 실험 조건은 `history.replaceState`에서 `collections` 쿼리 파라미터가 바뀌는 호출만 브라우저 테스트에서 억제한다. React local state와 v5 graph loader는 그대로 실행한다. [Actions run 36257063658](https://github.com/neocjmix/moirai/actions/runs/36257063658), [원시 시료](a4-collection-abba.json).
+
+| 순서 | URL 조건 | 600 frame p95 / max | >100ms frame | URL 변경 호출 | checkbox off/on |
+| --- | --- | ---: | --- | --- | --- |
+| A1 | 정상 | 19/968 ms | 968, 103, 116 ms | 1, 6 ms | 정상 |
+| B1 | Collection URL 억제 | 19/160 ms | 160, 123 ms | 억제 | 정상 |
+| B2 | Collection URL 억제 | 19/151 ms | 151, 116 ms | 억제 | 정상 |
+| A2 | 정상 | 19/154 ms | 154, 120 ms | 0, 0 ms | 정상 |
+
+모든 조건에서 100ms 최대 예산을 넘었고 page error 0이다. 첫 A의 968ms와 뒤 세 context 151~160ms 차이는 첫 실행/JIT/캐시 등 순서 효과를 포함하므로 URL 갱신만이 병목이라고 결론 내릴 수 없다. 실제 `replaceState` 호출 자체는 A에서 0~6ms였지만 비동기 후속 라우팅 비용은 별도 분리되지 않았다. 실험 조건은 URL을 영속적으로 갱신하지 않아 제품 대안도 아니다. 첫 context cold와 후속 warm, 네트워크/React commit을 더 분리하고 기존 UI·조작·드로어를 그대로 유지해야 한다. A4 exit 미완료.
+
+순서를 뒤집은 [BAAB run 36257435680](https://github.com/neocjmix/moirai/actions/runs/36257435680)에서는 첫 B(컬렉션 URL 억제) 자체가 **598ms**, 이후 A/A/B는 117/111/130ms였다. [BAAB 원시 시료](a4-collection-baab.json)의 각 mode도 600 frame·checkbox off/on·page error 0을 충족한다. 따라서 큰 냉간 첫 조작 지연은 Collection URL 쓰기가 없어도 재현된다. URL 갱신은 이 장시간 frame의 필요조건이 아니며, 후속 세 warm context도 모두 max 100ms 예산을 넘는다. 이 순서 실험은 renderer/JIT/네트워크 중 어느 하나를 아직 특정하지 못하며 제품 URL 동작을 변경하지 않는다.

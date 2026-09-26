@@ -1,0 +1,118 @@
+{
+  "source": "https://github.com/neocjmix/moirai/actions/runs/36257435680",
+  "device": "iPhone 14 WebKit emulation, no throttling",
+  "production_sha": "d4dad95a8d44c6636ae5acd7db91d297903235a8",
+  "world_id": "01995c2a-7b00-7000-8000-000000000101",
+  "order": "BAAB",
+  "intervention": "only suppress history.replaceState when the collections query parameter changes; local React state and graph loading are otherwise untouched",
+  "results": [
+    {
+      "mode": "suppress_collection_history",
+      "samples": 600,
+      "p95_ms": 19,
+      "max_ms": 598,
+      "frames_over_100_ms": [
+        {
+          "index": 10,
+          "ms": 598
+        }
+      ],
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": true,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": false,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    },
+    {
+      "mode": "normal",
+      "samples": 600,
+      "p95_ms": 18,
+      "max_ms": 117,
+      "frames_over_100_ms": [
+        {
+          "index": 15,
+          "ms": 117
+        }
+      ],
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    },
+    {
+      "mode": "normal",
+      "samples": 600,
+      "p95_ms": 18,
+      "max_ms": 111,
+      "frames_over_100_ms": [
+        {
+          "index": 13,
+          "ms": 111
+        }
+      ],
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 1
+        },
+        {
+          "changed_collection": true,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    },
+    {
+      "mode": "suppress_collection_history",
+      "samples": 600,
+      "p95_ms": 19,
+      "max_ms": 130,
+      "frames_over_100_ms": [
+        {
+          "index": 14,
+          "ms": 130
+        }
+      ],
+      "history_calls": [
+        {
+          "changed_collection": true,
+          "suppressed": true,
+          "duration_ms": 0
+        },
+        {
+          "changed_collection": false,
+          "suppressed": false,
+          "duration_ms": 0
+        }
+      ],
+      "checked_after_off": false,
+      "checked_after_on": true,
+      "page_errors": []
+    }
+  ]
+}

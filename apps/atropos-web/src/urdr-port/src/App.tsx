@@ -168,7 +168,11 @@ export function App({ initialScreen = "graph", loader, preserveWorkspaceOnLoader
       try {
         const parsed = graphShellWorkspaceShellSchema.parse(await loader.loadWorkspace(locale));
         if (active) {
-          setWorkspace(parsed);
+          setWorkspace((current) =>
+            preserveWorkspaceOnLoaderChange && current?.buildRevision === parsed.buildRevision
+              ? current
+              : parsed
+          );
           setWorkspaceStatus("ready");
         }
       } catch (error) {

@@ -90,7 +90,20 @@ async function benchmark() {
   const source = process.env.DATABASE_URL;
   if (!source) throw Error("a4_pg17_database_required");
   const admin = createDatabase(source);
-  const results = [];
+  const results: Array<{
+    event_count: number;
+    local_matches: number;
+    query: string;
+    page_size: number;
+    cache: string;
+    fixture_seed_ms: number;
+    fixture_loading_only_index: string;
+    cold: Sample[];
+    warm: Sample[];
+    cold_p95_ms: number;
+    warm_p95_ms: number;
+    explain: Awaited<ReturnType<typeof explain>>;
+  }> = [];
   try {
     for (const eventCount of [1000, 10000, 100000]) {
       const name = `ip011_a4_authoring_${randomBytes(6).toString("hex")}`;
@@ -170,6 +183,25 @@ async function benchmark() {
   } finally {
     await admin.destroy();
   }
+  const baseline = results[0]!;
+  const largest = results.at(-1)!;
+  const failures = results.flatMap((result) => [
+    ...(result.cold_p95_ms > 500 ? [`cold_${result.event_count}`] : []),
+    ...(result.warm_p95_ms > 100 ? [`warm_${result.event_count}`] : []),
+    ...(result.cold.some((sample) => sample.history_rows !== 0) ||
+    result.warm.some((sample) => sample.history_rows !== 0)
+      ? [`history_${result.event_count}`]
+      : []),
+    ...(result.warm.some((sample) => sample.response_bytes > 1024 * 1024)
+      ? [`response_${result.event_count}`]
+      : [])
+  ]);
+  if (largest.warm[0]!.response_bytes > 2 * baseline.warm[0]!.response_bytes)
+    failures.push("response_growth");
+  const rowCount = (result: (typeof results)[number]) =>
+    Number(result.explain.nodes[0]?.actual_rows);
+  if (rowCount(largest) > 2 * rowCount(baseline))
+    failures.push("result_row_growth");
   process.stdout.write(
     JSON.stringify({
       host: {
@@ -181,9 +213,12 @@ async function benchmark() {
       world_revision: 31,
       fixture:
         "21 identical local title matches at high UUID IDs; only lower-ID remote Events added",
-      results
+      results,
+      failures
     }) + "\n"
   );
+  if (failures.length)
+    throw Error(`a4_pg17_budget_failed:${failures.join(",")}`);
 }
 
 interface Sample {

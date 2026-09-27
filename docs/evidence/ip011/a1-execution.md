@@ -1,5 +1,7 @@
 # IP-011 A1 execution evidence
 
+> 2026-09-28 종료 상태: 사용자 승인으로 A4 잔여를 [후속 백로그](../../implementation/IP-011-A4-closeout-backlog.md)에 이관하고 실행 단계를 종료했다. 아래 당시 실패·미완료·미배포 기록은 보존하며 원래 성능 기준 전체 통과를 뜻하지 않는다.
+
 2026-09-22; baseline main `814a5779147c8f458693029326e57885984f62c4` (PR #129). Railway API/web/worker all SUCCESS at that commit. Live historical World remains revision 30. User authorized IP execution, including writes/deletes/merge/deploy; backup and rehearsal gates remain required.
 
 ## Policy delivery

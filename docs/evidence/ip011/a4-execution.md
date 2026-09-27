@@ -1,5 +1,7 @@
 # IP-011 A4 — 실행 기록 (진행 중)
 
+> 2026-09-28 종료 상태: 사용자 승인으로 A4 잔여를 [후속 백로그](../../implementation/IP-011-A4-closeout-backlog.md)에 이관하고 실행 단계를 종료했다. 아래 당시 실패·미완료·미배포 기록은 보존하며 원래 성능 기준 전체 통과를 뜻하지 않는다.
+
 ## 시작 기준선 — 2026-09-25
 
 - main 및 공개 `/__status` SHA `72377e3563a88760e00f06cfe9cdf996fd829689`; contract 5, schema 011, v5 Publication, smoke passed (`36121610532`). Railway production의 web/API/worker/Postgres 모두 SUCCESS이며 pending work는 없다.
@@ -404,3 +406,9 @@ Follow-up isolates the two empty fade-state shortcuts by restoring prior update 
 On b830f13, mobile job 108727645571 (CI 36357363435) passed after restoring the two fade-state updates. Original 1k large/shared/sparse and 10k shared/large/sparse profiles also passed. 10k dense job 108727645283 retained a pan max 124ms failure (p95 18ms); menu toggle completed with two trusted clicks. Do not discard this failure or attribute all prior input stalls to one proven mechanism.
 
 The next change measures each candidate label path once and binary-searches its precomputed segment lengths for visibility samples. It preserves the original tiny-segment skip and floating-point addition order. Density is scored only after the original fit/overflow filters; candidate identity and incumbent hysteresis remain unchanged. A golden SHA-256 captured from the unmodified b830f13 resolver covers all output coordinates, paths and offsets across 162 thin/curved/clipped/crowded views. New output is identical. Density queries drop from 9119 to 547 in that fixture (94% fewer); this is not a claim of 94% faster frames. Seven focused label/candidate tests and web strict typecheck pass. Hosted frame measurement remains required.
+
+## Closeout — 2026-09-28 user-directed backlog transfer
+
+PR #235 was merged as `035cc069b00c0cc722c17f8b976b36c8738335ad`; main CI 36357907586 and post-deploy smoke 36358106084 succeeded. Final PR candidate scale run 36357642646 passed the original 12 mobile cases and both worker cases, but sustained job 108728432034 failed p95 at all three checkpoints (50/56/62ms; whole interval 50/56/63ms). Max was 100/84/92ms. It completed 30 visits/returns and preserved home IDs/geometry, DOM 229 and bounded cache (8 entries/700360 serialized bytes). Unlike the earlier Slice 31 run, the final failure list contains only frame gates.
+
+The user explicitly requested closure with remaining work moved to backlog. A4 is closed with deferred work, not a full performance pass. [Closeout/backlog](../../implementation/IP-011-A4-closeout-backlog.md) owns the decision, remaining acceptance criteria and evidence links. Earlier numeric thresholds and failing runs remain unchanged. A5/A6/M5 are not activated by this documentation change.

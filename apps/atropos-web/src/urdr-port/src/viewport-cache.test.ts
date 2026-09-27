@@ -50,6 +50,16 @@ it("bounds LRU retention", async () => {
   for (let i = 1; i <= 8; i++) await load(query(i * 1000));
   await load(query());
   expect(read).toHaveBeenCalledTimes(11);
+  expect(load.inspect()).toMatchObject({
+    entries: 8,
+    requests: 11,
+    pending: 0,
+    maxEntries: 8
+  });
+  expect(load.inspect().bytes).toBeLessThanOrEqual(load.inspect().maxBytes);
+  const inspection = load.inspect();
+  inspection.entries = 1000;
+  expect(load.inspect().entries).toBe(8);
 });
 it("retries incomplete and stale responses even at the same viewport", async () => {
   const read = vi

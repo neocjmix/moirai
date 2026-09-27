@@ -3,14 +3,17 @@ import type { CanonicalState } from "@moirai/contracts/v5";
 export function scaleFixture(count: number, density: string): CanonicalState {
   if (
     ![1000, 10000, 100000].includes(count) ||
-    !["sparse", "dense", "shared", "large"].includes(density)
+    !["sparse", "dense", "shared", "large", "sustained"].includes(density)
   )
     throw Error("a4_fixture_shape_invalid");
   const id = (i: number) => `event-${String(i).padStart(6, "0")}`;
   const worldId = "a4-synthetic-world";
   const local = density === "dense" ? 300 : 12;
-  const members = density === "large" ? count : local;
+  const members =
+    density === "large" || density === "sustained" ? count : local;
   const coordinate = (i: number) => {
+    if (density === "sustained")
+      return `${1453 + Math.floor(i / 32)}-01-${String((i % 28) + 1).padStart(2, "0")}T00:00:00.000000000000Z`;
     const year = i < local ? 1453 : 2000 + (Math.floor((i - local) / 366) % 20);
     const day =
       i < local ? (density === "dense" ? 1 : i + 1) : ((i - local) % 28) + 1;
@@ -25,7 +28,7 @@ export function scaleFixture(count: number, density: string): CanonicalState {
     roles: [],
     attributes: {}
   }));
-  const state: CanonicalState = {
+  let state: CanonicalState = {
     world: { id: worldId, slug: "a4", title: "Synthetic", description: null },
     collections: ["a", "b"].map((c) => ({
       id: c,
@@ -110,6 +113,26 @@ export function scaleFixture(count: number, density: string): CanonicalState {
     ],
     collectionTimeSystems: []
   };
+
+  // Separate sustained-navigation fixture; the four original fixed-gate shapes
+  // remain byte-for-byte unchanged. Each neighborhood has points and a hull.
+  if (density === "sustained") {
+    const relations = state.relations.filter((_, i) => i % 32 !== 0);
+    for (let parent = 0; parent + 8 < count; parent += 32) {
+      for (let child = parent + 1; child <= parent + 8; child++) {
+        relations.push({
+          id: `contains-${id(child)}`,
+          world_id: worldId,
+          type: "contains",
+          direction: "directed",
+          source_ref: { kind: "event", event_id: id(parent) },
+          target_ref: { kind: "event", event_id: id(child) },
+          attributes: {}
+        });
+      }
+    }
+    state = { ...state, relations };
+  }
 
   const ids = new Map<string, string>();
   const uuid = (group: number, index: number) =>

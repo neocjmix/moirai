@@ -3,6 +3,7 @@ import {
   v5ShellResponse
 } from "../../../../lib/v5-shell-request";
 import { z } from "zod";
+import { viewportCompleteness } from "../../../../urdr-port/src/viewport-completeness";
 import { v5ShellReader } from "../../../../lib/v5-shell-reader";
 import { graphShellViewportQuerySchema } from "../../../../urdr-port/shared/contracts";
 
@@ -81,6 +82,11 @@ export async function POST(request: Request) {
     }
     const mapped = await Promise.all(shapes.map(shell.shape));
     const connections = await shell.edges(mapped);
+    const completeness = viewportCompleteness(
+      mapped,
+      cursor !== null,
+      connections.truncated
+    );
     return v5ShellResponse({
       revision: query.revision,
       canonicalRevision: query.revision,
@@ -93,7 +99,8 @@ export async function POST(request: Request) {
           )
         : connections.edges,
       diagnostics: [],
-      truncated: cursor !== null || connections.truncated,
+      completeness,
+      truncated: Object.values(completeness).some((complete) => !complete),
       cache: { stale: false }
     });
   } catch {

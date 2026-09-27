@@ -65,6 +65,7 @@ export function createV5GraphReadLoader(input: {
   return {
     viewportMode: "snapshot",
     dispose: () => cached.dispose(),
+    inspectViewport: () => cached.inspect(),
     loadWorkspace: async () => input.workspace,
     loadViewport: (_locale, viewport) => cached(viewport),
     loadEventDetail: async (_locale, event_id) =>

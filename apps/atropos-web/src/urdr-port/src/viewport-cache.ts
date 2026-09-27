@@ -52,6 +52,10 @@ export function createViewportCache(
     { controller: AbortController; promise: Promise<Response> }
   >();
   let bytes = 0;
+  let requests = 0,
+    hits = 0,
+    coalesced = 0,
+    aborted = 0;
   const load = async (query: Query): Promise<Response> => {
     // Expiry is measured from the read, not extended by cache hits. A bounded
     // lifetime lets revision-pinned v5 reads recheck the current publication.
@@ -73,18 +77,24 @@ export function createViewportCache(
             covers(e.query.bbox, requiredCoverage(query))))
     );
     if (found >= 0) {
+      hits++;
       const [entry] = entries.splice(found, 1);
       entries.push(entry!);
       return entry!.value;
     }
     const existing = pending.get(exact);
-    if (existing) return existing.promise;
+    if (existing) {
+      coalesced++;
+      return existing.promise;
+    }
     // Bound active reads per context. Superseded fetches cannot refill the cache.
     if (pending.size >= (options.maxPending ?? 2)) {
       const [oldKey, old] = pending.entries().next().value!;
       pending.delete(oldKey);
       old.controller.abort();
+      aborted++;
     }
+    requests++;
     const controller = new AbortController();
     const promise = read(query, controller.signal)
       .then((value) => {
@@ -117,8 +127,25 @@ export function createViewportCache(
     return promise;
   };
   return Object.assign(load, {
+    inspect() {
+      return {
+        entries: entries.length,
+        bytes,
+        pending: pending.size,
+        requests,
+        hits,
+        coalesced,
+        aborted,
+        maxEntries: 8,
+        maxBytes: MAX_BYTES,
+        maxPending: options.maxPending ?? 2
+      };
+    },
     dispose() {
-      for (const { controller } of pending.values()) controller.abort();
+      for (const { controller } of pending.values()) {
+        controller.abort();
+        aborted++;
+      }
       pending.clear();
       entries.length = 0;
       bytes = 0;

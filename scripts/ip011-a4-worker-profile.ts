@@ -36,6 +36,7 @@ function measure(count: number, cancel: boolean): Promise<Measurement> {
         env: {
           ...process.env,
           A4_COMPLETE: "1",
+          A4_MEMORY_PHASES: "1",
           A4_QUERY_CENTER_X: "-355.1"
         },
         stdio: ["ignore", "pipe", "pipe"]

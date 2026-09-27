@@ -31,6 +31,7 @@ const gestures: Record<
   }
 > = {};
 const failures: string[] = [];
+const pointerSetupMs: Record<string, number> = {};
 let panDisplacement: { x: number; y: number } | null = null;
 let trustedTouchClicks = 0;
 
@@ -164,10 +165,14 @@ try {
         failures.push(`${name}_frame_error:${String(error)}`);
       }
     };
+    // Mouse hover is an automation prerequisite, not a mobile drag. Place
+    // it before the post-ready sample, just as scrolling the Collection target
+    // into view happens before its tap sample. Report this setup separately.
+    const panSetupStarted = performance.now();
+    await page.mouse.move(65, 510);
+    pointerSetupMs.pan = performance.now() - panSetupStarted;
     await frameSample("pan", async () => {
-      // Drag the same empty-canvas area in the opposite direction to
-      // distinguish a navigation bound from an inert pan gesture.
-      await page.mouse.move(65, 510);
+      // All contact, movement, release and resulting render work is measured.
       await page.mouse.down();
       await page.mouse.move(25, 450, { steps: 20 });
       await page.mouse.up();
@@ -182,30 +187,32 @@ try {
     )
       failures.push("pan_ineffective");
     const zoomBefore = new URL(page.url()).searchParams.get("gsViewport");
+    const zoomSetupStarted = performance.now();
+    // iPhone WebKit automation has one native touch. Combine it with a
+    // held pointer, using the established pinch regression path.
+    await page.evaluate(() => {
+      document.addEventListener(
+        "pointerdown",
+        (event) => {
+          if (event.pointerType !== "touch") return;
+          (event.target as Element).dispatchEvent(
+            new PointerEvent("pointermove", {
+              bubbles: true,
+              pointerId: event.pointerId,
+              pointerType: "touch",
+              clientX: event.clientX + 70,
+              clientY: event.clientY + 70,
+              buttons: 1,
+              isPrimary: event.isPrimary
+            })
+          );
+        },
+        { once: false }
+      );
+    });
+    await page.mouse.move(25, 350);
+    pointerSetupMs.zoom = performance.now() - zoomSetupStarted;
     await frameSample("zoom", async () => {
-      // iPhone WebKit automation has one native touch. Combine it with a
-      // held pointer, using the established pinch regression path.
-      await page.evaluate(() => {
-        document.addEventListener(
-          "pointerdown",
-          (event) => {
-            if (event.pointerType !== "touch") return;
-            (event.target as Element).dispatchEvent(
-              new PointerEvent("pointermove", {
-                bubbles: true,
-                pointerId: event.pointerId,
-                pointerType: "touch",
-                clientX: event.clientX + 70,
-                clientY: event.clientY + 70,
-                buttons: 1,
-                isPrimary: event.isPrimary
-              })
-            );
-          },
-          { once: false }
-        );
-      });
-      await page.mouse.move(25, 350);
       await page.mouse.down();
       await page.touchscreen.tap(290, 550);
       await page.mouse.up();
@@ -282,6 +289,7 @@ process.stdout.write(
     shape: process.env.A4_SHAPE ?? "production",
     navigations,
     gestures,
+    automation_pointer_setup_ms: pointerSetupMs,
     pan_displacement: panDisplacement,
     collection_touch_trusted_clicks: trustedTouchClicks,
     graph_ready_p95_ms: graphP95,

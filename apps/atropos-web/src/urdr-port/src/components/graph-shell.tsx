@@ -3504,6 +3504,28 @@ export function GraphShell({
     return applyAxisLabelVisibility(majorTicks, minorTicks);
   }, [chartPlane, viewportSize.height, view.scaleY, view.y, workspace.chronologyBoard]);
 
+  const pendingViewportMovesRef = useRef(new Map<number, {x: number; y: number}>());
+  const viewportMoveFrameRef = useRef<number | null>(null);
+  const flushViewportMoves = useCallback(() => {
+    if (viewportMoveFrameRef.current !== null) cancelAnimationFrame(viewportMoveFrameRef.current);
+    viewportMoveFrameRef.current = null;
+    const moves = [...pendingViewportMovesRef.current];
+    pendingViewportMovesRef.current.clear();
+    if (!moves.length) return;
+    setImageViewportState(current => {
+      let next = current;
+      for (const [id, point] of moves) next = moveViewportPointer(next, id, point);
+      if (next === current) return current;
+      const pointers = Object.values(next.activePointers);
+      const pivot = pointers.length > 1 ? {x:(pointers[0].x+pointers[1].x)/2, y:(pointers[0].y+pointers[1].y)/2} : {x:0,y:0};
+      return {...next, view:constrainNavigation(next.view, viewportSize, navigationBounds, true, pivot)};
+    });
+  }, [viewportSize, navigationBounds]);
+  useEffect(() => () => {
+    if (viewportMoveFrameRef.current !== null) cancelAnimationFrame(viewportMoveFrameRef.current);
+    pendingViewportMovesRef.current.clear();
+  }, []);
+
   const handleViewportPointerDown = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     if (event.pointerType === "mouse" && event.button !== 0) {
       return;
@@ -3525,8 +3547,9 @@ export function GraphShell({
     }
 
     if(navigationAnimationRef.current !== null) { cancelAnimationFrame(navigationAnimationRef.current); navigationAnimationRef.current = null; }
+    flushViewportMoves();
     setImageViewportState((current) => addViewportPointer(current, event.pointerId, point));
-  }, []);
+  }, [flushViewportMoves]);
 
   const handleViewportPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault();
@@ -3539,14 +3562,10 @@ export function GraphShell({
       }
     }
 
-    const point = getLocalViewportPoint(event);
-    setImageViewportState((current) => {
-      const next = moveViewportPointer(current, event.pointerId, point);
-      const pointers = Object.values(next.activePointers);
-      const pivot = pointers.length > 1 ? {x:(pointers[0].x+pointers[1].x)/2, y:(pointers[0].y+pointers[1].y)/2} : {x:0,y:0};
-      return {...next, view:constrainNavigation(next.view, viewportSize, navigationBounds, true, pivot)};
-    });
-  }, [viewportSize, navigationBounds]);
+    pendingViewportMovesRef.current.set(event.pointerId, getLocalViewportPoint(event));
+    if (viewportMoveFrameRef.current === null)
+      viewportMoveFrameRef.current = requestAnimationFrame(flushViewportMoves);
+  }, [flushViewportMoves]);
 
   const pushPeekSelectionHistory = useCallback((eventId: string) => {
     if (typeof window === "undefined") return;
@@ -3566,6 +3585,7 @@ export function GraphShell({
 
   const handleViewportPointerEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault();
+    flushViewportMoves();
 
     const pendingEventTap = pendingEventTapRef.current;
     if (pendingEventTap?.pointerId === event.pointerId) {
@@ -3595,7 +3615,7 @@ export function GraphShell({
     }
 
     setImageViewportState(current => removeViewportPointer(current, event.pointerId));
-  }, [imageViewportState.activePointers, pushPeekSelectionHistory]);
+  }, [flushViewportMoves, imageViewportState.activePointers, pushPeekSelectionHistory]);
 
   const handleCloseSelectedEvent = useCallback(() => {
     if (typeof window !== "undefined") {

@@ -2,7 +2,7 @@
 import { useMemo } from "react";
 import { Theme } from "@radix-ui/themes";
 import { App } from "../urdr-port/src/App";
-import type { GraphReadLoader } from "../urdr-port/src/graph-read-loader";
+import { createV5GraphReadLoader } from "../lib/v5-graph-read-loader";
 import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import { GraphQueryProvider, useGraphQuery } from "./graph-query-context";
 import {
@@ -88,47 +88,26 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       .sort(),
     relationTypes: state.query.relation_filter.types
   });
-  const loader = useMemo<GraphReadLoader>(() => {
-    const call = async (query: Record<string, unknown>) => {
-      const response = await fetch("/graph/v5/shell", {
-        method: "POST",
-        headers: { "content-type": "application/json" },
-        body: JSON.stringify({
-          world_id: props.worldId,
-          revision: props.revision,
-          ...query
-        })
-      });
-      if (!response.ok) throw Error("v5_shell_unavailable");
-      return response.json();
-    };
-    return {
-      loadWorkspace: async () => props.workspace,
-      loadViewport: async (_locale, viewport) =>
-        call({
-          kind: "viewport",
-          time_system_id: props.timeSystemId,
-          collection_ids: JSON.parse(selection).collections,
-          relation_types: JSON.parse(selection).relationTypes,
-          viewport
-        }),
-      loadEventDetail: async (_locale, event_id) =>
-        event_id.startsWith("collection:")
-          ? call({
-              kind: "collection",
-              collection_id: event_id.slice(11),
-              page: props.readPage ?? 0
-            })
-          : call({ kind: "detail", event_id, page: props.readPage ?? 0 })
-    };
-  }, [
-    props.worldId,
-    props.revision,
-    props.timeSystemId,
-    props.workspace,
-    props.readPage,
-    selection
-  ]);
+  const loader = useMemo(
+    () =>
+      createV5GraphReadLoader({
+        worldId: props.worldId,
+        revision: props.revision,
+        timeSystemId: props.timeSystemId,
+        workspace: props.workspace,
+        readPage: props.readPage,
+        collectionIds: JSON.parse(selection).collections,
+        relationTypes: JSON.parse(selection).relationTypes
+      }),
+    [
+      props.worldId,
+      props.revision,
+      props.timeSystemId,
+      props.workspace,
+      props.readPage,
+      selection
+    ]
+  );
   const focus =
     state.focus?.kind === "event" && state.focus.event_ref.kind === "event"
       ? state.focus.event_ref.event_id

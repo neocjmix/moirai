@@ -315,3 +315,14 @@ PR #226은 pointer의 마지막 위치를 RAF당 한 번 적용하며 pointer-do
 `ec930160b9e6031e992be1dd81d09dac9bba23a6`의 별도 진단 `36315569837`은 pan p95 18ms/max 106ms로 실패했다. 해당 106ms 중 10ms JS timer가 8회 실행되고 7회 pointermove와 pointerup이 처리됐다. 후속 74ms gap에도 timer 6회가 진행됐다. 연속 106ms JS block은 아니지만, WebKit presentation/compositor와 hosted scheduling 중 정확한 원인을 확정한 증거는 아니다. [실패 진단 시료](a4-frame-paint-diagnostic.json). `contain: layout paint; transform: translateZ(0)` 후보는 예산 통과/재현 가능한 개선을 입증하지 못해 제거했다.
 
 A4를 닫지 않는다. 서버 full-route 12-case cold/warm/bytes/object/growth, PG17 authoring query, 10k worker budget과 실제 100k interrupted upload/recovery는 검증됐지만 mobile absolute max 100ms는 반복해서 실패한다. p95 통과, 다른 run의 같은 case 성공, timer-instrumented 결과를 실패의 대체물로 쓰지 않는다. 현재 환경에서 안정적 통과를 달성하지 못했으며 불가능함의 수학적 증명이나 실제 iPhone 전체의 성능 결론은 아니다. 다음은 실패 구간의 WebKit presentation trace 또는 독립 동일-profile 재현으로 browser/host와 제품 paint 비용을 분리하는 작업이다. 기준 변경이 필요하다고 판단하더라도 현재 고정 기준을 조용히 변경하지 않는다. 새 cache protocol 검토와 A5/A6/M5는 시작하지 않는다.
+
+
+## Slice 26: v5 snapshot과 재방문 보관 분리 — A4-R1 첫 checkpoint
+
+재계획 PR #229(main cf6d72b) 이후 실제 v5 UI loader에 응답 cache를 연결했다. World/Revision/time system/Collection/relation filter마다 loader를 분리한다. viewport key는 범위·배율·화면 크기·선택·artifact class를 포함한다. 최대 8개·직렬화 8MiB이며 JS heap 8MiB 보장은 아니다. 완전 응답만 기존 padding coverage로 재사용하고 부분 응답은 exact query에만 재사용한다. 응답 수신 후 30초가 지나면 다음 조회에서 기존 server current pointer 검사로 돌아간다. hit으로 만료를 연장하지 않으며 idle 중 자동 Revision 갱신은 추가하지 않는다.
+
+v5 endpoint의 응답은 delta가 아닌 bounded snapshot이다. `truncated`여도 과거 방문 사건으로 보충하지 않고 새 응답으로 active 집합을 교체한다. legacy incremental reader의 계약은 유지한다. 이로써 오래된 point가 region/edge 슬롯을 소비하지 않는다. loading/error 때 마지막 성공 snapshot은 유지한다. 중복 exact 요청은 병합하고 새 요청은 이전 요청을 abort한다(최대 1). loader 교체·pagehide에 cache와 pending을 정리한다. 취소된 transport의 늦은 결과는 cache를 채우지 못하며 화면 effect도 무효 응답을 해석 전에 제외한다.
+
+로컬 Vitest 13개 성공: 30개 구간×100 point/1 region/1 edge 후 첫 구간 복귀 시 active 100/1/1 유지, partial flag 유지, LRU evict 후 재조회, exact partial dedup, partial coverage 재사용 금지, 30초 pointer 재조회/409, Revision mismatch, superseded/page exit/late response, 기존 adapter route. 실제 WebKit에서 30개 query 교체·복귀·실패 후 마지막 성공 화면 유지 시험도 추가했다. 이는 synthetic query 교체 correctness 시험이고 R3의 실제 장시간 이동/600 active frame 시험을 대체하지 않는다. CI·모바일·배포 증거는 PR에 후속 기록한다.
+
+아직 A4 미완료: geometry/edge completeness의 별도 계약, 더 작은 active 후보 선정, Composite 원형 재사용, fade 정리, R3 연속·왕복 성능, 기존 fixed gate 재검증이 남는다. 화면의 새 밀도 규칙이나 renderer 교체는 없다.

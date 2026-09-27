@@ -3,7 +3,13 @@ import type {
   GraphShellViewportResponse as Response
 } from "../shared/contracts";
 
-type Entry = { query: Query; key: string; value: Response; bytes: number };
+type Entry = {
+  query: Query;
+  key: string;
+  value: Response;
+  bytes: number;
+  createdAt: number;
+};
 const MAX_BYTES = 8 * 1024 * 1024;
 const keyFor = (q: Query) =>
   JSON.stringify({
@@ -33,7 +39,12 @@ function requiredCoverage(q: Query): Query["bbox"] {
   };
 }
 export function createViewportCache(
-  read: (query: Query, signal: AbortSignal) => Promise<Response>
+  read: (query: Query, signal: AbortSignal) => Promise<Response>,
+  options: {
+    cachePartial?: boolean;
+    maxAgeMs?: number;
+    maxPending?: number;
+  } = {}
 ) {
   const entries: Entry[] = [];
   const pending = new Map<
@@ -42,6 +53,15 @@ export function createViewportCache(
   >();
   let bytes = 0;
   const load = async (query: Query): Promise<Response> => {
+    // Expiry is measured from the read, not extended by cache hits. A bounded
+    // lifetime lets revision-pinned v5 reads recheck the current publication.
+    const now = Date.now();
+    for (let i = entries.length - 1; i >= 0; i--) {
+      if (now - entries[i]!.createdAt >= (options.maxAgeMs ?? Infinity)) {
+        bytes -= entries[i]!.bytes;
+        entries.splice(i, 1);
+      }
+    }
     const key = keyFor(query);
     const exact = key + JSON.stringify(query.bbox);
     const found = entries.findIndex(
@@ -59,8 +79,8 @@ export function createViewportCache(
     }
     const existing = pending.get(exact);
     if (existing) return existing.promise;
-    // At most two active reads per query context. Superseded fetches cannot refill the cache.
-    if (pending.size >= 2) {
+    // Bound active reads per context. Superseded fetches cannot refill the cache.
+    if (pending.size >= (options.maxPending ?? 2)) {
       const [oldKey, old] = pending.entries().next().value!;
       pending.delete(oldKey);
       old.controller.abort();
@@ -71,8 +91,18 @@ export function createViewportCache(
         if (controller.signal.aborted)
           throw new DOMException("Superseded viewport", "AbortError");
         const size = new TextEncoder().encode(JSON.stringify(value)).byteLength;
-        if (!value.truncated && !value.cache.stale && size <= MAX_BYTES) {
-          entries.push({ key, query, value, bytes: size });
+        if (
+          (!value.truncated || options.cachePartial) &&
+          !value.cache.stale &&
+          size <= MAX_BYTES
+        ) {
+          entries.push({
+            key,
+            query,
+            value,
+            bytes: size,
+            createdAt: Date.now()
+          });
           bytes += size;
           while (entries.length > 8 || bytes > MAX_BYTES)
             bytes -= entries.shift()!.bytes;
@@ -96,11 +126,15 @@ export function createViewportCache(
   });
 }
 
-/** Only a complete response can evict the old viewport. Partial reads retain identity and edges. */
+/** Legacy incremental reads retain partial identity; snapshots replace the active view. */
 export function reconcileViewport(
   previous: Response | null,
-  incoming: Response
+  incoming: Response,
+  mode: "incremental" | "snapshot" = "incremental"
 ): Response {
+  // v5 returns a bounded snapshot, never a delta. A partial snapshot remains
+  // partial; unrelated historical entities must not fill its missing slots.
+  if (mode === "snapshot") return incoming;
   if (!previous || (!incoming.truncated && !incoming.cache.stale))
     return incoming;
   let remaining = 2500;

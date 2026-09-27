@@ -1,11 +1,76 @@
 import { expect, test } from "@playwright/test";
 import type { Page } from "@playwright/test";
+import type { GraphShellViewportResponse } from "../../apps/atropos-web/src/urdr-port/shared/contracts";
 
 const world = "019f3b00-0000-7000-8000-000000000a01";
 const battle = "019f3b00-0000-7000-8000-000000000a12";
 const war = "019f3b00-0000-7000-8000-000000000a11";
 const graph = `/graph/v5?world=${world}`;
 const node = (page: Page) => page.locator(`[data-event-point-id="${battle}"]`);
+
+test("partial v5 refreshes replace active geometry across 30 queries and a return", async ({
+  page
+}) => {
+  test.setTimeout(90_000);
+  let visit = 0;
+  let template: GraphShellViewportResponse | undefined;
+  let fail = false;
+  await page.route("**/graph/v5/shell", async (route) => {
+    const request = route.request().postDataJSON();
+    if (request.kind !== "viewport") return route.continue();
+    if (fail) return route.fulfill({ status: 503, body: "{}" });
+    if (!template) template = await (await route.fetch()).json();
+    const bbox = request.viewport.bbox;
+    const point = template!.entities.find(
+      (e: { geometryKind: string }) => e.geometryKind === "point"
+    );
+    expect(point).toBeTruthy();
+    await route.fulfill({
+      json: {
+        ...template,
+        truncated: true,
+        entities: [
+          {
+            ...point,
+            id: `a4-visit-${visit}`,
+            eventId: `a4-visit-${visit}`,
+            containedBy: undefined,
+            contains: [],
+            position: {
+              x: (bbox.minX + bbox.maxX) / 2,
+              y: (bbox.minY + bbox.maxY) / 2
+            }
+          }
+        ],
+        regions: [],
+        edges: []
+      }
+    });
+  });
+  await page.goto(graph);
+  const points = page.locator('[data-event-point-id^="a4-visit-"]');
+  await expect(points).toHaveCount(1);
+  for (visit = 1; visit <= 30; visit++) {
+    // Distinct dimensions force distinct requests without changing product data.
+    await page.setViewportSize({ width: 390 + visit, height: 844 });
+    await expect(
+      page.locator(`[data-event-point-id="a4-visit-${visit}"]`)
+    ).toHaveCount(1);
+    await expect(points).toHaveCount(1);
+  }
+  visit = 0;
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(page.locator('[data-event-point-id="a4-visit-0"]')).toHaveCount(
+    1
+  );
+  await expect(points).toHaveCount(1);
+  fail = true;
+  await page.setViewportSize({ width: 430, height: 844 });
+  await expect(page.getByTestId("graph-stage")).toContainText(
+    "v5_shell_unavailable"
+  );
+  await expect(points).toHaveCount(1);
+});
 
 test.beforeEach(async ({ page }) => {
   await page.addInitScript(() =>

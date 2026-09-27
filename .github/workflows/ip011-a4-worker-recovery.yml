@@ -48,6 +48,8 @@ jobs:
       - name: Verify deployed base SHA and public smoke
         if: github.event_name == 'pull_request'
         run: pnpm smoke
+      - name: Build worker and runtime dependencies
+        run: pnpm --filter @moirai/lachesis-worker... build
       - name: Verify actual worker heartbeat, interrupted upload and restart
         run: |
           set -o pipefail

@@ -1,0 +1,360 @@
+{
+  "run_id": 36315569837,
+  "commit": "ec930160b9e6031e992be1dd81d09dac9bba23a6",
+  "samples": [
+    {
+      "device": "iPhone 14 WebKit emulation, no throttling",
+      "world_id": "019f5000-1300-7000-8000-000000000001",
+      "scale": "1000",
+      "shape": "dense",
+      "navigations": [
+        {
+          "graph_ready_ms": 2229.13,
+          "drawer_ms": 83.87,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 1132.3,
+          "drawer_ms": 75.02,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 633.27,
+          "drawer_ms": 100.8,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 593.93,
+          "drawer_ms": 103.73,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 600.37,
+          "drawer_ms": 84.87,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 597.1,
+          "drawer_ms": 119.34,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 612.19,
+          "drawer_ms": 114.77,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 564.01,
+          "drawer_ms": 110.53,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 610.48,
+          "drawer_ms": 112.72,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 576.95,
+          "drawer_ms": 102.91,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 601.45,
+          "drawer_ms": 128.76,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 601.05,
+          "drawer_ms": 101.76,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 575.01,
+          "drawer_ms": 111.22,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 585.56,
+          "drawer_ms": 122.29,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 609.39,
+          "drawer_ms": 114,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 618.14,
+          "drawer_ms": 90.91,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 578.25,
+          "drawer_ms": 95.78,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 586.69,
+          "drawer_ms": 107.61,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 586.72,
+          "drawer_ms": 83.76,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 592.13,
+          "drawer_ms": 133.44,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        }
+      ],
+      "gestures": {
+        "pan": {
+          "samples": 600,
+          "p95_ms": 18,
+          "max_ms": 106,
+          "dom_nodes": 323,
+          "long_frames": [
+            {
+              "index": 13,
+              "ms": 106
+            },
+            {
+              "index": 14,
+              "ms": 74
+            },
+            {
+              "index": 317,
+              "ms": 44
+            }
+          ],
+          "diagnosis": [
+            {
+              "index": 13,
+              "ms": 106,
+              "timer_ticks": 8,
+              "inputs": [
+                {
+                  "type": "pointermove",
+                  "at": 2571
+                },
+                {
+                  "type": "pointermove",
+                  "at": 2572
+                },
+                {
+                  "type": "pointermove",
+                  "at": 2578
+                },
+                {
+                  "type": "pointermove",
+                  "at": 2580
+                },
+                {
+                  "type": "pointermove",
+                  "at": 2582
+                },
+                {
+                  "type": "pointermove",
+                  "at": 2584
+                },
+                {
+                  "type": "pointermove",
+                  "at": 2586
+                },
+                {
+                  "type": "pointerup",
+                  "at": 2588
+                }
+              ]
+            },
+            {
+              "index": 14,
+              "ms": 74,
+              "timer_ticks": 6,
+              "inputs": []
+            },
+            {
+              "index": 317,
+              "ms": 44,
+              "timer_ticks": 0,
+              "inputs": []
+            }
+          ]
+        },
+        "zoom": {
+          "samples": 600,
+          "p95_ms": 19,
+          "max_ms": 75,
+          "dom_nodes": 229,
+          "long_frames": [
+            {
+              "index": 12,
+              "ms": 39
+            },
+            {
+              "index": 186,
+              "ms": 67
+            },
+            {
+              "index": 550,
+              "ms": 75
+            }
+          ],
+          "diagnosis": [
+            {
+              "index": 12,
+              "ms": 39,
+              "timer_ticks": 2,
+              "inputs": [
+                {
+                  "type": "pointerup",
+                  "at": 12484
+                }
+              ]
+            },
+            {
+              "index": 186,
+              "ms": 67,
+              "timer_ticks": 1,
+              "inputs": []
+            },
+            {
+              "index": 550,
+              "ms": 75,
+              "timer_ticks": 0,
+              "inputs": []
+            }
+          ]
+        },
+        "collection_toggle": {
+          "samples": 600,
+          "p95_ms": 20,
+          "max_ms": 86,
+          "dom_nodes": 311,
+          "long_frames": [
+            {
+              "index": 214,
+              "ms": 86
+            }
+          ],
+          "diagnosis": [
+            {
+              "index": 214,
+              "ms": 86,
+              "timer_ticks": 1,
+              "inputs": []
+            }
+          ]
+        }
+      },
+      "automation_pointer_setup_ms": {
+        "pan": 6.454681000002893,
+        "zoom": 7.276670000006561
+      },
+      "pan_displacement": {
+        "x": -40,
+        "y": -60
+      },
+      "collection_touch_trusted_clicks": 2,
+      "graph_ready_p95_ms": 1132.3,
+      "drawer_p95_ms": 128.76,
+      "failures": [
+        "pan_frames"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,79 @@
+{
+  "commit": "cf3535c1804b0d94b1d95c9612601782fe27416c",
+  "samples": [
+    {
+      "job_id": 108601747145,
+      "run_id": 36312770656,
+      "phase": "worker_recovery",
+      "node": "v22.23.2",
+      "postgres": "17-alpine",
+      "events": 10000,
+      "measurements": [
+        {
+          "started": 2452.146752,
+          "first_put_ms": 7792.123039999999,
+          "peak_rss_mib": 474.6171875,
+          "cpu_seconds": 10.5,
+          "elapsed_ms": 30254.755731
+        },
+        {
+          "started": 32718.68417,
+          "first_put_ms": 10592.854374000002,
+          "peak_rss_mib": 570.66796875,
+          "cpu_seconds": 21.97,
+          "elapsed_ms": 26190.619078999996
+        }
+      ],
+      "fixture": "sparse placed Events; same 12 local Events and remote-only growth",
+      "elapsed_ms": 56485.01757,
+      "heartbeat_renewed": true,
+      "cancel_signal": "SIGKILL",
+      "attempts": 2,
+      "immutable_reuse": 104,
+      "uploaded_objects": 51819,
+      "object_bytes": 56747480,
+      "pointer_writes": 1,
+      "served_revision": 32,
+      "previous_pointer_preserved_during_upload": true,
+      "lease_expiry": "SQL time acceleration after process death",
+      "failures": []
+    },
+    {
+      "job_id": 108601747206,
+      "run_id": 36312770656,
+      "phase": "worker_recovery",
+      "node": "v22.23.2",
+      "postgres": "17-alpine",
+      "events": 100000,
+      "measurements": [
+        {
+          "started": 21179.332023,
+          "first_put_ms": 200527.554022,
+          "peak_rss_mib": 3495.19140625,
+          "cpu_seconds": 218.65,
+          "elapsed_ms": 222094.869461
+        },
+        {
+          "started": 243293.41043,
+          "first_put_ms": 204775.03864400001,
+          "peak_rss_mib": 3522.78515625,
+          "cpu_seconds": 435.48,
+          "elapsed_ms": 455894.610618
+        }
+      ],
+      "fixture": "sparse placed Events; same 12 local Events and remote-only growth",
+      "elapsed_ms": 678099.025989,
+      "heartbeat_renewed": true,
+      "cancel_signal": "SIGKILL",
+      "attempts": 2,
+      "immutable_reuse": 104,
+      "uploaded_objects": 621006,
+      "object_bytes": 1248073895,
+      "pointer_writes": 1,
+      "served_revision": 32,
+      "previous_pointer_preserved_during_upload": true,
+      "lease_expiry": "SQL time acceleration after process death",
+      "failures": []
+    }
+  ]
+}

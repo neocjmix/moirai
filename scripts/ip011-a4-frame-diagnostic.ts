@@ -130,17 +130,52 @@ try {
             .map((animation) => animation.finished.catch(() => {}))
         );
       });
-      const pending = page.evaluate(async () => {
+      const pending = page.evaluate(async (diagnostic) => {
         // Let the sampler's evaluation and the previous UI action settle
         // before counting frames. Gesture work remains inside the 600 samples.
         for (let i = 0; i < 5; i++) await new Promise(requestAnimationFrame);
         const intervals: number[] = [];
+        const frameEnds: number[] = [];
+        const timerTicks: number[] = [];
+        const inputTimes: { type: string; at: number }[] = [];
+        const recordInput = {
+          handle(event: Event) {
+            inputTimes.push({ type: event.type, at: performance.now() });
+          }
+        }.handle;
+        const timer = diagnostic
+          ? setInterval(() => timerTicks.push(performance.now()), 10)
+          : null;
+        if (diagnostic)
+          for (const type of ["pointerdown", "pointermove", "pointerup"])
+            document.addEventListener(type, recordInput, true);
         let last = performance.now();
         for (let i = 0; i < 600; i++) {
           const now = await new Promise<number>(requestAnimationFrame);
           intervals.push(now - last);
+          frameEnds.push(now);
           last = now;
         }
+        if (timer !== null) clearInterval(timer);
+        if (diagnostic)
+          for (const type of ["pointerdown", "pointermove", "pointerup"])
+            document.removeEventListener(type, recordInput, true);
+        const diagnosis = diagnostic
+          ? intervals.flatMap((ms, index) => {
+              if (ms <= 33.4) return [];
+              const end = frameEnds[index]!,
+                start = end - ms;
+              return [
+                {
+                  index,
+                  ms,
+                  timer_ticks: timerTicks.filter((t) => t >= start && t <= end)
+                    .length,
+                  inputs: inputTimes.filter((t) => t.at >= start && t.at <= end)
+                }
+              ];
+            })
+          : undefined;
         const longFrames = intervals.flatMap((ms, index) =>
           ms > 33.4 ? [{ index, ms }] : []
         );
@@ -150,9 +185,10 @@ try {
           p95_ms: intervals[Math.ceil(intervals.length * 0.95) - 1]!,
           max_ms: intervals.at(-1)!,
           dom_nodes: document.querySelectorAll("*").length,
-          long_frames: longFrames.slice(0, 30)
+          long_frames: longFrames.slice(0, 30),
+          diagnosis
         };
-      });
+      }, process.env.A4_FRAME_DIAGNOSTICS === "1");
       await page.waitForTimeout(250);
       try {
         await gesture();

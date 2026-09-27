@@ -21,7 +21,7 @@ Composite 여부·전체 자식 수는 active World contains에서 계산한다.
 
 World-level temporal constraints를 기준으로 projection하고 Collection 선택은 표시를 제한한다. 서로 다른 Collection에서 같은 Event가 다른 사실 시간을 얻지 않는다. authored duration과 descendant visual span은 분리한다. structural rank를 Gregorian 연도로 대체하지 않는다. partial order를 근거 없는 total order로 저장하지 않는다. 별도 World는 호환 시간축에서도 identity와 revision vector를 보존한다.
 
-같은 World/Event node를 하나로 합성한다. Collection container는 selection overlay, Composite container는 contains 근거의 region이다. 공통 renderer를 사용해도 provenance와 선택 행동은 구별한다. Collection 선택 순서에 따라 첫 Canon의 좌표를 택하는 현재 방식은 이행 대상이다. target은 World Revision별 안정된 layout과 bounded detail이다.
+같은 World/Event node를 하나로 합성한다. Collection container는 selection overlay, Composite container는 contains 근거의 region이다. 공통 renderer를 사용해도 provenance와 선택 행동은 구별한다. A3 이전 첫 Canon 좌표 선택 방식은 World Revision별 안정된 layout과 bounded detail로 전환했다. UI 복원은 과거 Canon별 사실 소유권 복원을 뜻하지 않는다. 실제 검증 범위는 CURRENT와 A3/A4 증거를 따른다.
 
 ## TS-005.4 invalidation
 

@@ -9,7 +9,7 @@ layer: technical-specifications
 
 ## TS-002.1 효력
 
-[CON-003](../constitution/CON-003-world-truth.md)와 [CORE-MODEL](../business-requirements/entities/CORE-MODEL.md)을 구현하는 목표 계약이다. 2026-09-22 배포는 아직 v4 Canon 모델이다. 목표를 이미 구현됐다고 간주하지 않는다. 이행 순서·실제 차이는 [IP-011](../implementation/IP-011-architecture-realignment.md)과 [조사](../evidence/ip011/reconstruction.md)에 둔다.
+[CON-003](../constitution/CON-003-world-truth.md)와 [CORE-MODEL](../business-requirements/entities/CORE-MODEL.md)을 구현하는 목표 계약이다. 2026-09-22 기준 v4 Canon 모델에서 A3를 거쳐 운영 v5로 전환됐다. 세부 기능과 잔여 성능의 달성 여부는 CURRENT 및 증거로 판단한다. 이행 순서·실제 차이는 [IP-011](../implementation/IP-011-architecture-realignment.md)과 [조사](../evidence/ip011/reconstruction.md)에 둔다.
 
 ## TS-002.2 식별과 생명주기
 

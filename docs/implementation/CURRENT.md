@@ -1,10 +1,10 @@
 # 현재 구현 상태
 
-**IP-011 A3 완료; A4 진행 중 — 지속 탐색 exit 미완료.** PR #230–233의 snapshot/cache 분리·원형 재사용·역산 후보·퇴장 시한·부분 support 구분을 배포했다. #233 main 8ac1da4의 CI 36355519818/post-deploy 36355675829, 시험 실행부 수정 #234 main 5250eda의 CI 36355835485/post-deploy 36355982612가 성공했다. #232 scale 36333166185의 기존 mobile 12개·worker 2개 성공은 유지하되 장시간 탐색 해결로 확대 해석하지 않는다.
+**IP-011 A1–A3 완료; A4는 2026-09-28 사용자 승인으로 잔여 백로그를 이관하여 종료했다.** 원래 성능 exit 전체 통과를 뜻하지 않는다. 다음 단계는 A5이며 아직 비활성이다. A6/M5·대량 역사 입력도 비활성이다.
 
-고정 성능 재검증에서 PR #230 scale 36331858204의 1k dense pan max 132ms, PR #231 scale 36332336741의 1k sparse/100k large pan max 109ms가 100ms 상한을 넘었다. 통과 실행만 채택하지 않으며 기준을 완화하지 않는다. 상세 근거는 [A4 실행 Slice 26–28](../evidence/ip011/a4-execution.md).
+[종료 결정·후속 백로그](IP-011-A4-closeout-backlog.md)가 잔여 A4-B01(지속 frame), B02(region 계산), B03(실기기·메모리 증거)의 상태와 완료 조건을 소유한다. 기존 수치 기준·실패 기록·테스트는 유지한다. A5의 표현·tile·Collection discovery 실험은 [reader performance plan](IP-011-reader-performance-plan.md)을 따른다.
 
-PR #235의 R3는 30개 구간 왕복을 완료했다. 같은 첫 화면의 사건·영역 모양·계산 대상 수와 DOM 229개가 유지됐고 캐시는 8항목/약 700KB 이내였다. 그러나 연속 이동 p95 44/42/41ms는 33.4ms 기준에 실패했다. 첫 실행의 Collection 전환과 모바일 입력 5개 실패는 b830f13에서 상태 갱신 생략을 되돌린 뒤 모바일 CI 36357363435에서 통과했다. #235는 아직 미배포다. 이름표 결과를 보존한 계산 축소를 추가 검증한다. [A4 종료/A5 실험 재계획](IP-011-reader-performance-plan.md)을 따르며 새 밀도 규칙·tile/level·Collection discovery(A5), A6/M5는 비활성이다.
+종료 시 runtime main은 PR #235 `035cc069b00c0cc722c17f8b976b36c8738335ad`다. [main CI](https://github.com/neocjmix/moirai/actions/runs/36357907586)와 [배포 후 smoke](https://github.com/neocjmix/moirai/actions/runs/36358106084)가 성공했다. 최종 PR 후보 [scale](https://github.com/neocjmix/moirai/actions/runs/36357642646)는 기존 모바일 12개·worker 2개 성공, sustained 실패다. 30회 왕복에서 DOM 229·동일 복귀 geometry와 cache 상한은 유지됐으나 연속 frame p95 50/56/62ms는 33.4ms 예산을 넘었다. 성능 검증 완료로 보고하지 않는다.
 
 2026-09-25 운영 World는 Revision 30→31의 v5 schema/content로 이전됐고 새 암호화 owner-full 백업·격리 복원·clone migration 재현을 통과했다. 인증된 v5 정책 기반 운영 쓰기와 동일 Change Set 재생으로 Revision 32가 됐으며 공개 완전 Publication 포인터는 v5 served/current/target 32다. 127 Event·6 Collection·415 Relation·133 Narrative가 보존됐다. API·worker·web은 v5로 동작하고 구형 v4 변경 경로는 404, 미인증 v5 commit은 401이다. v5 공개·인증 배포 smoke 36093424585와 운영 iPhone WebKit 미배치 Event·Collection·Composite 탐색이 통과해 A3의 아홉 시나리오를 충족했다. IP-004~010 완료 이력은 유지한다.
 
@@ -14,7 +14,7 @@ A1은 PR #130으로 구현·병합·배포했다. v4 transition policy 조회, H
 
 A2는 [owner-full inventory·암호화 backup/restore·실제 clone rehearsal](../evidence/ip011/a2-execution.md)을 완료했고, 원본 운영 snapshot을 바꾸지 않은 채 `ip011_rehearsal_81811c151956e9af`에서 Revision 30→31 schema/content migration을 검증했다. PR #132–145는 보존 manifest, World v5 불변식, transaction/인가/결정적 client_ref, v4 이력과 v5 Revision reader를 구축했다. PR #146–165는 World content/temporal page, immutable digest index, bounded Event/Collection/adjacency/Composite/다중 Collection 읽기와 격리 HTTP/MCP/CLI 경계를 누적 검증했다. PR #166은 World-owned viewport와 정확한 Collection 선택 intersection, PR #167은 v5 ZIP64 content 계약을 추가했다. 실제 clone은 Rev30 이력 동일, Rev31 history=active, ZIP64 round-trip을 통과했다. 상세 PR/SHA·검증 범위·한계는 실행 증거에 기록한다.
 
-A2의 격리 clone은 별도 [A2 gate review](../evidence/ip011/a2-gate-review.md)에 기록한다. 운영 공개 UI는 `/graph/v5`와 검증된 포인터를 통해 v5를 읽으며 공간 요약은 125개 배치·2개 미배치를 반환한다. 인증된 v5 commit/replay는 임시로 제한한 운영 API action의 성공 로그로, 모바일 탐색은 post-deploy WebKit 실행으로 확인했다. A4에서는 [IP-011](IP-011-architecture-realignment.md)의 cold/warm/dense/scale latency·frame budget과 N 증가에 따른 bounded cost를 측정·개선한다.
+A2의 격리 clone은 별도 [A2 gate review](../evidence/ip011/a2-gate-review.md)에 기록한다. 운영 공개 UI는 `/graph/v5`와 검증된 포인터를 통해 v5를 읽으며 공간 요약은 125개 배치·2개 미배치를 반환한다. 인증된 v5 commit/replay는 임시로 제한한 운영 API action의 성공 로그로, 모바일 탐색은 post-deploy WebKit 실행으로 확인했다. A4의 측정·개선 이력은 [A4 실행](../evidence/ip011/a4-execution.md), 종료 후 미충족 항목은 [후속 백로그](IP-011-A4-closeout-backlog.md)를 따른다.
 
 - [실제 조사와 한계](../evidence/ip011/reconstruction.md)
 - [migration 대상 IDs](../evidence/ip011/data-audit.json)

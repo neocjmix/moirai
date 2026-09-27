@@ -9,7 +9,7 @@ layer: technical-specifications
 
 ## TS-004.1 책임과 효력
 
-Clotho는 HTTP/MCP/CLI의 같은 계약·인증·policy 제공을 소유하고 Lachesis가 최종 인가·불변식·원자적 commit을 소유한다. 목표 v5는 TS-002를 따른다. 현재 v4 배포의 기능과 혼동하지 않는다.
+Clotho는 HTTP/MCP/CLI의 같은 계약·인증·policy 제공을 소유하고 Lachesis가 최종 인가·불변식·원자적 commit을 소유한다. 운영 v5는 TS-002를 따른다. A3 전 v4 transition policy 기록과 현재 v5 계약을 구분하며 최신 검증 상태는 CURRENT를 따른다.
 
 ## TS-004.2 policy 조회
 
@@ -50,7 +50,7 @@ version echo는 모델이 문서를 이해했다는 증명이 아니다. 숨은 
 
 ## TS-004.6 query와 bounded context
 
-world.list/get, collection.list/get, event.search/get/neighbors, context.slice, time-event.resolve, change.validate/commit, export를 같은 transport 계약으로 제공한다. at_revision과 cursor는 같은 World Revision에 고정한다. 응답은 budget, truncated, continuation, matched membership을 명시한다. shared Event는 한 번 반환한다. bounded 응답 전 World 이력을 전부 replay하는 현재 구현은 TS-006/IP-011의 개선 대상이다.
+world.list/get, collection.list/get, event.search/get/neighbors, context.slice, time-event.resolve, change.validate/commit, export를 같은 transport 계약으로 제공한다. at_revision과 cursor는 같은 World Revision에 고정한다. 응답은 budget, truncated, continuation, matched membership을 명시한다. shared Event는 한 번 반환한다. A1 당시 bounded 응답 전 World 이력을 전부 replay하던 경로의 문제와 A4의 bounded authoring query 검증을 구분한다. 각 method의 지원·비용은 TS-006/IP-011 실행 증거로 확인하며 한 검색 경로의 통과를 전체 API 통과로 확대하지 않는다.
 
 ## TS-004.7 write contract와 recovery
 

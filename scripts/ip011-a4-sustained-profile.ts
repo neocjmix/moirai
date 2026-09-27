@@ -22,6 +22,7 @@ const failures: string[] = [];
 const visits: unknown[] = [];
 const checkpoints: unknown[] = [];
 const returnStates: unknown[] = [];
+const setupReads: { bounds: Bounds; bytes: number; truncated: boolean }[] = [];
 const network: { bbox: unknown; status: number; bytes: number }[] = [];
 const pendingBodies: Promise<void>[] = [];
 const p95 = (values: number[]) =>
@@ -188,9 +189,7 @@ try {
     ...devices["iPhone 14"],
     baseURL
   });
-  // tsx/esbuild preserves names with this helper inside serialized callbacks.
-  // Playwright's browser realm does not inherit the Node helper. Test-only;
-  // no application bundle or measured navigation behavior is changed.
+  // Match tsx/esbuild's name helper in serialized browser callbacks (test-only).
   await context.addInitScript(
     "globalThis.__name = (target, value) => Object.defineProperty(target, 'name', { value, configurable: true });"
   );
@@ -228,22 +227,37 @@ try {
     .waitFor({ state: "visible" });
   const initial = await settled(page);
   if (!viewportRequest) throw Error("viewport_request_missing");
-  // Query the synthetic fixture once outside the page/cache to choose 30 real,
-  // data-bearing neighborhoods. This is setup, not a profiled reader request.
-  const setup = await context.request.post("/graph/v5/shell", {
-    data: {
-      ...viewportRequest,
-      viewport: {
-        ...(viewportRequest.viewport as object),
-        bbox: initial.navigationBounds
+  // A full-world query is intentionally capped and cannot enumerate the
+  // fixture. Discover real neighborhoods through bounded strips, outside the
+  // page/cache. Record setup traffic separately from profiled reader traffic.
+  const regionById = new Map<string, { id: string; worldBounds: Bounds }>();
+  const all = initial.navigationBounds;
+  for (let band = 0; band < 32; band++) {
+    const bbox = {
+      ...all,
+      minY: all.minY + ((all.maxY - all.minY) * band) / 32,
+      maxY: all.minY + ((all.maxY - all.minY) * (band + 1)) / 32
+    };
+    const setup = await context.request.post("/graph/v5/shell", {
+      data: {
+        ...viewportRequest,
+        viewport: { ...(viewportRequest.viewport as object), bbox }
       }
-    }
-  });
-  if (!setup.ok()) throw Error("fixture_neighborhood_query_failed");
-  const fixture = (await setup.json()) as {
-    regions: { id: string; worldBounds: Bounds }[];
-  };
-  const regions = fixture.regions
+    });
+    if (!setup.ok()) throw Error("fixture_neighborhood_query_failed");
+    const body = await setup.body();
+    const fixture = JSON.parse(body.toString()) as {
+      regions: { id: string; worldBounds: Bounds }[];
+      truncated: boolean;
+    };
+    setupReads.push({
+      bounds: bbox,
+      bytes: body.byteLength,
+      truncated: fixture.truncated
+    });
+    for (const region of fixture.regions) regionById.set(region.id, region);
+  }
+  const regions = [...regionById.values()]
     .sort((a, b) => a.worldBounds.minY - b.worldBounds.minY)
     .slice(0, 30);
   if (regions.length !== 30)
@@ -351,6 +365,7 @@ process.stdout.write(
     heap: "unmeasured: WebKit has no comparable exposed heap counter",
     visits,
     returns: returnStates,
+    setup_reads: setupReads,
     checkpoints,
     network,
     failures

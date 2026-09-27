@@ -372,3 +372,17 @@ PR #232 head ddd7dfe, main 5c4886960db6a12e9502142ce5b828a33e4e1e3c. PR CI 36333
 기존 4종 scale fixture는 보존하고 1k sustained fixture를 별도로 추가한다. 30개 이상 실제 Composite 이웃을 가진 완전 Publication을 실제 서버로 공급한다. 한 브라우저 문서에서 history 복원으로 구간을 선택하고 native drag로 이동 후 첫 구간으로 돌아온다. 두 경로, 30회 왕복, 확대 단계 변경, 마지막 Collection OFF/ON을 수행한다. primary 왕복 동안 loader를 리셋하지 않고 ON/OFF는 그 뒤에 수행한다. 시작/중간/복귀에서 native contact에 매 RAF PointerEvent를 보내는 hybrid 연속 이동 602 frame을 측정한다. 실제 기기 multi-touch 또는 602개 native touch 이벤트라고 부르지 않는다. 기존 native pan/Collection 시험은 별도로 유지한다. 연속 구간과 contact/release 포함 전체 frame 분포 모두 p95 33.4ms/max 100ms 기준을 적용한다.
 
 매 복귀 active IDs/원형 일치, 마지막 camera/Revision/후보·DOM 증가 여부, 보관 상한과 settle 후 퇴장 정리를 검사한다. 원시 frame·구간별 상태·네트워크 bytes를 artifact로 남긴다. 이 checkpoint의 CI/browser 실행 전이며 아직 결과나 A4 완료 증거가 아니다. partial/reversed/error/revision loader 시험과 기존 모바일 회귀를 함께 유지한다. 투명 SVG 정리와 추가 region 작업 제한은 남는다.
+
+### Slice 29 배포와 시험 준비 실패 기록
+
+#233 main 8ac1da4dfc112b320eef3e01666efc1fd218c658 Railway 3서비스 SUCCESS, main CI 36355519818/post-deploy 36355675829 성공. 최초 R3 job 108721984295(run 36355388384)은 tsx callback의 `__name` helper 부재로 구간 측정 전에 실패했다. 같은 fixture의 기존 pan/zoom/toggle p95/max는 18/39, 19/34, 19/25ms였다. #234는 browser test realm에만 helper를 제공하며 운영 runtime과 gate는 바꾸지 않았다. main 5250eda24be2f18718a8c402a6738cf03f71a7a3 CI 36355835485/post-deploy 36355982612 성공.
+
+재실행 36355648638의 sustained job 108722725333은 전체 범위 조회에서 8개 region만 받아 30개 준비 assertion에 실패했다. 서버의 bounded 응답을 완전한 열거로 가정한 시험 오류이며, 원본에 region이 8개뿐이라는 뜻이 아니다. 이 실행의 기존 pan p95/max 18/104ms도 독립 실패로 기록한다. 아직 R3 visits/checkpoints는 0개이며 성공을 주장하지 않는다.
+
+## Slice 30: 투명 paint 정리와 bounded R3 준비
+
+기존 opacity 규칙에서 정확히 0인 region paint만 기존 presence의 퇴장 대상으로 보낸다. 220ms label 퇴장을 마친 뒤 SVG surface/label/path가 함께 사라진다. geometry·label 충돌·opacity 계산 입력은 삭제하지 않는다. 아주 작은 nonzero opacity와 surface 없이 점으로 표시하는 작은 Composite는 유지한다. 현재 원본의 색 배정은 SVG와 분리해 재등장 때 같은 색을 유지하며 기존 진입 효과를 거친다. 빈 paint 집합의 불필요한 state 교체도 건너뛴다.
+
+R3 준비는 서버의 제한을 풀지 않고 전체 범위를 32개 strip으로 나눠 30개 이상의 실제 이웃을 찾는다. 준비 요청/bytes/부분 응답은 reader 측정과 별도 기록한다. 원래 네 fixture는 그대로이며 새 sustained fixture의 server query만 실제 사건이 있는 X 범위를 사용한다. 서버 route를 통과하는 1k Publication 회귀 시험에서 전체 조회가 partial/<30개이고 32개 제한 조회가 >=30개를 확보하는지 확인했다.
+
+로컬 graph 관련 37개와 새 fixture 2개 시험 성공. 현재 checkpoint의 CI/mobile/배포 및 실제 R3 결과는 아직 전이다. 기존 100ms max를 완화하지 않는다. 원형 관계 closure의 추가 최적화와 모든 exit 판정은 남는다.

@@ -188,6 +188,12 @@ try {
     ...devices["iPhone 14"],
     baseURL
   });
+  // tsx/esbuild preserves names with this helper inside serialized callbacks.
+  // Playwright's browser realm does not inherit the Node helper. Test-only;
+  // no application bundle or measured navigation behavior is changed.
+  await context.addInitScript(
+    "globalThis.__name = (target, value) => Object.defineProperty(target, 'name', { value, configurable: true });"
+  );
   const page = await context.newPage();
   page.on("pageerror", (error) => failures.push(`page_error:${error.message}`));
   page.on("response", (response) => {

@@ -1288,6 +1288,9 @@
   -webkit-user-select: none;
   -webkit-touch-callout: none;
   overflow: hidden;
+  /* Keep graph layout and paint invalidation inside its fixed viewport. */
+  contain: layout paint;
+  transform: translateZ(0);
 }
 
 .chartPlaneStage,

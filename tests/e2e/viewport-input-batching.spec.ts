@@ -4,7 +4,7 @@ test("a pointer burst reads stage layout once and preserves the final pan", asyn
   page
 }) => {
   await page.goto("/graph/demo");
-  const point = page.locator('[data-event-point-id="event:founding"]');
+  const point = page.locator('[data-event-point-id="event:capital"]');
   await expect(point).toBeVisible();
   const before = await point.boundingBox();
   expect(before).not.toBeNull();

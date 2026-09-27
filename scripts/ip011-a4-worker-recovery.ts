@@ -6,7 +6,7 @@ import { spawn, type ChildProcess } from "node:child_process";
 import { createServer } from "node:http";
 import { setTimeout as delay } from "node:timers/promises";
 import { sql } from "kysely";
-import type { CanonicalState } from "@moirai/contracts/v5";
+import { V5_AUTHORING_POLICY, type CanonicalState } from "@moirai/contracts/v5";
 import { createDatabase } from "@moirai/persistence";
 import { S3ObjectStore } from "@moirai/publication";
 import { buildV5WorldCompleteArtifacts } from "@moirai/graph-presentation/server";
@@ -137,8 +137,8 @@ try {
     );
     for (const revision of [31, 32]) {
       const changeId = randomUUID();
-      await sql`insert into change_sets(id,world_id,request_digest,actor,intent,contract_version,origins,result)
-        values (${changeId},${worldId},${"0".repeat(64)},'synthetic','A4 recovery fixture','5','[]','{}')`.execute(
+      await sql`insert into change_sets(id,world_id,request_digest,actor,intent,contract_version,origins,result,policy_version,policy_digest)
+        values (${changeId},${worldId},${"0".repeat(64)},'synthetic','A4 recovery fixture','5','[]','{}',${V5_AUTHORING_POLICY.policy_version},${V5_AUTHORING_POLICY.policy_digest})`.execute(
         tx
       );
       await sql`insert into world_revisions(id,world_id,revision,change_set_id) values (${randomUUID()},${worldId},${revision},${changeId})`.execute(

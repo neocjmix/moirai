@@ -103,7 +103,12 @@ if (operatorAction) {
 }
 
 async function processNextJob(): Promise<boolean> {
-  const job = await claimPublicationJob(database);
+  // The measured 100k v5 build takes about three minutes. Keep its claim
+  // beyond that build, while retaining short restart recovery for v4.
+  const job = await claimPublicationJob(
+    database,
+    publicationMode === "v5" ? 300 : 60
+  );
   if (!job) return false;
   try {
     if (publicationMode === "v5") {
@@ -127,7 +132,8 @@ async function processNextJob(): Promise<boolean> {
         served.pointer.manifest_sha256 !== pointer.manifest_sha256
       )
         throw Error("v5_publication_readback_mismatch");
-      await completePublicationJob(database, job, job.targetRevision);
+      if (!(await completePublicationJob(database, job, job.targetRevision)))
+        throw Error("publication_job_lease_lost");
       process.stdout.write(
         JSON.stringify({
           level: "info",
@@ -162,7 +168,8 @@ async function processNextJob(): Promise<boolean> {
       artifacts.manifestBody,
       artifacts.documents
     );
-    await completePublicationJob(database, job, servedRevision);
+    if (!(await completePublicationJob(database, job, servedRevision)))
+      throw Error("publication_job_lease_lost");
     process.stdout.write(
       JSON.stringify({
         level: "info",
@@ -180,7 +187,7 @@ async function processNextJob(): Promise<boolean> {
       error instanceof Error
         ? error.message.slice(0, 128)
         : "projection_failed";
-    await retryPublicationJob(database, job, errorCode);
+    const retried = await retryPublicationJob(database, job, errorCode);
     process.stderr.write(
       JSON.stringify({
         level: "error",
@@ -189,7 +196,7 @@ async function processNextJob(): Promise<boolean> {
         world_id: job.worldId,
         change_set_id: job.changeSetId,
         revision: job.targetRevision,
-        result_code: errorCode,
+        result_code: retried ? errorCode : "publication_job_lease_lost",
         retry_count: job.attemptCount
       }) + "\n"
     );

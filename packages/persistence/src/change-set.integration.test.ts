@@ -15,7 +15,8 @@ import {
   createDatabase,
   getPublicationStatus,
   readWorldAtRevision,
-  reconcileSubjectHandleState
+  reconcileSubjectHandleState,
+  retryPublicationJob
 } from "./index.js";
 import { migrateToLatest } from "./migrate.js";
 
@@ -643,6 +644,43 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       targetRevision: 1,
       servedRevision: 1,
       projectionStatus: "ready"
+    });
+  });
+
+  it("fences stale completion and retry after an expired worker claim", async () => {
+    const input = createTestChangeSet();
+    await commitCreateChangeSet(db, input);
+    const first = (await claimPublicationJob(db, 1))!;
+    await sql`update publication_outbox set lease_expires_at = now() - interval '1 second'
+      where id = ${first.id}`.execute(db);
+    const restarted = (await claimPublicationJob(db, 300))!;
+    expect(restarted).toMatchObject({
+      id: first.id,
+      attemptCount: first.attemptCount + 1
+    });
+    expect(await completePublicationJob(db, first, 1)).toBe(false);
+    expect(await retryPublicationJob(db, first, "stale_failure")).toBe(false);
+    expect(await claimPublicationJob(db)).toBeNull();
+    expect(await completePublicationJob(db, restarted, 1)).toBe(true);
+    expect(await retryPublicationJob(db, restarted, "late_failure")).toBe(
+      false
+    );
+    await expect(
+      getPublicationStatus(db, input.world_id)
+    ).resolves.toMatchObject({
+      servedRevision: 1,
+      projectionStatus: "ready"
+    });
+    const result = await sql<{
+      status: string;
+      attempt_count: number;
+      last_error_code: string | null;
+    }>`select status, attempt_count, last_error_code from publication_outbox
+      where id = ${first.id}`.execute(db);
+    expect(result.rows[0]).toEqual({
+      status: "completed",
+      attempt_count: 2,
+      last_error_code: null
     });
   });
 

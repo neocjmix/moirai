@@ -9,6 +9,7 @@ import type { GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
 import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gregorian-axis-coordinate";
 import { composeNavigationBounds, constrainNavigation, restoreNavigation } from "./viewport-navigation";
+import { prepareCompositeWorldGeometry, selectCompositeWorldRegions } from "./graph-shell-world";
 import { compositePointDisplay } from "./composite-point-display";
 import { reconcileViewport } from "../viewport-cache";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
@@ -41,7 +42,6 @@ import {
 import {
   buildClosedSplinePath,
   buildOpenSplinePath,
-  buildCompositeHull,
   DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING,
   expandPolygon,
   resolveCompositeEdgeLabelPlacement,
@@ -169,9 +169,6 @@ type CompositeRegion = {
   compactPoint?: {x: number; y: number} | null;
 };
 
-type CompositeHullGeometry = {
-  points: ViewportCoordinate[];
-};
 
 type WorldInstantPoint = {
   id: string;
@@ -184,15 +181,6 @@ type WorldInstantPoint = {
   editorial?: GraphShellChartPlaneEntity["editorial"];
 };
 
-type WorldCompositeRegion = {
-  id: string;
-  label: string;
-  points: ViewportCoordinate[];
-  depth: number;
-  contains: string[];
-  containedBy?: string;
-  editorial?: GraphShellChartPlaneEntity["editorial"];
-};
 
 type CompositeRenderState = {
   regions: CompositeRegion[];
@@ -276,24 +264,6 @@ function regionIntersectsViewport(points: ViewportCoordinate[], viewport: Viewpo
     bounds.maxY >= -margin &&
     bounds.minY <= viewport.height + margin
   );
-}
-
-function worldBoundsIntersect(bounds: GraphShellChartPlaneRegionEntity["worldBounds"], viewportBounds: GraphShellChartPlaneRegionEntity["worldBounds"]) {
-  return (
-    bounds.maxX >= viewportBounds.minX &&
-    bounds.minX <= viewportBounds.maxX &&
-    bounds.maxY >= viewportBounds.minY &&
-    bounds.minY <= viewportBounds.maxY
-  );
-}
-
-function worldBoundsToPolygon(bounds: GraphShellChartPlaneRegionEntity["worldBounds"]): ViewportCoordinate[] {
-  return [
-    { x: bounds.minX, y: bounds.minY },
-    { x: bounds.maxX, y: bounds.minY },
-    { x: bounds.maxX, y: bounds.maxY },
-    { x: bounds.minX, y: bounds.maxY },
-  ];
 }
 
 function getRelationStyle(typeKey: string) {
@@ -675,74 +645,6 @@ function collectRegionDescendantIds(
   }
 
   return descendantIds;
-}
-
-function collectRecursiveRegionClosure(
-  seedRegionIds: Set<string>,
-  regionById: Map<string, GraphShellChartPlaneRegionEntity>,
-  parentRegionIdsByChildId: Map<string, Set<string>>
-) {
-  const allRegionIds = new Set<string>();
-  const stack = [...seedRegionIds];
-
-  while (stack.length > 0) {
-    const regionId = stack.pop();
-    if (!regionId || allRegionIds.has(regionId)) {
-      continue;
-    }
-
-    allRegionIds.add(regionId);
-    const region = regionById.get(regionId);
-    if (!region) {
-      continue;
-    }
-
-    for (const childId of region.contains) {
-      if (regionById.has(childId) && !allRegionIds.has(childId)) {
-        stack.push(childId);
-      }
-    }
-
-    for (const parentRegionId of parentRegionIdsByChildId.get(regionId) ?? []) {
-      if (!allRegionIds.has(parentRegionId)) {
-        stack.push(parentRegionId);
-      }
-    }
-  }
-
-  return allRegionIds;
-}
-
-function computeRegionDepth(
-  regionId: string,
-  regionById: Map<string, GraphShellChartPlaneRegionEntity>,
-  memo: Map<string, number>,
-  visited: Set<string>
-): number {
-  if (memo.has(regionId)) {
-    return memo.get(regionId) ?? 0;
-  }
-
-  if (visited.has(regionId)) {
-    return 0;
-  }
-
-  visited.add(regionId);
-  const region = regionById.get(regionId);
-  if (!region) {
-    memo.set(regionId, 0);
-    return 0;
-  }
-
-  const childRegionIds = region.contains.filter((childId) => regionById.has(childId));
-  if (childRegionIds.length === 0) {
-    memo.set(regionId, 0);
-    return 0;
-  }
-
-  const depth = 1 + Math.max(...childRegionIds.map((childId) => computeRegionDepth(childId, regionById, memo, new Set(visited))));
-  memo.set(regionId, depth);
-  return depth;
 }
 
 function getPolygonFootprint(points: ViewportCoordinate[]) {
@@ -2379,6 +2281,7 @@ export function GraphShell({
   const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
 
   const runtimeViewportOwnerRef = useRef(null);
+  const parsedRuntimeViewportRef = useRef(null);
   const chartViewportRef = useRef<HTMLDivElement | null>(null);
   const eventDrawerRef = useRef<HTMLElement | null>(null);
   const eventDrawerViewportRef = useRef<HTMLDivElement | null>(null);
@@ -2601,7 +2504,10 @@ export function GraphShell({
           artifactClasses: [...GRAPH_SHELL_FULL_ARTIFACT_CLASSES],
         });
         if (!active) return;
-        const fullResponse = parseViewportResponse(received);
+        const previousParsed = parsedRuntimeViewportRef.current;
+        const fullResponse = previousParsed?.loader === loader && previousParsed.received === received
+          ? previousParsed.parsed : parseViewportResponse(received);
+        parsedRuntimeViewportRef.current = {loader, received, parsed: fullResponse};
         if (active) {
           const sameOwner = runtimeViewportOwnerRef.current?.loader === loader && runtimeViewportOwnerRef.current?.canons === canonIds.join(",");
           runtimeViewportOwnerRef.current = {loader, canons: canonIds.join(",")};
@@ -2657,10 +2563,12 @@ export function GraphShell({
     return runtimeViewportResponse.regions;
   }, [runtimeViewportResponse]);
 
+  const runtimeChartPlaneEntities = useMemo(() => [...runtimeLinearEntities, ...runtimeRegionEntities], [runtimeLinearEntities, runtimeRegionEntities]);
+
   const visibleChartPlaneEntities = useMemo(() => {
     if (runtimeViewportOwnerRef.current?.loader !== loader || runtimeViewportOwnerRef.current?.canons !== [...effectiveEnabledCanonIds].join(",")) return [];
     if (runtimeViewportResponse) {
-      return [...runtimeLinearEntities, ...runtimeRegionEntities];
+      return runtimeChartPlaneEntities;
     }
 
     if (runtimeViewportLoadState === "loading" || runtimeViewportLoadState === "error") {
@@ -2671,8 +2579,8 @@ export function GraphShell({
       return bootstrapVisibleChartPlaneEntities;
     }
 
-    return [...runtimeLinearEntities, ...runtimeRegionEntities];
-  }, [bootstrapVisibleChartPlaneEntities, runtimeLinearEntities, runtimeRegionEntities, runtimeViewportLoadState, runtimeViewportResponse, loader, effectiveEnabledCanonIds]);
+    return runtimeChartPlaneEntities;
+  }, [bootstrapVisibleChartPlaneEntities, runtimeChartPlaneEntities, runtimeViewportLoadState, runtimeViewportResponse, loader, effectiveEnabledCanonIds]);
 
   useEffect(() => {
     if (usesLoadingWorkspace || !hasHydratedRestorableState) {
@@ -2865,10 +2773,6 @@ export function GraphShell({
   }, [visibleChartPlaneEntities, viewportSize.height, viewportSize.width, view.x, view.y, view.scaleX, view.scaleY]);
 
   const allWorldInstantPoints = useMemo(() => {
-    if (viewportSize.width <= 0 || viewportSize.height <= 0) {
-      return [] as WorldInstantPoint[];
-    }
-
     return visibleChartPlaneEntities
       .filter(
         (entity) =>
@@ -2888,7 +2792,7 @@ export function GraphShell({
         y: entity.position.y,
       }))
       .sort((left, right) => left.y - right.y || left.x - right.x);
-  }, [visibleChartPlaneEntities, viewportSize.height, viewportSize.width]);
+  }, [visibleChartPlaneEntities]);
 
   const allProjectedInstantPoints = useMemo(() => {
     return allWorldInstantPoints
@@ -2904,108 +2808,20 @@ export function GraphShell({
       .sort((left, right) => left.y - right.y || left.x - right.x);
   }, [allWorldInstantPoints, view, viewportSize]);
 
+  const preparedWorldCompositeRegions = useMemo(
+    () => prepareCompositeWorldGeometry(visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode),
+    [visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode],
+  );
   const worldCompositeRegions = useMemo(() => {
-    if (viewportSize.width <= 0 || viewportSize.height <= 0) {
-      return [] as WorldCompositeRegion[];
-    }
-
-    const visibleWorldBounds = getVisibleWorldBounds(view, viewportSize);
-    const seedVisibleInstantIds = new Set(
-      allProjectedInstantPoints
-        .filter((point) => point.x >= -16 && point.x <= viewportSize.width + 16 && point.y >= -16 && point.y <= viewportSize.height + 16)
-        .map((point) => point.id)
-    );
-    const allWorldInstantPointById = new Map(allWorldInstantPoints.map((point) => [point.id, point]));
-    const regionById = new Map(
-      visibleChartPlaneEntities
-        .filter((entity): entity is Extract<GraphShellChartPlaneEntity, { geometryKind: "region" }> => entity.geometryKind === "region")
-        .map((entity) => [entity.id, entity])
-    );
-    const parentRegionIdsByChildId = new Map<string, Set<string>>();
-    for (const region of regionById.values()) {
-      for (const childId of region.contains) {
-        const parents = parentRegionIdsByChildId.get(childId) ?? new Set<string>();
-        parents.add(region.id);
-        parentRegionIdsByChildId.set(childId, parents);
-      }
-    }
-
-    const seedRegionIds = new Set(
-      [...regionById.values()]
-        .filter(
-          (entity) =>
-            entity.contains.some((childId) => seedVisibleInstantIds.has(childId)) ||
-            worldBoundsIntersect(entity.worldBounds, visibleWorldBounds)
-        )
-        .map((entity) => entity.id)
-    );
-    const recursiveRegionIds = collectRecursiveRegionClosure(seedRegionIds, regionById, parentRegionIdsByChildId);
-    const selectedRegionEntities = [...recursiveRegionIds]
-      .map((regionId) => regionById.get(regionId))
-      .filter((entity): entity is Extract<GraphShellChartPlaneEntity, { geometryKind: "region" }> => Boolean(entity));
-    const regionDepthById = new Map<string, number>();
-    for (const entity of selectedRegionEntities) {
-      regionDepthById.set(entity.id, computeRegionDepth(entity.id, regionById, regionDepthById, new Set<string>()));
-    }
-
-    const regionGeometryById = new Map<string, CompositeHullGeometry>();
-    const rawRegions = selectedRegionEntities
-      .sort(
-        (left, right) =>
-          (regionDepthById.get(left.id) ?? 0) - (regionDepthById.get(right.id) ?? 0) || left.id.localeCompare(right.id)
-      )
-      .map((entity) => {
-        const directSupportPoints: ViewportCoordinate[] = [];
-        const childRegionPolygons: ViewportCoordinate[][] = [];
-
-        for (const childId of entity.contains) {
-          if (allWorldInstantPointById.has(childId)) {
-            const point = allWorldInstantPointById.get(childId);
-            if (point) {
-              directSupportPoints.push({ x: point.x, y: point.y });
-            }
-            continue;
-          }
-
-          const childRegionGeometry = regionGeometryById.get(childId);
-          if (childRegionGeometry) {
-            childRegionPolygons.push(childRegionGeometry.points);
-          }
-        }
-
-        const fallbackBoundsPolygon =
-          directSupportPoints.length === 0 && childRegionPolygons.length === 0
-            ? worldBoundsToPolygon(entity.worldBounds)
-            : [];
-        const hullSupportPoints = directSupportPoints.length > 0 ? directSupportPoints : fallbackBoundsPolygon;
-
-        const hullPoints = buildCompositeHull(
-          {
-            instantPoints: hullSupportPoints,
-            childPolygons: childRegionPolygons,
-          },
-          compositeHullMode,
-        );
-        const geometry = {
-          points: hullPoints,
-        } satisfies CompositeHullGeometry;
-        regionGeometryById.set(entity.id, geometry);
-
-        return {
-          id: entity.id,
-          label: entity.label,
-          depth: (regionDepthById.get(entity.id) ?? 0) + 1,
-          contains: entity.contains,
-          containedBy: entity.containedBy,
-          editorial: entity.editorial,
-          points: geometry.points,
-        } satisfies WorldCompositeRegion;
-      })
-      .filter((region) => region !== null)
-      .sort((left, right) => left.depth - right.depth || left.id.localeCompare(right.id)) as WorldCompositeRegion[];
-
-    return rawRegions;
-  }, [allProjectedInstantPoints, allWorldInstantPoints, compositeHullMode, view, viewportSize, visibleChartPlaneEntities]);
+    if (viewportSize.width <= 0 || viewportSize.height <= 0) return [];
+    const bounds = getVisibleWorldBounds(view, viewportSize);
+    return selectCompositeWorldRegions(preparedWorldCompositeRegions, bounds, {
+      minX: bounds.minX - 16 / view.scaleX,
+      maxX: bounds.maxX + 16 / view.scaleX,
+      minY: bounds.minY - 16 / view.scaleY,
+      maxY: bounds.maxY + 16 / view.scaleY,
+    });
+  }, [preparedWorldCompositeRegions, view, viewportSize]);
 
   const compositePlacementHistoryRef = useRef({loader, entries: new Map()});
   const chartCompositeRegions = useMemo(() => {

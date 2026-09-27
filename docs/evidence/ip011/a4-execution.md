@@ -326,3 +326,18 @@ v5 endpoint의 응답은 delta가 아닌 bounded snapshot이다. `truncated`여�
 로컬 Vitest 13개 성공: 30개 구간×100 point/1 region/1 edge 후 첫 구간 복귀 시 active 100/1/1 유지, partial flag 유지, LRU evict 후 재조회, exact partial dedup, partial coverage 재사용 금지, 30초 pointer 재조회/409, Revision mismatch, superseded/page exit/late response, 기존 adapter route. 실제 WebKit에서 30개 query 교체·복귀·실패 후 마지막 성공 화면 유지 시험도 추가했다. 이는 synthetic query 교체 correctness 시험이고 R3의 실제 장시간 이동/600 active frame 시험을 대체하지 않는다. CI·모바일·배포 증거는 PR에 후속 기록한다.
 
 아직 A4 미완료: geometry/edge completeness의 별도 계약, 더 작은 active 후보 선정, Composite 원형 재사용, fade 정리, R3 연속·왕복 성능, 기존 fixed gate 재검증이 남는다. 화면의 새 밀도 규칙이나 renderer 교체는 없다.
+
+
+### Slice 26 배포 checkpoint
+
+PR #230 head 37ac4e8 (동작 코드 38857b5)의 CI 36331858193은 quality/PostgreSQL/build/audit, WebKit 30개, secret scan 성공. 첫 실행의 29개 성공/1개 실패는 새 시험이 내부 오류 문자열을 기대한 오류였다. 실제 한국어 안내 문구로 시험을 수정했으며 runtime은 변경하지 않았다. squash main a355d06d3ae8a3e9bf58e9edf9f7f2a412b78db8의 Railway web/API/worker 배포는 모두 SUCCESS. main CI 36332056026과 post-deploy는 확인 중이다.
+
+동작 코드 38857b5의 scale run 36331601642에서 1k/10k sparse/dense/shared/large 8개 mobile job이 성공했다. dense pan p95/max는 1k 18/98ms, 10k 18/66ms였다. 단일 실행의 통과이며 지속 탐색 해결·A4 exit 주장이 아니다. 최종 head의 재실행과 100k 결과는 후속 확인한다.
+
+## Slice 27: Composite 원형과 화면 후보 계산 분리 — R2 첫 checkpoint
+
+GraphShell에서 세계 좌표의 Composite hull 생성과 viewport별 선택을 분리했다. bounded 현재 응답에 대해 원형과 부모/자식 관계를 준비하고, 화면 이동에서는 역산한 viewport 및 기존 16px point buffer로 필요한 기존 관계 집합만 선택한다. 가로·세로 배율을 각각 역산하며, 화면 밖 자식 support point/polygon도 원형 계산에 보존한다. 기존 convex/concave hull·부모/자식 closure·depth·label/fade 의미는 유지한다. loading/error 상태 변화만으로 원본 배열을 다시 만들지 않고, 동일 cached response의 반복 해석도 마지막 1개 참조 안에서 재사용한다.
+
+로컬 3개 시험: convex/concave에서 화면 밖 support 보존·600회 범위 교체에도 동일 hull 객체 재사용·빈 region의 bounds fallback·9가지 독립 X/Y 배율에서 이전 screen-space point seed 판정과 일치. 기존 렌더링 엔진·사건 밀도 정책은 그대로다. CI/WebKit/규모별 성능 및 배포 확인 전 checkpoint다.
+
+남은 작업: geometry/edge completeness 구분, point/edge/label 화면 후보 계산 제한, fade 퇴장 정리, 실제 지속 조작/왕복 시험과 전체 고정 gate. 원형을 재사용했다는 사실만으로 A4를 닫지 않는다.

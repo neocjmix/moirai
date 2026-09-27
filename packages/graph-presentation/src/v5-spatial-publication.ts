@@ -49,7 +49,8 @@ function buildV5WorldSpatialStagedArtifactsWithLayouts(
  * or production migration is performed here. */
 export async function buildV5WorldCompleteArtifacts(
   state: CanonicalState,
-  revision: number
+  revision: number,
+  observePhase?: (phase: string) => void
 ): Promise<{
   artifacts: V5StagedArtifacts;
   proof: {
@@ -63,10 +64,13 @@ export async function buildV5WorldCompleteArtifacts(
     state,
     revision
   );
+  observePhase?.("staged");
   verifyV5StagedIndex(staged);
+  observePhase?.("staged_verified");
   const objects = new Map(
     [...staged.documents, ...staged.index].map(({ key, body }) => [key, body])
   );
+  observePhase?.("proof_objects_mapped");
   let placed = 0;
   let unplaced = 0;
   let viewportPages = 0;
@@ -151,8 +155,11 @@ export async function buildV5WorldCompleteArtifacts(
         throw Error("v5_complete_selection_drift");
     }
   }
+  observePhase?.("selection_proved");
+  const artifacts = finalizeV5VerifiedSpatialArtifacts(state, staged);
+  observePhase?.("complete_finalized");
   return {
-    artifacts: finalizeV5VerifiedSpatialArtifacts(state, staged),
+    artifacts,
     proof: {
       placed,
       unplaced,

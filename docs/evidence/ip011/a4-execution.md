@@ -230,3 +230,19 @@ Pan 실제 점 이동과 zoom URL 변화 검사도 기존대로 유지한다. �
 | 100k | 23.26 s | 32.12 ms | 4.35 ms | 14.17 ms | 3.67 ms | 2113 B | 0 | Bitmap Index Scan `events_active_title_trgm`, 21 rows |
 
 실제 검색에서 10k의 순차 스캔이 가장 비싼 DB 단계였지만 100k에서는 제목 인덱스를 사용한다. 세 규모의 cold ≤500 ms, warm ≤100 ms, 응답 bytes 증가 1배, history replay 0으로 이 국소 제목 질의는 통과한다. EXPLAIN의 shared buffers는 순서대로 17/137/126 hit, 0 read이며 물리 디스크 cold 증거가 아니다. 첫 페이지 쿼리만 측정했고 다른 검색어·dense/discovery 후보 500·후속 페이지와 운영 데이터 분포를 대표하지 않는다. 코드 최적화는 이 수치만으로 정당화되지 않는다. A4 전체 exit는 dense·100k viewport의 충분한 cold/warm 수, 모바일 규모/반복, worker peak/cancel/restart가 남아 있다.
+
+## Slice 17: 100k worker lease 재획득 안전성
+
+[PR #216](https://github.com/neocjmix/moirai/pull/216) main/운영 `53fe5e53ff089402c2354f34ab76e9dbcbf6ef03`. 이전 worker claim lease 60초는 합성 100k 완전 빌드 약 168초보다 짧아 중복 claim 가능성이 있었다. v5 claim만 300초로 늘리고, 완료·재시도를 `status=processing` 및 `attempt_count`에 원자적으로 조건화했다. PG17 시험은 첫 lease 강제 만료→같은 job 재claim→첫 시도의 완료/재시도 거부→새 시도의 완료 및 World served 상태 유지까지 확인한다. [PR CI 36286539579](https://github.com/neocjmix/moirai/actions/runs/36286539579) 품질/PG17/모바일/secret scan과 [배포 smoke 36286797216](https://github.com/neocjmix/moirai/actions/runs/36286797216) 공개·모바일·인증 authoring 성공. 300초를 넘는 빌드와 실제 프로세스 종료 후 queue 재claim은 아직 별도 검증이다.
+
+## Slice 18: hosted Ubuntu 10k/100k worker 프로세스 peak·강제 중단·재실행
+
+[PR #217](https://github.com/neocjmix/moirai/pull/217)의 [Actions run 36286884869](https://github.com/neocjmix/moirai/actions/runs/36286884869), [원시 JSONL](a4-worker-process.jsonl). Ubuntu hosted x64, Node 22, 합성 Revision 31 sparse World, `A4_COMPLETE=1`, 고정 viewport 중심 X −355.1, 메모리 object store. 별도 Node 프로세스를 `/proc` 100ms 간격으로 추적해 VmHWM와 CPU tick을 기록했다. 10k 완전 빌드 후 100k 프로세스 RSS 300MiB 이상·3초 이후 SIGKILL, 이어 새 100k 완전 빌드를 수행했다.
+
+| 단계 | wall | CPU sampled | peak RSS | 결과 |
+| --- | ---: | ---: | ---: | --- |
+| 10k complete | 5.04 s | 6.23 s | 496.47 MiB | 50,196 documents, 41.50 MB artifact; ≤180s/3GiB 통과 |
+| 100k cancel | 3.03 s | 3.44 s | 412.33 MiB | SIGKILL; 완전 artifact 출력 전 종료 |
+| 100k restart complete | 92.79 s | 108.84 s | **5069.41 MiB** | 601,597 documents, 779.52 MB artifact, 국소 viewport 1 shape |
+
+이 실행에서 100k 취소 후 새 프로세스의 완전 빌드는 성공했다. 100k RSS는 이전 로컬 Node 24 종료 RSS 2975MiB보다 훨씬 높으며, 종료 RSS와 peak·실행 환경이 달라 개선/악화율로 해석하지 않는다. hosted 100k peak 5GiB는 운영 worker 용량·중복 빌드 위험을 조사할 근거다. 이 시험은 DB lease/실제 object-store 업로드/served pointer를 포함하지 않으므로 운영 queue의 중단·재개 성공으로 간주하지 않는다. 100k 메모리 감소와 queue end-to-end 재시작은 A4 잔여 작업이다.

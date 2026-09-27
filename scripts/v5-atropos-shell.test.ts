@@ -69,9 +69,23 @@ describe("v5 adapter into the original Atropos shell", () => {
     expect(both.entities.map((e) => e.eventId)).toEqual([ids.battle]);
     expect(japan.entities).toEqual(both.entities);
     expect(both.regions[0]?.contains).toEqual([ids.battle]);
+    expect(both.regions[0]).toMatchObject({ childrenComplete: true });
+    expect(both.completeness).toEqual({
+      entities: true,
+      regions: true,
+      edges: true,
+      regionSupport: true
+    });
+    expect(both.truncated).toBe(false);
     expect(japan.regions).toEqual([]);
     const off = await read([]);
     expect([...off.entities, ...off.regions, ...off.edges]).toEqual([]);
+    expect(off.completeness).toEqual({
+      entities: true,
+      regions: true,
+      edges: true,
+      regionSupport: true
+    });
   });
   it("maps one World relation to the existing line geometry without duplicating it", async () => {
     const shell = await v5ShellReader(world);

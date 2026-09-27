@@ -1342,6 +1342,7 @@ export type GraphShellChartPlaneSegmentEntity = z.infer<typeof graphShellChartPl
 export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntityBaseSchema.extend({
   geometryKind: z.literal("region"),
   worldBounds: chartPlaneWorldBoundsSchema,
+  childrenComplete: z.boolean().optional(),
 });
 export type GraphShellChartPlaneRegionEntity = z.infer<typeof graphShellChartPlaneRegionEntitySchema>;
 
@@ -1391,6 +1392,12 @@ export const graphShellViewportResponseSchema = z.object({
   regions: z.array(graphShellChartPlaneEntitySchema),
   diagnostics: z.array(chartPlaneDiagnosticSchema),
   truncated: z.boolean(),
+  completeness: z.object({
+    entities: z.boolean(),
+    regions: z.boolean(),
+    edges: z.boolean(),
+    regionSupport: z.boolean(),
+  }).optional(),
   cache: z.object({ stale: z.boolean() }),
   nextSuggestedLod: z.number().int().optional(),
 });

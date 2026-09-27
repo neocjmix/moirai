@@ -193,6 +193,7 @@ export async function v5ShellReader(worldId: string) {
     return {
       ...base,
       contains: [...(children?.child_event_ids ?? [])],
+      childrenComplete: children !== null && children.page_count <= 1,
       geometryKind: "region",
       worldBounds: value.bounds
     };

@@ -1333,6 +1333,7 @@ function parseViewportResponse(payload: unknown) {
     regions: parseRegionArray(candidate.regions, parsedEntities),
     diagnostics: parseDiagnostics(candidate.diagnostics),
     truncated,
+    ...(candidate.completeness === undefined ? {} : {completeness: graphShellViewportResponseSchema.shape.completeness.parse(candidate.completeness)}),
     cache: { stale: (cache as { stale: boolean }).stale },
     ...(nextSuggestedLod === undefined ? {} : { nextSuggestedLod }),
   };
@@ -2283,6 +2284,13 @@ export function GraphShell({
 
   const runtimeViewportOwnerRef = useRef(null);
   const parsedRuntimeViewportRef = useRef(null);
+  const graphWorkCountsRef = useRef({worldGeometryBatches: 0, pointTransforms: 0, regionTransforms: 0, labelQueries: 0});
+  const graphInspectionRef = useRef(null);
+  useEffect(() => {
+    const inspect = () => window.dispatchEvent(new CustomEvent("moirai:graph-inspection", {detail: structuredClone(graphInspectionRef.current?.())}));
+    window.addEventListener("moirai:inspect-graph", inspect);
+    return () => window.removeEventListener("moirai:inspect-graph", inspect);
+  }, []);
   const chartViewportRef = useRef<HTMLDivElement | null>(null);
   const eventDrawerRef = useRef<HTMLElement | null>(null);
   const eventDrawerViewportRef = useRef<HTMLDivElement | null>(null);
@@ -2801,9 +2809,11 @@ export function GraphShell({
   const pointProjection = useMemo(() => {
     const projectedById = new Map();
     return {
+      size: () => projectedById.size,
       project(point) {
         let projected = projectedById.get(point.id);
         if (!projected) {
+          graphWorkCountsRef.current.pointTransforms++;
           projected = {...point, ...projectWorldPoint(view, viewportSize, point), opacity: 1};
           projectedById.set(point.id, projected);
         }
@@ -2823,13 +2833,15 @@ export function GraphShell({
     }
     return [...candidates.values()].sort((a, b) => a.y - b.y || a.x - b.x).map(pointProjection.project);
   }, [allWorldInstantPoints, worldPointQuery, pointProjection, chartRelationSegments, renderedEventSelection, selectedEventSelection, view, viewportSize]);
-  const queryProjectedLabelPoints = useCallback((screenBounds) =>
-    worldPointQuery.query(worldBoundsForScreenBounds(screenBounds, view, viewportSize)).map(pointProjection.project),
+  const queryProjectedLabelPoints = useCallback((screenBounds) => {
+    graphWorkCountsRef.current.labelQueries++;
+    return worldPointQuery.query(worldBoundsForScreenBounds(screenBounds, view, viewportSize)).map(pointProjection.project);
+  },
     [worldPointQuery, pointProjection, view, viewportSize],
   );
 
   const preparedWorldCompositeRegions = useMemo(
-    () => prepareCompositeWorldGeometry(visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode),
+    () => { graphWorkCountsRef.current.worldGeometryBatches++; return prepareCompositeWorldGeometry(visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode); },
     [visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode],
   );
   const worldCompositeRegions = useMemo(() => {
@@ -2849,6 +2861,7 @@ export function GraphShell({
     const history = compositePlacementHistoryRef.current.loader === loader ? compositePlacementHistoryRef.current.entries : new Map();
     const zoomBucket = getEditorialZoomBucket(view.scaleY);
     const projectedRawRegions = worldCompositeRegions.map((region) => {
+      graphWorkCountsRef.current.regionTransforms += region.points.length;
       const projectedHullPoints = region.points.map((point) => projectWorldPoint(view, viewportSize, point));
       const compactPoint = compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
       const projectedPoints = expandPolygon(projectedHullPoints, getCompositeRegionPadding(region.depth));
@@ -3697,6 +3710,32 @@ export function GraphShell({
     }),
     [allProjectedInstantPoints, chartCompositeRegions.regions, compositeSplineTuning, selectedEventPoint, selectedEventTitle, visibleRelationSegments],
   );
+
+  // Read-only, on-demand diagnostics. No per-frame serialization or telemetry.
+  graphInspectionRef.current = () => ({
+    revision: runtimeViewportResponse?.revision ?? null,
+    selection: [...effectiveEnabledCanonIds].sort(),
+    view, viewportSize, navigationBounds,
+    completeness: runtimeViewportResponse?.completeness ?? null,
+    loadState: runtimeViewportLoadState,
+    activeIds: {
+      points: allProjectedInstantPoints.map(point => point.id).sort(),
+      regions: worldCompositeRegions.map(region => region.id).sort(),
+      edges: chartRelationSegments.map(edge => edge.id).sort(),
+    },
+    geometry: worldCompositeRegions.map(region => ({id: region.id, points: region.points})).sort((a, b) => a.id.localeCompare(b.id)),
+    counts: {
+      sourceEntities: runtimeViewportResponse?.entities.length ?? 0,
+      sourceRegions: runtimeViewportResponse?.regions.length ?? 0,
+      sourceEdges: runtimeViewportResponse?.edges.length ?? 0,
+      projectedPoints: pointProjection.size(),
+      fadeRegions: visibleCompositeRegions.length,
+      exitingRegions: visibleCompositeRegions.filter(region => region.visibilityState === "exiting").length,
+      exitOverdueMs: Math.max(0, ...visibleCompositeRegions.filter(region => region.visibilityState === "exiting" && region.exitStartedAt !== undefined).map(region => performance.now() - region.exitStartedAt - COMPOSITE_FADE_DURATION_MS)),
+    },
+    cache: loader.inspectViewport?.() ?? null,
+    work: {...graphWorkCountsRef.current},
+  });
 
   return (
     <>

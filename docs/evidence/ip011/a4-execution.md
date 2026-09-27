@@ -358,3 +358,17 @@ point 원본에 응답 단위 Y 정렬 인덱스를 만들고 화면+기존 16px
 로컬 5개 시험 성공: 9가지 독립 X/Y 배율에서 역산 후보와 기존 screen predicate 일치, 양 endpoint가 화면 밖인 교차선 보존, 1,600개 point의 전체 투영과 이웃 조회 방식이 동일한 label/이전 위치 유지 결과, 600회 연속 갱신에도 퇴장 시한 유지·재진입 reset. label density의 이웃 후보 합은 전체 반복 방식의 1/4 미만이었다. 이 수치는 synthetic logic 검증이며 browser FPS 개선 수치가 아니다. CI/모바일/성능/배포 확인은 후속 기록한다.
 
 A4 잔여: geometry/edge/Composite support의 완전성 구분, 현재 응답 안에서의 추가 region 작업 제한·투명 SVG 정리·안정성 검증, 새로고침 없는 실제 30구간 왕복과 시작/중간/복귀 각각 600 active frame 계측, 전체 fixed gate. 기존 순간 frame 초과가 아직 해결됐다는 주장은 하지 않는다.
+
+### Slice 28 배포와 기존 고정 시험
+
+PR #232 head ddd7dfe, main 5c4886960db6a12e9502142ce5b828a33e4e1e3c. PR CI 36333166214, main CI 36333405215, post-deploy 36333622215 성공. scale 36333166185는 1k/10k/100k × sparse/dense/shared/large mobile 12개와 worker 10k/100k 모두 성공했다. 이전 실패 기록은 유지한다. 새 지속 탐색 gate를 통과했다는 뜻은 아니다.
+
+## Slice 29: 완전성 분리와 지속 탐색 관측 checkpoint
+
+사건/영역 목록, 관계, Composite 원형 support의 완전성을 분리한다. 자식 첫 페이지만 있거나 자식 자료가 빠졌거나 순환이 있으면 support는 불완전하다. aggregate truncated도 유지해 불완전한 응답을 완전 coverage cache로 재사용하지 않는다. 화면의 기존 모양·표시 규칙은 바꾸지 않는다. support를 자동으로 무제한 추가 읽기하지도 않는다.
+
+명시적 DOM event 요청에만 상태 복사본을 반환하는 읽기 전용 관측을 추가한다. source/active IDs, geometry, 변환 횟수, 응답 cache 항목·직렬화 bytes·pending·hit·abort, 퇴장 수를 기록한다. 매 frame JSON 직렬화·네트워크 telemetry는 없다. cache bytes는 heap이 아니며 WebKit heap은 미측정이다.
+
+기존 4종 scale fixture는 보존하고 1k sustained fixture를 별도로 추가한다. 30개 이상 실제 Composite 이웃을 가진 완전 Publication을 실제 서버로 공급한다. 한 브라우저 문서에서 history 복원으로 구간을 선택하고 native drag로 이동 후 첫 구간으로 돌아온다. 두 경로, 30회 왕복, 확대 단계 변경, 마지막 Collection OFF/ON을 수행한다. primary 왕복 동안 loader를 리셋하지 않고 ON/OFF는 그 뒤에 수행한다. 시작/중간/복귀에서 native contact에 매 RAF PointerEvent를 보내는 hybrid 연속 이동 602 frame을 측정한다. 실제 기기 multi-touch 또는 602개 native touch 이벤트라고 부르지 않는다. 기존 native pan/Collection 시험은 별도로 유지한다. 연속 구간과 contact/release 포함 전체 frame 분포 모두 p95 33.4ms/max 100ms 기준을 적용한다.
+
+매 복귀 active IDs/원형 일치, 마지막 camera/Revision/후보·DOM 증가 여부, 보관 상한과 settle 후 퇴장 정리를 검사한다. 원시 frame·구간별 상태·네트워크 bytes를 artifact로 남긴다. 이 checkpoint의 CI/browser 실행 전이며 아직 결과나 A4 완료 증거가 아니다. partial/reversed/error/revision loader 시험과 기존 모바일 회귀를 함께 유지한다. 투명 SVG 정리와 추가 region 작업 제한은 남는다.

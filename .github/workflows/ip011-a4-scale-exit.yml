@@ -11,6 +11,7 @@ on:
       - "apps/atropos-web/src/**"
       - "scripts/ip011-a4-worker-recovery.ts"
       - "scripts/ip011-a4-mobile-profile.ts"
+      - "scripts/ip011-a4-sustained-profile.ts"
   workflow_dispatch:
 permissions:
   contents: read
@@ -66,6 +67,9 @@ jobs:
       matrix:
         scale: [1000, 10000, 100000]
         shape: [sparse, dense, shared, large]
+        include:
+          - scale: 1000
+            shape: sustained
     env:
       A4_SCALE: ${{ matrix.scale }}
       A4_SHAPE: ${{ matrix.shape }}
@@ -104,7 +108,11 @@ jobs:
           node --import tsx scripts/ip011-a4-shell-benchmark.ts "$A4_SHAPE" | tee /tmp/a4-shell.json || read_exit=$?
           mobile_exit=0
           node --import tsx scripts/ip011-a4-mobile-profile.ts | tee /tmp/a4-mobile.json || mobile_exit=$?
-          test "$read_exit" -eq 0 && test "$mobile_exit" -eq 0
+          sustained_exit=0
+          if [ "$A4_SHAPE" = sustained ]; then
+            node --import tsx scripts/ip011-a4-sustained-profile.ts | tee /tmp/a4-sustained.json || sustained_exit=$?
+          fi
+          test "$read_exit" -eq 0 && test "$mobile_exit" -eq 0 && test "$sustained_exit" -eq 0
       - uses: actions/upload-artifact@v4
         if: always()
         with:
@@ -112,6 +120,7 @@ jobs:
           path: |
             /tmp/a4-shell.json
             /tmp/a4-mobile.json
+            /tmp/a4-sustained.json
             /tmp/a4-publication.jsonl
             /tmp/a4-next.log
           retention-days: 14

@@ -138,8 +138,11 @@ try {
         const frameEnds: number[] = [];
         const timerTicks: number[] = [];
         const inputTimes: { type: string; at: number }[] = [];
-        const recordInput = (event: Event) =>
-          inputTimes.push({ type: event.type, at: performance.now() });
+        const recordInput = {
+          handle(event: Event) {
+            inputTimes.push({ type: event.type, at: performance.now() });
+          }
+        }.handle;
         const timer = diagnostic
           ? setInterval(() => timerTicks.push(performance.now()), 10)
           : null;

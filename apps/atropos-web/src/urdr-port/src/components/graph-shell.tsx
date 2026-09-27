@@ -3505,6 +3505,7 @@ export function GraphShell({
   }, [chartPlane, viewportSize.height, view.scaleY, view.y, workspace.chronologyBoard]);
 
   const pendingViewportMovesRef = useRef(new Map<number, {x: number; y: number}>());
+  const viewportMoveTargetRef = useRef<HTMLDivElement | null>(null);
   const viewportMoveFrameRef = useRef<number | null>(null);
   const flushViewportMoves = useCallback(() => {
     if (viewportMoveFrameRef.current !== null) cancelAnimationFrame(viewportMoveFrameRef.current);
@@ -3512,9 +3513,15 @@ export function GraphShell({
     const moves = [...pendingViewportMovesRef.current];
     pendingViewportMovesRef.current.clear();
     if (!moves.length) return;
+    // Read stage geometry once per input batch, before scheduling a render.
+    const bounds = viewportMoveTargetRef.current?.getBoundingClientRect();
+    if (!bounds) return;
     setImageViewportState(current => {
       let next = current;
-      for (const [id, point] of moves) next = moveViewportPointer(next, id, point);
+      for (const [id, point] of moves) next = moveViewportPointer(next, id, {
+        x: point.x - bounds.left - bounds.width / 2,
+        y: point.y - bounds.top - bounds.height / 2,
+      });
       if (next === current) return current;
       const pointers = Object.values(next.activePointers);
       const pivot = pointers.length > 1 ? {x:(pointers[0].x+pointers[1].x)/2, y:(pointers[0].y+pointers[1].y)/2} : {x:0,y:0};
@@ -3562,7 +3569,8 @@ export function GraphShell({
       }
     }
 
-    pendingViewportMovesRef.current.set(event.pointerId, getLocalViewportPoint(event));
+    viewportMoveTargetRef.current = event.currentTarget;
+    pendingViewportMovesRef.current.set(event.pointerId, {x: event.clientX, y: event.clientY});
     if (viewportMoveFrameRef.current === null)
       viewportMoveFrameRef.current = requestAnimationFrame(flushViewportMoves);
   }, [flushViewportMoves]);

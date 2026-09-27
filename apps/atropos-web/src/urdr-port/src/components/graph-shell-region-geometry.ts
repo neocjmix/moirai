@@ -796,7 +796,7 @@ function getDistanceToPolyline(point: ViewportCoordinate, polyline: ViewportCoor
   return bestDistance;
 }
 
-function getCandidateDensityScore(bounds: { minX: number; maxX: number; minY: number; maxY: number }, pathPoints: ViewportCoordinate[], nearbyPoints: ViewportCoordinate[], labelHeight: number, inset = 0) {
+function getCandidateDensityScore(bounds: { minX: number; maxX: number; minY: number; maxY: number }, pathPoints: ViewportCoordinate[], nearbyPoints: ViewportCoordinate[] | ((bounds: {minX: number; maxX: number; minY: number; maxY: number}) => ViewportCoordinate[]), labelHeight: number, inset = 0) {
   let score = 0;
   const expanded = {
     minX: bounds.minX - labelHeight * 0.8 + inset,
@@ -805,7 +805,17 @@ function getCandidateDensityScore(bounds: { minX: number; maxX: number; minY: nu
     maxY: bounds.maxY + labelHeight * 0.8 - inset,
   };
 
-  for (const point of nearbyPoints) {
+  // Query just the finite neighborhood that can contribute to this score.
+  const radius = Math.max(0, labelHeight - inset);
+  const queryBounds = {...expanded};
+  for (const point of pathPoints) {
+    queryBounds.minX = Math.min(queryBounds.minX, point.x - radius);
+    queryBounds.maxX = Math.max(queryBounds.maxX, point.x + radius);
+    queryBounds.minY = Math.min(queryBounds.minY, point.y - radius);
+    queryBounds.maxY = Math.max(queryBounds.maxY, point.y + radius);
+  }
+  const candidates = typeof nearbyPoints === "function" ? nearbyPoints(queryBounds) : nearbyPoints;
+  for (const point of candidates) {
     const insideBox = point.x >= expanded.minX && point.x <= expanded.maxX && point.y >= expanded.minY && point.y <= expanded.maxY;
     if (insideBox) {
       score += 1;
@@ -872,7 +882,7 @@ export function resolveCompositeEdgeLabelPlacement(
   viewport: ViewportExtent,
   guideLength = 10,
   labelGap = 6,
-  nearbyPoints: ViewportCoordinate[] = [],
+  nearbyPoints: ViewportCoordinate[] | ((bounds: {minX: number; maxX: number; minY: number; maxY: number}) => ViewportCoordinate[]) = [],
   previous?: CompositeEdgeLabelPlacement,
 ): CompositeEdgeLabelPlacement {
   const normalizedPoints = dedupeOrderedPoints(points);

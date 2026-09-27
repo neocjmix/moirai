@@ -172,6 +172,7 @@ export function reconcileCompositeColorAssignments(
 
 export type CompositeFadePresence<T extends CompositeFadeCarrier> = T & {
   renderedOpacity: number;
+  exitStartedAt?: number;
   visibilityState: "entering" | "present" | "exiting";
 };
 
@@ -272,15 +273,18 @@ export function reconcileCompositeFadePresence<T extends CompositeFadeCarrier>(
 }
 
 export function advanceCompositeFadePresence<T extends CompositeFadeCarrier>(
-  items: CompositeFadePresence<T>[]
+  items: CompositeFadePresence<T>[],
+  now = performance.now(),
 ): CompositeFadePresence<T>[] {
   return items.map((item) => ({
     ...item,
+    ...(item.visibilityState === "exiting" ? {exitStartedAt: item.exitStartedAt ?? now} : {}),
     renderedOpacity: item.visibilityState === "exiting" ? 0 : item.opacity,
     visibilityState: item.visibilityState === "exiting" ? "exiting" : "present"
   }));
 }
 
-export function pruneExitedCompositeFadePresence<T extends CompositeFadeCarrier>(items: CompositeFadePresence<T>[]) {
-  return items.filter((item) => !(item.visibilityState === "exiting" && item.renderedOpacity <= 0.001));
+export function pruneExitedCompositeFadePresence<T extends CompositeFadeCarrier>(items: CompositeFadePresence<T>[], now = performance.now(), duration = 220) {
+  const retained = items.filter((item) => !(item.visibilityState === "exiting" && item.renderedOpacity <= 0.001 && item.exitStartedAt !== undefined && now >= item.exitStartedAt + duration));
+  return retained.length === items.length ? items : retained;
 }

@@ -1,8 +1,10 @@
 # 현재 구현 상태
 
-**IP-011 A3 완료; A4 진행 중 — 순간 frame 초과와 장시간 탐색 작업량 문제 미해결.** 기존 서버 full-route/authoring/worker의 검증 범위는 [A4 실행](../evidence/ip011/a4-execution.md) Slice 24–25를 따른다. PR #230 checkpoint a355d06의 세 서비스 배포와 PR CI 36331858193(WebKit 30개 포함)은 성공했다. main CI/post-deploy는 확인 중이다. 이전 PR #226 e9be564의 post-deploy 36316264388은 성공했다. 최종 후보 scale run 36315902479에서 1k/10k dense pan max 123/131ms로 고정 100ms를 초과했다. 이는 현재 새 실측이 아닌 마지막 검증 기록이다.
+**IP-011 A3 완료; A4 진행 중 — 고정 frame 상한과 지속 탐색 exit 미완료.** PR #230의 v5 snapshot/cache 분리와 PR #231의 Composite 원형 재사용을 배포했다. 현재 main 29287ef의 Railway web/API/worker, CI 36332633985, post-deploy 36332831401(readiness·live mobile A3·인증 authoring-to-public)은 성공했다. 기능 검증과 A4 성능 완료는 구분한다.
 
-사용자의 장시간 탐색 후 지속 저하 보고와 코드의 부분 응답 누적·v5 cache/취소 부재·반복 geometry 계산을 [A4 종료/A5 실험 재계획](IP-011-reader-performance-plan.md)에 반영했다. A4-R1 첫 checkpoint는 v5 bounded cache·중복 병합·취소와 snapshot 교체를 배포했다([실행 Slice 26](../evidence/ip011/a4-execution.md)). R2의 Composite 원형 재사용·역산 범위 선택은 구현/로컬 검증했고 CI·배포 확인 전이다(Slice 27). 종류별 completeness 구분 등 R1 잔여 → R2 현재 화면 계산 제한 → R3 연속·왕복 탐색과 기존 gate가 남는다. A4 완료를 위해 새 cluster/fade 규칙으로 사건을 숨기지 않는다. 고정 tile/level 프로토콜과 밀도·Collection discovery 결합은 A5-E1~E3의 후속 실험이며 비활성이다. A6/M5도 비활성이다. 기존 UI와 작은 Composite 점 표시(PR #225)를 유지한다.
+고정 성능 재검증에서 PR #230 scale 36331858204의 1k dense pan max 132ms, PR #231 scale 36332336741의 1k sparse/100k large pan max 109ms가 100ms 상한을 넘었다. 통과 실행만 채택하지 않으며 기준을 완화하지 않는다. 상세 근거는 [A4 실행 Slice 26–28](../evidence/ip011/a4-execution.md).
+
+다음 R2 checkpoint는 역산한 point/edge/label 후보 조회, 프레임 내 point 변환 재사용, 항목별 220ms 퇴장 정리를 구현해 로컬 5개 시험을 통과했다. CI·모바일·배포 검증 전이다. 완전성 구분·region 안정성 및 R3의 실제 30구간 왕복/600 active frame 검증은 남는다. [A4 종료/A5 실험 재계획](IP-011-reader-performance-plan.md)을 따른다. 새 밀도 규칙·tile/level·Collection discovery 실험(A5), A6/M5는 비활성이다. 기존 UI와 작은 Composite 점 표시를 유지한다.
 
 2026-09-25 운영 World는 Revision 30→31의 v5 schema/content로 이전됐고 새 암호화 owner-full 백업·격리 복원·clone migration 재현을 통과했다. 인증된 v5 정책 기반 운영 쓰기와 동일 Change Set 재생으로 Revision 32가 됐으며 공개 완전 Publication 포인터는 v5 served/current/target 32다. 127 Event·6 Collection·415 Relation·133 Narrative가 보존됐다. API·worker·web은 v5로 동작하고 구형 v4 변경 경로는 404, 미인증 v5 commit은 401이다. v5 공개·인증 배포 smoke 36093424585와 운영 iPhone WebKit 미배치 Event·Collection·Composite 탐색이 통과해 A3의 아홉 시나리오를 충족했다. IP-004~010 완료 이력은 유지한다.
 

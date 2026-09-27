@@ -67,7 +67,7 @@ test("partial v5 refreshes replace active geometry across 30 queries and a retur
   fail = true;
   await page.setViewportSize({ width: 430, height: 844 });
   await expect(page.getByTestId("graph-stage")).toContainText(
-    "v5_shell_unavailable"
+    "뷰포트 데이터를 불러오지 못했습니다."
   );
   await expect(points).toHaveCount(1);
 });

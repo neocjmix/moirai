@@ -341,3 +341,20 @@ GraphShell에서 세계 좌표의 Composite hull 생성과 viewport별 선택을
 로컬 3개 시험: convex/concave에서 화면 밖 support 보존·600회 범위 교체에도 동일 hull 객체 재사용·빈 region의 bounds fallback·9가지 독립 X/Y 배율에서 이전 screen-space point seed 판정과 일치. 기존 렌더링 엔진·사건 밀도 정책은 그대로다. CI/WebKit/규모별 성능 및 배포 확인 전 checkpoint다.
 
 남은 작업: geometry/edge completeness 구분, point/edge/label 화면 후보 계산 제한, fade 퇴장 정리, 실제 지속 조작/왕복 시험과 전체 고정 gate. 원형을 재사용했다는 사실만으로 A4를 닫지 않는다.
+
+
+### Slice 27 배포와 고정 frame 재검증
+
+PR #231 head 461ac26의 CI 36332336817 및 main 29287ef82e1b51c3f9a765a508a6d24824fbed50의 CI 36332633985 성공. Railway 세 서비스 SUCCESS, post-deploy 36332831401의 readiness/expected SHA·운영 mobile A3·인증 authoring-to-public 성공. Slice 26도 main CI 36332056026/post-deploy 36332258661 성공으로 확인을 마쳤다.
+
+통과 실행만 채택하지 않는다. PR #230 최종 head 37ac4e8 scale 36331858204는 1k dense pan p95/max 18/132ms로 실패했다(나머지 mobile 11개·worker 2개 성공). PR #231 scale 36332336741은 1k sparse와 100k large pan이 각각 18/109ms로 실패했다. 100k worker는 이 기록 시점 진행 중이다. 기존 100ms max 기준은 유지하고 A4를 미완료로 둔다.
+
+## Slice 28: 역산 후보 조회와 항목별 퇴장 시한 — R2 후속 checkpoint
+
+point 원본에 응답 단위 Y 정렬 인덱스를 만들고 화면+기존 16px 여유를 역산해 후보를 조회한다. 화면을 가로지르는 선의 endpoint는 화면 밖이어도 추가한다. 상세 drawer를 연 경우 기존 관계 문맥 전체는 보존한다. 선도 기존 24px 여유의 역산 범위와 교차하는 후보만 화면 변환·label 계산한다. Composite 이름의 각 후보는 label box/path에 실제로 영향을 줄 수 있는 유한한 이웃 범위를 역산해 조회한다. 프레임 안에서 같은 point 좌표는 재사용한다. 기존 이름 위치·이전 위치 유지 규칙은 바꾸지 않는다.
+
+퇴장 시작 RAF를 이동 때마다 취소하지 않고, 각 영역이 opacity 0 전환을 시작한 시각부터 220ms 후 정리한다. 다음 화면 업데이트가 기존 deadline을 연장하지 않는다. 재진입하면 이전 퇴장 시각을 제거한다. 들어옴/나감 전환은 보존한다. 현재 snapshot 내부의 투명 영역 SVG 제외는 기존 CSS label 전환 완료 시각까지 보존해야 하므로 이번 slice에는 포함하지 않았다.
+
+로컬 5개 시험 성공: 9가지 독립 X/Y 배율에서 역산 후보와 기존 screen predicate 일치, 양 endpoint가 화면 밖인 교차선 보존, 1,600개 point의 전체 투영과 이웃 조회 방식이 동일한 label/이전 위치 유지 결과, 600회 연속 갱신에도 퇴장 시한 유지·재진입 reset. label density의 이웃 후보 합은 전체 반복 방식의 1/4 미만이었다. 이 수치는 synthetic logic 검증이며 browser FPS 개선 수치가 아니다. CI/모바일/성능/배포 확인은 후속 기록한다.
+
+A4 잔여: geometry/edge/Composite support의 완전성 구분, 현재 응답 안에서의 추가 region 작업 제한·투명 SVG 정리·안정성 검증, 새로고침 없는 실제 30구간 왕복과 시작/중간/복귀 각각 600 active frame 계측, 전체 fixed gate. 기존 순간 frame 초과가 아직 해결됐다는 주장은 하지 않는다.

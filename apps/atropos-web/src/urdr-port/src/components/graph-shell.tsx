@@ -10,6 +10,7 @@ import type { AppLocale } from "../locale";
 import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gregorian-axis-coordinate";
 import { composeNavigationBounds, constrainNavigation, restoreNavigation } from "./viewport-navigation";
 import { prepareCompositeWorldGeometry, selectCompositeWorldRegions } from "./graph-shell-world";
+import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
 import { compositePointDisplay } from "./composite-point-display";
 import { reconcileViewport } from "../viewport-cache";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
@@ -2730,8 +2731,10 @@ export function GraphShell({
       return [] as RelationSegment[];
     }
 
+    const bounds = worldBoundsForScreenBounds({minX: -24, minY: -24, maxX: viewportSize.width + 24, maxY: viewportSize.height + 24}, view, viewportSize);
     return visibleChartPlaneEntities
       .filter((entity) => entity.geometryKind === "segment")
+      .filter((entity) => segmentIntersectsBounds(entity.start, entity.end, bounds))
       .map((entity) => {
         const normalized = normalizeRelationGeometry(
           entity.contains,
@@ -2794,19 +2797,36 @@ export function GraphShell({
       .sort((left, right) => left.y - right.y || left.x - right.x);
   }, [visibleChartPlaneEntities]);
 
-  const allProjectedInstantPoints = useMemo(() => {
-    return allWorldInstantPoints
-      .map((point) => {
-        const projected = projectWorldPoint(view, viewportSize, { x: point.x, y: point.y });
-        return {
-          ...point,
-          x: projected.x,
-          y: projected.y,
-          opacity: 1,
-        } satisfies InstantPoint;
-      })
-      .sort((left, right) => left.y - right.y || left.x - right.x);
+  const worldPointQuery = useMemo(() => createWorldPointQuery(allWorldInstantPoints), [allWorldInstantPoints]);
+  const pointProjection = useMemo(() => {
+    const projectedById = new Map();
+    return {
+      project(point) {
+        let projected = projectedById.get(point.id);
+        if (!projected) {
+          projected = {...point, ...projectWorldPoint(view, viewportSize, point), opacity: 1};
+          projectedById.set(point.id, projected);
+        }
+        return projected;
+      },
+    };
   }, [allWorldInstantPoints, view, viewportSize]);
+  const allProjectedInstantPoints = useMemo(() => {
+    // An open detail fragment keeps its existing context. Otherwise project
+    // only visible point candidates and endpoints needed by crossing edges.
+    if (renderedEventSelection || selectedEventSelection) return allWorldInstantPoints.map(pointProjection.project);
+    const bounds = worldBoundsForScreenBounds({minX: -16, minY: -16, maxX: viewportSize.width + 16, maxY: viewportSize.height + 16}, view, viewportSize);
+    const candidates = new Map(worldPointQuery.query(bounds).map(point => [point.id, point]));
+    for (const segment of chartRelationSegments) for (const id of segment.endpointIds) {
+      const point = worldPointQuery.byId.get(id);
+      if (point) candidates.set(id, point);
+    }
+    return [...candidates.values()].sort((a, b) => a.y - b.y || a.x - b.x).map(pointProjection.project);
+  }, [allWorldInstantPoints, worldPointQuery, pointProjection, chartRelationSegments, renderedEventSelection, selectedEventSelection, view, viewportSize]);
+  const queryProjectedLabelPoints = useCallback((screenBounds) =>
+    worldPointQuery.query(worldBoundsForScreenBounds(screenBounds, view, viewportSize)).map(pointProjection.project),
+    [worldPointQuery, pointProjection, view, viewportSize],
+  );
 
   const preparedWorldCompositeRegions = useMemo(
     () => prepareCompositeWorldGeometry(visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode),
@@ -2845,7 +2865,7 @@ export function GraphShell({
         viewportSize,
         COMPOSITE_LABEL_GUIDE_LENGTH,
         COMPOSITE_LABEL_GAP,
-        allProjectedInstantPoints.map((point) => ({ x: point.x, y: point.y })),
+        queryProjectedLabelPoints,
         history.get(region.id)?.label === renderedLabel ? history.get(region.id).placement : undefined,
       );
       placements.set(region.id, {label: renderedLabel, placement, compactPoint});
@@ -2927,7 +2947,7 @@ export function GraphShell({
       .map((region) => region.id);
 
     return { regions, activeColorRegionIds, descendantOpacityById, placements } satisfies CompositeRenderState;
-  }, [allProjectedInstantPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader]);
+  }, [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader]);
   useEffect(() => {
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
   }, [loader, chartCompositeRegions]);
@@ -3167,22 +3187,41 @@ export function GraphShell({
     return () => abortController.abort();
   }, [initialEventDetail, loader, locale, renderedEventSelection]);
 
+  const compositeFadeFrameRef = useRef(null);
   useEffect(() => {
     setVisibleCompositeRegions((current) => reconcileCompositeFadePresence(current, chartCompositeRegions.regions));
-
-    const animationFrameId = window.requestAnimationFrame(() => {
-      setVisibleCompositeRegions((current) => advanceCompositeFadePresence(current));
-    });
-
-    const pruneTimeoutId = window.setTimeout(() => {
-      setVisibleCompositeRegions((current) => pruneExitedCompositeFadePresence(current));
-    }, COMPOSITE_FADE_DURATION_MS);
-
-    return () => {
-      window.cancelAnimationFrame(animationFrameId);
-      window.clearTimeout(pruneTimeoutId);
-    };
+    // A moving viewport must not keep cancelling the frame that starts exits.
+    if (compositeFadeFrameRef.current === null) {
+      compositeFadeFrameRef.current = window.requestAnimationFrame(() => {
+        compositeFadeFrameRef.current = null;
+        const now = performance.now();
+        setVisibleCompositeRegions((current) => advanceCompositeFadePresence(current, now));
+      });
+    }
   }, [chartCompositeRegions.regions]);
+  useEffect(() => () => {
+    if (compositeFadeFrameRef.current !== null) window.cancelAnimationFrame(compositeFadeFrameRef.current);
+    compositeFadeFrameRef.current = null;
+  }, []);
+  const nextCompositeExitDeadline = visibleCompositeRegions.reduce((deadline, region) =>
+    region.visibilityState === "exiting" && region.exitStartedAt !== undefined
+      ? Math.min(deadline, region.exitStartedAt + COMPOSITE_FADE_DURATION_MS) : deadline,
+    Infinity,
+  );
+  useEffect(() => {
+    if (!Number.isFinite(nextCompositeExitDeadline)) return;
+    let timer;
+    const pruneAtDeadline = () => {
+      const now = performance.now();
+      if (now < nextCompositeExitDeadline) {
+        timer = window.setTimeout(pruneAtDeadline, Math.max(1, Math.ceil(nextCompositeExitDeadline - now)));
+        return;
+      }
+      setVisibleCompositeRegions(current => pruneExitedCompositeFadePresence(current, now, COMPOSITE_FADE_DURATION_MS));
+    };
+    timer = window.setTimeout(pruneAtDeadline, Math.max(1, Math.ceil(nextCompositeExitDeadline - performance.now())));
+    return () => window.clearTimeout(timer);
+  }, [nextCompositeExitDeadline]);
 
   useEffect(() => {
     setVisibleCompositeColorAssignments((current) =>

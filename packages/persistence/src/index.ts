@@ -1218,6 +1218,24 @@ export async function claimPublicationJob(
     : null;
 }
 
+/** Refresh only the current processing attempt; a reclaimed job cannot be
+ * extended by its previous worker. */
+export async function renewPublicationJobLease(
+  db: MoiraiDatabase,
+  job: PublicationJob,
+  leaseSeconds: number
+): Promise<boolean> {
+  if (!Number.isSafeInteger(leaseSeconds) || leaseSeconds < 1)
+    throw Error("publication_lease_invalid");
+  const result = await sql`
+    update publication_outbox
+    set lease_expires_at = now() + (${leaseSeconds} * interval '1 second')
+    where id = ${job.id} and status = 'processing'
+      and attempt_count = ${job.attemptCount}
+  `.execute(db);
+  return result.numAffectedRows === 1n;
+}
+
 export async function completePublicationJob(
   db: MoiraiDatabase,
   job: PublicationJob,

@@ -81,6 +81,18 @@ describe("v5 serving pointer fail-closed boundary", () => {
     ).rejects.toThrow("v5_immutable_write_failed");
     expect(objects.get(pointerKey)!.body).toBe(original);
     failImmutable = false;
+    let claimChecks = 0;
+    await expect(
+      publishV5CompleteArtifacts(
+        store,
+        complete,
+        "2026-09-24T00:00:00Z",
+        async () => {
+          if (++claimChecks === 3) throw Error("publication_job_lease_lost");
+        }
+      )
+    ).rejects.toThrow("publication_job_lease_lost");
+    expect(objects.get(pointerKey)!.body).toBe(original);
     objects.set(pointerKey, {
       body: JSON.stringify({
         ...JSON.parse(original),

@@ -5,6 +5,7 @@ import {
   createDatabase,
   readWorldAtRevision,
   reconcileSubjectHandleState,
+  renewPublicationJobLease,
   retryPublicationJob
 } from "@moirai/persistence";
 import {
@@ -110,6 +111,23 @@ async function processNextJob(): Promise<boolean> {
     publicationMode === "v5" ? 300 : 60
   );
   if (!job) return false;
+  let leaseLost = false;
+  const assertActive = async (): Promise<void> => {
+    if (leaseLost || !(await renewPublicationJobLease(database, job, 300))) {
+      leaseLost = true;
+      throw Error("publication_job_lease_lost");
+    }
+  };
+  // Large immutable uploads can run much longer than the build. The timer
+  // renews during network waits; publication also checks before pointer CAS.
+  const heartbeat =
+    publicationMode === "v5"
+      ? setInterval(() => {
+          void assertActive().catch(() => {
+            leaseLost = true;
+          });
+        }, 30_000)
+      : null;
   try {
     if (publicationMode === "v5") {
       const state = await readV5WorldAtRevision(
@@ -121,10 +139,12 @@ async function processNextJob(): Promise<boolean> {
         state,
         job.targetRevision
       );
+      await assertActive();
       const pointer = await publishV5CompleteArtifacts(
         publicationStore,
         artifacts,
-        new Date().toISOString()
+        new Date().toISOString(),
+        assertActive
       );
       const served = await readV5ServedRoot(publicationStore, job.worldId);
       if (
@@ -200,6 +220,8 @@ async function processNextJob(): Promise<boolean> {
         retry_count: job.attemptCount
       }) + "\n"
     );
+  } finally {
+    if (heartbeat) clearInterval(heartbeat);
   }
   return true;
 }

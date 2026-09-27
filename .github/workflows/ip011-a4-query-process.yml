@@ -7,6 +7,7 @@ on:
       - "scripts/ip011-a4-profile.ts"
       - "scripts/ip011-a4-process-benchmark.ts"
       - "scripts/ip011-a4-read-sample.ts"
+      - "packages/publication/src/v5-staging.ts"
   workflow_dispatch:
 
 permissions:

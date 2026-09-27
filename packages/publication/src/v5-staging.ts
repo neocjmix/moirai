@@ -133,6 +133,13 @@ export function finalizeV5VerifiedSpatialArtifacts(
     })
   )
     throw Error("v5_complete_spatial_invalid");
+  // The complete index below allocates a second tree of document refs. Drop
+  // validation-only content objects before that allocation; staged bodies and
+  // the proof result are already checked and remain intact.
+  expectedPages.length = 0;
+  expectedKeys.clear();
+  documents.clear();
+  eventIds.clear();
   const complete = buildV5Index(
     root.world_id,
     root.revision,

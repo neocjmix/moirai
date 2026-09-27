@@ -9,6 +9,7 @@ import type { GraphReadLoader } from "../graph-read-loader";
 import type { AppLocale } from "../locale";
 import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gregorian-axis-coordinate";
 import { composeNavigationBounds, constrainNavigation, restoreNavigation } from "./viewport-navigation";
+import { compositePointDisplay } from "./composite-point-display";
 import { reconcileViewport } from "../viewport-cache";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 import { withGraphReturnContext } from "../../../lib/event-reading-navigation";
@@ -165,6 +166,7 @@ type CompositeRegion = {
   showLabel: boolean;
   opacity: number;
   surfaceOpacity: number;
+  compactPoint?: {x: number; y: number} | null;
 };
 
 type CompositeHullGeometry = {
@@ -3010,9 +3012,15 @@ export function GraphShell({
     const zoomBucket = getEditorialZoomBucket(view.scaleY);
     const projectedRawRegions = worldCompositeRegions.map((region) => {
       const projectedHullPoints = region.points.map((point) => projectWorldPoint(view, viewportSize, point));
+      const compactPoint = compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
       const projectedPoints = expandPolygon(projectedHullPoints, getCompositeRegionPadding(region.depth));
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
-      const placement = resolveCompositeEdgeLabelPlacement(
+      const placement = compactPoint ? {
+        pathPoints: [], attachX: compactPoint.x, attachY: compactPoint.y,
+        guideX: compactPoint.x, guideY: compactPoint.y, labelX: compactPoint.x + 10,
+        labelY: compactPoint.y - 10, labelAnchor: "start", labelAngle: 0,
+        textPathStartOffset: "0%"
+      } : resolveCompositeEdgeLabelPlacement(
         projectedPoints,
         Math.max(renderedLabel.length * COMPOSITE_LABEL_CHAR_WIDTH, 72),
         COMPOSITE_LABEL_LINE_HEIGHT,
@@ -3022,13 +3030,14 @@ export function GraphShell({
         allProjectedInstantPoints.map((point) => ({ x: point.x, y: point.y })),
         history.get(region.id)?.label === renderedLabel ? history.get(region.id).placement : undefined,
       );
-      placements.set(region.id, {label: renderedLabel, placement});
+      placements.set(region.id, {label: renderedLabel, placement, compactPoint});
       return {
         id: region.id,
         label: region.label,
         renderedLabel,
-        path: buildClosedSplinePath(projectedPoints, compositeSplineTuning),
-        labelPath: buildOpenSplinePath(placement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
+        path: compactPoint ? "" : buildClosedSplinePath(projectedPoints, compositeSplineTuning),
+        compactPoint,
+        labelPath: compactPoint ? "" : buildOpenSplinePath(placement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
         projectedPoints,
         labelAttachX: placement.attachX,
         labelAttachY: placement.attachY,
@@ -3087,7 +3096,7 @@ export function GraphShell({
         return {
           ...region,
           renderedLabel: policy?.renderedLabel ?? region.renderedLabel,
-          showLabel: policy?.showLabel ?? true,
+          showLabel: region.compactPoint ? true : policy?.showLabel ?? true,
           opacity: descendantOpacityById.get(region.id) ?? 1,
           surfaceOpacity: region.surfaceOpacity,
         } satisfies CompositeRegion;
@@ -3872,6 +3881,21 @@ export function GraphShell({
                   <rect className={styles.chartBackdrop} height={viewportSize.height} width={viewportSize.width} x={0} y={0} />
                   {visibleCompositeRegions.map((region) => {
                     const compositeStyle = compositeStyleById.get(region.id);
+                    if (region.compactPoint) {
+                      if (region.renderedOpacity === 0) return null;
+                      const point = region.compactPoint;
+                      return <g key={region.id} data-composite-point-id={region.id} style={{opacity: region.renderedOpacity}}>
+                        <rect className={styles.chartInstantPointHitTarget} x={point.x - 22} y={point.y - 22}
+                          width={Math.max(44, region.renderedLabel.length * 8 + 34)} height={44} rx={22}
+                          onPointerDown={(event) => handleCompositeRegionPointerDown(region, event)}>
+                          <title>{region.label}</title>
+                        </rect>
+                        <circle className={styles.chartInstantPoint} cx={point.x} cy={point.y} r={6}
+                          style={{fill: compositeStyle?.label, pointerEvents: "none"}} />
+                        {region.showLabel ? <text className={styles.chartInstantPointLabel} x={point.x + 10} y={point.y - 10}
+                          style={{fill: compositeStyle?.label, pointerEvents: "none"}}>{region.renderedLabel}</text> : null}
+                      </g>;
+                    }
                     return (
                       <path
                         className={styles.chartCompositeRegion}
@@ -3882,6 +3906,7 @@ export function GraphShell({
                         onPointerDown={(event) => handleCompositeRegionPointerDown(region, event)}
                         style={{
                           fill: compositeStyle?.fill,
+                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 ? "none" : undefined,
                           mixBlendMode: "darken",
                           fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY * region.renderedOpacity * region.surfaceOpacity,
                           stroke: compositeStyle?.label,
@@ -3906,6 +3931,7 @@ export function GraphShell({
                     </g>
                   ))}
                   {visibleRelationSegments.map((segment) => {
+                    if (segment.opacity === 0) return null;
                     const relationStyle = getRelationStyle(segment.typeKey);
                     return (
                       <g key={segment.id}>
@@ -3948,6 +3974,9 @@ export function GraphShell({
                     );
                   })}
                   {chartInstantPoints.map((point) => {
+                    // Keep geometry available for zoom/layout, but do not mount
+                    // invisible SVG nodes or an invisible interactive hit target.
+                    if (point.opacity === 0) return null;
                     const labelHitWidth = Math.max(point.label.length * 8 + 20, 64);
                     const hitTargetWidth = Math.max(labelHitWidth + 20, 24);
                     const hitTargetHeight = 36;
@@ -3999,6 +4028,7 @@ export function GraphShell({
                         style={{
                           fill: compositeStyle?.label,
                           opacity: region.renderedOpacity * region.surfaceOpacity * 0.45,
+                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 ? "none" : undefined,
                         }}
                         textAnchor={region.labelAnchor}
                       >
@@ -4014,6 +4044,7 @@ export function GraphShell({
                     );
                   })}
                   {visibleRelationSegments.map((segment) => {
+                    if (segment.opacity === 0) return null;
                     const relationStyle = getRelationStyle(segment.typeKey);
                     return segment.showLabel && relationStyle.label ? (
                       segment.typeKey === "causes" && !segment.isSurrogate ? (

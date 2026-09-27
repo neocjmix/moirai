@@ -273,3 +273,16 @@ Pan 실제 점 이동과 zoom URL 변화 검사도 기존대로 유지한다. �
 초기 run 36297980967은 fixture의 v5 정책 identity 누락, 36298088379는 CI의 worker runtime dependency 미빌드로 실패했다. 정책 제약을 유지한 채 fixture에 실제 v5 정책을 기록하고 배포와 같은 compiled worker를 실행하도록 고쳤다. 런타임 오류를 회피하거나 예산을 완화하지 않았다. 로컬 strict typecheck·lint·gitleaks 성공. 최종 CI·모바일·배포 SHA/smoke는 PR 검증 댓글에 이어 기록한다.
 
 이 slice는 1k 복구 경로만 검증한다. 100k 약 621k 객체의 실제 업로드 처리량·규모별 복구, dense/대형 Collection의 종단간 cold/warm과 모바일 1k/10k/100k frame exit는 여전히 미완료다. A3 UI/그래프/드로어는 변경하지 않았고 A5·A6·M5도 시작하지 않았다.
+
+## Slice 23 진행: 전체 화면 경로와 UUID 100k 재검증
+
+PR #224는 기존 내부 reader 측정을 실제 shell/search route, 전체 UUID Publication, 실제 worker process/HTTP upload 및 12개 규모·형태의 Next/WebKit 경로로 확장한다. 1k/10k/100k × sparse/dense/shared/large에서 동일 국소 질의를 유지한다. 첫 실행 `36300623994`는 100k semantic digest의 단일 문자열이 JS 문자열 상한을 초과함을 발견했다. 같은 정렬·직렬화 토큰을 스트리밍 SHA256에 공급해 digest 의미를 보존했다. 수정 후 실행 `36301030872`에서 100k 네 형태의 완전 Publication 생성이 성공했다. 이것만으로 A4 완료는 아니다.
+
+전체 shell 측정은 내부 reader 통과가 실제 API 통과와 다름을 드러냈다. 로컬 1k dense에서 viewport 925 objects/1,996,103 bytes/warm p95 163.25 ms, Collection 270 objects로 고정 예산을 초과했다. 제목과 작은 membership 집합을 인증된 spatial leaf에 함께 넣고, Collection 목록은 시간 정보 없이 content detail만 읽도록 변경했다. 기존 leaf는 기존 경로로 읽으며, 새 hint는 완전 Publication 확정 시 canonical 값과 대조한다. geometry/좌표/256개 반환 상한은 유지했다. 로컬 같은 fixture 재측정은 viewport 211 objects/1,032,933 bytes/cold p95 113.76 ms/warm p95 44.51 ms, Collection 137 objects/440,566 bytes/cold 85.01 ms/warm 33.00 ms다. 로컬 수치는 진단이며 hosted 12-shape gate를 대체하지 않는다. 운영 Revision 32의 immutable artifacts는 변경하지 않았다.
+
+2026-09-27 사용자 지적에 따라 opacity=0인 사건의 circle/text뿐 아니라 투명한 hit target도 계속 mount하던 것을 확인했다. 완전히 투명한 point와 relation SVG는 생략하고, 확대 복원에 필요한 geometry는 유지한다. Composite 진입·퇴장 fade는 유지하며 완전히 투명한 surface의 pointer events를 비활성화한다. 서버 fetch 감소와 DOM 감소는 별도로 측정한다.
+
+### 사용자 추가 지시와 후속 검토 순서
+
+- 15:56 KST: 화면상 충분히 작은 Composite를 면적 대신 점으로 표시하도록 명시적으로 요청했다. 작은 화면 footprint에서만 같은 Composite identity/drawer를 가진 점으로 바꾸고, 확대하면 영역을 복원한다. 일반 레이아웃 교체나 canonical Time Event 변경이 아니다. 경계 진동 방지와 모바일 회귀를 검증한다.
+- 16:01 KST: 기존 작업을 마친 뒤 작은 구간별 cache, 서버에서 준비하는 상태별 작은 응답, 잦은 fetch의 trade-off를 후속 검토한다. 지금 cache 프로토콜 변경을 시작하지 않는다. 실측 server latency/왕복 지연, tile 크기·prefetch 여유·zoom별 payload·요청 빈도, World Revision/Collection selection cache key 및 이동 중 연속성을 비교할 것. A5/A6/M5는 활성화하지 않는다.

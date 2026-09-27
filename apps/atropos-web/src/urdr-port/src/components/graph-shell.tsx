@@ -2596,14 +2596,16 @@ export function GraphShell({
           includeNeighbors: selectedEventSelection ? true : false,
           ...(selectedEventSelection ? { selectedEntityId: selectedEventSelection.eventId } : {}),
         } as const;
-        const fullResponse = parseViewportResponse(await loader.loadViewport(locale, {
+        const received = await loader.loadViewport(locale, {
           ...baseQuery,
           artifactClasses: [...GRAPH_SHELL_FULL_ARTIFACT_CLASSES],
-        }));
+        });
+        if (!active) return;
+        const fullResponse = parseViewportResponse(received);
         if (active) {
           const sameOwner = runtimeViewportOwnerRef.current?.loader === loader && runtimeViewportOwnerRef.current?.canons === canonIds.join(",");
           runtimeViewportOwnerRef.current = {loader, canons: canonIds.join(",")};
-          setRuntimeViewportResponse(previous => reconcileViewport(sameOwner ? previous : null, fullResponse));
+          setRuntimeViewportResponse(previous => reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode));
           setRuntimeViewportLoadState("ready");
         }
 

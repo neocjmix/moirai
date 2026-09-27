@@ -9,6 +9,7 @@ import type {
 import type { AppLocale } from "./locale";
 
 export type GraphReadLoader = {
+  viewportMode?: "incremental" | "snapshot";
   dispose?(): void;
   loadWorkspace(locale: AppLocale): Promise<GraphShellWorkspaceShell>;
   loadViewport(

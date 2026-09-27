@@ -1,0 +1,47 @@
+name: IP-011 A4 worker 100k process profile
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ip011-a4-worker-profile.yml"
+      - "scripts/ip011-a4-worker-profile.ts"
+      - "scripts/ip011-a4-profile.ts"
+      - "packages/graph-presentation/src/**"
+      - "packages/projections/src/**"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  worker-profile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      PUBLIC_INTEGRATION_URL: >-
+        ${{ vars.PUBLIC_INTEGRATION_URL || 'https://moirai-production-8ed1.up.railway.app' }}
+      EXPECTED_COMMIT_SHA: ${{ github.event.pull_request.base.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Verify deployed base SHA and public smoke
+        if: github.event_name == 'pull_request'
+        run: pnpm smoke
+      - name: Measure 10k build and 100k forced cancel/restart
+        run: |
+          set -o pipefail
+          node --import tsx scripts/ip011-a4-worker-profile.ts \
+            | tee /tmp/ip011-a4-worker-profile.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: ip011-a4-worker-profile
+          path: /tmp/ip011-a4-worker-profile.jsonl
+          retention-days: 14

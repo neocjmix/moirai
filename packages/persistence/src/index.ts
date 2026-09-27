@@ -1222,8 +1222,21 @@ export async function completePublicationJob(
   db: MoiraiDatabase,
   job: PublicationJob,
   servedRevision: number
-): Promise<void> {
-  await db.transaction().execute(async (transaction) => {
+): Promise<boolean> {
+  return db.transaction().execute(async (transaction) => {
+    const completed = await transaction
+      .updateTable("publication_outbox")
+      .set({
+        status: "completed",
+        completed_at: new Date(),
+        lease_expires_at: null,
+        last_error_code: null
+      })
+      .where("id", "=", job.id)
+      .where("status", "=", "processing")
+      .where("attempt_count", "=", job.attemptCount)
+      .executeTakeFirst();
+    if (completed.numUpdatedRows !== 1n) return false;
     await transaction
       .updateTable("world_publication_state")
       .set({
@@ -1235,16 +1248,7 @@ export async function completePublicationJob(
       .where("world_id", "=", job.worldId)
       .where("served_revision", "<", servedRevision)
       .execute();
-    await transaction
-      .updateTable("publication_outbox")
-      .set({
-        status: "completed",
-        completed_at: new Date(),
-        lease_expires_at: null,
-        last_error_code: null
-      })
-      .where("id", "=", job.id)
-      .execute();
+    return true;
   });
 }
 
@@ -1252,27 +1256,34 @@ export async function retryPublicationJob(
   db: MoiraiDatabase,
   job: PublicationJob,
   errorCode: string
-): Promise<void> {
+): Promise<boolean> {
   const delaySeconds = Math.min(300, 2 ** Math.min(job.attemptCount, 8));
-  await db
-    .updateTable("publication_outbox")
-    .set({
-      status: "pending",
-      available_at: new Date(Date.now() + delaySeconds * 1000),
-      lease_expires_at: null,
-      last_error_code: errorCode.slice(0, 128)
-    })
-    .where("id", "=", job.id)
-    .execute();
-  await db
-    .updateTable("world_publication_state")
-    .set({
-      projection_status: "failed",
-      last_error_code: errorCode.slice(0, 128),
-      updated_at: new Date()
-    })
-    .where("world_id", "=", job.worldId)
-    .execute();
+  return db.transaction().execute(async (transaction) => {
+    const retried = await transaction
+      .updateTable("publication_outbox")
+      .set({
+        status: "pending",
+        available_at: new Date(Date.now() + delaySeconds * 1000),
+        lease_expires_at: null,
+        last_error_code: errorCode.slice(0, 128)
+      })
+      .where("id", "=", job.id)
+      .where("status", "=", "processing")
+      .where("attempt_count", "=", job.attemptCount)
+      .executeTakeFirst();
+    if (retried.numUpdatedRows !== 1n) return false;
+    await transaction
+      .updateTable("world_publication_state")
+      .set({
+        projection_status: "failed",
+        last_error_code: errorCode.slice(0, 128),
+        updated_at: new Date()
+      })
+      .where("world_id", "=", job.worldId)
+      .where("served_revision", "<", job.targetRevision)
+      .execute();
+    return true;
+  });
 }
 
 export async function getPublicationStatus(

@@ -120,6 +120,15 @@ const server = createServer(async (request, response) => {
   const etag = `"${createHash("sha256").update(body).digest("hex")}"`;
   objects.set(key, { body, etag });
   puts++;
+  if ((pauseEnabled && puts === 100) || puts % 50000 === 0)
+    process.stdout.write(
+      JSON.stringify({
+        phase: "upload_progress",
+        objects: puts,
+        attempt: activeAttempt + 1,
+        measurements
+      }) + "\n"
+    );
   if (key.endsWith("/current.json")) pointerWrites++;
   if (pauseEnabled && puts === 100) {
     paused = true;
@@ -358,7 +367,8 @@ try {
   );
   await until(
     async () => (await row()).status === "completed",
-    "restart_complete"
+    "restart_complete",
+    20 * 60_000
   );
   const completed = await row();
   const served = await readV5ServedRoot(store, worldId);

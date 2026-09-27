@@ -12,7 +12,7 @@ import type {
 } from "./urdr-layout-types.js";
 
 type Temporal = ReturnType<typeof projectV5WorldTemporal>;
-type Shape =
+type Geometry =
   | {
       readonly event_id: string;
       readonly kind: "point";
@@ -34,6 +34,13 @@ type Shape =
         readonly maxY: number;
       };
     };
+
+type Shape = Geometry & {
+  readonly read_hint?: {
+    readonly title: string;
+    readonly collection_ids?: readonly string[];
+  };
+};
 
 export interface V5WorldLayout {
   readonly world_id: string;

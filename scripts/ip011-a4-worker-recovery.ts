@@ -1,8 +1,10 @@
 /** Actual worker process + isolated PG17 + local conditional HTTP object store.
  * History-only synthetic fixture; no production database or bucket is used. */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { scaleFixture } from "./ip011-a4-scale-fixture.js";
 import { createHash, randomBytes, randomUUID } from "node:crypto";
-import { spawn, type ChildProcess } from "node:child_process";
+import { spawn, spawnSync, type ChildProcess } from "node:child_process";
 import { createServer } from "node:http";
 import { setTimeout as delay } from "node:timers/promises";
 import { sql } from "kysely";
@@ -28,11 +30,13 @@ const name = `ip011_a4_recovery_${randomBytes(6).toString("hex")}`;
 const target = new URL(source);
 target.pathname = `/${name}`;
 const db = createDatabase(target.toString());
-const worldId = "019f5000-1200-7000-8000-000000000001";
+const scale = process.argv[2] ? Number(process.argv[2]) : 1000;
+const scaledState = process.argv[2] ? scaleFixture(scale, "sparse") : null;
+const worldId = scaledState?.world.id ?? "019f5000-1200-7000-8000-000000000001";
 const world = {
   id: worldId,
   slug: "recovery",
-  title: "Synthetic recovery",
+  title: scaledState?.world.title ?? "Synthetic recovery",
   description: null
 };
 const state: CanonicalState = {
@@ -46,12 +50,46 @@ const state: CanonicalState = {
   eventCollectionMemberships: []
 };
 const objects = new Map<string, { body: string; etag: string }>();
+const ticksPerSecond = Number(
+  spawnSync("getconf", ["CLK_TCK"], { encoding: "utf8" }).stdout.trim()
+);
+if (!Number.isFinite(ticksPerSecond) || ticksPerSecond <= 0)
+  throw Error("a4_process_clock_missing");
 let puts = 0;
+let activeAttempt = -1;
+const measurements: Array<{
+  started: number;
+  first_put_ms: number | null;
+  peak_rss_mib: number;
+  cpu_seconds: number;
+  elapsed_ms: number;
+}> = [];
+const sampleProcess = (child: ChildProcess, index: number) => {
+  try {
+    const status = readFileSync(`/proc/${child.pid}/status`, "utf8");
+    const stat = readFileSync(`/proc/${child.pid}/stat`, "utf8");
+    const fields = stat.slice(stat.lastIndexOf(")") + 2).split(" ");
+    const sample = measurements[index]!;
+    sample.peak_rss_mib = Math.max(
+      sample.peak_rss_mib,
+      Number(status.match(/^VmHWM:\s+(\d+) kB/m)?.[1] ?? 0) / 1024
+    );
+    sample.cpu_seconds =
+      (Number(fields[11]) + Number(fields[12])) / ticksPerSecond;
+    sample.elapsed_ms = performance.now() - sample.started;
+  } catch {
+    /* process may have just exited */
+  }
+};
 let reused = 0;
 let pointerWrites = 0;
 let paused = false;
 let pauseEnabled = false;
 const server = createServer(async (request, response) => {
+  if (request.method === "PUT" && activeAttempt >= 0) {
+    const sample = measurements[activeAttempt]!;
+    sample.first_put_ms ??= performance.now() - sample.started;
+  }
   const key = decodeURIComponent(
     (request.url ?? "").replace(/^\/fixture\//, "")
   );
@@ -82,6 +120,15 @@ const server = createServer(async (request, response) => {
   const etag = `"${createHash("sha256").update(body).digest("hex")}"`;
   objects.set(key, { body, etag });
   puts++;
+  if ((pauseEnabled && puts === 100) || puts % 50000 === 0)
+    process.stdout.write(
+      JSON.stringify({
+        phase: "upload_progress",
+        objects: puts,
+        attempt: activeAttempt + 1,
+        measurements
+      }) + "\n"
+    );
   if (key.endsWith("/current.json")) pointerWrites++;
   if (pauseEnabled && puts === 100) {
     paused = true;
@@ -94,7 +141,7 @@ let childErrors = "";
 async function until(
   predicate: () => Promise<boolean> | boolean,
   label: string,
-  timeout = 120_000
+  timeout = 12 * 60_000
 ) {
   const start = performance.now();
   while (!(await predicate())) {
@@ -152,48 +199,83 @@ try {
           tx
         );
       } else {
-        // Fixed 1k unplaced Events exercise upload/reuse/recovery, not layout scale.
-        const operations = Array.from({ length: 1000 }, (_, i) => {
-          const id = `019f5000-1200-7000-8001-${i.toString(16).padStart(12, "0")}`;
-          const narrativeId = `019f5000-1200-7000-8002-${i.toString(16).padStart(12, "0")}`;
-          return [
-            {
-              index: 2 * i,
-              type: "event",
-              id,
-              value: {
-                id,
-                world_id: worldId,
-                slug: null,
-                title: `Event ${i}`,
-                summary: null,
-                roles: [],
-                attributes: {}
-              }
-            },
-            {
-              index: 2 * i + 1,
-              type: "narrative",
-              id: narrativeId,
-              value: {
-                id: narrativeId,
-                world_id: worldId,
-                scope_type: "event",
-                scope_id: id,
-                locale: "ko",
-                title: null,
-                body: "Synthetic recovery",
-                public_references: [],
-                notes: []
-              }
+        if (scaledState) {
+          let operationIndex = 0;
+          const groups = [
+            ["collection", scaledState.collections],
+            ["time_system", scaledState.timeSystems],
+            ["collection_time_system", scaledState.collectionTimeSystems],
+            ["event", scaledState.events],
+            ["relation", scaledState.relations],
+            ["narrative", scaledState.narratives],
+            [
+              "event_collection_membership",
+              scaledState.eventCollectionMemberships
+            ]
+          ] as const;
+          for (const [type, items] of groups) {
+            for (let offset = 0; offset < items.length; offset += 500) {
+              const operations = items
+                .slice(offset, offset + 500)
+                .map((value) => ({
+                  index: operationIndex++,
+                  type,
+                  id: "id" in value ? value.id : randomUUID(),
+                  kind:
+                    type === "event_collection_membership" ? "add" : "create",
+                  value
+                }));
+              await sql`insert into change_operations(change_set_id,world_id,revision,operation_index,entity_type,entity_id,operation_kind,"after")
+                select ${changeId}::uuid,${worldId}::uuid,32,(o->>'index')::int,o->>'type',(o->>'id')::uuid,o->>'kind',o->'value'
+                from jsonb_array_elements(${JSON.stringify(operations)}::jsonb) o`.execute(
+                tx
+              );
             }
-          ];
-        }).flat();
-        await sql`insert into change_operations(change_set_id,world_id,revision,operation_index,entity_type,entity_id,operation_kind,"after")
+          }
+        } else {
+          // Fixed 1k unplaced Events exercise upload/reuse/recovery, not layout scale.
+          const operations = Array.from({ length: 1000 }, (_, i) => {
+            const id = `019f5000-1200-7000-8001-${i.toString(16).padStart(12, "0")}`;
+            const narrativeId = `019f5000-1200-7000-8002-${i.toString(16).padStart(12, "0")}`;
+            return [
+              {
+                index: 2 * i,
+                type: "event",
+                id,
+                value: {
+                  id,
+                  world_id: worldId,
+                  slug: null,
+                  title: `Event ${i}`,
+                  summary: null,
+                  roles: [],
+                  attributes: {}
+                }
+              },
+              {
+                index: 2 * i + 1,
+                type: "narrative",
+                id: narrativeId,
+                value: {
+                  id: narrativeId,
+                  world_id: worldId,
+                  scope_type: "event",
+                  scope_id: id,
+                  locale: "ko",
+                  title: null,
+                  body: "Synthetic recovery",
+                  public_references: [],
+                  notes: []
+                }
+              }
+            ];
+          }).flat();
+          await sql`insert into change_operations(change_set_id,world_id,revision,operation_index,entity_type,entity_id,operation_kind,"after")
           select ${changeId}::uuid,${worldId}::uuid,32,(o->>'index')::int,o->>'type',(o->>'id')::uuid,'create',o->'value'
           from jsonb_array_elements(${JSON.stringify(operations)}::jsonb) o`.execute(
-          tx
-        );
+            tx
+          );
+        }
         await sql`insert into publication_outbox(world_id,target_revision,change_set_id,status) values (${worldId},32,${changeId},'pending')`.execute(
           tx
         );
@@ -237,6 +319,17 @@ try {
     child.stderr!.on("data", (data: Buffer) => {
       childErrors = (childErrors + data.toString()).slice(-2000);
     });
+    activeAttempt = children.length;
+    measurements.push({
+      started: performance.now(),
+      first_put_ms: null,
+      peak_rss_mib: 0,
+      cpu_seconds: 0,
+      elapsed_ms: 0
+    });
+    const index = activeAttempt;
+    const poll = setInterval(() => sampleProcess(child, index), 100);
+    child.once("close", () => clearInterval(poll));
     children.push(child);
     return child;
   };
@@ -274,7 +367,8 @@ try {
   );
   await until(
     async () => (await row()).status === "completed",
-    "restart_complete"
+    "restart_complete",
+    20 * 60_000
   );
   const completed = await row();
   const served = await readV5ServedRoot(store, worldId);
@@ -297,14 +391,27 @@ try {
     served_revision: 32,
     projection_status: "ready"
   });
+  sampleProcess(second, 1);
   await stop(second);
+  const failures =
+    scale === 10000
+      ? measurements.flatMap((sample, index) => [
+          ...((sample.first_put_ms ?? Infinity) > 180000
+            ? [`10k_build_wall_${index}`]
+            : []),
+          ...(sample.peak_rss_mib > 3072 ? [`10k_rss_${index}`] : [])
+        ])
+      : [];
   process.stdout.write(
     JSON.stringify({
       phase: "worker_recovery",
       node: process.version,
       postgres: "17-alpine",
-      events: 1000,
-      fixture: "history-only unplaced Events",
+      events: scale,
+      measurements,
+      fixture: scaledState
+        ? "sparse placed Events; same 12 local Events and remote-only growth"
+        : "history-only unplaced Events",
       elapsed_ms: performance.now() - started,
       heartbeat_renewed: true,
       cancel_signal: first.signalCode,
@@ -319,9 +426,11 @@ try {
       served_revision: 32,
       previous_pointer_preserved_during_upload: true,
       lease_expiry: "SQL time acceleration after process death",
-      failures: []
+      failures
     }) + "\n"
   );
+  if (failures.length)
+    throw Error(`a4_worker_budget_failed:${failures.join(",")}`);
 } finally {
   for (const child of children) await stop(child);
   server.closeAllConnections();

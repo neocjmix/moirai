@@ -1,0 +1,114 @@
+name: IP-011 A4 actual worker and mobile scale acceptance
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/ip011-a4-scale-exit.yml"
+      - "scripts/ip011-a4-scale-*.ts"
+      - "scripts/ip011-a4-shell-*.ts"
+      - "packages/projections/src/**"
+      - "scripts/ip011-a4-worker-recovery.ts"
+      - "scripts/ip011-a4-mobile-profile.ts"
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  worker:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        scale: [10000, 100000]
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: moirai
+          POSTGRES_DB: moirai_test
+          POSTGRES_HOST_AUTH_METHOD: trust
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U moirai -d moirai_test"
+          --health-interval 5s --health-timeout 5s --health-retries 10
+    env:
+      DATABASE_URL: postgresql://moirai@127.0.0.1:5432/moirai_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @moirai/lachesis-worker... build
+      - name: Actual build, interrupted HTTP upload and queue recovery
+        run: |
+          set -o pipefail
+          node --import tsx scripts/ip011-a4-worker-recovery.ts ${{ matrix.scale }} \
+            | tee /tmp/a4-worker-${{ matrix.scale }}.jsonl
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a4-worker-${{ matrix.scale }}
+          path: /tmp/a4-worker-*.jsonl
+          retention-days: 14
+  mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        scale: [1000, 10000, 100000]
+        shape: [sparse, dense, shared, large]
+    env:
+      A4_SCALE: ${{ matrix.scale }}
+      A4_SHAPE: ${{ matrix.shape }}
+      A4_WORLD_ID: 019f5000-1300-7000-8000-000000000001
+      A4_COLLECTION_LABEL: a
+      PUBLIC_INTEGRATION_URL: http://127.0.0.1:3000
+      LOCAL_PUBLICATION_FIXTURE_DIR: /tmp/a4-full-publication
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @moirai/atropos-web... build
+      - run: pnpm exec playwright install --with-deps webkit
+      - name: Build complete local Publication
+        run: |
+          set -o pipefail
+          node --import tsx scripts/ip011-a4-scale-publication.ts "$A4_SCALE" "$A4_SHAPE" "$LOCAL_PUBLICATION_FIXTURE_DIR" \
+            | tee /tmp/a4-publication.jsonl
+      - name: Measure actual page and gestures against Next production server
+        run: |
+          set -o pipefail
+          pnpm --filter @moirai/atropos-web exec next start --hostname 127.0.0.1 > /tmp/a4-next.log 2>&1 &
+          next_pid=$!
+          trap 'kill "$next_pid" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:3000/health/live > /dev/null; then break; fi
+            sleep 1
+          done
+          read_exit=0
+          node --import tsx scripts/ip011-a4-shell-benchmark.ts "$A4_SHAPE" | tee /tmp/a4-shell.json || read_exit=$?
+          mobile_exit=0
+          node --import tsx scripts/ip011-a4-mobile-profile.ts | tee /tmp/a4-mobile.json || mobile_exit=$?
+          test "$read_exit" -eq 0 && test "$mobile_exit" -eq 0
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a4-mobile-${{ matrix.scale }}-${{ matrix.shape }}
+          path: |
+            /tmp/a4-shell.json
+            /tmp/a4-mobile.json
+            /tmp/a4-publication.jsonl
+            /tmp/a4-next.log
+          retention-days: 14

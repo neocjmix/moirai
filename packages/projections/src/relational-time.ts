@@ -19,7 +19,7 @@ import {
   type TemporalConstraint,
   type ResolvedTimeEventReference
 } from "@moirai/domain";
-import { createHash } from "node:crypto";
+import { stableDigest } from "./stable-digest.js";
 import type { CanonicalRevisionView } from "./index.js";
 import { temporalProofIndex } from "./temporal-proof.js";
 
@@ -434,8 +434,6 @@ export function projectRelationalTime(
     world_id: view.world.id,
     canon_id: canonId,
     source_revision: revision,
-    semantic_digest: createHash("sha256")
-      .update(stableStringify(semantic))
-      .digest("hex")
+    semantic_digest: stableDigest(semantic)
   };
 }

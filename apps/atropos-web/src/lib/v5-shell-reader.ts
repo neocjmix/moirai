@@ -166,13 +166,15 @@ export async function v5ShellReader(worldId: string) {
   const shape = async (
     value: Awaited<ReturnType<typeof reader.viewport>>["shapes"][number]
   ): Promise<GraphShellChartPlaneEntity> => {
-    const item = await event(value.event_id);
-    if (!item) throw Error("v5_event_missing");
+    const title =
+      value.read_hint?.title ??
+      (await reader.eventContent(value.event_id))?.event.title;
+    if (title === undefined) throw Error("v5_event_missing");
     const base = {
       id: value.event_id,
       eventId: value.event_id,
       canonId: worldId,
-      label: item.event.title,
+      label: title,
       validationState: "ok" as const,
       contains: [] as string[],
       diagnostics: [],
@@ -251,7 +253,7 @@ export async function v5ShellReader(worldId: string) {
     if (!item) throw Error("v5_collection_missing");
     const members = await Promise.all(
       item.event_ids.map(async (eventId) => ({
-        label: (await event(eventId))?.event.title ?? eventId,
+        label: (await reader.eventContent(eventId))?.event.title ?? eventId,
         href: `/graph/v5?world=${worldId}&event=${eventId}&collections=${id}`
       }))
     );

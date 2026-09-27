@@ -12,6 +12,7 @@ import type {
 } from "@moirai/graph-presentation/server";
 import {
   readV5StagedEvent,
+  readV5StagedEventContent,
   readV5StagedCollection,
   readV5StagedCollectionCatalog,
   readV5StagedAdjacencyPage,
@@ -68,6 +69,8 @@ export function createV5StagedAtroposReader(
         cursor,
         get
       ),
+    eventContent: (eventId: string) =>
+      readV5StagedEventContent(rootBody, worldId, revision, eventId, get),
     event: (eventId: string) =>
       readV5StagedEvent(rootBody, worldId, revision, eventId, get),
     collection: (collectionId: string, page: number) =>

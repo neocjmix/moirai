@@ -2,13 +2,12 @@
  * an adapter to reuse the proven solver; it is never a Collection or a
  * canonical/public entity. Atropos must not consume this until v5 format,
  * spatial shards and publication are complete. */
-import { createHash } from "node:crypto";
+import { stableDigest } from "./stable-digest.js";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import {
   assertV5CanonicalState,
   compositeChildCounts
 } from "@moirai/domain/v5";
-import { stableStringify } from "@moirai/domain";
 import type { CanonicalRevisionView } from "./index.js";
 import { projectRelationalTime } from "./relational-time.js";
 
@@ -86,8 +85,6 @@ export function projectV5WorldTemporal(
     ...semantic,
     world_id: state.world.id,
     source_revision: revision,
-    semantic_digest: createHash("sha256")
-      .update(stableStringify(semantic))
-      .digest("hex")
+    semantic_digest: stableDigest(semantic)
   };
 }

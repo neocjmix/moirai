@@ -31,13 +31,33 @@ function buildV5WorldSpatialStagedArtifactsWithLayouts(
   const layouts = [...state.timeSystems]
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
     .map((system) => buildV5WorldLayout(state, temporal, system.id));
+  const titles = new Map(state.events.map((event) => [event.id, event.title]));
+  const memberships = new Map<string, string[]>();
+  for (const member of state.eventCollectionMemberships) {
+    const ids = memberships.get(member.event_id) ?? [];
+    ids.push(member.collection_id);
+    memberships.set(member.event_id, ids);
+  }
+  for (const ids of memberships.values()) ids.sort();
   const staged = buildV5SpatialStagedArtifacts(
     state,
     revision,
     layouts.map((layout) => ({
       time_system_id: layout.time_system_id,
       temporal_digest: temporal.semantic_digest,
-      ...buildV5SpatialIndex(layout)
+      ...buildV5SpatialIndex({
+        ...layout,
+        shapes: layout.shapes.map((shape) => {
+          const ids = memberships.get(shape.event_id) ?? [];
+          return {
+            ...shape,
+            read_hint: {
+              title: titles.get(shape.event_id)!,
+              ...(ids.length <= 8 ? { collection_ids: ids } : {})
+            }
+          };
+        })
+      })
     }))
   );
   return { staged, layouts };
@@ -411,6 +431,15 @@ export async function readV5SelectedViewport(
   );
   const shapes: (typeof spatial.shapes)[number][] = [];
   for (const shape of spatial.shapes) {
+    if (shape.read_hint?.collection_ids !== undefined) {
+      if (
+        collectionIds.some((id) =>
+          shape.read_hint!.collection_ids!.includes(id)
+        )
+      )
+        shapes.push(shape);
+      continue;
+    }
     for (const collectionId of collectionIds) {
       const key = `worlds/${worldId}/revisions/${revision}/v5/content/event-selection/${shape.event_id}/${collectionId}.json`;
       const body = await readV5StagedDocument(rootBody, key, countedGet);

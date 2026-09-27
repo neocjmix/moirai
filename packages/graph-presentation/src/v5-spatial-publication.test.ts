@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { verifyV5StagedIndex } from "@moirai/publication/v5";
+import {
+  verifyV5StagedIndex,
+  finalizeV5VerifiedSpatialArtifacts
+} from "@moirai/publication/v5";
 import { readV5StagedEvent } from "@moirai/publication/v5";
 import {
   buildV5WorldCompleteArtifacts,
@@ -298,8 +301,10 @@ describe("authenticated v5 World viewport rehearsal", () => {
         get
       )
     ).rejects.toThrow("v5_viewport_collection_missing");
-    const marker =
-      "worlds/world-1/revisions/31/v5/content/event-selection/coup/joseon.json";
+    // The inline selection is authenticated through its spatial leaf.
+    const marker = artifacts.documents.find((item) =>
+      item.key.includes("/spatial/gregorian/nodes/0/")
+    )!.key;
     objects.set(marker, "altered");
     await expect(
       readV5SelectedViewport(
@@ -313,6 +318,67 @@ describe("authenticated v5 World viewport rehearsal", () => {
         get
       )
     ).rejects.toThrow("v5_index_digest_mismatch");
+  });
+  it("rejects canonically wrong inline titles and memberships even with a rebuilt valid index", () => {
+    const temporal = projectV5WorldTemporal(state, 31);
+    const layout = buildV5WorldLayout(state, temporal, "gregorian");
+    for (const read_hint of [
+      { title: "wrong", collection_ids: ["japan", "joseon"] },
+      { title: "coup", collection_ids: ["joseon"] }
+    ]) {
+      const spatial = buildV5SpatialIndex({
+        ...layout,
+        shapes: layout.shapes.map((shape) => ({ ...shape, read_hint }))
+      });
+      const staged = buildV5SpatialStagedArtifacts(state, 31, [
+        {
+          time_system_id: "gregorian",
+          temporal_digest: temporal.semantic_digest,
+          ...spatial
+        }
+      ]);
+      expect(() => finalizeV5VerifiedSpatialArtifacts(state, staged)).toThrow(
+        "v5_complete_spatial_hint_invalid"
+      );
+    }
+  });
+  it("reads legacy leaves without hints and authenticates their membership objects", async () => {
+    const temporal = projectV5WorldTemporal(state, 31);
+    const layout = buildV5WorldLayout(state, temporal, "gregorian");
+    const spatial = buildV5SpatialIndex(layout);
+    const staged = buildV5SpatialStagedArtifacts(state, 31, [
+      {
+        time_system_id: "gregorian",
+        temporal_digest: temporal.semantic_digest,
+        ...spatial
+      }
+    ]);
+    const objects = new Map(
+      [...staged.documents, ...staged.index].map((item) => [
+        item.key,
+        item.body
+      ])
+    );
+    const get = async (key: string) => objects.get(key) ?? null;
+    const read = () =>
+      readV5SelectedViewport(
+        staged.root.body,
+        "world-1",
+        31,
+        "gregorian",
+        { minX: -1e6, maxX: 1e6, minY: -1e6, maxY: 1e6 },
+        ["joseon"],
+        null,
+        get
+      );
+    expect((await read()).shapes.map((shape) => shape.event_id)).toEqual([
+      "coup"
+    ]);
+    objects.set(
+      "worlds/world-1/revisions/31/v5/content/event-selection/coup/joseon.json",
+      "altered"
+    );
+    await expect(read()).rejects.toThrow("v5_index_digest_mismatch");
   });
   it("indexes every World Time System with one World-owned shared Event and detects tampering", async () => {
     const artifacts = buildV5WorldSpatialStagedArtifacts(state, 31);

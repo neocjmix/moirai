@@ -5,7 +5,8 @@ import { devices, webkit, type Response } from "@playwright/test";
 const baseURL =
   process.env.PUBLIC_INTEGRATION_URL ??
   "https://moirai-production-8ed1.up.railway.app";
-const worldId = "01995c2a-7b00-7000-8000-000000000101";
+const worldId =
+  process.env.A4_WORLD_ID ?? "01995c2a-7b00-7000-8000-000000000101";
 const url = `/graph/v5?world=${worldId}`;
 const p95 = (values: number[]) =>
   values.length
@@ -51,12 +52,38 @@ try {
     const response = await page.goto(url, { waitUntil: "domcontentloaded" });
     if (!response?.ok()) throw Error("a4_mobile_navigation_failed");
     await page.getByTestId("graph-stage").waitFor({ state: "visible" });
-    const first = page.locator("[data-event-point-id]").first();
-    await first.waitFor({ state: "visible", timeout: 20_000 });
+    await page
+      .locator("[data-event-point-id]")
+      .first()
+      .waitFor({ state: "visible", timeout: 20000 });
+    // Dense labels overlap. Pick an actually hit-testable visible Event,
+    // as a reader would, rather than forcing a covered DOM-first element.
+    const target = await page.evaluate(() => {
+      for (const point of document.querySelectorAll("[data-event-point-id]")) {
+        const box = point.getBoundingClientRect();
+        const left = Math.max(1, box.left),
+          right = Math.min(innerWidth - 1, box.right);
+        const top = Math.max(1, box.top),
+          bottom = Math.min(innerHeight - 1, box.bottom);
+        if (left >= right || top >= bottom) continue;
+        for (const x of [left + (right - left) / 2, left + 1, right - 1]) {
+          for (const y of [top + (bottom - top) / 2, top + 1, bottom - 1]) {
+            const hit = document
+              .elementFromPoint(x, y)
+              ?.closest("[data-event-point-id]");
+            if (hit === point)
+              return { id: point.getAttribute("data-event-point-id"), x, y };
+          }
+        }
+      }
+      return null;
+    });
+    if (!target) throw Error("a4_mobile_no_hit_testable_event");
+    const first = page.locator(`[data-event-point-id="${target.id}"]`).first();
     const graphReadyMs = performance.now() - started;
     const htmlBytes = (await response.body()).byteLength;
     const drawerStarted = performance.now();
-    await first.click();
+    await page.mouse.click(target.x, target.y);
     await page.getByTestId("event-drawer-sheet").waitFor({ state: "visible" });
     const drawerMs = performance.now() - drawerStarted;
     navigations.push({
@@ -81,12 +108,27 @@ try {
       continue;
     }
     await page.getByTestId("event-drawer-close").click();
+    await page.getByTestId("event-drawer-sheet").waitFor({ state: "detached" });
     const stage = page.getByTestId("graph-stage");
     const bounds = await stage.boundingBox();
     if (!bounds) throw Error("a4_mobile_graph_bounds_missing");
     const pointBefore = await first.boundingBox();
     if (!pointBefore) throw Error("a4_mobile_point_bounds_missing");
     const frameSample = async (name: string, gesture: () => Promise<void>) => {
+      // Post-ready budget: finish the preceding drawer/panel transition before
+      // sampling. The measured gesture and all its resulting work stay inside.
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await Promise.all(
+          document
+            .getAnimations()
+            .filter(
+              (animation) =>
+                animation.effect?.getTiming().iterations !== Infinity
+            )
+            .map((animation) => animation.finished.catch(() => {}))
+        );
+      });
       const pending = page.evaluate(async () => {
         // Let the sampler's evaluation and the previous UI action settle
         // before counting frames. Gesture work remains inside the 600 samples.
@@ -173,7 +215,7 @@ try {
     await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
     await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
     const checkbox = page.getByRole("checkbox", {
-      name: "조선 전기 연표",
+      name: process.env.A4_COLLECTION_LABEL ?? "조선 전기 연표",
       exact: true
     });
     await checkbox.scrollIntoViewIfNeeded();
@@ -236,6 +278,8 @@ process.stdout.write(
   JSON.stringify({
     device: "iPhone 14 WebKit emulation, no throttling",
     world_id: worldId,
+    scale: process.env.A4_SCALE ?? "production",
+    shape: process.env.A4_SHAPE ?? "production",
     navigations,
     gestures,
     pan_displacement: panDisplacement,

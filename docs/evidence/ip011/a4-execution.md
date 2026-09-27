@@ -246,3 +246,18 @@ Pan 실제 점 이동과 zoom URL 변화 검사도 기존대로 유지한다. �
 | 100k restart complete | 92.79 s | 108.84 s | **5069.41 MiB** | 601,597 documents, 779.52 MB artifact, 국소 viewport 1 shape |
 
 이 실행에서 100k 취소 후 새 프로세스의 완전 빌드는 성공했다. 100k RSS는 이전 로컬 Node 24 종료 RSS 2975MiB보다 훨씬 높으며, 종료 RSS와 peak·실행 환경이 달라 개선/악화율로 해석하지 않는다. hosted 100k peak 5GiB는 운영 worker 용량·중복 빌드 위험을 조사할 근거다. 이 시험은 DB lease/실제 object-store 업로드/served pointer를 포함하지 않으므로 운영 queue의 중단·재개 성공으로 간주하지 않는다. 100k 메모리 감소와 queue end-to-end 재시작은 A4 잔여 작업이다.
+
+## Slice 19: 긴 v5 immutable 업로드의 lease 소유권
+
+[PR #218](https://github.com/neocjmix/moirai/pull/218)은 100k 합성 완전 산출물 약 601,597 documents와 19,407 index nodes를 순차 PUT하는 동안 300초 claim이 만료될 위험을 다룬다. 현재 시도의 `attempt_count`만 30초 간격으로 lease를 갱신하고, 빌드 이후·매 1,024 immutable 업로드·공개 pointer CAS 직전에 claim을 재검증한다. 잃어버린 claim은 공개 pointer를 바꾸기 전에 실패한다. PG17 재claim 시험은 이전 시도의 갱신 거부와 새 시도의 갱신 성공을, pointer 단위 시험은 업로드 후 CAS 직전 소유권 상실 시 이전 pointer 유지를 확인한다. main/운영 `8836ea7577190d06b031bb6666fb1487fd5f0257`, [PR CI/PG17/모바일 36287758648](https://github.com/neocjmix/moirai/actions/runs/36287758648) 및 [배포 smoke 36288059427](https://github.com/neocjmix/moirai/actions/runs/36288059427) 성공. 실제 S3 100k 업로드 시간과 실제 queue 중단·재claim은 시험하지 않았다.
+
+## Slice 20: 100k 메모리 peak 위치
+
+[PR #219](https://github.com/neocjmix/moirai/pull/219)은 관찰자가 있는 합성 프로파일에만 phase RSS/heap을 추가하고 운영 worker에는 전달하지 않는다. [hosted run 36288146604](https://github.com/neocjmix/moirai/actions/runs/36288146604)에서 100k 재실행 wall 174.33초, CPU sampled 202.22초, peak RSS **4806.48 MiB**. 단계 경계 RSS는 state 171.61, staged 2020.83, staged verification 2139.46, proof Map 2206.82, selection proof 2177.22, complete finalization 종료 2835.32 MiB다. 따라서 4.8GiB peak는 finalization 내부의 일시 할당 구간에서 관측된 것으로 추론한다. 경계 값은 peak 시점의 heap attribution이 아니다. [12개 1k/10k/100k 형상 매트릭스 36288146553](https://github.com/neocjmix/moirai/actions/runs/36288146553), [CI/모바일 36288146598](https://github.com/neocjmix/moirai/actions/runs/36288146598), [배포 smoke 36288519743](https://github.com/neocjmix/moirai/actions/runs/36288519743) 성공. main/운영 `c7c52c075bdb50be5df749dd3559ce7ea3b2424c`; 공개 contract 5/schema 011/v5, World Revision 32.
+
+## Slice 21: 메모리 후보 두 개 기각
+
+- [PR #220](https://github.com/neocjmix/moirai/pull/220)은 최종 검증 뒤 임시 content pages/Map/Set을 비웠으나 [hosted 100k 36288795209](https://github.com/neocjmix/moirai/actions/runs/36288795209) peak **4801.98 MiB**로 기준 4806.48 MiB와 사실상 같다. [12 형상 36288795204](https://github.com/neocjmix/moirai/actions/runs/36288795204)와 [CI/모바일 36288795212](https://github.com/neocjmix/moirai/actions/runs/36288795212)는 성공했지만 개선 증거가 없어 **병합 없이 종료**했다.
+- [PR #221](https://github.com/neocjmix/moirai/pull/221)은 문서 60만 개의 leaf Ref 배열을 bounded leaf chunk 생성으로 바꾸었으나 [hosted 100k 36289128377](https://github.com/neocjmix/moirai/actions/runs/36289128377) peak **4799.36 MiB**였다. 산출물 601,597 documents/779,523,312 B, 10k 예산, [12 형상 36289128520](https://github.com/neocjmix/moirai/actions/runs/36289128520), [CI/PG17/모바일 36289128414](https://github.com/neocjmix/moirai/actions/runs/36289128414)는 통과했지만 peak 개선이 없어 **병합 없이 종료**했다. 이 후보는 실행 환경 연결 장애로 로컬 검사를 수행하지 못했고 CI를 검증 경계로 삼았다.
+
+최신 운영 코드에는 두 후보가 포함되지 않는다. 100k worker peak 약 4.8–5.1GiB와 약 621k 객체의 실제 업로드 처리량, queue 수준의 프로세스 중단/재시작, dense·대형 Collection cold/warm 20/50 및 100k 모바일 frame 재현성은 A4 미완료 게이트다. A5·A6·M5는 시작하지 않는다.

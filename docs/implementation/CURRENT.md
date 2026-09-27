@@ -4,7 +4,7 @@
 
 고정 성능 재검증에서 PR #230 scale 36331858204의 1k dense pan max 132ms, PR #231 scale 36332336741의 1k sparse/100k large pan max 109ms가 100ms 상한을 넘었다. 통과 실행만 채택하지 않으며 기준을 완화하지 않는다. 상세 근거는 [A4 실행 Slice 26–28](../evidence/ip011/a4-execution.md).
 
-새 R3 시험은 두 차례 준비 오류로 아직 구간 측정을 완료하지 못했다. #234 scale 36355648638의 새 sustained fixture에서는 기존 pan max 104ms도 관측해 실패로 남긴다. 다음 checkpoint는 전체 범위 조회의 응답 상한을 존중하는 구간 준비와 투명 SVG의 기존 220ms 퇴장 후 제거다. 원본/이름 정책과 작은 Composite 점·색 배정은 유지한다. 로컬 관련 39개 시험 성공; 브라우저 검증 전이다. 추가 region 작업 제한과 R3 판정이 남는다. [A4 종료/A5 실험 재계획](IP-011-reader-performance-plan.md)을 따른다. 새 밀도 규칙·tile/level·Collection discovery(A5), A6/M5는 비활성이다.
+PR #235의 R3는 30개 구간 왕복을 완료했다. 같은 첫 화면의 사건·영역 모양·계산 대상 수와 DOM 229개가 유지됐고 캐시는 8항목/약 700KB 이내였다. 그러나 연속 이동 p95 44/42/41ms는 33.4ms 기준에 실패했다. 마지막 Collection 전환과 기존 모바일 입력 시험 5개도 실패해 #235는 미배포다. 불필요한 이전 요청 중단과 입력 실패 분리 검증, 이름표 계산 축소를 진행한다. [A4 종료/A5 실험 재계획](IP-011-reader-performance-plan.md)을 따르며 새 밀도 규칙·tile/level·Collection discovery(A5), A6/M5는 비활성이다.
 
 2026-09-25 운영 World는 Revision 30→31의 v5 schema/content로 이전됐고 새 암호화 owner-full 백업·격리 복원·clone migration 재현을 통과했다. 인증된 v5 정책 기반 운영 쓰기와 동일 Change Set 재생으로 Revision 32가 됐으며 공개 완전 Publication 포인터는 v5 served/current/target 32다. 127 Event·6 Collection·415 Relation·133 Narrative가 보존됐다. API·worker·web은 v5로 동작하고 구형 v4 변경 경로는 404, 미인증 v5 commit은 401이다. v5 공개·인증 배포 smoke 36093424585와 운영 iPhone WebKit 미배치 Event·Collection·Composite 탐색이 통과해 A3의 아홉 시나리오를 충족했다. IP-004~010 완료 이력은 유지한다.
 

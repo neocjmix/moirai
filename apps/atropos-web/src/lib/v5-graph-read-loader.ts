@@ -28,6 +28,8 @@ export function createV5GraphReadLoader(input: {
         ...query
       })
     });
+    if (signal?.aborted)
+      throw new DOMException("Superseded viewport", "AbortError");
     if (!response.ok) throw Error("v5_shell_unavailable");
     return response.json();
   };

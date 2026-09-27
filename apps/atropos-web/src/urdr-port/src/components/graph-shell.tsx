@@ -3204,13 +3204,13 @@ export function GraphShell({
   const compositeFadeFrameRef = useRef(null);
   const compositePaintTargets = useMemo(() => selectCompositePaintTargets(chartCompositeRegions.regions), [chartCompositeRegions.regions]);
   useEffect(() => {
-    setVisibleCompositeRegions((current) => current.length === 0 && compositePaintTargets.length === 0 ? current : reconcileCompositeFadePresence(current, compositePaintTargets));
+    setVisibleCompositeRegions((current) => reconcileCompositeFadePresence(current, compositePaintTargets));
     // A moving viewport must not keep cancelling the frame that starts exits.
     if (compositeFadeFrameRef.current === null) {
       compositeFadeFrameRef.current = window.requestAnimationFrame(() => {
         compositeFadeFrameRef.current = null;
         const now = performance.now();
-        setVisibleCompositeRegions((current) => current.length === 0 ? current : advanceCompositeFadePresence(current, now));
+        setVisibleCompositeRegions((current) => advanceCompositeFadePresence(current, now));
       });
     }
   }, [compositePaintTargets]);

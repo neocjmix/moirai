@@ -44,6 +44,39 @@ async function snapshot(x = 0, truncated = true): Promise<Viewport> {
 }
 afterEach(() => vi.useRealTimers());
 
+it("returning to cached A cancels pending B before parsing its late body", async () => {
+  const first = await snapshot();
+  let finish!: (response: Response) => void;
+  let pendingSignal!: AbortSignal;
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(Response.json(first))
+    .mockImplementationOnce((_url, init) => {
+      pendingSignal = init!.signal!;
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    });
+  const loader = await setup(fetcher);
+  const home = await loader.loadViewport("ko", query());
+  const away = loader.loadViewport("ko", query(1000));
+  const rejected = expect(away).rejects.toMatchObject({ name: "AbortError" });
+  expect(await loader.loadViewport("ko", query())).toBe(home);
+  expect(pendingSignal.aborted).toBe(true);
+  expect(loader.inspectViewport?.()).toMatchObject({
+    pending: 0,
+    aborted: 1,
+    hits: 1
+  });
+  const late = Response.json(await snapshot(1000));
+  const parse = vi.spyOn(late, "json");
+  finish(late);
+  await rejected;
+  expect(parse).not.toHaveBeenCalled();
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  loader.dispose?.();
+});
+
 it("30 distinct visits and a return keep only the current snapshot, including its regions and edges", async () => {
   const fetcher = vi.fn<typeof fetch>(async (_url, init) => {
     const body = JSON.parse(String(init?.body));

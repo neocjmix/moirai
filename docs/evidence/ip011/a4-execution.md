@@ -386,3 +386,14 @@ PR #232 head ddd7dfe, main 5c4886960db6a12e9502142ce5b828a33e4e1e3c. PR CI 36333
 R3 준비는 서버의 제한을 풀지 않고 전체 범위를 32개 strip으로 나눠 30개 이상의 실제 이웃을 찾는다. 준비 요청/bytes/부분 응답은 reader 측정과 별도 기록한다. 원래 네 fixture는 그대로이며 새 sustained fixture의 server query만 실제 사건이 있는 X 범위를 사용한다. 서버 route를 통과하는 1k Publication 회귀 시험에서 전체 조회가 partial/<30개이고 32개 제한 조회가 >=30개를 확보하는지 확인했다.
 
 로컬 graph 관련 37개와 새 fixture 2개 시험 성공. 현재 checkpoint의 CI/mobile/배포 및 실제 R3 결과는 아직 전이다. 기존 100ms max를 완화하지 않는다. 원형 관계 closure의 추가 최적화와 모든 exit 판정은 남는다.
+
+
+## Slice 31 — R3 first completed route and unresolved input regression
+
+PR #235 head a7fa8f2, scale run 36356215247, sustained job 108724353864 completed 30 visits and 30 returns. All three home snapshots retained revision 31, camera, selection, source counts (247 entities/9 regions), 49 projected points, 3 fade regions, zero overdue exits and DOM 229. Cache grew from 2 entries/175425 bytes to its bounded 8 entries/700360 bytes, pending zero. IDs and original geometry checks passed. WebKit heap remains unmeasured.
+
+Continuous hybrid pointer samples (602 frames each) failed the unchanged 33.4ms p95 gate: start 44/58ms p95/max, middle 42/54, return 41/49. Whole interaction interval p95 also failed. Label density queries were 277350/276895/277350 per sample; world geometry rebuilt once per sample. These results establish bounded history in this fixture, not A4 completion or resolution of every user-reported slowdown. Collection OFF/ON failed at menu opening after the final sample.
+
+CI 36356215227 quality/security passed; mobile had 24 passed, 5 failed, 1 skipped. Failed legacy drawer/search clicks resolved visible buttons but stalled during input; trace showed repeated client diagnostics with only 17 network entries, not a repeated download storm. PR #235 is not merged or deployed. Published main remains 5250eda (main CI 36355835485 and public smoke 36355982612 passed).
+
+Follow-up isolates the two empty fade-state shortcuts by restoring prior update behavior; this is a diagnostic change, not a confirmed root-cause fix. Latest-view cache hits now cancel superseded requests, and the loader rejects an already aborted response before parsing its body. A deferred A→B→cached A test verifies cancellation and no late JSON parsing. Fourteen focused tests and web strict typecheck pass locally; hosted input verification remains required. Fixed budgets and all original scenarios remain unchanged.

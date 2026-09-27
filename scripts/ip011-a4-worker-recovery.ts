@@ -98,6 +98,8 @@ async function until(
 ) {
   const start = performance.now();
   while (!(await predicate())) {
+    if (children.some((child) => child.exitCode !== null))
+      throw Error(`a4_recovery_worker_exit:${childErrors}`);
     if (performance.now() - start > timeout)
       throw Error(`a4_recovery_timeout:${label}:${childErrors.slice(-500)}`);
     await delay(100);
@@ -204,7 +206,7 @@ try {
   const environment: NodeJS.ProcessEnv = {
     ...process.env,
     DATABASE_URL: target.toString(),
-    PORT: "0",
+    PORT: "3002",
     PUBLICATION_CONTRACT_MODE: "v5",
     AWS_ACCESS_KEY_ID: "synthetic",
     AWS_SECRET_ACCESS_KEY: "synthetic",
@@ -228,7 +230,7 @@ try {
   const launch = () => {
     const child = spawn(
       process.execPath,
-      ["--import", "tsx", "apps/lachesis-worker/src/index.ts"],
+      ["apps/lachesis-worker/dist/index.js"],
       { env: environment, stdio: ["ignore", "pipe", "pipe"] }
     );
     child.stdout!.on("data", () => {});
@@ -253,6 +255,13 @@ try {
   assert.equal(first.signalCode, "SIGKILL");
   pauseEnabled = false;
   const second = launch();
+  await until(async () => {
+    try {
+      return (await fetch("http://127.0.0.1:3002/health/ready")).ok;
+    } catch {
+      return false;
+    }
+  }, "restart_ready");
   await delay(2000);
   assert.equal(
     (await row()).attempt_count,

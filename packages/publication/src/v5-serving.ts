@@ -17,7 +17,8 @@ import {
 export async function publishV5CompleteArtifacts(
   store: ObjectStore,
   artifacts: V5StagedArtifacts,
-  generatedAt: string
+  generatedAt: string,
+  assertActive?: () => Promise<void>
 ): Promise<V5PublicationPointer> {
   verifyV5StagedIndex(artifacts);
   const root = JSON.parse(artifacts.root.body) as {
@@ -45,12 +46,13 @@ export async function publishV5CompleteArtifacts(
       .digest("hex"),
     generated_at: generatedAt
   };
-  await publishV5StagedArtifacts(store, artifacts);
+  await publishV5StagedArtifacts(store, artifacts, assertActive);
   const rootRead = await store.get(artifacts.root.key);
   if (rootRead.status !== 200 || rootRead.body !== artifacts.root.body)
     throw Error("v5_complete_root_readback_failed");
   const key = `worlds/${root.world_id}/current.json`;
   for (let attempt = 0; attempt < 4; attempt++) {
+    await assertActive?.();
     const current = await store.get(key);
     if (![200, 404].includes(current.status))
       throw Error("v5_complete_pointer_read_failed");
@@ -87,6 +89,7 @@ export async function publishV5CompleteArtifacts(
         throw Error("v5_complete_pointer_revision_conflict");
       }
     }
+    await assertActive?.();
     const swapped = await store.put(
       key,
       JSON.stringify(pointer),

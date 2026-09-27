@@ -16,6 +16,7 @@ import {
   getPublicationStatus,
   readWorldAtRevision,
   reconcileSubjectHandleState,
+  renewPublicationJobLease,
   retryPublicationJob
 } from "./index.js";
 import { migrateToLatest } from "./migrate.js";
@@ -658,10 +659,13 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
       id: first.id,
       attemptCount: first.attemptCount + 1
     });
+    expect(await renewPublicationJobLease(db, first, 300)).toBe(false);
+    expect(await renewPublicationJobLease(db, restarted, 300)).toBe(true);
     expect(await completePublicationJob(db, first, 1)).toBe(false);
     expect(await retryPublicationJob(db, first, "stale_failure")).toBe(false);
     expect(await claimPublicationJob(db)).toBeNull();
     expect(await completePublicationJob(db, restarted, 1)).toBe(true);
+    expect(await renewPublicationJobLease(db, restarted, 300)).toBe(false);
     expect(await retryPublicationJob(db, restarted, "late_failure")).toBe(
       false
     );

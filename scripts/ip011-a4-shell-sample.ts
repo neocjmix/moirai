@@ -27,7 +27,7 @@ const input =
         viewport: {
           canonIds: [world],
           bbox:
-            shape === "dense"
+            shape === "dense" || shape === "sustained"
               ? { minX: -100000, maxX: 100000, minY: 203419, maxY: 203422 }
               : { minX: -356.6, maxX: -353.6, minY: 203419, maxY: 203422 },
           scale: 1,

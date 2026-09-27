@@ -666,15 +666,24 @@ function getCompositeLabelBounds(candidate: CompositeEdgeLabelPlacement, labelWi
   };
 }
 
-function getPolylineLength(points: ViewportCoordinate[]) {
-  let length = 0;
+function measurePolyline(points: ViewportCoordinate[]) {
+  let totalLength = 0;
+  let traversed = 0;
+  const segments = [];
   for (let index = 1; index < points.length; index += 1) {
-    length += Math.hypot(points[index]!.x - points[index - 1]!.x, points[index]!.y - points[index - 1]!.y);
+    const start = points[index - 1]!;
+    const end = points[index]!;
+    const length = Math.hypot(end.x - start.x, end.y - start.y);
+    totalLength += length;
+    if (length <= AREA_EPSILON) continue;
+    segments.push({start, end, length, traversed, until: traversed + length});
+    traversed += length;
   }
-  return length;
+  return {points, totalLength, segments};
 }
 
-function getPointAtDistanceOnPolyline(points: ViewportCoordinate[], distance: number): PathSample {
+function getPointAtDistanceOnPolyline(path: ReturnType<typeof measurePolyline>, distance: number): PathSample {
+  const {points, totalLength, segments} = path;
   if (points.length === 0) {
     return {
       point: { x: 0, y: 0 },
@@ -691,32 +700,30 @@ function getPointAtDistanceOnPolyline(points: ViewportCoordinate[], distance: nu
     } satisfies PathSample;
   }
 
-  const totalLength = getPolylineLength(points);
   const target = clamp(distance, 0, totalLength);
-  let traversed = 0;
-
-  for (let index = 1; index < points.length; index += 1) {
-    const start = points[index - 1]!;
-    const end = points[index]!;
-    const segmentLength = Math.hypot(end.x - start.x, end.y - start.y);
-    if (segmentLength <= AREA_EPSILON) {
-      continue;
-    }
-    if (traversed + segmentLength >= target) {
-      const t = (target - traversed) / segmentLength;
-      return {
-        point: {
-          x: start.x + (end.x - start.x) * t,
-          y: start.y + (end.y - start.y) * t,
-        },
-        distance: target,
-        tangent: {
-          x: (end.x - start.x) / segmentLength,
-          y: (end.y - start.y) / segmentLength,
-        },
-      } satisfies PathSample;
-    }
-    traversed += segmentLength;
+  // Measure each candidate path once. Sampling used to rescan and remeasure
+  // every segment for every six-pixel visibility sample.
+  let low = 0;
+  let high = segments.length;
+  while (low < high) {
+    const middle = (low + high) >>> 1;
+    if (segments[middle].until < target) low = middle + 1;
+    else high = middle;
+  }
+  if (low < segments.length) {
+    const {start, end, length: segmentLength, traversed} = segments[low];
+    const t = (target - traversed) / segmentLength;
+    return {
+      point: {
+        x: start.x + (end.x - start.x) * t,
+        y: start.y + (end.y - start.y) * t,
+      },
+      distance: target,
+      tangent: {
+        x: (end.x - start.x) / segmentLength,
+        y: (end.y - start.y) / segmentLength,
+      },
+    } satisfies PathSample;
   }
 
   const tailStart = points[points.length - 2]!;
@@ -741,8 +748,8 @@ function isPointWithinViewport(point: ViewportCoordinate, viewport: ViewportExte
   );
 }
 
-function getLongestVisiblePathInterval(points: ViewportCoordinate[], viewport: ViewportExtent, margin: number) {
-  const totalLength = getPolylineLength(points);
+function getLongestVisiblePathInterval(path: ReturnType<typeof measurePolyline>, viewport: ViewportExtent, margin: number) {
+  const {totalLength} = path;
   if (totalLength <= AREA_EPSILON) {
     return { start: 0, end: 0, span: 0 };
   }
@@ -754,7 +761,7 @@ function getLongestVisiblePathInterval(points: ViewportCoordinate[], viewport: V
 
   for (let index = 0; index <= sampleCount; index += 1) {
     const distance = (totalLength * index) / sampleCount;
-    const sample = getPointAtDistanceOnPolyline(points, distance);
+    const sample = getPointAtDistanceOnPolyline(path, distance);
     const visible = isPointWithinViewport(sample.point, viewport, margin);
     if (visible && currentStart === null) {
       currentStart = distance;
@@ -969,8 +976,9 @@ export function resolveCompositeEdgeLabelPlacement(
       pathPoints: getCompositeLabelPathPoints(normalizedPoints, index, labelGap + labelHeight * 0.5),
       side,
     };
-    const totalPathLength = getPolylineLength(placement.pathPoints);
-    const visibleInterval = getLongestVisiblePathInterval(placement.pathPoints, viewport, labelHeight * 0.5);
+    const measuredPath = measurePolyline(placement.pathPoints);
+    const totalPathLength = measuredPath.totalLength;
+    const visibleInterval = getLongestVisiblePathInterval(measuredPath, viewport, labelHeight * 0.5);
     const minVisibleSpan = labelWidth * 0.72;
     const fitClass: 0 | 1 | 2 = visibleInterval.span >= labelWidth + 8 ? 0 : visibleInterval.span >= minVisibleSpan ? 1 : 2;
     const halfLabel = labelWidth / 2;
@@ -978,7 +986,7 @@ export function resolveCompositeEdgeLabelPlacement(
     const maxCenter = clamp(visibleInterval.end - halfLabel, 0, totalPathLength);
     const preferredCenter = (visibleInterval.start + visibleInterval.end) / 2;
     const centerDistance = minCenter <= maxCenter ? clamp(preferredCenter, minCenter, maxCenter) : clamp(preferredCenter, 0, totalPathLength);
-    const centerSample = getPointAtDistanceOnPolyline(placement.pathPoints, centerDistance);
+    const centerSample = getPointAtDistanceOnPolyline(measuredPath, centerDistance);
     const fittedPlacement = {
       ...placement,
       labelX: centerSample.point.x,
@@ -989,8 +997,7 @@ export function resolveCompositeEdgeLabelPlacement(
     const bounds = getCompositeLabelBounds(fittedPlacement, labelWidth, labelHeight);
     const overflow = getBoundsOverflow(bounds, viewport);
     const breathingRoom = getBreathingRoom(bounds, viewport);
-    const densityScore = getCandidateDensityScore(bounds, fittedPlacement.pathPoints, nearbyPoints, labelHeight);
-    candidates.push({ ...fittedPlacement, edgeLength, overflow, breathingRoom, densityScore, fitClass, visibleSpan: visibleInterval.span });
+    candidates.push({ ...fittedPlacement, edgeLength, overflow, breathingRoom, densityScore: 0, fitClass, visibleSpan: visibleInterval.span });
   }
 
   if (candidates.length === 0) {
@@ -1016,6 +1023,11 @@ export function resolveCompositeEdgeLabelPlacement(
   const fitCandidates = candidates.filter((candidate) => candidate.fitClass === bestFitClass);
   const zeroOverflowCandidates = fitCandidates.filter((candidate) => candidate.overflow <= AREA_EPSILON);
   const candidatePool = zeroOverflowCandidates.length > 0 ? zeroOverflowCandidates : fitCandidates;
+  // Fit and overflow eliminate candidates independently of density. Query
+  // nearby events only for candidates that can still win the original sort.
+  for (const candidate of candidatePool) {
+    candidate.densityScore = getCandidateDensityScore(getCompositeLabelBounds(candidate, labelWidth, labelHeight), candidate.pathPoints, nearbyPoints, labelHeight);
+  }
   const prioritizedSides = getCompositeSidePriority(centroid, viewport);
 
   let selected = [...candidatePool].sort((left, right) => {

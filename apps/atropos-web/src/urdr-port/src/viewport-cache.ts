@@ -77,6 +77,15 @@ export function createViewportCache(
             covers(e.query.bbox, requiredCoverage(query))))
     );
     if (found >= 0) {
+      // In latest-view-only mode, returning to cached A supersedes a pending B
+      // just as starting a fresh A read would. Do not finish useless B work.
+      if (options.maxPending === 1) {
+        for (const { controller } of pending.values()) {
+          controller.abort();
+          aborted++;
+        }
+        pending.clear();
+      }
       hits++;
       const [entry] = entries.splice(found, 1);
       entries.push(entry!);

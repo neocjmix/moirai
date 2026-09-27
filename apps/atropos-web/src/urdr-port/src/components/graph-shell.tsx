@@ -12,6 +12,7 @@ import { composeNavigationBounds, constrainNavigation, restoreNavigation } from 
 import { prepareCompositeWorldGeometry, selectCompositeWorldRegions } from "./graph-shell-world";
 import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
 import { compositePointDisplay } from "./composite-point-display";
+import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { reconcileViewport } from "../viewport-cache";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 import { withGraphReturnContext } from "../../../lib/event-reading-navigation";
@@ -3201,8 +3202,9 @@ export function GraphShell({
   }, [initialEventDetail, loader, locale, renderedEventSelection]);
 
   const compositeFadeFrameRef = useRef(null);
+  const compositePaintTargets = useMemo(() => selectCompositePaintTargets(chartCompositeRegions.regions), [chartCompositeRegions.regions]);
   useEffect(() => {
-    setVisibleCompositeRegions((current) => reconcileCompositeFadePresence(current, chartCompositeRegions.regions));
+    setVisibleCompositeRegions((current) => reconcileCompositeFadePresence(current, compositePaintTargets));
     // A moving viewport must not keep cancelling the frame that starts exits.
     if (compositeFadeFrameRef.current === null) {
       compositeFadeFrameRef.current = window.requestAnimationFrame(() => {
@@ -3211,7 +3213,7 @@ export function GraphShell({
         setVisibleCompositeRegions((current) => advanceCompositeFadePresence(current, now));
       });
     }
-  }, [chartCompositeRegions.regions]);
+  }, [compositePaintTargets]);
   useEffect(() => () => {
     if (compositeFadeFrameRef.current !== null) window.cancelAnimationFrame(compositeFadeFrameRef.current);
     compositeFadeFrameRef.current = null;
@@ -3241,10 +3243,12 @@ export function GraphShell({
       reconcileCompositeColorAssignments(
         current,
         chartCompositeRegions.activeColorRegionIds,
-        visibleCompositeRegions.map((region) => region.id),
+        // Geometry/color identity survives transparent SVG pruning; a hidden
+        // current region must not steal a new color when it becomes visible.
+        [...new Set([...chartCompositeRegions.regions.map((region) => region.id), ...visibleCompositeRegions.map((region) => region.id)])],
       ),
     );
-  }, [chartCompositeRegions.activeColorRegionIds, visibleCompositeRegions]);
+  }, [chartCompositeRegions.activeColorRegionIds, chartCompositeRegions.regions, visibleCompositeRegions]);
 
   const visibleRelationSegments = useMemo<RelationSegment[]>(
     () => {

@@ -8,6 +8,7 @@ on:
       - "scripts/ip011-a4-profile.ts"
       - "packages/graph-presentation/src/**"
       - "packages/projections/src/**"
+      - "packages/publication/src/v5-staging.ts"
   workflow_dispatch:
 
 permissions:

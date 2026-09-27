@@ -6,6 +6,9 @@ on:
       - "scripts/ip011-a4-scale-*.ts"
       - "scripts/ip011-a4-shell-*.ts"
       - "packages/projections/src/**"
+      - "packages/publication/src/**"
+      - "packages/graph-presentation/src/**"
+      - "apps/atropos-web/src/**"
       - "scripts/ip011-a4-worker-recovery.ts"
       - "scripts/ip011-a4-mobile-profile.ts"
   workflow_dispatch:

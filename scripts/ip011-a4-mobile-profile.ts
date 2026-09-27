@@ -52,8 +52,32 @@ try {
     const response = await page.goto(url, { waitUntil: "domcontentloaded" });
     if (!response?.ok()) throw Error("a4_mobile_navigation_failed");
     await page.getByTestId("graph-stage").waitFor({ state: "visible" });
-    const first = page.locator("[data-event-point-id]").first();
-    await first.waitFor({ state: "visible", timeout: 20_000 });
+    await page
+      .locator("[data-event-point-id]")
+      .first()
+      .waitFor({ state: "visible", timeout: 20000 });
+    // Dense labels overlap. Pick an actually hit-testable visible Event,
+    // as a reader would, rather than forcing a covered DOM-first element.
+    const targetId = await page.evaluate(() => {
+      for (const point of document.querySelectorAll("[data-event-point-id]")) {
+        const box = point.getBoundingClientRect();
+        const x = box.x + box.width / 2,
+          y = box.y + box.height / 2;
+        if (x < 20 || x > innerWidth - 20 || y < 150 || y > innerHeight - 100)
+          continue;
+        const hit = document
+          .elementFromPoint(x, y)
+          ?.closest("[data-event-point-id]");
+        if (
+          hit?.getAttribute("data-event-point-id") ===
+          point.getAttribute("data-event-point-id")
+        )
+          return point.getAttribute("data-event-point-id");
+      }
+      return null;
+    });
+    if (!targetId) throw Error("a4_mobile_no_hit_testable_event");
+    const first = page.locator(`[data-event-point-id="${targetId}"]`).first();
     const graphReadyMs = performance.now() - started;
     const htmlBytes = (await response.body()).byteLength;
     const drawerStarted = performance.now();

@@ -36,13 +36,13 @@ export interface V5StagedEventRead {
   readonly composite_child_count: number;
 }
 
-export async function readV5StagedEvent(
+export async function readV5StagedEventContent(
   rootBody: string,
   worldId: string,
   revision: number,
   eventId: string,
   get: (key: string) => Promise<string | null>
-): Promise<V5StagedEventRead | null> {
+): Promise<EventDetail | null> {
   const root = JSON.parse(rootBody) as {
     world_id: string;
     revision: number;
@@ -77,6 +77,27 @@ export async function readV5StagedEvent(
     detail.composite_child_count < 0
   )
     throw Error("v5_event_detail_invalid");
+  return detail;
+}
+
+export async function readV5StagedEvent(
+  rootBody: string,
+  worldId: string,
+  revision: number,
+  eventId: string,
+  get: (key: string) => Promise<string | null>
+): Promise<V5StagedEventRead | null> {
+  const detail = await readV5StagedEventContent(
+    rootBody,
+    worldId,
+    revision,
+    eventId,
+    get
+  );
+  if (!detail) return null;
+  const prefix = `worlds/${worldId}/revisions/${revision}/v5/`;
+  const load = (key: string) =>
+    readV5StagedDocument(rootBody, `${prefix}${key}`, get);
   const positionBody = await load(`temporal/events/${eventId}/position.json`);
   if (positionBody === null) throw Error("v5_event_temporal_missing");
   const temporal = JSON.parse(positionBody) as TemporalDetail;

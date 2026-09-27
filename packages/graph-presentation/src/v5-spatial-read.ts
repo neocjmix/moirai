@@ -137,6 +137,19 @@ export async function readV5WorldViewport(
         if (!validBox(item.bounds) || !item.shape?.event_id)
           throw Error("v5_viewport_node_invalid");
         if (!spatialIntersects(item.bounds, viewport)) continue;
+        const hint = item.shape.read_hint;
+        if (
+          hint !== undefined &&
+          (typeof hint.title !== "string" ||
+            (hint.collection_ids !== undefined &&
+              (!Array.isArray(hint.collection_ids) ||
+                hint.collection_ids.length > 8 ||
+                hint.collection_ids.some(
+                  (id: string, i: number, ids: readonly string[]) =>
+                    typeof id !== "string" || (i > 0 && ids[i - 1]! >= id)
+                ))))
+        )
+          throw Error("v5_viewport_hint_invalid");
         shapes.push(item.shape);
         if (shapes.length === limit && index + 1 < node.entries.length)
           pending.push({ ...ref, offset: index + 1 });

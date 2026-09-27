@@ -3882,6 +3882,7 @@ export function GraphShell({
                         onPointerDown={(event) => handleCompositeRegionPointerDown(region, event)}
                         style={{
                           fill: compositeStyle?.fill,
+                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 ? "none" : undefined,
                           mixBlendMode: "darken",
                           fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY * region.renderedOpacity * region.surfaceOpacity,
                           stroke: compositeStyle?.label,
@@ -3906,6 +3907,7 @@ export function GraphShell({
                     </g>
                   ))}
                   {visibleRelationSegments.map((segment) => {
+                    if (segment.opacity === 0) return null;
                     const relationStyle = getRelationStyle(segment.typeKey);
                     return (
                       <g key={segment.id}>
@@ -3948,6 +3950,9 @@ export function GraphShell({
                     );
                   })}
                   {chartInstantPoints.map((point) => {
+                    // Keep geometry available for zoom/layout, but do not mount
+                    // invisible SVG nodes or an invisible interactive hit target.
+                    if (point.opacity === 0) return null;
                     const labelHitWidth = Math.max(point.label.length * 8 + 20, 64);
                     const hitTargetWidth = Math.max(labelHitWidth + 20, 24);
                     const hitTargetHeight = 36;
@@ -3999,6 +4004,7 @@ export function GraphShell({
                         style={{
                           fill: compositeStyle?.label,
                           opacity: region.renderedOpacity * region.surfaceOpacity * 0.45,
+                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 ? "none" : undefined,
                         }}
                         textAnchor={region.labelAnchor}
                       >
@@ -4014,6 +4020,7 @@ export function GraphShell({
                     );
                   })}
                   {visibleRelationSegments.map((segment) => {
+                    if (segment.opacity === 0) return null;
                     const relationStyle = getRelationStyle(segment.typeKey);
                     return segment.showLabel && relationStyle.label ? (
                       segment.typeKey === "causes" && !segment.isSurrogate ? (

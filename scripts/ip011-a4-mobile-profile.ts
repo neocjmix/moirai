@@ -58,30 +58,32 @@ try {
       .waitFor({ state: "visible", timeout: 20000 });
     // Dense labels overlap. Pick an actually hit-testable visible Event,
     // as a reader would, rather than forcing a covered DOM-first element.
-    const targetId = await page.evaluate(() => {
+    const target = await page.evaluate(() => {
       for (const point of document.querySelectorAll("[data-event-point-id]")) {
         const box = point.getBoundingClientRect();
-        const x = box.x + box.width / 2,
-          y = box.y + box.height / 2;
-        if (x < 20 || x > innerWidth - 20 || y < 150 || y > innerHeight - 100)
-          continue;
-        const hit = document
-          .elementFromPoint(x, y)
-          ?.closest("[data-event-point-id]");
-        if (
-          hit?.getAttribute("data-event-point-id") ===
-          point.getAttribute("data-event-point-id")
-        )
-          return point.getAttribute("data-event-point-id");
+        const left = Math.max(1, box.left),
+          right = Math.min(innerWidth - 1, box.right);
+        const top = Math.max(1, box.top),
+          bottom = Math.min(innerHeight - 1, box.bottom);
+        if (left >= right || top >= bottom) continue;
+        for (const x of [left + (right - left) / 2, left + 1, right - 1]) {
+          for (const y of [top + (bottom - top) / 2, top + 1, bottom - 1]) {
+            const hit = document
+              .elementFromPoint(x, y)
+              ?.closest("[data-event-point-id]");
+            if (hit === point)
+              return { id: point.getAttribute("data-event-point-id"), x, y };
+          }
+        }
       }
       return null;
     });
-    if (!targetId) throw Error("a4_mobile_no_hit_testable_event");
-    const first = page.locator(`[data-event-point-id="${targetId}"]`).first();
+    if (!target) throw Error("a4_mobile_no_hit_testable_event");
+    const first = page.locator(`[data-event-point-id="${target.id}"]`).first();
     const graphReadyMs = performance.now() - started;
     const htmlBytes = (await response.body()).byteLength;
     const drawerStarted = performance.now();
-    await first.click();
+    await page.mouse.click(target.x, target.y);
     await page.getByTestId("event-drawer-sheet").waitFor({ state: "visible" });
     const drawerMs = performance.now() - drawerStarted;
     navigations.push({

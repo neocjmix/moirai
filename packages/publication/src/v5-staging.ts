@@ -88,6 +88,14 @@ export function finalizeV5VerifiedSpatialArtifacts(
       throw Error("v5_complete_content_invalid");
   }
   const eventIds = new Set(state.events.map((event) => event.id));
+  const titles = new Map(state.events.map((event) => [event.id, event.title]));
+  const memberships = new Map<string, string[]>();
+  for (const member of state.eventCollectionMemberships) {
+    const ids = memberships.get(member.event_id) ?? [];
+    ids.push(member.collection_id);
+    memberships.set(member.event_id, ids);
+  }
+  for (const ids of memberships.values()) ids.sort();
   for (const system of state.timeSystems) {
     const spatialPrefix = `${prefix}spatial/${system.id}/`;
     const manifest = JSON.parse(
@@ -102,7 +110,12 @@ export function finalizeV5VerifiedSpatialArtifacts(
       if (!key.startsWith(`${spatialPrefix}nodes/0/`)) continue;
       const leaf = JSON.parse(body) as {
         kind: string;
-        entries: { shape: { event_id: string } }[];
+        entries: {
+          shape: {
+            event_id: string;
+            read_hint?: { title: string; collection_ids?: string[] };
+          };
+        }[];
       };
       if (leaf.kind !== "leaf" || !Array.isArray(leaf.entries))
         throw Error("v5_complete_spatial_invalid");
@@ -112,6 +125,17 @@ export function finalizeV5VerifiedSpatialArtifacts(
           seen.has(entry.shape.event_id)
         )
           throw Error("v5_complete_spatial_invalid");
+        const hint = entry.shape.read_hint;
+        if (hint !== undefined) {
+          const ids = memberships.get(entry.shape.event_id) ?? [];
+          if (
+            hint.title !== titles.get(entry.shape.event_id) ||
+            (hint.collection_ids !== undefined &&
+              (ids.length > 8 ||
+                JSON.stringify(hint.collection_ids) !== JSON.stringify(ids)))
+          )
+            throw Error("v5_complete_spatial_hint_invalid");
+        }
         seen.add(entry.shape.event_id);
       }
     }

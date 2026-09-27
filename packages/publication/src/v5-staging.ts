@@ -147,14 +147,19 @@ export function finalizeV5VerifiedSpatialArtifacts(
  * content-and-temporal-detail-only cannot yet serve a complete viewport. */
 export async function publishV5StagedArtifacts(
   store: ObjectStore,
-  artifacts: V5StagedArtifacts
+  artifacts: V5StagedArtifacts,
+  assertActive?: () => Promise<void>
 ): Promise<string> {
   verifyV5StagedIndex(artifacts);
-  for (const { key, body } of [
-    ...artifacts.documents,
-    ...artifacts.index,
-    artifacts.root
-  ]) {
+  const count = artifacts.documents.length + artifacts.index.length + 1;
+  for (let i = 0; i < count; i++) {
+    if (i % 1024 === 0) await assertActive?.();
+    const { key, body } =
+      i < artifacts.documents.length
+        ? artifacts.documents[i]!
+        : i < count - 1
+          ? artifacts.index[i - artifacts.documents.length]!
+          : artifacts.root;
     const written = await store.put(key, body, { immutable: true });
     if (written.status === 412) {
       const existing = await store.get(key);

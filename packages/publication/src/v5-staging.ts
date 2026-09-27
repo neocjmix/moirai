@@ -175,15 +175,8 @@ export async function publishV5StagedArtifacts(
   assertActive?: () => Promise<void>
 ): Promise<string> {
   verifyV5StagedIndex(artifacts);
-  const count = artifacts.documents.length + artifacts.index.length + 1;
-  for (let i = 0; i < count; i++) {
-    if (i % 1024 === 0) await assertActive?.();
-    const { key, body } =
-      i < artifacts.documents.length
-        ? artifacts.documents[i]!
-        : i < count - 1
-          ? artifacts.index[i - artifacts.documents.length]!
-          : artifacts.root;
+  const count = artifacts.documents.length + artifacts.index.length;
+  const write = async ({ key, body }: { key: string; body: string }) => {
     const written = await store.put(key, body, { immutable: true });
     if (written.status === 412) {
       const existing = await store.get(key);
@@ -192,7 +185,28 @@ export async function publishV5StagedArtifacts(
     } else if (written.status !== 200 && written.status !== 201) {
       throw Error("v5_immutable_write_failed");
     }
+  };
+  // Small bounded batches hide per-object request latency without buffering a
+  // second World or leaving writes running after a rejected publication.
+  for (let offset = 0; offset < count; offset += 8) {
+    if (offset % 1024 === 0) await assertActive?.();
+    const batch = Array.from(
+      { length: Math.min(8, count - offset) },
+      (_, item) => {
+        const i = offset + item;
+        return write(
+          i < artifacts.documents.length
+            ? artifacts.documents[i]!
+            : artifacts.index[i - artifacts.documents.length]!
+        );
+      }
+    );
+    const results = await Promise.allSettled(batch);
+    const failed = results.find((result) => result.status === "rejected");
+    if (failed?.status === "rejected") throw failed.reason;
   }
+  await assertActive?.();
+  await write(artifacts.root);
   return artifacts.root.key;
 }
 

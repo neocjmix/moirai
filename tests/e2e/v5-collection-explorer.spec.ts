@@ -18,7 +18,7 @@ async function sources(page: Page) {
   await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
 }
 
-test("v5 uses the original URDR shell, pan, one shared node and all-off selection", async ({
+test("v5 preserves pan, compact Composite identity, shared Event and all-off selection", async ({
   page
 }, testInfo) => {
   const errors: string[] = [];
@@ -26,26 +26,36 @@ test("v5 uses the original URDR shell, pan, one shared node and all-off selectio
   await page.goto(graph);
   await expect(page.getByTestId("graph-stage")).toBeVisible();
   await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
-  await expect(node(page)).toBeVisible();
-  await expect(node(page)).toHaveCount(1);
+  const composite = page.locator(`[data-composite-point-id="${war}"]`);
+  await expect(composite).toBeVisible();
+  await expect(composite).toHaveCount(1);
+  // The one-child Composite used to leave an invisible Event hit target.
+  // Its visible compact point now opens the same Composite drawer.
+  await composite.locator("rect").click();
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(
+    "임진왜란 서사"
+  );
+  await page.getByTestId("event-drawer-close").click();
+  await page.getByTestId("event-drawer-sheet").waitFor({ state: "detached" });
   await page.screenshot({
     path: testInfo.outputPath("v5-restored-mobile.png"),
     animations: "disabled"
   });
-  const before = await node(page).boundingBox();
+  const before = await composite.boundingBox();
   await page.mouse.move(25, 450);
   await page.mouse.down();
   await page.mouse.move(65, 510, { steps: 8 });
   await page.mouse.up();
   await expect
-    .poll(async () => (await node(page).boundingBox())?.x)
+    .poll(async () => (await composite.boundingBox())?.x)
     .toBeGreaterThan(before!.x + 25);
   await sources(page);
   await page.getByRole("checkbox", { name: "조선사", exact: true }).uncheck();
   await expect(node(page)).toHaveCount(1);
   await page.getByRole("checkbox", { name: "일본사", exact: true }).uncheck();
   await expect(node(page)).toHaveCount(0);
-  await page.getByRole("checkbox", { name: "조선사", exact: true }).check();
+  await expect(composite).toHaveCount(0);
+  await page.getByRole("checkbox", { name: "일본사", exact: true }).check();
   await expect(node(page)).toHaveCount(1);
   await page.getByRole("button", { name: "소스 쿼리 접기" }).click();
   await node(page).click();

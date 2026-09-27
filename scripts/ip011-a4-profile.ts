@@ -131,6 +131,22 @@ const state: CanonicalState = {
 };
 const started = performance.now();
 const phases: Record<string, number | string> = {};
+const memoryPhases: Array<{
+  phase: string;
+  elapsed_ms: number;
+  rss_mib: number;
+  heap_used_mib: number;
+}> = [];
+const observeMemory = (phase: string) => {
+  const memory = process.memoryUsage();
+  memoryPhases.push({
+    phase,
+    elapsed_ms: +(performance.now() - started).toFixed(2),
+    rss_mib: +(memory.rss / 1048576).toFixed(2),
+    heap_used_mib: +(memory.heapUsed / 1048576).toFixed(2)
+  });
+};
+if (process.env.A4_MEMORY_PHASES === "1") observeMemory("state_built");
 if (process.env.A4_PHASES === "1") {
   let phaseStart = performance.now();
   const temporal = projectV5WorldTemporal(state, 31);
@@ -159,7 +175,13 @@ if (process.env.A4_PHASES === "1") {
 }
 const artifacts =
   process.env.A4_COMPLETE === "1"
-    ? (await buildV5WorldCompleteArtifacts(state, 31)).artifacts
+    ? (
+        await buildV5WorldCompleteArtifacts(
+          state,
+          31,
+          process.env.A4_MEMORY_PHASES === "1" ? observeMemory : undefined
+        )
+      ).artifacts
     : buildV5WorldSpatialStagedArtifacts(state, 31);
 const buildMs = performance.now() - started;
 const objects = new Map(
@@ -168,6 +190,7 @@ const objects = new Map(
     body
   ])
 );
+if (process.env.A4_MEMORY_PHASES === "1") observeMemory("profile_map_built");
 const manifest = JSON.parse(
   artifacts.documents.find(({ key }) =>
     key.endsWith("/spatial/gregorian/manifest.json")
@@ -253,6 +276,7 @@ if (process.env.A4_CAPTURE_DIR) {
     })
   );
 }
+if (process.env.A4_MEMORY_PHASES === "1") observeMemory("profile_output_ready");
 process.stdout.write(
   JSON.stringify({
     count,
@@ -270,6 +294,7 @@ process.stdout.write(
     viewport,
     local_bounds: example,
     phases,
+    memory_phases: memoryPhases,
     rss_mb: Math.round(process.memoryUsage().rss / 1048576),
     samples
   }) + "\n"

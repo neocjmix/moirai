@@ -42,6 +42,8 @@ A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 �
 | A6 역사 dogfooding 재개                   | A3+A4+A5                     | 단종·임진왜란·일본사 신규 세션 작성과 더 깊은 병렬 서사                                                                      | 정책 준수 transcript, reuse·Narrative·temporal 품질과 read performance 기준, 회귀 없음                                                    |
 | 이후 M5 재편                              | A6                           | 아래 잔여 lifecycle·portability·governance/release                                                                           | 현 target 계약 기준으로 별도 실행 활성화                                                                                                  |
 
+2026-09-28 재계획: A4의 종료 범위와 A5의 실험·채택 순서는 [reader performance plan](IP-011-reader-performance-plan.md)이 상세화한다. A4는 기존 표현의 bounded cache/active set/geometry 재사용과 장시간 복귀 성능까지 완료한다. 새 고정 타일·다중 레벨 프로토콜, 밀도 정책·임시 cluster·Collection discovery 결합은 A5-E1~E3에서 시험·채택한다. 기존 A4 고정 예산과 A5 discovery exit는 유지하며 A5는 아직 비활성이다. A6의 A5 선행에는 채택안 통합·검증까지 포함한다.
+
 A1 transition policy는 v4 서버에 v5 semantics를 쓰라고 지시하지 않는다. A2에서 target policy를 구현하고 A3에서 contract와 함께 교체한다. policy guard는 A1의 격리된 v5 prototype에서 검증하고 A2 contract에 통합한 뒤 A3에서 신규 production write에 강제한다. 기존 strict v4 payload에 policy 필드를 조용히 추가하지 않는다. v4를 영구 호환하지 않는다. A4까지 bulk 역사 입력은 멈추고 회귀용 소규모 fixture만 사용한다. 계획 단계 A0 완료는 A1 구현의 자동 승인이 아니다.
 
 ## 4. 기존 milestone/backlog disposition

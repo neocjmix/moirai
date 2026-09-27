@@ -320,23 +320,45 @@ function buildV5Index(
       throw Error("v5_index_document_invalid");
   }
   const index: V5StagedObject[] = [];
-  let level = 0;
-  let refs: Ref[] = documents.map(({ key, body }) => ({
-    key,
-    sha256: hash(body),
-    first_key: key,
-    last_key: key
-  }));
-  do {
+  // Serialize each leaf as its bounded fanout fills, rather than retaining
+  // one Ref object per World document alongside the complete document set.
+  let refs: Ref[] = [];
+  for (
+    let offset = 0;
+    offset < documents.length || offset === 0;
+    offset += fanout
+  ) {
+    const entries = documents
+      .slice(offset, offset + fanout)
+      .map(({ key, body }) => ({
+        key,
+        sha256: hash(body),
+        first_key: key,
+        last_key: key
+      }));
+    const key = `${stagingPrefix}index/0/${refs.length}.json`;
+    const node: Node = {
+      kind: "leaf",
+      world_id: worldId,
+      revision,
+      entries
+    };
+    const body = JSON.stringify(node);
+    index.push({ key, body });
+    refs.push({
+      key,
+      sha256: hash(body),
+      first_key: entries[0]?.first_key ?? "",
+      last_key: entries.at(-1)?.last_key ?? ""
+    });
+  }
+  let level = 1;
+  while (refs.length > fanout) {
     const next: Ref[] = [];
-    for (
-      let offset = 0;
-      offset < refs.length || offset === 0;
-      offset += fanout
-    ) {
+    for (let offset = 0; offset < refs.length; offset += fanout) {
       const key = `${stagingPrefix}index/${level}/${next.length}.json`;
       const node: Node = {
-        kind: level === 0 ? "leaf" : "branch",
+        kind: "branch",
         world_id: worldId,
         revision,
         entries: refs.slice(offset, offset + fanout)
@@ -352,7 +374,7 @@ function buildV5Index(
     }
     refs = next;
     level++;
-  } while (refs.length > fanout);
+  }
   const root = {
     key: `${stagingPrefix}manifest.json`,
     body: JSON.stringify({

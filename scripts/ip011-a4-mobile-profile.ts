@@ -108,12 +108,27 @@ try {
       continue;
     }
     await page.getByTestId("event-drawer-close").click();
+    await page.getByTestId("event-drawer-sheet").waitFor({ state: "detached" });
     const stage = page.getByTestId("graph-stage");
     const bounds = await stage.boundingBox();
     if (!bounds) throw Error("a4_mobile_graph_bounds_missing");
     const pointBefore = await first.boundingBox();
     if (!pointBefore) throw Error("a4_mobile_point_bounds_missing");
     const frameSample = async (name: string, gesture: () => Promise<void>) => {
+      // Post-ready budget: finish the preceding drawer/panel transition before
+      // sampling. The measured gesture and all its resulting work stay inside.
+      await page.evaluate(async () => {
+        await document.fonts.ready;
+        await Promise.all(
+          document
+            .getAnimations()
+            .filter(
+              (animation) =>
+                animation.effect?.getTiming().iterations !== Infinity
+            )
+            .map((animation) => animation.finished.catch(() => {}))
+        );
+      });
       const pending = page.evaluate(async () => {
         // Let the sampler's evaluation and the previous UI action settle
         // before counting frames. Gesture work remains inside the 600 samples.

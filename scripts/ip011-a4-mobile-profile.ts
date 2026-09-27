@@ -5,7 +5,8 @@ import { devices, webkit, type Response } from "@playwright/test";
 const baseURL =
   process.env.PUBLIC_INTEGRATION_URL ??
   "https://moirai-production-8ed1.up.railway.app";
-const worldId = "01995c2a-7b00-7000-8000-000000000101";
+const worldId =
+  process.env.A4_WORLD_ID ?? "01995c2a-7b00-7000-8000-000000000101";
 const url = `/graph/v5?world=${worldId}`;
 const p95 = (values: number[]) =>
   values.length
@@ -173,7 +174,7 @@ try {
     await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
     await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
     const checkbox = page.getByRole("checkbox", {
-      name: "조선 전기 연표",
+      name: process.env.A4_COLLECTION_LABEL ?? "조선 전기 연표",
       exact: true
     });
     await checkbox.scrollIntoViewIfNeeded();
@@ -236,6 +237,8 @@ process.stdout.write(
   JSON.stringify({
     device: "iPhone 14 WebKit emulation, no throttling",
     world_id: worldId,
+    scale: process.env.A4_SCALE ?? "production",
+    shape: process.env.A4_SHAPE ?? "production",
     navigations,
     gestures,
     pan_displacement: panDisplacement,

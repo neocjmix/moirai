@@ -1,0 +1,19 @@
+{
+  "phase": "worker_recovery",
+  "node": "v22.23.2",
+  "postgres": "17-alpine",
+  "events": 1000,
+  "fixture": "history-only unplaced Events",
+  "elapsed_ms": 37528.88351,
+  "heartbeat_renewed": true,
+  "cancel_signal": "SIGKILL",
+  "attempts": 2,
+  "immutable_reuse": 100,
+  "uploaded_objects": 2020,
+  "object_bytes": 1930830,
+  "pointer_writes": 1,
+  "served_revision": 32,
+  "previous_pointer_preserved_during_upload": true,
+  "lease_expiry": "SQL time acceleration after process death",
+  "failures": []
+}

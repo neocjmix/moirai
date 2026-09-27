@@ -261,3 +261,15 @@ Pan 실제 점 이동과 zoom URL 변화 검사도 기존대로 유지한다. �
 - [PR #221](https://github.com/neocjmix/moirai/pull/221)은 문서 60만 개의 leaf Ref 배열을 bounded leaf chunk 생성으로 바꾸었으나 [hosted 100k 36289128377](https://github.com/neocjmix/moirai/actions/runs/36289128377) peak **4799.36 MiB**였다. 산출물 601,597 documents/779,523,312 B, 10k 예산, [12 형상 36289128520](https://github.com/neocjmix/moirai/actions/runs/36289128520), [CI/PG17/모바일 36289128414](https://github.com/neocjmix/moirai/actions/runs/36289128414)는 통과했지만 peak 개선이 없어 **병합 없이 종료**했다. 이 후보는 실행 환경 연결 장애로 로컬 검사를 수행하지 못했고 CI를 검증 경계로 삼았다.
 
 최신 운영 코드에는 두 후보가 포함되지 않는다. 100k worker peak 약 4.8–5.1GiB와 약 621k 객체의 실제 업로드 처리량, queue 수준의 프로세스 중단/재시작, dense·대형 Collection cold/warm 20/50 및 100k 모바일 frame 재현성은 A4 미완료 게이트다. A5·A6·M5는 시작하지 않는다.
+
+## Slice 22: 실제 worker 업로드 중단·큐 재시작 검증
+
+2026-09-27 시작 시 main/API/worker/web은 `8aa7c91812fbdaf89d74348cdd3842b89cded6dd`, 공개 served Revision 32였다. 직전 증거 배포의 [smoke 36289703247](https://github.com/neocjmix/moirai/actions/runs/36289703247)는 public readiness·live iPhone WebKit·인증 authoring 모두 성공했다.
+
+[PR #223](https://github.com/neocjmix/moirai/pull/223)은 제품 코드를 바꾸지 않고 compiled Lachesis worker를 별도 프로세스로 실행하는 PG17/local HTTP object-store 회귀를 추가한다. 새 임시 DB의 history-only 1k 미배치 Event와 Narrative를 재구성하며, 로컬 store는 immutable PUT와 ETag 조건부 포인터 교체를 처리한다. 기존 build-only SIGKILL 시험과 달리 실제 claim·heartbeat·S3ObjectStore HTTP 요청·재시작·DB 완료 기록을 통과한다. 객체 인증 서명 검증이나 외부 S3 서비스 지연을 재현하는 시험은 아니다.
+
+[hosted run 36298284643](https://github.com/neocjmix/moirai/actions/runs/36298284643), [원시 결과](a4-worker-recovery.json): 첫 시도의 100번째 immutable PUT 응답을 보류하고 실제 30초 heartbeat의 lease 연장을 확인한 뒤 SIGKILL했다. Revision 31 포인터가 그대로 유지됐다. 두 번째 worker의 readiness를 확인한 뒤에도 만료 전 claim은 attempt 1에 머물렀다. 죽은 프로세스의 lease를 **이 임시 DB에서만 SQL로 만료**시킨 뒤 attempt 2가 기존 객체 100개를 비교·재사용하고 업로드를 완료했다. 새 객체/포인터 PUT 2,020회, 최종 store 1,930,830 B, 포인터 교체 1회, root digest 검증 및 PostgreSQL served Revision 32/ready 일치, 전체 관측 37.53초(의도적 heartbeat 대기 포함), failures 0. 실제 300초 만료를 기다리는 시간 시험은 아니다.
+
+초기 run 36297980967은 fixture의 v5 정책 identity 누락, 36298088379는 CI의 worker runtime dependency 미빌드로 실패했다. 정책 제약을 유지한 채 fixture에 실제 v5 정책을 기록하고 배포와 같은 compiled worker를 실행하도록 고쳤다. 런타임 오류를 회피하거나 예산을 완화하지 않았다. 로컬 strict typecheck·lint·gitleaks 성공. 최종 CI·모바일·배포 SHA/smoke는 PR 검증 댓글에 이어 기록한다.
+
+이 slice는 1k 복구 경로만 검증한다. 100k 약 621k 객체의 실제 업로드 처리량·규모별 복구, dense/대형 Collection의 종단간 cold/warm과 모바일 1k/10k/100k frame exit는 여전히 미완료다. A3 UI/그래프/드로어는 변경하지 않았고 A5·A6·M5도 시작하지 않았다.

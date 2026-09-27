@@ -1,8 +1,8 @@
 # 현재 구현 상태
 
-**IP-011 A3 완료; A4 진행 중 — 모바일 최대 frame 기준 미달.** A3의 v5 운영 전환·기존 Atropos UI 복구 기준선은 유지한다. A4는 full-route 1k/10k/100k × 4 shape의 cold/warm·읽기량, PG17 authoring search, 10k worker 예산과 실제 100k 업로드 중단/재시작을 통과했다. 그러나 WebKit 600-frame max ≤100ms가 반복 실행에서 110/126ms로 실패해 종료할 수 없다. p95 성공만으로 완료 처리하지 않는다. [A4 실행 증거](../evidence/ip011/a4-execution.md)의 Slice 24–25가 최신 결과와 기각 후보를 소유한다.
+**IP-011 A3 완료; A4 진행 중 — 순간 frame 초과와 장시간 탐색 작업량 문제 미해결.** 기존 서버 full-route/authoring/worker의 검증 범위는 [A4 실행](../evidence/ip011/a4-execution.md) Slice 24–25를 따른다. PR #226 checkpoint e9be564의 세 서비스 배포, main CI 36315919416, post-deploy 36316264388은 성공했다. 최종 후보 scale run 36315902479에서 1k/10k dense pan max 123/131ms로 고정 100ms를 초과했다. 이는 현재 새 실측이 아닌 마지막 검증 기록이다.
 
-운영 checkpoint는 PR #227 `8c556cf`(bounded 8-object upload)이며 세 서비스 배포와 post-deploy `36314918364`가 성공했다. 작은 Composite 점 표시(PR #225)는 배포돼 있다. pointer batching/bounds-read 개선(PR #226)은 기능 회귀·배포 확인을 별도로 기록하며 이 변경의 완료를 A4 완료로 확대하지 않는다. 사용자 실행·쓰기·수정·병합·배포 위임은 유지한다. A5/A6/M5와 새 cache protocol 구현은 비활성이다.
+사용자의 장시간 탐색 후 지속 저하 보고와 코드의 부분 응답 누적·v5 cache/취소 부재·반복 geometry 계산을 [A4 종료/A5 실험 재계획](IP-011-reader-performance-plan.md)에 반영했다. 다음 실행은 A4-R1 요청/보관/active 분리 → R2 현재 화면 계산 제한 → R3 연속·왕복 탐색과 기존 gate다. 아직 구현하지 않았다. A4 완료를 위해 새 cluster/fade 규칙으로 사건을 숨기지 않는다. 고정 tile/level 프로토콜과 밀도·Collection discovery 결합은 A5-E1~E3의 후속 실험이며 비활성이다. A6/M5도 비활성이다. 기존 UI와 작은 Composite 점 표시(PR #225)를 유지한다.
 
 2026-09-25 운영 World는 Revision 30→31의 v5 schema/content로 이전됐고 새 암호화 owner-full 백업·격리 복원·clone migration 재현을 통과했다. 인증된 v5 정책 기반 운영 쓰기와 동일 Change Set 재생으로 Revision 32가 됐으며 공개 완전 Publication 포인터는 v5 served/current/target 32다. 127 Event·6 Collection·415 Relation·133 Narrative가 보존됐다. API·worker·web은 v5로 동작하고 구형 v4 변경 경로는 404, 미인증 v5 commit은 401이다. v5 공개·인증 배포 smoke 36093424585와 운영 iPhone WebKit 미배치 Event·Collection·Composite 탐색이 통과해 A3의 아홉 시나리오를 충족했다. IP-004~010 완료 이력은 유지한다.
 

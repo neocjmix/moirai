@@ -1,6 +1,6 @@
 # IP-011 A3 완료 기준선과 A4 인계
 
-2026-09-25. 이 문서는 다음 세션의 실행 인계다. 제품 의미와 exit의 권위는 [IP-011](IP-011-architecture-realignment.md), [TS-006](../technical-specifications/TS-006-atropos-publication.md), [A1 고정 budget](../evidence/ip011/a1-execution.md)에 있다. 현재 활성 상태는 [CURRENT](CURRENT.md)를 따른다. 다음 세션에서 A4 실행 지시를 받으면 A4를 활성화하고 진행한다.
+2026-09-25. 이 문서는 다음 세션의 실행 인계다. 제품 의미와 exit의 권위는 [IP-011](IP-011-architecture-realignment.md), [TS-006](../technical-specifications/TS-006-atropos-publication.md), [A1 고정 budget](../evidence/ip011/a1-execution.md)에 있다. 현재 활성 상태는 [CURRENT](CURRENT.md)를 따른다. A4는 진행 중이며 다음 실행은 [A4 종료/A5 실험 재계획](IP-011-reader-performance-plan.md)의 R1–R3를 따른다. 이 문서의 A3 SHA는 역사적 기준선이며 마지막 checkpoint는 CURRENT에서 확인한다.
 
 ## A3 완료 기준선
 
@@ -21,3 +21,7 @@ A4는 World/Collection 전체 materialization을 없애고 paged index, stable l
 [A1 budget](../evidence/ip011/a1-execution.md) 그대로 Ubuntu hosted runner/PostgreSQL 17/local object store/iPhone 14 WebKit/no throttling에서 측정하고 host/runtime·fixture shape·cache 상태·raw samples를 남긴다. cold process 20회: index+artifact 총 <=1 MiB, object <=256, p95 <=500 ms; warm 50회 p95 <=100 ms. 고정 query의 rows/bytes는 1k→100k에서 2배 이하, 전체 history replay 0. Dense overflow는 명시적 partial/continuation. 첫 decoded HTML 및 후속 graph response 각각 <=1 MiB. 모바일 20 navigation p95 graph-ready <=3000 ms, drawer <=1000 ms, page error 0. pan/zoom/Collection toggle 각각 post-ready 600 frame 이상에서 p95 <=33.4 ms, max <=100 ms. Authoring search/discovery도 cold/warm 500/100 ms p95와 명시적 continuation, discovery 후보 500·page 20. Worker는 별도 10k build <=180 s/<=3 GiB 회귀를 유지하고 100k CPU/RSS/output/cancel/restart를 보고한다. 예산을 조용히 완화하거나 warm-only 결과로 완료하지 않는다.
 
 종료 시 CI·PostgreSQL·WebKit·secret scan·배포 smoke를 통과시키고 World 증가 대비 bounded cost 및 cold/warm/dense/frame을 수치로 제출한다. 성공하지 못한 gate는 실패로 명시해 다음 slice에서 이어간다. 현재 A3에서 입력·응답·viewport·선형 연결 읽기에 상한이 있어도 상류 전체 작업과 cold latency·100k 비용은 아직 증명되지 않았다.
+
+## 2026-09-28 인계 보충
+
+A4는 기존 표현에서 데이터 보관과 현재 계산 대상을 분리하고 v5 응답 재사용/취소·부분 응답 누적·반복 geometry·퇴장 정리를 수정한다. 단일 gesture 후 idle 중심 측정만으로 장시간 탐색을 통과 처리하지 않는다. 연속 조작·동일 위치/배율 복귀의 상세 exit와 A5로 넘기는 고정 tile/level·밀도/cluster/Collection 실험은 [재계획](IP-011-reader-performance-plan.md)이 소유한다. A1 수치 상한은 유지한다.

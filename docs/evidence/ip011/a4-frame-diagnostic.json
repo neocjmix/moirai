@@ -1,0 +1,333 @@
+{
+  "run_id": 36315328270,
+  "commit": "3dbc4e17da2904b2ac00eb027e9099c6edd0fd65",
+  "samples": [
+    {
+      "device": "iPhone 14 WebKit emulation, no throttling",
+      "world_id": "019f5000-1300-7000-8000-000000000001",
+      "scale": "1000",
+      "shape": "dense",
+      "navigations": [
+        {
+          "graph_ready_ms": 2288.61,
+          "drawer_ms": 108.63,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 1131.73,
+          "drawer_ms": 109.39,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 606.33,
+          "drawer_ms": 126.86,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 616.02,
+          "drawer_ms": 93.12,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 612.56,
+          "drawer_ms": 143.75,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 617.76,
+          "drawer_ms": 110.43,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 615.06,
+          "drawer_ms": 123.72,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 600.77,
+          "drawer_ms": 122.26,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 650.49,
+          "drawer_ms": 120.58,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 622.99,
+          "drawer_ms": 146.91,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 611.4,
+          "drawer_ms": 141.78,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 604.42,
+          "drawer_ms": 106.35,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 611.58,
+          "drawer_ms": 145.76,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 623.5,
+          "drawer_ms": 98.86,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 612.24,
+          "drawer_ms": 136.99,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 627.52,
+          "drawer_ms": 109.92,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 608.33,
+          "drawer_ms": 144.54,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 643.66,
+          "drawer_ms": 129.85,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976,
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 642.45,
+          "drawer_ms": 119.48,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        },
+        {
+          "graph_ready_ms": 674.48,
+          "drawer_ms": 117.74,
+          "html_bytes": 22799,
+          "graph_response_bytes": [
+            83976
+          ],
+          "errors": []
+        }
+      ],
+      "gestures": {
+        "pan": {
+          "samples": 600,
+          "p95_ms": 18,
+          "max_ms": 86,
+          "dom_nodes": 323,
+          "long_frames": [
+            {
+              "index": 14,
+              "ms": 86
+            },
+            {
+              "index": 15,
+              "ms": 44
+            },
+            {
+              "index": 258,
+              "ms": 44
+            },
+            {
+              "index": 501,
+              "ms": 57
+            }
+          ],
+          "diagnosis": [
+            {
+              "index": 14,
+              "ms": 86,
+              "timer_ticks": 7,
+              "inputs": [
+                {
+                  "type": "pointerup",
+                  "at": 2667
+                }
+              ]
+            },
+            {
+              "index": 15,
+              "ms": 44,
+              "timer_ticks": 3,
+              "inputs": []
+            },
+            {
+              "index": 258,
+              "ms": 44,
+              "timer_ticks": 1,
+              "inputs": []
+            },
+            {
+              "index": 501,
+              "ms": 57,
+              "timer_ticks": 1,
+              "inputs": []
+            }
+          ]
+        },
+        "zoom": {
+          "samples": 600,
+          "p95_ms": 20,
+          "max_ms": 78,
+          "dom_nodes": 229,
+          "long_frames": [
+            {
+              "index": 12,
+              "ms": 35
+            },
+            {
+              "index": 172,
+              "ms": 61
+            },
+            {
+              "index": 553,
+              "ms": 78
+            }
+          ],
+          "diagnosis": [
+            {
+              "index": 12,
+              "ms": 35,
+              "timer_ticks": 1,
+              "inputs": [
+                {
+                  "type": "pointerup",
+                  "at": 12586
+                }
+              ]
+            },
+            {
+              "index": 172,
+              "ms": 61,
+              "timer_ticks": 1,
+              "inputs": []
+            },
+            {
+              "index": 553,
+              "ms": 78,
+              "timer_ticks": 1,
+              "inputs": []
+            }
+          ]
+        },
+        "collection_toggle": {
+          "samples": 600,
+          "p95_ms": 21,
+          "max_ms": 74,
+          "dom_nodes": 311,
+          "long_frames": [
+            {
+              "index": 168,
+              "ms": 74
+            }
+          ],
+          "diagnosis": [
+            {
+              "index": 168,
+              "ms": 74,
+              "timer_ticks": 0,
+              "inputs": []
+            }
+          ]
+        }
+      },
+      "automation_pointer_setup_ms": {
+        "pan": 4.8627010000018345,
+        "zoom": 14.048312000006263
+      },
+      "pan_displacement": {
+        "x": -40,
+        "y": -60
+      },
+      "collection_touch_trusted_clicks": 2,
+      "graph_ready_p95_ms": 1131.73,
+      "drawer_p95_ms": 145.76,
+      "failures": []
+    }
+  ]
+}

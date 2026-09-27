@@ -1,6 +1,8 @@
 # 현재 구현 상태
 
-**IP-011 A3 완료 기준선; A4 진행 중.** v5 운영 전환과 아홉 시나리오, 기존 Atropos UI 복구가 완료됐다. UI 기능 배포 `9ff100d`(PR #196), 증거 병합 `9dbdd99`(PR #197)가 기준선이다. 기존 App·그래프·스타일·드로어를 유지하고 v5 데이터만 어댑터로 연결했다. CI `36114960810`과 기능 배포 smoke `36115276269`가 통과했고, `9dbdd99` 배포의 smoke `36115869450`도 통과했다. [A3 UI 복구](../evidence/ip011/a3-ui-restoration.md)와 [A4 인계](IP-011-A4-handoff.md)에 근거와 시작 조건을 기록한다. A4의 성능/규모 exit는 아직 검증되지 않았다. 사용자 실행·쓰기·수정·삭제·병합·배포 위임(2026-09-22)은 유지한다. M5는 별도 후속 범위다.
+**IP-011 A3 완료; A4 진행 중 — 모바일 최대 frame 기준 미달.** A3의 v5 운영 전환·기존 Atropos UI 복구 기준선은 유지한다. A4는 full-route 1k/10k/100k × 4 shape의 cold/warm·읽기량, PG17 authoring search, 10k worker 예산과 실제 100k 업로드 중단/재시작을 통과했다. 그러나 WebKit 600-frame max ≤100ms가 반복 실행에서 110/126ms로 실패해 종료할 수 없다. p95 성공만으로 완료 처리하지 않는다. [A4 실행 증거](../evidence/ip011/a4-execution.md)의 Slice 24–25가 최신 결과와 기각 후보를 소유한다.
+
+운영 checkpoint는 PR #227 `8c556cf`(bounded 8-object upload)이며 세 서비스 배포와 post-deploy `36314918364`가 성공했다. 작은 Composite 점 표시(PR #225)는 배포돼 있다. pointer batching/bounds-read 개선(PR #226)은 기능 회귀·배포 확인을 별도로 기록하며 이 변경의 완료를 A4 완료로 확대하지 않는다. 사용자 실행·쓰기·수정·병합·배포 위임은 유지한다. A5/A6/M5와 새 cache protocol 구현은 비활성이다.
 
 2026-09-25 운영 World는 Revision 30→31의 v5 schema/content로 이전됐고 새 암호화 owner-full 백업·격리 복원·clone migration 재현을 통과했다. 인증된 v5 정책 기반 운영 쓰기와 동일 Change Set 재생으로 Revision 32가 됐으며 공개 완전 Publication 포인터는 v5 served/current/target 32다. 127 Event·6 Collection·415 Relation·133 Narrative가 보존됐다. API·worker·web은 v5로 동작하고 구형 v4 변경 경로는 404, 미인증 v5 commit은 401이다. v5 공개·인증 배포 smoke 36093424585와 운영 iPhone WebKit 미배치 Event·Collection·Composite 탐색이 통과해 A3의 아홉 시나리오를 충족했다. IP-004~010 완료 이력은 유지한다.
 

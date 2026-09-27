@@ -286,3 +286,32 @@ PR #224는 기존 내부 reader 측정을 실제 shell/search route, 전체 UUID
 
 - 15:56 KST: 화면상 충분히 작은 Composite를 면적 대신 점으로 표시하도록 명시적으로 요청했다. 작은 화면 footprint에서만 같은 Composite identity/drawer를 가진 점으로 바꾸고, 확대하면 영역을 복원한다. 일반 레이아웃 교체나 canonical Time Event 변경이 아니다. 경계 진동 방지와 모바일 회귀를 검증한다.
 - 16:01 KST: 기존 작업을 마친 뒤 작은 구간별 cache, 서버에서 준비하는 상태별 작은 응답, 잦은 fetch의 trade-off를 후속 검토한다. 지금 cache 프로토콜 변경을 시작하지 않는다. 실측 server latency/왕복 지연, tile 크기·prefetch 여유·zoom별 payload·요청 빈도, World Revision/Collection selection cache key 및 이동 중 연속성을 비교할 것. A5/A6/M5는 활성화하지 않는다.
+
+
+## Slice 24: bounded upload와 최종 읽기 증거 (2026-09-27)
+
+PR #227의 `cf3535c1804b0d94b1d95c9612601782fe27416c`는 immutable upload를 최대 8개씩 처리한다. 실패한 batch는 전부 settle한 뒤 실패하며 다음 batch/root는 쓰지 않는다. 기존 객체의 내용 검증, root-last, claim fencing, pointer CAS는 보존한다. CI/PG17/mobile/security `36312770615`, 실제 worker recovery `36312770605` 성공. 큰 규모 실행 `36312770656`의 worker 10k/100k는 성공했지만 이 브랜치의 모바일 성능은 실패했다. worker 성공을 A4 전체 통과로 확대하지 않는다. [원시 worker 결과](a4-worker-batched.json).
+
+PR #227은 main `8c556cf3d3d9e5e4491e9eb7305b43746f51c4a9`로 병합됐고 API/worker/web 모두 동일 SHA로 SUCCESS다. 공개 status SHA도 일치하며 main CI `36314668325`와 post-deploy `36314918364`의 readiness/live mobile/authenticated authoring이 성공했다.
+
+프레임 후보와 합친 `fd090dd9057b8e83d21c6ee09208e7ea941f6689`의 `36314710167`에서 actual worker 10k/100k를 다시 통과했다. 10k build-to-first-PUT 7.90/10.92초, process peak 559.70MiB, 중단/heartbeat 대기를 포함한 전체 57.49초. 100k build-to-first-PUT 200.21/203.73초, peak 3613.53MiB, 전체 685.63초(11분 26초), CPU 첫/재시도 216.69/446.57초, 객체 621006개·1248073895B. 두 규모 모두 SIGKILL 후 이전 포인터 유지, 실제 heartbeat, 만료 전 claim 보존, 임시 DB에서 만료 시간을 앞당긴 뒤 attempt 2, immutable 104개 재사용, 최종 pointer 1회 교체/served 32를 확인했다. 10k의 고정 180초/3GiB는 통과; 100k에는 10k 상한을 잘못 적용하지 않으며 큰 RSS/전체 rebuild 비용은 운영 용량 위험으로 남는다. 외부 S3 지연·서명 인가·실제 300초 대기는 이 local HTTP store 시험 범위가 아니다.
+
+`6ec9c8b8fa1d5da75903a81e2a14a4ffc61007d8`의 `36314634126`에서 전체 UUID Publication의 실제 shell/search route 12개 scale/shape가 모두 통과했다. viewport/detail/collection/search 각각 20 fresh-process cold, 50 same-process warm; pointer/root/index/artifact를 포함한다. 최악 cold p95 217.24ms, warm p95 60.40ms, 241 objects, 1032933B. 같은 query의 1k→100k bytes 증가 최대 1.1062배, objects 최대 1.9091배다. Dense는 256 entities와 explicit truncated를 반환한다. [원시 전체 경로 시료](a4-full-route-final.json). OS page cache를 비우지 않으며 네트워크 왕복과 query 이전 module loading은 cold query body 시간에 포함하지 않는다. 브라우저 navigation은 별도 20회 측정한다.
+
+## Slice 25 진행: 모바일 최대 frame 재현성
+
+PR #226은 pointer의 마지막 위치를 RAF당 한 번 적용하며 pointer-down/up 전에 pending 위치를 flush한다. 추가로 client 좌표만 저장하고 stage bounds를 RAF당 한 번 읽어 매 pointermove의 강제 layout을 줄인다. A3 화면/좌표/selection/pinch/URL을 보존한다. profiler는 자동화 mouse hover 준비 시간을 따로 기록하고 contact/move/up 및 이후 렌더를 기존 600-frame/p95 33.4ms/max 100ms 예산 안에 남긴다.
+
+- `36314634126`: 12개 shape의 navigation/drawer/p95는 통과. graph-ready p95 최대 1405.42ms, drawer p95 최대 152.87ms. 11개 frame case는 통과하지만 100k large Collection toggle max 110ms 실패. [원시 frame 반복](a4-frame-repeat.json).
+- `36314710167`: 같은 runtime + batch upload의 1k dense pan max 126ms 실패(나머지 mobile 11개 성공). 바로 이전 실행의 1k dense 96ms 성공을 선택해 이 실패를 덮지 않는다.
+- 새 입력-burst E2E는 bounds read 0 synchronous/1 RAF를 통과했으나 pan 후 화면 밖으로 나가 제거되는 `event:founding`을 기다리다 실패했다. trace를 확인하고 pan 후에도 보이는 `event:capital`로 바꿨다. native pointer ID도 직접 capture한다. 기존 28개 mobile 회귀는 성공했다.
+- 별도 timer 진단 `36315328270`은 1k dense pan 86ms gap 동안 10ms timer 7회/pointerup을 관측했다. 이 86ms 전체가 연속 JS block인 것은 아니다. timer 자체가 조건을 바꾸므로 acceptance 대체나 >100ms gap의 원인 확정으로 쓰지 않는다. [진단 원시 시료](a4-frame-diagnostic.json). 첫 진단 `36315138037`은 tsx __name helper가 serialized callback에 들어가 실패했고 self-contained callback으로 수정했다.
+
+현재는 graph stage의 고정 viewport 안에 layout/paint를 제한하는 후보 `ec930160b9e6031e992be1dd81d09dac9bba23a6`를 검증 중이다. 해당 후보의 측정·기능 회귀·배포가 확인되기 전에는 채택 또는 A4 완료로 표시하지 않는다. 고정 budget, A5/A6/M5 범위는 변경하지 않는다.
+
+
+### Paint containment 후보 기각과 남은 종료 차단
+
+`ec930160b9e6031e992be1dd81d09dac9bba23a6`의 별도 진단 `36315569837`은 pan p95 18ms/max 106ms로 실패했다. 해당 106ms 중 10ms JS timer가 8회 실행되고 7회 pointermove와 pointerup이 처리됐다. 후속 74ms gap에도 timer 6회가 진행됐다. 연속 106ms JS block은 아니지만, WebKit presentation/compositor와 hosted scheduling 중 정확한 원인을 확정한 증거는 아니다. [실패 진단 시료](a4-frame-paint-diagnostic.json). `contain: layout paint; transform: translateZ(0)` 후보는 예산 통과/재현 가능한 개선을 입증하지 못해 제거했다.
+
+A4를 닫지 않는다. 서버 full-route 12-case cold/warm/bytes/object/growth, PG17 authoring query, 10k worker budget과 실제 100k interrupted upload/recovery는 검증됐지만 mobile absolute max 100ms는 반복해서 실패한다. p95 통과, 다른 run의 같은 case 성공, timer-instrumented 결과를 실패의 대체물로 쓰지 않는다. 현재 환경에서 안정적 통과를 달성하지 못했으며 불가능함의 수학적 증명이나 실제 iPhone 전체의 성능 결론은 아니다. 다음은 실패 구간의 WebKit presentation trace 또는 독립 동일-profile 재현으로 browser/host와 제품 paint 비용을 분리하는 작업이다. 기준 변경이 필요하다고 판단하더라도 현재 고정 기준을 조용히 변경하지 않는다. 새 cache protocol 검토와 A5/A6/M5는 시작하지 않는다.

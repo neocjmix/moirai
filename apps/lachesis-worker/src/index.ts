@@ -321,13 +321,18 @@ async function workerLoop(): Promise<void> {
       );
     }
   }
+  let nextRenderPollAt = 0;
   while (!stopping) {
     const processed =
       publicationMode === "quiesced" || publicationMode === "v5-hold"
         ? false
         : await processNextJob();
     let rendered = false;
-    if (publicationMode === "v5" && renderMode === "deferred") {
+    if (
+      publicationMode === "v5" &&
+      renderMode === "deferred" &&
+      Date.now() >= nextRenderPollAt
+    ) {
       try {
         rendered = await processNextRenderGeneration(
           database,
@@ -344,6 +349,7 @@ async function workerLoop(): Promise<void> {
           }) + "\n"
         );
       }
+      nextRenderPollAt = Date.now() + (rendered ? 1_000 : 5_000);
     }
     if (!processed && !rendered)
       await new Promise((resolve) => setTimeout(resolve, 1_000));

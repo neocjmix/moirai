@@ -1,0 +1,50 @@
+name: A5 public mobile checkpoint
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/atropos-web/**"
+      - "packages/graph-presentation/**"
+      - "packages/publication/**"
+      - "tests/live/ip011-a3.spec.ts"
+      - ".github/workflows/a5-public-mobile.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: a5-public-mobile
+  cancel-in-progress: true
+
+jobs:
+  public-mobile:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      PUBLIC_INTEGRATION_URL: ${{ vars.PUBLIC_INTEGRATION_URL || 'https://moirai-production-8ed1.up.railway.app' }}
+      EXPECTED_COMMIT_SHA: ${{ github.sha }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Wait for exact public deployment and corpus
+        run: pnpm smoke
+      - run: pnpm exec playwright install --with-deps webkit
+      - name: Public iPhone discovery and reading
+        run: pnpm exec playwright test --config playwright.ip011-live.config.ts
+      - name: Retain public mobile evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: a5-public-mobile-${{ github.sha }}
+          path: test-results/
+          if-no-files-found: ignore
+          retention-days: 7

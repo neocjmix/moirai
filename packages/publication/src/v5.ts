@@ -15,6 +15,7 @@ export { readV5StagedDocument } from "./v5-staging.js";
 export {
   buildV5SpatialStagedArtifacts,
   finalizeV5VerifiedSpatialArtifacts,
+  attachV5RenderDocuments,
   verifyV5StagedIndex
 } from "./v5-staging.js";
 export type { V5StagedArtifacts } from "./v5-staging.js";

@@ -1,0 +1,241 @@
+import type {
+  RenderPrimitive,
+  RenderPublication,
+  RenderTile
+} from "@moirai/graph-presentation/server";
+
+type Box = { minX: number; maxX: number; minY: number; maxY: number };
+type Manifest = Omit<RenderPublication, "documents" | "geometryDocuments">;
+type Asset = {
+  key: string;
+  sha256: string;
+  body:
+    | RenderTile
+    | {
+        format: "render-geometry/1";
+        worldId: string;
+        revision: number;
+        timeSystemId: string;
+        geometry: RenderPrimitive["geometry"];
+      };
+};
+const overlaps = (a: Box, b: Box) =>
+  a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
+const expand = (b: Box) => ({
+  minX: b.minX - (b.maxX - b.minX) / 2,
+  maxX: b.maxX + (b.maxX - b.minX) / 2,
+  minY: b.minY - (b.maxY - b.minY) / 2,
+  maxY: b.maxY + (b.maxY - b.minY) / 2
+});
+
+/** Renderer-neutral read working set. Selection never causes semantic reads. */
+export function createV5RenderTileClient(input: {
+  worldId: string;
+  revision: number;
+  timeSystemId: string;
+  fetcher?: typeof fetch;
+  maxBytes?: number;
+}) {
+  const fetcher = input.fetcher ?? fetch;
+  const maxBytes = input.maxBytes ?? 16 * 1024 * 1024;
+  const cache = new Map<string, { asset: Asset; bytes: number }>();
+  let manifestPromise: Promise<Manifest> | null = null;
+  let disposed = false;
+  const call = async (body: Record<string, unknown>, signal?: AbortSignal) => {
+    const response = await fetcher("/graph/v5/render", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({
+        world_id: input.worldId,
+        revision: input.revision,
+        time_system_id: input.timeSystemId,
+        ...body
+      }),
+      signal: signal ?? null
+    });
+    if (response.status === 409) throw Error("render_revision_changed");
+    if (!response.ok) throw Error("render_read_unavailable");
+    return response.json() as Promise<unknown>;
+  };
+  const manifest = () =>
+    (manifestPromise ??= call({ kind: "manifest" })
+      .then((value) => {
+        const item = value as Manifest;
+        if (
+          item.format !== "render-publication/1" ||
+          item.worldId !== input.worldId ||
+          item.revision !== input.revision ||
+          item.timeSystemId !== input.timeSystemId ||
+          !Array.isArray(item.tiles) ||
+          !Array.isArray(item.geometry) ||
+          !Number.isInteger(item.maxLevel)
+        )
+          throw Error("render_manifest_invalid");
+        return item;
+      })
+      .catch((cause) => {
+        manifestPromise = null;
+        throw cause;
+      }));
+  const load = async (
+    viewport: Box,
+    level: number,
+    collectionIds: readonly string[],
+    signal?: AbortSignal
+  ) => {
+    if (disposed) throw Error("render_client_disposed");
+    const publication = await manifest();
+    if (!Number.isInteger(level) || level < 0 || level > publication.maxLevel)
+      throw Error("render_level_invalid");
+    const coverage = expand(viewport);
+    const required = publication.tiles.filter(
+      (ref) =>
+        Math.abs(ref.level - level) <= 1 && overlaps(ref.bounds, coverage)
+    );
+    const needed = required.filter((ref) => !cache.has(ref.key));
+    for (let offset = 0; offset < needed.length; offset += 16) {
+      const batch = needed.slice(offset, offset + 16);
+      const response = (await call(
+        {
+          kind: "assets",
+          assets: batch.map((ref) => ({
+            kind: "tile",
+            level: ref.level,
+            x: ref.x,
+            y: ref.y
+          }))
+        },
+        signal
+      )) as { assets: Asset[]; revision: number };
+      if (
+        response.revision !== input.revision ||
+        response.assets.length !== batch.length
+      )
+        throw Error("render_asset_batch_invalid");
+      for (const ref of batch) {
+        const asset = response.assets.find((item) => item.key === ref.key);
+        if (
+          !asset ||
+          asset.sha256 !== ref.sha256 ||
+          asset.body.format !== "render-tile/1" ||
+          asset.body.revision !== input.revision ||
+          asset.body.worldId !== input.worldId ||
+          asset.body.timeSystemId !== input.timeSystemId ||
+          asset.body.level !== ref.level ||
+          asset.body.x !== ref.x ||
+          asset.body.y !== ref.y
+        )
+          throw Error("render_asset_invalid");
+        cache.set(ref.key, {
+          asset,
+          bytes: new TextEncoder().encode(JSON.stringify(asset.body)).byteLength
+        });
+      }
+    }
+    if (signal?.aborted || disposed) throw Error("render_read_aborted");
+    const scene = new Map<string, RenderPrimitive>();
+    const selected = new Set(collectionIds);
+    for (const ref of required) {
+      if (ref.level !== level) continue;
+      const tile = cache.get(ref.key)?.asset.body as RenderTile | undefined;
+      if (!tile) throw Error("render_tile_missing");
+      for (const primitive of tile.primitives) {
+        if (
+          !overlaps(primitive.bounds, viewport) ||
+          !primitive.collectionIds.some((id) => selected.has(id))
+        )
+          continue;
+        const previous = scene.get(primitive.id);
+        if (previous && JSON.stringify(previous) !== JSON.stringify(primitive))
+          throw Error("render_replica_mismatch");
+        scene.set(primitive.id, primitive);
+      }
+    }
+    const geometryRefs = new Map(
+      publication.geometry.map((ref) => [ref.key, ref])
+    );
+    const missing = [
+      ...new Set(
+        [...scene.values()].flatMap((primitive) =>
+          primitive.geometry.kind === "external" ? [primitive.geometry.key] : []
+        )
+      )
+    ].filter((key) => !cache.has(key));
+    for (let offset = 0; offset < missing.length; offset += 16) {
+      const batch = missing.slice(offset, offset + 16);
+      const response = (await call(
+        {
+          kind: "assets",
+          assets: batch.map((key) => ({
+            kind: "geometry",
+            sha256: geometryRefs.get(key)?.sha256
+          }))
+        },
+        signal
+      )) as { assets: Asset[]; revision: number };
+      if (
+        response.revision !== input.revision ||
+        response.assets.length !== batch.length
+      )
+        throw Error("render_geometry_batch_invalid");
+      for (const key of batch) {
+        const asset = response.assets.find((item) => item.key === key);
+        if (
+          !asset ||
+          asset.sha256 !== geometryRefs.get(key)?.sha256 ||
+          asset.body.format !== "render-geometry/1" ||
+          asset.body.revision !== input.revision ||
+          asset.body.worldId !== input.worldId ||
+          asset.body.timeSystemId !== input.timeSystemId
+        )
+          throw Error("render_geometry_invalid");
+        cache.set(key, {
+          asset,
+          bytes: new TextEncoder().encode(JSON.stringify(asset.body)).byteLength
+        });
+      }
+    }
+    const primitives = [...scene.values()]
+      .map((primitive): RenderPrimitive => {
+        if (primitive.geometry.kind !== "external") return primitive;
+        const asset = cache.get(primitive.geometry.key)?.asset;
+        if (
+          !asset ||
+          asset.sha256 !== primitive.geometry.sha256 ||
+          asset.body.format !== "render-geometry/1" ||
+          asset.body.geometry.kind === "external"
+        )
+          throw Error("render_geometry_missing");
+        return { ...primitive, geometry: asset.body.geometry };
+      })
+      .sort((a, b) => a.id.localeCompare(b.id));
+    const pinned = new Set([...required.map((ref) => ref.key), ...missing]);
+    let bytes = [...cache.values()].reduce((sum, item) => sum + item.bytes, 0);
+    if (
+      [...pinned].reduce((sum, key) => sum + (cache.get(key)?.bytes ?? 0), 0) >
+      maxBytes
+    )
+      throw Error("render_working_set_budget_exceeded");
+    for (const [key, item] of cache) {
+      if (bytes <= maxBytes) break;
+      if (!pinned.has(key)) {
+        cache.delete(key);
+        bytes -= item.bytes;
+      }
+    }
+    return {
+      primitives,
+      manifest: publication,
+      cache: { entries: cache.size, bytes }
+    };
+  };
+  return {
+    load,
+    manifest,
+    dispose() {
+      disposed = true;
+      cache.clear();
+      manifestPromise = null;
+    }
+  };
+}

@@ -10,6 +10,8 @@ IP-012 hybrid geometry follow-up: large or many-tile Composite polygons are now 
 
 IP-012 staging checkpoint: an opt-in worker setting `LACHESIS_RENDER_PUBLICATION=shadow` compiles the Render Publication, checks finest-Level Event coverage and attaches its manifest/tiles/geometry to the existing verified v5 staging index before the normal atomic pointer swap. Default worker operation is unchanged. This is not yet enabled on production: direct tile serving, Atropos consumption, camera/LOD and mobile gates remain open. The preceding standalone-only note describes the previous checkpoint.
 
+IP-012 read bridge: `POST /graph/v5/render` now exposes only manifest-listed, revision-pinned immutable render assets through the authenticated v5 root and staged digest index, with bounded batches and no-store responses. It returns 404 if the served revision has no render sidecar and 409 for a changed pointer. This route is not the ordinary Graph loader yet; CDN/direct immutable delivery, Atropos tile scene and real device gates remain pending.
+
 2026-09-29 planning update: [IP-012 Render Publication](IP-012-render-publication-plan.md) reconciles the handoff with current v5 code as a subsequent implementation baseline. No IP-012 runtime migration is active; A5 remains active, A4-B01–03 remain open, and A6/M5 remain inactive.
 
 2026-09-28 역사 6개 선택 누락 수정: 운영 `75f5520`에서 1330–1460년 범위가 사건 3개·건국 과정만 반환되는 것을 재현했다(`truncated:true`). 꺼진 합성 후보를 거르는 도중 shell 16-page budget이 소진되고 client가 continuation을 받지 못했다. 요청당 budget은 유지하며 cursor를 전달하고 client가 동일 query/revision 안에서 끝까지 합친다. 취소·cursor 정체·중복 방어와 실제 mobile shell 회귀를 추가한다. 여러 응답에 걸친 relation 완전성은 별도 미달로 유지한다. A5 pin/자동 relevance보다 이 누락 수정을 우선한다.

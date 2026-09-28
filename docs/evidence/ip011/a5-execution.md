@@ -76,3 +76,8 @@ Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) rest
 - S3 확인된 중복: 각 8-Collection batch가 같은 공간/index 객체를 독립 get. 동일 요청 안에서만 Promise cache를 공유하고 inner 256-read work bound는 유지한다. query 종료 후 cache 폐기; World/Revision/selection 간 결과 혼합 없음.
 - 로컬 고차수 공유+Collection별 고유 Event fixture의 전체 pagination store 호출: 9개 32→26, 16개 98→82, 30개 326→242. 새 32개 256회, 64개 893회(전체 페이지 합계; page당 수치 아님). 서로 다른 선택 크기에서 geometry는 각 World 전체 query와 동일하고 중복·누락 없으며 cursor가 진전했다. 각 page의 실제 호출 수와 object_reads 일치·같은 key 중복 0을 assertion으로 고정했다.
 - 이 측정은 process 내 deterministic fixture의 store callback 호출 수다. 운영 cold latency·frame·전체 gesture 비용·64개 실제 콘텐츠 가독성 성공 주장이 아니다.
+
+### S2b 모바일 실패와 수정
+
+- run 36391950100의 운영 iPhone 시험에서 합성 corpus 테스트가 실패했다. 30개 선택·공유 사건·뷰포트·Geographic input 검사는 통과했지만 Semantic Event target이 0개여서 keyboard 읽기로 진행할 수 없었다. 기존 역사/미배치/Composite 모바일 시험은 성공했다. 인증 단계는 후속 배포로 SHA가 바뀌어 기다리다 다음 run에 의해 취소됐다.
+- 원인: 작은 화면에서 긴 point label이 오른쪽 경계를 넘으면 새 bounds 정책이 통째로 탈락시켰다. 같은 위치에서 가용 폭에 맞게 rendered text를 줄이고 ellipsis를 붙인다. 원래 전체 title/aria-label/본문은 그대로 유지하며, 44px도 확보할 수 없는 가장자리만 Geographic으로 남긴다. 회귀 테스트는 완화하지 않았다.

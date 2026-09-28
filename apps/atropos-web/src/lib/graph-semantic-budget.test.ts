@@ -1,6 +1,8 @@
 import { expect, it } from "vitest";
 import {
   selectSemanticLabels,
+  fitSemanticText,
+  semanticTextWidth,
   type SemanticCandidate
 } from "./graph-semantic-budget";
 
@@ -50,4 +52,28 @@ it("keeps admitted labels under small navigation and ignores input order", () =>
     before.ids
   );
   expect([...after.ids].sort()).toEqual([...before.ids].sort());
+});
+
+it("keeps long centered mobile labels readable instead of dropping every primary target", () => {
+  const title = "[A5 실험 01] 항구의 교역 — 모임 1";
+  const fitted = fitSemanticText(title, 205, 390);
+  expect(fitted.endsWith("…")).toBe(true);
+  expect(fitted.length).toBeGreaterThan(5);
+  expect(semanticTextWidth(fitted)).toBeLessThanOrEqual(177);
+  const selected = selectSemanticLabels(
+    [
+      {
+        id: "point",
+        x: 205,
+        y: 240,
+        width: semanticTextWidth(fitted),
+        height: 44,
+        selected: true
+      }
+    ],
+    viewport,
+    new Set()
+  );
+  expect(selected.ids.has("point")).toBe(true);
+  expect(fitSemanticText(title, 380, 390)).toBe("");
 });

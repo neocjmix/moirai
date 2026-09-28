@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-09-29 planning update: [IP-012 Render Publication](IP-012-render-publication-plan.md) reconciles the handoff with current v5 code as a subsequent implementation baseline. No IP-012 runtime migration is active; A5 remains active, A4-B01–03 remain open, and A6/M5 remain inactive.
+
 2026-09-28 역사 6개 선택 누락 수정: 운영 `75f5520`에서 1330–1460년 범위가 사건 3개·건국 과정만 반환되는 것을 재현했다(`truncated:true`). 꺼진 합성 후보를 거르는 도중 shell 16-page budget이 소진되고 client가 continuation을 받지 못했다. 요청당 budget은 유지하며 cursor를 전달하고 client가 동일 query/revision 안에서 끝까지 합친다. 취소·cursor 정체·중복 방어와 실제 mobile shell 회귀를 추가한다. 여러 응답에 걸친 relation 완전성은 별도 미달로 유지한다. A5 pin/자동 relevance보다 이 누락 수정을 우선한다.
 
 2026-09-28 S2b/S3 후속: PR #251 `ec4b8d2`를 운영 배포했다. 공개 동일 viewport의 61 point/12 region ID·좌표·경로가 변경 전과 동일하며 Semantic primary target 4개, Geographic 69개를 확인했다. Enter 키 본문 열기도 성공했다. 이어 S3의 동일 viewport/Revision 요청 내부 batch 간 immutable object 재사용을 추가한다. 로컬 30-Collection fixture 전체 pagination의 store 호출은 326→242(중복 84 제거), 9/16/32/64 정확성·좌표·continuation 검증은 통과했다. 운영 latency/frame 개선이나 S3 전체 완료로 해석하지 않는다.

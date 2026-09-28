@@ -161,6 +161,7 @@ describe("render tile working set", () => {
       collectionIds: ["one"]
     });
     expect(frame.level).toBeCloseTo(0.5);
+    expect(frame.cache?.entries).toBeGreaterThan(0);
     expect(
       frame.representations.find((item) => item.primitive.id === "a")?.opacity
     ).toBeCloseTo(1);

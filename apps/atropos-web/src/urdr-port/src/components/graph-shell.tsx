@@ -3851,12 +3851,15 @@ export function GraphShell({
                     if (region.compactPoint) {
                       if (region.renderedOpacity === 0) return null;
                       const point = region.compactPoint;
-                      return <g key={region.id} data-composite-point-id={region.id} style={{opacity: region.renderedOpacity}}>
-                        <rect className={styles.chartInstantPointHitTarget} x={point.x - 22} y={point.y - 22}
+                      return <g key={region.id} data-composite-point-id={region.id}
+                        data-representation={region.showLabel ? "semantic" : "geographic"}
+                        aria-hidden={discovery?.contextHud && !region.showLabel ? true : undefined}
+                        style={{opacity: region.renderedOpacity}}>
+                        {!discovery?.contextHud || region.showLabel ? <rect data-primary-hit-target="composite" className={styles.chartInstantPointHitTarget} x={point.x - 22} y={point.y - 22}
                           width={Math.max(44, region.renderedLabel.length * 8 + 34)} height={44} rx={22}
                           onPointerDown={(event) => handleCompositeRegionPointerDown(region, event)}>
                           <title>{region.label}</title>
-                        </rect>
+                        </rect> : null}
                         <circle className={styles.chartInstantPoint} cx={point.x} cy={point.y} r={6}
                           style={{fill: compositeStyle?.label, pointerEvents: "none"}} />
                         {region.showLabel ? <text className={styles.chartInstantPointLabel} x={point.x + 10} y={point.y - 10}
@@ -3868,12 +3871,14 @@ export function GraphShell({
                         className={styles.chartCompositeRegion}
                         data-depth={region.depth}
                         data-region-id={region.id}
+                        data-representation={region.showLabel ? "semantic" : "geographic"}
+                        aria-hidden={discovery?.contextHud && !region.showLabel ? true : undefined}
                         key={region.id}
                         d={region.path}
-                        onPointerDown={(event) => handleCompositeRegionPointerDown(region, event)}
+                        onPointerDown={!discovery?.contextHud || region.showLabel ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
                           fill: compositeStyle?.fill,
-                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 ? "none" : undefined,
+                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 || (discovery?.contextHud && !region.showLabel) ? "none" : undefined,
                           mixBlendMode: "darken",
                           fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY * region.renderedOpacity * region.surfaceOpacity,
                           stroke: compositeStyle?.label,
@@ -3949,9 +3954,12 @@ export function GraphShell({
                     const hitTargetHeight = 36;
 
                     return (
-                      <g key={point.id}>
-                        <rect
+                      <g key={point.id}
+                        data-representation={point.showLabel !== false ? "semantic" : "geographic"}
+                        aria-hidden={discovery?.contextHud && point.showLabel === false ? true : undefined}>
+                        {!discovery?.contextHud || point.showLabel !== false ? <rect
                           className={styles.chartInstantPointHitTarget}
+                          data-primary-hit-target="event"
                           data-event-point-id={point.eventId}
                           data-event-point-label-id={point.showLabel !== false ? point.eventId : undefined}
                           height={hitTargetHeight}
@@ -3963,9 +3971,10 @@ export function GraphShell({
                           y={point.y - 24}
                         >
                           <title>{copy.eventOpenPointLabel(point.label)}</title>
-                        </rect>
+                        </rect> : null}
                         <circle
                           className={styles.chartInstantPoint}
+                          data-event-point-id={discovery?.contextHud && point.showLabel === false ? point.eventId : undefined}
                           cx={point.x}
                           cy={point.y}
                           r={6}

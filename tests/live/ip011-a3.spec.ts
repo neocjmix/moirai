@@ -77,6 +77,19 @@ test("A5 corpus is published with shared identity and readable mobile narrative"
   await expect(page.locator(`[data-event-point-id="${shared}"]`)).toHaveCount(
     1
   );
+  const geographic = page.locator('[data-representation="geographic"]');
+  await expect(geographic).not.toHaveCount(0);
+  await expect(geographic.locator("[data-primary-hit-target]")).toHaveCount(0);
+  expect(
+    await geographic.evaluateAll((nodes) =>
+      nodes.every(
+        (node) =>
+          node.getAttribute("aria-hidden") === "true" &&
+          (node.tagName.toLowerCase() !== "path" ||
+            getComputedStyle(node).pointerEvents === "none")
+      )
+    )
+  ).toBe(true);
 });
 
 test("live mobile Collection, unplaced Event and Composite navigation", async ({

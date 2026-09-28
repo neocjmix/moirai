@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-09-28 15:36 KST: main `2fe083c`의 Clotho v5 계약 복구(#242)와 독립 인증 smoke(#246)를 A5 작업 브랜치에 back-merge했다. 충돌 없음, merge 직후 tree는 main과 동일. 8개 선택 상한 제거(#245/#247)의 main CI `36375218854`와 운영 모바일/인증 smoke `36375607244`는 성공했다. **다음 checkpoint S2a**는 A5에서 이름 없는 Geographic point/Composite의 primary hit target·접근성 노출을 제거한다. geometry와 paint/suppression, label 밀도 정책은 유지한다. S2 전체(독립 밀도·keyboard·200% text) 및 S3 성능 exit 완료는 아니다.
+
 2026-09-28 12:40 KST 사용자 지시로 **8개 선택 제한 해제를 우선 진행**한다. 제목 상대 ranking은 PR #243으로 구현·배포됐고 합성 corpus 입력은 완료했다. v5 shell/viewport/search의 8개 입력 상한과 기본 선택 절단을 제거하며, 선택 판정은 8개 내부 batch의 동일 spatial page를 union한다. batch당 256 object read·shell 16 page·응답 byte budget을 유지한다. 총 요청 비용은 batch 수에 비례하므로 capacity/S2 표현·성능 완료로 보지 않는다. 9/16/30 Collection의 좌표 불변·공유 Event 중복 제거·continuation 진전을 검증하고 운영 모바일 30개 선택을 확인한다. 기존 selection 변경 시 loader/cache 교체와 catalog 첫 128개 제한은 후속 과제로 남는다.
 
 2026-09-28 후속 corpus 입력 완료: 실행 36372949326 성공, World current/served/target **56**으로 일치. 합성 24 Collection·552 Event·1,008 Relation·576 Narrative 추가(전체 30 Collection·679 Event). 현재 개발 World에 직접 입력했으며 기존 역사 기록은 유지했다. 입력 중 열어둔 구 Revision 화면은 본문 409가 발생할 수 있어 완료 후 reload 검증했다. 12:21 KST 지시의 상대 ranking 단일 대표 선정(`a5-s1-v3`)을 배포했다.

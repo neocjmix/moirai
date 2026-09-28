@@ -276,6 +276,7 @@ export function createV5RenderTileClient(input: {
         upper.primitives,
         level
       ),
+      cache: upper.cache,
       manifest: publication
     };
   };

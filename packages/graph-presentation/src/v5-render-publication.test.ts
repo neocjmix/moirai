@@ -4,6 +4,7 @@ import type { V5WorldLayout } from "./v5-world-layout.js";
 import {
   compileV5RenderPublication,
   selectRenderScene,
+  resolveRenderGeometry,
   type RenderTile
 } from "./v5-render-publication.js";
 
@@ -67,23 +68,35 @@ describe("render publication compiler", () => {
     const primitives = new Map(
       publication.documents
         .flatMap(
-          (document) =>
-            (
-              JSON.parse(document.body) as {
-                primitives: {
-                  id: string;
-                  geometry: unknown;
-                  collectionIds: string[];
-                }[];
-              }
-            ).primitives
+          (document) => (JSON.parse(document.body) as RenderTile).primitives
         )
         .map((primitive) => [primitive.id, primitive])
     );
-    expect(primitives.get("event:outer:hull")?.geometry).toMatchObject({
+    const external = primitives.get("event:outer:hull")?.geometry as {
+      kind: "external";
+      key: string;
+    };
+    expect(external.kind).toBe("external");
+    const body = publication.geometryDocuments.find(
+      (doc) => doc.key === external.key
+    )?.body;
+    expect(body).toBeDefined();
+    const hull = resolveRenderGeometry(
+      publication,
+      primitives.get("event:outer:hull")!,
+      body!
+    );
+    expect(hull).toMatchObject({
       kind: "polygon",
       rings: [expect.arrayContaining([{ x: 100, y: 100 }])]
     });
+    expect(() =>
+      resolveRenderGeometry(
+        publication,
+        primitives.get("event:outer:hull")!,
+        body! + " "
+      )
+    ).toThrow("render_geometry_digest_invalid");
     expect(primitives.get("relation:ac")?.geometry).toEqual({
       kind: "line",
       paths: [

@@ -1,7 +1,7 @@
 // @ts-nocheck -- Next.js adapter: URDR was authored under its own TS config.
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 
 import { chartPlaneDiagnosticSchema, eventDetailResponseSchema, graphShellChartPlaneEntitySchema, graphShellChartPlaneRegionEntitySchema, graphShellViewportResponseSchema, type EventDetailResponse, type EventRecord, type GraphShellChartPlane, type GraphShellChartPlaneEntity, type GraphShellChartPlaneRegionEntity, type GraphShellWorkspaceShell, type WorldAnchor } from "@urdr/contracts";
 import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
@@ -14,6 +14,7 @@ import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBou
 import { compositePointDisplay } from "./composite-point-display";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { reconcileViewport } from "../viewport-cache";
+import { selectSemanticLabels } from "../../../lib/graph-semantic-budget";
 import { GraphContextHud } from "../../../components/graph-context-hud";
 import { selectGraphContext, polygonContainsCenter, contextViewportMetrics, CONTEXT_DWELL_MS } from "../../../lib/graph-context-policy";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
@@ -3091,6 +3092,37 @@ export function GraphShell({
     });
   }, [allProjectedInstantPoints, chartCompositeRegions.descendantOpacityById, farZoomElisionState.hiddenPointIds, viewportSize.height, viewportSize.width, view.scaleY]);
 
+  const previousSemanticIds = useRef<ReadonlySet<string>>(new Set());
+  const semanticSelection = useMemo(() => {
+    const selectedId = renderedEventSelection?.eventId ?? selectedEventSelection?.eventId;
+    const textWidth = (text: string) => [...text].reduce((sum, char) => sum + (char.charCodeAt(0) > 127 ? 13 : 7.5), 0);
+    return selectSemanticLabels([
+      ...chartInstantPoints.filter(point => point.showLabel !== false && point.opacity > 0).map(point => ({
+        id: `point:${point.id}`, x: point.x + 10, y: point.y - 24,
+        width: textWidth(point.renderedLabel ?? point.label), height: 44, selected: point.eventId === selectedId,
+      })),
+      ...visibleCompositeRegions.filter(region => region.showLabel && region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0)).map(region => {
+        const width = textWidth(region.renderedLabel);
+        const angle = region.compactPoint ? 0 : region.labelAngle * Math.PI / 180;
+        const rotatedWidth = Math.abs(Math.cos(angle)) * width + Math.abs(Math.sin(angle)) * 20;
+        const rotatedHeight = Math.abs(Math.sin(angle)) * width + Math.abs(Math.cos(angle)) * 20;
+        return {
+          id: `region:${region.id}`,
+          x: region.compactPoint ? region.compactPoint.x + 10 : region.labelX - (region.labelAnchor === "end" ? rotatedWidth : region.labelAnchor === "middle" ? rotatedWidth / 2 : 0),
+          y: region.compactPoint ? region.compactPoint.y - 24 : region.labelY - rotatedHeight / 2,
+          width: rotatedWidth, height: Math.max(44, rotatedHeight), selected: region.id === selectedId,
+        };
+      }),
+    ], viewportSize, previousSemanticIds.current);
+  }, [chartInstantPoints, visibleCompositeRegions, viewportSize, renderedEventSelection?.eventId, selectedEventSelection?.eventId]);
+  useEffect(() => { previousSemanticIds.current = semanticSelection.ids; }, [semanticSelection]);
+  const presentedPoints = useMemo(() => discovery?.contextHud
+    ? chartInstantPoints.map(point => ({...point, showLabel: point.showLabel !== false && semanticSelection.ids.has(`point:${point.id}`)}))
+    : chartInstantPoints, [discovery?.contextHud, chartInstantPoints, semanticSelection]);
+  const presentedRegions = useMemo(() => discovery?.contextHud
+    ? visibleCompositeRegions.map(region => ({...region, showLabel: region.showLabel && semanticSelection.ids.has(`region:${region.id}`)}))
+    : visibleCompositeRegions, [discovery?.contextHud, visibleCompositeRegions, semanticSelection]);
+
   useEffect(() => {
     selectedEventSelectionRef.current = renderedEventSelection;
   }, [renderedEventSelection]);
@@ -3702,6 +3734,17 @@ export function GraphShell({
     };
   }, []);
 
+  const handleSemanticKeyDown = useCallback((target: EventDrawerTarget, event: ReactKeyboardEvent<Element>) => {
+    if (event.key !== "Enter" && event.key !== " ") return;
+    event.preventDefault();
+    event.stopPropagation();
+    pushPeekSelectionHistory(target.eventId);
+    eventSelectionNonceRef.current += 1;
+    pendingRestoredDrawerStageRef.current = "peek";
+    setSelectedEventTab("notes");
+    setSelectedEventSelection({ ...target, requestKey: eventSelectionNonceRef.current });
+  }, [pushPeekSelectionHistory]);
+
   const handleEventPointPointerDown = useCallback((point: InstantPoint, event: ReactPointerEvent<Element>) => {
     handleEventDrawerTargetPointerDown({ eventId: point.eventId, label: point.label }, event);
   }, [handleEventDrawerTargetPointerDown]);
@@ -3767,14 +3810,15 @@ export function GraphShell({
     },
     context: { policyVersion: discovery?.policyVersion ?? null, enabled: discovery?.contextHud ?? false, candidateCount: contextCandidates.length, topicId: contextTopic?.id ?? null },
     representation: {
-      semanticPoints: chartInstantPoints.filter(point => point.showLabel !== false && point.opacity > 0).length,
-      semanticRegions: visibleCompositeRegions.filter(region => region.showLabel && region.opacity * region.surfaceOpacity > 0).length,
+      semanticBudget: discovery?.contextHud ? semanticSelection.budget : null,
+      semanticPoints: presentedPoints.filter(point => point.showLabel !== false && point.opacity > 0).length,
+      semanticRegions: presentedRegions.filter(region => region.showLabel && region.opacity * region.surfaceOpacity > 0).length,
       geographicPoints: chartInstantPoints.length,
       geographicRegions: visibleCompositeRegions.length,
       vertices: visibleCompositeRegions.reduce((sum, region) => sum + region.projectedPoints.length, 0),
       // Count interactive entities, independently from painted geography.
-      primaryPointTargets: chartInstantPoints.filter(point => point.opacity > 0 && (!discovery?.contextHud || point.showLabel !== false)).length,
-      primaryRegionTargets: visibleCompositeRegions.filter(region => region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0) && (!discovery?.contextHud || region.showLabel)).length,
+      primaryPointTargets: presentedPoints.filter(point => point.opacity > 0 && (!discovery?.contextHud || point.showLabel !== false)).length,
+      primaryRegionTargets: presentedRegions.filter(region => region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0) && (!discovery?.contextHud || region.showLabel)).length,
     },
     cache: loader.inspectViewport?.() ?? null,
     work: {...graphWorkCountsRef.current},
@@ -3823,7 +3867,7 @@ export function GraphShell({
                 style={{ backgroundImage: `url("${GRAPH_BACKDROP_REFERENCE_IMAGE_URL}")` }}
               />
               {chartPlane ? (
-                <svg aria-label="Projected chart surface" className={styles.chartSurface} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                <svg data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
                   <defs>
                     <marker id="relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_ORDER_STROKE} />
@@ -3834,7 +3878,7 @@ export function GraphShell({
                     <marker id="relation-arrow-soft" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_SOFT_STROKE} />
                     </marker>
-                    {visibleCompositeRegions.map((region) =>
+                    {presentedRegions.map((region) =>
                       region.showLabel && region.labelPath ? (
                         <path
                           d={region.labelPath}
@@ -3846,7 +3890,7 @@ export function GraphShell({
                     )}
                   </defs>
                   <rect className={styles.chartBackdrop} height={viewportSize.height} width={viewportSize.width} x={0} y={0} />
-                  {visibleCompositeRegions.map((region) => {
+                  {presentedRegions.map((region) => {
                     const compositeStyle = compositeStyleById.get(region.id);
                     if (region.compactPoint) {
                       if (region.renderedOpacity === 0) return null;
@@ -3855,7 +3899,11 @@ export function GraphShell({
                         data-representation={region.showLabel ? "semantic" : "geographic"}
                         aria-hidden={discovery?.contextHud && !region.showLabel ? true : undefined}
                         style={{opacity: region.renderedOpacity}}>
-                        {!discovery?.contextHud || region.showLabel ? <rect data-primary-hit-target="composite" className={styles.chartInstantPointHitTarget} x={point.x - 22} y={point.y - 22}
+                        {!discovery?.contextHud || region.showLabel ? <rect data-primary-hit-target="composite"
+                          role={discovery?.contextHud ? "button" : undefined} tabIndex={discovery?.contextHud ? 0 : undefined}
+                          aria-label={discovery?.contextHud ? region.label : undefined}
+                          onKeyDown={discovery?.contextHud ? event => handleSemanticKeyDown({eventId: region.id, label: region.label}, event) : undefined}
+                          className={styles.chartInstantPointHitTarget} x={point.x - 22} y={point.y - 22}
                           width={Math.max(44, region.renderedLabel.length * 8 + 34)} height={44} rx={22}
                           onPointerDown={(event) => handleCompositeRegionPointerDown(region, event)}>
                           <title>{region.label}</title>
@@ -3875,10 +3923,10 @@ export function GraphShell({
                         aria-hidden={discovery?.contextHud && !region.showLabel ? true : undefined}
                         key={region.id}
                         d={region.path}
-                        onPointerDown={!discovery?.contextHud || region.showLabel ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
+                        onPointerDown={!discovery?.contextHud ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
                           fill: compositeStyle?.fill,
-                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 || (discovery?.contextHud && !region.showLabel) ? "none" : undefined,
+                          pointerEvents: region.renderedOpacity * region.surfaceOpacity === 0 || discovery?.contextHud ? "none" : undefined,
                           mixBlendMode: "darken",
                           fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY * region.renderedOpacity * region.surfaceOpacity,
                           stroke: compositeStyle?.label,
@@ -3945,13 +3993,13 @@ export function GraphShell({
                       </g>
                     );
                   })}
-                  {chartInstantPoints.map((point) => {
+                  {presentedPoints.map((point) => {
                     // Keep geometry available for zoom/layout, but do not mount
                     // invisible SVG nodes or an invisible interactive hit target.
                     if (point.opacity === 0) return null;
-                    const labelHitWidth = Math.max(point.label.length * 8 + 20, 64);
+                    const labelHitWidth = Math.max((discovery?.contextHud ? [...(point.renderedLabel ?? point.label)].reduce((sum, char) => sum + (char.charCodeAt(0) > 127 ? 13 : 7.5), 0) : point.label.length * 8) + 20, 64);
                     const hitTargetWidth = Math.max(labelHitWidth + 20, 24);
-                    const hitTargetHeight = 36;
+                    const hitTargetHeight = discovery?.contextHud ? 44 : 36;
 
                     return (
                       <g key={point.id}
@@ -3960,6 +4008,9 @@ export function GraphShell({
                         {!discovery?.contextHud || point.showLabel !== false ? <rect
                           className={styles.chartInstantPointHitTarget}
                           data-primary-hit-target="event"
+                          role={discovery?.contextHud ? "button" : undefined} tabIndex={discovery?.contextHud ? 0 : undefined}
+                          aria-label={discovery?.contextHud ? point.label : undefined}
+                          onKeyDown={discovery?.contextHud ? event => handleSemanticKeyDown({eventId: point.eventId, label: point.label}, event) : undefined}
                           data-event-point-id={point.eventId}
                           data-event-point-label-id={point.showLabel !== false ? point.eventId : undefined}
                           height={hitTargetHeight}
@@ -3986,7 +4037,7 @@ export function GraphShell({
                       </g>
                     );
                   })}
-                  {visibleCompositeRegions.map((region) => {
+                  {presentedRegions.map((region) => {
                     if (!region.showLabel || !region.labelPath) {
                       return null;
                     }
@@ -3995,6 +4046,10 @@ export function GraphShell({
                     return (
                       <text
                         className={styles.chartCompositeRegionLabel}
+                        data-primary-hit-target="composite-label"
+                        role={discovery?.contextHud ? "button" : undefined} tabIndex={discovery?.contextHud ? 0 : undefined}
+                        aria-label={discovery?.contextHud ? region.label : undefined}
+                        onKeyDown={discovery?.contextHud ? event => handleSemanticKeyDown({eventId: region.id, label: region.label}, event) : undefined}
                         data-depth={region.depth}
                         data-region-id={region.id}
                         data-region-label-anchor={region.labelAnchor}

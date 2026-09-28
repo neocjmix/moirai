@@ -62,3 +62,10 @@ Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) rest
 - 사용자 지시로 최신 main `2fe083c`를 작업 브랜치에 merge. #242 Clotho transport/policy/query parity와 #246 인증 smoke 독립 실행을 포함하며 conflict 없이 main과 동일 tree를 확인했다. MCP/parity·기존 suppression targeted 7 tests와 web typecheck 통과.
 - 이전 8개 제한 제거의 최종 main CI `36375218854`와 post-deploy `36375607244` 모두 성공. 30개 선택·29→30 복구·공유 사건 단일 표현·viewport 유지의 운영 모바일 회귀까지 통과.
 - S2a: A5 모드에서 label 없는 point/compact Composite의 투명 hit rectangle을 생성하지 않고 label 없는 region은 pointer-events:none 및 aria-hidden. 그림과 좌표는 유지하며 legacy flag의 interaction은 보존한다. Semantic/Geographic 독립 밀도·keyboard 개선은 후속 S2로 남는다.
+
+## S2b — 통합 Semantic 예산 실험
+
+- 시작 확인: main `103a30a`, CI 36387835246, post-deploy/mobile 36388167524 모두 성공.
+- 사전 고정 실험값: Event/Composite 합산 `clamp(floor(viewport area / 28000),8,32)` label budget; 충돌 여백 8px; HUD 상단 72px/하단 56px 예약. 기존 label/suppression 자격을 되살리지 않으며 geometry 후보는 제거하지 않는다. 선택된 유자격 대상→이전 label→중심 거리→ID 순으로 배치한다. 텍스트 bounds는 한글/ASCII 폭과 회전의 보수적 추정이며 실제 200% text 검증 완료를 뜻하지 않는다.
+- point primary target은 표시된 label 길이에 맞추며 A5에서 높이 44px. region 면 전체는 primary input을 받지 않고 label에서 읽는다. Semantic target은 Enter/Space와 focus 표시를 지원한다.
+- 검증: 통합 quota, 서로 다른 종류 간 충돌/선택 우선, 1px 이동 안정성과 입력 geometry 불변. 운영 mobile 회귀에 실제 target 합산 budget과 keyboard 본문 열기를 추가했다. S2 전체 및 S3 성능 exit 완료는 아니다.

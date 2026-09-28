@@ -77,6 +77,13 @@ test("A5 corpus is published with shared identity and readable mobile narrative"
   await expect(page.locator(`[data-event-point-id="${shared}"]`)).toHaveCount(
     1
   );
+  const surface = page.locator("svg[data-semantic-budget]");
+  const budget = Number(await surface.getAttribute("data-semantic-budget"));
+  expect(budget).toBeGreaterThanOrEqual(8);
+  expect(budget).toBeLessThanOrEqual(32);
+  expect(
+    await surface.locator("[data-primary-hit-target]").count()
+  ).toBeLessThanOrEqual(budget);
   const geographic = page.locator('[data-representation="geographic"]');
   await expect(geographic).not.toHaveCount(0);
   await expect(geographic.locator("[data-primary-hit-target]")).toHaveCount(0);
@@ -90,6 +97,14 @@ test("A5 corpus is published with shared identity and readable mobile narrative"
       )
     )
   ).toBe(true);
+  const semanticTarget = surface
+    .locator('[data-primary-hit-target="event"]')
+    .first();
+  await expect(semanticTarget).toBeVisible();
+  const title = await semanticTarget.getAttribute("aria-label");
+  await semanticTarget.focus();
+  await semanticTarget.press("Enter");
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(title!);
 });
 
 test("live mobile Collection, unplaced Event and Composite navigation", async ({

@@ -38,6 +38,9 @@ test("A5 corpus is published with shared identity and readable mobile narrative"
   expect(new Set(memberships.flat()).size).toBe(552);
   const shared = "019f9280-a500-7000-8000-0000000003e8";
   expect(memberships.filter((ids) => ids.includes(shared))).toHaveLength(24);
+  await page.addInitScript(() =>
+    localStorage.setItem("urdr:app-language-override", "ko")
+  );
   await page.goto(
     `${graph}&collections=${catalog.collections.map((item: { id: string }) => item.id).join(",")}&event=${shared}`
   );
@@ -49,6 +52,31 @@ test("A5 corpus is published with shared identity and readable mobile narrative"
     1
   );
   await expect(page.getByTestId("graph-context-topic")).toBeVisible();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("gsViewport"))
+    .not.toBeNull();
+  const camera = new URL(page.url()).searchParams.get("gsViewport");
+  await page.getByRole("button", { name: "컬렉션 30", exact: true }).click();
+  const option = page.getByRole("checkbox", {
+    name: synthetic[23]!.title,
+    exact: true
+  });
+  await option.uncheck();
+  await expect(
+    page.getByRole("button", { name: "컬렉션 29", exact: true })
+  ).toBeVisible();
+  await expect(option).toBeEnabled();
+  await option.check();
+  await expect(
+    page.getByRole("button", { name: "컬렉션 30", exact: true })
+  ).toBeVisible();
+  await page.getByRole("button", { name: "닫기", exact: true }).click();
+  await expect
+    .poll(() => new URL(page.url()).searchParams.get("gsViewport"))
+    .toBe(camera);
+  await expect(page.locator(`[data-event-point-id="${shared}"]`)).toHaveCount(
+    1
+  );
 });
 
 test("live mobile Collection, unplaced Event and Composite navigation", async ({

@@ -170,4 +170,16 @@ describe("revision-pinned render read", () => {
       ).status
     ).toBe(503);
   });
+  it("ignores an older generation after the canonical pointer advances", async () => {
+    readGeneration.mockRejectedValue(Error("render_generation_source_changed"));
+    const response = await post({
+      kind: "manifest",
+      world_id: world,
+      revision: 7,
+      time_system_id: "t"
+    });
+    expect(response.status).toBe(200);
+    expect((await response.json()).tiles[0].key).toBe(tileKey);
+    expect(readDocument).toHaveBeenCalled();
+  });
 });

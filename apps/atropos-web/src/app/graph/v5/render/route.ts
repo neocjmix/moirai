@@ -88,8 +88,12 @@ export async function POST(request: Request): Promise<Response> {
     ).catch((cause: unknown) => {
       if (
         cause instanceof Error &&
-        cause.message === "render_generation_unavailable"
+        (cause.message === "render_generation_unavailable" ||
+          cause.message === "render_generation_source_changed")
       )
+        // A canonical revision may advance before its next independent Render
+        // generation is ready. Only the current revision's staged sidecar is
+        // eligible; never draw the stale generation with newer Event detail.
         return null;
       throw cause;
     });

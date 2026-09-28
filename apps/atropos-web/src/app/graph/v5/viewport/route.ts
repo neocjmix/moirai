@@ -44,7 +44,7 @@ const v5ViewportRequest = z
       .regex(/^[a-zA-Z0-9-]+$/)
       .max(128),
     viewport: box,
-    collection_ids: z.array(z.string().regex(/^[a-zA-Z0-9-]+$/)).max(8),
+    collection_ids: z.array(z.string().regex(/^[a-zA-Z0-9-]+$/)),
     cursor: cursor.nullable().optional()
   })
   .strict();

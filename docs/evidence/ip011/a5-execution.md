@@ -49,3 +49,10 @@ Local production build and strict web typecheck passed. Targeted context/geometr
 S2 separates Semantic primary interaction from Geographic geometry and removes invisible broad primary hit targets. Measure semantic/graphic density and mobile input before S3 multi-Collection capacity; only then proceed to S4 intent persistence and S5 automation. Existing 8-active/128-catalog limits, selection cache replacement and sustained frame deficit remain explicit. No bottleneck or 16-active success is inferred.
 
 Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) restores the retained Island. Server default can be set with `ATROPOS_COLLECTION_DISCOVERY=legacy`. `discovery=context` explicitly opts into the checkpoint. These flags only select presentation; they do not modify Publication or canonical data.
+
+## 8개 선택 상한 제거 checkpoint (2026-09-28 후속 지시)
+
+- 이전 실패: corpus 입력 후 기존 live 역사 회귀가 고정 32-page 상한에서 종료했다(run 36374450335). selected viewport는 6 Collection × index depth에 따른 작은 raw page로 World 후보를 훑으므로 677개 전체 bounds에 32 page로 충분하지 않았다. 새 검증은 World shape_count 기반 유한 상한과 중복 cursor 실패를 적용하며 역사 125 placed/2 unplaced 정확한 assertion을 유지한다.
+- title ranking PR #243 운영 반영과 합성 corpus 24 Collection/552 Event 입력은 완료. 이전 main CI 36374225647 성공, 모바일 32 pass/1 skip. 해당 post-deploy의 신규 합성 corpus 모바일 테스트는 성공했고 기존 역사 paging만 실패했다.
+- 새 변경은 사용자 선택 상한을 제거하고 내부 8개 작업 batch를 유지한다. 전체 선택 digest로 continuation을 묶으며 각 batch는 동일 spatial page를 읽고 결과는 Event ID로 union한다. 총 object read 예산은 `256 × ceil(selected/8)`/viewport page, shell은 기존 16 page와 1MiB 응답 상한 유지. 무제한 throughput 보장이 아니다.
+- 로컬 9/16/30 Collection 검사: 고차수 공유 Event와 batch 마지막 Collection의 고유 Event를 빠짐없이 조회, 좌표 동일, 페이지 간 중복 없음, cursor 진전. S2 가독성과 S3 성능 exit는 아직 미달/미검증이다.

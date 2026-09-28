@@ -242,6 +242,107 @@ describe("authenticated v5 World viewport rehearsal", () => {
     } while (cursor);
     expect(seen.sort()).toEqual(["coup", ...ids]);
   });
+  it.each([9, 16, 30])(
+    "unions %i Collections with stable coordinates and advancing pages",
+    async (count) => {
+      const ids = Array.from(
+        { length: count },
+        (_, i) => `collection-${String(i).padStart(3, "0")}`
+      );
+      const expanded: CanonicalState = {
+        ...state,
+        collections: ids.map((id) => ({
+          ...state.collections[0]!,
+          id,
+          slug: id
+        })),
+        collectionTimeSystems: [],
+        events: [
+          state.events[0]!,
+          ...ids.map((id) => ({ ...state.events[0]!, id }))
+        ],
+        narratives: [
+          ...ids.map((id) => ({
+            ...state.narratives[0]!,
+            id: `n-${id}`,
+            scope_type: "collection" as const,
+            scope_id: id
+          })),
+          ...["coup", ...ids].map((id) => ({
+            ...state.narratives[0]!,
+            id: `event-n-${id}`,
+            scope_type: "event" as const,
+            scope_id: id
+          }))
+        ],
+        eventCollectionMemberships: ids.flatMap((id) => [
+          { collection_id: id, event_id: "coup" },
+          { collection_id: id, event_id: id }
+        ]),
+        relations: [
+          state.relations[0]!,
+          ...ids.map((id) => ({
+            ...state.relations[0]!,
+            id: `date-${id}`,
+            source_ref: { kind: "event" as const, event_id: id }
+          }))
+        ]
+      };
+      const artifacts = buildV5WorldSpatialStagedArtifacts(expanded, 31);
+      const objects = new Map(
+        [...artifacts.documents, ...artifacts.index].map(({ key, body }) => [
+          key,
+          body
+        ])
+      );
+      const get = async (key: string) => objects.get(key) ?? null;
+      const viewport = { minX: -1e6, maxX: 1e6, minY: -1e6, maxY: 1e6 };
+      const whole = await readV5AuthenticatedViewport(
+        artifacts.root.body,
+        "world-1",
+        31,
+        "gregorian",
+        viewport,
+        128,
+        null,
+        get
+      );
+      let cursor: Parameters<typeof readV5SelectedViewport>[6] = null;
+      const seen = new Map<string, (typeof whole.shapes)[number]>();
+      const tokens = new Set<string>();
+      do {
+        const page = await readV5SelectedViewport(
+          artifacts.root.body,
+          "world-1",
+          31,
+          "gregorian",
+          viewport,
+          ids,
+          cursor,
+          get
+        );
+        expect(page.object_reads).toBeLessThanOrEqual(
+          256 * Math.ceil(count / 8)
+        );
+        for (const shape of page.shapes) {
+          expect(seen.has(shape.event_id)).toBe(false);
+          seen.set(shape.event_id, shape);
+        }
+        cursor = page.next_cursor;
+        if (cursor) {
+          const token = JSON.stringify(cursor);
+          expect(tokens.has(token)).toBe(false);
+          tokens.add(token);
+        }
+      } while (cursor);
+      expect([...seen.keys()].sort()).toEqual(["coup", ...ids].sort());
+      expect(
+        [...seen.values()].sort((a, b) => a.event_id.localeCompare(b.event_id))
+      ).toEqual(
+        [...whole.shapes].sort((a, b) => a.event_id.localeCompare(b.event_id))
+      );
+    }
+  );
   it("intersects viewport and Collection selection without duplicating a shared World Event", async () => {
     const artifacts = buildV5WorldSpatialStagedArtifacts(state, 31);
     const objects = new Map(

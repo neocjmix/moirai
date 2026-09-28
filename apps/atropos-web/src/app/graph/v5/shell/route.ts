@@ -33,7 +33,7 @@ const input = z.discriminatedUnion("kind", [
       world_id: z.string().uuid(),
       revision: z.number().int(),
       time_system_id: z.string().uuid(),
-      collection_ids: z.array(z.string().uuid()).max(8),
+      collection_ids: z.array(z.string().uuid()),
       relation_types: z.array(z.string().max(64)).max(32).optional(),
       viewport: graphShellViewportQuerySchema
     })

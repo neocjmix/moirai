@@ -16,6 +16,10 @@ IP-012 browser working-set checkpoint: an isolated `createV5RenderTileClient` fe
 
 IP-012 transition checkpoint: `levelForCamera` now maps independent X/Y scales to a continuous semantic Level, and `interpolateRenderLevels` blends prepared adjacent representations with fade intervals. The isolated tile client exposes `loadFrame` with weighted renderer-neutral primitives. These are pure/runtime-library results, not a GraphShell cutover or frame-time acceptance result.
 
+IP-012 hull correction: the worker compiler now builds World-level concave Y-sweep Composite hulls bottom-up using direct child points and prepared child polygons, matching Atropos's current default mode on parity fixtures. The earlier convex-only prototype was unsuitable for visual cutover. A synthetic 10k-Event / single dense Composite / 30-Collection offline run compiled in 101ms locally into 85 tiles, one external geometry object, 2.71MB tile bodies and 41.8KB largest tile. This does not establish 100k dense or mobile acceptance.
+
+The same synthetic uniform-grid construction at 100k Events with one dense Composite and 30 Collections compiled in 7.0s locally into 1,365 tiles, one 10.7KB external geometry object and a largest tile of 26.0KB. This remains an offline compiler/size measurement, not a production worker or device result.
+
 2026-09-29 planning update: [IP-012 Render Publication](IP-012-render-publication-plan.md) reconciles the handoff with current v5 code as a subsequent implementation baseline. No IP-012 runtime migration is active; A5 remains active, A4-B01–03 remain open, and A6/M5 remain inactive.
 
 2026-09-28 역사 6개 선택 누락 수정: 운영 `75f5520`에서 1330–1460년 범위가 사건 3개·건국 과정만 반환되는 것을 재현했다(`truncated:true`). 꺼진 합성 후보를 거르는 도중 shell 16-page budget이 소진되고 client가 continuation을 받지 못했다. 요청당 budget은 유지하며 cursor를 전달하고 client가 동일 query/revision 안에서 끝까지 합친다. 취소·cursor 정체·중복 방어와 실제 mobile shell 회귀를 추가한다. 여러 응답에 걸친 relation 완전성은 별도 미달로 유지한다. A5 pin/자동 relevance보다 이 누락 수정을 우선한다.

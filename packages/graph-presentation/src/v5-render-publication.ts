@@ -1,6 +1,7 @@
 import { createHash } from "node:crypto";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import type { V5WorldLayout } from "./v5-world-layout.js";
+import { buildRenderConcaveHull } from "./v5-render-hull.js";
 
 type Point = Readonly<{ x: number; y: number }>;
 type Box = Readonly<{ minX: number; maxX: number; minY: number; maxY: number }>;
@@ -42,7 +43,7 @@ export type RenderPublication = Readonly<{
   worldId: string;
   revision: number;
   timeSystemId: string;
-  algorithmVersion: "render-compiler/1";
+  algorithmVersion: "render-compiler/2";
   maxLevel: number;
   bounds: Box | null;
   tiles: readonly Readonly<{
@@ -149,29 +150,6 @@ const boundsOf = (points: readonly Point[]): Box => {
 const intersects = (a: Box, b: Box) =>
   a.minX <= b.maxX && a.maxX >= b.minX && a.minY <= b.maxY && a.maxY >= b.minY;
 
-/** Stable convex support hull. Never derive support from a viewport subset. */
-function hull(points: readonly Point[]): Point[] {
-  const sorted = [
-    ...new Map(points.map((p) => [`${p.x},${p.y}`, p])).values()
-  ].sort((a, b) => a.x - b.x || a.y - b.y);
-  if (sorted.length < 3) return sorted;
-  const cross = (a: Point, b: Point, c: Point) =>
-    (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
-  const lower: Point[] = [],
-    upper: Point[] = [];
-  for (const p of sorted) {
-    while (lower.length > 1 && cross(lower.at(-2)!, lower.at(-1)!, p) <= 0)
-      lower.pop();
-    lower.push(p);
-  }
-  for (const p of sorted.toReversed()) {
-    while (upper.length > 1 && cross(upper.at(-2)!, upper.at(-1)!, p) <= 0)
-      upper.pop();
-    upper.push(p);
-  }
-  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
-}
-
 /** Offline prototype. No pointer write: serving requires independent completeness proofs. */
 export function compileV5RenderPublication(
   state: CanonicalState,
@@ -210,17 +188,21 @@ export function compileV5RenderPublication(
       const frame = stack.pop()!;
       if (frame.exit) {
         const shape = shapes.get(frame.id);
-        const points =
-          shape?.kind === "point"
-            ? [shape.position]
-            : shape?.kind === "segment"
-              ? [shape.start, shape.end]
-              : [...new Set(children.get(frame.id) ?? [])]
-                  .sort()
-                  .flatMap((child) => support.get(child) ?? []);
-        // For a convex parent hull, every interior descendant can be dropped.
-        // The hull of child hull vertices equals the hull of all descendants.
-        support.set(frame.id, shape?.kind === "region" ? hull(points) : points);
+        if (shape?.kind === "point") support.set(frame.id, [shape.position]);
+        else if (shape?.kind === "segment")
+          support.set(frame.id, [shape.start, shape.end]);
+        else {
+          const direct: Point[] = [],
+            polygons: Point[][] = [];
+          for (const child of [
+            ...new Set(children.get(frame.id) ?? [])
+          ].sort()) {
+            const points = support.get(child) ?? [];
+            if (shapes.get(child)?.kind === "region") polygons.push(points);
+            else direct.push(...points);
+          }
+          support.set(frame.id, buildRenderConcaveHull(direct, polygons));
+        }
         visiting.delete(frame.id);
         continue;
       }
@@ -286,7 +268,7 @@ export function compileV5RenderPublication(
         collectionIds
       );
     if (shape.kind === "region") {
-      const points = hull(resolve(id));
+      const points = resolve(id);
       // A region with insufficient placed descendants retains the published bounds,
       // explicitly as fallback geometry; it must not pretend to be a complete hull.
       const b = shape.bounds;
@@ -365,7 +347,7 @@ export function compileV5RenderPublication(
       worldId: layout.world_id,
       revision: layout.revision,
       timeSystemId: layout.time_system_id,
-      algorithmVersion: "render-compiler/1",
+      algorithmVersion: "render-compiler/2",
       maxLevel: 0,
       bounds: null,
       tiles: [],
@@ -529,7 +511,7 @@ export function compileV5RenderPublication(
     worldId: layout.world_id,
     revision: layout.revision,
     timeSystemId: layout.time_system_id,
-    algorithmVersion: "render-compiler/1",
+    algorithmVersion: "render-compiler/2",
     maxLevel,
     bounds: world,
     tiles: documents.map((document, i) => ({

@@ -1,5 +1,6 @@
 import { createHash } from "node:crypto";
 export { buildV5WorldLayout } from "./v5-world-layout.js";
+export { buildRenderConcaveHull } from "./v5-render-hull.js";
 export {
   compileV5RenderPublication,
   selectRenderScene,

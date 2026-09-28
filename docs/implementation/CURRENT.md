@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-09-28 후속 corpus 입력 완료: 실행 36372949326 성공, World current/served/target **56**으로 일치. 합성 24 Collection·552 Event·1,008 Relation·576 Narrative 추가(전체 30 Collection·679 Event). 현재 개발 World에 직접 입력했으며 기존 역사 기록은 유지했다. 입력 중 열어둔 구 Revision 화면은 본문 409가 발생할 수 있어 완료 후 reload 검증했다. 이제 12:21 KST 사용자 지시에 따라 HUD를 threshold가 아닌 상대 ranking의 단일 대표 선정(`a5-s1-v3`)으로 변경한다.
+
 2026-09-28 11:45 KST 후속: HUD 면적/fade 독립 선정과 현재 운영 World의 합성 corpus 직접 입력을 사용자 승인으로 진행한다. 24 Collection·552 Event·1,008 Relation 후보를 24개 bounded atomic batch로 검증한다. 출시 reset은 지금 수행하지 않으며 A6/M5는 비활성이다. 기본 선택은 기존 query 제한에 맞게 최대 8개; corpus 추가를 capacity 확대 완료로 보고하지 않는다.
 
 **IP-011 A1–A3 완료; A4는 2026-09-28 사용자 승인으로 잔여 백로그를 이관하여 종료했다.** 원래 성능 exit 전체 통과를 뜻하지 않는다. A5는 2026-09-28 명시적 사용자 지시로 **구현 활성**이다. 계획 PR #237을 main `55cae82717af34d09683d04e4bd0a7df46c68aef`에 통합했다. [S0–S7 계획](IP-011-A5-collection-discovery-plan.md)에 따라 S0/S1 첫 checkpoint를 PR #238 `b09394c`로 운영 배포했다. main CI(모바일 32 pass/1 skip)와 공개 모바일 post-deploy smoke가 성공했다. 다음은 S2 표현·입력 분리이며, pin·자동 relevance·capacity 완료를 뜻하지 않는다. A4 scale의 구형 Island selector 실패와 sustained frame 미달도 보존한다. [실행 근거](../evidence/ip011/a5-execution.md)에 checkpoint와 미달을 기록한다. CI 실패는 숨기지 않고 배포 가능한 작은 checkpoint를 자주 운영에 노출한다. A6/M5·대량 역사 입력·canonical migration·새 유료 서비스는 비활성이다.

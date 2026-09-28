@@ -13,6 +13,8 @@ layer: implementation-plan
 
 ## 1. 실제 기준선과 조사 한계
 
+2026-09-28 12:21 KST 최우선 HUD 결정: 임계 기준에 합격한 Composite만 찾는 방식이 아니라 화면 관련 후보들을 상대 점수화하여 하나를 고른다. partial/작은 면적/동률도 탈락 사유가 아니며 World-only는 후보가 실제 없는 경우에 한한다. 이 결정은 아래 기존 no-topic/partial/ambiguity 초기 실험 가정을 대체한다. suppression·viewport·World 좌표 계약은 불변이다.
+
 2026-09-28 11:45 KST 사용자 피드백이 아래 초기 실험 결정을 대체한다. HUD는 fade/면적과 독립적으로 현재 보이는 Composite 맥락을 선정한다. 선형·작은 Composite도 단독 후보면 제목으로 표시하며 graph label과 HUD 동시 표시를 허용한다. suppression 자체는 유지한다. 운영 데이터 부족을 해결하기 위해 현재 개발 World에 합성 데이터를 직접 추가·수정하는 것이 명시 승인됐다. 별도 World 격리나 read-only 제한은 이 A5 합성 corpus 작업에 적용하지 않는다. 출시 reset은 향후 별도 작업이며 지금 일괄 삭제하지 않는다. A6/M5·schema migration·새 유료 서비스는 계속 비활성이다.
 
 - `git fetch origin` 후 origin/main과 로컬 HEAD는 위 SHA로 일치했다. 공개 Atropos `/health`도 같은 SHA와 `status:ok`를 반환했다. 운영 브라우저 UX·DB inventory를 이번에 다시 시험했다는 뜻은 아니다.

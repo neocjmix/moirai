@@ -2,6 +2,8 @@ import { describe, expect, it } from "vitest";
 import {
   selectGraphContext,
   polygonContainsCenter,
+  contextViewportMetrics,
+  rankGraphContexts,
   type ContextCandidate
 } from "./graph-context-policy";
 import { collectionDiscoveryConfig } from "./collection-discovery-config";
@@ -17,6 +19,8 @@ const candidate = (
   centerInside: true,
   supportComplete: true,
   contains: [],
+  centerDistance: 0,
+  viewportSpan: 1,
   ...changes
 });
 
@@ -35,10 +39,14 @@ describe("A5 registered context fixtures", () => {
       true
     );
   });
-  it("hands off a full viewport and rejects incomplete or offscreen geometry", () => {
+  it("always selects a visible candidate, including incomplete support", () => {
     expect(selectGraphContext([candidate("full")])?.id).toBe("full");
-    for (const changes of [{ supportComplete: false }, { visible: false }])
-      expect(selectGraphContext([candidate("x", changes)])).toBeNull();
+    expect(
+      selectGraphContext([candidate("partial", { supportComplete: false })])?.id
+    ).toBe("partial");
+    expect(
+      selectGraphContext([candidate("off", { visible: false })])
+    ).toBeNull();
     expect(selectGraphContext([])).toBeNull();
   });
   it.each([1, 4, 16])(
@@ -51,8 +59,8 @@ describe("A5 registered context fixtures", () => {
       expect(selectGraphContext(values.reverse())?.id).toBe(String(count - 1));
     }
   );
-  it("does not invent a winner for unrelated overlap and retains a valid prior topic", () => {
-    expect(selectGraphContext([candidate("a"), candidate("b")])).toBeNull();
+  it("breaks ties deterministically rather than erasing the title", () => {
+    expect(selectGraphContext([candidate("b"), candidate("a")])?.id).toBe("a");
     expect(selectGraphContext([candidate("a"), candidate("b")], "a")?.id).toBe(
       "a"
     );
@@ -70,11 +78,55 @@ describe("A5 registered context fixtures", () => {
   });
   it("prefers the unique central topic when unrelated candidates compete", () => {
     const values = [
-      candidate("edge", { centerInside: false }),
+      candidate("edge", { centerInside: false, centerDistance: 0.5 }),
       candidate("center")
     ];
     expect(selectGraphContext(values)?.id).toBe("center");
     expect(selectGraphContext(values.reverse())?.id).toBe("center");
+  });
+  it("ranks a central linear shape above a remote or viewport-engulfing shape", () => {
+    const values = [
+      candidate("huge", { viewportSpan: 20 }),
+      candidate("line", {
+        viewportSpan: 0.8,
+        centerDistance: 0.02,
+        coverage: 0.001
+      }),
+      candidate("remote", { centerDistance: 0.8 })
+    ];
+    expect(rankGraphContexts(values)[0]?.id).toBe("line");
+    expect(selectGraphContext(values, "remote")?.id).toBe("line");
+    expect(selectGraphContext(values.reverse())?.id).toBe("line");
+  });
+  it("retains a near-tied previous topic but changes for a clearly stronger candidate", () => {
+    expect(
+      selectGraphContext(
+        [candidate("a"), candidate("b", { centerDistance: 0.01 })],
+        "b"
+      )?.id
+    ).toBe("b");
+    expect(
+      selectGraphContext(
+        [candidate("a"), candidate("b", { centerDistance: 0.5 })],
+        "b"
+      )?.id
+    ).toBe("a");
+  });
+  it("measures narrow support without area and handles a single point", () => {
+    const size = { width: 100, height: 100 };
+    expect(
+      contextViewportMetrics(
+        [
+          { x: 50, y: 10 },
+          { x: 50, y: 90 }
+        ],
+        size
+      )
+    ).toEqual({ centerDistance: 0, viewportSpan: 0.8 });
+    expect(contextViewportMetrics([{ x: 50, y: 50 }], size)).toEqual({
+      centerDistance: 0,
+      viewportSpan: 0
+    });
   });
   it("uses polygon containment rather than a bounding box", () => {
     expect(

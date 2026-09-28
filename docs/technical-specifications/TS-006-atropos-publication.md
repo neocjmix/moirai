@@ -7,6 +7,8 @@ layer: technical-specifications
 
 # TS-006 — Publication과 확장 가능한 탐색 읽기
 
+2026-09-28 12:21 KST 후속 정정(이전 HUD 조건보다 우선): 화면과 관련된 Composite 후보 전체를 상대 평가하여 가장 적합한 하나를 대표 제목으로 선택한다. 면적·중심 포함·완전성의 합격 threshold나 동률을 이유로 제목을 비우지 않는다. 거리·화면 scale 적합성·contains 구체성·근거 완전성·직전 제목 안정성은 점수 신호다. 동점은 안정적인 ID 순으로 해소하며 실제 화면 후보가 없을 때만 World 단독으로 표시한다. 부분 support는 낮은 확신의 대표 맥락이지 사실/geometry 완전성 주장이 아니다.
+
 2026-09-28 A5 HUD 정정: 대표 Composite 제목은 paint fade/면적 threshold와 독립적으로 선정한다. 화면의 단독 선형·작은 Composite도 후보이며 graph label과 HUD의 동시 표시는 허용한다. 현재 보이는 후보의 contains specificity·중심 맥락·직전 주제 안정성을 사용하고, 도형의 기존 full-viewport/ancestor suppression은 변경하지 않는다.
 
 ## TS-006.1 경계와 현재 상태

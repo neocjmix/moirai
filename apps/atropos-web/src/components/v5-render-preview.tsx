@@ -159,6 +159,7 @@ export function RenderPreview({
         <button onClick={() => zoom(1 / 0.6)} aria-label="Zoom out">
           －
         </button>
+        <button onClick={() => window.location.reload()}>새 발행 확인</button>
         <a href={`/graph/v5?world=${encodeURIComponent(worldId)}`}>
           기존 그래프 보기
         </a>

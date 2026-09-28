@@ -69,3 +69,10 @@ Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) rest
 - 사전 고정 실험값: Event/Composite 합산 `clamp(floor(viewport area / 28000),8,32)` label budget; 충돌 여백 8px; HUD 상단 72px/하단 56px 예약. 기존 label/suppression 자격을 되살리지 않으며 geometry 후보는 제거하지 않는다. 선택된 유자격 대상→이전 label→중심 거리→ID 순으로 배치한다. 텍스트 bounds는 한글/ASCII 폭과 회전의 보수적 추정이며 실제 200% text 검증 완료를 뜻하지 않는다.
 - point primary target은 표시된 label 길이에 맞추며 A5에서 높이 44px. region 면 전체는 primary input을 받지 않고 label에서 읽는다. Semantic target은 Enter/Space와 focus 표시를 지원한다.
 - 검증: 통합 quota, 서로 다른 종류 간 충돌/선택 우선, 1px 이동 안정성과 입력 geometry 불변. 운영 mobile 회귀에 실제 target 합산 budget과 keyboard 본문 열기를 추가했다. S2 전체 및 S3 성능 exit 완료는 아니다.
+
+## S2b 운영 확인 및 S3 요청 내부 재사용
+
+- 운영 `ec4b8d2`에서 기존 동일 viewport와 비교: 61 point/12 region의 ID·좌표·path 완전 동일. 실제 primary target 4개(예산 32), Geographic 69개. HUD 유지, Semantic Enter 키로 본문 정상 표시. 보수적 bounds 때문에 예산보다 적게 배치되며 가독성 채택 판정은 사용자 피드백/모바일 증거를 따른다.
+- S3 확인된 중복: 각 8-Collection batch가 같은 공간/index 객체를 독립 get. 동일 요청 안에서만 Promise cache를 공유하고 inner 256-read work bound는 유지한다. query 종료 후 cache 폐기; World/Revision/selection 간 결과 혼합 없음.
+- 로컬 고차수 공유+Collection별 고유 Event fixture의 전체 pagination store 호출: 9개 32→26, 16개 98→82, 30개 326→242. 새 32개 256회, 64개 893회(전체 페이지 합계; page당 수치 아님). 서로 다른 선택 크기에서 geometry는 각 World 전체 query와 동일하고 중복·누락 없으며 cursor가 진전했다. 각 page의 실제 호출 수와 object_reads 일치·같은 key 중복 0을 assertion으로 고정했다.
+- 이 측정은 process 내 deterministic fixture의 store callback 호출 수다. 운영 cold latency·frame·전체 gesture 비용·64개 실제 콘텐츠 가독성 성공 주장이 아니다.

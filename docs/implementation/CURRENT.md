@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-09-28 S2b/S3 후속: PR #251 `ec4b8d2`를 운영 배포했다. 공개 동일 viewport의 61 point/12 region ID·좌표·경로가 변경 전과 동일하며 Semantic primary target 4개, Geographic 69개를 확인했다. Enter 키 본문 열기도 성공했다. 이어 S3의 동일 viewport/Revision 요청 내부 batch 간 immutable object 재사용을 추가한다. 로컬 30-Collection fixture 전체 pagination의 store 호출은 326→242(중복 84 제거), 9/16/32/64 정확성·좌표·continuation 검증은 통과했다. 운영 latency/frame 개선이나 S3 전체 완료로 해석하지 않는다.
+
 2026-09-28 16:19 KST: `103a30a`의 CI `36387835246`와 운영 smoke `36388167524` 성공을 확인했다. S2b에서 Event/Composite 통합 Semantic 예산과 종류 간 label 충돌 회피를 추가한다. 실험값은 viewport 면적/28,000, 최소 8·최대 32개이며 기존 suppression/label 자격 위에서만 적용한다. Geographic geometry/paint는 그대로 보존하고 이전 label 우선으로 흔들림을 줄인다. Semantic 대상 Enter/Space·focus 표시와 44px point target을 제공한다. 200% text 실측 및 S3 scale/누적 비용 검증은 아직 완료되지 않았다.
 
 2026-09-28 15:36 KST: main `2fe083c`의 Clotho v5 계약 복구(#242)와 독립 인증 smoke(#246)를 A5 작업 브랜치에 back-merge했다. 충돌 없음, merge 직후 tree는 main과 동일. 8개 선택 상한 제거(#245/#247)의 main CI `36375218854`와 운영 모바일/인증 smoke `36375607244`는 성공했다. **다음 checkpoint S2a**는 A5에서 이름 없는 Geographic point/Composite의 primary hit target·접근성 노출을 제거한다. geometry와 paint/suppression, label 밀도 정책은 유지한다. S2 전체(독립 밀도·keyboard·200% text) 및 S3 성능 exit 완료는 아니다.

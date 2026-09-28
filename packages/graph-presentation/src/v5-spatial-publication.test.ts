@@ -242,7 +242,7 @@ describe("authenticated v5 World viewport rehearsal", () => {
     } while (cursor);
     expect(seen.sort()).toEqual(["coup", ...ids]);
   });
-  it.each([9, 16, 30])(
+  it.each([9, 16, 30, 32, 64])(
     "unions %i Collections with stable coordinates and advancing pages",
     async (count) => {
       const ids = Array.from(
@@ -295,7 +295,11 @@ describe("authenticated v5 World viewport rehearsal", () => {
           body
         ])
       );
-      const get = async (key: string) => objects.get(key) ?? null;
+      const fetched: string[] = [];
+      const get = async (key: string) => {
+        fetched.push(key);
+        return objects.get(key) ?? null;
+      };
       const viewport = { minX: -1e6, maxX: 1e6, minY: -1e6, maxY: 1e6 };
       const whole = await readV5AuthenticatedViewport(
         artifacts.root.body,
@@ -311,6 +315,7 @@ describe("authenticated v5 World viewport rehearsal", () => {
       const seen = new Map<string, (typeof whole.shapes)[number]>();
       const tokens = new Set<string>();
       do {
+        fetched.length = 0;
         const page = await readV5SelectedViewport(
           artifacts.root.body,
           "world-1",
@@ -324,6 +329,8 @@ describe("authenticated v5 World viewport rehearsal", () => {
         expect(page.object_reads).toBeLessThanOrEqual(
           256 * Math.ceil(count / 8)
         );
+        expect(fetched.length).toBe(new Set(fetched).size);
+        expect(page.object_reads).toBe(fetched.length);
         for (const shape of page.shapes) {
           expect(seen.has(shape.event_id)).toBe(false);
           seen.set(shape.event_id, shape);

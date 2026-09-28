@@ -40,12 +40,14 @@ export function RenderPreview({
   );
   const surface = useRef<SVGSVGElement>(null);
   const dragging = useRef<{ x: number; y: number } | null>(null);
+  const moved = useRef(false);
   const [size, setSize] = useState({ width: 360, height: 520 });
   const [camera, setCamera] = useState<Camera | null>(null);
   const [active, setActive] = useState(() =>
     collections.map((item) => item.id)
   );
   const [scene, setScene] = useState<Weighted[]>([]);
+  const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [level, setLevel] = useState(0);
   const [status, setStatus] = useState("Publication 확인 중…");
 
@@ -132,6 +134,58 @@ export function RenderPreview({
         return `${index ? "L" : "M"}${p.x},${p.y}`;
       })
       .join(" ") + (closed ? " Z" : "");
+  // Only screen-space collision belongs to the renderer. Text and positions
+  // arrive in prepared tiles; panning never reads Event/Composite semantics.
+  const labels = new Set<string>();
+  const occupied: {
+    left: number;
+    right: number;
+    top: number;
+    bottom: number;
+  }[] = [];
+  if (camera) {
+    for (const { primitive, opacity } of scene) {
+      if (labels.size >= 32) break;
+      if (
+        opacity < 0.5 ||
+        primitive.geometry.kind !== "point" ||
+        !primitive.label
+      )
+        continue;
+      const p = xy(primitive.geometry.xy);
+      const box = {
+        left: p.x + 8,
+        right:
+          p.x +
+          8 +
+          Math.min(
+            220,
+            [...primitive.label].reduce(
+              (width, char) => width + (char.charCodeAt(0) > 255 ? 12 : 7),
+              0
+            )
+          ),
+        top: p.y - 20,
+        bottom: p.y - 4
+      };
+      if (
+        box.left < 0 ||
+        box.top < 0 ||
+        box.right > size.width ||
+        box.bottom > size.height ||
+        occupied.some(
+          (other) =>
+            box.left < other.right &&
+            box.right > other.left &&
+            box.top < other.bottom &&
+            box.bottom > other.top
+        )
+      )
+        continue;
+      occupied.push(box);
+      labels.add(primitive.id);
+    }
+  }
   const zoom = (factor: number) =>
     setCamera(
       (old) =>
@@ -171,6 +225,13 @@ export function RenderPreview({
         <a href={`/graph/v5?world=${encodeURIComponent(worldId)}`}>
           기존 그래프 보기
         </a>
+        {selectedEvent && !demo && (
+          <a
+            href={`/graph/v5?world=${encodeURIComponent(worldId)}&event=${encodeURIComponent(selectedEvent)}`}
+          >
+            선택한 Event 상세 읽기
+          </a>
+        )}
         {!demo && (
           <a href="/graph/v5/render-preview?demo=1">즉시 체험: 합성 World</a>
         )}
@@ -181,12 +242,16 @@ export function RenderPreview({
         aria-label="Prepared World render tiles"
         onPointerDown={(e) => {
           dragging.current = { x: e.clientX, y: e.clientY };
-          e.currentTarget.setPointerCapture(e.pointerId);
+          moved.current = false;
         }}
         onPointerMove={(e) => {
           if (!dragging.current || !camera) return;
           const dx = e.clientX - dragging.current.x,
             dy = e.clientY - dragging.current.y;
+          if (Math.abs(dx) + Math.abs(dy) > 2 && !moved.current) {
+            moved.current = true;
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }
           dragging.current = { x: e.clientX, y: e.clientY };
           setCamera(
             (old) =>
@@ -219,7 +284,14 @@ export function RenderPreview({
             const color =
               primitive.entity.kind === "relation" ? "#57606c" : "#b27839";
             return (
-              <g key={primitive.id} opacity={opacity}>
+              <g
+                key={primitive.id}
+                opacity={opacity}
+                onClick={() => {
+                  if (!moved.current && primitive.entity.kind === "event")
+                    setSelectedEvent(primitive.entity.id);
+                }}
+              >
                 {g.kind === "polygon" &&
                   g.rings.map((ring, index) => (
                     <path
@@ -251,7 +323,7 @@ export function RenderPreview({
                       }
                     />
                     <title>{primitive.label}</title>
-                    {demo && primitive.entity.kind === "event" && (
+                    {labels.has(primitive.id) && (
                       <text
                         x={xy(g.xy).x + 8}
                         y={xy(g.xy).y - 8}
@@ -268,8 +340,8 @@ export function RenderPreview({
           })}
       </svg>
       <p style={{ fontSize: 12 }}>
-        준비된 타일 geometry 확인용 화면입니다. 기존 그래프의 레이블·선택·읽기
-        동작은 위 링크에서 확인하세요. Level {level.toFixed(2)}
+        준비된 타일 geometry와 화면 좌표 레이블 충돌을 확인하세요. Event를
+        선택하면 별도 상세 읽기 링크가 표시됩니다. Level {level.toFixed(2)}
       </p>
       <details>
         <summary>

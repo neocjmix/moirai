@@ -1,3 +1,28 @@
+export function semanticTextWidth(text: string) {
+  return [...text].reduce(
+    (sum, char) => sum + (char.charCodeAt(0) > 127 ? 13 : 7.5),
+    0
+  );
+}
+
+/** Keep a readable, bounded label beside the existing point on narrow screens. */
+export function fitSemanticText(
+  text: string,
+  x: number,
+  viewportWidth: number
+) {
+  const available = viewportWidth - x - 8;
+  if (available < 44) return "";
+  if (semanticTextWidth(text) <= available) return text;
+  const characters = [...text];
+  while (
+    characters.length &&
+    semanticTextWidth(characters.join("") + "…") > available
+  )
+    characters.pop();
+  return characters.length ? characters.join("") + "…" : "";
+}
+
 export interface SemanticCandidate {
   id: string;
   x: number;

@@ -14,7 +14,7 @@ import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBou
 import { compositePointDisplay } from "./composite-point-display";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { reconcileViewport } from "../viewport-cache";
-import { selectSemanticLabels } from "../../../lib/graph-semantic-budget";
+import { selectSemanticLabels, fitSemanticText, semanticTextWidth } from "../../../lib/graph-semantic-budget";
 import { GraphContextHud } from "../../../components/graph-context-hud";
 import { selectGraphContext, polygonContainsCenter, contextViewportMetrics, CONTEXT_DWELL_MS } from "../../../lib/graph-context-policy";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
@@ -3092,12 +3092,15 @@ export function GraphShell({
     });
   }, [allProjectedInstantPoints, chartCompositeRegions.descendantOpacityById, farZoomElisionState.hiddenPointIds, viewportSize.height, viewportSize.width, view.scaleY]);
 
+  const semanticPointCandidates = useMemo(() => discovery?.contextHud
+    ? chartInstantPoints.map(point => ({...point, renderedLabel: fitSemanticText(point.renderedLabel ?? point.label, point.x + 10, viewportSize.width)}))
+    : chartInstantPoints, [discovery?.contextHud, chartInstantPoints, viewportSize.width]);
   const previousSemanticIds = useRef<ReadonlySet<string>>(new Set());
   const semanticSelection = useMemo(() => {
     const selectedId = renderedEventSelection?.eventId ?? selectedEventSelection?.eventId;
-    const textWidth = (text: string) => [...text].reduce((sum, char) => sum + (char.charCodeAt(0) > 127 ? 13 : 7.5), 0);
+    const textWidth = semanticTextWidth;
     return selectSemanticLabels([
-      ...chartInstantPoints.filter(point => point.showLabel !== false && point.opacity > 0).map(point => ({
+      ...semanticPointCandidates.filter(point => point.showLabel !== false && point.opacity > 0 && (point.renderedLabel ?? point.label).length > 0).map(point => ({
         id: `point:${point.id}`, x: point.x + 10, y: point.y - 24,
         width: textWidth(point.renderedLabel ?? point.label), height: 44, selected: point.eventId === selectedId,
       })),
@@ -3114,11 +3117,11 @@ export function GraphShell({
         };
       }),
     ], viewportSize, previousSemanticIds.current);
-  }, [chartInstantPoints, visibleCompositeRegions, viewportSize, renderedEventSelection?.eventId, selectedEventSelection?.eventId]);
+  }, [semanticPointCandidates, visibleCompositeRegions, viewportSize, renderedEventSelection?.eventId, selectedEventSelection?.eventId]);
   useEffect(() => { previousSemanticIds.current = semanticSelection.ids; }, [semanticSelection]);
   const presentedPoints = useMemo(() => discovery?.contextHud
-    ? chartInstantPoints.map(point => ({...point, showLabel: point.showLabel !== false && semanticSelection.ids.has(`point:${point.id}`)}))
-    : chartInstantPoints, [discovery?.contextHud, chartInstantPoints, semanticSelection]);
+    ? semanticPointCandidates.map(point => ({...point, showLabel: point.showLabel !== false && semanticSelection.ids.has(`point:${point.id}`)}))
+    : chartInstantPoints, [discovery?.contextHud, semanticPointCandidates, chartInstantPoints, semanticSelection]);
   const presentedRegions = useMemo(() => discovery?.contextHud
     ? visibleCompositeRegions.map(region => ({...region, showLabel: region.showLabel && semanticSelection.ids.has(`region:${region.id}`)}))
     : visibleCompositeRegions, [discovery?.contextHud, visibleCompositeRegions, semanticSelection]);

@@ -110,7 +110,7 @@ export function RenderPreview({
         setScene(frame.representations);
         setLevel(frame.level);
         setStatus(
-          `${frame.representations.length} representations · Level ${frame.level.toFixed(2)}`
+          `${frame.representations.length} representations · Level ${frame.level.toFixed(2)} · ${frame.cache?.entries ?? 0} cached assets / ${Math.round((frame.cache?.bytes ?? 0) / 1024)} KiB`
         );
       })
       .catch(() => {

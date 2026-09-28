@@ -19,6 +19,7 @@ export type RenderPrimitive = Readonly<{
   bounds: Box;
   label: string;
   collectionIds: readonly string[];
+  endpointIds?: readonly [string, string];
   memberCount?: number;
   lod: Readonly<{
     visible: readonly [number, number];
@@ -226,7 +227,8 @@ export function compileV5RenderPublication(
     points: readonly Point[],
     label: string,
     lod: RenderPrimitive["lod"],
-    collectionIds: readonly string[]
+    collectionIds: readonly string[],
+    endpointIds?: readonly [string, string]
   ) => {
     if (points.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y)))
       throw Error("render_nonfinite_geometry");
@@ -237,7 +239,8 @@ export function compileV5RenderPublication(
       bounds: boundsOf(points),
       label,
       lod,
-      collectionIds
+      collectionIds,
+      ...(endpointIds ? { endpointIds } : {})
     });
   };
   for (const shape of [...layout.shapes].sort((a, b) =>
@@ -338,7 +341,8 @@ export function compileV5RenderPublication(
           ...(memberships.get(relation.source_ref.event_id) ?? []),
           ...(memberships.get(relation.target_ref.event_id) ?? [])
         ])
-      ].sort()
+      ].sort(),
+      [relation.source_ref.event_id, relation.target_ref.event_id]
     );
   }
   if (!primitives.length)
@@ -370,11 +374,16 @@ export function compileV5RenderPublication(
     { key: string; sha256: string; bounds: Box }
   >();
   const renderPrimitives = primitives.map((primitive): RenderPrimitive => {
-    if (primitive.geometry.kind !== "polygon") return primitive;
-    const vertexCount = primitive.geometry.rings.reduce(
-      (count, ring) => count + ring.length,
-      0
-    );
+    if (
+      primitive.geometry.kind !== "polygon" &&
+      primitive.geometry.kind !== "line"
+    )
+      return primitive;
+    const vertexCount = (
+      primitive.geometry.kind === "polygon"
+        ? primitive.geometry.rings
+        : primitive.geometry.paths
+    ).reduce((count, path) => count + path.length, 0);
     const spansManyTiles =
       (primitive.bounds.maxX - primitive.bounds.minX) / width > 0.25 ||
       (primitive.bounds.maxY - primitive.bounds.minY) / height > 0.25;
@@ -496,7 +505,30 @@ export function compileV5RenderPublication(
     if (clustered && level === 5) throw Error("render_level_capacity_exceeded");
     if (!clustered && level >= 3) break;
   }
-  const documents = tiles.map((tile) => ({
+  const visibleByLevel = new Map<number, Set<string>>();
+  for (const tile of tiles) {
+    const visible = visibleByLevel.get(tile.level) ?? new Set<string>();
+    for (const primitive of tile.primitives)
+      if (
+        primitive.entity.kind === "event" ||
+        primitive.entity.kind === "composite"
+      )
+        visible.add(primitive.entity.id);
+    visibleByLevel.set(tile.level, visible);
+  }
+  const finalTiles = tiles
+    .map((tile) => ({
+      ...tile,
+      primitives: tile.primitives.filter(
+        (primitive) =>
+          !primitive.endpointIds ||
+          primitive.endpointIds.every((id) =>
+            visibleByLevel.get(tile.level)?.has(id)
+          )
+      )
+    }))
+    .filter((tile) => tile.primitives.length);
+  const documents = finalTiles.map((tile) => ({
     key: `${prefix}/${tile.level}/${tile.x}/${tile.y}.json`,
     body: JSON.stringify(tile)
   }));
@@ -517,10 +549,10 @@ export function compileV5RenderPublication(
     tiles: documents.map((document, i) => ({
       key: document.key,
       sha256: digest(document.body),
-      bounds: tiles[i]!.bounds,
-      level: tiles[i]!.level,
-      x: tiles[i]!.x,
-      y: tiles[i]!.y
+      bounds: finalTiles[i]!.bounds,
+      level: finalTiles[i]!.level,
+      x: finalTiles[i]!.x,
+      y: finalTiles[i]!.y
     })),
     documents,
     geometry: [...geometry.values()],

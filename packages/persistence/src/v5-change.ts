@@ -192,9 +192,32 @@ async function updateEntity(
 
 /** The caller must be a trusted Lachesis boundary with an authorized Actor.
  * Full World read is validation-only and must not be used for interactive queries. */
+class ValidationRollback {
+  constructor(readonly result: unknown) {}
+}
+export async function validateV5Resolved(
+  db: MoiraiDatabase,
+  input: ResolvedV5Change
+) {
+  try {
+    return await executeV5Resolved(db, input, true);
+  } catch (error) {
+    if (error instanceof ValidationRollback) return error.result;
+    throw error;
+  }
+}
 export async function commitV5Resolved(
   db: MoiraiDatabase,
   input: ResolvedV5Change
+) {
+  return executeV5Resolved(db, input, false);
+}
+/** Validation executes the identical transaction and deferred constraints, then
+ * rolls it back. No canonical row, revision, outbox or idempotency record persists. */
+async function executeV5Resolved(
+  db: MoiraiDatabase,
+  input: ResolvedV5Change,
+  preview: boolean
 ) {
   if (
     !uuid.test(input.change_set_id) ||
@@ -246,7 +269,14 @@ export async function commitV5Resolved(
           "Change Set ID has different content",
           [input.change_set_id]
         );
-      return { ...previous.result, idempotent_replay: true };
+      const replay = { ...previous.result, idempotent_replay: true };
+      if (preview)
+        throw new ValidationRollback({
+          valid: true,
+          already_committed: true,
+          result: replay
+        });
+      return replay;
     }
     if (!input.policy_version || !input.policy_digest)
       throw new ChangeSetError(
@@ -449,6 +479,16 @@ export async function commitV5Resolved(
       tx
     );
     await sql`set constraints all immediate`.execute(tx);
+    if (preview)
+      throw new ValidationRollback({
+        valid: true,
+        provisional: true,
+        world_id: input.world_id,
+        source_revision: input.expected_revision,
+        candidate_revision: revision,
+        id_mapping: result.id_mapping,
+        warnings: result.warnings
+      });
     return result;
   });
 }

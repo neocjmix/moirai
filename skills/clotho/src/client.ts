@@ -1,3 +1,4 @@
+import type { V5Method } from "@moirai/contracts/v5-wire";
 import type { ClothoMethod } from "@moirai/contracts";
 
 export class ClothoClientError extends Error {
@@ -26,11 +27,10 @@ export async function callClotho(
   return requestClotho(config, `/v1/clotho/${method}`, input);
 }
 
-/** Staged v5 endpoint; production's v4 server returns 404 until cutover. */
+/** Production v5 endpoint. */
 export async function callV5Clotho(
   config: ClientConfig,
-  method:
-    "authoring.policy.get" | "event.search" | "event.get" | "change.commit",
+  method: V5Method,
   input: unknown
 ): Promise<unknown> {
   const result = await requestClotho(config, `/v2/clotho/${method}`, input);
@@ -128,13 +128,15 @@ async function requestClotho(
       const raw = result.error?.recovery as
         { action?: unknown; current_revision?: unknown } | undefined;
       const recovery =
-        raw?.action === "refresh_context" &&
-        Number.isSafeInteger(raw.current_revision)
-          ? {
-              action: "refresh_context",
-              current_revision: raw.current_revision
-            }
-          : undefined;
+        raw?.action === "authoring.policy.get"
+          ? { action: "authoring.policy.get" }
+          : raw?.action === "refresh_context" &&
+              Number.isSafeInteger(raw.current_revision)
+            ? {
+                action: "refresh_context",
+                current_revision: raw.current_revision
+              }
+            : undefined;
       throw new ClothoClientError(
         code,
         result.error?.retryable === true,

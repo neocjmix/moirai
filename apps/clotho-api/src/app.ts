@@ -200,6 +200,15 @@ export function buildApp(
       mode === "v5-readonly"
         ? {
             ...activeService,
+            execute: ((method, input, actor) => {
+              if (method === "change.commit")
+                throw new ChangeSetError(
+                  "writes_quiesced",
+                  "method",
+                  "Writes are paused"
+                );
+              return activeService.execute(method, input, actor);
+            }) as typeof activeService.execute,
             commit: (() => {
               throw new ChangeSetError(
                 "writes_quiesced",

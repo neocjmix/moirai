@@ -1,4 +1,5 @@
-/** Staged v5 trust boundary. Do not expose until the coordinated v5 ingress. */
+import type { V5ReadMethod } from "@moirai/contracts/v5-wire";
+/** Production v5 trust boundary. */
 import {
   V5_AUTHORING_POLICY,
   type ResolvedV5Change
@@ -12,6 +13,12 @@ import {
 export type { V5DraftChange } from "./v5-client-resolver.js";
 
 export interface V5CanonicalStore {
+  query?(
+    method: V5ReadMethod,
+    input: Record<string, unknown>,
+    worlds: readonly string[]
+  ): Promise<unknown>;
+  validate?(input: ResolvedV5Change): Promise<unknown>;
   commit(input: ResolvedV5Change): Promise<unknown>;
   search?(input: {
     world_id: string;
@@ -29,6 +36,43 @@ export interface V5CanonicalStore {
 
 export function createV5Lachesis(store: V5CanonicalStore) {
   return {
+    query(
+      method: V5ReadMethod,
+      input: Record<string, unknown>,
+      actor: ActorContext
+    ) {
+      authorizeActor(
+        actor,
+        "world:read",
+        method === "world.list" ? undefined : input.world_id
+      );
+      if (!store.query)
+        throw new ChangeSetError(
+          "unsupported_method",
+          "method",
+          "Query unavailable"
+        );
+      return store.query(method, input, actor.world_ids);
+    },
+    validateDraft(plan: V5DraftChange, actor: ActorContext) {
+      authorizeActor(actor, "world:write", plan?.world_id);
+      if (Object.hasOwn(plan, "actor") || Object.hasOwn(plan, "id_mapping"))
+        throw new ChangeSetError(
+          "invalid_request",
+          "plan",
+          "Server-derived fields are forbidden"
+        );
+      if (!store.validate)
+        throw new ChangeSetError(
+          "unsupported_method",
+          "method",
+          "Validation unavailable"
+        );
+      return store.validate({
+        ...resolveV5DraftChange(plan),
+        actor: actor.actor_id
+      });
+    },
     async detail(
       input: {
         world_id: string;

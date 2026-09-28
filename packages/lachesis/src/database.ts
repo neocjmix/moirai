@@ -7,6 +7,8 @@ import {
 } from "@moirai/persistence";
 import {
   commitV5Resolved,
+  validateV5Resolved,
+  queryV5Authoring,
   searchV5WorldEvents,
   getV5EventEvidence
 } from "@moirai/persistence/v5";
@@ -22,10 +24,13 @@ export function databaseLachesis(db: MoiraiDatabase): Lachesis {
   });
 }
 
-/** Staged only. The active app still calls databaseLachesis (v4). */
+/** Production v5 database wiring. */
 export function databaseV5Lachesis(db: MoiraiDatabase) {
   return createV5Lachesis({
     commit: (input) => commitV5Resolved(db, input),
+    validate: (input) => validateV5Resolved(db, input),
+    query: (method, input, worlds) =>
+      queryV5Authoring(db, method, input, worlds),
     search: (input) => searchV5WorldEvents(db, input),
     detail: (input) => getV5EventEvidence(db, input)
   });

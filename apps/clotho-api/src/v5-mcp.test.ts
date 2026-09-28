@@ -215,7 +215,7 @@ describe("inactive v5 MCP transport", () => {
     try {
       const publicList = await send("tools/list", undefined, undefined, false);
       expect(publicList.statusCode).toBe(200);
-      expect(publicList.json().result.tools).toHaveLength(4);
+      expect(publicList.json().result.tools).toHaveLength(13);
       expect(
         (
           await send(
@@ -246,10 +246,19 @@ describe("inactive v5 MCP transport", () => {
         expect(
           (await client.listTools()).tools.map((tool) => tool.name)
         ).toEqual([
+          "world_list",
+          "world_get",
+          "collection_list",
+          "collection_get",
+          "event_neighbors",
+          "context_slice",
+          "time_event_resolve",
+          "world_export",
           "authoring_policy_get",
-          "change_commit",
           "event_search",
-          "event_get"
+          "event_get",
+          "change_validate",
+          "change_commit"
         ]);
       } finally {
         await client.close();
@@ -259,10 +268,19 @@ describe("inactive v5 MCP transport", () => {
       expect(
         listing.json().result.tools.map((tool: { name: string }) => tool.name)
       ).toEqual([
+        "world_list",
+        "world_get",
+        "collection_list",
+        "collection_get",
+        "event_neighbors",
+        "context_slice",
+        "time_event_resolve",
+        "world_export",
         "authoring_policy_get",
-        "change_commit",
         "event_search",
-        "event_get"
+        "event_get",
+        "change_validate",
+        "change_commit"
       ]);
       const policy = await send("tools/call", "authoring_policy_get", {
         world_id: worldId,

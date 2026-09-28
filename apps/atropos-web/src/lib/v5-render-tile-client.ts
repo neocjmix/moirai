@@ -143,7 +143,11 @@ export function createV5RenderTileClient(input: {
       for (const primitive of tile.primitives) {
         if (
           !overlaps(primitive.bounds, viewport) ||
-          !primitive.collectionIds.some((id) => selected.has(id))
+          !primitive.collectionIds.some((id) => selected.has(id)) ||
+          (primitive.endpointCollectionIds &&
+            !primitive.endpointCollectionIds.every((ids) =>
+              ids.some((id) => selected.has(id))
+            ))
         )
           continue;
         const previous = scene.get(primitive.id);

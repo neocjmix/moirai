@@ -20,6 +20,7 @@ export type RenderPrimitive = Readonly<{
   label: string;
   collectionIds: readonly string[];
   endpointIds?: readonly [string, string];
+  endpointCollectionIds?: readonly [readonly string[], readonly string[]];
   memberCount?: number;
   lod: Readonly<{
     visible: readonly [number, number];
@@ -121,7 +122,13 @@ export function selectRenderScene(
       if (!intersects(primitive.bounds, viewport)) continue;
       if (
         activeCollectionIds &&
-        !primitive.collectionIds.some((id) => activeCollectionIds.includes(id))
+        (!primitive.collectionIds.some((id) =>
+          activeCollectionIds.includes(id)
+        ) ||
+          (primitive.endpointCollectionIds &&
+            !primitive.endpointCollectionIds.every((ids) =>
+              ids.some((id) => activeCollectionIds.includes(id))
+            )))
       )
         continue;
       const old = scene.get(primitive.id);
@@ -228,7 +235,8 @@ export function compileV5RenderPublication(
     label: string,
     lod: RenderPrimitive["lod"],
     collectionIds: readonly string[],
-    endpointIds?: readonly [string, string]
+    endpointIds?: readonly [string, string],
+    endpointCollectionIds?: readonly [readonly string[], readonly string[]]
   ) => {
     if (points.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y)))
       throw Error("render_nonfinite_geometry");
@@ -240,7 +248,8 @@ export function compileV5RenderPublication(
       label,
       lod,
       collectionIds,
-      ...(endpointIds ? { endpointIds } : {})
+      ...(endpointIds ? { endpointIds } : {}),
+      ...(endpointCollectionIds ? { endpointCollectionIds } : {})
     });
   };
   for (const shape of [...layout.shapes].sort((a, b) =>
@@ -342,7 +351,11 @@ export function compileV5RenderPublication(
           ...(memberships.get(relation.target_ref.event_id) ?? [])
         ])
       ].sort(),
-      [relation.source_ref.event_id, relation.target_ref.event_id]
+      [relation.source_ref.event_id, relation.target_ref.event_id],
+      [
+        [...(memberships.get(relation.source_ref.event_id) ?? [])].sort(),
+        [...(memberships.get(relation.target_ref.event_id) ?? [])].sort()
+      ]
     );
   }
   if (!primitives.length)

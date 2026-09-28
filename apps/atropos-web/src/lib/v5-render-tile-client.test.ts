@@ -61,6 +61,47 @@ const viewport = (minX: number, maxX: number) => ({
 });
 
 describe("render tile working set", () => {
+  it("requires both relation endpoint memberships for Collection selection", async () => {
+    const linked = {
+      ...primitive("link", 0.5, "one"),
+      entity: { kind: "relation", id: "link" },
+      endpointIds: ["a", "b"],
+      endpointCollectionIds: [["one"], ["two"]]
+    };
+    const fetcher = vi.fn(async (_url: string, init: RequestInit) => {
+      const request = JSON.parse(init.body as string) as {
+        kind: string;
+        assets?: { level: number; x: number; y: number }[];
+      };
+      if (request.kind === "manifest") return Response.json(manifest);
+      return Response.json({
+        revision,
+        assets: (request.assets ?? []).map((ref) => {
+          const key = `${prefix}${ref.level}/${ref.x}/${ref.y}.json`;
+          const tile = tiles[refs.findIndex((item) => item.key === key)]!;
+          return {
+            key,
+            sha256: "digest",
+            body: { ...tile, primitives: [linked] }
+          };
+        })
+      });
+    });
+    const client = createV5RenderTileClient({
+      worldId: world,
+      revision,
+      timeSystemId,
+      fetcher: fetcher as typeof fetch
+    });
+    expect(
+      (await client.load(viewport(0, 0.5), 1, ["one"])).primitives
+    ).toEqual([]);
+    expect(
+      (await client.load(viewport(0, 0.5), 1, ["one", "two"])).primitives.map(
+        (p) => p.id
+      )
+    ).toEqual(["link"]);
+  });
   it("fetches newly entered tiles and filters Collection selection without refetch", async () => {
     const fetched: string[][] = [];
     const fetcher = vi.fn(async (_url: string, init: RequestInit) => {

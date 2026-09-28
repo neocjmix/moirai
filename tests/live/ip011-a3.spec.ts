@@ -7,6 +7,27 @@ const compositeId = "01a0c40a-a761-7fc7-aef2-10211e0ecb0e";
 const childId = "019f5b00-0000-7000-8000-000000000116";
 const graph = `/graph/v5?world=${worldId}`;
 
+test("Render Publication preview stays usable while the pinned revision awaits its sidecar", async ({
+  page
+}) => {
+  await page.goto(`/graph/v5/render-preview?world=${worldId}`);
+  await expect(
+    page.getByRole("heading", { name: "Render Publication preview" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("img", { name: "Prepared World render tiles" })
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "새 발행 확인" })
+  ).toBeVisible();
+  await expect(page.getByRole("status")).toContainText(
+    /Publication|representations|타일/
+  );
+  await expect(
+    page.getByRole("link", { name: "기존 그래프 보기" })
+  ).toHaveAttribute("href", graph);
+});
+
 test("A5 corpus is published with shared identity and readable mobile narrative", async ({
   page,
   request

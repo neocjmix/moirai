@@ -49,6 +49,8 @@ export function RenderPreview({
   const [scene, setScene] = useState<Weighted[]>([]);
   const [selectedEvent, setSelectedEvent] = useState<string | null>(null);
   const [level, setLevel] = useState(0);
+  const [worldBounds, setWorldBounds] = useState<Bounds | null>(null);
+  const [showGrid, setShowGrid] = useState(false);
   const [status, setStatus] = useState("Publication 확인 중…");
 
   useEffect(() => () => client.dispose(), [client]);
@@ -75,6 +77,7 @@ export function RenderPreview({
           return;
         }
         const bounds = manifest.bounds;
+        setWorldBounds(bounds);
         setCamera({
           x: (bounds.minX + bounds.maxX) / 2,
           y: (bounds.minY + bounds.maxY) / 2,
@@ -133,6 +136,14 @@ export function RenderPreview({
   }, [client, camera, size, active]);
 
   const view = camera && viewOf(camera);
+  const gridLevel = Math.floor(level);
+  const gridCount = 2 ** gridLevel;
+  const gridWidth = worldBounds
+    ? Math.max(worldBounds.maxX - worldBounds.minX, 1) / gridCount
+    : 0;
+  const gridHeight = worldBounds
+    ? Math.max(worldBounds.maxY - worldBounds.minY, 1) / gridCount
+    : 0;
   const xy = (point: { x: number; y: number }) => ({
     x: ((point.x - view!.minX) / camera!.spanX) * size.width,
     y: ((point.y - view!.minY) / camera!.spanY) * size.height
@@ -232,6 +243,14 @@ export function RenderPreview({
           －
         </button>
         <button onClick={() => window.location.reload()}>새 발행 확인</button>
+        <label style={{ fontSize: 12 }}>
+          <input
+            type="checkbox"
+            checked={showGrid}
+            onChange={(event) => setShowGrid(event.target.checked)}
+          />
+          타일 경계
+        </label>
         <a href={`/graph/v5?world=${encodeURIComponent(worldId)}`}>
           기존 그래프 보기
         </a>
@@ -287,6 +306,39 @@ export function RenderPreview({
           touchAction: "none"
         }}
       >
+        {camera && worldBounds && showGrid && (
+          <g
+            pointerEvents="none"
+            stroke="#2478ba"
+            strokeWidth="1"
+            opacity="0.45"
+          >
+            {Array.from({ length: gridCount + 1 }, (_, index) => {
+              const x = xy({
+                x: worldBounds.minX + index * gridWidth,
+                y: worldBounds.minY
+              }).x;
+              return (
+                <line
+                  key={`x-${index}`}
+                  x1={x}
+                  x2={x}
+                  y1={0}
+                  y2={size.height}
+                />
+              );
+            })}
+            {Array.from({ length: gridCount + 1 }, (_, index) => {
+              const y = xy({
+                x: worldBounds.minX,
+                y: worldBounds.minY + index * gridHeight
+              }).y;
+              return (
+                <line key={`y-${index}`} x1={0} x2={size.width} y1={y} y2={y} />
+              );
+            })}
+          </g>
+        )}
         {camera &&
           scene.map(({ primitive, opacity }) => {
             const g = primitive.geometry;
@@ -352,6 +404,8 @@ export function RenderPreview({
       <p style={{ fontSize: 12 }}>
         준비된 타일 geometry와 화면 좌표 레이블 충돌을 확인하세요. Event를
         선택하면 별도 상세 읽기 링크가 표시됩니다. Level {level.toFixed(2)}
+        {worldBounds &&
+          ` · Level ${gridLevel} 타일 ${gridCount}×${gridCount}, 셀 ${gridWidth.toPrecision(3)} × ${gridHeight.toPrecision(3)} World 단위`}
       </p>
       <details>
         <summary>

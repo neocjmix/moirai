@@ -9,6 +9,8 @@ layer: implementation-plan
 
 2026-09-29 planning baseline against main `d6dda43`. Implementation is **not activated** by this document. IP-011 A5 remains active; A6/M5 remain inactive. [Decision handoff](IP-011-render-publication-handoff.md) supplies the architectural invariants; this plan resolves its open design choices against the repository. This is a separate follow-up IP because A5 S0–S7 deliberately used the existing Publication and treated tile/engine changes as conditional experiments. Do not silently rewrite A5's execution gates. A4-B01–03 remain open until independently verified; IP-012 measurements may close them only with the specified evidence.
 
+2026-09-29 execution update: the user's subsequent implementation instruction activates IP-012 work. A deterministic compiler, opt-in worker sidecar, revision-pinned render read, isolated browser tile client and public preview are implemented. `LACHESIS_RENDER_PUBLICATION=shadow` is set on the production worker for **future canonical revisions**; the currently served revision is immutable and has no sidecar. GraphShell still uses the prior semantic viewport pipeline. The preview and synthetic fixture do not constitute runtime cutover, mobile performance acceptance, A5 completion or closure of A4-B01–03. [CURRENT](CURRENT.md) owns exact deployment status.
+
 ## Verified before pipeline and limitations
 
 ```mermaid

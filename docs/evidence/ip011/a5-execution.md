@@ -81,3 +81,9 @@ Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) rest
 
 - run 36391950100의 운영 iPhone 시험에서 합성 corpus 테스트가 실패했다. 30개 선택·공유 사건·뷰포트·Geographic input 검사는 통과했지만 Semantic Event target이 0개여서 keyboard 읽기로 진행할 수 없었다. 기존 역사/미배치/Composite 모바일 시험은 성공했다. 인증 단계는 후속 배포로 SHA가 바뀌어 기다리다 다음 run에 의해 취소됐다.
 - 원인: 작은 화면에서 긴 point label이 오른쪽 경계를 넘으면 새 bounds 정책이 통째로 탈락시켰다. 같은 위치에서 가용 폭에 맞게 rendered text를 줄이고 ellipsis를 붙인다. 원래 전체 title/aria-label/본문은 그대로 유지하며, 44px도 확보할 수 없는 가장자리만 Geographic으로 남긴다. 회귀 테스트는 완화하지 않았다.
+# Historical selection truncation — 2026-09-28
+
+- Production `75f5520`, Revision 56, six historical Collections, bbox X -1000..1000 / Y 186200..204400: shell returned exactly 황산대첩, 위화도 회군, 과전법 시행 and 건국 과정 with every completeness flag false and `truncated:true`.
+- The spatial reader pages World candidates before filtering memberships. Synthetic candidates consume the shell's 16-page per-request work budget even when disabled. The client previously cached that partial result without continuing. The prior live test exhausted the raw API cursor but did not assert late historical points through the actual shell loader.
+- Fix: bounded shell requests expose/accept validated selection/spatial cursor; client follows it to exhaustion under the same abort signal and revision, unions IDs, rejects stalled cursors. No camera or World coordinate changes. Multi-response cross-batch edges remain explicitly incomplete; this is an entity/region omission fix, not a performance exit pass. Loading currently commits the assembled snapshot after continuation finishes.
+- Added loader regression for empty intermediate batches, late events, duplicate identity, stalled continuation and cancellation during continuation. Public mobile regression now requires the late historical shared Event in the 1330–1460 viewport.

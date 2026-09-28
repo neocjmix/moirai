@@ -1,5 +1,7 @@
 import type { GraphReadLoader } from "../urdr-port/src/graph-read-loader";
 import { createViewportCache } from "../urdr-port/src/viewport-cache";
+import { viewportCompleteness } from "../urdr-port/src/viewport-completeness";
+import { v5ViewportCursorSchema } from "./v5-viewport-cursor";
 import {
   graphShellViewportResponseSchema,
   type GraphShellWorkspaceShell
@@ -35,25 +37,59 @@ export function createV5GraphReadLoader(input: {
   };
   const cached = createViewportCache(
     async (viewport, signal) => {
-      const body = await call(
-        {
-          kind: "viewport",
-          time_system_id: input.timeSystemId,
-          collection_ids: input.collectionIds,
-          relation_types: input.relationTypes,
-          viewport
-        },
-        signal
-      );
-      if (signal.aborted)
-        throw new DOMException("Superseded viewport", "AbortError");
-      const value = graphShellViewportResponseSchema.parse(body);
-      if (
-        value.revision !== input.revision ||
-        value.canonicalRevision !== input.revision
-      )
-        throw Error("v5_shell_revision_mismatch");
-      return value;
+      let cursor = null;
+      let accumulated: ReturnType<
+        typeof graphShellViewportResponseSchema.parse
+      > | null = null;
+      const seen = new Set<string>();
+      for (;;) {
+        const body = await call(
+          {
+            kind: "viewport",
+            time_system_id: input.timeSystemId,
+            collection_ids: input.collectionIds,
+            relation_types: input.relationTypes,
+            viewport,
+            cursor
+          },
+          signal
+        );
+        if (signal.aborted)
+          throw new DOMException("Superseded viewport", "AbortError");
+        const value = graphShellViewportResponseSchema.parse(body);
+        if (
+          value.revision !== input.revision ||
+          value.canonicalRevision !== input.revision
+        )
+          throw Error("v5_shell_revision_mismatch");
+        const next =
+          body.next_cursor == null
+            ? null
+            : v5ViewportCursorSchema.parse(body.next_cursor);
+        if (accumulated) {
+          const union = <T extends { id: string }>(a: T[], b: T[]) => [
+            ...new Map([...a, ...b].map((item) => [item.id, item])).values()
+          ];
+          value.entities = union(accumulated.entities, value.entities);
+          value.regions = union(accumulated.regions, value.regions);
+          value.edges = union(accumulated.edges, value.edges);
+          // Relations crossing server batches are not guaranteed by this read.
+          value.completeness = viewportCompleteness(
+            [...value.entities, ...value.regions],
+            next !== null,
+            true
+          );
+          value.truncated = Object.values(value.completeness).some(
+            (complete) => !complete
+          );
+        }
+        accumulated = value;
+        if (!next) return value;
+        const token = JSON.stringify(next);
+        if (seen.has(token)) throw Error("v5_shell_cursor_stalled");
+        seen.add(token);
+        cursor = next;
+      }
     },
     {
       // Incomplete snapshots are reusable only for the exact same request.

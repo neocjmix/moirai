@@ -187,6 +187,16 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
   }
   expect(cursor).toBeNull();
   expect(placed.size).toBe(125);
+  // Exercise the actual shell loader, not only the unbounded API loop above.
+  // Synthetic candidates precede the historical events in the spatial tree.
+  // The former 16-page server cutoff returned only the three founding points.
+  await page.goto(
+    `${graph}&collections=${catalog.collections.map((c) => c.id).join(",")}&gsViewport=0,195300,2000,18200`
+  );
+  const lateHistoricalPoint = "019f5b00-0000-7000-8000-000000000115";
+  await expect(
+    page.locator(`[data-event-point-id="${lateHistoricalPoint}"]`)
+  ).toHaveCount(1, { timeout: 90_000 });
   const unplaced = [...allIds].filter((id) => !placed.has(id));
   expect(unplaced).toHaveLength(2);
   const owner = members.find((part) => part.ids.includes(unplaced[0]!));

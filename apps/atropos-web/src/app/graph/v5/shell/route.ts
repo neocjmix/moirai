@@ -3,6 +3,7 @@ import {
   v5ShellResponse
 } from "../../../../lib/v5-shell-request";
 import { z } from "zod";
+import { v5ViewportCursorSchema } from "../../../../lib/v5-viewport-cursor";
 import { viewportCompleteness } from "../../../../urdr-port/src/viewport-completeness";
 import { v5ShellReader } from "../../../../lib/v5-shell-reader";
 import { graphShellViewportQuerySchema } from "../../../../urdr-port/shared/contracts";
@@ -34,6 +35,7 @@ const input = z.discriminatedUnion("kind", [
       revision: z.number().int(),
       time_system_id: z.string().uuid(),
       collection_ids: z.array(z.string().uuid()),
+      cursor: v5ViewportCursorSchema.nullable().optional(),
       relation_types: z.array(z.string().max(64)).max(32).optional(),
       viewport: graphShellViewportQuerySchema
     })
@@ -66,9 +68,11 @@ export async function POST(request: Request) {
     const shapes: Awaited<
       ReturnType<typeof shell.reader.viewport>
     >["shapes"][number][] = [];
-    let cursor: Parameters<typeof shell.reader.selectedViewport>[3] = null;
+    let cursor: Parameters<typeof shell.reader.selectedViewport>[3] =
+      query.cursor ?? null;
     if (query.collection_ids.length) {
       for (let page = 0; page < 16; page++) {
+        if (request.signal.aborted) throw Error("v5_viewport_aborted");
         const result = await shell.reader.selectedViewport(
           query.time_system_id,
           query.viewport.bbox,
@@ -88,6 +92,7 @@ export async function POST(request: Request) {
       connections.truncated
     );
     return v5ShellResponse({
+      next_cursor: cursor,
       revision: query.revision,
       canonicalRevision: query.revision,
       lodLevel: 0,

@@ -83,6 +83,8 @@ Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) rest
 - 원인: 작은 화면에서 긴 point label이 오른쪽 경계를 넘으면 새 bounds 정책이 통째로 탈락시켰다. 같은 위치에서 가용 폭에 맞게 rendered text를 줄이고 ellipsis를 붙인다. 원래 전체 title/aria-label/본문은 그대로 유지하며, 44px도 확보할 수 없는 가장자리만 Geographic으로 남긴다. 회귀 테스트는 완화하지 않았다.
 # Historical selection truncation — 2026-09-28
 
+최종 후속: #256 `bf8701e` 운영 배포와 CI 36423087955, 공개 모바일 36423087941(2 pass), post-deploy smoke 36423498717의 성공을 확인했다. 아래 마지막 문장의 rerun 대기는 종료됐다. 이후 30개 선택 지연 보고와 구현/설계 중지 지시는 [최적화 전 상태 기준점](a5-stabilization-baseline.md)을 따른다. 누락 수정은 성능 전체 통과가 아니다.
+
 - Production `75f5520`, Revision 56, six historical Collections, bbox X -1000..1000 / Y 186200..204400: shell returned exactly 황산대첩, 위화도 회군, 과전법 시행 and 건국 과정 with every completeness flag false and `truncated:true`.
 - The spatial reader pages World candidates before filtering memberships. Synthetic candidates consume the shell's 16-page per-request work budget even when disabled. The client previously cached that partial result without continuing. The prior live test exhausted the raw API cursor but did not assert late historical points through the actual shell loader.
 - Fix: bounded shell requests expose/accept validated selection/spatial cursor; client follows it to exhaustion under the same abort signal and revision, unions IDs, rejects stalled cursors. No camera or World coordinate changes. Multi-response cross-batch edges remain explicitly incomplete; this is an entity/region omission fix, not a performance exit pass. Loading currently commits the assembled snapshot after continuation finishes.

@@ -9,6 +9,8 @@ layer: implementation-plan
 
 ## 1. 상태·권한·근거
 
+2026-09-28 23:25 KST 최신 범위: A5 부분 구현을 보존하고 상태 정합화·최적화 전 기준점 커밋만 수행한다. 신규 기능과 최적화 구현·설계는 중지됐다. 아래 과거 위임은 이를 대체하지 않는다. [CURRENT](CURRENT.md)가 현재 상태를 소유한다.
+
 A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 실행과 쓰기·삭제·수정·병합·배포를 위임했다. 이 과거 실행 위임은 최신 사용자 지시보다 우선하지 않는다. 2026-09-28 후속 명시적 시작 지시로 A5 구현·merge·checkpoint 배포가 활성화됐다. 실행 시 A1부터의 dependency와 rehearsal/backup/검증 gate를 지킨다. 기존 M5의 별도 후속 범위는 활성화하지 않는다.
 
 [실제 상태](../evidence/ip011/reconstruction.md), [데이터 감사](../evidence/ip011/data-audit.json), [자기검증](../evidence/ip011/review.md)을 근거로 한다. A0 당시 관측된 v4와 target v5의 차이는 migration backlog였다. A3에서 운영 v5 전환을 완료했다. 2026-09-28 A4는 사용자 승인으로 잔여 작업을 이관하여 종료했으며 성능 전체 통과는 아니다. 최신 단계 상태는 CURRENT, 종료 예외와 잔여 완료 조건은 [A4 종료·백로그](IP-011-A4-closeout-backlog.md)를 따른다.

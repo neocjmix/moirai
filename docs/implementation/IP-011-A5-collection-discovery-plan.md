@@ -1,11 +1,13 @@
 ---
 id: IP-011-A5
 title: Graph 중심 Collection 발견과 이중 밀도 표현
-status: planning-baseline
+status: paused
 layer: implementation-plan
 ---
 
 # IP-011 A5 — Graph 중심 Collection Discovery
+
+2026-09-28 23:25 KST override: 부분 구현 후 중지. 현재는 상태 정합화·기준점 고정만 수행하며 최적화 설계도 작성하지 않는다. 아래 구현 활성 지시·slice 순서는 보존된 이력이며 자동 재개하지 않는다. 실제 완료/미달은 [CURRENT](CURRENT.md)와 [상태 기준점](../evidence/ip011/a5-stabilization-baseline.md)을 따른다.
 
 2026-09-28 KST. 사용자 최신 A5 지시를 반영한 planning baseline. 조사 기준 `8937cb4142215b439d4430e61b9db1ae15f218c8` (PR #236). 계획 PR #237은 main `55cae82`에 통합됐다. **2026-09-28 구현 시작 지시로 A5 S0–S7 구현·merge·checkpoint 배포가 활성화됐다.** A6/M5·대량 역사 입력·canonical migration·새 유료 서비스는 비활성이다. 진행·검증 결과는 CURRENT와 a5-execution이 소유하며 아래 planning 조사와 제안/실측 구분은 유지한다.
 

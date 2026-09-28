@@ -134,6 +134,8 @@ Ordinary code failures, test failures and deployment errors are not reasons to h
 
 ## IP-011 planning authority
 
+2026-09-28 23:25 KST latest override: A5 feature work and optimization implementation/design are paused. The current task is only state reconciliation, baseline verification and a documentation commit before optimization. Do not resume S0–S7, mutate data/infrastructure or treat conversational Redis/Elasticsearch/LOD/hull suggestions as accepted designs. Follow CURRENT and the stabilization evidence; earlier execution authorizations below are historical and do not override this freeze.
+
 2026-09-28 12:21 KST follow-up: HUD must rank all screen-related Composite candidates and select exactly one when candidates exist, not select only candidates exceeding eligibility/confidence thresholds. Completeness and specificity are relative ranking signals, not exclusion gates. Area/fade are not title eligibility. Existing paint suppression and camera invariants remain.
 
 2026-09-28 A5 feedback override: the user explicitly authorized synthetic corpus mutations directly in the current development World (release data will be reset separately). A5 corpus writes are allowed through the existing v5 policy/transaction boundary, with synthetic labeling and idempotent batches; this is not authorization for a schema migration or A6/M5. HUD topic selection is independent of area/fade eligibility and may duplicate a visible graph label.

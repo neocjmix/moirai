@@ -166,6 +166,7 @@ async function verifyV5(pointer: {
     status,
     landing,
     graph,
+    renderPreview,
     root,
     old,
     catalog,
@@ -178,6 +179,9 @@ async function verifyV5(pointer: {
     fetchJson<StatusPayload>("/status-public"),
     fetch(new URL("/", baseUrl), { signal: AbortSignal.timeout(10_000) }),
     fetch(new URL(`/graph/v5?world=${graphWorldId}`, baseUrl), {
+      signal: AbortSignal.timeout(20_000)
+    }),
+    fetch(new URL(`/graph/v5/render-preview?world=${graphWorldId}`, baseUrl), {
       signal: AbortSignal.timeout(20_000)
     }),
     fetch(new URL("/graph", baseUrl), { signal: AbortSignal.timeout(20_000) }),
@@ -240,9 +244,11 @@ async function verifyV5(pointer: {
     Object.values(status.surfaces).some((value) => value !== "ok") ||
     !landing.ok ||
     !graph.ok ||
+    !renderPreview.ok ||
     !root.ok ||
     !old.ok ||
     !(await graph.text()).includes("실제 세계사") ||
+    !(await renderPreview.text()).includes("Render Publication preview") ||
     !(await root.text()).includes("실제 세계사") ||
     catalog.served_revision !== pointer.served_revision ||
     catalog.data.collection_count !== 30 ||

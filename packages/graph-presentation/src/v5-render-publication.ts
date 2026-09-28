@@ -159,18 +159,36 @@ export function compileV5RenderPublication(
   const visiting = new Set<string>();
   const resolve = (id: string): Point[] => {
     if (support.has(id)) return support.get(id)!;
-    if (visiting.has(id)) throw Error("render_contains_cycle");
-    visiting.add(id);
-    const shape = shapes.get(id);
-    const points =
-      shape?.kind === "point"
-        ? [shape.position]
-        : shape?.kind === "segment"
-          ? [shape.start, shape.end]
-          : [...new Set(children.get(id) ?? [])].sort().flatMap(resolve);
-    visiting.delete(id);
-    support.set(id, points);
-    return points;
+    const stack: { id: string; exit: boolean }[] = [{ id, exit: false }];
+    while (stack.length) {
+      const frame = stack.pop()!;
+      if (frame.exit) {
+        const shape = shapes.get(frame.id);
+        const points =
+          shape?.kind === "point"
+            ? [shape.position]
+            : shape?.kind === "segment"
+              ? [shape.start, shape.end]
+              : [...new Set(children.get(frame.id) ?? [])]
+                  .sort()
+                  .flatMap((child) => support.get(child) ?? []);
+        // For a convex parent hull, every interior descendant can be dropped.
+        // The hull of child hull vertices equals the hull of all descendants.
+        support.set(frame.id, shape?.kind === "region" ? hull(points) : points);
+        visiting.delete(frame.id);
+        continue;
+      }
+      if (support.has(frame.id)) continue;
+      if (visiting.has(frame.id)) throw Error("render_contains_cycle");
+      visiting.add(frame.id);
+      stack.push({ id: frame.id, exit: true });
+      const shape = shapes.get(frame.id);
+      if (shape?.kind === "point" || shape?.kind === "segment") continue;
+      const descendants = [...new Set(children.get(frame.id) ?? [])].sort();
+      for (const child of descendants.toReversed())
+        if (!support.has(child)) stack.push({ id: child, exit: false });
+    }
+    return support.get(id)!;
   };
   const primitives: RenderPrimitive[] = [];
   const add = (

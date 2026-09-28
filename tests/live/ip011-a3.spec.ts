@@ -28,6 +28,28 @@ test("Render Publication preview stays usable while the pinned revision awaits i
   ).toHaveAttribute("href", graph);
 });
 
+test("mobile synthetic Render Publication tiles zoom and filter by Collection", async ({
+  page
+}) => {
+  await page.goto("/graph/v5/render-preview?demo=1");
+  await expect(
+    page.getByRole("heading", {
+      name: /Render Publication preview.*synthetic fixture/
+    })
+  ).toBeVisible();
+  await expect(page.getByRole("status")).toContainText("representations");
+  const drawing = page.getByRole("img", {
+    name: "Prepared World render tiles"
+  });
+  await expect(drawing.locator("circle").first()).toBeVisible();
+  await page.getByRole("button", { name: "Zoom in" }).click();
+  await expect(page.getByRole("status")).toContainText("Level");
+  await page.getByText(/Collection 선택/).click();
+  await page.getByRole("checkbox", { name: "조선사" }).uncheck();
+  await page.getByRole("checkbox", { name: "일본사" }).uncheck();
+  await expect(page.getByRole("status")).toContainText("0 representations");
+});
+
 test("A5 corpus is published with shared identity and readable mobile narrative", async ({
   page,
   request

@@ -1,3 +1,4 @@
+import { collectionDiscoveryConfig } from "../lib/collection-discovery-config";
 import { notFound } from "next/navigation";
 import { readV5StagedDocument } from "@moirai/publication/v5";
 import { assertPublicId } from "../lib/publication";
@@ -95,6 +96,10 @@ export default async function V5GraphPage({
             : null;
     return (
       <V5AtroposRoot
+        discovery={collectionDiscoveryConfig(
+          params.discovery,
+          process.env.ATROPOS_COLLECTION_DISCOVERY
+        )}
         worldId={worldId}
         revision={pointer.served_revision}
         timeSystemId={timeSystemId}

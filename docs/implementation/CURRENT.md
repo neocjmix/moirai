@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-**IP-011 A1–A3 완료; A4는 2026-09-28 사용자 승인으로 잔여 백로그를 이관하여 종료했다.** 원래 성능 exit 전체 통과를 뜻하지 않는다. A5는 현재 [authoritative planning](IP-011-A5-collection-discovery-plan.md)만 활성이고 구현은 비활성이다. 이번 문서 기준선은 main 반영 전이며 준비 세션에서 구현·merge·deployment를 하지 않는다. 다음 세션의 명시적 구현 시작 지시는 이 planning-only 제한을 대체하며 [A5 인계](IP-011-A5-handoff.md)에 따라 상태를 갱신한다. A6/M5·대량 역사 입력도 비활성이다.
+**IP-011 A1–A3 완료; A4는 2026-09-28 사용자 승인으로 잔여 백로그를 이관하여 종료했다.** 원래 성능 exit 전체 통과를 뜻하지 않는다. A5는 2026-09-28 명시적 사용자 지시로 **구현 활성**이다. 계획 PR #237을 main `55cae82717af34d09683d04e4bd0a7df46c68aef`에 통합했다. [S0–S7 계획](IP-011-A5-collection-discovery-plan.md)에 따라 S0/S1을 진행하며 [실행 근거](../evidence/ip011/a5-execution.md)에 checkpoint와 미달을 기록한다. CI 실패는 숨기지 않고 배포 가능한 작은 checkpoint를 자주 운영에 노출한다. A6/M5·대량 역사 입력·canonical migration·새 유료 서비스는 비활성이다.
 
 [종료 결정·후속 백로그](IP-011-A4-closeout-backlog.md)가 잔여 A4-B01(지속 frame), B02(region 계산), B03(실기기·메모리 증거)의 상태와 완료 조건을 소유한다. 기존 수치 기준·실패 기록·테스트는 유지한다. A5는 [Graph 중심 발견·이중 밀도 계획](IP-011-A5-collection-discovery-plan.md)을 따른다. 표현 capacity를 먼저 검증하고 contextual activation을 도입하며 tile/cluster는 조건부 실험이다.
 

@@ -1,6 +1,6 @@
 # IP-011 A4 종료와 A5 탐색 실험 재계획
 
-2026-09-28 KST. 사용자 요청에 따른 실행 범위 분리. 상위 계획은 [IP-011](IP-011-architecture-realignment.md), 현재 실행은 [CURRENT](CURRENT.md), 기존 성능 계약은 [TS-006](../technical-specifications/TS-006-atropos-publication.md)과 [A1 budget](../evidence/ip011/a1-execution.md)이다. A4는 이후 같은 날 사용자 승인으로 종료됐다. [종료 결정·백로그](IP-011-A4-closeout-backlog.md)가 미충족 항목을 소유한다. 아래 R1–R3는 원래 실행·측정 계획이며 자동 재개하지 않는다. A5-E1~E3는 같은 날 후속 사용자 지시에 따라 [IP-011-A5-collection-discovery-plan.md](IP-011-A5-collection-discovery-plan.md)의 S0~S7로 대체됐다. A5 planning만 활성, 구현은 비활성이다.
+2026-09-28 KST. 사용자 요청에 따른 실행 범위 분리. 상위 계획은 [IP-011](IP-011-architecture-realignment.md), 현재 실행은 [CURRENT](CURRENT.md), 기존 성능 계약은 [TS-006](../technical-specifications/TS-006-atropos-publication.md)과 [A1 budget](../evidence/ip011/a1-execution.md)이다. A4는 이후 같은 날 사용자 승인으로 종료됐다. [종료 결정·백로그](IP-011-A4-closeout-backlog.md)가 미충족 항목을 소유한다. 아래 R1–R3는 원래 실행·측정 계획이며 자동 재개하지 않는다. A5-E1~E3는 같은 날 후속 사용자 지시에 따라 [IP-011-A5-collection-discovery-plan.md](IP-011-A5-collection-discovery-plan.md)의 S0~S7로 대체됐다. A5는 후속 명시적 지시로 구현 활성이다.
 
 ## 1. 목표와 경계
 
@@ -58,7 +58,7 @@ A5의 현재 목표·표현·state·relevance·실험·exit는 [Graph 중심 Col
 
 기존 E1(Composite/fade 대 cluster), E2(tile/level), E3(discovery 결합) 순서는 표현 capacity를 먼저 검증하는 S0~S7로 대체한다. Island는 feature flag로 보존/비활성화하고 World+dominant Composite HUD를 시험한다. Semantic/Geographic 밀도와 interaction을 분리하며 full-viewport suppression은 유지한다. Pinned 의도와 Contextual Active/Suggested 추론을 분리하고 Suggested만 graph에 참여하지 않는다. Contextual은 안정성·provenance 검증 후 graph에 참여한다.
 
-고정 tile/다중 level·임시 cluster는 실측 필요가 있을 때의 조건부 수단이며 의무 구현 산출물이 아니다. canonical identity, bounded cost, Revision/partial/cache, A4 수치 budget은 유지한다. A5는 planning만 활성이고 구현·A6/M5는 비활성이다.
+고정 tile/다중 level·임시 cluster는 실측 필요가 있을 때의 조건부 수단이며 의무 구현 산출물이 아니다. canonical identity, bounded cost, Revision/partial/cache, A4 수치 budget은 유지한다. A5 구현은 활성이고 A6/M5는 비활성이다.
 
 ## 5. 참고
 

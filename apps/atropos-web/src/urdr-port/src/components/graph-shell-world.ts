@@ -154,6 +154,7 @@ export function prepareCompositeWorldGeometry(
     );
   }
 
+  const supportCompleteById = new Map<string, boolean>();
   const regionGeometryById = new Map<string, CompositeHullGeometry>();
   const rawRegions = selectedRegionEntities
     .sort(
@@ -201,10 +202,13 @@ export function prepareCompositeWorldGeometry(
         points: hullPoints
       } satisfies CompositeHullGeometry;
       regionGeometryById.set(entity.id, geometry);
+      const supportComplete = entity.childrenComplete === true && entity.contains.length > 0 && entity.contains.every((id) => allWorldInstantPointById.has(id) || supportCompleteById.get(id) === true);
+      supportCompleteById.set(entity.id, supportComplete);
 
       return {
         id: entity.id,
         label: entity.label,
+        supportComplete,
         depth: (regionDepthById.get(entity.id) ?? 0) + 1,
         contains: entity.contains,
         containedBy: entity.containedBy,

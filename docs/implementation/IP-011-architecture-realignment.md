@@ -9,7 +9,7 @@ layer: implementation-plan
 
 ## 1. 상태·권한·근거
 
-A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 실행과 쓰기·삭제·수정·병합·배포를 위임했다. 이 과거 실행 위임은 최신 사용자 지시보다 우선하지 않는다. 2026-09-28 현재 A5는 planning까지만 수행하며 구현·merge·deployment는 비활성이다. 향후 구현 재개 시 A1부터의 dependency와 rehearsal/backup/검증 gate를 지킨다. 기존 M5의 별도 후속 범위는 활성화하지 않는다.
+A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 실행과 쓰기·삭제·수정·병합·배포를 위임했다. 이 과거 실행 위임은 최신 사용자 지시보다 우선하지 않는다. 2026-09-28 후속 명시적 시작 지시로 A5 구현·merge·checkpoint 배포가 활성화됐다. 실행 시 A1부터의 dependency와 rehearsal/backup/검증 gate를 지킨다. 기존 M5의 별도 후속 범위는 활성화하지 않는다.
 
 [실제 상태](../evidence/ip011/reconstruction.md), [데이터 감사](../evidence/ip011/data-audit.json), [자기검증](../evidence/ip011/review.md)을 근거로 한다. A0 당시 관측된 v4와 target v5의 차이는 migration backlog였다. A3에서 운영 v5 전환을 완료했다. 2026-09-28 A4는 사용자 승인으로 잔여 작업을 이관하여 종료했으며 성능 전체 통과는 아니다. 최신 단계 상태는 CURRENT, 종료 예외와 잔여 완료 조건은 [A4 종료·백로그](IP-011-A4-closeout-backlog.md)를 따른다.
 
@@ -38,11 +38,11 @@ A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 �
 | A2 v5 contract + migration rehearsal      | A1                           | Collection 전환, kind 파생, World Relation, 단일 Narrative, DB/contract/UI/MCP/tests/export 동시 수정; snapshot copy dry-run | owner-full inventory, ID/본문 mapping, World union 제약 검사, 모든 아래 migration 검증; production 변경 없음                              |
 | A3 controlled cutover                     | A2                           | 백업·write quiesce, versioned schema/content migration, v5 배포·Publication 재생성                                           | old writer 거절, restore rehearsal, target/served 일치, 127 Event·6 Collection 보존 또는 검토된 mapping, 9 scenario E2E                   |
 | A4 bounded read scalability               | A3 (설계·prototype은 A1부터) | World/Collection 전체 materialization 제거, paged index·stable layout·incremental client·bounded authoring query             | 원래 목표: TS-006 suite·고정 budget·bounded cost. 현재: 사용자 승인 종료, 미충족은 [A4-B01~03](IP-011-A4-closeout-backlog.md) 이관                                   |
-| A5 Collection discovery | A4 종료 | Graph 중심 discovery, HUD hand-off, semantic/geographic 분리, explicit intent와 contextual activation | [IP-011-A5-collection-discovery-plan.md](IP-011-A5-collection-discovery-plan.md)의 S0–S7: capacity·안정성·feedback 방어·escape·모바일·exploration 품질. planning만 활성 |
+| A5 Collection discovery | A4 종료 | Graph 중심 discovery, HUD hand-off, semantic/geographic 분리, explicit intent와 contextual activation | [IP-011-A5-collection-discovery-plan.md](IP-011-A5-collection-discovery-plan.md)의 S0–S7: capacity·안정성·feedback 방어·escape·모바일·exploration 품질. 구현 활성 |
 | A6 역사 dogfooding 재개                   | A3+A4+A5                     | 단종·임진왜란·일본사 신규 세션 작성과 더 깊은 병렬 서사                                                                      | 정책 준수 transcript, reuse·Narrative·temporal 품질과 read performance 기준, 회귀 없음                                                    |
 | 이후 M5 재편                              | A6                           | 아래 잔여 lifecycle·portability·governance/release                                                                           | 현 target 계약 기준으로 별도 실행 활성화                                                                                                  |
 
-2026-09-28 최신 사용자 지시로 A5의 authoritative 실행 계획은 [Graph 중심 Collection Discovery](IP-011-A5-collection-discovery-plan.md)가 소유한다. A4는 미충족 성능·검증을 A4-B01~03에 이관하여 종료했다. 기존 [reader performance plan](IP-011-reader-performance-plan.md)의 A4 측정 이력은 유지하되 A5-E1~E3의 순서는 새 S0~S7로 대체한다. Semantic/Geographic 표현과 수동 다중 활성 capacity를 자동 relevance보다 먼저 검증한다. tile/cluster는 근거가 있을 때 선택하는 수단이다. 기존 수치 기준은 유지하며 A5는 planning만 활성, 구현·A6/M5·배포는 비활성이다. A6의 A5 선행에는 채택안 통합과 검증이 포함된다.
+2026-09-28 최신 사용자 지시로 A5의 authoritative 실행 계획은 [Graph 중심 Collection Discovery](IP-011-A5-collection-discovery-plan.md)가 소유한다. A4는 미충족 성능·검증을 A4-B01~03에 이관하여 종료했다. 기존 [reader performance plan](IP-011-reader-performance-plan.md)의 A4 측정 이력은 유지하되 A5-E1~E3의 순서는 새 S0~S7로 대체한다. Semantic/Geographic 표현과 수동 다중 활성 capacity를 자동 relevance보다 먼저 검증한다. tile/cluster는 근거가 있을 때 선택하는 수단이다. 기존 수치 기준은 유지하며 A5는 구현 활성이다. A6/M5는 비활성이다. A6의 A5 선행에는 채택안 통합과 검증이 포함된다.
 
 A1 transition policy는 v4 서버에 v5 semantics를 쓰라고 지시하지 않는다. A2에서 target policy를 구현하고 A3에서 contract와 함께 교체한다. policy guard는 A1의 격리된 v5 prototype에서 검증하고 A2 contract에 통합한 뒤 A3에서 신규 production write에 강제한다. 기존 strict v4 payload에 policy 필드를 조용히 추가하지 않는다. v4를 영구 호환하지 않는다. A4 종료가 bulk 역사 입력 재개를 뜻하지 않는다. A6 활성화 전까지 회귀용 소규모 fixture만 사용한다. 계획 단계 A0 완료는 A1 구현의 자동 승인이 아니다.
 

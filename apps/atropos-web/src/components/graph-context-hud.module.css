@@ -1,0 +1,140 @@
+.hud {
+  position: absolute;
+  z-index: 20;
+  top: calc(env(safe-area-inset-top, 0px) + 22px);
+  left: max(22px, env(safe-area-inset-left, 0px));
+  right: 130px;
+  pointer-events: none;
+  color: #303c35;
+  font-family: inherit;
+  overflow-wrap: anywhere;
+}
+.world {
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.topic {
+  font-size: 1rem;
+  line-height: 1.4;
+  margin-top: 5px;
+  color: #56645a;
+}
+.trigger {
+  position: absolute;
+  z-index: 21;
+  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  right: max(14px, env(safe-area-inset-right, 0px));
+  min-height: 44px;
+  padding: 8px 12px;
+  border: 1px solid #d6dcd3;
+  border-radius: 22px;
+  background: #fafbf7;
+  color: #303c35;
+  font: inherit;
+  cursor: pointer;
+}
+.trigger span {
+  margin-left: 4px;
+  color: #6c796e;
+}
+.dialog {
+  width: min(480px, calc(100vw - 24px));
+  max-height: calc(
+    100dvh - 32px - env(safe-area-inset-top, 0px) -
+      env(safe-area-inset-bottom, 0px)
+  );
+  margin: auto;
+  padding: 0;
+  border: 1px solid #d6dcd3;
+  border-radius: 20px;
+  background: #fafbf7;
+  color: #303c35;
+  overscroll-behavior: contain;
+}
+.dialog::backdrop {
+  background: rgb(30 40 33 / 20%);
+}
+.body {
+  padding: 20px;
+}
+.body header,
+.actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.body h2 {
+  font-size: 1.25rem;
+  margin: 0;
+}
+.body button {
+  min-height: 44px;
+  min-width: 44px;
+  padding: 8px;
+  font: inherit;
+  color: inherit;
+  border: 0;
+  border-radius: 8px;
+  background: transparent;
+  cursor: pointer;
+}
+.body button:hover {
+  background: #e9eee5;
+}
+.time {
+  color: #68766d;
+  font-size: 0.875rem;
+}
+.body input[type="search"] {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid #bac6ba;
+  border-radius: 10px;
+  padding: 10px;
+  font: inherit;
+  background: white;
+}
+.actions {
+  margin-top: 8px;
+  font-size: 0.875rem;
+}
+.list {
+  margin-top: 8px;
+}
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-top: 1px solid #e1e6df;
+}
+.row label {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 48px;
+  overflow-wrap: anywhere;
+  padding: 6px 0;
+}
+.row input {
+  width: 20px;
+  height: 20px;
+  flex-shrink: 0;
+  accent-color: #536c58;
+}
+.body :focus-visible,
+.trigger:focus-visible {
+  outline: 2px solid #536c58;
+  outline-offset: 2px;
+}
+@media (max-width: 767px) {
+  .hud {
+    left: 18px;
+    right: 126px;
+  }
+  .body {
+    padding: 16px;
+  }
+}

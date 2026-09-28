@@ -85,9 +85,11 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
   );
   await page.goto("/graph");
   await expect(page.getByTestId("graph-stage")).toBeVisible();
-  await expect(page.getByTestId("moirai-source-island")).toHaveCount(1);
-  await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
-  await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
+  await expect(page.getByTestId("graph-context-hud")).toContainText(
+    "실제 세계사"
+  );
+  await expect(page.getByTestId("moirai-source-island")).toHaveCount(0);
+  await page.getByRole("button", { name: /^컬렉션/ }).click();
   await page
     .getByRole("button", {
       name: `${owner!.collection.title} 설명`,
@@ -107,8 +109,7 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
   await page.goto(`${graph}&event=${sharedId}`);
   await expect(detail).toContainText("계유정난");
   await page.getByTestId("event-drawer-close").click();
-  await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
-  await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
+  await page.getByRole("button", { name: /^컬렉션/ }).click();
   await page
     .getByRole("checkbox", { name: "조선 전기 연표", exact: true })
     .uncheck();

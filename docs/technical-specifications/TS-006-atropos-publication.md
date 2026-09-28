@@ -45,7 +45,7 @@ Event URL은 World/Event identity를 사용하고 Collection은 선택 context�
 
 1k/10k/100k Event와 sparse/dense/overlap/large Collection fixtures에서 동일 local query를 유지한 채 먼 Event와 Collection만 늘린다. correctness 외에 cold path rows/bytes/object reads가 전체 World N에 선형 증가하지 않는지 확인한다. 초기 목표는 기존 viewport payload 1 MiB 이하·object reads 256 이하를 유지하되, index reads를 포함해 총량으로 측정한다. 이 수치는 현재 구현 일부의 상한이며 실측 달성 주장이나 충분한 latency 기준이 아니다.
 
-A1에서 고정 모바일·네트워크 profile과 허용 p95/interaction budget을 측정 근거로 명시하고 A4 시작 전에 고정한다. [A1 실행 근거와 고정 budget](../evidence/ip011/a1-execution.md)을 따른다. 임의 성능 수치를 완료 증거로 만들지 않는다. 성능 검증 완료는 합의된 latency/frame gate와 bounded cold cost 둘 다 통과해야 한다. budget 초과는 미충족으로 남긴다. 2026-09-28 사용자 결정에 따라 A4 실행 단계는 잔여를 [A4-B01~03](../implementation/IP-011-A4-closeout-backlog.md)으로 이관해 종료했다. 이는 단계 종료 조건의 명시적 예외이며 수치 기준 완화·성능 통과·출시 준비 완료가 아니다. A5는 [planning baseline](../implementation/IP-011-A5-collection-discovery-plan.md)만 활성이고 구현은 비활성이다. 채택 시 열린 성능 항목을 함께 판정한다. 표현 capacity 검증이 자동 relevance보다 선행하며 tile/cluster는 실측 필요에 따른 선택 수단이다.
+A1에서 고정 모바일·네트워크 profile과 허용 p95/interaction budget을 측정 근거로 명시하고 A4 시작 전에 고정한다. [A1 실행 근거와 고정 budget](../evidence/ip011/a1-execution.md)을 따른다. 임의 성능 수치를 완료 증거로 만들지 않는다. 성능 검증 완료는 합의된 latency/frame gate와 bounded cold cost 둘 다 통과해야 한다. budget 초과는 미충족으로 남긴다. 2026-09-28 사용자 결정에 따라 A4 실행 단계는 잔여를 [A4-B01~03](../implementation/IP-011-A4-closeout-backlog.md)으로 이관해 종료했다. 이는 단계 종료 조건의 명시적 예외이며 수치 기준 완화·성능 통과·출시 준비 완료가 아니다. A5는 [planning baseline](../implementation/IP-011-A5-collection-discovery-plan.md)을 따라 구현 활성이다. 채택 시 열린 성능 항목을 함께 판정한다. 표현 capacity 검증이 자동 relevance보다 선행하며 tile/cluster는 실측 필요에 따른 선택 수단이다.
 
 ## TS-006.8 무결성과 복구
 

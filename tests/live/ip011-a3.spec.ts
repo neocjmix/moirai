@@ -193,7 +193,8 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
   await page.goto(
     `${graph}&collections=${catalog.collections.map((c) => c.id).join(",")}&gsViewport=0,195300,2000,18200`
   );
-  const lateHistoricalPoint = "019f5b00-0000-7000-8000-000000000115";
+  // Gyeyu (115) is a bounded-time segment, not a point. Use the 1457 exile.
+  const lateHistoricalPoint = "019f5b00-0000-7000-8000-000000000119";
   await expect(
     page.locator(`[data-event-point-id="${lateHistoricalPoint}"]`)
   ).toHaveCount(1, { timeout: 90_000 });

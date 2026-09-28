@@ -117,7 +117,16 @@ export async function queryV5Authoring(
           }
         );
       const revision = world.current_revision;
-      if (method === "world.get") return { source_revision: revision, world };
+      if (method === "world.get") {
+        const systems = (
+          await sql<{
+            id: string;
+          }>`select id,world_id,slug,title,kind,definition_version,definition from time_systems where world_id=${worldId} and withdrawn_revision is null and id>${after} order by id limit ${limit + 1}`.execute(
+            tx
+          )
+        ).rows;
+        return { ...page(systems, revision), world, item_type: "time_system" };
+      }
       if (method === "collection.list")
         return page(
           (

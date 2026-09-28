@@ -41,6 +41,14 @@ export function createV5RenderTileClient(input: {
   const fetcher = input.fetcher ?? fetch;
   const maxBytes = input.maxBytes ?? 16 * 1024 * 1024;
   const cache = new Map<string, { asset: Asset; bytes: number }>();
+  const touch = (key: string) => {
+    const item = cache.get(key);
+    if (item) {
+      cache.delete(key);
+      cache.set(key, item);
+    }
+    return item;
+  };
   let manifestPromise: Promise<Manifest> | null = null;
   let disposed = false;
   const call = async (body: Record<string, unknown>, signal?: AbortSignal) => {
@@ -135,11 +143,12 @@ export function createV5RenderTileClient(input: {
       }
     }
     if (signal?.aborted || disposed) throw Error("render_read_aborted");
+    for (const ref of required) touch(ref.key);
     const scene = new Map<string, RenderPrimitive>();
     const selected = new Set(collectionIds);
     for (const ref of required) {
       if (ref.level !== level) continue;
-      const tile = cache.get(ref.key)?.asset.body as RenderTile | undefined;
+      const tile = touch(ref.key)?.asset.body as RenderTile | undefined;
       if (!tile) throw Error("render_tile_missing");
       for (const primitive of tile.primitives) {
         if (
@@ -204,7 +213,7 @@ export function createV5RenderTileClient(input: {
     const primitives = [...scene.values()]
       .map((primitive): RenderPrimitive => {
         if (primitive.geometry.kind !== "external") return primitive;
-        const asset = cache.get(primitive.geometry.key)?.asset;
+        const asset = touch(primitive.geometry.key)?.asset;
         if (
           !asset ||
           asset.sha256 !== primitive.geometry.sha256 ||
@@ -276,6 +285,7 @@ export function createV5RenderTileClient(input: {
         upper.primitives,
         level
       ),
+      cache: upper.cache,
       manifest: publication
     };
   };

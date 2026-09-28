@@ -1,13 +1,6 @@
 name: A5 authorized production corpus
 on:
-  push:
-    branches: [main]
-    paths:
-      [
-        .github/workflows/a5-seed-production.yml,
-        scripts/a5-seed-production.ts,
-        scripts/a5-discovery-corpus.ts
-      ]
+  # Initial authorized import completed at Revision 56. Future runs are explicit.
   workflow_dispatch:
 permissions:
   contents: read

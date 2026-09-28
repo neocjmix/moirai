@@ -7,6 +7,50 @@ const compositeId = "01a0c40a-a761-7fc7-aef2-10211e0ecb0e";
 const childId = "019f5b00-0000-7000-8000-000000000116";
 const graph = `/graph/v5?world=${worldId}`;
 
+test("A5 corpus is published with shared identity and readable mobile narrative", async ({
+  page,
+  request
+}) => {
+  const read = async (body: Record<string, unknown>) => {
+    const response = await request.post("/graph/v5/read", {
+      data: { world_id: worldId, ...body }
+    });
+    expect(response.ok()).toBe(true);
+    return (await response.json()).data;
+  };
+  const catalog = await read({ kind: "collections", page: 0 });
+  const synthetic = (
+    catalog.collections as { id: string; title: string }[]
+  ).filter((item) => item.title.startsWith("[A5 실험 "));
+  expect(synthetic).toHaveLength(24);
+  const memberships = await Promise.all(
+    synthetic.map(
+      async (collection) =>
+        (
+          await read({
+            kind: "collection",
+            collection_id: collection.id,
+            page: 0
+          })
+        ).event_ids as string[]
+    )
+  );
+  expect(new Set(memberships.flat()).size).toBe(552);
+  const shared = "019f9280-a500-7000-8000-0000000003e8";
+  expect(memberships.filter((ids) => ids.includes(shared))).toHaveLength(24);
+  await page.goto(
+    `${graph}&collections=019f9280-a500-7000-8000-000000000064,019f9280-a500-7000-8000-00000000006a&event=${shared}`
+  );
+  const drawer = page.getByTestId("event-drawer-sheet");
+  await expect(drawer).toContainText("항구의 교역");
+  await expect(drawer).toContainText("가상 사건");
+  await page.getByTestId("event-drawer-close").click();
+  await expect(page.locator(`[data-event-point-id="${shared}"]`)).toHaveCount(
+    1
+  );
+  await expect(page.getByTestId("graph-context-topic")).toBeVisible();
+});
+
 test("live mobile Collection, unplaced Event and Composite navigation", async ({
   page,
   request

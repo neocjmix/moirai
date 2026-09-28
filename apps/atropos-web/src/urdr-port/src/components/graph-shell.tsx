@@ -15,7 +15,7 @@ import { compositePointDisplay } from "./composite-point-display";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { reconcileViewport } from "../viewport-cache";
 import { GraphContextHud } from "../../../components/graph-context-hud";
-import { selectGraphContext, polygonContainsCenter, CONTEXT_DWELL_MS } from "../../../lib/graph-context-policy";
+import { selectGraphContext, polygonContainsCenter, contextViewportMetrics, CONTEXT_DWELL_MS } from "../../../lib/graph-context-policy";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 import { withGraphReturnContext } from "../../../lib/event-reading-navigation";
 
@@ -2979,20 +2979,21 @@ export function GraphShell({
     id: region.id, label: region.label, contains: region.contains,
     coverage: region.contextCoverage, centerInside: region.contextCenterInside,
     visible: regionIntersectsViewport(region.projectedPoints, viewportSize),
+    ...contextViewportMetrics(region.projectedPoints, viewportSize),
     supportComplete: region.supportComplete === true,
   })) : [], [discovery?.contextHud, chartCompositeRegions.regions, viewportSize]);
   const proposedContext = useMemo(() => selectGraphContext(contextCandidates, contextTopicId), [contextCandidates, contextTopicId]);
   const proposedContextId = proposedContext?.id ?? null;
-  const immediateContext = contextTopicId === null && proposedContext !== null;
+  const immediateContext = proposedContext !== null && !contextCandidates.some(candidate => candidate.id === contextTopicId && candidate.visible);
   useEffect(() => {
     if (proposedContextId === contextTopicId) return;
     if (immediateContext) { setContextTopicId(proposedContextId); return; }
     const timer = window.setTimeout(() => setContextTopicId(proposedContextId), CONTEXT_DWELL_MS);
     return () => window.clearTimeout(timer);
   }, [proposedContextId, contextTopicId, immediateContext]);
-  // Never keep a stale/partial topic after its qualification disappears.
+  // Keep the previous visible representative only during the switching dwell.
   const contextTopic = immediateContext ? proposedContext : proposedContextId === contextTopicId ? proposedContext :
-    contextCandidates.find(candidate => candidate.id === contextTopicId && candidate.supportComplete && candidate.visible) ?? null;
+    contextCandidates.find(candidate => candidate.id === contextTopicId && candidate.visible) ?? null;
 
   const farZoomElisionState = useMemo(() => {
     const zoomBucket = getEditorialZoomBucket(view.scaleY);

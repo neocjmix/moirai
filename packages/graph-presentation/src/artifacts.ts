@@ -1,5 +1,14 @@
 import { createHash } from "node:crypto";
 export { buildV5WorldLayout } from "./v5-world-layout.js";
+export {
+  compileV5RenderPublication,
+  selectRenderScene
+} from "./v5-render-publication.js";
+export type {
+  RenderPublication,
+  RenderTile,
+  RenderPrimitive
+} from "./v5-render-publication.js";
 export type { V5WorldLayout } from "./v5-world-layout.js";
 export { buildV5SpatialIndex, spatialIntersects } from "./v5-spatial-index.js";
 export type { V5SpatialIndex, V5SpatialNode } from "./v5-spatial-index.js";

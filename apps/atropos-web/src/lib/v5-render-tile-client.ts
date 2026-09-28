@@ -65,6 +65,12 @@ export function createV5RenderTileClient(input: {
     });
     if (response.status === 409) throw Error("render_revision_changed");
     if (response.status === 413) throw Error("render_batch_too_large");
+    if (response.status === 404)
+      throw Error(
+        body.kind === "manifest"
+          ? "render_manifest_unavailable"
+          : "render_asset_unlisted"
+      );
     if (!response.ok) throw Error("render_read_unavailable");
     return response.json() as Promise<unknown>;
   };

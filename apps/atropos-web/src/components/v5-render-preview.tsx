@@ -82,11 +82,14 @@ export function RenderPreview({
           spanY: Math.max(bounds.maxY - bounds.minY, 1) * 1.2
         });
       })
-      .catch(() => {
-        if (!cancelled)
-          setStatus(
-            "현재 revision에는 Render Publication이 없습니다. 다음 발행을 기다리고 있습니다."
-          );
+      .catch((error: unknown) => {
+        if (cancelled) return;
+        setStatus(
+          error instanceof Error &&
+            error.message === "render_manifest_unavailable"
+            ? "현재 revision에는 Render Publication이 없습니다. 새 revision 발행이 필요합니다."
+            : "Render Publication 상태를 확인할 수 없습니다. 잠시 후 다시 시도하세요."
+        );
       });
     return () => {
       cancelled = true;
@@ -115,9 +118,16 @@ export function RenderPreview({
           `${frame.representations.length} representations · Level ${frame.level.toFixed(2)} · ${frame.cache?.entries ?? 0} cached assets / ${Math.round((frame.cache?.bytes ?? 0) / 1024)} KiB`
         );
       })
-      .catch(() => {
-        if (!controller.signal.aborted)
-          setStatus("타일을 읽을 수 없습니다. 새로고침해 다시 확인하세요.");
+      .catch((error: unknown) => {
+        if (controller.signal.aborted) return;
+        setStatus(
+          error instanceof Error && error.message === "render_revision_changed"
+            ? "새 revision이 발행됐습니다. 새 발행 확인을 누르세요."
+            : error instanceof Error &&
+                error.message === "render_asset_unlisted"
+              ? "필요한 타일이 manifest에 없습니다. 이 revision의 Render Publication을 점검해야 합니다."
+              : "타일을 읽거나 검증할 수 없습니다. 새로고침해 다시 확인하세요."
+        );
       });
     return () => controller.abort();
   }, [client, camera, size, active]);

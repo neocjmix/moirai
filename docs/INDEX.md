@@ -10,7 +10,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 ## 현재 authoritative baseline — IP-011
 
-Render Publication 책임 경계와 후속 migration 계획은 [IP-012](implementation/IP-012-render-publication-plan.md)가 소유한다. IP-012는 계획 기준선이며 현재 활성 구현 단계인 IP-011 A5를 대체하거나 A4 미달을 종료하지 않는다.
+Render Publication 책임 경계와 migration 순서는 [IP-012](implementation/IP-012-render-publication-plan.md)가 소유한다. IP-012의 opt-in sidecar와 별도 preview 구현은 활성화됐지만 GraphShell cutover는 미완료다. IP-011 A5의 활성 구현을 대체하거나 A4 미달을 종료하지 않는다.
 
 [IP-011 architecture realignment](implementation/IP-011-architecture-realignment.md)이 현재 planning과 남은 milestone 순서를 소유한다. 개정 CON-003/BR/TS는 목표 계약이며 운영 배포는 A3를 거쳐 v5로 전환됐다. [CURRENT](implementation/CURRENT.md)가 실행 활성 상태를 구분한다. A4는 사용자 승인으로 잔여 작업을 이관해 종료했다(성능 전체 통과 아님). [종료 결정·백로그](implementation/IP-011-A4-closeout-backlog.md)와 [A5 planning baseline](implementation/IP-011-A5-collection-discovery-plan.md)이 다음 작업의 시작점이다. A5는 2026-09-28 사용자 지시로 구현 활성이다. 계획 PR #237을 main에 통합했으며 실행 상태는 CURRENT를 따른다. [A4 인계](implementation/IP-011-A4-handoff.md)는 역사적 기준선이다.
 

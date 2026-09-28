@@ -35,6 +35,7 @@ export function createV5RenderTileClient(input: {
   revision: number;
   timeSystemId: string;
   fetcher?: typeof fetch;
+  endpoint?: string;
   maxBytes?: number;
 }) {
   const fetcher = input.fetcher ?? fetch;
@@ -43,7 +44,7 @@ export function createV5RenderTileClient(input: {
   let manifestPromise: Promise<Manifest> | null = null;
   let disposed = false;
   const call = async (body: Record<string, unknown>, signal?: AbortSignal) => {
-    const response = await fetcher("/graph/v5/render", {
+    const response = await fetcher(input.endpoint ?? "/graph/v5/render", {
       method: "POST",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({

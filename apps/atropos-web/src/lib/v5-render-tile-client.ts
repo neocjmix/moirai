@@ -3,6 +3,7 @@ import type {
   RenderPublication,
   RenderTile
 } from "@moirai/graph-presentation/server";
+import { interpolateRenderLevels, levelForCamera } from "./v5-render-level";
 
 type Box = { minX: number; maxX: number; minY: number; maxY: number };
 type Manifest = Omit<RenderPublication, "documents" | "geometryDocuments">;
@@ -229,8 +230,53 @@ export function createV5RenderTileClient(input: {
       cache: { entries: cache.size, bytes }
     };
   };
+  const loadFrame = async (
+    input: {
+      viewport: Box;
+      scaleX: number;
+      scaleY: number;
+      width: number;
+      height: number;
+      collectionIds: readonly string[];
+    },
+    signal?: AbortSignal
+  ) => {
+    const publication = await manifest();
+    if (!publication.bounds)
+      return { level: 0, representations: [], manifest: publication };
+    const level = levelForCamera({
+      ...input,
+      world: publication.bounds,
+      maxLevel: publication.maxLevel
+    });
+    const lower = await load(
+      input.viewport,
+      Math.floor(level),
+      input.collectionIds,
+      signal
+    );
+    const upper =
+      Math.ceil(level) > Math.floor(level)
+        ? await load(
+            input.viewport,
+            Math.ceil(level),
+            input.collectionIds,
+            signal
+          )
+        : lower;
+    return {
+      level,
+      representations: interpolateRenderLevels(
+        lower.primitives,
+        upper.primitives,
+        level
+      ),
+      manifest: publication
+    };
+  };
   return {
     load,
+    loadFrame,
     manifest,
     dispose() {
       disposed = true;

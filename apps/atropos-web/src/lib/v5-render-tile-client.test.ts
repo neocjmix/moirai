@@ -111,6 +111,18 @@ describe("render tile working set", () => {
       )
     ).toEqual(["a"]);
     expect(fetched).toHaveLength(later);
+    const frame = await client.loadFrame({
+      viewport: viewport(0, 0.5),
+      scaleX: 200,
+      scaleY: 100,
+      width: 400,
+      height: 200,
+      collectionIds: ["one"]
+    });
+    expect(frame.level).toBeCloseTo(0.5);
+    expect(
+      frame.representations.find((item) => item.primitive.id === "a")?.opacity
+    ).toBeCloseTo(1);
     client.dispose();
     await expect(client.load(viewport(0, 0.5), 1, ["one"])).rejects.toThrow(
       "render_client_disposed"

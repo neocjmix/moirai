@@ -1,3 +1,9 @@
+import { queryV5Authoring } from "./v5-authoring-query.js";
+import { validateV5Resolved, commitV5Resolved } from "./v5-change.js";
+import {
+  V5_AUTHORING_POLICY,
+  type ResolvedV5Change
+} from "@moirai/contracts/v5";
 import { randomBytes } from "node:crypto";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { sql } from "kysely";
@@ -58,6 +64,246 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
     await sql`update events set summary = ${"s".repeat(5000)} where id = ${first}`.execute(
       db
     );
+  });
+  it("discovers authorized Worlds and rejects cross-query cursors/revision drift", async () => {
+    const result = (await queryV5Authoring(
+      db,
+      "world.list",
+      { contract_version: 5 },
+      [world]
+    )) as { items: { id: string }[] };
+    expect(result.items.map((v) => v.id)).toEqual([world]);
+    await expect(
+      queryV5Authoring(
+        db,
+        "world.get",
+        { contract_version: 5, world_id: other },
+        [world]
+      )
+    ).rejects.toMatchObject({ code: "forbidden" });
+    const input = {
+      contract_version: 5,
+      world_id: world,
+      seed_ids: [first, second],
+      collection_ids: [],
+      limit: 1
+    };
+    const page = (await queryV5Authoring(db, "context.slice", input, [
+      world
+    ])) as { continuation: string; items: { id: string }[] };
+    expect(page.items.map((v) => v.id)).toEqual([first]);
+    expect(page.continuation).toBeTruthy();
+    const next = (await queryV5Authoring(
+      db,
+      "context.slice",
+      { ...input, cursor: page.continuation },
+      [world]
+    )) as { items: { id: string }[] };
+    expect(next.items.map((v) => v.id)).toEqual([second]);
+    await expect(
+      queryV5Authoring(
+        db,
+        "context.slice",
+        { ...input, seed_ids: [first], cursor: page.continuation },
+        [world]
+      )
+    ).rejects.toMatchObject({ code: "invalid_cursor" });
+    await expect(
+      queryV5Authoring(
+        db,
+        "world.get",
+        { contract_version: 5, world_id: world, at_revision: 30 },
+        [world]
+      )
+    ).rejects.toMatchObject({ code: "revision_conflict" });
+  });
+  it("reads Collection membership, World systems, neighbors and complete content", async () => {
+    const collection = "019f5000-1100-7000-8000-000000000080";
+    await db.transaction().execute(async (tx) => {
+      await sql`insert into collections(id,world_id,slug,title,description,created_revision,updated_revision) values (${collection},${world},'selection','Selection',null,31,31)`.execute(
+        tx
+      );
+      await sql`insert into narratives(id,world_id,scope_type,scope_id,locale,body,public_references,notes,created_revision,updated_revision) values (${collection},${world},'collection',${collection},'ko','Collection account','[]','[]',31,31)`.execute(
+        tx
+      );
+      for (const event of [first, second])
+        await sql`insert into collection_event_memberships(id,world_id,collection_id,event_id,created_revision,updated_revision) values (${event},${world},${collection},${event},31,31)`.execute(
+          tx
+        );
+    });
+    try {
+      const input = { contract_version: 5, world_id: world };
+      expect(
+        await queryV5Authoring(db, "world.get", input, [world])
+      ).toMatchObject({
+        world: { current_revision: 31 },
+        item_type: "time_system",
+        items: []
+      });
+      expect(
+        await queryV5Authoring(db, "collection.list", input, [world])
+      ).toMatchObject({ items: [{ id: collection }] });
+      expect(
+        await queryV5Authoring(
+          db,
+          "collection.get",
+          { ...input, collection_id: collection, limit: 1 },
+          [world]
+        )
+      ).toMatchObject({
+        items: [{ id: first }],
+        truncated: true,
+        narrative: { body: "Collection account" }
+      });
+      expect(
+        await queryV5Authoring(
+          db,
+          "context.slice",
+          { ...input, seed_ids: [first], collection_ids: [collection] },
+          [world]
+        )
+      ).toMatchObject({
+        items: [{ id: first }, { id: second }],
+        matched_memberships: [
+          { event_id: first, collection_id: collection },
+          { event_id: second, collection_id: collection }
+        ]
+      });
+      expect(
+        await queryV5Authoring(
+          db,
+          "event.neighbors",
+          { ...input, event_id: first },
+          [world]
+        )
+      ).toMatchObject({ items: [], depth: 1 });
+      expect(
+        await queryV5Authoring(db, "world.export", input, [world])
+      ).toMatchObject({
+        completeness: "complete",
+        format_version: 5,
+        snapshot: { events: [{ id: first }, { id: second }] }
+      });
+      await expect(
+        queryV5Authoring(
+          db,
+          "time-event.resolve",
+          {
+            ...input,
+            time_system_id: other,
+            definition_version: "1",
+            coordinate: "1592"
+          },
+          [world]
+        )
+      ).rejects.toMatchObject({ code: "not_found" });
+    } finally {
+      await db.transaction().execute(async (tx) => {
+        await sql`delete from collection_event_memberships where collection_id=${collection}`.execute(
+          tx
+        );
+        await sql`delete from narratives where id=${collection}`.execute(tx);
+        await sql`delete from collections where id=${collection}`.execute(tx);
+      });
+    }
+  });
+  it("validates with full rollback, then commits the same plan exactly once", async () => {
+    await sql`insert into kysely_migration(name,timestamp) values ('010_ip011_collections','2026-01-01T00:00:00.000Z') on conflict do nothing`.execute(
+      db
+    );
+    const plan: ResolvedV5Change = {
+      change_set_id: "019f5000-1100-7000-8000-000000000090",
+      world_id: world,
+      actor: world,
+      expected_revision: 31,
+      intent: "Synthetic validation rollback",
+      origins: [{ kind: "human_instruction", summary: "Synthetic" }],
+      policy_version: V5_AUTHORING_POLICY.policy_version,
+      policy_digest: V5_AUTHORING_POLICY.policy_digest,
+      operations: [
+        {
+          kind: "update",
+          entity_type: "event",
+          entity_id: first,
+          origin_refs: [{ field: "*", origin_index: 0 }],
+          value: {
+            world_id: world,
+            slug: null,
+            title: "Dan%jong Deposition validated",
+            summary: null,
+            roles: [],
+            attributes: {}
+          }
+        }
+      ]
+    };
+    const before = (
+      await sql`select title from events where id=${first}`.execute(db)
+    ).rows;
+    expect(await validateV5Resolved(db, plan)).toMatchObject({
+      valid: true,
+      provisional: true,
+      source_revision: 31,
+      candidate_revision: 32
+    });
+    expect(
+      (await sql`select title from events where id=${first}`.execute(db)).rows
+    ).toEqual(before);
+    expect(
+      (
+        await sql`select id from change_sets where id=${plan.change_set_id}`.execute(
+          db
+        )
+      ).rows
+    ).toHaveLength(0);
+    expect(
+      (
+        await sql`select id from publication_outbox where change_set_id=${plan.change_set_id}`.execute(
+          db
+        )
+      ).rows
+    ).toHaveLength(0);
+    expect(
+      (
+        await sql<{
+          current_revision: number;
+        }>`select current_revision from worlds where id=${world}`.execute(db)
+      ).rows[0]!.current_revision
+    ).toBe(31);
+    await expect(
+      validateV5Resolved(db, { ...plan, policy_digest: "0".repeat(64) })
+    ).rejects.toMatchObject({ code: "authoring_policy_mismatch" });
+    // Use the other World to keep subsequent search tests at their fixed revision.
+    const otherEvent = "019f5000-1100-7000-8000-000000000013";
+    const commitPlan = {
+      ...plan,
+      world_id: other,
+      operations: [
+        {
+          ...plan.operations[0]!,
+          entity_id: otherEvent,
+          value: {
+            world_id: other,
+            slug: null,
+            title: "Dan%jong Fiction",
+            summary: "Validated",
+            roles: [],
+            attributes: {}
+          }
+        }
+      ]
+    } as ResolvedV5Change;
+    expect(await validateV5Resolved(db, commitPlan)).toMatchObject({
+      valid: true
+    });
+    expect(await commitV5Resolved(db, commitPlan)).toMatchObject({
+      current_revision: 32,
+      idempotent_replay: false
+    });
+    expect(await commitV5Resolved(db, commitPlan)).toMatchObject({
+      current_revision: 32,
+      idempotent_replay: true
+    });
   });
   afterAll(async () => {
     await db?.destroy();
@@ -136,7 +382,7 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
       getV5EventEvidence(db, {
         world_id: other,
         event_id: first,
-        at_revision: 31
+        at_revision: 32
       })
     ).rejects.toThrow("v5_detail_event_missing");
     await expect(

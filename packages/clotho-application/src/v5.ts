@@ -1,5 +1,9 @@
-/** Staged v5 Clotho application contract. Never mount this alongside the
- * active v4 writer or advertise it before the coordinated cutover. */
+import {
+  V5_INPUT_SCHEMAS,
+  type V5Method,
+  type V5ReadMethod
+} from "@moirai/contracts/v5-wire";
+/** Production v5 Clotho application contract. */
 import {
   V5_CHANGE_PLAN_SCHEMA,
   V5_EVENT_SEARCH_SCHEMA,
@@ -24,6 +28,12 @@ const validDetail = new Ajv({
   removeAdditional: false
 }).compile(V5_EVENT_DETAIL_SCHEMA);
 export interface V5LachesisBoundary {
+  query?(
+    method: V5ReadMethod,
+    input: Record<string, unknown>,
+    actor: ActorContext
+  ): Promise<unknown>;
+  validateDraft?(plan: V5DraftChange, actor: ActorContext): Promise<unknown>;
   policy(worldId: string, actor: ActorContext): unknown;
   commitDraft(plan: V5DraftChange, actor: ActorContext): Promise<unknown>;
   search(
@@ -46,8 +56,14 @@ export interface V5LachesisBoundary {
   ): Promise<unknown>;
 }
 
+const validators = Object.fromEntries(
+  Object.entries(V5_INPUT_SCHEMAS).map(([method, schema]) => [
+    method,
+    new Ajv({ coerceTypes: false, removeAdditional: false }).compile(schema)
+  ])
+);
 export function createV5Clotho(boundary: V5LachesisBoundary) {
-  return {
+  const service = {
     detail(
       input: {
         world_id: string;
@@ -112,6 +128,80 @@ export function createV5Clotho(boundary: V5LachesisBoundary) {
         operations: plan.operations
       };
       return boundary.commitDraft(draft, actor);
+    }
+  };
+  return {
+    ...service,
+    async execute(
+      method: V5Method,
+      raw: unknown,
+      actor: ActorContext
+    ): Promise<unknown> {
+      const input =
+        raw && typeof raw === "object" && !Array.isArray(raw)
+          ? (raw as Record<string, unknown>)
+          : {};
+      authorizeActor(
+        actor,
+        method.startsWith("change.") ? "world:write" : "world:read",
+        method === "world.list" ? undefined : input.world_id
+      );
+      if (!validators[method])
+        throw new ChangeSetError("unknown_tool", "method", "Unknown method");
+      if (method.startsWith("change.")) {
+        if (input.contract_version !== 5)
+          throw new ChangeSetError(
+            "unsupported_contract_version",
+            "contract_version",
+            "Use v5"
+          );
+        if (!input.policy_version || !input.policy_digest)
+          throw new ChangeSetError(
+            "authoring_policy_required",
+            "policy_version",
+            "Retrieve policy",
+            [],
+            true,
+            { action: "authoring.policy.get" }
+          );
+      }
+      if (!validators[method]!(input))
+        throw new ChangeSetError(
+          "invalid_request",
+          "input",
+          "Invalid v5 input"
+        );
+      if (method === "authoring.policy.get")
+        return service.policy(String(input.world_id), actor);
+      if (method === "change.commit") return service.commit(input, actor);
+      if (method === "change.validate") {
+        if (!boundary.validateDraft)
+          throw new ChangeSetError(
+            "unsupported_method",
+            "method",
+            "Validation unavailable"
+          );
+        const draft = { ...input };
+        delete draft.contract_version;
+        return boundary.validateDraft(draft as unknown as V5DraftChange, actor);
+      }
+      if (method === "event.search")
+        return service.search(
+          input as unknown as Parameters<typeof service.search>[0],
+          actor
+        );
+      if (method === "event.get")
+        return service.detail(
+          input as unknown as Parameters<typeof service.detail>[0],
+          actor
+        );
+      if (!boundary.query)
+        throw new ChangeSetError(
+          "unsupported_method",
+          "method",
+          "Query unavailable"
+        );
+      return boundary.query(method, input, actor);
     }
   };
 }

@@ -1,3 +1,8 @@
+import {
+  V5_METHODS,
+  V5_INPUT_SCHEMAS,
+  type V5Method
+} from "@moirai/contracts/v5-wire";
 import { readFile, stat, writeFile } from "node:fs/promises";
 import {
   exportWorldPackage,
@@ -60,16 +65,17 @@ async function main(): Promise<void> {
     return;
   }
   const v5 = args[0] === "v5";
-  const v5Method = args[1];
+  const v5Schema = v5 && args[1] === "schema";
+  const v5Method = args[v5Schema ? 2 : 1] as V5Method;
   if (
     v5 &&
-    (args.length !== 2 ||
-      (v5Method !== "authoring.policy.get" &&
-        v5Method !== "event.search" &&
-        v5Method !== "event.get" &&
-        v5Method !== "change.commit"))
+    (args.length !== (v5Schema ? 3 : 2) || !V5_METHODS.includes(v5Method))
   )
-    throw new ClothoClientError("usage_v5_policy_search_or_commit");
+    throw new ClothoClientError("usage_v5_method_or_schema");
+  if (v5Schema) {
+    process.stdout.write(`${JSON.stringify(V5_INPUT_SCHEMAS[v5Method])}\n`);
+    return;
+  }
   const schema = args[0] === "schema";
   const method = args[schema ? 1 : 0] as ClothoMethod;
   if (
@@ -98,15 +104,7 @@ async function main(): Promise<void> {
     throw new ClothoClientError("invalid_json");
   }
   const result = v5
-    ? await callV5Clotho(
-        config,
-        v5Method as
-          | "authoring.policy.get"
-          | "event.search"
-          | "event.get"
-          | "change.commit",
-        input
-      )
+    ? await callV5Clotho(config, v5Method, input)
     : await callClotho(config, method, input);
   process.stdout.write(`${JSON.stringify(result)}\n`);
 }

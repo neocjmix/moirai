@@ -1,5 +1,4 @@
-/** Inactive until coordinated v5 cutover. Strict Clotho HTTP/MCP/CLI input
- * schema; the older v4 schema remains the only live ingress contract. */
+/** Strict production v5 Clotho HTTP/MCP/CLI schemas. */
 import { MOIRAI_GRAPH_RELATION_TYPES } from "./graph.js";
 
 type Schema = Record<string, unknown>;
@@ -235,3 +234,86 @@ export const V5_CHANGE_PLAN_SCHEMA: Schema = object({
     minItems: 1
   }
 });
+
+const revision = {
+  type: "integer",
+  minimum: 1,
+  maximum: Number.MAX_SAFE_INTEGER
+};
+const page = {
+  cursor: string(2048),
+  limit: { type: "integer", minimum: 1, maximum: 100 }
+};
+const worldRead = {
+  contract_version: { const: 5 },
+  world_id: id,
+  at_revision: revision
+};
+export const V5_READ_SCHEMAS = {
+  "world.list": object(
+    { contract_version: { const: 5 }, query: string(160), ...page },
+    ["contract_version"]
+  ),
+  "world.get": object({ ...worldRead, ...page }, [
+    "contract_version",
+    "world_id"
+  ]),
+  "collection.list": object({ ...worldRead, ...page }, [
+    "contract_version",
+    "world_id"
+  ]),
+  "collection.get": object({ ...worldRead, collection_id: id, ...page }, [
+    "contract_version",
+    "world_id",
+    "collection_id"
+  ]),
+  "event.neighbors": object(
+    {
+      ...worldRead,
+      event_id: id,
+      direction: enumOf("incoming", "outgoing", "both"),
+      relation_types: list(enumOf(...MOIRAI_GRAPH_RELATION_TYPES), 16),
+      ...page
+    },
+    ["contract_version", "world_id", "event_id"]
+  ),
+  "context.slice": object(
+    {
+      ...worldRead,
+      seed_ids: list(id, 25),
+      collection_ids: list(id, 25),
+      ...page
+    },
+    ["contract_version", "world_id", "seed_ids", "collection_ids"]
+  ),
+  "time-event.resolve": object(
+    {
+      ...worldRead,
+      time_system_id: id,
+      definition_version: string(128),
+      coordinate: string(256)
+    },
+    [
+      "contract_version",
+      "world_id",
+      "time_system_id",
+      "definition_version",
+      "coordinate"
+    ]
+  ),
+  "world.export": object(worldRead, ["contract_version", "world_id"])
+} as const;
+export type V5ReadMethod = keyof typeof V5_READ_SCHEMAS;
+export const V5_INPUT_SCHEMAS = {
+  ...V5_READ_SCHEMAS,
+  "authoring.policy.get": object({
+    contract_version: { const: 5 },
+    world_id: id
+  }),
+  "event.search": V5_EVENT_SEARCH_SCHEMA,
+  "event.get": V5_EVENT_DETAIL_SCHEMA,
+  "change.validate": V5_CHANGE_PLAN_SCHEMA,
+  "change.commit": V5_CHANGE_PLAN_SCHEMA
+} as const;
+export type V5Method = keyof typeof V5_INPUT_SCHEMAS;
+export const V5_METHODS = Object.keys(V5_INPUT_SCHEMAS) as V5Method[];

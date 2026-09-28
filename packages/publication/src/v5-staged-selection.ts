@@ -38,7 +38,6 @@ export async function readV5StagedSelectionPage(
       "complete"
     ].includes(root.completeness) ||
     collectionIds.length < 1 ||
-    collectionIds.length > 8 ||
     collectionIds.some(
       (id, index) =>
         !/^[a-zA-Z0-9-]+$/.test(id) ||

@@ -39,7 +39,7 @@ test("A5 corpus is published with shared identity and readable mobile narrative"
   const shared = "019f9280-a500-7000-8000-0000000003e8";
   expect(memberships.filter((ids) => ids.includes(shared))).toHaveLength(24);
   await page.goto(
-    `${graph}&collections=019f9280-a500-7000-8000-000000000064,019f9280-a500-7000-8000-00000000006a&event=${shared}`
+    `${graph}&collections=${catalog.collections.map((item: { id: string }) => item.id).join(",")}&event=${shared}`
   );
   const drawer = page.getByTestId("event-drawer-sheet");
   await expect(drawer).toContainText("항구의 교역");
@@ -104,7 +104,8 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
   expect(summary.unplaced_count).toBe(2);
   const placed = new Set<string>();
   let cursor: unknown = null;
-  for (let pageNumber = 0; pageNumber < 32; pageNumber++) {
+  const seenCursors = new Set<string>();
+  for (let pageNumber = 0; pageNumber <= summary.shape_count; pageNumber++) {
     const response = await request.post("/graph/v5/viewport", {
       data: {
         world_id: worldId,
@@ -122,6 +123,11 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
     for (const shape of result.shapes) placed.add(shape.event_id);
     cursor = result.next_cursor;
     if (cursor === null) break;
+    const token = JSON.stringify(cursor);
+    expect(seenCursors.has(token), "viewport continuation must advance").toBe(
+      false
+    );
+    seenCursors.add(token);
   }
   expect(cursor).toBeNull();
   expect(placed.size).toBe(125);

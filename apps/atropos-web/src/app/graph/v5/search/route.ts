@@ -24,7 +24,7 @@ const input = z.object({
           z.object({
             world_id: z.string().uuid(),
             served_revision: z.number().int(),
-            canon_ids: z.array(z.string().uuid()).max(8)
+            canon_ids: z.array(z.string().uuid())
           })
         )
         .max(1)

@@ -268,3 +268,7 @@ CON-003와 CORE-MODEL의 World/Collection/Event/Narrative 의미는 변경할 �
 후속 사용자 정정(2026-09-28 10:16 KST): 사건 검색·관계 필터·미배치 사건 접근의 목적지는 UX 채택 후 하단 내비게이션 탐색이다. §1/6/8/10/12의 동시 대체 요구를 정정했고 전체 Collection escape hatch와 구분했다. 런타임 구현은 하지 않았다.
 
 후속 사용자 확정(2026-09-28 10:19 KST): 첫 방문은 읽기 좋은 특정 맥락, pin은 다음 방문에도 유지. 한 번 이상 방문한 사용자는 기존 viewport 복원 로직을 유지하며 첫 방문용 초기화로 덮어쓰지 않는다. §3/S4/exit에 반영했다.
+
+## 2026-09-28 12:40 KST 실행 순서 보완
+
+사용자가 8개 제한 해제를 우선 지시했다. S2 표현 분리 완료 전에 S3의 입력 제약 제거 checkpoint만 먼저 배포한다. 사용자 선택 상한 8을 제거하되 내부 8개 batch당 기존 object budget을 유지하며 동일 spatial continuation을 union하여 공유 Event를 중복하지 않는다. 한 요청의 총 비용은 선택 batch 수에 비례하며 shell 16-page/response byte 상한은 유지한다. 9/16/30 선택의 정확성과 모바일 운영 동작을 확인하고, density·누적 gesture 비용·cache 재사용·전체 catalog는 별도 미완료로 기록한다. 자동 relevance는 아직 시작하지 않는다.

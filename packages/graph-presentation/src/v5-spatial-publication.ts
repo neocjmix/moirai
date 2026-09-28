@@ -364,11 +364,15 @@ export async function readV5SelectedViewport(
   viewport: { minX: number; maxX: number; minY: number; maxY: number },
   collectionIds: readonly string[],
   cursor: V5SelectedViewportCursor | null,
-  get: (key: string) => Promise<string | null>
-) {
+  get: (key: string) => Promise<string | null>,
+  pageSelectionSize = collectionIds.length
+): Promise<{
+  shapes: Awaited<ReturnType<typeof readV5AuthenticatedViewport>>["shapes"];
+  next_cursor: V5SelectedViewportCursor | null;
+  object_reads: number;
+}> {
   const root = JSON.parse(rootBody) as { index_depth: number };
   if (
-    collectionIds.length > 8 ||
     collectionIds.some(
       (id, index) =>
         !/^[a-zA-Z0-9-]+$/.test(id) ||
@@ -383,10 +387,56 @@ export async function readV5SelectedViewport(
     throw Error("v5_viewport_selection_cursor_invalid");
   if (collectionIds.length === 0)
     return { shapes: [], next_cursor: null, object_reads: 0 };
+  // Eight is an internal work batch, never a user selection limit. Every
+  // batch scans the same spatial page, so their union has one continuation
+  // and one representation per World Event. Keep each batch's 256-read cap.
+  if (collectionIds.length > 8) {
+    const shapes = new Map<
+      string,
+      Awaited<ReturnType<typeof readV5AuthenticatedViewport>>["shapes"][number]
+    >();
+    let spatialCursor: V5ViewportCursor | null = null;
+    let objectReads = 0;
+    for (let offset = 0; offset < collectionIds.length; offset += 8) {
+      const batch = collectionIds.slice(offset, offset + 8);
+      const batchDigest = createHash("sha256")
+        .update(JSON.stringify([rootBody, timeSystemId, viewport, batch]))
+        .digest("hex");
+      const result = await readV5SelectedViewport(
+        rootBody,
+        worldId,
+        revision,
+        timeSystemId,
+        viewport,
+        batch,
+        cursor
+          ? { selection_digest: batchDigest, spatial: cursor.spatial }
+          : null,
+        get,
+        8
+      );
+      for (const shape of result.shapes) shapes.set(shape.event_id, shape);
+      if (
+        offset > 0 &&
+        JSON.stringify(spatialCursor) !==
+          JSON.stringify(result.next_cursor?.spatial ?? null)
+      )
+        throw Error("v5_viewport_batch_cursor_mismatch");
+      spatialCursor = result.next_cursor?.spatial ?? null;
+      objectReads += result.object_reads;
+    }
+    return {
+      shapes: [...shapes.values()],
+      next_cursor: spatialCursor
+        ? { selection_digest: digest, spatial: spatialCursor }
+        : null,
+      object_reads: objectReads
+    };
+  }
   const perLookup = root.index_depth + 1;
   const rawLimit = Math.max(
     1,
-    Math.min(16, Math.floor(80 / (collectionIds.length * perLookup)))
+    Math.min(16, Math.floor(80 / (pageSelectionSize * perLookup)))
   );
   let reads = 0;
   // One immutable object may authenticate many candidate membership lookups.

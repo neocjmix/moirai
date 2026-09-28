@@ -14,6 +14,19 @@
 
 ## Results
 
-Local production build and strict web typecheck passed. Targeted context/geometry/loader/shell unit tests: 19 passed. Targeted ESLint and diff whitespace checks passed. Mobile suite and deployed verification pending. S2–S7 are not complete.
+Local production build and strict web typecheck passed. Targeted context/geometry/loader/shell unit tests: 19 passed. Targeted ESLint and diff whitespace checks passed. [Main CI 36369948758](https://github.com/neocjmix/moirai/actions/runs/36369948758) passed quality, secret scan and mobile WebKit (32 passed, one pre-existing skip). S2–S7 are not complete.
+
+### First production checkpoint
+
+- Implementation PR #238 merged as `b09394c6989f895caf7e7d0086d9a953b6531732`. Railway web deployment `452246cb-0a81-4866-8567-b0a66866bccf`; public health/readiness/status confirmed this SHA. Served/current/target Publication remains Revision 32.
+- [Post-deploy smoke 36370230458](https://github.com/neocjmix/moirai/actions/runs/36370230458) passed readiness, live mobile navigation and authenticated authoring/replay smoke. Manual public browser verified World HUD, retained six-Collection catalog, title search, all-off/re-enable, Collection narrative and linked Event narrative. Desktop screenshot is supplementary, not physical mobile evidence.
+- New mobile fixtures verify full-cover suppression-to-HUD handoff, incomplete-support World-only fallback, Island rollback, modal controls/focus and viewport reload restoration. Pin, automatic relevance, first-visit curated context and >128 catalog completeness are not implemented or claimed.
+- [IP-004 reader 36369937539](https://github.com/neocjmix/moirai/actions/runs/36369937539) passed 100/1k/10k.
+- [A4 scale 36369937462](https://github.com/neocjmix/moirai/actions/runs/36369937462) failed mobile profiles: inspected dense and sustained logs wait for the removed default Island button (`소스 쿼리 열기`), producing measurement_error/collection_toggle_missing. Sustained additionally fails start/middle/return frame budgets. These failures remain recorded; this is not an A4 pass. Worker 10k passed; worker 100k was still running at inspection.
+- Follow-up explicitly selects `discovery=legacy` in the five A4 Island-dependent profiling scripts to preserve their historical comparator. It does not relax timing budgets or make them A5 acceptance tests. A5 measurements must use the new controls. Do not block this deployed checkpoint on an unlimited A4 rerun.
+
+### Next checkpoint
+
+S2 separates Semantic primary interaction from Geographic geometry and removes invisible broad primary hit targets. Measure semantic/graphic density and mobile input before S3 multi-Collection capacity; only then proceed to S4 intent persistence and S5 automation. Existing 8-active/128-catalog limits, selection cache replacement and sustained frame deficit remain explicit. No bottleneck or 16-active success is inferred.
 
 Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) restores the retained Island. Server default can be set with `ATROPOS_COLLECTION_DISCOVERY=legacy`. `discovery=context` explicitly opts into the checkpoint. These flags only select presentation; they do not modify Publication or canonical data.

@@ -218,7 +218,7 @@ try {
       })()
     );
   });
-  await page.goto(`/graph/v5?world=${world}`, {
+  await page.goto(`/graph/v5?discovery=legacy&world=${world}`, {
     waitUntil: "domcontentloaded"
   });
   await page

@@ -3772,9 +3772,9 @@ export function GraphShell({
       geographicPoints: chartInstantPoints.length,
       geographicRegions: visibleCompositeRegions.length,
       vertices: visibleCompositeRegions.reduce((sum, region) => sum + region.projectedPoints.length, 0),
-      // S1 baseline still includes legacy invisible targets; S2 separates them.
-      primaryPointTargets: chartInstantPoints.length,
-      primaryRegionTargets: visibleCompositeRegions.length,
+      // Count interactive entities, independently from painted geography.
+      primaryPointTargets: chartInstantPoints.filter(point => point.opacity > 0 && (!discovery?.contextHud || point.showLabel !== false)).length,
+      primaryRegionTargets: visibleCompositeRegions.filter(region => region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0) && (!discovery?.contextHud || region.showLabel)).length,
     },
     cache: loader.inspectViewport?.() ?? null,
     work: {...graphWorkCountsRef.current},

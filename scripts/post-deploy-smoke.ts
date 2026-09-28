@@ -216,6 +216,12 @@ async function verifyV5(pointer: {
     )
   );
   const allIds = collections.flatMap((collection) => collection.data.event_ids);
+  const corpusPrefix = "019f9280-a500-7000-8000-";
+  const historicalIds = collections.flatMap((collection, index) =>
+    catalog.data.collections[index]!.id.startsWith(corpusPrefix)
+      ? []
+      : collection.data.event_ids
+  );
   if (
     pointer.format_version !== "v5-publication/1" ||
     pointer.served_revision < 31 ||
@@ -239,20 +245,25 @@ async function verifyV5(pointer: {
     !(await graph.text()).includes("실제 세계사") ||
     !(await root.text()).includes("실제 세계사") ||
     catalog.served_revision !== pointer.served_revision ||
-    catalog.data.collection_count !== 6 ||
+    catalog.data.collection_count !== 30 ||
+    catalog.data.collections.filter((collection) =>
+      collection.id.startsWith(corpusPrefix)
+    ).length !== 24 ||
     event.served_revision !== pointer.served_revision ||
     event.data.event.id !== sharedEventId ||
     !event.data.narrative.body ||
     children.served_revision !== pointer.served_revision ||
     children.data.child_event_ids.length !== 14 ||
     spatial.served_revision !== pointer.served_revision ||
-    spatial.data.shape_count !== 125 ||
+    spatial.data.shape_count !== 677 ||
     spatial.data.unplaced_count !== 2 ||
     collections.some(
       (collection) => collection.served_revision !== pointer.served_revision
     ) ||
-    allIds.length !== 153 ||
-    new Set(allIds).size !== 127 ||
+    allIds.length !== 841 ||
+    new Set(allIds).size !== 679 ||
+    historicalIds.length !== 153 ||
+    new Set(historicalIds).size !== 127 ||
     allIds.filter((id) => id === sharedEventId).length !== 2
   )
     throw Error("v5 public deployment does not match the expected build");

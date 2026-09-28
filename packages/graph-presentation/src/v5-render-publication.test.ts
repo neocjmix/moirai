@@ -232,6 +232,48 @@ describe("render publication compiler", () => {
     ).toHaveLength(0);
   });
 
+  it("publishes relations only at Levels where both endpoints are represented and externalizes long lines", () => {
+    const ids = Array.from({ length: 300 }, (_, i) => `node-${i}`);
+    const dense = {
+      ...state,
+      events: ids.map(event),
+      eventCollectionMemberships: [],
+      relations: [relation("long", "causes", ids[0]!, ids[299]!)]
+    } as unknown as CanonicalState;
+    const positions = {
+      ...layout,
+      shapes: ids.map((id, i) => ({
+        event_id: id,
+        kind: "point" as const,
+        position: { x: i % 20, y: Math.floor(i / 20) }
+      }))
+    };
+    const publication = compileV5RenderPublication(dense, positions);
+    const tiles = publication.documents.map(
+      (d) => JSON.parse(d.body) as RenderTile
+    );
+    expect(
+      tiles
+        .filter((t) => t.level === 0)
+        .flatMap((t) => t.primitives)
+        .some((p) => p.id === "relation:long")
+    ).toBe(false);
+    const near = tiles
+      .filter((t) => t.level === publication.maxLevel)
+      .flatMap((t) => t.primitives)
+      .find((p) => p.id === "relation:long");
+    expect(near?.endpointIds).toEqual([ids[0], ids[299]]);
+    expect(near?.geometry.kind).toBe("external");
+    const ref = near?.geometry;
+    if (ref?.kind !== "external") throw Error("expected_external_line");
+    const body = publication.geometryDocuments.find(
+      (d) => d.key === ref.key
+    )?.body;
+    expect(resolveRenderGeometry(publication, near!, body!)).toMatchObject({
+      kind: "line"
+    });
+  });
+
   it("keeps nested convex support bounded to child hull vertices", () => {
     const depth = 250;
     const nested = {

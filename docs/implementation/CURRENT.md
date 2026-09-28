@@ -1,5 +1,9 @@
 # 현재 구현 상태
 
+2026-09-29 IP-012 implementation started: offline `compileV5RenderPublication` prototype and revision/digest-checked tile scene selection are implemented in graph-presentation with deterministic closure, relation and cross-tile tests. This is an isolated prototype, not integrated into served Publication or Atropos. Full hull semantics, LOD scale mapping, tile size/100k budget, cross-tile external geometry, A5 selection and runtime cutover remain open. The active A5 production path and A4 backlog are unchanged.
+
+Prototype measurement: a 10k-point synthetic 100×100 grid compiled in 81ms locally, producing 85 tiles / 9.53MB total; its largest tile is 2.38MB. This exceeds the TS-006 initial viewport payload budget and rules out attaching the current naive all-points-at-every-level format to the served pointer. Next implementation slice must implement bounded level representations and verify pinned Collection selection before publication integration. This synthetic measurement is not an A4 production performance result.
+
 2026-09-29 planning update: [IP-012 Render Publication](IP-012-render-publication-plan.md) reconciles the handoff with current v5 code as a subsequent implementation baseline. No IP-012 runtime migration is active; A5 remains active, A4-B01–03 remain open, and A6/M5 remain inactive.
 
 2026-09-28 역사 6개 선택 누락 수정: 운영 `75f5520`에서 1330–1460년 범위가 사건 3개·건국 과정만 반환되는 것을 재현했다(`truncated:true`). 꺼진 합성 후보를 거르는 도중 shell 16-page budget이 소진되고 client가 continuation을 받지 못했다. 요청당 budget은 유지하며 cursor를 전달하고 client가 동일 query/revision 안에서 끝까지 합친다. 취소·cursor 정체·중복 방어와 실제 mobile shell 회귀를 추가한다. 여러 응답에 걸친 relation 완전성은 별도 미달로 유지한다. A5 pin/자동 relevance보다 이 누락 수정을 우선한다.

@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-09-28 역사 6개 선택 누락 수정: 운영 `75f5520`에서 1330–1460년 범위가 사건 3개·건국 과정만 반환되는 것을 재현했다(`truncated:true`). 꺼진 합성 후보를 거르는 도중 shell 16-page budget이 소진되고 client가 continuation을 받지 못했다. 요청당 budget은 유지하며 cursor를 전달하고 client가 동일 query/revision 안에서 끝까지 합친다. 취소·cursor 정체·중복 방어와 실제 mobile shell 회귀를 추가한다. 여러 응답에 걸친 relation 완전성은 별도 미달로 유지한다. A5 pin/자동 relevance보다 이 누락 수정을 우선한다.
+
 2026-09-28 S2b/S3 후속: PR #251 `ec4b8d2`를 운영 배포했다. 공개 동일 viewport의 61 point/12 region ID·좌표·경로가 변경 전과 동일하며 Semantic primary target 4개, Geographic 69개를 확인했다. Enter 키 본문 열기도 성공했다. 이어 S3의 동일 viewport/Revision 요청 내부 batch 간 immutable object 재사용을 추가한다. 로컬 30-Collection fixture 전체 pagination의 store 호출은 326→242(중복 84 제거), 9/16/32/64 정확성·좌표·continuation 검증은 통과했다. 운영 latency/frame 개선이나 S3 전체 완료로 해석하지 않는다.
 
 2026-09-28 16:19 KST: `103a30a`의 CI `36387835246`와 운영 smoke `36388167524` 성공을 확인했다. S2b에서 Event/Composite 통합 Semantic 예산과 종류 간 label 충돌 회피를 추가한다. 실험값은 viewport 면적/28,000, 최소 8·최대 32개이며 기존 suppression/label 자격 위에서만 적용한다. Geographic geometry/paint는 그대로 보존하고 이전 label 우선으로 흔들림을 줄인다. Semantic 대상 Enter/Space·focus 표시와 44px point target을 제공한다. 200% text 실측 및 S3 scale/누적 비용 검증은 아직 완료되지 않았다.

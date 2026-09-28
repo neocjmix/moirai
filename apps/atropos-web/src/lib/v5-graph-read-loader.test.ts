@@ -44,6 +44,99 @@ async function snapshot(x = 0, truncated = true): Promise<Viewport> {
 }
 afterEach(() => vi.useRealTimers());
 
+const continuation = (offset: number) => ({
+  selection_digest: "a".repeat(64),
+  spatial: {
+    query_digest: "b".repeat(64),
+    pending: [
+      {
+        key: "node",
+        level: 0,
+        offset,
+        bounds: { minX: 0, maxX: 10, minY: 0, maxY: 10 }
+      }
+    ]
+  }
+});
+
+it("continues past empty filtered batches and unions late historical events without duplicates", async () => {
+  const first = await snapshot();
+  const last = await snapshot(1000, false);
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      Response.json({
+        ...first,
+        entities: [],
+        regions: [],
+        edges: [],
+        next_cursor: continuation(1)
+      })
+    )
+    .mockResolvedValueOnce(
+      Response.json({ ...first, next_cursor: continuation(2) })
+    )
+    .mockResolvedValueOnce(
+      Response.json({
+        ...last,
+        entities: [first.entities[0], ...last.entities],
+        next_cursor: null
+      })
+    );
+  const loader = await setup(fetcher);
+  const value = await loader.loadViewport("ko", query());
+  expect(value.entities).toHaveLength(200);
+  expect(value.entities.some((e) => e.id === "point:1000:99")).toBe(true);
+  expect(value.completeness).toMatchObject({
+    entities: true,
+    regions: true,
+    edges: false
+  });
+  expect(JSON.parse(String(fetcher.mock.calls[1]![1]!.body)).cursor).toEqual(
+    continuation(1)
+  );
+  expect(fetcher).toHaveBeenCalledTimes(3);
+  loader.dispose?.();
+});
+
+it("rejects a stalled continuation instead of caching incomplete success", async () => {
+  const value = { ...(await snapshot()), next_cursor: continuation(1) };
+  const fetcher = vi.fn<typeof fetch>(async () => Response.json(value));
+  const loader = await setup(fetcher);
+  await expect(loader.loadViewport("ko", query())).rejects.toThrow(
+    "v5_shell_cursor_stalled"
+  );
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  loader.dispose?.();
+});
+
+it("cancels an in-flight continuation on selection disposal", async () => {
+  const value = await snapshot();
+  let finish!: (response: Response) => void;
+  let continuationSignal!: AbortSignal;
+  const fetcher = vi
+    .fn<typeof fetch>()
+    .mockResolvedValueOnce(
+      Response.json({ ...value, next_cursor: continuation(1) })
+    )
+    .mockImplementationOnce((_url, init) => {
+      continuationSignal = init!.signal!;
+      return new Promise((resolve) => {
+        finish = resolve;
+      });
+    });
+  const loader = await setup(fetcher);
+  const loading = loader.loadViewport("ko", query());
+  const rejected = expect(loading).rejects.toMatchObject({
+    name: "AbortError"
+  });
+  await vi.waitFor(() => expect(fetcher).toHaveBeenCalledTimes(2));
+  loader.dispose?.();
+  expect(continuationSignal.aborted).toBe(true);
+  finish(Response.json({ ...value, next_cursor: null }));
+  await rejected;
+});
+
 it("returning to cached A cancels pending B before parsing its late body", async () => {
   const first = await snapshot();
   let finish!: (response: Response) => void;

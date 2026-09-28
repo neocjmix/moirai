@@ -2,7 +2,8 @@ import { createHash } from "node:crypto";
 export { buildV5WorldLayout } from "./v5-world-layout.js";
 export {
   compileV5RenderPublication,
-  selectRenderScene
+  selectRenderScene,
+  resolveRenderGeometry
 } from "./v5-render-publication.js";
 export type {
   RenderPublication,

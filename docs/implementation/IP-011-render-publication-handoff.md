@@ -1,6 +1,8 @@
 # Render Publication Architecture Handoff
 
 Status: planning handoff, not yet authoritative architecture
+
+Disposition (2026-09-29): verified implementation plan is [IP-012](IP-012-render-publication-plan.md). Preserve this handoff as decision history; use IP-012 for migration boundaries and exit gates.
 Date: 2026-09-28
 Repository: neocjmix/moirai
 

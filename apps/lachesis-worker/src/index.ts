@@ -30,6 +30,7 @@ import {
   publishPresentation,
   backfillPresentation
 } from "./spatial-publication.js";
+import { backfillV5RenderGeneration } from "./render-backfill.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required");
@@ -260,6 +261,49 @@ async function processNextJob(): Promise<boolean> {
 async function workerLoop(): Promise<void> {
   if (publicationMode === "v5" || publicationMode === "v5-hold")
     await assertV5SchemaReady(database);
+  const backfillWorldId = process.env.IP012_RENDER_BACKFILL_WORLD_ID;
+  if (backfillWorldId) {
+    const revision = Number(process.env.IP012_RENDER_BACKFILL_REVISION);
+    if (
+      publicationMode !== "v5" ||
+      !/^[a-zA-Z0-9-]+$/.test(backfillWorldId) ||
+      !Number.isSafeInteger(revision) ||
+      revision < 1
+    )
+      throw Error("render_backfill_operator_input_invalid");
+    try {
+      const result = await backfillV5RenderGeneration({
+        state: await readV5WorldAtRevision(database, backfillWorldId, revision),
+        revision,
+        store: publicationStore
+      });
+      process.stdout.write(
+        JSON.stringify({
+          level: "info",
+          service: "lachesis-worker",
+          operation: "render_backfill",
+          world_id: backfillWorldId,
+          revision,
+          ...result,
+          result_code: "served"
+        }) + "\n"
+      );
+    } catch (cause) {
+      process.stderr.write(
+        JSON.stringify({
+          level: "error",
+          service: "lachesis-worker",
+          operation: "render_backfill",
+          world_id: backfillWorldId,
+          revision,
+          result_code:
+            cause instanceof Error ? cause.message.slice(0, 128) : "failed"
+        }) + "\n"
+      );
+      // The ordinary publication worker must remain available after an
+      // operator rebuild fails; the old Render pointer stays untouched.
+    }
+  }
   if (publicationMode === "v4") {
     try {
       await backfillPresentation(publicationStore);

@@ -56,3 +56,9 @@ Rollback: `?discovery=legacy` (or `&discovery=legacy` on an existing query) rest
 - title ranking PR #243 운영 반영과 합성 corpus 24 Collection/552 Event 입력은 완료. 이전 main CI 36374225647 성공, 모바일 32 pass/1 skip. 해당 post-deploy의 신규 합성 corpus 모바일 테스트는 성공했고 기존 역사 paging만 실패했다.
 - 새 변경은 사용자 선택 상한을 제거하고 내부 8개 작업 batch를 유지한다. 전체 선택 digest로 continuation을 묶으며 각 batch는 동일 spatial page를 읽고 결과는 Event ID로 union한다. 총 object read 예산은 `256 × ceil(selected/8)`/viewport page, shell은 기존 16 page와 1MiB 응답 상한 유지. 무제한 throughput 보장이 아니다.
 - 로컬 9/16/30 Collection 검사: 고차수 공유 Event와 batch 마지막 Collection의 고유 Event를 빠짐없이 조회, 좌표 동일, 페이지 간 중복 없음, cursor 진전. S2 가독성과 S3 성능 exit는 아직 미달/미검증이다.
+
+## main back-merge와 S2a (2026-09-28 15:36 KST)
+
+- 사용자 지시로 최신 main `2fe083c`를 작업 브랜치에 merge. #242 Clotho transport/policy/query parity와 #246 인증 smoke 독립 실행을 포함하며 conflict 없이 main과 동일 tree를 확인했다. MCP/parity·기존 suppression targeted 7 tests와 web typecheck 통과.
+- 이전 8개 제한 제거의 최종 main CI `36375218854`와 post-deploy `36375607244` 모두 성공. 30개 선택·29→30 복구·공유 사건 단일 표현·viewport 유지의 운영 모바일 회귀까지 통과.
+- S2a: A5 모드에서 label 없는 point/compact Composite의 투명 hit rectangle을 생성하지 않고 label 없는 region은 pointer-events:none 및 aria-hidden. 그림과 좌표는 유지하며 legacy flag의 interaction은 보존한다. Semantic/Geographic 독립 밀도·keyboard 개선은 후속 S2로 남는다.

@@ -1,6 +1,6 @@
 # IP-011 A3 완료 기준선과 A4 인계
 
-2026-09-25. 이 문서는 다음 세션의 실행 인계다. 제품 의미와 exit의 권위는 [IP-011](IP-011-architecture-realignment.md), [TS-006](../technical-specifications/TS-006-atropos-publication.md), [A1 고정 budget](../evidence/ip011/a1-execution.md)에 있다. 현재 활성 상태는 [CURRENT](CURRENT.md)를 따른다. A4는 2026-09-28 사용자 승인으로 종료됐고 잔여 작업은 [종료·백로그](IP-011-A4-closeout-backlog.md)에 이관했다. 아래 A4 시작·exit 지시는 종료 전의 역사적 계약이며 자동 재개 지시가 아니다. 수치 기준은 유지하고 A5는 아직 비활성이다. 이 문서의 A3 SHA는 역사적 기준선이며 마지막 checkpoint는 CURRENT에서 확인한다.
+2026-09-25. 이 문서는 다음 세션의 실행 인계다. 제품 의미와 exit의 권위는 [IP-011](IP-011-architecture-realignment.md), [TS-006](../technical-specifications/TS-006-atropos-publication.md), [A1 고정 budget](../evidence/ip011/a1-execution.md)에 있다. 현재 활성 상태는 [CURRENT](CURRENT.md)를 따른다. A4는 2026-09-28 사용자 승인으로 종료됐고 잔여 작업은 [종료·백로그](IP-011-A4-closeout-backlog.md)에 이관했다. 아래 A4 시작·exit 지시는 종료 전의 역사적 계약이며 자동 재개 지시가 아니다. 수치 기준은 유지한다. A5는 현재 planning만 활성이고 구현은 비활성이며 최신 계획은 CURRENT가 연결한다. 이 문서의 A3 SHA는 역사적 기준선이며 마지막 checkpoint는 CURRENT에서 확인한다.
 
 ## A3 완료 기준선
 

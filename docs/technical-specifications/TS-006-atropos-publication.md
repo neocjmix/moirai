@@ -17,7 +17,7 @@ A1 당시 v4는 spatial bands·bounded payload·on-demand Event detail·LRU cach
 
 입력은 World/revision vector, active Collection IDs, viewport/time range, scale, 선택 Event, bounded neighborhood depth 및 node/edge/bytes/read budget이다. pagination·continuation은 동일 query digest와 Revision에 고정한다. 응답에는 하나의 World/Event node, matched memberships, edges, Composite child completeness, Collection overlays, source revision/algorithm, truncated/continuation/diagnostics를 포함한다.
 
-active Collections의 합집합으로 Event를 선택하되 node를 복제하지 않는다. 모두 OFF이면 빈 선택을 보여주며 무제한 World scan으로 해석하지 않는다. World 검색·직접 Event URL·명시적 bounded neighborhood는 membership 없는 Event에도 접근 가능하다. 선택 이웃이 Collection 밖에 있으면 그 이유를 표시한다. temporal/contains 진실은 hidden endpoint나 Collection OFF로 바뀌지 않는다.
+effective active Collections는 사용자 pin/수동 활성과 안정된 contextual activation에서 파생하고 명시적 제외·auto pause를 준수한다. 그 합집합으로 Event를 선택하되 node를 복제하지 않는다. 모두 OFF이면 빈 선택을 보여주며 무제한 World scan으로 해석하지 않는다. World 검색·직접 Event URL·명시적 bounded neighborhood는 membership 없는 Event에도 접근 가능하다. 선택 이웃이 Collection 밖에 있으면 그 이유를 표시한다. temporal/contains 진실은 hidden endpoint나 Collection OFF로 바뀌지 않는다.
 
 ## TS-006.3 target data path
 
@@ -33,11 +33,11 @@ immutable cache key는 World/revision/algorithm/shard/filter를 포함한다. po
 
 ## TS-006.5 discovery
 
-paged inverted membership, 시간 범위·spatial/scale summaries, bounded adjacency를 이용해 후보를 생성한다. 현재 visible Event overlap, active Collection overlap, time proximity와 이웃 연결로 설명 가능한 relevance를 파생한다. 모든 Collection을 요청마다 순회하지 않는다. 후보 수·posting read·response budget과 continuation을 둔다. 시간 정보가 없거나 candidate가 없을 때 명시적으로 처리한다. ranking formula와 가중치는 D 단계의 UX 실험으로 정하며 canonical importance/recommended_with를 추가하지 않는다. 결과는 권위 순위가 아니다.
+paged inverted membership, 시간 범위·spatial/scale summaries, bounded adjacency를 이용해 후보를 생성한다. 사용자 viewport/navigation에서 selection-independent bounded World anchor query로 얻은 overlap, time proximity와 이웃 연결로 설명 가능한 relevance를 파생한다. pin affinity는 viewport 관련 자격을 통과한 후보의 보정 신호이며 단독 확장 원인이 아니다. 시스템이 추가한 contextual paint/activation 결과를 다시 seed로 쓰지 않고 navigation epoch와 provenance를 구별한다. 모든 Collection을 요청마다 순회하지 않는다. 후보 수·posting read·response budget과 continuation을 둔다. 시간 정보가 없거나 candidate가 없을 때 명시적으로 처리한다. enter/exit threshold·dwell·hysteresis로 activation을 안정화하고 partial/error를 관련성 0으로 해석하지 않는다. Pinned 의도는 추론과 독립이고 Suggested는 graph에 참여하지 않는다. ranking formula와 가중치는 A5 S5의 사전 등록 UX 실험으로 정하며 canonical importance/recommended_with를 추가하지 않는다. 결과는 권위 순위가 아니다.
 
 ## TS-006.6 Narrative와 navigation
 
-Event URL은 World/Event identity를 사용하고 Collection은 선택 context일 뿐 본문 owner가 아니다. drawer/full-height direct URL/history/close-to-focus를 유지한다. 하나의 Event Narrative 본문과 펼침 가능한 주석/인용을 표시한다. Collection 소개는 별도 owner의 Narrative다. Collection과 Composite의 비슷한 container 표현은 label·legend·선택 행동으로 구별한다. 모바일 touch·접근성·pan continuity를 유지한다.
+Event URL은 World/Event identity를 사용하고 Collection은 선택 context일 뿐 본문 owner가 아니다. drawer/full-height direct URL/history/close-to-focus를 유지한다. 하나의 Event Narrative 본문과 펼침 가능한 주석/인용을 표시한다. Collection 소개는 별도 owner의 Narrative다. Collection과 Composite의 비슷한 container 표현은 label·legend·선택 행동으로 구별한다. 모바일 touch·접근성·pan continuity를 유지한다. Collection Island는 삭제하지 않고 feature flag로 비활성화한다. 사건 검색·관계 필터·미배치 사건 접근은 새 Graph UX 채택 후 하단 내비게이션 탐색으로 이관할 후속 범위이며 초기 Graph 실험에 대체 control을 강제하지 않는다. 필요한 시간 기준 접근은 보존한다. 좌상단 World+dominant Composite HUD가 suppressed Composite의 의미를 이어받는다. Semantic label/primary interaction budget과 Geographic geometry budget을 분리하고 Geographic의 primary hit target은 만들지 않는다. full-viewport·중복 ancestor suppression을 유지한다. pin/contextual 상태, 전체 Collection browser/search, auto 중지와 명시 해제 경로는 Graph mode에서 접근 가능해야 한다.
 
 ## TS-006.7 병목 측정과 exit gates
 
@@ -45,7 +45,7 @@ Event URL은 World/Event identity를 사용하고 Collection은 선택 context�
 
 1k/10k/100k Event와 sparse/dense/overlap/large Collection fixtures에서 동일 local query를 유지한 채 먼 Event와 Collection만 늘린다. correctness 외에 cold path rows/bytes/object reads가 전체 World N에 선형 증가하지 않는지 확인한다. 초기 목표는 기존 viewport payload 1 MiB 이하·object reads 256 이하를 유지하되, index reads를 포함해 총량으로 측정한다. 이 수치는 현재 구현 일부의 상한이며 실측 달성 주장이나 충분한 latency 기준이 아니다.
 
-A1에서 고정 모바일·네트워크 profile과 허용 p95/interaction budget을 측정 근거로 명시하고 A4 시작 전에 고정한다. [A1 실행 근거와 고정 budget](../evidence/ip011/a1-execution.md)을 따른다. 임의 성능 수치를 완료 증거로 만들지 않는다. 성능 검증 완료는 합의된 latency/frame gate와 bounded cold cost 둘 다 통과해야 한다. budget 초과는 미충족으로 남긴다. 2026-09-28 사용자 결정에 따라 A4 실행 단계는 잔여를 [A4-B01~03](../implementation/IP-011-A4-closeout-backlog.md)으로 이관해 종료했다. 이는 단계 종료 조건의 명시적 예외이며 수치 기준 완화·성능 통과·출시 준비 완료가 아니다. A5는 별도 활성화하며 채택 시 열린 성능 항목을 함께 판정한다.
+A1에서 고정 모바일·네트워크 profile과 허용 p95/interaction budget을 측정 근거로 명시하고 A4 시작 전에 고정한다. [A1 실행 근거와 고정 budget](../evidence/ip011/a1-execution.md)을 따른다. 임의 성능 수치를 완료 증거로 만들지 않는다. 성능 검증 완료는 합의된 latency/frame gate와 bounded cold cost 둘 다 통과해야 한다. budget 초과는 미충족으로 남긴다. 2026-09-28 사용자 결정에 따라 A4 실행 단계는 잔여를 [A4-B01~03](../implementation/IP-011-A4-closeout-backlog.md)으로 이관해 종료했다. 이는 단계 종료 조건의 명시적 예외이며 수치 기준 완화·성능 통과·출시 준비 완료가 아니다. A5는 [planning baseline](../implementation/IP-011-A5-collection-discovery-plan.md)만 활성이고 구현은 비활성이다. 채택 시 열린 성능 항목을 함께 판정한다. 표현 capacity 검증이 자동 relevance보다 선행하며 tile/cluster는 실측 필요에 따른 선택 수단이다.
 
 ## TS-006.8 무결성과 복구
 

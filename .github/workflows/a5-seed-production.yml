@@ -1,0 +1,45 @@
+name: A5 authorized production corpus
+on:
+  push:
+    branches: [main]
+    paths:
+      [
+        .github/workflows/a5-seed-production.yml,
+        scripts/a5-seed-production.ts,
+        scripts/a5-discovery-corpus.ts
+      ]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: a5-production-corpus
+  cancel-in-progress: false
+jobs:
+  seed:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CLOTHO_API_URL: ${{ vars.CLOTHO_API_URL }}
+      CLOTHO_TOKEN: ${{ secrets.CLOTHO_TOKEN }}
+      PUBLIC_INTEGRATION_URL: ${{ vars.PUBLIC_INTEGRATION_URL || 'https://moirai-production-8ed1.up.railway.app' }}
+      A5_SEED_CONFIRM: 01995c2a-7b00-7000-8000-000000000101
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Validate bounded synthetic candidate states before writing
+        run: pnpm exec vitest run scripts/a5-discovery-corpus.test.ts
+      - name: Commit through authenticated v5 Clotho and verify Publication
+        run: pnpm exec tsx scripts/a5-seed-production.ts
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: a5-production-corpus
+          path: a5-seed-evidence.json

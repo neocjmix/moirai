@@ -1,7 +1,7 @@
 /** Public, reversible presentation experiment. Resolved once at SSR bootstrap. */
 export interface CollectionDiscoveryConfig {
   contextHud: boolean;
-  policyVersion: "a5-s1-v1";
+  policyVersion: "a5-s1-v2";
 }
 
 export function collectionDiscoveryConfig(
@@ -15,6 +15,6 @@ export function collectionDiscoveryConfig(
         : override === "context"
           ? true
           : rollout !== "legacy",
-    policyVersion: "a5-s1-v1"
+    policyVersion: "a5-s1-v2"
   };
 }

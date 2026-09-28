@@ -110,7 +110,7 @@ export default async function V5GraphPage({
                 .filter((id) =>
                   catalog.collections.some((collection) => collection.id === id)
                 )
-            : catalog.collections.map((collection) => collection.id)
+            : catalog.collections.slice(0, 8).map((collection) => collection.id)
         }
         readPage={readPage}
         fullEvent={fullEvent}

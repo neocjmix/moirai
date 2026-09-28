@@ -2,6 +2,7 @@ export interface ContextCandidate {
   id: string;
   label: string;
   coverage: number;
+  visible: boolean;
   centerInside: boolean;
   supportComplete: boolean;
   contains: readonly string[];
@@ -9,8 +10,8 @@ export interface ContextCandidate {
 
 export const CONTEXT_DWELL_MS = 250;
 
-/** No importance taxonomy: spatial qualification, then known contains specificity.
- * Unrelated overlapping topics are ambiguous, regardless of input order. */
+/** HUD orientation is independent of painted area and opacity. A lone visible
+ * linear Composite is a topic too; related ancestors yield to descendants. */
 export function selectGraphContext(
   candidates: readonly ContextCandidate[],
   previousId: string | null = null
@@ -19,10 +20,7 @@ export function selectGraphContext(
     candidates.map((candidate) => [candidate.id, candidate])
   );
   const eligible = candidates.filter(
-    (candidate) =>
-      candidate.supportComplete &&
-      candidate.centerInside &&
-      candidate.coverage >= (candidate.id === previousId ? 0.3 : 0.35)
+    (candidate) => candidate.supportComplete && candidate.visible
   );
   const hasDescendant = (parent: ContextCandidate, target: string) => {
     const pending = [...parent.contains];
@@ -43,7 +41,12 @@ export function selectGraphContext(
           other.id !== candidate.id && hasDescendant(candidate, other.id)
       )
   );
-  return specific.length === 1 ? specific[0]! : null;
+  if (specific.length === 1) return specific[0]!;
+  const central = specific.filter((candidate) => candidate.centerInside);
+  if (central.length === 1) return central[0]!;
+  // Retain a still-visible topic during ambiguous navigation, never choose by
+  // input order or by filled area. New ambiguous views remain World-only.
+  return specific.find((candidate) => candidate.id === previousId) ?? null;
 }
 
 export function polygonContainsCenter(

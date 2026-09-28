@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { createHash } from "node:crypto";
 import { readV5ServedRoot, readV5StagedDocument } from "@moirai/publication/v5";
+import { readV5RenderGeneration } from "@moirai/publication/v5";
 import { readPublicationObject } from "../../../../lib/publication";
 
 export const dynamic = "force-dynamic";
@@ -81,13 +82,29 @@ export async function POST(request: Request): Promise<Response> {
         { error: "revision_changed" },
         { status: 409, headers: noStore }
       );
-    const prefix = `worlds/${query.world_id}/revisions/${query.revision}/v5/render/${query.time_system_id}/`;
-    const get = async (key: string) => (await store.get(key)).body;
-    const body = await readV5StagedDocument(
-      rootBody,
-      `${prefix}manifest.json`,
-      get
+    const generation = await readV5RenderGeneration(
+      store,
+      query.world_id
+    ).catch((cause: unknown) => {
+      if (
+        cause instanceof Error &&
+        cause.message === "render_generation_unavailable"
+      )
+        return null;
+      throw cause;
+    });
+    const generationRef = generation?.manifests.find(
+      (item) => item.timeSystemId === query.time_system_id
     );
+    const prefix = generation
+      ? `worlds/${query.world_id}/render-generations/${generation.generation}/${query.time_system_id}/`
+      : `worlds/${query.world_id}/revisions/${query.revision}/v5/render/${query.time_system_id}/`;
+    const get = async (key: string) => (await store.get(key)).body;
+    const body = generation
+      ? generationRef
+        ? await generation.read(generationRef.key, generationRef.sha256)
+        : null
+      : await readV5StagedDocument(rootBody, `${prefix}manifest.json`, get);
     if (!body)
       return Response.json(
         { error: "render_unavailable" },
@@ -139,7 +156,9 @@ export async function POST(request: Request): Promise<Response> {
           { error: "render_asset_not_found" },
           { status: 404, headers: noStore }
         );
-      const value = await readV5StagedDocument(rootBody, key, get);
+      const value = generation
+        ? await generation.read(key, digest)
+        : await readV5StagedDocument(rootBody, key, get);
       if (!value) throw Error("render_asset_missing");
       if (createHash("sha256").update(value).digest("hex") !== digest)
         throw Error("render_manifest_digest_mismatch");

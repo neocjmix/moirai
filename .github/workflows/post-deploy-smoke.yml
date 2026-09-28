@@ -46,14 +46,18 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - name: Verify public deployment readiness
+        id: readiness
         run: pnpm smoke
       - name: Install mobile WebKit
         run: pnpm exec playwright install --with-deps webkit
       - name: Verify live mobile A3 navigation
         run: pnpm exec playwright test --config playwright.ip011-live.config.ts
       - name: Build Clotho CLI
+        id: clotho-build
+        if: ${{ !cancelled() && steps.readiness.outcome == 'success' }}
         run: pnpm --filter @moirai/clotho... build
       - name: Verify authenticated authoring to public Atropos
+        if: ${{ !cancelled() && steps.clotho-build.outcome == 'success' }}
         env:
           CLOTHO_API_URL: ${{ vars.CLOTHO_API_URL }}
           CLOTHO_TOKEN: ${{ secrets.CLOTHO_TOKEN }}

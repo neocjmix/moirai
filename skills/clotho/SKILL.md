@@ -36,7 +36,7 @@ the whole operation) to an origin index. Separate `source_explicit`,
 never hidden chain-of-thought. Sources do not silently become facts in another World.
 
 `change.validate` is read-only diagnostic preview. Generated preview IDs are
-provisional. Its digest is optional drift detection, not authority to commit.
+provisional. A preview does not reserve a revision or authorize a later commit.
 `change.commit` always revalidates and enforces `expected_revision` atomically.
 Report warnings, committed revision, and Publication propagation separately.
 

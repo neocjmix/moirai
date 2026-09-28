@@ -55,8 +55,11 @@ describe("production v5 transport parity", () => {
       app.inject({
         method: "POST",
         url: `/v2/clotho/${method}`,
-        headers: { authorization: `Bearer ${token}` },
-        payload
+        headers: {
+          authorization: `Bearer ${token}`,
+          "content-type": "application/json"
+        },
+        payload: JSON.stringify(payload)
       });
     const mcp = (method: string, args?: unknown) =>
       app.inject({

@@ -1,3 +1,7 @@
+import {
+  V5_METHODS,
+  V5_INPUT_SCHEMAS
+} from "../packages/contracts/src/v5-wire.js";
 import { spawnSync } from "node:child_process";
 import type { ClothoMethod } from "../packages/contracts/src/index.js";
 
@@ -208,16 +212,111 @@ if (publicStatus.versions.contract === "5") {
     capabilities: {},
     clientInfo: { name: "moirai-production-smoke", version: "5" }
   });
-  const discovered = await mcp<{ tools: { name: string }[] }>("tools/list", {});
+  const discovered = await mcp<{
+    tools: { name: string; inputSchema: unknown }[];
+  }>("tools/list", {});
+  for (const method of V5_METHODS) {
+    const tool = discovered.tools.find(
+      (t) => t.name === method.replaceAll(".", "_").replaceAll("-", "_")
+    );
+    if (
+      !tool ||
+      JSON.stringify(tool.inputSchema) !==
+        JSON.stringify(V5_INPUT_SCHEMAS[method])
+    )
+      throw Error(`V5 MCP schema mismatch: ${method}`);
+  }
+  const world = await mcp<{
+    structuredContent: { result: { world: { current_revision: number } } };
+  }>("tools/call", {
+    name: "world_get",
+    arguments: { contract_version: 5, world_id: worldId }
+  });
+  const currentRevision = world.structuredContent.result.world.current_revision;
+  if (!Number.isSafeInteger(currentRevision))
+    throw Error("V5 World discovery failed");
+  await mcp("tools/call", {
+    name: "world_list",
+    arguments: { contract_version: 5, limit: 1 }
+  });
+  await mcp("tools/call", {
+    name: "collection_list",
+    arguments: {
+      contract_version: 5,
+      world_id: worldId,
+      at_revision: currentRevision,
+      limit: 1
+    }
+  });
+  const preview = await mcp<{
+    structuredContent: { result: { valid: boolean; provisional: boolean } };
+  }>("tools/call", {
+    name: "change_validate",
+    arguments: {
+      contract_version: 5,
+      world_id: worldId,
+      expected_revision: currentRevision,
+      change_set_id: "019f9280-c105-7000-8000-000000000001",
+      intent:
+        "Read-only production validation smoke: roll back a synthetic Collection",
+      origins: [
+        {
+          kind: "human_instruction",
+          summary: "Authorized contract repair smoke; no persisted mutation"
+        }
+      ],
+      policy_version: policy.body.result.policy_version,
+      policy_digest: policy.body.result.policy_digest,
+      operations: [
+        {
+          kind: "create",
+          entity_type: "collection",
+          client_ref: "smoke_collection",
+          origin_refs: [{ field: "*", origin_index: 0 }],
+          value: {
+            world_id: worldId,
+            slug: "clotho-v5-validation-smoke",
+            title: "Synthetic validation only",
+            description: null
+          }
+        },
+        {
+          kind: "create",
+          entity_type: "narrative",
+          client_ref: "smoke_narrative",
+          origin_refs: [{ field: "*", origin_index: 0 }],
+          value: {
+            world_id: worldId,
+            scope_type: "collection",
+            scope_id: { client_ref: "smoke_collection" },
+            locale: "ko",
+            title: null,
+            body: "Synthetic validation preview; must be rolled back.",
+            public_references: [],
+            notes: []
+          }
+        }
+      ]
+    }
+  });
   if (
-    ![
-      "authoring_policy_get",
-      "change_commit",
-      "event_search",
-      "event_get"
-    ].every((name) => discovered.tools.some((tool) => tool.name === name))
+    !preview.structuredContent.result.valid ||
+    !preview.structuredContent.result.provisional
   )
-    throw Error("V5 MCP tool discovery failed");
+    throw Error("V5 validation smoke failed");
+  const afterPreview = await mcp<{
+    structuredContent: { result: { world: { current_revision: number } } };
+  }>("tools/call", {
+    name: "world_get",
+    arguments: { contract_version: 5, world_id: worldId }
+  });
+  if (
+    afterPreview.structuredContent.result.world.current_revision !==
+    currentRevision
+  )
+    throw Error(
+      "Revision changed during validation smoke; inspect concurrent authoring"
+    );
   process.stdout.write(
     `production v5 read/auth/policy smoke passed; sha=${expectedSha}\n`
   );

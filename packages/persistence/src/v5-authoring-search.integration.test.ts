@@ -117,6 +117,86 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
       )
     ).rejects.toMatchObject({ code: "revision_conflict" });
   });
+  it("reads Collection membership, World systems, neighbors and complete content", async () => {
+    const collection = "019f5000-1100-7000-8000-000000000080";
+    await db.transaction().execute(async (tx) => {
+      await sql`insert into collections(id,world_id,slug,title,description,created_revision,updated_revision) values (${collection},${world},'selection','Selection',null,31,31)`.execute(
+        tx
+      );
+      await sql`insert into narratives(id,world_id,scope_type,scope_id,locale,body,public_references,notes,created_revision,updated_revision) values (${collection},${world},'collection',${collection},'ko','Collection account','[]','[]',31,31)`.execute(
+        tx
+      );
+      for (const event of [first, second])
+        await sql`insert into collection_event_memberships(id,world_id,collection_id,event_id,created_revision,updated_revision) values (${event},${world},${collection},${event},31,31)`.execute(
+          tx
+        );
+    });
+    const input = { contract_version: 5, world_id: world };
+    expect(
+      await queryV5Authoring(db, "world.get", input, [world])
+    ).toMatchObject({
+      world: { current_revision: 31 },
+      item_type: "time_system",
+      items: []
+    });
+    expect(
+      await queryV5Authoring(db, "collection.list", input, [world])
+    ).toMatchObject({ items: [{ id: collection }] });
+    expect(
+      await queryV5Authoring(
+        db,
+        "collection.get",
+        { ...input, collection_id: collection, limit: 1 },
+        [world]
+      )
+    ).toMatchObject({
+      items: [{ id: first }],
+      truncated: true,
+      narrative: { body: "Collection account" }
+    });
+    expect(
+      await queryV5Authoring(
+        db,
+        "context.slice",
+        { ...input, seed_ids: [first], collection_ids: [collection] },
+        [world]
+      )
+    ).toMatchObject({
+      items: [{ id: first }, { id: second }],
+      matched_memberships: [
+        { event_id: first, collection_id: collection },
+        { event_id: second, collection_id: collection }
+      ]
+    });
+    expect(
+      await queryV5Authoring(
+        db,
+        "event.neighbors",
+        { ...input, event_id: first },
+        [world]
+      )
+    ).toMatchObject({ items: [], depth: 1 });
+    expect(
+      await queryV5Authoring(db, "world.export", input, [world])
+    ).toMatchObject({
+      completeness: "complete",
+      format_version: 5,
+      snapshot: { events: [{ id: first }, { id: second }] }
+    });
+    await expect(
+      queryV5Authoring(
+        db,
+        "time-event.resolve",
+        {
+          ...input,
+          time_system_id: other,
+          definition_version: "1",
+          coordinate: "1592"
+        },
+        [world]
+      )
+    ).rejects.toMatchObject({ code: "not_found" });
+  });
   it("validates with full rollback, then commits the same plan exactly once", async () => {
     await sql`insert into kysely_migration(name,timestamp) values ('010_ip011_collections','2026-01-01T00:00:00.000Z') on conflict do nothing`.execute(
       db
@@ -292,7 +372,7 @@ suite("IP-011 isolated v5 pre-write World candidate search", () => {
       getV5EventEvidence(db, {
         world_id: other,
         event_id: first,
-        at_revision: 31
+        at_revision: 32
       })
     ).rejects.toThrow("v5_detail_event_missing");
     await expect(

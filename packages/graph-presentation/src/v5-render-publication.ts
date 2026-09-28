@@ -6,7 +6,10 @@ type Point = Readonly<{ x: number; y: number }>;
 type Box = Readonly<{ minX: number; maxX: number; minY: number; maxY: number }>;
 export type RenderPrimitive = Readonly<{
   id: string;
-  entity: Readonly<{ kind: "event" | "relation" | "composite"; id: string }>;
+  entity: Readonly<{
+    kind: "event" | "relation" | "composite" | "cluster";
+    id: string;
+  }>;
   geometry:
     | Readonly<{ kind: "point"; xy: Point }>
     | Readonly<{ kind: "line"; paths: readonly (readonly Point[])[] }>
@@ -14,6 +17,7 @@ export type RenderPrimitive = Readonly<{
   bounds: Box;
   label: string;
   collectionIds: readonly string[];
+  memberCount?: number;
   lod: Readonly<{
     visible: readonly [number, number];
     fadeIn?: readonly [number, number];
@@ -38,6 +42,7 @@ export type RenderPublication = Readonly<{
   revision: number;
   timeSystemId: string;
   algorithmVersion: "render-compiler/1";
+  maxLevel: number;
   bounds: Box | null;
   tiles: readonly Readonly<{
     key: string;
@@ -55,9 +60,10 @@ export function selectRenderScene(
   publication: RenderPublication,
   tiles: readonly RenderTile[],
   viewport: Box,
-  level: number
+  level: number,
+  activeCollectionIds?: readonly string[]
 ): RenderPrimitive[] {
-  if (!Number.isInteger(level) || level < 0 || level > 3)
+  if (!Number.isInteger(level) || level < 0 || level > publication.maxLevel)
     throw Error("render_level_invalid");
   const refs = new Map(publication.tiles.map((ref) => [ref.key, ref]));
   const scene = new Map<string, RenderPrimitive>();
@@ -76,6 +82,11 @@ export function selectRenderScene(
     if (!intersects(tile.bounds, viewport)) continue;
     for (const primitive of tile.primitives) {
       if (!intersects(primitive.bounds, viewport)) continue;
+      if (
+        activeCollectionIds &&
+        !primitive.collectionIds.some((id) => activeCollectionIds.includes(id))
+      )
+        continue;
       const old = scene.get(primitive.id);
       if (old && JSON.stringify(old) !== JSON.stringify(primitive))
         throw Error("render_replica_mismatch");
@@ -320,6 +331,7 @@ export function compileV5RenderPublication(
       revision: layout.revision,
       timeSystemId: layout.time_system_id,
       algorithmVersion: "render-compiler/1",
+      maxLevel: 0,
       bounds: null,
       tiles: [],
       documents: []
@@ -333,8 +345,13 @@ export function compileV5RenderPublication(
   const width = Math.max(world.maxX - world.minX, 1),
     height = Math.max(world.maxY - world.minY, 1);
   const tiles: RenderTile[] = [];
-  for (let level = 0; level <= 3; level++) {
+  let maxLevel = 0;
+  // A coarse tile is represented by one aggregate per exact membership set.
+  // The source Event remains unique; no graph lookup is needed to apply
+  // Collection selection to an aggregate. Deep levels recover Event points.
+  for (let level = 0; level <= 5; level++) {
     const count = 2 ** level;
+    let clustered = false;
     for (let y = 0; y < count; y++)
       for (let x = 0; x < count; x++) {
         const bounds = {
@@ -347,9 +364,72 @@ export function compileV5RenderPublication(
           (p) =>
             p.lod.visible[0] <= level &&
             p.lod.visible[1] >= level &&
-            intersects(p.bounds, bounds)
+            (p.geometry.kind === "point" && p.entity.kind === "event"
+              ? (p.geometry.xy.x >= bounds.minX &&
+                  p.geometry.xy.x < bounds.maxX &&
+                  p.geometry.xy.y >= bounds.minY &&
+                  p.geometry.xy.y < bounds.maxY) ||
+                (p.geometry.xy.x === world.maxX &&
+                  x === count - 1 &&
+                  p.geometry.xy.y >= bounds.minY &&
+                  p.geometry.xy.y <= bounds.maxY) ||
+                (p.geometry.xy.y === world.maxY &&
+                  y === count - 1 &&
+                  p.geometry.xy.x >= bounds.minX &&
+                  p.geometry.xy.x <= bounds.maxX)
+              : intersects(p.bounds, bounds))
         );
-        if (entries.length)
+        const points = entries.filter(
+          (p) => p.entity.kind === "event" && p.geometry.kind === "point"
+        );
+        let packed = entries;
+        if (points.length > 256) {
+          clustered = true;
+          const groups = new Map<string, RenderPrimitive[]>();
+          for (const point of points) {
+            const signature = JSON.stringify(point.collectionIds);
+            const group = groups.get(signature) ?? [];
+            group.push(point);
+            groups.set(signature, group);
+          }
+          const aggregates: RenderPrimitive[] = [];
+          for (const [signature, group] of [...groups].sort(([a], [b]) =>
+            a.localeCompare(b)
+          )) {
+            const xy = {
+              x:
+                group.reduce(
+                  (sum, p) =>
+                    sum + (p.geometry.kind === "point" ? p.geometry.xy.x : 0),
+                  0
+                ) / group.length,
+              y:
+                group.reduce(
+                  (sum, p) =>
+                    sum + (p.geometry.kind === "point" ? p.geometry.xy.y : 0),
+                  0
+                ) / group.length
+            };
+            const id = `cluster:${level}:${x}:${y}:${digest(signature).slice(0, 16)}`;
+            aggregates.push({
+              id,
+              entity: { kind: "cluster", id },
+              geometry: { kind: "point", xy },
+              bounds: boundsOf([xy]),
+              label: `${group.length} Events`,
+              collectionIds: group[0]!.collectionIds,
+              memberCount: group.length,
+              lod: { visible: [level, level + 1], groupId: id }
+            });
+          }
+          packed = [
+            ...entries.filter(
+              (p) => p.entity.kind !== "event" || p.geometry.kind !== "point"
+            ),
+            ...aggregates
+          ];
+        }
+        if (packed.length)
           tiles.push({
             format: "render-tile/1",
             worldId: layout.world_id,
@@ -359,17 +439,20 @@ export function compileV5RenderPublication(
             x,
             y,
             bounds,
-            primitives: entries
+            primitives: packed
           });
       }
+    maxLevel = level;
+    if (clustered && level === 5) throw Error("render_level_capacity_exceeded");
+    if (!clustered && level >= 3) break;
   }
   const prefix = `worlds/${layout.world_id}/revisions/${layout.revision}/v5/render/${layout.time_system_id}`;
   const documents = tiles.map((tile) => ({
     key: `${prefix}/${tile.level}/${tile.x}/${tile.y}.json`,
     body: JSON.stringify(tile)
   }));
-  // This compiler is not a serving format for dense Worlds yet. Fail closed
-  // until coarse-level representation and selection-aware clusters are built.
+  // Large Composite/relation fragments and pathological membership signatures
+  // still require external geometry or a finer partition. Fail closed.
   if (
     documents.some((document) => Buffer.byteLength(document.body) > 1024 * 1024)
   )
@@ -380,6 +463,7 @@ export function compileV5RenderPublication(
     revision: layout.revision,
     timeSystemId: layout.time_system_id,
     algorithmVersion: "render-compiler/1",
+    maxLevel,
     bounds: world,
     tiles: documents.map((document, i) => ({
       key: document.key,

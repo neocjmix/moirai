@@ -31,6 +31,7 @@ import {
   backfillPresentation
 } from "./spatial-publication.js";
 import { backfillV5RenderGeneration } from "./render-backfill.js";
+import { processNextRenderGeneration } from "./render-scheduler.js";
 
 const databaseUrl = process.env.DATABASE_URL;
 if (!databaseUrl) throw new Error("DATABASE_URL is required");
@@ -44,6 +45,9 @@ const port = Number(process.env.PORT ?? "3002");
 const database = createDatabase(databaseUrl);
 const publicationStore = new S3ObjectStore();
 const publicationMode = process.env.PUBLICATION_CONTRACT_MODE ?? "v4";
+const renderMode = process.env.LACHESIS_RENDER_PUBLICATION;
+if (renderMode && !["shadow", "deferred"].includes(renderMode))
+  throw Error("invalid_render_publication_mode");
 if (!["v4", "quiesced", "v5-hold", "v5"].includes(publicationMode))
   throw Error("invalid_publication_contract_mode");
 let stopping = false;
@@ -136,8 +140,7 @@ async function processNextJob(): Promise<boolean> {
         job.worldId,
         job.targetRevision
       );
-      const renderEnabled =
-        process.env.LACHESIS_RENDER_PUBLICATION === "shadow";
+      const renderEnabled = renderMode === "shadow";
       let renderStart = 0;
       const { artifacts } = await buildV5WorldCompleteArtifacts(
         state,
@@ -323,7 +326,27 @@ async function workerLoop(): Promise<void> {
       publicationMode === "quiesced" || publicationMode === "v5-hold"
         ? false
         : await processNextJob();
-    if (!processed) await new Promise((resolve) => setTimeout(resolve, 1_000));
+    let rendered = false;
+    if (publicationMode === "v5" && renderMode === "deferred") {
+      try {
+        rendered = await processNextRenderGeneration(
+          database,
+          publicationStore
+        );
+      } catch (cause) {
+        process.stderr.write(
+          JSON.stringify({
+            level: "error",
+            service: "lachesis-worker",
+            operation: "render_scheduler",
+            result_code:
+              cause instanceof Error ? cause.message.slice(0, 128) : "failed"
+          }) + "\n"
+        );
+      }
+    }
+    if (!processed && !rendered)
+      await new Promise((resolve) => setTimeout(resolve, 1_000));
   }
 }
 

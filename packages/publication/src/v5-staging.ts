@@ -56,6 +56,150 @@ export interface V5StagedArtifacts {
   readonly root: V5StagedObject;
 }
 
+/** Attach a fully checked render sidecar to an already complete v5 tree.
+ * No pointer is written here; the existing atomic serving path uploads and
+ * authenticates these documents with the same revision root. */
+export function attachV5RenderDocuments(
+  state: CanonicalState,
+  complete: V5StagedArtifacts,
+  render: readonly {
+    readonly timeSystemId: string;
+    readonly manifest: V5StagedObject;
+    readonly documents: readonly V5StagedObject[];
+  }[]
+): V5StagedArtifacts {
+  verifyV5StagedIndex(complete);
+  const root = JSON.parse(complete.root.body) as {
+    world_id: string;
+    revision: number;
+    completeness: string;
+  };
+  if (
+    root.completeness !== "complete" ||
+    root.world_id !== state.world.id ||
+    render.length !== state.timeSystems.length ||
+    new Set(render.map((item) => item.timeSystemId)).size !== render.length ||
+    render.some(
+      (item) =>
+        !state.timeSystems.some((system) => system.id === item.timeSystemId)
+    )
+  )
+    throw Error("v5_render_system_coverage_invalid");
+  const attached: V5StagedObject[] = [];
+  for (const item of render) {
+    const prefix = `worlds/${root.world_id}/revisions/${root.revision}/v5/render/${item.timeSystemId}/`;
+    if (item.manifest.key !== `${prefix}manifest.json`)
+      throw Error("v5_render_manifest_invalid");
+    const manifest = JSON.parse(item.manifest.body) as {
+      format?: string;
+      worldId?: string;
+      revision?: number;
+      timeSystemId?: string;
+      tiles?: {
+        key: string;
+        sha256: string;
+        level: number;
+        x: number;
+        y: number;
+      }[];
+      geometry?: { key: string; sha256: string }[];
+    };
+    if (
+      manifest.format !== "render-publication/1" ||
+      manifest.worldId !== root.world_id ||
+      manifest.revision !== root.revision ||
+      manifest.timeSystemId !== item.timeSystemId ||
+      !Array.isArray(manifest.tiles) ||
+      !Array.isArray(manifest.geometry)
+    )
+      throw Error("v5_render_manifest_invalid");
+    const expected = [...manifest.tiles, ...manifest.geometry];
+    const geometryRefs = new Map(
+      manifest.geometry.map((ref) => [ref.key, ref.sha256])
+    );
+    const bodies = new Map(
+      item.documents.map((document) => [document.key, document.body])
+    );
+    if (
+      bodies.size !== item.documents.length ||
+      bodies.size !== expected.length ||
+      new Set(expected.map((ref) => ref.key)).size !== expected.length
+    )
+      throw Error("v5_render_asset_set_invalid");
+    for (const ref of expected) {
+      const body = bodies.get(ref.key);
+      if (
+        !body ||
+        !ref.key.startsWith(prefix) ||
+        !/^[0-9a-f]{64}$/.test(ref.sha256) ||
+        hash(body) !== ref.sha256
+      )
+        throw Error("v5_render_asset_digest_invalid");
+      const document = JSON.parse(body) as {
+        format?: string;
+        worldId?: string;
+        revision?: number;
+        timeSystemId?: string;
+      };
+      if (
+        document.worldId !== root.world_id ||
+        document.revision !== root.revision ||
+        document.timeSystemId !== item.timeSystemId ||
+        document.format !==
+          (ref.key.includes("/geometry/")
+            ? "render-geometry/1"
+            : "render-tile/1")
+      )
+        throw Error("v5_render_asset_identity_invalid");
+      if (!ref.key.includes("/geometry/")) {
+        const tileRef = ref as (typeof manifest.tiles)[number];
+        const tile = document as typeof document & {
+          level?: number;
+          x?: number;
+          y?: number;
+          primitives?: {
+            geometry?: { kind?: string; key?: string; sha256?: string };
+          }[];
+        };
+        if (
+          !Number.isInteger(tileRef.level) ||
+          tileRef.level < 0 ||
+          tileRef.level > 16 ||
+          !Number.isInteger(tileRef.x) ||
+          !Number.isInteger(tileRef.y) ||
+          tileRef.x < 0 ||
+          tileRef.y < 0 ||
+          tileRef.x >= 2 ** tileRef.level ||
+          tileRef.y >= 2 ** tileRef.level ||
+          ref.key !==
+            `${prefix}${tileRef.level}/${tileRef.x}/${tileRef.y}.json` ||
+          tile.level !== tileRef.level ||
+          tile.x !== tileRef.x ||
+          tile.y !== tileRef.y ||
+          !Array.isArray(tile.primitives) ||
+          tile.primitives.some(
+            (primitive) =>
+              primitive.geometry?.kind === "external" &&
+              (!primitive.geometry.key ||
+                geometryRefs.get(primitive.geometry.key) !==
+                  primitive.geometry.sha256)
+          )
+        )
+          throw Error("v5_render_tile_reference_invalid");
+      }
+    }
+    attached.push(item.manifest, ...item.documents);
+  }
+  const result = buildV5Index(
+    root.world_id,
+    root.revision,
+    [...complete.documents, ...attached],
+    "complete"
+  );
+  verifyV5StagedIndex(result);
+  return result;
+}
+
 /** Internal finalization primitive. Only the graph-presentation producer may
  * call this after exhausting its canonical selection/viewport proof. It does
  * not upload objects or change the serving pointer. */

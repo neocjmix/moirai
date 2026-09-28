@@ -137,7 +137,12 @@ async function processNextJob(): Promise<boolean> {
       );
       const { artifacts } = await buildV5WorldCompleteArtifacts(
         state,
-        job.targetRevision
+        job.targetRevision,
+        undefined,
+        {
+          renderPublication:
+            process.env.LACHESIS_RENDER_PUBLICATION === "shadow"
+        }
       );
       await assertActive();
       const pointer = await publishV5CompleteArtifacts(

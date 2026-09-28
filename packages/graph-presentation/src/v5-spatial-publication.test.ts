@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
   verifyV5StagedIndex,
-  finalizeV5VerifiedSpatialArtifacts
+  finalizeV5VerifiedSpatialArtifacts,
+  readV5StagedDocument
 } from "@moirai/publication/v5";
 import { readV5StagedEvent } from "@moirai/publication/v5";
 import {
@@ -15,6 +16,52 @@ import { buildV5WorldLayout } from "./v5-world-layout.js";
 import { buildV5SpatialIndex } from "./v5-spatial-index.js";
 import { buildV5SpatialStagedArtifacts } from "@moirai/publication/v5";
 import type { CanonicalState } from "@moirai/contracts/v5";
+
+it("attaches checked render tiles to the same complete v5 revision without changing semantic reads", async () => {
+  const { artifacts } = await buildV5WorldCompleteArtifacts(
+    state,
+    7,
+    undefined,
+    { renderPublication: true }
+  );
+  verifyV5StagedIndex(artifacts);
+  const manifestKey =
+    "worlds/world-1/revisions/7/v5/render/gregorian/manifest.json";
+  const stored = new Map(
+    [...artifacts.documents, ...artifacts.index].map(({ key, body }) => [
+      key,
+      body
+    ])
+  );
+  const manifestBody = await readV5StagedDocument(
+    artifacts.root.body,
+    manifestKey,
+    async (key) => stored.get(key) ?? null
+  );
+  const manifest = JSON.parse(manifestBody!) as {
+    format: string;
+    revision: number;
+    tiles: { key: string }[];
+  };
+  expect(manifest.format).toBe("render-publication/1");
+  expect(manifest.revision).toBe(7);
+  expect(manifest.tiles.length).toBeGreaterThan(0);
+  expect(
+    await readV5StagedDocument(
+      artifacts.root.body,
+      manifest.tiles[0]!.key,
+      async (key) => stored.get(key) ?? null
+    )
+  ).toContain("render-tile/1");
+  stored.set(manifest.tiles[0]!.key, "modified");
+  await expect(
+    readV5StagedDocument(
+      artifacts.root.body,
+      manifest.tiles[0]!.key,
+      async (key) => stored.get(key) ?? null
+    )
+  ).rejects.toThrow("v5_index_digest_mismatch");
+});
 
 const state: CanonicalState = {
   world: {

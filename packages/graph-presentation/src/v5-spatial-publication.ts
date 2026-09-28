@@ -5,11 +5,13 @@ import { projectV5WorldTemporal } from "@moirai/projections";
 import {
   buildV5SpatialStagedArtifacts,
   finalizeV5VerifiedSpatialArtifacts,
+  attachV5RenderDocuments,
   verifyV5StagedIndex,
   readV5StagedDocument
 } from "@moirai/publication/v5";
 import type { V5StagedArtifacts } from "@moirai/publication/v5";
 import { buildV5WorldLayout } from "./v5-world-layout.js";
+import { compileV5RenderPublication } from "./v5-render-publication.js";
 import { buildV5SpatialIndex } from "./v5-spatial-index.js";
 import {
   readV5WorldViewport,
@@ -70,7 +72,8 @@ function buildV5WorldSpatialStagedArtifactsWithLayouts(
 export async function buildV5WorldCompleteArtifacts(
   state: CanonicalState,
   revision: number,
-  observePhase?: (phase: string) => void
+  observePhase?: (phase: string) => void,
+  options?: { renderPublication?: boolean }
 ): Promise<{
   artifacts: V5StagedArtifacts;
   proof: {
@@ -176,8 +179,53 @@ export async function buildV5WorldCompleteArtifacts(
     }
   }
   observePhase?.("selection_proved");
-  const artifacts = finalizeV5VerifiedSpatialArtifacts(state, staged);
+  let artifacts = finalizeV5VerifiedSpatialArtifacts(state, staged);
   observePhase?.("complete_finalized");
+  if (options?.renderPublication) {
+    const render = layouts.map((layout) => {
+      const publication = compileV5RenderPublication(state, layout);
+      const maxLevel = publication.maxLevel;
+      const finest = new Set(
+        publication.documents
+          .filter(
+            (document) =>
+              publication.tiles.find((tile) => tile.key === document.key)
+                ?.level === maxLevel
+          )
+          .flatMap(
+            (document) =>
+              (
+                JSON.parse(document.body) as {
+                  primitives: { entity: { kind: string; id: string } }[];
+                }
+              ).primitives
+          )
+          .filter(
+            (primitive) =>
+              primitive.entity.kind === "event" ||
+              primitive.entity.kind === "composite"
+          )
+          .map((primitive) => primitive.entity.id)
+      );
+      if (
+        finest.size !== layout.shapes.length ||
+        layout.shapes.some((shape) => !finest.has(shape.event_id))
+      )
+        throw Error("v5_render_event_coverage_invalid");
+      const { documents, geometryDocuments, ...manifest } = publication;
+      const prefix = `worlds/${state.world.id}/revisions/${revision}/v5/render/${layout.time_system_id}`;
+      return {
+        timeSystemId: layout.time_system_id,
+        manifest: {
+          key: `${prefix}/manifest.json`,
+          body: JSON.stringify(manifest)
+        },
+        documents: [...documents, ...geometryDocuments]
+      };
+    });
+    artifacts = attachV5RenderDocuments(state, artifacts, render);
+    observePhase?.("render_attached");
+  }
   return {
     artifacts,
     proof: {

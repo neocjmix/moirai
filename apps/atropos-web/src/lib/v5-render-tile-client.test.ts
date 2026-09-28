@@ -61,6 +61,38 @@ const viewport = (minX: number, maxX: number) => ({
 });
 
 describe("render tile working set", () => {
+  it("treats an absent sparse tile as empty but distinguishes a missing publication", async () => {
+    const fetcher = vi.fn(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string) as { kind: string };
+      return body.kind === "manifest"
+        ? Response.json(manifest)
+        : Response.json({ error: "unexpected_asset" }, { status: 404 });
+    });
+    const client = createV5RenderTileClient({
+      worldId: world,
+      revision,
+      timeSystemId,
+      fetcher: fetcher as typeof fetch
+    });
+    expect(
+      (await client.load(viewport(10, 11), 1, ["one"])).primitives
+    ).toEqual([]);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    await expect(client.load(viewport(0, 0.5), 1, ["one"])).rejects.toThrow(
+      "render_asset_unlisted"
+    );
+    const missing = createV5RenderTileClient({
+      worldId: world,
+      revision,
+      timeSystemId,
+      fetcher: vi.fn(async () =>
+        Response.json({ error: "render_unavailable" }, { status: 404 })
+      ) as typeof fetch
+    });
+    await expect(missing.manifest()).rejects.toThrow(
+      "render_manifest_unavailable"
+    );
+  });
   it("requires both relation endpoint memberships for Collection selection", async () => {
     const linked = {
       ...primitive("link", 0.5, "one"),

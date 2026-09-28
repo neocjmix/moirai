@@ -167,8 +167,16 @@ const state: CanonicalState = {
   collectionTimeSystems: []
 };
 
-export async function prepareV5PublicationFixture(root: string): Promise<void> {
-  const { artifacts } = await buildV5WorldCompleteArtifacts(state, 31);
+export async function prepareV5PublicationFixture(
+  root: string,
+  options: { renderPublication?: boolean } = {}
+): Promise<void> {
+  const { artifacts } = await buildV5WorldCompleteArtifacts(
+    state,
+    31,
+    undefined,
+    options
+  );
   const pointer: V5PublicationPointer = {
     format_version: "v5-publication/1",
     world_id: V5_FIXTURE_WORLD_ID,

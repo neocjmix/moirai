@@ -8,6 +8,8 @@ HUD policy `a5-s1-v2` no longer gates on filled area, center containment or fade
 
 The existing first-page default selected every Collection despite the maximum-eight query contract. With this corpus that would cause invalid requests; default bootstrap is bounded to eight without claiming S3 capacity. Explicit selection and catalog remain available. Deployment, corpus Revision and CI results will be recorded after execution.
 
+PR #240 deployed as `a2bbdf615dd9b63b87a066b4552f56e4a3bbeb51` (Railway `ae4226e5-3a1f-40bd-9a85-6f8f1d92fc0e`, SUCCESS); public status confirms this SHA. Browser observed existing `건국 과정` simultaneously in HUD and graph. Main mobile CI 36372949321 passed; corpus runner 36372949326 is executing. The A3 live test's historical exact 6/127/125 subset is now explicitly separated from synthetic additions; its historical membership/placed/unplaced assertions remain intact rather than freezing the whole World at six Collections.
+
 ## S0 registration — 2026-09-28, before implementation measurements
 
 - Latest main and production web/API/worker: `8937cb4142215b439d4430e61b9db1ae15f218c8`. Planning #237 head `1cf9745bd278a31cc51ed43d0b10bcc91a902ed9`, CI 36368885368 succeeded; reviewed Markdown-only change, diff check, merged as `55cae82717af34d09683d04e4bd0a7df46c68aef`.

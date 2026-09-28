@@ -23,10 +23,19 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
     expect(payload.served_revision).toBeGreaterThanOrEqual(32);
     return payload.data;
   };
-  const catalog = await read<{ collections: { id: string; title: string }[] }>({
+  const allCatalog = await read<{
+    collections: { id: string; title: string }[];
+  }>({
     kind: "collections",
     page: 0
   });
+  // Preserve the exact historical A3 regression subset as the explicitly
+  // authorized A5 synthetic corpus grows in this same development World.
+  const catalog = {
+    collections: allCatalog.collections.filter(
+      (collection) => !collection.title.startsWith("[A5 실험 ")
+    )
+  };
   expect(catalog.collections).toHaveLength(6);
   const members = await Promise.all(
     catalog.collections.map(async (collection) => ({
@@ -47,7 +56,8 @@ test("live mobile Collection, unplaced Event and Composite navigation", async ({
     unplaced_count: number;
     bounds: { minX: number; maxX: number; minY: number; maxY: number };
   }>({ kind: "spatial_summary", time_system_id: systemId });
-  expect([summary.shape_count, summary.unplaced_count]).toEqual([125, 2]);
+  expect(summary.shape_count).toBeGreaterThanOrEqual(125);
+  expect(summary.unplaced_count).toBe(2);
   const placed = new Set<string>();
   let cursor: unknown = null;
   for (let pageNumber = 0; pageNumber < 32; pageNumber++) {

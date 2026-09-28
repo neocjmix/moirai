@@ -2,6 +2,8 @@
 
 2026-09-28 KST. 준비 세션은 문서만 작성했다. 구현·운영 데이터 변경·merge·deployment는 실행하지 않았다. 다음 세션에서 사용자가 아래 시작 지시를 전달하면 planning-only 제한을 대체하여 A5 구현을 활성화한다. 활성화 전 CURRENT/AGENTS의 계획 전용 상태를 명시적으로 갱신한다.
 
+2026-09-28 실행 후속: 구현 시작 지시를 수신했고 PR #237을 `55cae82`로 병합했다. A5 구현은 활성이다. 아래는 인계 당시 기록이며 최신 checkpoint는 CURRENT와 [A5 실행](../evidence/ip011/a5-execution.md)을 따른다.
+
 ## 가져올 기준선
 
 - Repository: https://github.com/neocjmix/moirai

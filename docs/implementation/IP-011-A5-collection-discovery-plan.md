@@ -7,7 +7,7 @@ layer: implementation-plan
 
 # IP-011 A5 — Graph 중심 Collection Discovery
 
-2026-09-28 KST. 사용자 최신 A5 지시를 반영한 planning baseline. 조사 기준 `8937cb4142215b439d4430e61b9db1ae15f218c8` (PR #236). 이 문서와 동반 개정은 로컬 문서 변경이며 main 반영 전에는 작업본 기준선이다. **계획만 활성; 구현·운영 데이터 변경·merge·deployment·A6/M5는 비활성**이다. 이전 포괄 실행 승인이 이번 제한을 대체하지 않는다.
+2026-09-28 KST. 사용자 최신 A5 지시를 반영한 planning baseline. 조사 기준 `8937cb4142215b439d4430e61b9db1ae15f218c8` (PR #236). 계획 PR #237은 main `55cae82`에 통합됐다. **2026-09-28 구현 시작 지시로 A5 S0–S7 구현·merge·checkpoint 배포가 활성화됐다.** A6/M5·대량 역사 입력·canonical migration·새 유료 서비스는 비활성이다. 진행·검증 결과는 CURRENT와 a5-execution이 소유하며 아래 planning 조사와 제안/실측 구분은 유지한다.
 
 상위 의미는 CON-003/CORE-MODEL, 독자 수용은 BR-003/JRN-004, 읽기 계약은 TS-005/006, 단계 의존성은 IP-011이 소유한다. 이 문서는 실행 순서·실험·채택 판정을 소유한다. 사용자 확정 방향과 아래 제안된 초기 실험 파라미터를 구별한다.
 
@@ -143,7 +143,7 @@ Pin을 renderer cap 때문에 자동 해제하지 않는다. 물리 상한을 �
 
 선택 변경에 따른 loader/viewport cache 전체 교체, Composite placement history reset은 A5의 자동 토글과 직접 결합한다. camera·immutable geometry/detail 재사용·색과 label 안정성을 보존하되 selection이 다른 응답을 혼합하지 않도록 cache identity를 분리한다. World 공간 좌표는 동일 입력에서 같아야 하며 자동 fit/강제 recenter는 하지 않는다.
 
-## 8. 단계별 implementation slices — 모두 아직 미실행
+## 8. 단계별 implementation slices — 실행 상태는 CURRENT 참조
 
 | Slice | 사용자 가치/산출물 | 검증·다음 단계 gate |
 | --- | --- | --- |
@@ -255,7 +255,7 @@ CON-003와 CORE-MODEL의 World/Collection/Event/Narrative 의미는 변경할 �
 
 리뷰에서 발견해 수정한 누락은 (a) unpin과 off 차이, (b) 모두 OFF와 auto의 충돌, (c) empty bootstrap, (d) 기존 Island의 숨은 기능과 UX 채택 후 하단 탐색 이관 경계, (e) 첫 catalog page 밖 Collection, (f) loader/URL의 inferred state 혼합, (g) suggested hint와 실제 graph participation 구별, (h) 많은 pins의 starvation, (i) probe UI가 없는 장식 geometry의 접근 경로, (j) 사용자 검증을 자동 테스트로 대체할 위험이다.
 
-정확한 HUD tie-break, semantic/graphic 수치 cap, ranking weight, 임시 activate 표면, 공간 힌트 위치/형태는 실험 결정사항이다. 이는 goal·meaning의 미정이 아니라 사전 기준을 둔 채택 절차다. 구현 첫 단위는 S0/S1이며 **이번 작업에서는 실행하지 않는다**.
+정확한 HUD tie-break, semantic/graphic 수치 cap, ranking weight, 임시 activate 표면, 공간 힌트 위치/형태는 실험 결정사항이다. 이는 goal·meaning의 미정이 아니라 사전 기준을 둔 채택 절차다. 구현 첫 단위는 S0/S1이며 **S0/S1 실행을 시작했다**.
 
 ## 13. 이번 planning 작업 검증
 

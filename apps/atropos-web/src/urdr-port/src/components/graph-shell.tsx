@@ -14,6 +14,8 @@ import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBou
 import { compositePointDisplay } from "./composite-point-display";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { reconcileViewport } from "../viewport-cache";
+import { GraphContextHud } from "../../../components/graph-context-hud";
+import { selectGraphContext, polygonContainsCenter, CONTEXT_DWELL_MS } from "../../../lib/graph-context-policy";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
 import { withGraphReturnContext } from "../../../lib/event-reading-navigation";
 
@@ -767,9 +769,7 @@ function clipPolygonAgainstViewport(points: ViewportCoordinate[], viewportSize: 
   return [clipLeft, clipRight, clipTop, clipBottom].reduce((current, clip) => (current.length >= 3 ? clip(current) : current), points);
 }
 
-function getCompositeSurfaceOpacityScale(points: ViewportCoordinate[], viewportSize: ViewportSize) {
-  const viewportArea = Math.max(viewportSize.width * viewportSize.height, 1);
-  const coverage = getPolygonArea(clipPolygonAgainstViewport(points, viewportSize)) / viewportArea;
+function getCompositeSurfaceOpacityScale(coverage: number) {
   if (coverage <= 0.35) {
     return 1;
   }
@@ -781,6 +781,7 @@ function getCompositeSurfaceOpacityScale(points: ViewportCoordinate[], viewportS
 }
 
 type GraphShellProps = {
+  discovery?: import("../../../lib/collection-discovery-config").CollectionDiscoveryConfig;
   initialWorkspace: GraphShellBootstrapWorkspace;
   initialChartPlane?: GraphShellChartPlane;
   loader: GraphReadLoader;
@@ -2242,6 +2243,7 @@ function EventDrawerContent({
 }
 
 export function GraphShell({
+  discovery,
   initialWorkspace,
   initialChartPlane,
   loader,
@@ -2866,6 +2868,7 @@ export function GraphShell({
       const projectedHullPoints = region.points.map((point) => projectWorldPoint(view, viewportSize, point));
       const compactPoint = compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
       const projectedPoints = expandPolygon(projectedHullPoints, getCompositeRegionPadding(region.depth));
+      const coverage = getPolygonArea(clipPolygonAgainstViewport(projectedPoints, viewportSize)) / Math.max(viewportSize.width * viewportSize.height, 1);
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
       const placement = compactPoint ? {
         pathPoints: [], attachX: compactPoint.x, attachY: compactPoint.y,
@@ -2906,7 +2909,10 @@ export function GraphShell({
         editorial: region.editorial,
         showLabel: true,
         opacity: 1,
-        surfaceOpacity: getCompositeSurfaceOpacityScale(projectedPoints, viewportSize),
+        surfaceOpacity: getCompositeSurfaceOpacityScale(coverage),
+        contextCoverage: coverage,
+        contextCenterInside: polygonContainsCenter(projectedHullPoints, viewportSize),
+        supportComplete: region.supportComplete,
       } satisfies CompositeRegion;
     });
 
@@ -2966,6 +2972,26 @@ export function GraphShell({
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
   }, [loader, chartCompositeRegions]);
 
+
+  // Read candidates before paint suppression; geometry and camera stay untouched.
+  const [contextTopicId, setContextTopicId] = useState<string | null>(null);
+  const contextCandidates = useMemo(() => discovery?.contextHud ? chartCompositeRegions.regions.map(region => ({
+    id: region.id, label: region.label, contains: region.contains,
+    coverage: region.contextCoverage, centerInside: region.contextCenterInside,
+    supportComplete: region.supportComplete === true,
+  })) : [], [discovery?.contextHud, chartCompositeRegions.regions]);
+  const proposedContext = useMemo(() => selectGraphContext(contextCandidates, contextTopicId), [contextCandidates, contextTopicId]);
+  const proposedContextId = proposedContext?.id ?? null;
+  const immediateContext = proposedContext !== null && proposedContext.coverage >= 1 - 1e-6;
+  useEffect(() => {
+    if (proposedContextId === contextTopicId) return;
+    if (immediateContext) { setContextTopicId(proposedContextId); return; }
+    const timer = window.setTimeout(() => setContextTopicId(proposedContextId), CONTEXT_DWELL_MS);
+    return () => window.clearTimeout(timer);
+  }, [proposedContextId, contextTopicId, immediateContext]);
+  // Never keep a stale/partial topic after its qualification disappears.
+  const contextTopic = immediateContext ? proposedContext : proposedContextId === contextTopicId ? proposedContext :
+    contextCandidates.find(candidate => candidate.id === contextTopicId && candidate.supportComplete && candidate.centerInside && candidate.coverage >= 0.30) ?? null;
 
   const farZoomElisionState = useMemo(() => {
     const zoomBucket = getEditorialZoomBucket(view.scaleY);
@@ -3737,13 +3763,24 @@ export function GraphShell({
       exitingRegions: visibleCompositeRegions.filter(region => region.visibilityState === "exiting").length,
       exitOverdueMs: Math.max(0, ...visibleCompositeRegions.filter(region => region.visibilityState === "exiting" && region.exitStartedAt !== undefined).map(region => performance.now() - region.exitStartedAt - COMPOSITE_FADE_DURATION_MS)),
     },
+    context: { policyVersion: discovery?.policyVersion ?? null, enabled: discovery?.contextHud ?? false, candidateCount: contextCandidates.length, topicId: contextTopic?.id ?? null },
+    representation: {
+      semanticPoints: chartInstantPoints.filter(point => point.showLabel !== false && point.opacity > 0).length,
+      semanticRegions: visibleCompositeRegions.filter(region => region.showLabel && region.opacity * region.surfaceOpacity > 0).length,
+      geographicPoints: chartInstantPoints.length,
+      geographicRegions: visibleCompositeRegions.length,
+      vertices: visibleCompositeRegions.reduce((sum, region) => sum + region.projectedPoints.length, 0),
+      // S1 baseline still includes legacy invisible targets; S2 separates them.
+      primaryPointTargets: chartInstantPoints.length,
+      primaryRegionTargets: visibleCompositeRegions.length,
+    },
     cache: loader.inspectViewport?.() ?? null,
     work: {...graphWorkCountsRef.current},
   });
 
   return (
     <>
-      <GraphSourceIsland locale={locale} />
+      {discovery?.contextHud ? <GraphContextHud locale={locale} topic={contextTopic} /> : <GraphSourceIsland locale={locale} />}
 
       <div className={styles.canvasFrame}>
           <div

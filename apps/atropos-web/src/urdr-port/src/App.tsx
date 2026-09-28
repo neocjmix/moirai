@@ -27,6 +27,7 @@ import {
 } from "./locale";
 
 type AppProps = {
+  discovery?: import("../../lib/collection-discovery-config").CollectionDiscoveryConfig;
   initialScreen?: AtroposScreenId;
   loader: GraphReadLoader;
   preserveWorkspaceOnLoaderChange?: boolean;
@@ -113,7 +114,7 @@ const SCREEN_ICONS = {
   settings: GearIcon,
 } as const;
 
-export function App({ initialScreen = "graph", loader, preserveWorkspaceOnLoaderChange = false, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
+export function App({ discovery, initialScreen = "graph", loader, preserveWorkspaceOnLoaderChange = false, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
@@ -132,6 +133,7 @@ export function App({ initialScreen = "graph", loader, preserveWorkspaceOnLoader
       <>{renderGraphPage({ workspace: graphWorkspace, locale, compositeHullMode, compositeSplineTuning })}</>
     ) : (
       <GraphShell
+        discovery={discovery}
         initialWorkspace={graphWorkspace}
         compositeHullMode={compositeHullMode}
         compositeSplineTuning={compositeSplineTuning}

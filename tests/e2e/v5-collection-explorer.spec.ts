@@ -5,7 +5,7 @@ import type { GraphShellViewportResponse } from "../../apps/atropos-web/src/urdr
 const world = "019f3b00-0000-7000-8000-000000000a01";
 const battle = "019f3b00-0000-7000-8000-000000000a12";
 const war = "019f3b00-0000-7000-8000-000000000a11";
-const graph = `/graph/v5?world=${world}`;
+const graph = `/graph/v5?world=${world}&discovery=legacy`;
 const node = (page: Page) => page.locator(`[data-event-point-id="${battle}"]`);
 
 test("partial v5 refreshes replace active geometry across 30 queries and a return", async ({

@@ -11,7 +11,10 @@ import {
 } from "../lib/moirai-graph-source-query";
 import type { AtroposScreenId } from "../lib/atropos-screen-registry";
 
+import type { CollectionDiscoveryConfig } from "../lib/collection-discovery-config";
+
 export interface V5AtroposBootstrap {
+  discovery?: CollectionDiscoveryConfig;
   worldId: string;
   revision: number;
   timeSystemId: string;
@@ -114,6 +117,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       : null;
   return (
     <App
+      {...(props.discovery ? { discovery: props.discovery } : {})}
       preserveWorkspaceOnLoaderChange
       initialScreen={props.screen ?? "graph"}
       initialDrawerStage={props.fullEvent ? "full" : "peek"}

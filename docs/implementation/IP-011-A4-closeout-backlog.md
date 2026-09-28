@@ -4,7 +4,7 @@
 
 ## 결정과 효력
 
-A4는 **사용자 승인으로 잔여 작업을 이관하여 종료(closed with deferred backlog)**한다. 원래 고정 성능 exit를 모두 통과한 완료가 아니다. 숫자 예산·fixture·assertion·실패 기록은 유지한다. A4를 재개하는 대신 아래 항목을 명시적으로 선택해 실행한다. A5의 선행 단계로서 A4 종료는 충족됐지만 A5 구현은 아직 비활성이다. A6/M5·대량 역사 입력도 자동 활성화하지 않는다.
+A4는 **사용자 승인으로 잔여 작업을 이관하여 종료(closed with deferred backlog)**한다. 원래 고정 성능 exit를 모두 통과한 완료가 아니다. 숫자 예산·fixture·assertion·실패 기록은 유지한다. A4를 재개하는 대신 아래 항목을 명시적으로 선택해 실행한다. A5의 선행 단계로서 A4 종료는 충족됐지만 A5 구현은 후속 2026-09-28 사용자 지시로 활성화됐다. A6/M5·대량 역사 입력도 자동 활성화하지 않는다.
 
 이 결정은 기존 IP-011/reader-performance-plan/TS-006의 “모든 gate 통과 전 A4 종료 불가”라는 실행 종료 조건을 명시적으로 대체한다. World/Event/Narrative 의미, A3 UI 보존, 읽기 무결성, 기존 수치 기준과 출시 품질 요구는 완화하지 않는다. 백로그가 열린 상태를 성능 검증 완료나 production release readiness로 표현하지 않는다.
 
@@ -27,8 +27,8 @@ A4는 **사용자 승인으로 잔여 작업을 이관하여 종료(closed with 
 | A4-B02 / open | P2; B01 profile이 병목을 확인할 때, A5 표현/공급 실험과 조율 | 현재 응답 안의 region 변환·parent/child closure 등 잔여 반복 작업 축소. 원형/선/부분 support를 보존해야 함. DOM 상한만으로 계산량 상한을 증명하지 않음 | 동일 Revision/화면/선택의 IDs·geometry·label·교차선·partial 의미 보존, 30구간 복귀 후 후보/계산량/퇴장 객체가 과거 방문량에 따라 누적되지 않음. 프로파일상 유효 병목이 아니면 측정 근거와 함께 불필요 판정 가능; frame 효과는 B01에서 별도 검증 |
 | A4-B03 / open | P2; 후속 성능 검증, 사용자 체감 해결 주장 전 | 실기기 장시간 체감과 메모리 증거 부족. CI iPhone 14 WebKit emulation 및 hybrid RAF 입력을 실제 iPhone과 동일시하지 않음 | 실제 touch 장시간 탐색·복귀·zoom/toggle의 단말/브라우저/시간 조건과 결과 기록. WebKit heap 측정 불가 시 한계를 유지하고 가능한 보조 관측을 구분. 다른 브라우저 heap이나 직렬화 bytes로 WebKit heap 통과를 주장하지 않음 |
 
-A5의 최신 순서는 [Graph 중심 Collection Discovery 계획](IP-011-A5-collection-discovery-plan.md)의 S0~S7이 소유한다. 이전 reader-performance-plan의 E1~E3는 대체됐고 tile/cluster는 조건부다. A5 planning만 활성이고 구현은 비활성이다. B01의 실패를 숨기는 수단으로 간주하지 않는다. A5 채택 시 이 기준선과 동일 fixture에서 표현 품질과 비용을 비교하고 열린 성능 항목의 disposition을 보고한다. A6/M5 실행·출시 판단 시에도 열린 항목을 명시적으로 재검토한다.
+A5의 최신 순서는 [Graph 중심 Collection Discovery 계획](IP-011-A5-collection-discovery-plan.md)의 S0~S7이 소유한다. 이전 reader-performance-plan의 E1~E3는 대체됐고 tile/cluster는 조건부다. A5 구현 활성이고 A6/M5는 비활성이다. B01의 실패를 숨기는 수단으로 간주하지 않는다. A5 채택 시 이 기준선과 동일 fixture에서 표현 품질과 비용을 비교하고 열린 성능 항목의 disposition을 보고한다. A6/M5 실행·출시 판단 시에도 열린 항목을 명시적으로 재검토한다.
 
 ## 정합성 및 이력 규칙
 
-CURRENT는 A4 종료와 A5 planning 활성·구현 비활성을 표시한다. IP-011은 단계 의존성과 종료 예외를, TS-006은 수치 요구와 이번 실행 종료의 차이를 표시한다. A4 handoff와 R1–R3는 종료 전 계획/측정 기준으로 보존한다. A1/A4 실행 로그의 당시 “미완료/미배포” 문장은 역사적 기록이며 최신 판정은 이 문서와 CURRENT를 따른다. 일반 CI·smoke 성공을 성능 suite 전체 성공으로 바꾸지 않는다.
+CURRENT는 A4 종료와 A5 구현 활성을 표시한다. IP-011은 단계 의존성과 종료 예외를, TS-006은 수치 요구와 이번 실행 종료의 차이를 표시한다. A4 handoff와 R1–R3는 종료 전 계획/측정 기준으로 보존한다. A1/A4 실행 로그의 당시 “미완료/미배포” 문장은 역사적 기록이며 최신 판정은 이 문서와 CURRENT를 따른다. 일반 CI·smoke 성공을 성능 suite 전체 성공으로 바꾸지 않는다.

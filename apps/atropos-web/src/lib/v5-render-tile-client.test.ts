@@ -189,6 +189,50 @@ describe("render tile working set", () => {
     );
   });
 
+  it("splits oversized asset responses without losing required tiles", async () => {
+    const sizes: number[] = [];
+    const fetcher = vi.fn(async (_url: string, init: RequestInit) => {
+      const body = JSON.parse(init.body as string) as {
+        kind: string;
+        assets?: { level: number; x: number; y: number }[];
+      };
+      if (body.kind === "manifest") return Response.json(manifest);
+      sizes.push(body.assets!.length);
+      if (body.assets!.length > 1)
+        return Response.json(
+          { error: "render_batch_too_large" },
+          { status: 413 }
+        );
+      return Response.json({
+        revision,
+        assets: body.assets!.map((ref) => {
+          const key = `${prefix}${ref.level}/${ref.x}/${ref.y}.json`;
+          return {
+            key,
+            sha256: "digest",
+            body: tiles[refs.findIndex((item) => item.key === key)]
+          };
+        })
+      });
+    });
+    const client = createV5RenderTileClient({
+      worldId: world,
+      revision,
+      timeSystemId,
+      fetcher: fetcher as typeof fetch
+    });
+    expect(
+      (await client.load(viewport(0, 3), 1, ["one", "two"])).primitives.map(
+        (item) => item.id
+      )
+    ).toEqual(["a", "b"]);
+    expect(sizes).toContain(3);
+    expect(sizes.filter((size) => size === 1)).toHaveLength(3);
+    const calls = sizes.length;
+    await client.load(viewport(0, 3), 1, ["one", "two"]);
+    expect(sizes).toHaveLength(calls);
+  });
+
   it("loads shared external polygon geometry once and enforces the working-set budget", async () => {
     const key = `${prefix}geometry/${"a".repeat(64)}.json`;
     const geom = {

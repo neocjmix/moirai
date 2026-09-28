@@ -135,15 +135,41 @@ async function processNextJob(): Promise<boolean> {
         job.worldId,
         job.targetRevision
       );
+      const renderEnabled =
+        process.env.LACHESIS_RENDER_PUBLICATION === "shadow";
+      let renderStart = 0;
       const { artifacts } = await buildV5WorldCompleteArtifacts(
         state,
         job.targetRevision,
-        undefined,
-        {
-          renderPublication:
-            process.env.LACHESIS_RENDER_PUBLICATION === "shadow"
-        }
+        (phase) => {
+          if (phase === "complete_finalized") renderStart = performance.now();
+        },
+        { renderPublication: renderEnabled }
       );
+      if (renderEnabled) {
+        const renderDocuments = artifacts.documents.filter(({ key }) =>
+          key.includes("/v5/render/")
+        );
+        process.stdout.write(
+          JSON.stringify({
+            level: "info",
+            service: "lachesis-worker",
+            operation: "render_publication_shadow",
+            world_id: job.worldId,
+            revision: job.targetRevision,
+            document_count: renderDocuments.length,
+            total_bytes: renderDocuments.reduce(
+              (sum, item) => sum + Buffer.byteLength(item.body),
+              0
+            ),
+            max_document_bytes: renderDocuments.reduce(
+              (max, item) => Math.max(max, Buffer.byteLength(item.body)),
+              0
+            ),
+            compile_ms: Math.round(performance.now() - renderStart)
+          }) + "\n"
+        );
+      }
       await assertActive();
       const pointer = await publishV5CompleteArtifacts(
         publicationStore,

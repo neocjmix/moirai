@@ -274,6 +274,32 @@ describe("render publication compiler", () => {
     });
   });
 
+  it("keeps relation selection exact when only one endpoint belongs to an active Collection", () => {
+    const selectedState = {
+      ...state,
+      eventCollectionMemberships: [
+        ...state.eventCollectionMemberships,
+        { event_id: "c", collection_id: "three" }
+      ]
+    } as CanonicalState;
+    const publication = compileV5RenderPublication(selectedState, layout);
+    const tiles = publication.documents.map(
+      (d) => JSON.parse(d.body) as RenderTile
+    );
+    const scene = (selection: string[]) =>
+      selectRenderScene(
+        publication,
+        tiles.filter((t) => t.level === 3),
+        publication.bounds!,
+        3,
+        selection
+      );
+    expect(scene(["one"]).some((p) => p.id === "relation:ac")).toBe(false);
+    expect(scene(["one", "three"]).some((p) => p.id === "relation:ac")).toBe(
+      true
+    );
+  });
+
   it("keeps nested convex support bounded to child hull vertices", () => {
     const depth = 250;
     const nested = {

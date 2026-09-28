@@ -64,8 +64,40 @@ export function createV5RenderTileClient(input: {
       signal: signal ?? null
     });
     if (response.status === 409) throw Error("render_revision_changed");
+    if (response.status === 413) throw Error("render_batch_too_large");
     if (!response.ok) throw Error("render_read_unavailable");
     return response.json() as Promise<unknown>;
+  };
+  const callAssets = async (
+    assets: readonly (
+      | { kind: "tile"; level: number; x: number; y: number }
+      | { kind: "geometry"; sha256: string }
+    )[],
+    signal?: AbortSignal
+  ): Promise<{ assets: Asset[]; revision: number }> => {
+    try {
+      return (await call({ kind: "assets", assets }, signal)) as {
+        assets: Asset[];
+        revision: number;
+      };
+    } catch (cause) {
+      if (
+        !(cause instanceof Error) ||
+        cause.message !== "render_batch_too_large" ||
+        assets.length <= 1 ||
+        signal?.aborted
+      )
+        throw cause;
+      const half = Math.floor(assets.length / 2);
+      const left = await callAssets(assets.slice(0, half), signal);
+      const right = await callAssets(assets.slice(half), signal);
+      if (left.revision !== right.revision)
+        throw Error("render_asset_batch_invalid", { cause });
+      return {
+        revision: left.revision,
+        assets: [...left.assets, ...right.assets]
+      };
+    }
   };
   const manifest = () =>
     (manifestPromise ??= call({ kind: "manifest" })
@@ -105,18 +137,15 @@ export function createV5RenderTileClient(input: {
     const needed = required.filter((ref) => !cache.has(ref.key));
     for (let offset = 0; offset < needed.length; offset += 16) {
       const batch = needed.slice(offset, offset + 16);
-      const response = (await call(
-        {
-          kind: "assets",
-          assets: batch.map((ref) => ({
-            kind: "tile",
-            level: ref.level,
-            x: ref.x,
-            y: ref.y
-          }))
-        },
+      const response = await callAssets(
+        batch.map((ref) => ({
+          kind: "tile" as const,
+          level: ref.level,
+          x: ref.x,
+          y: ref.y
+        })),
         signal
-      )) as { assets: Asset[]; revision: number };
+      );
       if (
         response.revision !== input.revision ||
         response.assets.length !== batch.length
@@ -176,18 +205,17 @@ export function createV5RenderTileClient(input: {
         )
       )
     ].filter((key) => !cache.has(key));
+    if (missing.some((key) => !geometryRefs.has(key)))
+      throw Error("render_geometry_unlisted");
     for (let offset = 0; offset < missing.length; offset += 16) {
       const batch = missing.slice(offset, offset + 16);
-      const response = (await call(
-        {
-          kind: "assets",
-          assets: batch.map((key) => ({
-            kind: "geometry",
-            sha256: geometryRefs.get(key)?.sha256
-          }))
-        },
+      const response = await callAssets(
+        batch.map((key) => ({
+          kind: "geometry" as const,
+          sha256: geometryRefs.get(key)!.sha256
+        })),
         signal
-      )) as { assets: Asset[]; revision: number };
+      );
       if (
         response.revision !== input.revision ||
         response.assets.length !== batch.length

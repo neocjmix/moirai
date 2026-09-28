@@ -23,6 +23,8 @@ World-level temporal constraints를 기준으로 projection하고 Collection 선
 
 같은 World/Event node를 하나로 합성한다. Collection container는 selection overlay, Composite container는 contains 근거의 region이다. 공통 renderer를 사용해도 provenance와 선택 행동은 구별한다. A3 이전 첫 Canon 좌표 선택 방식은 World Revision별 안정된 layout과 bounded detail로 전환했다. UI 복원은 과거 Canon별 사실 소유권 복원을 뜻하지 않는다. 실제 검증 범위는 CURRENT와 A3/A4 증거를 따른다.
 
+Atropos의 pin/수동 활성/자동 관련성은 정본 필드가 아닌 읽기 상태다. effective Collection selection과 Event의 semantic/geographic/suppressed 표현을 분리한다. label/geometry/interaction eligibility는 서로 구별하고, Collection 활성 변경은 World layout을 재계산하거나 camera를 자동 이동시키지 않는다. full-viewport·중복 ancestor 억제와 HUD semantic hand-off를 유지한다.
+
 ## TS-005.4 invalidation
 
 facts/time/contains 변경은 영향받는 dependency closure의 projection과 index를 무효화한다. membership 변경은 Collection selection/discovery index만, Narrative 변경은 내용/search만 재생성한다. global constraint 영향이 실제로 넓으면 worker에서 계산하며 요청 시 조용히 전체 World 계산으로 fallback하지 않는다. 완전한 새 manifest 이전에는 이전 served Revision을 유지한다.

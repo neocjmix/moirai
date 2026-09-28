@@ -1,8 +1,10 @@
 # IP-011 A4 종료와 A5 탐색 실험 재계획
 
-2026-09-28 KST. 사용자 요청에 따른 실행 범위 분리. 상위 계획은 [IP-011](IP-011-architecture-realignment.md), 현재 실행은 [CURRENT](CURRENT.md), 기존 성능 계약은 [TS-006](../technical-specifications/TS-006-atropos-publication.md)과 [A1 budget](../evidence/ip011/a1-execution.md)이다. A4는 이후 같은 날 사용자 승인으로 종료됐다. [종료 결정·백로그](IP-011-A4-closeout-backlog.md)가 미충족 항목을 소유한다. 아래 R1–R3는 원래 실행·측정 계획이며 자동 재개하지 않는다. A5-E1~E3는 다음 단계 계획으로 아직 비활성이다.
+2026-09-28 KST. 사용자 요청에 따른 실행 범위 분리. 상위 계획은 [IP-011](IP-011-architecture-realignment.md), 현재 실행은 [CURRENT](CURRENT.md), 기존 성능 계약은 [TS-006](../technical-specifications/TS-006-atropos-publication.md)과 [A1 budget](../evidence/ip011/a1-execution.md)이다. A4는 이후 같은 날 사용자 승인으로 종료됐다. [종료 결정·백로그](IP-011-A4-closeout-backlog.md)가 미충족 항목을 소유한다. 아래 R1–R3는 원래 실행·측정 계획이며 자동 재개하지 않는다. A5-E1~E3는 같은 날 후속 사용자 지시에 따라 [IP-011-A5-collection-discovery-plan.md](IP-011-A5-collection-discovery-plan.md)의 S0~S7로 대체됐다. A5 planning만 활성, 구현은 비활성이다.
 
 ## 1. 목표와 경계
+
+아래 A5 열과 표현은 이 문서 작성 당시 범위 분리 기록이다. 최신 A5 결정은 §4의 후속 계획이 우선하며 이 표만으로 tile/cluster를 필수 구현으로 해석하지 않는다.
 
 A4의 목표는 기존 화면·사건 의미를 유지하면서 오래 탐색해도 과거 방문량 때문에 현재 조작이 무거워지지 않게 하는 것이다. 원래는 고정 성능 gate 전체 통과를 종료 조건으로 삼았으나, 이번 사용자 결정으로 미충족을 백로그에 이관해 종료했다. 수치 기준은 유지한다. A5의 목표는 어느 배율에서도 읽을 수 있는 밀도와 Collection 탐색을 함께 설계·시험하는 것이다. A5는 A4 완료 후 별도 실험과 채택 판정을 거친다. A6는 A5 채택·통합 완료 이후이며 M5는 여전히 별도다.
 
@@ -50,30 +52,13 @@ A4를 통과시키려고 사건을 새 규칙으로 숨기거나 cluster로 대�
 
 원래 A4 성능 exit: R1/R2 correctness, R3와 기존 전체 gate, A3 UI/URL/선택/Collection 모두 OFF/공유 Event 회귀, CI/배포 SHA/smoke까지 충족. 성능 전체 통과는 미달이다. 사용자 승인으로 실행 단계만 종료하고 잔여는 A4-B01~03에 이관했다. A5 선행으로 A4 종료는 인정하되 A5 자체의 채택·검증과 열린 성능 항목 검토를 대체하지 않는다.
 
-## 4. A5 — 읽기 밀도와 Collection discovery의 제한된 실험
+## 4. A5 — 후속 사용자 결정으로 대체
 
-### A5-E1: 표현 계약과 네 장면
+A5의 현재 목표·표현·state·relevance·실험·exit는 [Graph 중심 Collection Discovery](IP-011-A5-collection-discovery-plan.md)가 소유한다. 이 문서 앞부분의 A4 기록과 수치 기준은 유지한다.
 
-멀리 보기 → 밀집 묶음 선택 → 확대해 개별 사건 읽기 → Collection 추가/제거의 네 장면을 먼저 설계한다. 빈 구간을 채우는 최소 밀도가 아니라 읽기 부담의 상한을 목표로 한다. 점·이름·선을 각각 관리한다. canonical Composite, Collection, 화면상 임시 cluster를 구분하며 cluster를 정본 Event로 저장하지 않는다. 숨긴 내용의 존재와 개별 사건에 도달하는 경로, 선택 유지, 부분/요약 표시를 명시한다.
+기존 E1(Composite/fade 대 cluster), E2(tile/level), E3(discovery 결합) 순서는 표현 capacity를 먼저 검증하는 S0~S7로 대체한다. Island는 feature flag로 보존/비활성화하고 World+dominant Composite HUD를 시험한다. Semantic/Geographic 밀도와 interaction을 분리하며 full-viewport suppression은 유지한다. Pinned 의도와 Contextual Active/Suggested 추론을 분리하고 Suggested만 graph에 참여하지 않는다. Contextual은 안정성·provenance 검증 후 graph에 참여한다.
 
-A안: 기존 Composite+단계적 label/fade. B안: A안에 임시 밀집 cluster를 추가. 우선 두 안으로 한정한다. 역사 중요도를 임의 도입하지 않으며 결정적 공간·화면 규칙부터 비교한다. 새 표시 의미는 BR-003/JRN-004/TS-006에 채택안을 반영한 뒤 운영 적용한다.
-
-### A5-E2: 고정 타일·레벨 prototype
-
-- Google의 공개 tile coordinate 모델과 MapLibre/Mapbox vector tile 원리를 참고한다. 제안은 Moirai 자체 설계이며 Google 내부 알고리즘의 재현 주장이 아니다.
-- 연속 display zoom과 불연속 data level을 구분한다. 독립 X/Y 확대에 대해 직사각형 두 축 레벨과 단일 레벨의 요청량을 비교한 뒤 채택한다. 모든 레벨 조합을 사전 생성하지 않는다.
-- 기존 spatial index를 bounded tile 생성 기반으로 활용한다. geometry/index 저장 계층은 display zoom level과 동일하지 않다. 고정 원점·경계·버전, empty/partial/page, filter identity를 계약화한다.
-- tile 경계 buffer, 사건 중복 제거, 선/영역 조각 보존, 반투명 중복 칠하기 방지, 화면 단위 label 배치를 검증한다. geometry 안정화 없이 현재 hull 재계산을 tile 안으로 옮기는 것으로 끝내지 않는다.
-- cache key는 World/Revision/좌표·배치·표현 버전/레벨/구역/응답에 영향을 주는 필터를 포함한다. 현재/주변/보관 tile을 분리하고 byte·decoded memory·동시 요청을 제한한다. 부모 대체는 요약/불완전임을 유지하며 잘못된 selection/Revision tile을 잠시라도 혼합하지 않는다.
-- 고밀도 최상위 tile은 자동으로 bounded가 되지 않는다. 상세 단계·continuation 정책과 전체 viewport 요청 budget이 필요하다. 수치 선택은 prototype 근거로 고정하고 tile당 예산만으로 화면 전체 비용을 통과 처리하지 않는다.
-
-### A5-E3: Collection discovery 통합과 채택 판정
-
-선택 Collection 합집합 → Event 중복 제거 → 밀도 정책 → 별도 Collection 후보 탐색 순서로 책임을 분리한다. 여러 Collection을 켜도 같은 Event를 복제하지 않고, 비선택 Collection 추천 때문에 그 사건을 그래프에 암묵적으로 추가하지 않는다. 기존 A5의 membership/temporal/adjacency candidate·설명·paging·empty/no-time·모바일 container gate를 유지한다.
-
-같은 fixture·단말에서 A4 기준선과 A/B를 비교한다. 사건 찾기/묶음 펼치기/선택 보존/Collection 추가 후 맥락 읽기, 겹침·깜빡임·발견 불가능한 내용, frame/bytes/memory를 함께 판단한다. 채택 기준의 수치·필수 시나리오는 실험 전에 기록하며 통과 run을 고른 뒤 기준을 정하지 않는다. 사용자가 읽기 경험을 확인할 수 있는 prototype과 채택/기각 근거를 제공한다. A4보다 숨겨서 빨라진 결과만으로 채택하지 않는다.
-
-A5 exit는 E1–E3 채택안의 계약 반영·통합·성능 및 기존 discovery gate 통과다. 기각한 cluster/tile 안은 명시적으로 보류하고, 대안이 목표를 충족했는지 기록한다. prototype만으로 A5 완료 또는 A6 활성화하지 않는다.
+고정 tile/다중 level·임시 cluster는 실측 필요가 있을 때의 조건부 수단이며 의무 구현 산출물이 아니다. canonical identity, bounded cost, Revision/partial/cache, A4 수치 budget은 유지한다. A5는 planning만 활성이고 구현·A6/M5는 비활성이다.
 
 ## 5. 참고
 

@@ -1,8 +1,8 @@
 # 현재 구현 상태
 
-**IP-011 A1–A3 완료; A4는 2026-09-28 사용자 승인으로 잔여 백로그를 이관하여 종료했다.** 원래 성능 exit 전체 통과를 뜻하지 않는다. 다음 단계는 A5이며 아직 비활성이다. A6/M5·대량 역사 입력도 비활성이다.
+**IP-011 A1–A3 완료; A4는 2026-09-28 사용자 승인으로 잔여 백로그를 이관하여 종료했다.** 원래 성능 exit 전체 통과를 뜻하지 않는다. A5는 현재 [authoritative planning](IP-011-A5-collection-discovery-plan.md)만 활성이고 구현은 비활성이다. 이번 문서 기준선은 main 반영 전이며 준비 세션에서 구현·merge·deployment를 하지 않는다. 다음 세션의 명시적 구현 시작 지시는 이 planning-only 제한을 대체하며 [A5 인계](IP-011-A5-handoff.md)에 따라 상태를 갱신한다. A6/M5·대량 역사 입력도 비활성이다.
 
-[종료 결정·후속 백로그](IP-011-A4-closeout-backlog.md)가 잔여 A4-B01(지속 frame), B02(region 계산), B03(실기기·메모리 증거)의 상태와 완료 조건을 소유한다. 기존 수치 기준·실패 기록·테스트는 유지한다. A5의 표현·tile·Collection discovery 실험은 [reader performance plan](IP-011-reader-performance-plan.md)을 따른다.
+[종료 결정·후속 백로그](IP-011-A4-closeout-backlog.md)가 잔여 A4-B01(지속 frame), B02(region 계산), B03(실기기·메모리 증거)의 상태와 완료 조건을 소유한다. 기존 수치 기준·실패 기록·테스트는 유지한다. A5는 [Graph 중심 발견·이중 밀도 계획](IP-011-A5-collection-discovery-plan.md)을 따른다. 표현 capacity를 먼저 검증하고 contextual activation을 도입하며 tile/cluster는 조건부 실험이다.
 
 종료 시 runtime main은 PR #235 `035cc069b00c0cc722c17f8b976b36c8738335ad`다. [main CI](https://github.com/neocjmix/moirai/actions/runs/36357907586)와 [배포 후 smoke](https://github.com/neocjmix/moirai/actions/runs/36358106084)가 성공했다. 최종 PR 후보 [scale](https://github.com/neocjmix/moirai/actions/runs/36357642646)는 기존 모바일 12개·worker 2개 성공, sustained 실패다. 30회 왕복에서 DOM 229·동일 복귀 geometry와 cache 상한은 유지됐으나 연속 frame p95 50/56/62ms는 33.4ms 예산을 넘었다. 성능 검증 완료로 보고하지 않는다.
 

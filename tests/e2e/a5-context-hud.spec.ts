@@ -69,7 +69,7 @@ test("A5 mobile escape, shared detail, all-off, camera restore and legacy flag",
   expect(errors).toEqual([]);
 });
 
-test("full-viewport suppression hands meaning to HUD; partial support does not claim a topic", async ({
+test("full, narrow and incomplete support all receive a ranked representative", async ({
   page
 }) => {
   let complete = true;
@@ -150,6 +150,8 @@ test("full-viewport suppression hands meaning to HUD; partial support does not c
   );
   complete = false;
   await page.setViewportSize({ width: 400, height: 844 });
-  await expect(page.getByTestId("graph-context-topic")).toHaveCount(0);
+  await expect(page.getByTestId("graph-context-topic")).toHaveText(
+    "고정된 맥락"
+  );
   await expect(page.getByTestId("graph-context-hud")).toBeVisible();
 });

@@ -42,6 +42,7 @@ test("mobile synthetic Render Publication tiles zoom and filter by Collection", 
     name: "Prepared World render tiles"
   });
   await expect(drawing.locator("circle").first()).toBeVisible();
+  await expect(drawing.locator("text").first()).toBeVisible();
   await page.getByRole("button", { name: "Zoom in" }).click();
   await expect(page.getByRole("status")).toContainText("Level");
   await page.getByText(/Collection 선택/).click();

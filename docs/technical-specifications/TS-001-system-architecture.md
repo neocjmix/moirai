@@ -63,6 +63,8 @@ flowchart TD
 
 ## TS-001.3 정본 소유권
 
+Render Publication migration 경계는 [IP-012](../implementation/IP-012-render-publication-plan.md)를 따른다. Projection Worker의 Lachesis Render Compiler가 World revision의 Composite hull, relation world geometry와 Level representation을 준비하고 immutable tile을 완전한 Publication에 포함한다. Atropos는 해당 revision의 타일을 선택하고 카메라 투영·최종 픽셀 충돌·입력만 처리한다. Event 본문과 탐색용 semantic query는 별도의 bounded 읽기로 유지한다. 현재 운영 GraphShell의 기존 semantic viewport 읽기는 cutover 전 경로이며 Render Publication preview의 존재를 cutover 완료로 보지 않는다.
+
 - Lachesis만 정본 상태를 변경할 수 있다.
 - 정본 상태의 물리적 저장소는 PostgreSQL이다.
 - 모든 쓰기는 Lachesis의 명령 계약과 하나의 데이터베이스 트랜잭션을 통과한다.

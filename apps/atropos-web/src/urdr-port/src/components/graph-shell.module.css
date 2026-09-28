@@ -2134,3 +2134,9 @@
     font-size: 12px;
   }
 }
+
+.chartInstantPointHitTarget:focus-visible,
+.chartCompositeRegionLabel:focus-visible {
+  outline: 2px solid currentColor;
+  outline-offset: 3px;
+}

@@ -36,7 +36,7 @@ try {
     const page = await context.newPage();
     const pageErrors: string[] = [];
     page.on("pageerror", (error) => pageErrors.push(error.message));
-    await page.goto("/graph/v5?world=" + worldId, {
+    await page.goto("/graph/v5?discovery=legacy&world=" + worldId, {
       waitUntil: "domcontentloaded"
     });
     await page

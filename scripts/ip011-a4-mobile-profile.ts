@@ -7,7 +7,7 @@ const baseURL =
   "https://moirai-production-8ed1.up.railway.app";
 const worldId =
   process.env.A4_WORLD_ID ?? "01995c2a-7b00-7000-8000-000000000101";
-const url = `/graph/v5?world=${worldId}`;
+const url = `/graph/v5?discovery=legacy&world=${worldId}`;
 const p95 = (values: number[]) =>
   values.length
     ? [...values].sort((a, b) => a - b)[Math.ceil(values.length * 0.95) - 1]!

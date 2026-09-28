@@ -181,4 +181,42 @@ describe("render publication compiler", () => {
       "render_tile_budget_exceeded"
     );
   });
+
+  it("keeps nested convex support bounded to child hull vertices", () => {
+    const depth = 250;
+    const nested = {
+      ...state,
+      events: [
+        ...state.events,
+        ...Array.from({ length: depth }, (_, i) => event(`nest-${i}`))
+      ],
+      relations: [
+        ...state.relations,
+        relation("root-nest", "contains", "outer", "nest-0"),
+        ...Array.from({ length: depth - 1 }, (_, i) =>
+          relation(`nest-link-${i}`, "contains", `nest-${i}`, `nest-${i + 1}`)
+        ),
+        relation("nest-leaf", "contains", `nest-${depth - 1}`, "a")
+      ]
+    } as unknown as CanonicalState;
+    const positioned = {
+      ...layout,
+      shapes: [
+        ...layout.shapes,
+        ...Array.from({ length: depth }, (_, i) => ({
+          event_id: `nest-${i}`,
+          kind: "region" as const,
+          bounds: { minX: 1, maxX: 1, minY: 1, maxY: 1 }
+        }))
+      ]
+    };
+    const publication = compileV5RenderPublication(nested, positioned);
+    expect(publication.tiles.length).toBeGreaterThan(0);
+    const hull = publication.documents
+      .flatMap(
+        (document) => (JSON.parse(document.body) as RenderTile).primitives
+      )
+      .find((primitive) => primitive.id === "event:outer:hull");
+    expect(hull?.bounds.maxX).toBe(100);
+  });
 });

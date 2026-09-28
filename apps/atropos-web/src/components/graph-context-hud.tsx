@@ -112,9 +112,6 @@ export function GraphContextHud({
                   <input
                     type="checkbox"
                     checked={selected.includes(item.id)}
-                    disabled={
-                      !selected.includes(item.id) && selected.length >= 8
-                    }
                     onChange={(event) =>
                       change(
                         event.target.checked
@@ -157,13 +154,6 @@ export function GraphContextHud({
               </p>
             ) : null}
           </div>
-          {selected.length >= 8 ? (
-            <p role="status">
-              {ko
-                ? "다른 컬렉션을 켜려면 활성 컬렉션을 하나 꺼 주세요."
-                : "Turn off an active collection to enable another."}
-            </p>
-          ) : null}
         </div>
       </dialog>
     </>

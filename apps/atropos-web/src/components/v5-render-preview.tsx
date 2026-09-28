@@ -19,16 +19,24 @@ export function RenderPreview({
   worldId,
   revision,
   timeSystemId,
-  collections
+  collections,
+  demo = false
 }: {
   worldId: string;
   revision: number;
   timeSystemId: string;
   collections: { id: string; title: string }[];
+  demo?: boolean;
 }) {
   const client = useMemo(
-    () => createV5RenderTileClient({ worldId, revision, timeSystemId }),
-    [worldId, revision, timeSystemId]
+    () =>
+      createV5RenderTileClient({
+        worldId,
+        revision,
+        timeSystemId,
+        ...(demo ? { endpoint: "/graph/v5/render-demo" } : {})
+      }),
+    [worldId, revision, timeSystemId, demo]
   );
   const surface = useRef<SVGSVGElement>(null);
   const dragging = useRef<{ x: number; y: number } | null>(null);
@@ -141,7 +149,7 @@ export function RenderPreview({
       }}
     >
       <h1 style={{ fontSize: 19, margin: "0 0 5px" }}>
-        Render Publication preview
+        Render Publication preview {demo ? "· synthetic fixture" : ""}
       </h1>
       <p style={{ fontSize: 12, margin: "0 0 12px" }}>
         World {worldId} · revision {revision} · {timeSystemId}
@@ -163,6 +171,9 @@ export function RenderPreview({
         <a href={`/graph/v5?world=${encodeURIComponent(worldId)}`}>
           기존 그래프 보기
         </a>
+        {!demo && (
+          <a href="/graph/v5/render-preview?demo=1">즉시 체험: 합성 World</a>
+        )}
       </nav>
       <svg
         ref={surface}

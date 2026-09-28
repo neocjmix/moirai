@@ -9,7 +9,8 @@ wrapped ChangePlan, contract versions 2/3/4, no policy lookup). Actual productio
 
 This repair follows TS-004 and CON-003. It does not activate A6/M5, change the
 ontology, migrate canonical content, or change A5 UI/corpus. Work is isolated on
-`fix/clotho-v5-contract-parity`; incorporate concurrent main before merge.
+`fix/clotho-v5-contract-parity`. Concurrent A5 changes through PR #244 were
+preserved when PR #242 merged as `90a000e502e245a631e465cfa18aad6a4beeffca`.
 
 ## Implementation
 
@@ -34,12 +35,47 @@ ontology, migrate canonical content, or change A5 UI/corpus. Work is isolated on
 
 ## Verification status
 
-Local strict TypeScript, architecture boundary and focused HTTP/MCP tests pass.
-Full unit run initially passed 420 tests with one old four-tool assertion failing;
-updated the assertion to the new thirteen-tool catalogue and focused rerun passed.
-PostgreSQL integration adds authorization/cursor checks and validate rollback →
-commit → exact replay checks. Local PostgreSQL is unavailable; CI must execute it.
-Final CI, merge, deployment and connected catalogue evidence follow below.
+- [PR #242](https://github.com/neocjmix/moirai/pull/242) merged without conflicts.
+  The implementation did not change A5 UI, corpus or its live test assertions.
+- [Final PR CI](https://github.com/neocjmix/moirai/actions/runs/36374189825)
+  passed on `2f3025cd315ab7b0219d8a2e4e96fde8ed0fc1dc`: 426 unit tests
+  passed (2 skipped), 45 PostgreSQL integration tests passed, mobile regression,
+  strict typecheck, boundaries, production build and security gates passed.
+  Earlier failures identified a Fastify test payload type, missing World time
+  systems and cross-test fixture pollution; all were fixed before merge.
+- [Merged main CI](https://github.com/neocjmix/moirai/actions/runs/36374619650)
+  passed on `90a000e502e245a631e465cfa18aad6a4beeffca`.
+- Railway API, worker and web deployments all succeeded on that exact SHA.
+  API `/health/ready` returned that SHA with `status: ok`.
+- Production MCP discovery returned all 13 methods, each with
+  `contract_version: { const: 5 }`.
+- Refreshed the existing Moirai Live app catalogue using **Refresh tools**;
+  retained its OAuth connection. The app detail UI now displays **Write 1 / Read
+  12**, including `authoring_policy_get`, `collection_list`, `collection_get`
+  and rollback-only `change_validate`. App description now states the v5
+  World/Collection and policy-first authoring model.
+- Actual authenticated connected `world_list` and `world_get` both succeeded
+  after previously returning `unknown_tool`. World current/target/served were
+  all **56**; World.get returned the Gregorian Time System definition.
+- This conversation's originally loaded tool declaration text still describes
+  the old schema. The refreshed app UI catalogue and successful runtime calls
+  are separate evidence; a newly loaded conversation is needed to acquire the
+  new declaration set, including the newly added policy tool.
+
+## Post-deployment smoke
+
+The deployed repair's [smoke run](https://github.com/neocjmix/moirai/actions/runs/36374810648)
+passed public readiness but failed in the live mobile step, so its subsequent
+authenticated Clotho check was skipped. The prior A5 deployment's
+[smoke run](https://github.com/neocjmix/moirai/actions/runs/36374450335)
+failed at `tests/live/ip011-a3.spec.ts:126`: the viewport continuation remained
+non-null after 32 pages. It occurred before this repair was deployed and skipped
+its later authenticated Clotho step. Do not report that live mobile gate as passed.
+
+The follow-up workflow change runs the Clotho build whenever readiness succeeded
+and the run was not cancelled, then runs authentication smoke only when that
+build succeeded. Mobile failures still fail the overall job; they no longer hide
+Clotho results. No assertions or authorization checks were relaxed.
 
 ## Operational limits
 

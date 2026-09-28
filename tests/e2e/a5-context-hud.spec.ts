@@ -73,6 +73,7 @@ test("full-viewport suppression hands meaning to HUD; partial support does not c
   page
 }) => {
   let complete = true;
+  let linear = false;
   await page.route("**/graph/v5/shell", async (route) => {
     const request = route.request().postDataJSON();
     if (request.kind !== "viewport") return route.continue();
@@ -80,12 +81,21 @@ test("full-viewport suppression hands meaning to HUD; partial support does not c
     const box = request.viewport.bbox;
     const dx = box.maxX - box.minX;
     const dy = box.maxY - box.minY;
-    const positions = [
-      { x: box.minX - dx, y: box.minY - dy },
-      { x: box.maxX + dx, y: box.minY - dy },
-      { x: box.maxX + dx, y: box.maxY + dy },
-      { x: box.minX - dx, y: box.maxY + dy }
-    ];
+    const cx = (box.minX + box.maxX) / 2;
+    const cy = (box.minY + box.maxY) / 2;
+    const positions = linear
+      ? [
+          { x: cx - dx * 0.002, y: cy - dy * 0.08 },
+          { x: cx + dx * 0.002, y: cy - dy * 0.08 },
+          { x: cx + dx * 0.002, y: cy + dy * 0.08 },
+          { x: cx - dx * 0.002, y: cy + dy * 0.08 }
+        ]
+      : [
+          { x: box.minX - dx, y: box.minY - dy },
+          { x: box.maxX + dx, y: box.minY - dy },
+          { x: box.maxX + dx, y: box.maxY + dy },
+          { x: box.minX - dx, y: box.maxY + dy }
+        ];
     const base = {
       canonId: world,
       validationState: "ok",
@@ -132,6 +142,12 @@ test("full-viewport suppression hands meaning to HUD; partial support does not c
     "고정된 맥락"
   );
   await expect(page.locator(`[data-region-id="${war}"]`)).toHaveCount(0);
+  linear = true;
+  await page.setViewportSize({ width: 410, height: 844 });
+  await expect(page.locator(`[data-region-id="${war}"]`)).not.toHaveCount(0);
+  await expect(page.getByTestId("graph-context-topic")).toHaveText(
+    "고정된 맥락"
+  );
   complete = false;
   await page.setViewportSize({ width: 400, height: 844 });
   await expect(page.getByTestId("graph-context-topic")).toHaveCount(0);

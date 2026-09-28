@@ -2978,11 +2978,12 @@ export function GraphShell({
   const contextCandidates = useMemo(() => discovery?.contextHud ? chartCompositeRegions.regions.map(region => ({
     id: region.id, label: region.label, contains: region.contains,
     coverage: region.contextCoverage, centerInside: region.contextCenterInside,
+    visible: regionIntersectsViewport(region.projectedPoints, viewportSize),
     supportComplete: region.supportComplete === true,
-  })) : [], [discovery?.contextHud, chartCompositeRegions.regions]);
+  })) : [], [discovery?.contextHud, chartCompositeRegions.regions, viewportSize]);
   const proposedContext = useMemo(() => selectGraphContext(contextCandidates, contextTopicId), [contextCandidates, contextTopicId]);
   const proposedContextId = proposedContext?.id ?? null;
-  const immediateContext = proposedContext !== null && proposedContext.coverage >= 1 - 1e-6;
+  const immediateContext = contextTopicId === null && proposedContext !== null;
   useEffect(() => {
     if (proposedContextId === contextTopicId) return;
     if (immediateContext) { setContextTopicId(proposedContextId); return; }
@@ -2991,7 +2992,7 @@ export function GraphShell({
   }, [proposedContextId, contextTopicId, immediateContext]);
   // Never keep a stale/partial topic after its qualification disappears.
   const contextTopic = immediateContext ? proposedContext : proposedContextId === contextTopicId ? proposedContext :
-    contextCandidates.find(candidate => candidate.id === contextTopicId && candidate.supportComplete && candidate.centerInside && candidate.coverage >= 0.30) ?? null;
+    contextCandidates.find(candidate => candidate.id === contextTopicId && candidate.supportComplete && candidate.visible) ?? null;
 
   const farZoomElisionState = useMemo(() => {
     const zoomBucket = getEditorialZoomBucket(view.scaleY);

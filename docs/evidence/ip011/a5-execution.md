@@ -1,5 +1,13 @@
 # IP-011 A5 execution
 
+## S1 feedback checkpoint — independent title and operational corpus
+
+User feedback 2026-09-28 11:45 KST authorizes synthetic content directly in the existing development World, superseding the A5 read-only restriction for this corpus only. No schema migration/reset is performed. Corpus v1 adds 24 Collections, 552 Events (72 derived Composites), 576 Narratives and 1,008 Relations in 24 atomic batches. Fixed IDs, World-scoped duplicate search, policy identity check, candidate-state validation and readback prevent accidental duplication. New content is explicitly labeled A5 synthetic. Existing historical records are not deleted. The checked-in workflow uses the existing Clotho secret only for the normal v5 API boundary; no credential extraction or permission expansion.
+
+HUD policy `a5-s1-v2` no longer gates on filled area, center containment or fade. Complete, visible candidates qualify; a sole most-specific candidate wins, otherwise a unique central candidate wins, otherwise a still-visible prior topic is retained, with World-only fallback for fresh ambiguity. First acquisition is immediate and subsequent change dwell remains 250ms. Graph paint/suppression and camera remain unchanged. A mobile fixture now switches full-cover to narrow geometry and checks the title remains while the shape is painted.
+
+The existing first-page default selected every Collection despite the maximum-eight query contract. With this corpus that would cause invalid requests; default bootstrap is bounded to eight without claiming S3 capacity. Explicit selection and catalog remain available. Deployment, corpus Revision and CI results will be recorded after execution.
+
 ## S0 registration — 2026-09-28, before implementation measurements
 
 - Latest main and production web/API/worker: `8937cb4142215b439d4430e61b9db1ae15f218c8`. Planning #237 head `1cf9745bd278a31cc51ed43d0b10bcc91a902ed9`, CI 36368885368 succeeded; reviewed Markdown-only change, diff check, merged as `55cae82717af34d09683d04e4bd0a7df46c68aef`.

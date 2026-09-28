@@ -7,6 +7,8 @@ layer: technical-specifications
 
 # TS-006 — Publication과 확장 가능한 탐색 읽기
 
+2026-09-28 A5 HUD 정정: 대표 Composite 제목은 paint fade/면적 threshold와 독립적으로 선정한다. 화면의 단독 선형·작은 Composite도 후보이며 graph label과 HUD의 동시 표시는 허용한다. 현재 보이는 후보의 contains specificity·중심 맥락·직전 주제 안정성을 사용하고, 도형의 기존 full-viewport/ancestor suppression은 변경하지 않는다.
+
 ## TS-006.1 경계와 현재 상태
 
 Atropos는 공개 allowlist Publication만 읽고 canonical DB/private provenance에 접근하지 않는다. Worker는 World Revision으로부터 immutable artifacts를 만들고 digest를 검증한 완전한 manifest의 served pointer를 원자적으로 교체한다. 늦게 끝난 worker가 pointer를 역행시키지 못한다. current/target/served 차이는 노출한다.

@@ -13,6 +13,7 @@ const candidate = (
   id,
   label: id,
   coverage: 1,
+  visible: true,
   centerInside: true,
   supportComplete: true,
   contains: [],
@@ -34,13 +35,9 @@ describe("A5 registered context fixtures", () => {
       true
     );
   });
-  it("hands off a full viewport and rejects partial, off-center or tiny geometry", () => {
+  it("hands off a full viewport and rejects incomplete or offscreen geometry", () => {
     expect(selectGraphContext([candidate("full")])?.id).toBe("full");
-    for (const changes of [
-      { supportComplete: false },
-      { centerInside: false },
-      { coverage: 0.2 }
-    ])
+    for (const changes of [{ supportComplete: false }, { visible: false }])
       expect(selectGraphContext([candidate("x", changes)])).toBeNull();
     expect(selectGraphContext([])).toBeNull();
   });
@@ -54,19 +51,30 @@ describe("A5 registered context fixtures", () => {
       expect(selectGraphContext(values.reverse())?.id).toBe(String(count - 1));
     }
   );
-  it("does not invent a winner for unrelated overlap, even with a prior topic", () => {
+  it("does not invent a winner for unrelated overlap and retains a valid prior topic", () => {
+    expect(selectGraphContext([candidate("a"), candidate("b")])).toBeNull();
+    expect(selectGraphContext([candidate("a"), candidate("b")], "a")?.id).toBe(
+      "a"
+    );
+  });
+  it("selects a lone linear or tiny visible Composite regardless of area or center", () => {
+    for (const coverage of [0, 0.001, 0.2, 0.32, 1])
+      expect(
+        selectGraphContext([
+          candidate("line", { coverage, centerInside: false })
+        ])?.id
+      ).toBe("line");
     expect(
-      selectGraphContext([candidate("a"), candidate("b")], "a")
+      selectGraphContext([candidate("line", { visible: false })], "line")
     ).toBeNull();
   });
-  it("retains an established context across small coverage jitter", () => {
-    expect(selectGraphContext([candidate("a", { coverage: 0.32 })])).toBeNull();
-    expect(
-      selectGraphContext([candidate("a", { coverage: 0.32 })], "a")?.id
-    ).toBe("a");
-    expect(
-      selectGraphContext([candidate("a", { coverage: 0.29 })], "a")
-    ).toBeNull();
+  it("prefers the unique central topic when unrelated candidates compete", () => {
+    const values = [
+      candidate("edge", { centerInside: false }),
+      candidate("center")
+    ];
+    expect(selectGraphContext(values)?.id).toBe("center");
+    expect(selectGraphContext(values.reverse())?.id).toBe("center");
   });
   it("uses polygon containment rather than a bounding box", () => {
     expect(

@@ -13,6 +13,8 @@ layer: implementation-plan
 
 ## 1. 실제 기준선과 조사 한계
 
+2026-09-28 11:45 KST 사용자 피드백이 아래 초기 실험 결정을 대체한다. HUD는 fade/면적과 독립적으로 현재 보이는 Composite 맥락을 선정한다. 선형·작은 Composite도 단독 후보면 제목으로 표시하며 graph label과 HUD 동시 표시를 허용한다. suppression 자체는 유지한다. 운영 데이터 부족을 해결하기 위해 현재 개발 World에 합성 데이터를 직접 추가·수정하는 것이 명시 승인됐다. 별도 World 격리나 read-only 제한은 이 A5 합성 corpus 작업에 적용하지 않는다. 출시 reset은 향후 별도 작업이며 지금 일괄 삭제하지 않는다. A6/M5·schema migration·새 유료 서비스는 계속 비활성이다.
+
 - `git fetch origin` 후 origin/main과 로컬 HEAD는 위 SHA로 일치했다. 공개 Atropos `/health`도 같은 SHA와 `status:ok`를 반환했다. 운영 브라우저 UX·DB inventory를 이번에 다시 시험했다는 뜻은 아니다.
 - A4는 사용자 승인으로 잔여를 이관하여 종료했다. PR #235의 코드 기준은 `035cc069b00c0cc722c17f8b976b36c8738335ad`; #236은 종료 문서다.
 - A4 최종 증거: 기존 모바일 12 case 및 worker 2 case 성공. 30회 왕복 sustained 시작/중간/복귀 frame p95 50/56/62ms, max 100/84/92ms로 p95 ≤33.4ms 미달. 동일 복귀 IDs/geometry·DOM 229·cache 8항목/700360 serialized bytes는 보존. heap 증거와 혼동하지 않는다.

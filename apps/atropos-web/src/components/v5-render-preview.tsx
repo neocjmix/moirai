@@ -251,6 +251,16 @@ export function RenderPreview({
                       }
                     />
                     <title>{primitive.label}</title>
+                    {demo && primitive.entity.kind === "event" && (
+                      <text
+                        x={xy(g.xy).x + 8}
+                        y={xy(g.xy).y - 8}
+                        fontSize="12"
+                        fill="#222"
+                      >
+                        {primitive.label}
+                      </text>
+                    )}
                   </>
                 )}
               </g>

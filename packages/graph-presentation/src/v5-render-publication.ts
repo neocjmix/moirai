@@ -13,7 +13,8 @@ export type RenderPrimitive = Readonly<{
   geometry:
     | Readonly<{ kind: "point"; xy: Point }>
     | Readonly<{ kind: "line"; paths: readonly (readonly Point[])[] }>
-    | Readonly<{ kind: "polygon"; rings: readonly (readonly Point[])[] }>;
+    | Readonly<{ kind: "polygon"; rings: readonly (readonly Point[])[] }>
+    | Readonly<{ kind: "external"; key: string; sha256: string }>;
   bounds: Box;
   label: string;
   collectionIds: readonly string[];
@@ -53,7 +54,41 @@ export type RenderPublication = Readonly<{
     y: number;
   }>[];
   documents: readonly Readonly<{ key: string; body: string }>[];
+  geometry: readonly Readonly<{ key: string; sha256: string; bounds: Box }>[];
+  geometryDocuments: readonly Readonly<{ key: string; body: string }>[];
 }>;
+
+/** Geometry remains world-space and revision-pinned; missing/tampered refs fail closed. */
+export function resolveRenderGeometry(
+  publication: RenderPublication,
+  primitive: RenderPrimitive,
+  body: string
+): Exclude<RenderPrimitive["geometry"], { kind: "external" }> {
+  if (primitive.geometry.kind !== "external") return primitive.geometry;
+  const external = primitive.geometry;
+  const ref = publication.geometry.find((item) => item.key === external.key);
+  if (
+    !ref ||
+    ref.sha256 !== primitive.geometry.sha256 ||
+    digest(body) !== ref.sha256 ||
+    JSON.stringify(ref.bounds) !== JSON.stringify(primitive.bounds)
+  )
+    throw Error("render_geometry_digest_invalid");
+  const document = JSON.parse(body) as {
+    worldId: string;
+    revision: number;
+    timeSystemId: string;
+    geometry: RenderPrimitive["geometry"];
+  };
+  if (
+    document.worldId !== publication.worldId ||
+    document.revision !== publication.revision ||
+    document.timeSystemId !== publication.timeSystemId ||
+    document.geometry.kind === "external"
+  )
+    throw Error("render_geometry_revision_invalid");
+  return document.geometry;
+}
 
 /** A tile's replica is identified by representation ID, never by tile address. */
 export function selectRenderScene(
@@ -334,7 +369,9 @@ export function compileV5RenderPublication(
       maxLevel: 0,
       bounds: null,
       tiles: [],
-      documents: []
+      documents: [],
+      geometry: [],
+      geometryDocuments: []
     };
   const world = boundsOf(
     primitives.flatMap((p) => [
@@ -344,6 +381,37 @@ export function compileV5RenderPublication(
   );
   const width = Math.max(world.maxX - world.minX, 1),
     height = Math.max(world.maxY - world.minY, 1);
+  const prefix = `worlds/${layout.world_id}/revisions/${layout.revision}/v5/render/${layout.time_system_id}`;
+  const geometryDocuments = new Map<string, string>();
+  const geometry = new Map<
+    string,
+    { key: string; sha256: string; bounds: Box }
+  >();
+  const renderPrimitives = primitives.map((primitive): RenderPrimitive => {
+    if (primitive.geometry.kind !== "polygon") return primitive;
+    const vertexCount = primitive.geometry.rings.reduce(
+      (count, ring) => count + ring.length,
+      0
+    );
+    const spansManyTiles =
+      (primitive.bounds.maxX - primitive.bounds.minX) / width > 0.25 ||
+      (primitive.bounds.maxY - primitive.bounds.minY) / height > 0.25;
+    if (vertexCount <= 32 && !spansManyTiles) return primitive;
+    const body = JSON.stringify({
+      format: "render-geometry/1",
+      worldId: layout.world_id,
+      revision: layout.revision,
+      timeSystemId: layout.time_system_id,
+      geometry: primitive.geometry
+    });
+    const sha256 = digest(body);
+    const key = `${prefix}/geometry/${sha256}.json`;
+    if (Buffer.byteLength(body) > 1024 * 1024)
+      throw Error("render_geometry_budget_exceeded");
+    geometryDocuments.set(key, body);
+    geometry.set(key, { key, sha256, bounds: primitive.bounds });
+    return { ...primitive, geometry: { kind: "external", key, sha256 } };
+  });
   const tiles: RenderTile[] = [];
   let maxLevel = 0;
   // A coarse tile is represented by one aggregate per exact membership set.
@@ -360,7 +428,7 @@ export function compileV5RenderPublication(
           minY: world.minY + (y * height) / count,
           maxY: world.minY + ((y + 1) * height) / count
         };
-        const entries = primitives.filter(
+        const entries = renderPrimitives.filter(
           (p) =>
             p.lod.visible[0] <= level &&
             p.lod.visible[1] >= level &&
@@ -446,7 +514,6 @@ export function compileV5RenderPublication(
     if (clustered && level === 5) throw Error("render_level_capacity_exceeded");
     if (!clustered && level >= 3) break;
   }
-  const prefix = `worlds/${layout.world_id}/revisions/${layout.revision}/v5/render/${layout.time_system_id}`;
   const documents = tiles.map((tile) => ({
     key: `${prefix}/${tile.level}/${tile.x}/${tile.y}.json`,
     body: JSON.stringify(tile)
@@ -473,6 +540,11 @@ export function compileV5RenderPublication(
       x: tiles[i]!.x,
       y: tiles[i]!.y
     })),
-    documents
+    documents,
+    geometry: [...geometry.values()],
+    geometryDocuments: [...geometryDocuments].map(([key, body]) => ({
+      key,
+      body
+    }))
   };
 }

@@ -396,7 +396,17 @@ export async function readV5SelectedViewport(
       Awaited<ReturnType<typeof readV5AuthenticatedViewport>>["shapes"][number]
     >();
     let spatialCursor: V5ViewportCursor | null = null;
-    let objectReads = 0;
+    // Immutable keys are shared only within this exact World/revision query.
+    // Each inner batch still enforces its own work bound; the outer count
+    // measures actual store calls rather than repeated cache lookups.
+    const sharedObjects = new Map<string, Promise<string | null>>();
+    const sharedGet = (key: string) => {
+      const cached = sharedObjects.get(key);
+      if (cached) return cached;
+      const pending = get(key);
+      sharedObjects.set(key, pending);
+      return pending;
+    };
     for (let offset = 0; offset < collectionIds.length; offset += 8) {
       const batch = collectionIds.slice(offset, offset + 8);
       const batchDigest = createHash("sha256")
@@ -412,7 +422,7 @@ export async function readV5SelectedViewport(
         cursor
           ? { selection_digest: batchDigest, spatial: cursor.spatial }
           : null,
-        get,
+        sharedGet,
         8
       );
       for (const shape of result.shapes) shapes.set(shape.event_id, shape);
@@ -423,14 +433,13 @@ export async function readV5SelectedViewport(
       )
         throw Error("v5_viewport_batch_cursor_mismatch");
       spatialCursor = result.next_cursor?.spatial ?? null;
-      objectReads += result.object_reads;
     }
     return {
       shapes: [...shapes.values()],
       next_cursor: spatialCursor
         ? { selection_digest: digest, spatial: spatialCursor }
         : null,
-      object_reads: objectReads
+      object_reads: sharedObjects.size
     };
   }
   const perLookup = root.index_depth + 1;

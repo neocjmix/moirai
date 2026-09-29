@@ -3888,7 +3888,7 @@ export function GraphShell({
                     view={view}
                     width={viewportSize.width}
                     height={viewportSize.height}
-                    collectionIds={[...effectiveEnabledCanonIds]}
+                    collectionIds={loader.renderTiles.collectionIds}
                     gestureActive={navigationPointerCount > 0}
                     onPointerTarget={(id, label, event) => handleEventDrawerTargetPointerDown({ eventId: id, label }, event)}
                     onKeyboardTarget={(id, label, event) => handleSemanticKeyDown({ eventId: id, label }, event)}

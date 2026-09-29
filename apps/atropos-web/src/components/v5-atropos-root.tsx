@@ -107,7 +107,8 @@ function V5GraphApp(props: V5AtroposBootstrap) {
               renderTiles: {
                 worldId: props.worldId,
                 revision: props.revision,
-                timeSystemId: props.timeSystemId
+                timeSystemId: props.timeSystemId,
+                collectionIds: JSON.parse(selection).collections
               }
             }
           : {})

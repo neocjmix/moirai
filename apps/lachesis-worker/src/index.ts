@@ -135,6 +135,46 @@ async function processNextJob(): Promise<boolean> {
       : null;
   try {
     if (publicationMode === "v5") {
+      // A newer complete Publication already contains this older revision.
+      // Draining a delayed/reclaimed outbox row must not rebuild it or try to
+      // move the canonical pointer backwards. Validate the served root first.
+      const servedBefore = await readV5ServedRoot(
+        publicationStore,
+        job.worldId
+      ).catch((cause: unknown) => {
+        if (
+          cause instanceof Error &&
+          cause.message === "v5_publication_pointer_unavailable"
+        )
+          return null;
+        throw cause;
+      });
+      if (
+        servedBefore &&
+        servedBefore.pointer.served_revision >= job.targetRevision
+      ) {
+        await assertActive();
+        if (
+          !(await completePublicationJob(
+            database,
+            job,
+            servedBefore.pointer.served_revision
+          ))
+        )
+          throw Error("publication_job_lease_lost");
+        process.stdout.write(
+          JSON.stringify({
+            level: "info",
+            service: "lachesis-worker",
+            operation: "publication_v5",
+            world_id: job.worldId,
+            revision: job.targetRevision,
+            served_revision: servedBefore.pointer.served_revision,
+            result_code: "already_served"
+          }) + "\n"
+        );
+        return true;
+      }
       const state = await readV5WorldAtRevision(
         database,
         job.worldId,

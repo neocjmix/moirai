@@ -648,6 +648,24 @@ describeWithDatabase("Milestone 1 Change Set transaction", () => {
     });
   });
 
+  it("drains an older completed outbox claim without regressing the served revision", async () => {
+    const input = createTestChangeSet();
+    await commitCreateChangeSet(db, input);
+    await commitCreateChangeSet(db, createTestExpansionChangeSet());
+    const older = (await claimPublicationJob(db))!;
+    const newer = (await claimPublicationJob(db))!;
+    expect([older.targetRevision, newer.targetRevision]).toEqual([1, 2]);
+    expect(await completePublicationJob(db, newer, 2)).toBe(true);
+    expect(await completePublicationJob(db, older, 2)).toBe(true);
+    expect(await claimPublicationJob(db)).toBeNull();
+    await expect(
+      getPublicationStatus(db, input.world_id)
+    ).resolves.toMatchObject({
+      servedRevision: 2,
+      projectionStatus: "ready"
+    });
+  });
+
   it("fences stale completion and retry after an expired worker claim", async () => {
     const input = createTestChangeSet();
     await commitCreateChangeSet(db, input);

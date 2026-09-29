@@ -15,7 +15,12 @@ export function createV5GraphReadLoader(input: {
   workspace: GraphShellWorkspaceShell;
   collectionIds: string[];
   relationTypes: string[];
-  renderTiles?: { worldId: string; revision: number; timeSystemId: string };
+  renderTiles?: {
+    worldId: string;
+    revision: number;
+    timeSystemId: string;
+    collectionIds: readonly string[];
+  };
   readPage?: number | undefined;
   fetcher?: typeof fetch;
 }): GraphReadLoader {

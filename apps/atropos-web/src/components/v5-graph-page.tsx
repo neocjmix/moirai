@@ -65,23 +65,28 @@ export default async function V5GraphPage({
       ? await reader.spatialSummary(timeSystemId)
       : null;
     if (!timeSystemId) notFound();
-    const renderEnabled = await readV5RenderGeneration(store, worldId)
-      .then(
-        (generation) =>
-          generation.revision === pointer.served_revision &&
-          generation.manifests.some(
-            (item) => item.timeSystemId === timeSystemId
-          )
-      )
-      .catch((cause: unknown) => {
-        if (
-          cause instanceof Error &&
-          (cause.message === "render_generation_unavailable" ||
-            cause.message === "render_generation_source_changed")
+    // Preserve GraphShell's established visual and interaction behavior by
+    // default while the tile scene is being brought to visual parity.
+    // An explicit URL opt-in keeps the deployed tile path observable.
+    const renderEnabled =
+      params.renderTiles === "1" &&
+      (await readV5RenderGeneration(store, worldId)
+        .then(
+          (generation) =>
+            generation.revision === pointer.served_revision &&
+            generation.manifests.some(
+              (item) => item.timeSystemId === timeSystemId
+            )
         )
-          return false;
-        throw cause;
-      });
+        .catch((cause: unknown) => {
+          if (
+            cause instanceof Error &&
+            (cause.message === "render_generation_unavailable" ||
+              cause.message === "render_generation_source_changed")
+          )
+            return false;
+          throw cause;
+        }));
     const systemBody = await readV5StagedDocument(
       rootBody,
       `worlds/${worldId}/revisions/${pointer.served_revision}/v5/content/time-systems/${timeSystemId}.json`,

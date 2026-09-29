@@ -65,20 +65,23 @@ export default async function V5GraphPage({
       ? await reader.spatialSummary(timeSystemId)
       : null;
     if (!timeSystemId) notFound();
-    // Preserve GraphShell's established visual and interaction behavior by
-    // default while the tile scene is being brought to visual parity.
-    // An explicit URL opt-in keeps the deployed tile path observable.
-    const wantsRender = params.renderTiles === "1" || params.tileData === "1";
+    // Use the preserved GraphShell painter with revision-pinned tiles when
+    // the generation carries authored Composite metadata. Older generations
+    // and absent sidecars stay on the semantic reader; tileData=0 is a
+    // per-request rollback without changing the served publication.
     const renderAvailable =
-      wantsRender &&
+      params.tileData !== "0" &&
       (await readV5RenderGeneration(store, worldId)
-        .then(
-          (generation) =>
-            generation.revision === pointer.served_revision &&
-            generation.manifests.some(
-              (item) => item.timeSystemId === timeSystemId
-            )
-        )
+        .then(async (generation) => {
+          if (generation.revision !== pointer.served_revision) return false;
+          const manifest = generation.manifests.find(
+            (item) => item.timeSystemId === timeSystemId
+          );
+          if (!manifest) return false;
+          const body = await generation.read(manifest.key, manifest.sha256);
+          return (JSON.parse(body) as { algorithmVersion?: string })
+            .algorithmVersion === "render-compiler/3";
+        })
         .catch((cause: unknown) => {
           if (
             cause instanceof Error &&
@@ -89,8 +92,7 @@ export default async function V5GraphPage({
           throw cause;
         }));
     const renderEnabled = params.renderTiles === "1" && renderAvailable;
-    const tileDataEnabled =
-      params.tileData === "1" && renderAvailable && !renderEnabled;
+    const tileDataEnabled = renderAvailable && !renderEnabled;
     const systemBody = await readV5StagedDocument(
       rootBody,
       `worlds/${worldId}/revisions/${pointer.served_revision}/v5/content/time-systems/${timeSystemId}.json`,

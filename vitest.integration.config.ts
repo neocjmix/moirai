@@ -4,6 +4,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@moirai/graph-presentation/server": fileURLToPath(
+        new URL(
+          "./packages/graph-presentation/src/artifacts.ts",
+          import.meta.url
+        )
+      ),
       "@moirai/domain/v5-operations": fileURLToPath(
         new URL("./packages/domain/src/v5-operations.ts", import.meta.url)
       ),

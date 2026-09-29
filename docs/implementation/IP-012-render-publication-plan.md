@@ -64,6 +64,35 @@ flowchart TD
 
 ## Target and ownership
 
+### 2026-09-29 GraphShell-preserving migration decision
+
+The first tile-only SVG cutover removed authored Composite surfaces, color,
+child fades, edge labels and HUD behavior, even though selection felt much
+faster. That is not an acceptable default. Preserve the existing GraphShell
+renderer, camera, input, drawer, Semantic/Geographic selection, color assignment,
+screen-space hull padding and spline, hull↔point switching, descendant opacity,
+label placement and context HUD. Replace its *viewport data source*, not the
+whole painter. Screen-dependent decisions stay in Atropos; Lachesis prepares
+revision-pinned World points, complete Composite concave hulls, direct authored
+child IDs, support completeness, relation endpoints and paths. The detail reader
+stays semantic. Never label a spatial membership aggregate as an authored
+Composite or Event: the existing `N Events` grid cluster is a transport LOD
+artifact, not the product's grouping semantics.
+
+Allow small differences in exact spline, hue assignment, label location or
+cross-tile fade timing when bounded and measured. Do not remove colorful
+Composite surfaces, child visibility transitions, hull/point morph, primary
+Event navigation, relation semantics, Collection filtering or the context HUD.
+`render-compiler/3` adds hierarchy metadata to hull representations. Gate the
+tile-backed GraphShell to this compiler version; a v2 sidecar must not be
+silently interpreted as complete. First deploy the new data path under an
+explicit URL option, recompile the same served Revision through the existing
+operator backfill, and compare production camera/selection/interaction scenes
+against the restored default. Only then make it the default; retain a query
+rollback to the semantic path. Large-world transport LOD and the stable
+fixed-coordinate L0 remain independent follow-up gates, not grounds for an
+arbitrary numbered cluster in the default scene.
+
 ```mermaid
 flowchart TD
  C["Clotho: semantic World revision"] --> L["Lachesis: temporal projection + Render Compiler"]

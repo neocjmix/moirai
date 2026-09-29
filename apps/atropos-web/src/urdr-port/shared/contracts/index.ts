@@ -1343,6 +1343,9 @@ export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntity
   geometryKind: z.literal("region"),
   worldBounds: chartPlaneWorldBoundsSchema,
   childrenComplete: z.boolean().optional(),
+  // Immutable hull prepared by Lachesis; screen padding, label and fades stay
+  // in GraphShell. Only the tile-backed adapter supplies this field.
+  preparedWorldHull: z.array(chartPlaneWorldPointSchema).optional(),
 });
 export type GraphShellChartPlaneRegionEntity = z.infer<typeof graphShellChartPlaneRegionEntitySchema>;
 

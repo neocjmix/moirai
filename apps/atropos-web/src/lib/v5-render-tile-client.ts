@@ -129,7 +129,8 @@ export function createV5RenderTileClient(input: {
     viewport: Box,
     level: number,
     collectionIds: readonly string[],
-    signal?: AbortSignal
+    signal?: AbortSignal,
+    includeNeighborLevels = true
   ) => {
     if (disposed) throw Error("render_client_disposed");
     const publication = await manifest();
@@ -138,7 +139,9 @@ export function createV5RenderTileClient(input: {
     const coverage = expand(viewport);
     const required = publication.tiles.filter(
       (ref) =>
-        Math.abs(ref.level - level) <= 1 && overlaps(ref.bounds, coverage)
+        (includeNeighborLevels
+          ? Math.abs(ref.level - level) <= 1
+          : ref.level === level) && overlaps(ref.bounds, coverage)
     );
     const needed = required.filter((ref) => !cache.has(ref.key));
     for (let offset = 0; offset < needed.length; offset += 16) {
@@ -325,6 +328,12 @@ export function createV5RenderTileClient(input: {
   };
   return {
     load,
+    loadExact: (
+      viewport: Box,
+      level: number,
+      collectionIds: readonly string[],
+      signal?: AbortSignal
+    ) => load(viewport, level, collectionIds, signal, false),
     loadFrame,
     manifest,
     dispose() {

@@ -68,8 +68,9 @@ export default async function V5GraphPage({
     // Preserve GraphShell's established visual and interaction behavior by
     // default while the tile scene is being brought to visual parity.
     // An explicit URL opt-in keeps the deployed tile path observable.
-    const renderEnabled =
-      params.renderTiles === "1" &&
+    const wantsRender = params.renderTiles === "1" || params.tileData === "1";
+    const renderAvailable =
+      wantsRender &&
       (await readV5RenderGeneration(store, worldId)
         .then(
           (generation) =>
@@ -87,6 +88,9 @@ export default async function V5GraphPage({
             return false;
           throw cause;
         }));
+    const renderEnabled = params.renderTiles === "1" && renderAvailable;
+    const tileDataEnabled =
+      params.tileData === "1" && renderAvailable && !renderEnabled;
     const systemBody = await readV5StagedDocument(
       rootBody,
       `worlds/${worldId}/revisions/${pointer.served_revision}/v5/content/time-systems/${timeSystemId}.json`,
@@ -120,6 +124,7 @@ export default async function V5GraphPage({
     return (
       <V5AtroposRoot
         renderEnabled={renderEnabled}
+        tileDataEnabled={tileDataEnabled}
         discovery={collectionDiscoveryConfig(
           params.discovery,
           process.env.ATROPOS_COLLECTION_DISCOVERY

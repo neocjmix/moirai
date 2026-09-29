@@ -110,6 +110,11 @@ describe("render publication compiler", () => {
       "one",
       "two"
     ]);
+    expect(primitives.get("event:outer:hull")?.composite).toEqual({
+      childEventIds: ["c", "d", "inner"],
+      supportComplete: true,
+      worldBounds: { minX: 0, maxX: 100, minY: 0, maxY: 100 }
+    });
     expect(
       publication.tiles.some(
         (tile) => tile.level === 3 && tile.x === 7 && tile.y === 7

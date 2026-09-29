@@ -1,8 +1,9 @@
 "use client";
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Theme } from "@radix-ui/themes";
 import { App } from "../urdr-port/src/App";
 import { createV5GraphReadLoader } from "../lib/v5-graph-read-loader";
+import { createV5RenderTileClient } from "../lib/v5-render-tile-client";
 import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import { GraphQueryProvider, useGraphQuery } from "./graph-query-context";
 import {
@@ -26,6 +27,7 @@ export interface V5AtroposBootstrap {
   fullEvent?: boolean;
   collectionIds?: string[];
   renderEnabled?: boolean;
+  tileDataEnabled?: boolean;
   screen?: AtroposScreenId;
 }
 
@@ -86,6 +88,20 @@ export function V5AtroposRoot(props: V5AtroposBootstrap) {
 
 function V5GraphApp(props: V5AtroposBootstrap) {
   const { state, setState } = useGraphQuery();
+  // Selection changes recreate the viewport adapter, not its immutable tile
+  // working set. One revision-scoped client retains decoded tiles across toggles.
+  const tileClient = useMemo(
+    () =>
+      props.tileDataEnabled
+        ? createV5RenderTileClient({
+            worldId: props.worldId,
+            revision: props.revision,
+            timeSystemId: props.timeSystemId
+          })
+        : null,
+    [props.tileDataEnabled, props.worldId, props.revision, props.timeSystemId]
+  );
+  useEffect(() => () => tileClient?.dispose(), [tileClient]);
   const selection = JSON.stringify({
     collections: state.query.sources
       .flatMap((source) => source.canon_ids)
@@ -102,6 +118,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
         readPage: props.readPage,
         collectionIds: JSON.parse(selection).collections,
         relationTypes: JSON.parse(selection).relationTypes,
+        ...(tileClient ? { tileViewport: tileClient } : {}),
         ...(props.renderEnabled
           ? {
               renderTiles: {
@@ -120,6 +137,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       props.workspace,
       props.readPage,
       props.renderEnabled,
+      tileClient,
       selection
     ]
   );

@@ -191,18 +191,22 @@ export function prepareCompositeWorldGeometry(
           ? directSupportPoints
           : fallbackBoundsPolygon;
 
-      const hullPoints = buildCompositeHull(
-        {
-          instantPoints: hullSupportPoints,
-          childPolygons: childRegionPolygons
-        },
-        mode
-      );
+      const hullPoints = entity.preparedWorldHull && mode === "concave"
+        ? entity.preparedWorldHull
+        : buildCompositeHull(
+            {
+              instantPoints: hullSupportPoints,
+              childPolygons: childRegionPolygons
+            },
+            mode
+          );
       const geometry = {
         points: hullPoints
       } satisfies CompositeHullGeometry;
       regionGeometryById.set(entity.id, geometry);
-      const supportComplete = entity.childrenComplete === true && entity.contains.length > 0 && entity.contains.every((id) => allWorldInstantPointById.has(id) || supportCompleteById.get(id) === true);
+      const supportComplete = entity.preparedWorldHull
+        ? entity.childrenComplete === true
+        : entity.childrenComplete === true && entity.contains.length > 0 && entity.contains.every((id) => allWorldInstantPointById.has(id) || supportCompleteById.get(id) === true);
       supportCompleteById.set(entity.id, supportComplete);
 
       return {

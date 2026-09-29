@@ -22,6 +22,12 @@ export type RenderPrimitive = Readonly<{
   endpointIds?: readonly [string, string];
   endpointCollectionIds?: readonly [readonly string[], readonly string[]];
   memberCount?: number;
+  /** Authored Composite hierarchy, independent of the spatial tile grid. */
+  composite?: Readonly<{
+    childEventIds: readonly string[];
+    supportComplete: boolean;
+    worldBounds: Box;
+  }>;
   lod: Readonly<{
     visible: readonly [number, number];
     fadeIn?: readonly [number, number];
@@ -45,7 +51,7 @@ export type RenderPublication = Readonly<{
   worldId: string;
   revision: number;
   timeSystemId: string;
-  algorithmVersion: "render-compiler/2";
+  algorithmVersion: "render-compiler/3";
   maxLevel: number;
   bounds: Box | null;
   tiles: readonly Readonly<{
@@ -236,7 +242,8 @@ export function compileV5RenderPublication(
     lod: RenderPrimitive["lod"],
     collectionIds: readonly string[],
     endpointIds?: readonly [string, string],
-    endpointCollectionIds?: readonly [readonly string[], readonly string[]]
+    endpointCollectionIds?: readonly [readonly string[], readonly string[]],
+    composite?: RenderPrimitive["composite"]
   ) => {
     if (points.some((p) => !Number.isFinite(p.x) || !Number.isFinite(p.y)))
       throw Error("render_nonfinite_geometry");
@@ -249,7 +256,8 @@ export function compileV5RenderPublication(
       lod,
       collectionIds,
       ...(endpointIds ? { endpointIds } : {}),
-      ...(endpointCollectionIds ? { endpointCollectionIds } : {})
+      ...(endpointCollectionIds ? { endpointCollectionIds } : {}),
+      ...(composite ? { composite } : {})
     });
   };
   for (const shape of [...layout.shapes].sort((a, b) =>
@@ -281,6 +289,14 @@ export function compileV5RenderPublication(
       );
     if (shape.kind === "region") {
       const points = resolve(id);
+      const childEventIds = [...new Set(children.get(id) ?? [])].sort();
+      const composite = {
+        childEventIds,
+        supportComplete:
+          childEventIds.length > 0 &&
+          childEventIds.every((child) => shapes.has(child)),
+        worldBounds: shape.bounds
+      };
       // A region with insufficient placed descendants retains the published bounds,
       // explicitly as fallback geometry; it must not pretend to be a complete hull.
       const b = shape.bounds;
@@ -303,7 +319,10 @@ export function compileV5RenderPublication(
         [{ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }],
         label,
         { visible: [0, 3.4], fadeOut: [2.8, 3.4], groupId: id },
-        collectionIds
+        collectionIds,
+        undefined,
+        undefined,
+        composite
       );
       add(
         `event:${id}:hull`,
@@ -312,7 +331,10 @@ export function compileV5RenderPublication(
         polygon,
         label,
         { visible: [2.7, 8], fadeIn: [2.7, 3.3], groupId: id },
-        collectionIds
+        collectionIds,
+        undefined,
+        undefined,
+        composite
       );
     }
   }
@@ -364,7 +386,7 @@ export function compileV5RenderPublication(
       worldId: layout.world_id,
       revision: layout.revision,
       timeSystemId: layout.time_system_id,
-      algorithmVersion: "render-compiler/2",
+      algorithmVersion: "render-compiler/3",
       maxLevel: 0,
       bounds: null,
       tiles: [],
@@ -556,7 +578,7 @@ export function compileV5RenderPublication(
     worldId: layout.world_id,
     revision: layout.revision,
     timeSystemId: layout.time_system_id,
-    algorithmVersion: "render-compiler/2",
+    algorithmVersion: "render-compiler/3",
     maxLevel,
     bounds: world,
     tiles: documents.map((document, i) => ({

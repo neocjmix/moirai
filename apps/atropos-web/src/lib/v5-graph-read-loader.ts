@@ -2,6 +2,8 @@ import type { GraphReadLoader } from "../urdr-port/src/graph-read-loader";
 import { createViewportCache } from "../urdr-port/src/viewport-cache";
 import { viewportCompleteness } from "../urdr-port/src/viewport-completeness";
 import { v5ViewportCursorSchema } from "./v5-viewport-cursor";
+import type { createV5RenderTileClient } from "./v5-render-tile-client";
+import { renderTileViewport } from "./v5-render-viewport";
 import {
   graphShellViewportResponseSchema,
   type GraphShellWorkspaceShell
@@ -21,6 +23,7 @@ export function createV5GraphReadLoader(input: {
     timeSystemId: string;
     collectionIds: readonly string[];
   };
+  tileViewport?: ReturnType<typeof createV5RenderTileClient>;
   readPage?: number | undefined;
   fetcher?: typeof fetch;
 }): GraphReadLoader {
@@ -43,6 +46,23 @@ export function createV5GraphReadLoader(input: {
   };
   const cached = createViewportCache(
     async (viewport, signal) => {
+      if (input.tileViewport) {
+        const manifest = await input.tileViewport.manifest();
+        if (manifest.algorithmVersion !== "render-compiler/3")
+          throw Error("render_compiler_version_mismatch");
+        const { primitives } = await input.tileViewport.loadExact(
+          viewport.bbox,
+          manifest.maxLevel,
+          input.collectionIds,
+          signal
+        );
+        return renderTileViewport({
+          worldId: input.worldId,
+          revision: input.revision,
+          primitives,
+          relationTypes: input.relationTypes
+        });
+      }
       let cursor = null;
       let accumulated: ReturnType<
         typeof graphShellViewportResponseSchema.parse

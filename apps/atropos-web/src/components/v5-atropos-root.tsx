@@ -25,6 +25,7 @@ export interface V5AtroposBootstrap {
   readPage?: number;
   fullEvent?: boolean;
   collectionIds?: string[];
+  renderEnabled?: boolean;
   screen?: AtroposScreenId;
 }
 
@@ -100,7 +101,16 @@ function V5GraphApp(props: V5AtroposBootstrap) {
         workspace: props.workspace,
         readPage: props.readPage,
         collectionIds: JSON.parse(selection).collections,
-        relationTypes: JSON.parse(selection).relationTypes
+        relationTypes: JSON.parse(selection).relationTypes,
+        ...(props.renderEnabled
+          ? {
+              renderTiles: {
+                worldId: props.worldId,
+                revision: props.revision,
+                timeSystemId: props.timeSystemId
+              }
+            }
+          : {})
       }),
     [
       props.worldId,
@@ -108,6 +118,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       props.timeSystemId,
       props.workspace,
       props.readPage,
+      props.renderEnabled,
       selection
     ]
   );

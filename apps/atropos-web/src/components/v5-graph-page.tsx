@@ -1,6 +1,7 @@
 import { collectionDiscoveryConfig } from "../lib/collection-discovery-config";
 import { notFound } from "next/navigation";
 import { readV5StagedDocument } from "@moirai/publication/v5";
+import { readV5RenderGeneration } from "@moirai/publication/v5";
 import { assertPublicId } from "../lib/publication";
 import { publicTimeSystemIdentity } from "@moirai/graph-query";
 import type { PublicTimeSystem } from "@moirai/contracts";
@@ -64,6 +65,23 @@ export default async function V5GraphPage({
       ? await reader.spatialSummary(timeSystemId)
       : null;
     if (!timeSystemId) notFound();
+    const renderEnabled = await readV5RenderGeneration(store, worldId)
+      .then(
+        (generation) =>
+          generation.revision === pointer.served_revision &&
+          generation.manifests.some(
+            (item) => item.timeSystemId === timeSystemId
+          )
+      )
+      .catch((cause: unknown) => {
+        if (
+          cause instanceof Error &&
+          (cause.message === "render_generation_unavailable" ||
+            cause.message === "render_generation_source_changed")
+        )
+          return false;
+        throw cause;
+      });
     const systemBody = await readV5StagedDocument(
       rootBody,
       `worlds/${worldId}/revisions/${pointer.served_revision}/v5/content/time-systems/${timeSystemId}.json`,
@@ -96,6 +114,7 @@ export default async function V5GraphPage({
             : null;
     return (
       <V5AtroposRoot
+        renderEnabled={renderEnabled}
         discovery={collectionDiscoveryConfig(
           params.discovery,
           process.env.ATROPOS_COLLECTION_DISCOVERY

@@ -15,6 +15,7 @@ export function createV5GraphReadLoader(input: {
   workspace: GraphShellWorkspaceShell;
   collectionIds: string[];
   relationTypes: string[];
+  renderTiles?: { worldId: string; revision: number; timeSystemId: string };
   readPage?: number | undefined;
   fetcher?: typeof fetch;
 }): GraphReadLoader {
@@ -101,6 +102,7 @@ export function createV5GraphReadLoader(input: {
     }
   );
   return {
+    ...(input.renderTiles ? { renderTiles: input.renderTiles } : {}),
     viewportMode: "snapshot",
     dispose: () => cached.dispose(),
     inspectViewport: () => cached.inspect(),

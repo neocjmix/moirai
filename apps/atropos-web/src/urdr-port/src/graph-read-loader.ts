@@ -9,6 +9,9 @@ import type {
 import type { AppLocale } from "./locale";
 
 export type GraphReadLoader = {
+  /** A ready, immutable Render generation replaces semantic viewport drawing.
+   * Event/Collection detail stays on the existing semantic read boundary. */
+  renderTiles?: { worldId: string; revision: number; timeSystemId: string };
   viewportMode?: "incremental" | "snapshot";
   dispose?(): void;
   inspectViewport?(): Record<string, number>;

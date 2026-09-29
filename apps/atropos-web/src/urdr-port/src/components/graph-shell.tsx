@@ -18,6 +18,7 @@ import { selectSemanticLabels, fitSemanticText, semanticTextWidth } from "../../
 import { GraphContextHud } from "../../../components/graph-context-hud";
 import { selectGraphContext, polygonContainsCenter, contextViewportMetrics, CONTEXT_DWELL_MS } from "../../../lib/graph-context-policy";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
+import { V5RenderGraphLayer } from "../../../components/v5-render-graph-layer";
 import { withGraphReturnContext } from "../../../lib/event-reading-navigation";
 
 import {
@@ -2473,6 +2474,15 @@ export function GraphShell({
       return;
     }
 
+    // The immutable Render generation supplies the complete draw scene.
+    // Never also query the semantic viewport for point/region/edge drawing.
+    if (loader.renderTiles) {
+      setRuntimeViewportResponse(null);
+      setRuntimeViewportLoadState("ready");
+      setRuntimeViewportErrorMessage(null);
+      return;
+    }
+
     if (viewportSize.width <= 0 || viewportSize.height <= 0) {
       return;
     }
@@ -3869,7 +3879,22 @@ export function GraphShell({
                 data-backdrop-texture="paper-grain"
                 style={{ backgroundImage: `url("${GRAPH_BACKDROP_REFERENCE_IMAGE_URL}")` }}
               />
-              {chartPlane ? (
+              {loader.renderTiles ? (
+                <svg aria-label="Projected chart surface" className={styles.chartSurface}
+                  data-render-source="tiles" viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                  <rect className={styles.chartBackdrop} height={viewportSize.height} width={viewportSize.width} x={0} y={0} />
+                  <V5RenderGraphLayer
+                    identity={loader.renderTiles}
+                    view={view}
+                    width={viewportSize.width}
+                    height={viewportSize.height}
+                    collectionIds={[...effectiveEnabledCanonIds]}
+                    gestureActive={navigationPointerCount > 0}
+                    onPointerTarget={(id, label, event) => handleEventDrawerTargetPointerDown({ eventId: id, label }, event)}
+                    onKeyboardTarget={(id, label, event) => handleSemanticKeyDown({ eventId: id, label }, event)}
+                  />
+                </svg>
+              ) : chartPlane ? (
                 <svg data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
                   <defs>
                     <marker id="relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">

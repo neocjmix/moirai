@@ -27,12 +27,19 @@ export async function processNextRenderGeneration(
       const worlds = await sql<{
         world_id: string;
         served_revision: number;
+        target_revision: number;
       }>`
-        select world_id::text, served_revision
-        from world_publication_state
-        where served_revision > 0 order by world_id
+        select state.world_id::text, state.served_revision,
+          world.publication_target_revision as target_revision
+        from world_publication_state as state
+        join worlds as world on world.id = state.world_id
+        where state.served_revision > 0 order by state.world_id
       `.execute(connection);
       for (const world of worlds.rows) {
+        // A burst may be committed in seconds while canonical publication
+        // takes much longer. Wait for the already known target instead of
+        // compiling an intermediate served revision between queued writes.
+        if (world.target_revision > world.served_revision) continue;
         const retry = retries.get(world.world_id);
         if (retry && Date.now() < retry.eligibleAt) continue;
         const root = await readV5ServedRoot(store, world.world_id);

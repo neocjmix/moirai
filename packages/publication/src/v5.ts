@@ -29,3 +29,6 @@ export {
   readV5RenderGeneration
 } from "./v5-render-generation.js";
 export { readV5StagedTimeSystemCatalog } from "./v5-staged-time-systems.js";
+
+export { renderReadSummary, isRenderBox } from "./v5-render-index.js";
+export type { RenderReadSummary, RenderBox } from "./v5-render-index.js";

@@ -118,3 +118,12 @@ it("disposes pending reads on page exit without retaining a late response", asyn
   await load(query());
   expect(read).toHaveBeenCalledTimes(2);
 });
+it("recomputes camera-local scenes inside cached metadata coverage when requested", async () => {
+  const read = vi.fn(async () => response());
+  const load = createViewportCache(read, { reuseCoverage: false });
+  await load(query());
+  await load(query(50));
+  expect(read).toHaveBeenCalledTimes(2);
+  await load(query(50));
+  expect(read).toHaveBeenCalledTimes(2);
+});

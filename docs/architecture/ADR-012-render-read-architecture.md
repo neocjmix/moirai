@@ -28,6 +28,34 @@ Spatial proximity alone is not a semantic grouping rule.
 
 The prototype spatial Event-count cluster is therefore **not** an authoritative replacement for authored Composite representations. Spatial clustering may only be introduced later if it is explicitly designed as an additional visual representation and does not erase semantic hierarchy.
 
+### 2026-10-01 approved visibility refinement
+
+The user explicitly approved priority-based omission when a dense viewport cannot
+show every independent Event, with an intermediate small, unlabeled point and
+natural transitions. The same rule applies to authored Composite representations:
+
+- Event: ordinary point → small point without text → hidden;
+- Composite: hull → ordinary point → small point without text → hidden.
+
+These are presentation states of the same authored identities. Priority is a
+reproducible visibility decision, not canonical importance, a new Event, or a
+spatial count cluster. A hidden representation remains available through semantic
+Event detail/navigation. Refining spatial coverage should reveal previously omitted
+distinct candidates; genuinely coincident or indistinguishably dense candidates can
+remain priority-limited at the finest supported scale.
+
+Atropos owns exact screen-space state, interpolation, hysteresis and fade-out
+retention. Lachesis publishes bounded candidate sets and sufficient authored
+ancestry/geometry support to avoid reconstructing a World graph at read time.
+Omitting an intermediate Composite must not erase the visible ancestor's child
+visibility constraint. Candidate omission and incomplete child-ID hints must be
+explicit metadata; complete hull support is a separate claim.
+
+The initial fixed frame, candidate budgets, coarse geometry overflow and measured
+limits are implementation decisions in
+[the 2026-10-01 evidence](../evidence/ip012/fixed-grid-visibility-2026-10-01.md),
+not new canonical product facts or final mobile-performance acceptance.
+
 ## 3. Publication cost model
 
 Publication is asynchronous and occurs much less frequently than reads. The architecture deliberately spends more compute time and storage at publication time when that reduces interactive read cost.

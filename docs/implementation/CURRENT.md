@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-10-01 IP-012 작업 브랜치 checkpoint (미배포): 고정 signed 격자·manifest 없는 viewport 조회, 큰 hull/관계의 coarse overflow, 후보 128개/cell 및 승인된 point→작은 무문자 point→숨김 정책을 구현·검증 중이다. Composite는 hull→point 전환과 작성된 ancestry를 유지한다. 이 항목은 배포·모바일 전환 품질 승인이나 IP-012 전체 완료를 뜻하지 않는다. [격자·bounded visibility 근거](../evidence/ip012/fixed-grid-visibility-2026-10-01.md)
+
 2026-09-29 IP-012 GraphShell 보존형 타일 마이그레이션: PR #298 (`a73b146`)은 작성된 Composite의 자식·support 메타데이터와 concave hull을 compiler v3에 넣고 기존 GraphShell에 fine tile 데이터를 공급한다. 격자 cluster를 사건으로 그리지 않는다. 운영 World Revision 62는 독립 generation `fdeac556…`으로 백필했다(worker `render_backfill: served`, 163문서·2,353,065바이트). `?tileData=1`과 기존 semantic 화면의 동일 시점·30개 Collection에서 영역 14개, SVG 경로 25개, 주요 클릭 대상 7개가 같았고 사건 서랍과 30→29→30 선택 토글이 작동했다. 아래 이전 checkpoint의 "다음 cutover"는 당시 기록이다. v3 generation만 기본 사용하고 `?tileData=0`으로 semantic 롤백하는 전환은 별도 배포 중이다. 이는 시각·상호작용 확인이지 모바일 프레임 예산·100k 규모·고정 격자·증분 인밸리데이션 완료 증거가 아니다. 백필 1회성 worker 변수는 비웠다.
 
 2026-09-29 IP-012 시각 경험 복원 checkpoint: PR #296, 운영 Atropos `3bdcf2a`에서 일반 `/graph/v5`는 기존 semantic GraphShell의 다색 Composite hull, child visibility, 레이블, 관계선, 페이드와 서랍을 다시 표시한다. Render tile 장면은 명시적 `?renderTiles=1`에서만 관찰한다. 기본 화면 30 Collection의 실제 hull과 상세 패널을 브라우저에서 확인했다. 이 복원은 기존 shell 성능 부담도 돌려놓는다. 현재 컴파일러의 `N Events` cluster는 타일에 256개를 넘는 Event 점을 같은 Collection membership별로 묶은 **격자 평균점**으로, 작성된 Composite가 아니다. 다음 cutover에서는 기존 painter와 상호작용을 유지하고 타일 데이터 공급만 점진 교체하며 동일 viewport/selection의 geometry, 컬러, 관계, 라벨, 전환 및 모바일 성능을 비교한다.

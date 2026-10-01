@@ -78,9 +78,18 @@ export default async function V5GraphPage({
             (item) => item.timeSystemId === timeSystemId
           );
           if (!manifest) return false;
-          const body = await generation.read(manifest.key, manifest.sha256);
-          return (JSON.parse(body) as { algorithmVersion?: string })
-            .algorithmVersion === "render-compiler/3";
+          // v4 publishes a bounded summary on the generation root. Do not
+          // download the global operational manifest to select the reader.
+          const version =
+            manifest.summary?.algorithmVersion ??
+            (
+              JSON.parse(
+                await generation.read(manifest.key, manifest.sha256)
+              ) as { algorithmVersion?: string }
+            ).algorithmVersion;
+          return (
+            version === "render-compiler/3" || version === "render-compiler/4"
+          );
         })
         .catch((cause: unknown) => {
           if (

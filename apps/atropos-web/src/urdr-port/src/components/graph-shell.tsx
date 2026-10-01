@@ -12,6 +12,7 @@ import { composeNavigationBounds, constrainNavigation, restoreNavigation } from 
 import { prepareCompositeWorldGeometry, selectCompositeWorldRegions } from "./graph-shell-world";
 import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
 import { compositePointDisplay } from "./composite-point-display";
+import { pointDensityDisplay } from "./point-density-display";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { reconcileViewport } from "../viewport-cache";
 import { selectSemanticLabels, fitSemanticText, semanticTextWidth } from "../../../lib/graph-semantic-budget";
@@ -71,6 +72,8 @@ import {
   type GraphShellRestorableState,
 } from "./graph-shell-share-state";
 import styles from "./graph-shell.module.css";
+
+const EMPTY_CANON_IDS: readonly string[] = [];
 
 const GRAPH_SHELL_LOADING_WORKSPACE_BUILD_REVISION = "__loading__";
 const GRAPH_DRAWER_HISTORY_KEY = "moiraiGraphDrawer";
@@ -173,6 +176,7 @@ type CompositeRegion = {
   opacity: number;
   surfaceOpacity: number;
   compactPoint?: {x: number; y: number} | null;
+  pointDisplay: ReturnType<typeof pointDensityDisplay>;
 };
 
 
@@ -2414,7 +2418,7 @@ export function GraphShell({
   }, [hydrateRestorableState, usesLoadingWorkspace, viewportSize.height, viewportSize.width]);
 
   const selectedTimeline = workspace.tabs.find((tab) => tab.id === selectedTimelineId) ?? workspace.tabs[0] ?? null;
-  const selectedTimelineCanonIds = selectedTimeline?.availableCanonIds ?? [];
+  const selectedTimelineCanonIds = selectedTimeline?.availableCanonIds ?? EMPTY_CANON_IDS;
   const effectiveEnabledCanonIds = useMemo(() => {
     const timelineSet = new Set(selectedTimelineCanonIds);
     const intersected = new Set([...enabledCanonIds].filter((id) => timelineSet.has(id)));
@@ -2797,6 +2801,8 @@ export function GraphShell({
       );
   }, [visibleChartPlaneEntities, viewportSize.height, viewportSize.width, view.x, view.y, view.scaleX, view.scaleY]);
 
+  const densityById = useMemo(() => new Map(visibleChartPlaneEntities.map(entity => [entity.id, entity.renderDensity])), [visibleChartPlaneEntities]);
+
   const allWorldInstantPoints = useMemo(() => {
     return visibleChartPlaneEntities
       .filter(
@@ -2877,7 +2883,10 @@ export function GraphShell({
     const projectedRawRegions = worldCompositeRegions.map((region) => {
       graphWorkCountsRef.current.regionTransforms += region.points.length;
       const projectedHullPoints = region.points.map((point) => projectWorldPoint(view, viewportSize, point));
-      const compactPoint = compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
+      const compactPoint = region.hullPending
+        ? {x: (Math.min(...projectedHullPoints.map(p=>p.x)) + Math.max(...projectedHullPoints.map(p=>p.x))) / 2,
+           y: (Math.min(...projectedHullPoints.map(p=>p.y)) + Math.max(...projectedHullPoints.map(p=>p.y))) / 2}
+        : compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
       const projectedPoints = expandPolygon(projectedHullPoints, getCompositeRegionPadding(region.depth));
       const coverage = getPolygonArea(clipPolygonAgainstViewport(projectedPoints, viewportSize)) / Math.max(viewportSize.width * viewportSize.height, 1);
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
@@ -2903,6 +2912,7 @@ export function GraphShell({
         renderedLabel,
         path: compactPoint ? "" : buildClosedSplinePath(projectedPoints, compositeSplineTuning),
         compactPoint,
+        pointDisplay: pointDensityDisplay(densityById.get(region.id), Boolean(compactPoint)),
         labelPath: compactPoint ? "" : buildOpenSplinePath(placement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
         projectedPoints,
         labelAttachX: placement.attachX,
@@ -2965,7 +2975,7 @@ export function GraphShell({
         return {
           ...region,
           renderedLabel: policy?.renderedLabel ?? region.renderedLabel,
-          showLabel: region.compactPoint ? true : policy?.showLabel ?? true,
+          showLabel: region.compactPoint ? region.pointDisplay.showLabel : policy?.showLabel ?? true,
           opacity: descendantOpacityById.get(region.id) ?? 1,
           surfaceOpacity: region.surfaceOpacity,
         } satisfies CompositeRegion;
@@ -2978,7 +2988,7 @@ export function GraphShell({
       .map((region) => region.id);
 
     return { regions, activeColorRegionIds, descendantOpacityById, placements } satisfies CompositeRenderState;
-  }, [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader]);
+  }, [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById]);
   useEffect(() => {
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
   }, [loader, chartCompositeRegions]);
@@ -3086,7 +3096,8 @@ export function GraphShell({
       .filter((point) => !farZoomElisionState.hiddenPointIds.has(point.id))
       .map((point) => ({
         ...point,
-        opacity: chartCompositeRegions.descendantOpacityById.get(point.id) ?? 1
+        opacity: chartCompositeRegions.descendantOpacityById.get(point.id) ?? 1,
+        pointDisplay: pointDensityDisplay(densityById.get(point.id)),
       }))
       .sort((left, right) => left.y - right.y || left.x - right.x);
     const labelPolicy = applyEditorialPointLabelPolicy(visiblePoints, getEditorialZoomBucket(view.scaleY));
@@ -3097,10 +3108,10 @@ export function GraphShell({
       return {
         ...point,
         renderedLabel: policy?.renderedLabel ?? point.label,
-        showLabel: policy?.showLabel ?? true,
+        showLabel: (policy?.showLabel ?? true) && point.pointDisplay.showLabel,
       };
     });
-  }, [allProjectedInstantPoints, chartCompositeRegions.descendantOpacityById, farZoomElisionState.hiddenPointIds, viewportSize.height, viewportSize.width, view.scaleY]);
+  }, [allProjectedInstantPoints, chartCompositeRegions.descendantOpacityById, farZoomElisionState.hiddenPointIds, viewportSize.height, viewportSize.width, view.scaleY, densityById]);
 
   const semanticPointCandidates = useMemo(() => discovery?.contextHud
     ? chartInstantPoints.map(point => ({...point, renderedLabel: fitSemanticText(point.renderedLabel ?? point.label, point.x + 10, viewportSize.width)}))
@@ -3830,8 +3841,8 @@ export function GraphShell({
       geographicRegions: visibleCompositeRegions.length,
       vertices: visibleCompositeRegions.reduce((sum, region) => sum + region.projectedPoints.length, 0),
       // Count interactive entities, independently from painted geography.
-      primaryPointTargets: presentedPoints.filter(point => point.opacity > 0 && (!discovery?.contextHud || point.showLabel !== false)).length,
-      primaryRegionTargets: presentedRegions.filter(region => region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0) && (!discovery?.contextHud || region.showLabel)).length,
+      primaryPointTargets: presentedPoints.filter(point => point.opacity > 0 && point.pointDisplay.interactive && (!discovery?.contextHud || point.showLabel !== false)).length,
+      primaryRegionTargets: presentedRegions.filter(region => region.renderedOpacity > 0 && region.pointDisplay.interactive && (region.compactPoint || region.surfaceOpacity > 0) && (!discovery?.contextHud || region.showLabel)).length,
     },
     cache: loader.inspectViewport?.() ?? null,
     work: {...graphWorkCountsRef.current},
@@ -3924,10 +3935,11 @@ export function GraphShell({
                       if (region.renderedOpacity === 0) return null;
                       const point = region.compactPoint;
                       return <g key={region.id} data-composite-point-id={region.id}
+                        data-point-density={region.pointDisplay.state}
                         data-representation={region.showLabel ? "semantic" : "geographic"}
                         aria-hidden={discovery?.contextHud && !region.showLabel ? true : undefined}
-                        style={{opacity: region.renderedOpacity}}>
-                        {!discovery?.contextHud || region.showLabel ? <rect data-primary-hit-target="composite"
+                        style={{opacity: region.renderedOpacity * region.pointDisplay.opacity, transition: "opacity 180ms ease-out"}}>
+                        {region.pointDisplay.interactive && (!discovery?.contextHud || region.showLabel) ? <rect data-primary-hit-target="composite"
                           role={discovery?.contextHud ? "button" : undefined} tabIndex={discovery?.contextHud ? 0 : undefined}
                           aria-label={discovery?.contextHud ? region.label : undefined}
                           onKeyDown={discovery?.contextHud ? event => handleSemanticKeyDown({eventId: region.id, label: region.label}, event) : undefined}
@@ -3936,10 +3948,10 @@ export function GraphShell({
                           onPointerDown={(event) => handleCompositeRegionPointerDown(region, event)}>
                           <title>{region.label}</title>
                         </rect> : null}
-                        <circle className={styles.chartInstantPoint} cx={point.x} cy={point.y} r={6}
-                          style={{fill: compositeStyle?.label, pointerEvents: "none"}} />
-                        {region.showLabel ? <text className={styles.chartInstantPointLabel} x={point.x + 10} y={point.y - 10}
-                          style={{fill: compositeStyle?.label, pointerEvents: "none"}}>{region.renderedLabel}</text> : null}
+                        <circle className={styles.chartInstantPoint} cx={point.x} cy={point.y} r={region.pointDisplay.radius}
+                          style={{r: region.pointDisplay.radius, strokeWidth: region.pointDisplay.strokeWidth, fill: compositeStyle?.label, pointerEvents: "none"}} />
+                        {region.showLabel || !region.pointDisplay.showLabel ? <text aria-hidden={!region.showLabel || undefined} className={styles.chartInstantPointLabel} x={point.x + 10} y={point.y - 10}
+                          style={{opacity: region.showLabel ? region.pointDisplay.labelOpacity : 0, fill: compositeStyle?.label, pointerEvents: "none"}}>{region.renderedLabel}</text> : null}
                       </g>;
                     }
                     return (
@@ -4031,9 +4043,10 @@ export function GraphShell({
 
                     return (
                       <g key={point.id}
+                        data-point-density={point.pointDisplay.state}
                         data-representation={point.showLabel !== false ? "semantic" : "geographic"}
                         aria-hidden={discovery?.contextHud && point.showLabel === false ? true : undefined}>
-                        {!discovery?.contextHud || point.showLabel !== false ? <rect
+                        {point.pointDisplay.interactive && (!discovery?.contextHud || point.showLabel !== false) ? <rect
                           className={styles.chartInstantPointHitTarget}
                           data-primary-hit-target="event"
                           role={discovery?.contextHud ? "button" : undefined} tabIndex={discovery?.contextHud ? 0 : undefined}
@@ -4056,11 +4069,11 @@ export function GraphShell({
                           data-event-point-id={discovery?.contextHud && point.showLabel === false ? point.eventId : undefined}
                           cx={point.x}
                           cy={point.y}
-                          r={6}
-                          style={{ opacity: point.opacity, pointerEvents: "none" }}
+                          r={point.pointDisplay.radius}
+                          style={{ r: point.pointDisplay.radius, strokeWidth: point.pointDisplay.strokeWidth, opacity: point.opacity * point.pointDisplay.opacity, pointerEvents: "none" }}
                         />
-                        {point.showLabel !== false ? (
-                          <text className={styles.chartInstantPointLabel} style={{ opacity: point.opacity, pointerEvents: "none" }} x={point.x + 10} y={point.y - 10}>{point.renderedLabel ?? point.label}</text>
+                        {point.showLabel !== false || !point.pointDisplay.showLabel ? (
+                          <text aria-hidden={point.showLabel === false || undefined} className={styles.chartInstantPointLabel} style={{ opacity: point.showLabel !== false ? point.opacity * point.pointDisplay.labelOpacity : 0, pointerEvents: "none" }} x={point.x + 10} y={point.y - 10}>{point.renderedLabel ?? point.label}</text>
                         ) : null}
                       </g>
                     );

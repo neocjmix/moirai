@@ -2,6 +2,13 @@ import { createHash } from "node:crypto";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import type { V5WorldLayout } from "./v5-world-layout.js";
 import { buildRenderConcaveHull } from "./v5-render-hull.js";
+import {
+  V5_RENDER_SPATIAL_FRAME,
+  renderTileAddresses,
+  renderTileBounds,
+  renderTileKey,
+  type RenderSpatialFrame
+} from "./v5-render-grid.js";
 
 type Point = Readonly<{ x: number; y: number }>;
 type Box = Readonly<{ minX: number; maxX: number; minY: number; maxY: number }>;
@@ -22,11 +29,30 @@ export type RenderPrimitive = Readonly<{
   endpointIds?: readonly [string, string];
   endpointCollectionIds?: readonly [readonly string[], readonly string[]];
   memberCount?: number;
+  /** Presentation priority only; never authored importance or a new identity. */
+  visibility?: Readonly<{ policy: "render-visibility/1"; priority: string }>;
+  /** Direct authored parents; never inferred from spatial proximity. */
+  parentCompositeIds?: readonly string[];
+  /** Complete authored ancestry, including intermediates omitted by visibility. */
+  ancestorCompositeIds?: readonly string[];
   /** Authored Composite hierarchy, independent of the spatial tile grid. */
   composite?: Readonly<{
     childEventIds: readonly string[];
+    childEventCount?: number;
+    childIdsComplete?: boolean;
     supportComplete: boolean;
     worldBounds: Box;
+    /** World-stable support for viewport-local point/hull/child transitions. */
+    hullBounds?: Box;
+    depth?: number;
+    anchor?: Point;
+    transitions?: Readonly<{
+      pointEnterMaxSizePx: number;
+      pointExitMaxSizePx: number;
+      childFadeHeightPx: readonly [number, number];
+      paddingBasePx: number;
+      paddingPerDepthPx: number;
+    }>;
   }>;
   lod: Readonly<{
     visible: readonly [number, number];
@@ -36,22 +62,35 @@ export type RenderPrimitive = Readonly<{
   }>;
 }>;
 export type RenderTile = Readonly<{
-  format: "render-tile/1";
+  format: "render-tile/1" | "render-tile/2";
   worldId: string;
   revision: number;
   timeSystemId: string;
   level: number;
   x: number;
   y: number;
+  bucketKind?: "overflow";
   bounds: Box;
   primitives: readonly RenderPrimitive[];
+  visibility?: Readonly<{
+    policy: "render-visibility/1";
+    candidateCount: number;
+    omittedCount: number;
+    normalBudget: number;
+    smallBudget: number;
+    bufferBudget: number;
+  }>;
 }>;
 export type RenderPublication = Readonly<{
-  format: "render-publication/1";
+  format: "render-publication/1" | "render-publication/2";
   worldId: string;
   revision: number;
   timeSystemId: string;
-  algorithmVersion: "render-compiler/3";
+  algorithmVersion: "render-compiler/3" | "render-compiler/4";
+  /** Only /2 publications use the fixed frame; /1 retains its original grid. */
+  spatialFrame?: RenderSpatialFrame;
+  minLevel?: number;
+  overflowLevels?: readonly number[];
   maxLevel: number;
   bounds: Box | null;
   tiles: readonly Readonly<{
@@ -61,6 +100,7 @@ export type RenderPublication = Readonly<{
     level: number;
     x: number;
     y: number;
+    bucketKind?: "overflow";
   }>[];
   documents: readonly Readonly<{ key: string; body: string }>[];
   geometry: readonly Readonly<{ key: string; sha256: string; bounds: Box }>[];
@@ -107,7 +147,11 @@ export function selectRenderScene(
   level: number,
   activeCollectionIds?: readonly string[]
 ): RenderPrimitive[] {
-  if (!Number.isInteger(level) || level < 0 || level > publication.maxLevel)
+  if (
+    !Number.isInteger(level) ||
+    level < (publication.minLevel ?? 0) ||
+    level > publication.maxLevel
+  )
     throw Error("render_level_invalid");
   const refs = new Map(publication.tiles.map((ref) => [ref.key, ref]));
   const scene = new Map<string, RenderPrimitive>();
@@ -116,10 +160,11 @@ export function selectRenderScene(
       tile.worldId !== publication.worldId ||
       tile.revision !== publication.revision ||
       tile.timeSystemId !== publication.timeSystemId ||
-      tile.level !== level
+      (tile.level !== level &&
+        !(tile.bucketKind === "overflow" && tile.level < level))
     )
       throw Error("render_mixed_revision");
-    const key = `worlds/${tile.worldId}/revisions/${tile.revision}/v5/render/${tile.timeSystemId}/${level}/${tile.x}/${tile.y}.json`;
+    const key = renderTileKey(tile, tile);
     const ref = refs.get(key);
     if (!ref || ref.sha256 !== digest(JSON.stringify(tile)))
       throw Error("render_tile_digest_invalid");
@@ -193,7 +238,17 @@ export function compileV5RenderPublication(
     ids.push(relation.target_ref.event_id);
     children.set(relation.source_ref.event_id, ids);
   }
+  const parents = new Map<string, Set<string>>();
+  for (const [parent, childIds] of children) {
+    for (const child of childIds) {
+      const ids = parents.get(child) ?? new Set<string>();
+      ids.add(parent);
+      parents.set(child, ids);
+    }
+  }
   const support = new Map<string, Point[]>();
+  const depths = new Map<string, number>();
+  const supportComplete = new Map<string, boolean>();
   const visiting = new Set<string>();
   const resolve = (id: string): Point[] => {
     if (support.has(id)) return support.get(id)!;
@@ -202,10 +257,13 @@ export function compileV5RenderPublication(
       const frame = stack.pop()!;
       if (frame.exit) {
         const shape = shapes.get(frame.id);
-        if (shape?.kind === "point") support.set(frame.id, [shape.position]);
-        else if (shape?.kind === "segment")
+        if (shape?.kind === "point") {
+          support.set(frame.id, [shape.position]);
+          supportComplete.set(frame.id, true);
+        } else if (shape?.kind === "segment") {
           support.set(frame.id, [shape.start, shape.end]);
-        else {
+          supportComplete.set(frame.id, true);
+        } else {
           const direct: Point[] = [],
             polygons: Point[][] = [];
           for (const child of [
@@ -216,6 +274,27 @@ export function compileV5RenderPublication(
             else direct.push(...points);
           }
           support.set(frame.id, buildRenderConcaveHull(direct, polygons));
+          const childIds = [...new Set(children.get(frame.id) ?? [])];
+          supportComplete.set(
+            frame.id,
+            shape?.kind === "region" &&
+              childIds.length > 0 &&
+              childIds.every(
+                (child) =>
+                  shapes.has(child) && supportComplete.get(child) === true
+              )
+          );
+          // Match GraphShell's bottom-up hull depth, not root distance.
+          depths.set(
+            frame.id,
+            1 +
+              Math.max(
+                0,
+                ...[...new Set(children.get(frame.id) ?? [])]
+                  .filter((child) => shapes.get(child)?.kind === "region")
+                  .map((child) => depths.get(child) ?? 1)
+              )
+          );
         }
         visiting.delete(frame.id);
         continue;
@@ -231,6 +310,27 @@ export function compileV5RenderPublication(
         if (!support.has(child)) stack.push({ id: child, exit: false });
     }
     return support.get(id)!;
+  };
+  const ancestorCache = new Map<string, readonly string[]>();
+  const ancestorIds = (id: string): readonly string[] => {
+    const cached = ancestorCache.get(id);
+    if (cached) return cached;
+    const ancestors = new Set<string>();
+    const stack = [...(parents.get(id) ?? [])];
+    while (stack.length) {
+      const parent = stack.pop()!;
+      if (parent === id) throw Error("render_contains_cycle");
+      if (ancestors.has(parent)) continue;
+      ancestors.add(parent);
+      if (ancestors.size > 1024)
+        throw Error("render_hierarchy_budget_exceeded");
+      const known = ancestorCache.get(parent);
+      if (known) stack.push(...known);
+      else stack.push(...(parents.get(parent) ?? []));
+    }
+    const result = [...ancestors].sort();
+    ancestorCache.set(id, result);
+    return result;
   };
   const primitives: RenderPrimitive[] = [];
   const add = (
@@ -255,6 +355,12 @@ export function compileV5RenderPublication(
       label,
       lod,
       collectionIds,
+      visibility: {
+        policy: "render-visibility/1",
+        priority: digest(entity.id).slice(0, 16)
+      },
+      parentCompositeIds: [...(parents.get(entity.id) ?? [])].sort(),
+      ancestorCompositeIds: ancestorIds(entity.id),
       ...(endpointIds ? { endpointIds } : {}),
       ...(endpointCollectionIds ? { endpointCollectionIds } : {}),
       ...(composite ? { composite } : {})
@@ -290,13 +396,6 @@ export function compileV5RenderPublication(
     if (shape.kind === "region") {
       const points = resolve(id);
       const childEventIds = [...new Set(children.get(id) ?? [])].sort();
-      const composite = {
-        childEventIds,
-        supportComplete:
-          childEventIds.length > 0 &&
-          childEventIds.every((child) => shapes.has(child)),
-        worldBounds: shape.bounds
-      };
       // A region with insufficient placed descendants retains the published bounds,
       // explicitly as fallback geometry; it must not pretend to be a complete hull.
       const b = shape.bounds;
@@ -309,28 +408,35 @@ export function compileV5RenderPublication(
               { x: b.maxX, y: b.maxY },
               { x: b.minX, y: b.maxY }
             ];
-      add(
-        `event:${id}:far`,
-        { kind: "composite", id },
-        {
-          kind: "point",
-          xy: { x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }
-        },
-        [{ x: (b.minX + b.maxX) / 2, y: (b.minY + b.maxY) / 2 }],
-        label,
-        { visible: [0, 3.4], fadeOut: [2.8, 3.4], groupId: id },
-        collectionIds,
-        undefined,
-        undefined,
-        composite
-      );
+      const hullBounds = boundsOf(polygon);
+      const anchor = {
+        x: (hullBounds.minX + hullBounds.maxX) / 2,
+        y: (hullBounds.minY + hullBounds.maxY) / 2
+      };
+      const composite = {
+        childEventIds: childEventIds.slice(0, 128),
+        childEventCount: childEventIds.length,
+        childIdsComplete: childEventIds.length <= 128,
+        supportComplete: supportComplete.get(id) === true,
+        worldBounds: shape.bounds,
+        hullBounds,
+        depth: depths.get(id) ?? 1,
+        anchor,
+        transitions: {
+          pointEnterMaxSizePx: 32,
+          pointExitMaxSizePx: 48,
+          childFadeHeightPx: [58, 100] as const,
+          paddingBasePx: 6,
+          paddingPerDepthPx: 5
+        }
+      };
       add(
         `event:${id}:hull`,
         { kind: "composite", id },
         { kind: "polygon", rings: [polygon] },
         polygon,
         label,
-        { visible: [2.7, 8], fadeIn: [2.7, 3.3], groupId: id },
+        { visible: [0, 8], groupId: id },
         collectionIds,
         undefined,
         undefined,
@@ -382,12 +488,15 @@ export function compileV5RenderPublication(
   }
   if (!primitives.length)
     return {
-      format: "render-publication/1",
+      format: "render-publication/2",
       worldId: layout.world_id,
       revision: layout.revision,
       timeSystemId: layout.time_system_id,
-      algorithmVersion: "render-compiler/3",
-      maxLevel: 0,
+      algorithmVersion: "render-compiler/4",
+      spatialFrame: V5_RENDER_SPATIAL_FRAME,
+      minLevel: V5_RENDER_SPATIAL_FRAME.minLevel,
+      overflowLevels: [],
+      maxLevel: V5_RENDER_SPATIAL_FRAME.maxLevel,
       bounds: null,
       tiles: [],
       documents: [],
@@ -400,8 +509,6 @@ export function compileV5RenderPublication(
       { x: p.bounds.maxX, y: p.bounds.maxY }
     ])
   );
-  const width = Math.max(world.maxX - world.minX, 1),
-    height = Math.max(world.maxY - world.minY, 1);
   const prefix = `worlds/${layout.world_id}/revisions/${layout.revision}/v5/render/${layout.time_system_id}`;
   const geometryDocuments = new Map<string, string>();
   const geometry = new Map<
@@ -419,10 +526,18 @@ export function compileV5RenderPublication(
         ? primitive.geometry.rings
         : primitive.geometry.paths
     ).reduce((count, path) => count + path.length, 0);
+    const finestSpanX = V5_RENDER_SPATIAL_FRAME.baseSpanX * 2 ** -3;
+    const finestSpanY = V5_RENDER_SPATIAL_FRAME.baseSpanY * 2 ** -3;
     const spansManyTiles =
-      (primitive.bounds.maxX - primitive.bounds.minX) / width > 0.25 ||
-      (primitive.bounds.maxY - primitive.bounds.minY) / height > 0.25;
-    if (vertexCount <= 32 && !spansManyTiles) return primitive;
+      (primitive.bounds.maxX - primitive.bounds.minX) / finestSpanX > 0.25 ||
+      (primitive.bounds.maxY - primitive.bounds.minY) / finestSpanY > 0.25;
+    // Hulls are independently loadable while the Composite is a compact point.
+    if (
+      primitive.geometry.kind !== "polygon" &&
+      vertexCount <= 32 &&
+      !spansManyTiles
+    )
+      return primitive;
     const body = JSON.stringify({
       format: "render-geometry/1",
       worldId: layout.world_id,
@@ -438,133 +553,198 @@ export function compileV5RenderPublication(
     geometry.set(key, { key, sha256, bounds: primitive.bounds });
     return { ...primitive, geometry: { kind: "external", key, sha256 } };
   });
-  const tiles: RenderTile[] = [];
-  let maxLevel = 0;
-  // A coarse tile is represented by one aggregate per exact membership set.
-  // The source Event remains unique; no graph lookup is needed to apply
-  // Collection selection to an aggregate. Deep levels recover Event points.
-  for (let level = 0; level <= 5; level++) {
-    const count = 2 ** level;
-    let clustered = false;
-    for (let y = 0; y < count; y++)
-      for (let x = 0; x < count; x++) {
-        const bounds = {
-          minX: world.minX + (x * width) / count,
-          maxX: world.minX + ((x + 1) * width) / count,
-          minY: world.minY + (y * height) / count,
-          maxY: world.minY + ((y + 1) * height) / count
-        };
-        const entries = renderPrimitives.filter(
-          (p) =>
-            p.lod.visible[0] <= level &&
-            p.lod.visible[1] >= level &&
-            (p.geometry.kind === "point" && p.entity.kind === "event"
-              ? (p.geometry.xy.x >= bounds.minX &&
-                  p.geometry.xy.x < bounds.maxX &&
-                  p.geometry.xy.y >= bounds.minY &&
-                  p.geometry.xy.y < bounds.maxY) ||
-                (p.geometry.xy.x === world.maxX &&
-                  x === count - 1 &&
-                  p.geometry.xy.y >= bounds.minY &&
-                  p.geometry.xy.y <= bounds.maxY) ||
-                (p.geometry.xy.y === world.maxY &&
-                  y === count - 1 &&
-                  p.geometry.xy.x >= bounds.minX &&
-                  p.geometry.xy.x <= bounds.maxX)
-              : intersects(p.bounds, bounds))
-        );
-        const points = entries.filter(
-          (p) => p.entity.kind === "event" && p.geometry.kind === "point"
-        );
-        let packed = entries;
-        if (points.length > 256) {
-          clustered = true;
-          const groups = new Map<string, RenderPrimitive[]>();
-          for (const point of points) {
-            const signature = JSON.stringify(point.collectionIds);
-            const group = groups.get(signature) ?? [];
-            group.push(point);
-            groups.set(signature, group);
+  const frame = V5_RENDER_SPATIAL_FRAME;
+  const primitiveCoverage = (
+    primitive: RenderPrimitive,
+    level: number,
+    maxTiles: number
+  ) => {
+    const coverage = renderTileAddresses(
+      frame,
+      primitive.bounds,
+      level,
+      maxTiles
+    );
+    // Line/polygon geometry is closed: a maximum endpoint exactly on a cell
+    // edge must also be available from its positive-side owner. Points keep
+    // their single half-open owner. This avoids missing a hull/line when a
+    // viewport begins exactly on that edge.
+    if (primitive.geometry.kind !== "point") {
+      const edgeBounds = [
+        { ...primitive.bounds, minX: primitive.bounds.maxX },
+        { ...primitive.bounds, minY: primitive.bounds.maxY }
+      ];
+      const seen = new Set(
+        coverage.map((address) => `${address.x}/${address.y}`)
+      );
+      for (const edge of edgeBounds)
+        for (const address of renderTileAddresses(
+          frame,
+          edge,
+          level,
+          maxTiles
+        )) {
+          const key = `${address.x}/${address.y}`;
+          if (!seen.has(key)) {
+            coverage.push(address);
+            seen.add(key);
           }
-          const aggregates: RenderPrimitive[] = [];
-          for (const [signature, group] of [...groups].sort(([a], [b]) =>
-            a.localeCompare(b)
-          )) {
-            const xy = {
-              x:
-                group.reduce(
-                  (sum, p) =>
-                    sum + (p.geometry.kind === "point" ? p.geometry.xy.x : 0),
-                  0
-                ) / group.length,
-              y:
-                group.reduce(
-                  (sum, p) =>
-                    sum + (p.geometry.kind === "point" ? p.geometry.xy.y : 0),
-                  0
-                ) / group.length
-            };
-            const id = `cluster:${level}:${x}:${y}:${digest(signature).slice(0, 16)}`;
-            aggregates.push({
-              id,
-              entity: { kind: "cluster", id },
-              geometry: { kind: "point", xy },
-              bounds: boundsOf([xy]),
-              label: `${group.length} Events`,
-              collectionIds: group[0]!.collectionIds,
-              memberCount: group.length,
-              lod: { visible: [level, level + 1], groupId: id }
-            });
-          }
-          packed = [
-            ...entries.filter(
-              (p) => p.entity.kind !== "event" || p.geometry.kind !== "point"
-            ),
-            ...aggregates
-          ];
         }
-        if (packed.length)
-          tiles.push({
-            format: "render-tile/1",
-            worldId: layout.world_id,
-            revision: layout.revision,
-            timeSystemId: layout.time_system_id,
-            level,
-            x,
-            y,
-            bounds,
-            primitives: packed
-          });
+      // Both maximum coordinates may share a corner outside either strip.
+      for (const address of renderTileAddresses(
+        frame,
+        {
+          minX: primitive.bounds.maxX,
+          maxX: primitive.bounds.maxX,
+          minY: primitive.bounds.maxY,
+          maxY: primitive.bounds.maxY
+        },
+        level,
+        1
+      )) {
+        if (!seen.has(`${address.x}/${address.y}`)) coverage.push(address);
       }
-    maxLevel = level;
-    if (clustered && level === 5) throw Error("render_level_capacity_exceeded");
-    if (!clustered && level >= 3) break;
-  }
-  const visibleByLevel = new Map<number, Set<string>>();
-  for (const tile of tiles) {
-    const visible = visibleByLevel.get(tile.level) ?? new Set<string>();
-    for (const primitive of tile.primitives)
-      if (
-        primitive.entity.kind === "event" ||
-        primitive.entity.kind === "composite"
-      )
-        visible.add(primitive.entity.id);
-    visibleByLevel.set(tile.level, visible);
-  }
-  const finalTiles = tiles
-    .map((tile) => ({
-      ...tile,
-      primitives: tile.primitives.filter(
-        (primitive) =>
-          !primitive.endpointIds ||
-          primitive.endpointIds.every((id) =>
-            visibleByLevel.get(tile.level)?.has(id)
+      if (coverage.length > maxTiles)
+        throw Error("render_tile_budget_exceeded");
+    }
+    return coverage;
+  };
+  const homeLevels = new Map<string, number>();
+  for (const primitive of renderPrimitives) {
+    let homeLevel = frame.maxLevel;
+    if (primitive.geometry.kind !== "point") {
+      for (; homeLevel > frame.minLevel; homeLevel--) {
+        try {
+          primitiveCoverage(primitive, homeLevel, 16);
+          break;
+        } catch (error) {
+          if (
+            !(error instanceof Error) ||
+            error.message !== "render_tile_budget_exceeded"
           )
-      )
-    }))
-    .filter((tile) => tile.primitives.length);
+            throw error;
+        }
+      }
+    }
+    homeLevels.set(primitive.id, homeLevel);
+  }
+  const tiles: RenderTile[] = [];
+  const overflowLevels = new Set<number>();
+  // Spatial resolution is independent of semantic LOD. In particular a signed
+  // negative cell level must not silently erase authored hulls or Events.
+  // GraphShell evaluates the published point/hull/child transitions in pixels.
+  for (let level = frame.minLevel; level <= frame.maxLevel; level++) {
+    const buckets = new Map<
+      string,
+      {
+        x: number;
+        y: number;
+        bucketKind?: "overflow";
+        primitives: RenderPrimitive[];
+      }
+    >();
+    for (const primitive of renderPrimitives) {
+      const homeLevel = homeLevels.get(primitive.id)!;
+      if (level > homeLevel) continue;
+      const coverage = primitiveCoverage(primitive, level, 65_536);
+      for (const address of coverage) {
+        const kinds =
+          homeLevel === level && level < frame.maxLevel
+            ? [undefined, "overflow" as const]
+            : [undefined];
+        for (const bucketKind of kinds) {
+          const key = `${bucketKind ?? "normal"}/${address.x}/${address.y}`;
+          const bucket = buckets.get(key) ?? {
+            x: address.x,
+            y: address.y,
+            ...(bucketKind ? { bucketKind } : {}),
+            primitives: []
+          };
+          bucket.primitives.push(primitive);
+          buckets.set(key, bucket);
+          if (bucketKind) overflowLevels.add(level);
+        }
+      }
+    }
+    const priority = (a: RenderPrimitive, b: RenderPrimitive) =>
+      a.visibility!.priority.localeCompare(b.visibility!.priority) ||
+      a.id.localeCompare(b.id);
+    const orderedBuckets = [...buckets.values()].sort(
+      (a, b) =>
+        (a.bucketKind ?? "").localeCompare(b.bucketKind ?? "") ||
+        a.y - b.y ||
+        a.x - b.x
+    );
+    const selectedByBucket = new Map<
+      (typeof orderedBuckets)[number],
+      RenderPrimitive[]
+    >();
+    const represented = new Set<string>();
+    for (const bucket of orderedBuckets) {
+      // Reserve room for both authored Composite context and individual Events.
+      // Spare capacity is shared; these are paint budgets, not ontology ranks.
+      const composites = bucket.primitives
+        .filter((item) => item.entity.kind === "composite")
+        .sort(priority);
+      const events = bucket.primitives
+        .filter((item) => item.entity.kind === "event")
+        .sort(priority);
+      const chosen = [...composites.slice(0, 32), ...events.slice(0, 80)];
+      const chosenIds = new Set(chosen.map((item) => item.id));
+      const remainder = [...composites, ...events]
+        .filter((item) => !chosenIds.has(item.id))
+        .sort(priority);
+      chosen.push(...remainder.slice(0, 112 - chosen.length));
+      selectedByBucket.set(bucket, chosen);
+      for (const primitive of chosen) represented.add(primitive.entity.id);
+    }
+    for (const bucket of orderedBuckets) {
+      const chosen = selectedByBucket.get(bucket)!;
+      const relations = bucket.primitives
+        .filter(
+          (item) =>
+            item.entity.kind === "relation" &&
+            item.endpointIds?.every((id) => represented.has(id))
+        )
+        .sort(priority)
+        .slice(0, 16);
+      chosen.push(...relations);
+      const chosenIds = new Set(chosen.map((item) => item.id));
+      const remainingEntities = bucket.primitives
+        .filter(
+          (item) => item.entity.kind !== "relation" && !chosenIds.has(item.id)
+        )
+        .sort(priority);
+      chosen.push(...remainingEntities.slice(0, 128 - chosen.length));
+      chosen.sort(priority);
+      const address = {
+        level,
+        x: bucket.x,
+        y: bucket.y,
+        ...(bucket.bucketKind ? { bucketKind: bucket.bucketKind } : {})
+      };
+      tiles.push({
+        format: "render-tile/2",
+        worldId: layout.world_id,
+        revision: layout.revision,
+        timeSystemId: layout.time_system_id,
+        ...address,
+        bounds: renderTileBounds(frame, address),
+        primitives: chosen,
+        visibility: {
+          policy: "render-visibility/1",
+          candidateCount: bucket.primitives.length,
+          omittedCount: bucket.primitives.length - chosen.length,
+          normalBudget: 64,
+          smallBudget: 32,
+          bufferBudget: 32
+        }
+      });
+    }
+  }
+  const finalTiles = tiles;
   const documents = finalTiles.map((tile) => ({
-    key: `${prefix}/${tile.level}/${tile.x}/${tile.y}.json`,
+    key: renderTileKey(tile, tile),
     body: JSON.stringify(tile)
   }));
   // Large Composite/relation fragments and pathological membership signatures
@@ -574,12 +754,15 @@ export function compileV5RenderPublication(
   )
     throw Error("render_tile_budget_exceeded");
   return {
-    format: "render-publication/1",
+    format: "render-publication/2",
     worldId: layout.world_id,
     revision: layout.revision,
     timeSystemId: layout.time_system_id,
-    algorithmVersion: "render-compiler/3",
-    maxLevel,
+    algorithmVersion: "render-compiler/4",
+    spatialFrame: frame,
+    minLevel: frame.minLevel,
+    overflowLevels: [...overflowLevels].sort((a, b) => a - b),
+    maxLevel: frame.maxLevel,
     bounds: world,
     tiles: documents.map((document, i) => ({
       key: document.key,
@@ -587,7 +770,10 @@ export function compileV5RenderPublication(
       bounds: finalTiles[i]!.bounds,
       level: finalTiles[i]!.level,
       x: finalTiles[i]!.x,
-      y: finalTiles[i]!.y
+      y: finalTiles[i]!.y,
+      ...(finalTiles[i]!.bucketKind
+        ? { bucketKind: finalTiles[i]!.bucketKind }
+        : {})
     })),
     documents,
     geometry: [...geometry.values()],
@@ -596,4 +782,56 @@ export function compileV5RenderPublication(
       body
     }))
   };
+}
+
+/** Presentation visibility is not canonical completeness. Require only known
+ * identities and explicit, internally consistent omission metadata. The caller
+ * separately proves full canonical/spatial coverage before attaching a sidecar. */
+export function verifyRenderVisibilityCoverage(
+  publication: RenderPublication,
+  placedEventIds: ReadonlySet<string>,
+  relationIds: ReadonlySet<string>
+): void {
+  const represented = new Set<string>();
+  let omissions = 0;
+  for (const document of publication.documents) {
+    const tile = JSON.parse(document.body) as RenderTile;
+    const policy = tile.visibility;
+    if (publication.algorithmVersion === "render-compiler/4") {
+      if (
+        !policy ||
+        policy.policy !== "render-visibility/1" ||
+        !Number.isSafeInteger(policy.candidateCount) ||
+        !Number.isSafeInteger(policy.omittedCount) ||
+        policy.omittedCount < 0 ||
+        policy.candidateCount !==
+          tile.primitives.length + policy.omittedCount ||
+        tile.primitives.length > 128 ||
+        policy.normalBudget !== 64 ||
+        policy.smallBudget !== 32 ||
+        policy.bufferBudget !== 32
+      )
+        throw Error("v5_render_visibility_policy_invalid");
+      omissions += policy.omittedCount;
+    }
+    for (const primitive of tile.primitives) {
+      if (
+        primitive.entity.kind === "event" ||
+        primitive.entity.kind === "composite"
+      ) {
+        if (!placedEventIds.has(primitive.entity.id))
+          throw Error("v5_render_event_coverage_invalid");
+        represented.add(primitive.entity.id);
+      } else if (primitive.entity.kind === "relation") {
+        if (
+          !relationIds.has(primitive.entity.id) ||
+          !primitive.endpointIds?.every((id) => placedEventIds.has(id))
+        )
+          throw Error("v5_render_event_coverage_invalid");
+      } else if (publication.algorithmVersion === "render-compiler/4")
+        throw Error("v5_render_event_coverage_invalid");
+    }
+  }
+  if (represented.size < placedEventIds.size && omissions === 0)
+    throw Error("v5_render_event_coverage_invalid");
 }

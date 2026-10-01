@@ -91,7 +91,8 @@ describe("tile data through the original GraphShell presentation contract", () =
   });
 
   it("fails closed if a selected Composite has no published hierarchy", () => {
-    const { composite: _metadata, ...incompleteHull } = hull;
+    const incompleteHull = { ...hull };
+    delete incompleteHull.composite;
     expect(() =>
       renderTileViewport({
         worldId: "world",
@@ -100,5 +101,27 @@ describe("tile data through the original GraphShell presentation contract", () =
         relationTypes: []
       })
     ).toThrow("render_composite_metadata_missing");
+  });
+});
+it("bridges a density-omitted intermediate Composite using compiled ancestry", () => {
+  const ancestorHull = {
+    ...hull,
+    composite: { ...hull.composite!, childEventIds: ["middle"], depth: 3 }
+  };
+  const child = {
+    ...point,
+    ancestorCompositeIds: ["outer", "middle"],
+    parentCompositeIds: ["middle"]
+  };
+  const value = renderTileViewport({
+    worldId: "world",
+    revision: 7,
+    primitives: [ancestorHull, child],
+    relationTypes: []
+  });
+  expect(value.regions[0]!.contains).toContain(child.entity.id);
+  expect(value.regions[0]).toMatchObject({
+    preparedDepth: 3,
+    childrenComplete: true
   });
 });

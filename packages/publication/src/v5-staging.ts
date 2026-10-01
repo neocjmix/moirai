@@ -2,6 +2,7 @@
  * untouched; this tree cannot be served until all read shards are complete. */
 import { createHash } from "node:crypto";
 import type { ObjectStore } from "./index.js";
+import { renderReadSummary } from "./v5-render-index.js";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import {
   buildV5ContentPages,
@@ -101,11 +102,14 @@ export function attachV5RenderDocuments(
         level: number;
         x: number;
         y: number;
+        bucketKind?: "overflow";
       }[];
       geometry?: { key: string; sha256: string }[];
     };
     if (
-      manifest.format !== "render-publication/1" ||
+      !["render-publication/1", "render-publication/2"].includes(
+        manifest.format ?? ""
+      ) ||
       manifest.worldId !== root.world_id ||
       manifest.revision !== root.revision ||
       manifest.timeSystemId !== item.timeSystemId ||
@@ -113,6 +117,10 @@ export function attachV5RenderDocuments(
       !Array.isArray(manifest.geometry)
     )
       throw Error("v5_render_manifest_invalid");
+    const summary =
+      manifest.format === "render-publication/2"
+        ? renderReadSummary(manifest)
+        : null;
     const expected = [...manifest.tiles, ...manifest.geometry];
     const geometryRefs = new Map(
       manifest.geometry.map((ref) => [ref.key, ref.sha256])
@@ -148,7 +156,9 @@ export function attachV5RenderDocuments(
         document.format !==
           (ref.key.includes("/geometry/")
             ? "render-geometry/1"
-            : "render-tile/1")
+            : manifest.format === "render-publication/2"
+              ? "render-tile/2"
+              : "render-tile/1")
       )
         throw Error("v5_render_asset_identity_invalid");
       if (!ref.key.includes("/geometry/")) {
@@ -157,22 +167,30 @@ export function attachV5RenderDocuments(
           level?: number;
           x?: number;
           y?: number;
+          bucketKind?: "overflow";
           primitives?: {
             geometry?: { kind?: string; key?: string; sha256?: string };
           }[];
         };
         if (
           !Number.isInteger(tileRef.level) ||
-          tileRef.level < 0 ||
-          tileRef.level > 16 ||
-          !Number.isInteger(tileRef.x) ||
-          !Number.isInteger(tileRef.y) ||
-          tileRef.x < 0 ||
-          tileRef.y < 0 ||
-          tileRef.x >= 2 ** tileRef.level ||
-          tileRef.y >= 2 ** tileRef.level ||
+          tileRef.level < (summary?.spatialFrame.minLevel ?? 0) ||
+          tileRef.level > (summary?.maxLevel ?? 16) ||
+          (tileRef.bucketKind !== undefined &&
+            tileRef.bucketKind !== "overflow") ||
+          (tileRef.bucketKind === "overflow" &&
+            (!summary || !summary.overflowLevels.includes(tileRef.level))) ||
+          !Number.isSafeInteger(tileRef.x) ||
+          !Number.isSafeInteger(tileRef.y) ||
+          (manifest.format === "render-publication/1" &&
+            (tileRef.level > 16 ||
+              tileRef.x < 0 ||
+              tileRef.y < 0 ||
+              tileRef.x >= 2 ** tileRef.level ||
+              tileRef.y >= 2 ** tileRef.level)) ||
           ref.key !==
-            `${prefix}${tileRef.level}/${tileRef.x}/${tileRef.y}.json` ||
+            `${prefix}${tileRef.bucketKind === "overflow" ? "overflow/" : ""}${tileRef.level}/${tileRef.x}/${tileRef.y}.json` ||
+          tile.bucketKind !== tileRef.bucketKind ||
           tile.level !== tileRef.level ||
           tile.x !== tileRef.x ||
           tile.y !== tileRef.y ||
@@ -189,6 +207,16 @@ export function attachV5RenderDocuments(
       }
     }
     attached.push(item.manifest, ...item.documents);
+    if (manifest.format === "render-publication/2")
+      attached.push({
+        key: `${prefix}viewport.json`,
+        body: JSON.stringify({
+          ...summary!,
+          worldId: root.world_id,
+          revision: root.revision,
+          timeSystemId: item.timeSystemId
+        })
+      });
   }
   const result = buildV5Index(
     root.world_id,

@@ -1,4 +1,4 @@
-import type { RenderPrimitive } from "@moirai/graph-presentation/server";
+import type { ResolvedRenderPrimitive } from "./v5-render-density";
 import type {
   GraphShellChartPlaneEntity,
   GraphShellViewportResponse
@@ -9,11 +9,30 @@ import type {
 export function renderTileViewport(input: {
   worldId: string;
   revision: number;
-  primitives: readonly RenderPrimitive[];
+  primitives: readonly ResolvedRenderPrimitive[];
   relationTypes: readonly string[];
 }): GraphShellViewportResponse {
   const { worldId, revision, primitives } = input;
-  const base = (primitive: RenderPrimitive) => ({
+  const visibleChildren = new Map<string, Set<string>>();
+  for (const primitive of primitives) {
+    if (primitive.entity.kind === "relation") continue;
+    for (const ancestor of primitive.ancestorCompositeIds ??
+      primitive.parentCompositeIds ??
+      []) {
+      const ids = visibleChildren.get(ancestor) ?? new Set<string>();
+      ids.add(primitive.entity.id);
+      visibleChildren.set(ancestor, ids);
+    }
+  }
+  // These are prepared display closure links, not newly asserted contains
+  // relations. They bridge a density-omitted middle Composite without a graph read.
+  const displayChildren = (primitive: ResolvedRenderPrimitive) => [
+    ...new Set([
+      ...(primitive.composite?.childEventIds ?? []),
+      ...(visibleChildren.get(primitive.entity.id) ?? [])
+    ])
+  ];
+  const base = (primitive: ResolvedRenderPrimitive) => ({
     id: primitive.entity.id,
     eventId: primitive.entity.id,
     canonId: worldId,
@@ -21,7 +40,10 @@ export function renderTileViewport(input: {
     validationState: "ok" as const,
     contains: [] as string[],
     diagnostics: [],
-    viewportClass: "visible" as const
+    viewportClass: "visible" as const,
+    ...(primitive.renderDensity
+      ? { renderDensity: primitive.renderDensity }
+      : {})
   });
   const entities: GraphShellChartPlaneEntity[] = [];
   const regions: GraphShellChartPlaneEntity[] = [];
@@ -31,14 +53,31 @@ export function renderTileViewport(input: {
     if (primitive.entity.kind === "cluster") continue;
     if (geometry.kind === "external") throw Error("render_geometry_unresolved");
     if (primitive.entity.kind === "composite") {
-      if (geometry.kind !== "polygon") continue; // discard coarse center
+      if (geometry.kind === "point" && primitive.composite?.hullBounds) {
+        regions.push({
+          ...base(primitive),
+          geometryKind: "region",
+          worldBounds: primitive.composite.worldBounds,
+          contains: displayChildren(primitive),
+          ...(primitive.composite.depth === undefined
+            ? {}
+            : { preparedDepth: primitive.composite.depth }),
+          childrenComplete: primitive.composite.supportComplete,
+          preparedCompactBounds: primitive.composite.hullBounds
+        });
+        continue;
+      }
+      if (geometry.kind !== "polygon") continue; // legacy preview coarse center
       if (!primitive.composite || !geometry.rings[0]?.length)
         throw Error("render_composite_metadata_missing");
       regions.push({
         ...base(primitive),
         geometryKind: "region",
         worldBounds: primitive.composite.worldBounds,
-        contains: [...primitive.composite.childEventIds],
+        contains: displayChildren(primitive),
+        ...(primitive.composite.depth === undefined
+          ? {}
+          : { preparedDepth: primitive.composite.depth }),
         childrenComplete: primitive.composite.supportComplete,
         preparedWorldHull: [...geometry.rings[0]]
       });

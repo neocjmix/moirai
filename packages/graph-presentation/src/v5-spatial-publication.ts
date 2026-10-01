@@ -11,7 +11,10 @@ import {
 } from "@moirai/publication/v5";
 import type { V5StagedArtifacts } from "@moirai/publication/v5";
 import { buildV5WorldLayout } from "./v5-world-layout.js";
-import { compileV5RenderPublication } from "./v5-render-publication.js";
+import {
+  compileV5RenderPublication,
+  verifyRenderVisibilityCoverage
+} from "./v5-render-publication.js";
 import { buildV5SpatialIndex } from "./v5-spatial-index.js";
 import {
   readV5WorldViewport,
@@ -184,34 +187,14 @@ export async function buildV5WorldCompleteArtifacts(
   if (options?.renderPublication) {
     const render = layouts.map((layout) => {
       const publication = compileV5RenderPublication(state, layout);
-      const maxLevel = publication.maxLevel;
-      const finest = new Set(
-        publication.documents
-          .filter(
-            (document) =>
-              publication.tiles.find((tile) => tile.key === document.key)
-                ?.level === maxLevel
-          )
-          .flatMap(
-            (document) =>
-              (
-                JSON.parse(document.body) as {
-                  primitives: { entity: { kind: string; id: string } }[];
-                }
-              ).primitives
-          )
-          .filter(
-            (primitive) =>
-              primitive.entity.kind === "event" ||
-              primitive.entity.kind === "composite"
-          )
-          .map((primitive) => primitive.entity.id)
+      // Canonical/spatial completeness was proved above. Render visibility may
+      // intentionally omit candidates; validate identity and explicit density
+      // disclosures rather than incorrectly requiring every Event at one level.
+      verifyRenderVisibilityCoverage(
+        publication,
+        new Set(layout.shapes.map((shape) => shape.event_id)),
+        new Set(state.relations.map((relation) => relation.id))
       );
-      if (
-        finest.size !== layout.shapes.length ||
-        layout.shapes.some((shape) => !finest.has(shape.event_id))
-      )
-        throw Error("v5_render_event_coverage_invalid");
       const { documents, geometryDocuments, ...manifest } = publication;
       const prefix = `worlds/${state.world.id}/revisions/${revision}/v5/render/${layout.time_system_id}`;
       return {

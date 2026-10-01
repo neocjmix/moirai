@@ -42,6 +42,7 @@ export function createViewportCache(
   read: (query: Query, signal: AbortSignal) => Promise<Response>,
   options: {
     cachePartial?: boolean;
+    reuseCoverage?: boolean;
     maxAgeMs?: number;
     maxPending?: number;
   } = {}
@@ -72,7 +73,8 @@ export function createViewportCache(
       (e) =>
         e.key === key &&
         (JSON.stringify(e.query.bbox) === JSON.stringify(query.bbox) ||
-          (!e.value.truncated &&
+          (options.reuseCoverage !== false &&
+            !e.value.truncated &&
             !e.value.cache.stale &&
             covers(e.query.bbox, requiredCoverage(query))))
     );

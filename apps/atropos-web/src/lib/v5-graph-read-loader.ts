@@ -47,15 +47,41 @@ export function createV5GraphReadLoader(input: {
   const cached = createViewportCache(
     async (viewport, signal) => {
       if (input.tileViewport) {
-        const manifest = await input.tileViewport.manifest();
-        if (manifest.algorithmVersion !== "render-compiler/3")
-          throw Error("render_compiler_version_mismatch");
-        const { primitives } = await input.tileViewport.loadExact(
+        const { primitives, metadata } = await input.tileViewport.loadViewport(
           viewport.bbox,
-          manifest.maxLevel,
           input.collectionIds,
-          signal
+          signal,
+          undefined,
+          {
+            visibleViewport: {
+              minX:
+                (viewport.bbox.minX + viewport.bbox.maxX) / 2 -
+                (viewport.bbox.maxX - viewport.bbox.minX) / 8,
+              maxX:
+                (viewport.bbox.minX + viewport.bbox.maxX) / 2 +
+                (viewport.bbox.maxX - viewport.bbox.minX) / 8,
+              minY:
+                (viewport.bbox.minY + viewport.bbox.maxY) / 2 -
+                (viewport.bbox.maxY - viewport.bbox.minY) / 8,
+              maxY:
+                (viewport.bbox.minY + viewport.bbox.maxY) / 2 +
+                (viewport.bbox.maxY - viewport.bbox.minY) / 8
+            },
+            ...(viewport.selectedEntityId
+              ? { selectedId: viewport.selectedEntityId }
+              : {}),
+            scaleX: viewport.scale,
+            scaleY:
+              (viewport.viewportHeight * 4) /
+              Math.max(Number.EPSILON, viewport.bbox.maxY - viewport.bbox.minY)
+          }
         );
+        if (
+          !["render-compiler/3", "render-compiler/4"].includes(
+            metadata.algorithmVersion
+          )
+        )
+          throw Error("render_compiler_version_mismatch");
         return renderTileViewport({
           worldId: input.worldId,
           revision: input.revision,
@@ -122,6 +148,9 @@ export function createV5GraphReadLoader(input: {
       // Coverage reuse requires a complete response. Never slide the expiry:
       // after 30 seconds the next read checks the server's current pointer.
       cachePartial: true,
+      // Tile metadata owns coverage reuse. A camera-local density result must
+      // be recomputed when panning inside that metadata coverage.
+      reuseCoverage: !input.tileViewport,
       maxAgeMs: 30_000,
       maxPending: 1
     }

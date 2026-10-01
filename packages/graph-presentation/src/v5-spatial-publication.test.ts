@@ -43,7 +43,7 @@ it("attaches checked render tiles to the same complete v5 revision without chang
     revision: number;
     tiles: { key: string }[];
   };
-  expect(manifest.format).toBe("render-publication/1");
+  expect(manifest.format).toBe("render-publication/2");
   expect(manifest.revision).toBe(7);
   expect(manifest.tiles.length).toBeGreaterThan(0);
   expect(
@@ -52,7 +52,7 @@ it("attaches checked render tiles to the same complete v5 revision without chang
       manifest.tiles[0]!.key,
       async (key) => stored.get(key) ?? null
     )
-  ).toContain("render-tile/1");
+  ).toContain("render-tile/2");
   stored.set(manifest.tiles[0]!.key, "modified");
   await expect(
     readV5StagedDocument(

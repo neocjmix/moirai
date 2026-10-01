@@ -55,7 +55,7 @@ describe("complete Render Publication served fixture", () => {
     };
     expect(payload.assets[0]).toMatchObject({
       sha256: first.sha256,
-      body: { format: "render-tile/1", revision: 31 }
+      body: { format: "render-tile/2", revision: 31 }
     });
     expect(payload.assets[0]!.body.primitives.length).toBeGreaterThan(0);
     expect((await query({ kind: "manifest", revision: 30 })).status).toBe(409);

@@ -1508,6 +1508,7 @@
   fill: var(--graph-point-fill);
   stroke: var(--graph-point-stroke);
   stroke-width: 1.8;
+  transition: r 180ms ease-out, stroke-width 180ms ease-out, opacity 180ms ease-out;
 }
 
 .chartInstantPointHitTarget {
@@ -1518,6 +1519,7 @@
 }
 
 .chartInstantPointLabel {
+  transition: opacity 180ms ease-out;
   fill: var(--graph-point-label);
   font-family: var(--graph-font-sans);
   font-size: 12px;

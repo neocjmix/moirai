@@ -1313,6 +1313,7 @@ export const chartPlaneDiagnosticSchema = z.object({
 export type ChartPlaneDiagnostic = z.infer<typeof chartPlaneDiagnosticSchema>;
 
 const graphShellChartPlaneEntityBaseSchema = z.object({
+  renderDensity: z.object({pointScale:z.number().min(0).max(1),opacity:z.number().min(0).max(1),labelOpacity:z.number().min(0).max(1)}).optional(),
   id: z.string(),
   eventId: z.string(),
   canonId: z.string(),
@@ -1346,6 +1347,9 @@ export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntity
   // Immutable hull prepared by Lachesis; screen padding, label and fades stay
   // in GraphShell. Only the tile-backed adapter supplies this field.
   preparedWorldHull: z.array(chartPlaneWorldPointSchema).optional(),
+  // A known compact Composite may paint its point before lazy hull retrieval.
+  preparedCompactBounds: chartPlaneWorldBoundsSchema.optional(),
+  preparedDepth: z.number().int().positive().optional(),
 });
 export type GraphShellChartPlaneRegionEntity = z.infer<typeof graphShellChartPlaneRegionEntitySchema>;
 

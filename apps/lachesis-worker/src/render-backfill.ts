@@ -37,7 +37,9 @@ export async function backfillV5RenderGeneration(input: {
     return {
       timeSystemId: system.id,
       manifest,
-      documents: documents.filter((doc) => doc.key !== manifestKey)
+      documents: documents.filter(
+        (doc) => doc.key !== manifestKey && doc.key !== `${prefix}viewport.json`
+      )
     };
   });
   const generation = buildV5RenderGeneration({

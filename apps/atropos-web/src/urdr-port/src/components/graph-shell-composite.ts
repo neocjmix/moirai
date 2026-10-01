@@ -167,7 +167,11 @@ export function reconcileCompositeColorAssignments(
 
   nextAssignments.push(...exitingAssignments);
 
-  return nextAssignments.sort((left, right) => left.slotIndex - right.slotIndex || left.id.localeCompare(right.id));
+  nextAssignments.sort((left, right) => left.slotIndex - right.slotIndex || left.id.localeCompare(right.id));
+  // React state effects may run again while an asynchronous scene is empty.
+  // Preserve identity for a no-op rather than scheduling another render.
+  return nextAssignments.length === previous.length && nextAssignments.every((item, index) => item === previous[index])
+    ? previous : nextAssignments;
 }
 
 export type CompositeFadePresence<T extends CompositeFadeCarrier> = T & {
@@ -236,6 +240,7 @@ export function reconcileCompositeFadePresence<T extends CompositeFadeCarrier>(
   previous: CompositeFadePresence<T>[],
   next: T[]
 ): CompositeFadePresence<T>[] {
+  if (previous.length === 0 && next.length === 0) return previous;
   const previousById = new Map(previous.map((item) => [item.id, item]));
   const nextIds = new Set(next.map((item) => item.id));
   const reconciled: CompositeFadePresence<T>[] = [];
@@ -276,6 +281,7 @@ export function advanceCompositeFadePresence<T extends CompositeFadeCarrier>(
   items: CompositeFadePresence<T>[],
   now = performance.now(),
 ): CompositeFadePresence<T>[] {
+  if (items.length === 0) return items;
   return items.map((item) => ({
     ...item,
     ...(item.visibilityState === "exiting" ? {exitStartedAt: item.exitStartedAt ?? now} : {}),

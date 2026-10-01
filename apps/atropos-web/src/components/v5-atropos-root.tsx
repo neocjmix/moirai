@@ -4,6 +4,7 @@ import { Theme } from "@radix-ui/themes";
 import { App } from "../urdr-port/src/App";
 import { createV5GraphReadLoader } from "../lib/v5-graph-read-loader";
 import { createV5RenderTileClient } from "../lib/v5-render-tile-client";
+import { createDeferredEffectDisposal } from "../lib/deferred-effect-disposal";
 import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import { GraphQueryProvider, useGraphQuery } from "./graph-query-context";
 import {
@@ -101,7 +102,11 @@ function V5GraphApp(props: V5AtroposBootstrap) {
         : null,
     [props.tileDataEnabled, props.worldId, props.revision, props.timeSystemId]
   );
-  useEffect(() => () => tileClient?.dispose(), [tileClient]);
+  const retainTileClient = useMemo(
+    () => createDeferredEffectDisposal(() => tileClient?.dispose()),
+    [tileClient]
+  );
+  useEffect(retainTileClient, [retainTileClient]);
   const selection = JSON.stringify({
     collections: state.query.sources
       .flatMap((source) => source.canon_ids)

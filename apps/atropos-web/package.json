@@ -17,7 +17,7 @@
     "@moirai/contracts": "workspace:*",
     "@moirai/projections": "workspace:*",
     "@moirai/publication": "workspace:*",
-    "next": "^16.3.3",
+    "next": "^16.3.6",
     "react": "^19.2.8",
     "react-dom": "^19.2.8",
     "react-markdown": "^10.1.0",

@@ -22,7 +22,8 @@ const requestSchema = z.discriminatedUnion("kind", [
                 kind: z.literal("tile"),
                 level: z.number().int(),
                 x: z.number().int(),
-                y: z.number().int()
+                y: z.number().int(),
+                bucket_kind: z.literal("overflow").optional()
               })
               .strict(),
             z
@@ -61,7 +62,7 @@ export async function POST(request: Request) {
     const assets = parsed.data.assets.map((item) => {
       const key =
         item.kind === "tile"
-          ? `${prefix}${item.level}/${item.x}/${item.y}.json`
+          ? `${prefix}${item.bucket_kind ? "overflow/" : ""}${item.level}/${item.x}/${item.y}.json`
           : `${prefix}geometry/${item.sha256}.json`;
       const asset = (
         demo.assets as Record<string, { sha256: string; body: unknown }>

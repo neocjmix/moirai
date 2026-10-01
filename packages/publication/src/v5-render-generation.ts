@@ -1,6 +1,21 @@
 import { createHash } from "node:crypto";
 import type { ObjectStore } from "./index.js";
 import { readV5ServedRoot } from "./v5-serving.js";
+import {
+  buildRenderAssetIndex,
+  createRenderAssetReader,
+  renderReadSummary,
+  type RenderIndexRef,
+  type RenderReadSummary
+} from "./v5-render-index.js";
+
+type ManifestRef = {
+  timeSystemId: string;
+  key: string;
+  sha256: string;
+  summary?: RenderReadSummary;
+  assetIndex?: RenderIndexRef | null;
+};
 
 type Document = Readonly<{ key: string; body: string }>;
 type RenderInput = Readonly<{
@@ -68,7 +83,7 @@ export function buildV5RenderGeneration(input: {
       );
   }
   const documents: Document[] = [];
-  const manifests: { timeSystemId: string; key: string; sha256: string }[] = [];
+  const manifests: ManifestRef[] = [];
   for (const item of [...render].sort((a, b) =>
     a.timeSystemId.localeCompare(b.timeSystemId)
   )) {
@@ -82,7 +97,9 @@ export function buildV5RenderGeneration(input: {
       [key: string]: unknown;
     };
     if (
-      parsed.format !== "render-publication/1" ||
+      !["render-publication/1", "render-publication/2"].includes(
+        parsed.format
+      ) ||
       parsed.worldId !== worldId ||
       parsed.revision !== revision ||
       parsed.timeSystemId !== item.timeSystemId ||
@@ -102,6 +119,7 @@ export function buildV5RenderGeneration(input: {
       )
     )
       throw Error("render_generation_refs_invalid");
+    const refsByKey = new Map(refs.map((ref) => [ref.key, ref]));
     for (const doc of item.documents) {
       const body = JSON.parse(doc.body) as {
         primitives?: { geometry?: { kind: string; key?: string } }[];
@@ -117,14 +135,31 @@ export function buildV5RenderGeneration(input: {
       const newKey = translated.get(doc.key)!;
       const newBody = JSON.stringify(body);
       documents.push({ key: newKey, body: newBody });
-      const ref = refs.find((entry) => entry.key === doc.key)!;
+      const ref = refsByKey.get(doc.key)!;
       ref.key = newKey;
       ref.sha256 = sha(newBody);
     }
     const key = translated.get(item.manifest.key)!;
     const body = JSON.stringify(parsed);
     documents.push({ key, body });
-    manifests.push({ timeSystemId: item.timeSystemId, key, sha256: sha(body) });
+    const ref: ManifestRef = {
+      timeSystemId: item.timeSystemId,
+      key,
+      sha256: sha(body)
+    };
+    if (parsed.format === "render-publication/2") {
+      ref.summary = renderReadSummary(parsed);
+      const systemPrefix = `${prefix}${item.timeSystemId}/`;
+      const index = buildRenderAssetIndex(
+        systemPrefix,
+        documents.filter(
+          (doc) => doc.key.startsWith(systemPrefix) && doc.key !== key
+        )
+      );
+      documents.push(...index.documents);
+      ref.assetIndex = index.root;
+    }
+    manifests.push(ref);
   }
   const root: Document = {
     key: `${prefix}index.json`,
@@ -209,14 +244,19 @@ export async function publishV5RenderGeneration(
 
 export async function readV5RenderGeneration(
   store: Pick<ObjectStore, "get">,
-  worldId: string
+  worldId: string,
+  pinnedSource?: Awaited<ReturnType<typeof readV5ServedRoot>>
 ): Promise<{
   generation: string;
   revision: number;
-  manifests: readonly { timeSystemId: string; key: string; sha256: string }[];
+  manifests: readonly ManifestRef[];
+  resolve?: (
+    timeSystemId: string,
+    key: string
+  ) => Promise<{ body: string; sha256: string } | null>;
   read: (key: string, sha256: string) => Promise<string>;
 }> {
-  const served = await readV5ServedRoot(store, worldId);
+  const served = pinnedSource ?? (await readV5ServedRoot(store, worldId));
   const pointerRead = await store.get(`worlds/${worldId}/render-current.json`);
   if (pointerRead.status === 404) throw Error("render_generation_unavailable");
   if (pointerRead.status !== 200 || !pointerRead.body)
@@ -254,7 +294,7 @@ export async function readV5RenderGeneration(
     revision: number;
     generation: string;
     sourceRootSha256: string;
-    manifests: { timeSystemId: string; key: string; sha256: string }[];
+    manifests: ManifestRef[];
   };
   if (
     root.format !== "render-generation/1" ||
@@ -273,17 +313,38 @@ export async function readV5RenderGeneration(
     )
   )
     throw Error("render_generation_root_invalid");
+  const read = async (key: string, digest: string) => {
+    if (!key.startsWith(prefix) || !/^[0-9a-f]{64}$/.test(digest))
+      throw Error("render_generation_asset_unlisted");
+    const value = await store.get(key);
+    if (value.status !== 200 || !value.body || sha(value.body) !== digest)
+      throw Error("render_generation_asset_invalid");
+    return value.body;
+  };
+  const readers = new Map<string, ReturnType<typeof createRenderAssetReader>>();
+  for (const manifest of root.manifests) {
+    if (!manifest.summary) continue;
+    renderReadSummary(manifest.summary);
+    if (manifest.assetIndex === undefined)
+      throw Error("render_asset_index_invalid");
+    readers.set(
+      manifest.timeSystemId,
+      createRenderAssetReader(
+        `${prefix}${manifest.timeSystemId}/`,
+        manifest.assetIndex,
+        read
+      )
+    );
+  }
   return {
     generation: pointer.generation,
     revision: pointer.revision,
     manifests: root.manifests,
-    read: async (key, digest) => {
-      if (!key.startsWith(prefix) || !/^[0-9a-f]{64}$/.test(digest))
-        throw Error("render_generation_asset_unlisted");
-      const value = await store.get(key);
-      if (value.status !== 200 || !value.body || sha(value.body) !== digest)
-        throw Error("render_generation_asset_invalid");
-      return value.body;
+    read,
+    resolve: async (timeSystemId, key) => {
+      const reader = readers.get(timeSystemId);
+      if (!reader) throw Error("render_asset_index_unavailable");
+      return reader(key);
     }
   };
 }

@@ -1,3 +1,4 @@
+export * from "./v5-render-grid.js";
 import { createHash } from "node:crypto";
 export { buildV5WorldLayout } from "./v5-world-layout.js";
 export { buildRenderConcaveHull } from "./v5-render-hull.js";

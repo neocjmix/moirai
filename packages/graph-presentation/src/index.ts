@@ -1,3 +1,4 @@
+export * from "./v5-render-grid.js";
 import type {
   CanonicalEventReference,
   MoiraiGraphDiagnostic,

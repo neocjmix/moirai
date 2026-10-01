@@ -191,7 +191,9 @@ export function prepareCompositeWorldGeometry(
           ? directSupportPoints
           : fallbackBoundsPolygon;
 
-      const hullPoints = entity.preparedWorldHull && mode === "concave"
+      const hullPoints = entity.preparedCompactBounds
+        ? worldBoundsToPolygon(entity.preparedCompactBounds)
+        : entity.preparedWorldHull && mode === "concave"
         ? entity.preparedWorldHull
         : buildCompositeHull(
             {
@@ -204,7 +206,7 @@ export function prepareCompositeWorldGeometry(
         points: hullPoints
       } satisfies CompositeHullGeometry;
       regionGeometryById.set(entity.id, geometry);
-      const supportComplete = entity.preparedWorldHull
+      const supportComplete = entity.preparedWorldHull || entity.preparedCompactBounds
         ? entity.childrenComplete === true
         : entity.childrenComplete === true && entity.contains.length > 0 && entity.contains.every((id) => allWorldInstantPointById.has(id) || supportCompleteById.get(id) === true);
       supportCompleteById.set(entity.id, supportComplete);
@@ -213,11 +215,12 @@ export function prepareCompositeWorldGeometry(
         id: entity.id,
         label: entity.label,
         supportComplete,
-        depth: (regionDepthById.get(entity.id) ?? 0) + 1,
+        depth: entity.preparedDepth ?? (regionDepthById.get(entity.id) ?? 0) + 1,
         contains: entity.contains,
         containedBy: entity.containedBy,
         editorial: entity.editorial,
-        points: geometry.points
+        points: geometry.points,
+        hullPending: Boolean(entity.preparedCompactBounds)
       };
     })
     .filter((region) => region !== null)

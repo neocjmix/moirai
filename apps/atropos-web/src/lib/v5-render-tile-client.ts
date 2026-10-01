@@ -3,6 +3,7 @@ import type {
   RenderPublication,
   RenderTile
 } from "@moirai/graph-presentation/server";
+import { createV5RenderViewportClient } from "./v5-render-viewport-client";
 import { interpolateRenderLevels, levelForCamera } from "./v5-render-level";
 
 type Box = { minX: number; maxX: number; minY: number; maxY: number };
@@ -38,6 +39,7 @@ export function createV5RenderTileClient(input: {
   endpoint?: string;
   maxBytes?: number;
 }) {
+  const viewportClient = createV5RenderViewportClient(input);
   const fetcher = input.fetcher ?? fetch;
   const maxBytes = input.maxBytes ?? 16 * 1024 * 1024;
   const cache = new Map<string, { asset: Asset; bytes: number }>();
@@ -76,7 +78,13 @@ export function createV5RenderTileClient(input: {
   };
   const callAssets = async (
     assets: readonly (
-      | { kind: "tile"; level: number; x: number; y: number }
+      | {
+          kind: "tile";
+          level: number;
+          x: number;
+          y: number;
+          bucket_kind?: "overflow";
+        }
       | { kind: "geometry"; sha256: string }
     )[],
     signal?: AbortSignal
@@ -110,7 +118,9 @@ export function createV5RenderTileClient(input: {
       .then((value) => {
         const item = value as Manifest;
         if (
-          item.format !== "render-publication/1" ||
+          !["render-publication/1", "render-publication/2"].includes(
+            item.format
+          ) ||
           item.worldId !== input.worldId ||
           item.revision !== input.revision ||
           item.timeSystemId !== input.timeSystemId ||
@@ -134,14 +144,20 @@ export function createV5RenderTileClient(input: {
   ) => {
     if (disposed) throw Error("render_client_disposed");
     const publication = await manifest();
-    if (!Number.isInteger(level) || level < 0 || level > publication.maxLevel)
+    if (
+      !Number.isInteger(level) ||
+      level < (publication.minLevel ?? 0) ||
+      level > publication.maxLevel
+    )
       throw Error("render_level_invalid");
     const coverage = expand(viewport);
     const required = publication.tiles.filter(
       (ref) =>
-        (includeNeighborLevels
-          ? Math.abs(ref.level - level) <= 1
-          : ref.level === level) && overlaps(ref.bounds, coverage)
+        (ref.bucketKind === "overflow"
+          ? ref.level < level
+          : includeNeighborLevels
+            ? Math.abs(ref.level - level) <= 1
+            : ref.level === level) && overlaps(ref.bounds, coverage)
     );
     const needed = required.filter((ref) => !cache.has(ref.key));
     for (let offset = 0; offset < needed.length; offset += 16) {
@@ -151,7 +167,8 @@ export function createV5RenderTileClient(input: {
           kind: "tile" as const,
           level: ref.level,
           x: ref.x,
-          y: ref.y
+          y: ref.y,
+          ...(ref.bucketKind ? { bucket_kind: ref.bucketKind } : {})
         })),
         signal
       );
@@ -165,7 +182,8 @@ export function createV5RenderTileClient(input: {
         if (
           !asset ||
           asset.sha256 !== ref.sha256 ||
-          asset.body.format !== "render-tile/1" ||
+          (asset.body.format !== "render-tile/1" &&
+            asset.body.format !== "render-tile/2") ||
           asset.body.revision !== input.revision ||
           asset.body.worldId !== input.worldId ||
           asset.body.timeSystemId !== input.timeSystemId ||
@@ -185,7 +203,11 @@ export function createV5RenderTileClient(input: {
     const scene = new Map<string, RenderPrimitive>();
     const selected = new Set(collectionIds);
     for (const ref of required) {
-      if (ref.level !== level) continue;
+      if (
+        ref.level !== level &&
+        !(ref.bucketKind === "overflow" && ref.level < level)
+      )
+        continue;
       const tile = touch(ref.key)?.asset.body as RenderTile | undefined;
       if (!tile) throw Error("render_tile_missing");
       for (const primitive of tile.primitives) {
@@ -261,7 +283,12 @@ export function createV5RenderTileClient(input: {
         return { ...primitive, geometry: asset.body.geometry };
       })
       .sort((a, b) => a.id.localeCompare(b.id));
-    const pinned = new Set([...required.map((ref) => ref.key), ...missing]);
+    const pinned = new Set([
+      ...required.map((ref) => ref.key),
+      ...[...scene.values()].flatMap((primitive) =>
+        primitive.geometry.kind === "external" ? [primitive.geometry.key] : []
+      )
+    ]);
     let bytes = [...cache.values()].reduce((sum, item) => sum + item.bytes, 0);
     if (
       [...pinned].reduce((sum, key) => sum + (cache.get(key)?.bytes ?? 0), 0) >
@@ -327,6 +354,7 @@ export function createV5RenderTileClient(input: {
     };
   };
   return {
+    loadViewport: viewportClient.load,
     load,
     loadExact: (
       viewport: Box,
@@ -337,6 +365,7 @@ export function createV5RenderTileClient(input: {
     loadFrame,
     manifest,
     dispose() {
+      viewportClient.dispose();
       disposed = true;
       cache.clear();
       manifestPromise = null;

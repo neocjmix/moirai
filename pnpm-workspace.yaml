@@ -6,3 +6,9 @@ packages:
 onlyBuiltDependencies:
   - esbuild
   - sharp
+
+# Advisory fixes limited to the affected transitive release lines.
+overrides:
+  "fast-uri@>=3.0.0 <3.1.7": 3.1.7
+  "brace-expansion@>=5.0.0 <5.0.11": 5.0.11
+  "fast-uri@>=4.0.0 <4.1.4": 4.1.4

@@ -210,9 +210,9 @@ function orientLabelPathPoints(points: ViewportCoordinate[], side: CompositeEdge
   return dy >= 0 ? points : [...points].reverse();
 }
 
-function getCompositeLabelPathPoints(points: ViewportCoordinate[], edgeIndex: number, outwardOffset: number) {
-  const normalizedPoints = dedupeOrderedPoints(points);
-
+function getCompositeLabelPathPoints(normalizedPoints: ViewportCoordinate[], edgeIndex: number, outwardOffset: number, isClockwise: boolean) {
+  // The resolver normalizes the polygon and measures its winding once. Doing
+  // either for each local edge path adds quadratic work to every camera frame.
   if (normalizedPoints.length < 2) {
     return normalizedPoints;
   }
@@ -228,7 +228,6 @@ function getCompositeLabelPathPoints(points: ViewportCoordinate[], edgeIndex: nu
   const tangent = edgeLength <= AREA_EPSILON
     ? ({ x: 1, y: 0 } satisfies ViewportCoordinate)
     : ({ x: (next.x - current.x) / edgeLength, y: (next.y - current.y) / edgeLength } satisfies ViewportCoordinate);
-  const isClockwise = getPolygonSignedArea(normalizedPoints) < 0;
   const outward = edgeLength <= AREA_EPSILON
     ? ({ x: 0, y: -1 } satisfies ViewportCoordinate)
     : (isClockwise
@@ -973,7 +972,7 @@ export function resolveCompositeEdgeLabelPlacement(
       labelAnchor,
       labelAngle,
       edgeIndex: index,
-      pathPoints: getCompositeLabelPathPoints(normalizedPoints, index, labelGap + labelHeight * 0.5),
+      pathPoints: getCompositeLabelPathPoints(normalizedPoints, index, labelGap + labelHeight * 0.5, isClockwise),
       side,
     };
     const measuredPath = measurePolyline(placement.pathPoints);
@@ -1023,18 +1022,16 @@ export function resolveCompositeEdgeLabelPlacement(
   const fitCandidates = candidates.filter((candidate) => candidate.fitClass === bestFitClass);
   const zeroOverflowCandidates = fitCandidates.filter((candidate) => candidate.overflow <= AREA_EPSILON);
   const candidatePool = zeroOverflowCandidates.length > 0 ? zeroOverflowCandidates : fitCandidates;
-  // Fit and overflow eliminate candidates independently of density. Query
-  // nearby events only for candidates that can still win the original sort.
-  for (const candidate of candidatePool) {
-    candidate.densityScore = getCandidateDensityScore(getCompositeLabelBounds(candidate, labelWidth, labelHeight), candidate.pathPoints, nearbyPoints, labelHeight);
-  }
   const prioritizedSides = getCompositeSidePriority(centroid, viewport);
 
-  let selected = [...candidatePool].sort((left, right) => {
+  // Visit candidates in the existing geometric tie-break order. Density is
+  // non-negative, so the first zero-density candidate wins and later candidates
+  // cannot improve it. Crowded views still inspect the whole necessary pool;
+  // sparse views no longer query every rounded hull edge on every pan frame.
+  const rankedCandidates = [...candidatePool].sort((left, right) => {
     const leftSidePriority = prioritizedSides.indexOf(left.side);
     const rightSidePriority = prioritizedSides.indexOf(right.side);
     return (
-      left.densityScore - right.densityScore ||
       left.overflow - right.overflow ||
       right.breathingRoom - left.breathingRoom ||
       right.visibleSpan - left.visibleSpan ||
@@ -1043,7 +1040,17 @@ export function resolveCompositeEdgeLabelPlacement(
       left.attachY - right.attachY ||
       left.attachX - right.attachX
     );
-  })[0]!;
+  });
+  let selected = rankedCandidates[0]!;
+  let bestDensity = Number.POSITIVE_INFINITY;
+  for (const candidate of rankedCandidates) {
+    candidate.densityScore = getCandidateDensityScore(getCompositeLabelBounds(candidate, labelWidth, labelHeight), candidate.pathPoints, nearbyPoints, labelHeight);
+    if (candidate.densityScore < bestDensity) {
+      selected = candidate;
+      bestDensity = candidate.densityScore;
+    }
+    if (bestDensity === 0) break;
+  }
 
   // Keep the committed edge through a small screen-space dead band. Its path
   // and coordinates are still recomputed, so the label follows pan and pinch.

@@ -301,3 +301,226 @@ it("does not retain deselected polygon hulls or lines as point fade-outs", async
   expect((await c.load(box(), ["one"])).primitives).toHaveLength(2);
   expect((await c.load(box(), [])).primitives).toHaveLength(0);
 });
+
+it("uses the fetched spatial margin during pan and refills before the camera reaches its edge", async () => {
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    expect(JSON.parse(init.body as string).kind).toBe("viewport");
+    return Response.json(metadata([point("a", "one", 5)]));
+  });
+  const c = client(fetcher);
+  const load = (shift: number) =>
+    c.load(box(shift, 10 + shift), ["one"], undefined, undefined, {
+      scaleX: 1,
+      scaleY: 1,
+      visibleViewport: {
+        minX: 3.75 + shift,
+        maxX: 6.25 + shift,
+        minY: 3.75,
+        maxY: 6.25
+      }
+    });
+  const first = await load(0);
+  for (let shift = 0.1; shift <= 2.4; shift += 0.1) {
+    const next = await load(shift);
+    expect(next.primitives[0]).toBe(first.primitives[0]);
+  }
+  expect(fetcher).toHaveBeenCalledTimes(1);
+  await load(2.6);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  expect(JSON.parse(fetcher.mock.calls[1]![1]!.body as string).exclude).toEqual(
+    [box()]
+  );
+});
+
+it("retains bounded immutable level snapshots for zoom reversals without restarting identity", async () => {
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    const q = JSON.parse(init.body as string);
+    return Response.json({
+      ...metadata([point("same-event", "one")]),
+      level: q.level
+    });
+  });
+  const c = client(fetcher);
+  const first = await c.load(box(), ["one"], undefined, 2);
+  await c.load(box(), ["one"], undefined, 3);
+  const back = await c.load(box(), ["one"], undefined, 2);
+  expect(back.primitives[0]).toBe(first.primitives[0]);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  for (let level = 4; level < 12; level++) {
+    const scene = await c.load(box(), ["one"], undefined, level);
+    expect(scene.cache.entries).toBeLessThanOrEqual(6);
+  }
+  await c.load(box(), ["one"], undefined, 2);
+  expect(fetcher).toHaveBeenCalledTimes(11);
+});
+
+it("expires level snapshots from their original read despite repeated warm visits", async () => {
+  const now = vi.spyOn(Date, "now").mockReturnValue(0);
+  try {
+    const fetcher = vi.fn(async () =>
+      Response.json(metadata([point("a", "one")]))
+    );
+    const c = client(fetcher);
+    await c.load(box(), ["one"]);
+    now.mockReturnValue(29_999);
+    await c.load(box(), ["one"]);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+    now.mockReturnValue(30_000);
+    await c.load(box(), ["one"]);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  } finally {
+    now.mockRestore();
+  }
+});
+
+it("promotes a pending hull buffer read across camera changes without abort or duplicate fetch", async () => {
+  const p: RenderPrimitive = {
+    ...external("h", "one"),
+    entity: { kind: "composite", id: "h" },
+    bounds: box(),
+    composite: {
+      childEventIds: ["a"],
+      supportComplete: true,
+      worldBounds: box(),
+      hullBounds: box(),
+      anchor: { x: 5, y: 5 }
+    }
+  };
+  let finish: (value: Response) => void = () => {};
+  let bufferSignal: AbortSignal | null | undefined;
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    if (JSON.parse(init.body as string).kind === "viewport")
+      return Response.json(metadata([p]));
+    bufferSignal = init.signal;
+    return new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+  });
+  const c = client(fetcher);
+  const load = (scale: number) =>
+    c.load(box(), ["one"], undefined, undefined, {
+      scaleX: scale,
+      scaleY: scale
+    });
+  expect((await load(2.5)).primitives[0]!.geometry.kind).toBe("point");
+  expect((await load(2.8)).primitives[0]!.geometry.kind).toBe("point");
+  const active = load(4);
+  expect(bufferSignal?.aborted).toBe(false);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  finish(Response.json({ revision: 7, generation: "g", assets: [geom("h")] }));
+  const ready = await active;
+  expect(ready.primitives[0]!.entity.id).toBe("h");
+  expect(ready.primitives[0]!.geometry.kind).toBe("polygon");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("evicts old metadata before exceeding the combined geometry and snapshot budget", async () => {
+  const value = metadata([point("a", "one")]);
+  const budget = new TextEncoder().encode(JSON.stringify(value)).length + 20;
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    const q = JSON.parse(init.body as string);
+    return Response.json({ ...value, level: q.level });
+  });
+  const c = client(fetcher, budget);
+  for (let level = 0; level < 10; level++) {
+    const result = await c.load(box(), ["one"], undefined, level);
+    expect(result.cache.bytes).toBeLessThanOrEqual(budget);
+    expect(result.cache.entries).toBe(1);
+  }
+});
+
+const square = (min: number, max: number) => ({
+  minX: min,
+  maxX: max,
+  minY: min,
+  maxY: max
+});
+const fixedMetadata = (
+  level: number,
+  hasOmitted: boolean,
+  primitives: RenderPrimitive[]
+): RenderViewportMetadata => ({
+  ...metadata(primitives),
+  algorithmVersion: "render-compiler/4",
+  level,
+  maxLevel: 2,
+  completeness: !hasOmitted,
+  spatialFrame: {
+    originX: 0,
+    originY: 0,
+    baseSpanX: 8,
+    baseSpanY: 8,
+    minLevel: 0,
+    maxLevel: 2
+  },
+  visibility: {
+    policy: "render-visibility/1",
+    candidateCount: primitives.length + Number(hasOmitted),
+    omittedCount: Number(hasOmitted),
+    hasOmitted,
+    counting: "tile-occurrences",
+    readCoverage: "full",
+    budgets: { normal: 64, small: 32, buffer: 32 }
+  }
+});
+
+it("computes first inward zoom locally when complete metadata already has every authored alternative", async () => {
+  const fetcher = vi.fn(async () =>
+    Response.json(fixedMetadata(1, false, [point("shared", "one", 8)]))
+  );
+  const c = client(fetcher);
+  const first = await c.load(square(0, 16), ["one"], undefined, undefined, {
+    scaleX: 1,
+    scaleY: 1,
+    visibleViewport: square(6, 10)
+  });
+  const zoom = await c.load(square(4, 12), ["one"], undefined, undefined, {
+    scaleX: 2,
+    scaleY: 2,
+    visibleViewport: square(7, 9)
+  });
+  expect(zoom.primitives[0]).toBe(first.primitives[0]);
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
+
+it("prepares a bounded finer candidate level without blocking paint and promotes it on the first zoom", async () => {
+  const shared = point("shared", "one", 8);
+  let finish: (value: Response) => void = () => {};
+  let bufferSignal: AbortSignal | null | undefined;
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    const q = JSON.parse(init.body as string);
+    if (q.level === undefined)
+      return Response.json(fixedMetadata(1, true, [shared]));
+    expect(q.level).toBe(2);
+    expect(q.viewport).toEqual(square(4, 12));
+    bufferSignal = init.signal;
+    return new Promise<Response>((resolve) => {
+      finish = resolve;
+    });
+  });
+  const c = client(fetcher);
+  const load = (wide: boolean) =>
+    c.load(
+      wide ? square(0, 16) : square(4, 12),
+      ["one"],
+      undefined,
+      undefined,
+      {
+        scaleX: wide ? 1 : 2,
+        scaleY: wide ? 1 : 2,
+        visibleViewport: wide ? square(6, 10) : square(7, 9)
+      }
+    );
+  const wide = await load(true);
+  expect(wide.primitives.map((p) => p.id)).toEqual(["shared"]);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  const zoom = load(false);
+  expect(bufferSignal?.aborted).toBe(false);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  finish(
+    Response.json(fixedMetadata(2, false, [shared, point("new", "one", 9)]))
+  );
+  expect((await zoom).primitives.map((p) => p.id)).toEqual(["new", "shared"]);
+  await load(true);
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});

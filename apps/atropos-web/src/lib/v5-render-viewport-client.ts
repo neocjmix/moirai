@@ -49,6 +49,14 @@ type GeometryAsset = {
     geometry: RenderPrimitive["geometry"];
   };
 };
+type GeometryRef = { kind: "external"; key: string; sha256: string };
+type Snapshot = {
+  box: Box;
+  metadata: RenderViewportMetadata;
+  createdAt: number;
+  bytes: number;
+  level?: number;
+};
 const covers = (a: Box, b: Box) =>
   a.minX <= b.minX && a.maxX >= b.maxX && a.minY <= b.minY && a.maxY >= b.maxY;
 const overlaps = (a: Box, b: Box) =>
@@ -57,7 +65,7 @@ const bytesOf = (value: unknown) =>
   new TextEncoder().encode(JSON.stringify(value)).byteLength;
 
 /** ADR-012 normal reader. Metadata is selection independent; geometry is not.
- * One coverage snapshot and a byte-bounded immutable geometry LRU survive
+ * Bounded coverage/level snapshots and an immutable geometry LRU survive
  * Collection-only loader changes, without a global descriptor manifest. */
 export function createV5RenderViewportClient(input: {
   worldId: string;
@@ -70,18 +78,60 @@ export function createV5RenderViewportClient(input: {
   const fetcher = input.fetcher ?? fetch;
   const maxBytes = input.maxBytes ?? 16 * 1024 * 1024;
   const geometry = new Map<string, { asset: GeometryAsset; bytes: number }>();
-  let snapshot: {
-    box: Box;
-    metadata: RenderViewportMetadata;
-    createdAt: number;
-    level?: number;
-  } | null = null;
+  const snapshots: Snapshot[] = [];
+  let snapshot: Snapshot | null = null;
   let generation: string | null | undefined;
   let disposed = false;
   let epoch = 0;
-  let prefetch: AbortController | null = null;
+  let prefetch: {
+    controller: AbortController;
+    refs: Map<string, GeometryRef>;
+    promise: Promise<GeometryAsset[]>;
+  } | null = null;
+  let levelPrefetch: {
+    controller: AbortController;
+    box: Box;
+    level: number;
+    promise: Promise<RenderViewportMetadata>;
+  } | null = null;
   let lastScene: ResolvedRenderPrimitive[] = [];
   let densityHistory = new Map<string, RenderDensity>();
+  const cacheBytes = () =>
+    snapshots.reduce((sum, item) => sum + item.bytes, 0) +
+    [...geometry.values()].reduce((sum, item) => sum + item.bytes, 0);
+  const validateMetadata = (value: RenderViewportMetadata) => {
+    if (
+      value.format !== "render-viewport/1" ||
+      value.world_id !== input.worldId ||
+      value.revision !== input.revision ||
+      value.time_system_id !== input.timeSystemId ||
+      !Array.isArray(value.primitives) ||
+      !Number.isInteger(value.level) ||
+      !Number.isInteger(value.maxLevel) ||
+      !(value.generation === null || typeof value.generation === "string")
+    )
+      throw Error("render_viewport_invalid");
+    if (generation !== undefined && generation !== value.generation)
+      throw Error("render_generation_changed");
+  };
+  const validateAssets = (
+    fetched: GeometryAsset[],
+    refs: ReadonlyMap<string, GeometryRef>
+  ) => {
+    for (const [key, ref] of refs) {
+      const asset = fetched.find((a) => a.key === key);
+      if (
+        !asset ||
+        asset.sha256 !== ref.sha256 ||
+        asset.body.format !== "render-geometry/1" ||
+        asset.body.worldId !== input.worldId ||
+        asset.body.revision !== input.revision ||
+        asset.body.timeSystemId !== input.timeSystemId ||
+        asset.body.geometry.kind === "external"
+      )
+        throw Error("render_geometry_invalid");
+    }
+  };
   const assertCurrent = (ticket: number, signal?: AbortSignal) => {
     if (disposed || signal?.aborted || ticket !== epoch)
       throw new DOMException("Superseded render viewport", "AbortError");
@@ -148,12 +198,12 @@ export function createV5RenderViewportClient(input: {
       selectedId?: string;
     }
   ) => {
-    prefetch?.abort();
-    prefetch = null;
     const ticket = ++epoch;
     assertCurrent(ticket, signal);
-    const previous = snapshot;
-    const frame = previous?.metadata.spatialFrame;
+    const now = Date.now();
+    for (let i = snapshots.length - 1; i >= 0; i--)
+      if (now - snapshots[i]!.createdAt >= 30_000) snapshots.splice(i, 1);
+    const frame = snapshot?.metadata.spatialFrame;
     let effectiveLevel = level;
     if (level === undefined && frame) {
       effectiveLevel = frame.maxLevel;
@@ -174,54 +224,85 @@ export function createV5RenderViewportClient(input: {
         effectiveLevel--;
       }
     }
-    const reusable =
-      previous &&
-      previous.level === level &&
-      (effectiveLevel === undefined ||
-        previous.metadata.level === effectiveLevel) &&
-      Date.now() - previous.createdAt < 30_000;
+    // The caller already requests four screen widths/heights. Refilling that
+    // whole margin after each tiny pan defeats its purpose. Keep half a screen
+    // ahead of the visible camera, then refill the full margin at its boundary.
+    const view = camera?.visibleViewport;
+    const required = view
+      ? {
+          minX: Math.max(
+            viewport.minX,
+            view.minX - (view.maxX - view.minX) / 2
+          ),
+          maxX: Math.min(
+            viewport.maxX,
+            view.maxX + (view.maxX - view.minX) / 2
+          ),
+          minY: Math.max(
+            viewport.minY,
+            view.minY - (view.maxY - view.minY) / 2
+          ),
+          maxY: Math.min(viewport.maxY, view.maxY + (view.maxY - view.minY) / 2)
+        }
+      : viewport;
+    const compatible = snapshots.filter(
+      (item) =>
+        item.level === level &&
+        (effectiveLevel === undefined ||
+          item.metadata.level === effectiveLevel ||
+          // Fixed-grid levels change candidate coverage, not representation.
+          // A complete snapshot already contains every authored alternative.
+          (level === undefined &&
+            item.metadata.algorithmVersion === "render-compiler/4" &&
+            item.metadata.completeness === true &&
+            item.metadata.visibility?.hasOmitted === false &&
+            covers(item.box, required)))
+    );
+    const previous =
+      compatible.findLast((item) => covers(item.box, required)) ??
+      compatible.findLast((item) => overlaps(item.box, viewport));
     let metadata: RenderViewportMetadata;
-    if (reusable && covers(previous.box, viewport))
+    if (previous && covers(previous.box, required)) {
       metadata = previous.metadata;
-    else {
-      const delta = reusable && overlaps(previous.box, viewport);
-      const value = (await call(
-        {
-          kind: "viewport",
-          viewport,
-          ...(level === undefined ? {} : { level }),
-          ...(delta
-            ? {
-                exclude: [previous.box],
-                exclude_level: previous.metadata.level
-              }
-            : {})
-        },
-        signal
-      )) as RenderViewportMetadata;
+      snapshots.splice(snapshots.indexOf(previous), 1);
+      snapshots.push(previous);
+      snapshot = previous;
+    } else {
+      const delta = previous && overlaps(previous.box, viewport);
+      const pending =
+        levelPrefetch &&
+        levelPrefetch.level === effectiveLevel &&
+        covers(levelPrefetch.box, required)
+          ? levelPrefetch
+          : null;
+      const value = pending
+        ? await pending.promise
+        : ((await call(
+            {
+              kind: "viewport",
+              viewport,
+              ...(level === undefined ? {} : { level }),
+              ...(delta
+                ? {
+                    exclude: [previous.box],
+                    exclude_level: previous.metadata.level
+                  }
+                : {})
+            },
+            signal
+          )) as RenderViewportMetadata);
       assertCurrent(ticket, signal);
-      if (
-        value.format !== "render-viewport/1" ||
-        value.world_id !== input.worldId ||
-        value.revision !== input.revision ||
-        value.time_system_id !== input.timeSystemId ||
-        !Array.isArray(value.primitives) ||
-        !Number.isInteger(value.level) ||
-        !Number.isInteger(value.maxLevel) ||
-        !(value.generation === null || typeof value.generation === "string")
-      )
-        throw Error("render_viewport_invalid");
-      if (generation !== undefined && generation !== value.generation)
-        throw Error("render_generation_changed");
+      validateMetadata(value);
       generation = value.generation;
+      const readBox = pending?.box ?? viewport;
       const merged = new Map<string, RenderPrimitive>();
       for (const primitive of [
-        ...(delta && value.level === previous.metadata.level
+        ...(delta && !pending && value.level === previous.metadata.level
           ? previous.metadata.primitives
           : []),
         ...value.primitives
       ]) {
-        if (!overlaps(primitive.bounds, viewport)) continue;
+        if (!overlaps(primitive.bounds, readBox)) continue;
         const old = merged.get(primitive.id);
         if (old && JSON.stringify(old) !== JSON.stringify(primitive))
           throw Error("render_replica_mismatch");
@@ -230,6 +311,7 @@ export function createV5RenderViewportClient(input: {
       metadata = { ...value, primitives: [...merged.values()] };
       if (
         delta &&
+        !pending &&
         value.level === previous.metadata.level &&
         previous.metadata.visibility?.hasOmitted
       ) {
@@ -237,14 +319,22 @@ export function createV5RenderViewportClient(input: {
         if (metadata.visibility)
           metadata.visibility = { ...metadata.visibility, hasOmitted: true };
       }
-      if (bytesOf(metadata) > maxBytes)
+      const metadataBytes = bytesOf(metadata);
+      if (metadataBytes > maxBytes)
         throw Error("render_working_set_budget_exceeded");
       snapshot = {
-        box: viewport,
+        box: readBox,
         metadata,
-        createdAt: Date.now(),
+        createdAt: now,
+        bytes: metadataBytes,
         ...(level === undefined ? {} : { level })
       };
+      const prefetchedIndex = snapshots.findIndex(
+        (item) => item.metadata === value
+      );
+      if (prefetchedIndex >= 0) snapshots.splice(prefetchedIndex, 1);
+      snapshots.push(snapshot);
+      while (snapshots.length > 6) snapshots.shift();
     }
     const selected = new Set(collectionIds);
     const visible = metadata.primitives.filter(
@@ -256,10 +346,7 @@ export function createV5RenderViewportClient(input: {
             ids.some((id) => selected.has(id))
           ))
     );
-    const buffered = new Map<
-      string,
-      { kind: "external"; key: string; sha256: string }
-    >();
+    const buffered = new Map<string, GeometryRef>();
     const densityScene = camera?.visibleViewport
       ? selectRenderDensity(
           visible,
@@ -288,7 +375,8 @@ export function createV5RenderViewportClient(input: {
         geometry.has(p.geometry.key)
       )
         return p;
-      if (span >= enter * 0.75) buffered.set(p.geometry.key, p.geometry);
+      // One scale doubling of lead time before the 32px hull transition.
+      if (span >= enter * 0.5) buffered.set(p.geometry.key, p.geometry);
       // This is the published Composite's point state, never a spatial cluster.
       // Its metadata retains true hull bounds; the adapter marks the hull pending.
       return {
@@ -311,32 +399,46 @@ export function createV5RenderViewportClient(input: {
       )
     );
     const missing = [...refs].filter(([key]) => !geometry.has(key));
+    if (
+      prefetch &&
+      ![...prefetch.refs.keys()].some(
+        (key) => refs.has(key) || buffered.has(key)
+      )
+    ) {
+      prefetch.controller.abort();
+      prefetch = null;
+    }
     if (missing.length) {
-      const fetched = await assets(
-        missing.map(([, ref]) => ({ kind: "geometry", sha256: ref.sha256 })),
-        signal
-      );
+      // A hull crossing its scale threshold promotes its existing buffer read.
+      // Camera updates must not cancel it and start the identical request again.
+      const promoted = prefetch;
+      const fresh = missing.filter(([key]) => !promoted?.refs.has(key));
+      const batches = await Promise.all([
+        ...(promoted && missing.some(([key]) => promoted.refs.has(key))
+          ? [promoted.promise]
+          : []),
+        ...(fresh.length
+          ? [
+              assets(
+                fresh.map(([, ref]) => ({
+                  kind: "geometry",
+                  sha256: ref.sha256
+                })),
+                signal
+              )
+            ]
+          : [])
+      ]);
+      const fetched = batches.flat();
       assertCurrent(ticket, signal);
       // Validate the entire response before making any cache changes.
-      for (const [key, ref] of missing) {
-        const asset = fetched.find((a) => a.key === key);
-        if (
-          !asset ||
-          asset.sha256 !== ref.sha256 ||
-          asset.body.format !== "render-geometry/1" ||
-          asset.body.worldId !== input.worldId ||
-          asset.body.revision !== input.revision ||
-          asset.body.timeSystemId !== input.timeSystemId ||
-          asset.body.geometry.kind === "external"
-        )
-          throw Error("render_geometry_invalid");
-      }
+      validateAssets(fetched, new Map(missing));
       for (const asset of fetched)
         geometry.set(asset.key, { asset, bytes: bytesOf(asset.body) });
     }
     assertCurrent(ticket, signal);
     // Pin ALL active refs, including previously cached ones, before eviction.
-    let activeBytes = bytesOf(metadata);
+    let activeBytes = snapshot!.bytes;
     for (const [key, ref] of refs) {
       const cached = geometry.get(key);
       if (!cached || cached.asset.sha256 !== ref.sha256)
@@ -347,9 +449,12 @@ export function createV5RenderViewportClient(input: {
     }
     if (activeBytes > maxBytes)
       throw Error("render_working_set_budget_exceeded");
-    let bytes =
-      bytesOf(metadata) +
-      [...geometry.values()].reduce((sum, item) => sum + item.bytes, 0);
+    let bytes = cacheBytes();
+    while (bytes > maxBytes && snapshots.length > 1) {
+      const index = snapshots.findIndex((item) => item !== snapshot);
+      if (index < 0) break;
+      bytes -= snapshots.splice(index, 1)[0]!.bytes;
+    }
     for (const [key, item] of geometry) {
       if (bytes <= maxBytes) break;
       if (!refs.has(key)) {
@@ -380,58 +485,121 @@ export function createV5RenderViewportClient(input: {
     // Keep exactly one outgoing frame so CSS can animate disappearance. This
     // never accumulates navigation history or fetches geometry for removed dots.
     primitives = [...primitives, ...outgoing];
-    if (buffered.size) {
+    if (buffered.size && !prefetch) {
       const controller = new AbortController();
-      prefetch = controller;
       // Optional nearby-scale hull fetch is deliberately outside the active await.
-      void assets(
+      const promise = assets(
         [...buffered.values()].map((ref) => ({
           kind: "geometry",
           sha256: ref.sha256
         })),
         controller.signal
-      )
-        .then((fetched) => {
-          assertCurrent(ticket, controller.signal);
-          let total = bytes;
-          for (const asset of fetched) {
-            const ref = buffered.get(asset.key);
-            if (
-              !ref ||
-              asset.sha256 !== ref.sha256 ||
-              asset.body.format !== "render-geometry/1" ||
-              asset.body.worldId !== input.worldId ||
-              asset.body.revision !== input.revision ||
-              asset.body.timeSystemId !== input.timeSystemId ||
-              asset.body.geometry.kind === "external"
-            )
-              return;
+      ).then((fetched) => {
+        if (disposed || controller.signal.aborted)
+          throw new DOMException("Superseded render buffer", "AbortError");
+        validateAssets(fetched, buffered);
+        let total = cacheBytes();
+        for (const asset of fetched) {
+          const size = bytesOf(asset.body);
+          if (total + size <= maxBytes && !geometry.has(asset.key)) {
+            geometry.set(asset.key, { asset, bytes: size });
+            total += size;
           }
-          for (const asset of fetched) {
-            const size = bytesOf(asset.body);
-            if (total + size <= maxBytes && !geometry.has(asset.key)) {
-              geometry.set(asset.key, { asset, bytes: size });
-              total += size;
-            }
-          }
-        })
+        }
+        return fetched;
+      });
+      prefetch = { controller, refs: buffered, promise };
+      void promise
         .catch(() => {
-          /* A cancelled/failed buffer never invalidates active paint. */
+          // A cancelled/failed buffer never invalidates the current point paint.
+        })
+        .finally(() => {
+          if (prefetch?.controller === controller) prefetch = null;
+        });
+    }
+    if (
+      levelPrefetch &&
+      (!overlaps(levelPrefetch.box, required) ||
+        Math.abs(levelPrefetch.level - metadata.level) > 1)
+    ) {
+      levelPrefetch.controller.abort();
+      levelPrefetch = null;
+    }
+    const nextLevel = metadata.level + 1;
+    if (
+      view &&
+      level === undefined &&
+      metadata.algorithmVersion === "render-compiler/4" &&
+      metadata.spatialFrame &&
+      metadata.visibility?.hasOmitted &&
+      nextLevel <= metadata.spatialFrame.maxLevel &&
+      !levelPrefetch &&
+      !snapshots.some(
+        (item) =>
+          item.level === undefined &&
+          item.metadata.level === nextLevel &&
+          covers(item.box, required)
+      )
+    ) {
+      const controller = new AbortController();
+      // Read the next finer spatial level over two screens, not the whole
+      // four-screen current-level margin. The cell fanout stays bounded while
+      // preparing candidates before the first inward scale boundary.
+      const promise = call(
+        { kind: "viewport", viewport: required, level: nextLevel },
+        controller.signal
+      ).then((value: RenderViewportMetadata) => {
+        if (disposed || controller.signal.aborted)
+          throw new DOMException(
+            "Superseded render level buffer",
+            "AbortError"
+          );
+        validateMetadata(value);
+        if (value.level !== nextLevel) throw Error("render_level_mismatch");
+        const size = bytesOf(value);
+        while (
+          snapshots.length > 1 &&
+          (snapshots.length >= 6 || cacheBytes() + size > maxBytes)
+        ) {
+          const index = snapshots.findIndex((item) => item !== snapshot);
+          if (index < 0) break;
+          snapshots.splice(index, 1);
+        }
+        if (cacheBytes() + size <= maxBytes)
+          snapshots.push({
+            box: required,
+            metadata: value,
+            createdAt: Date.now(),
+            bytes: size
+          });
+        return value;
+      });
+      levelPrefetch = { controller, box: required, level: nextLevel, promise };
+      void promise
+        .catch(() => {
+          // A best-effort finer buffer cannot invalidate the current scene.
+        })
+        .finally(() => {
+          if (levelPrefetch?.controller === controller) levelPrefetch = null;
         });
     }
     return {
       primitives,
       metadata,
-      cache: { entries: geometry.size + 1, bytes }
+      cache: { entries: geometry.size + snapshots.length, bytes }
     };
   };
   return {
     load,
     dispose() {
       disposed = true;
-      prefetch?.abort();
+      prefetch?.controller.abort();
+      prefetch = null;
+      levelPrefetch?.controller.abort();
+      levelPrefetch = null;
       epoch++;
       snapshot = null;
+      snapshots.length = 0;
       geometry.clear();
       lastScene = [];
       densityHistory.clear();

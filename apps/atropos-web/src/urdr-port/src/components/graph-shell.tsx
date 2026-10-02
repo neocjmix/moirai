@@ -3139,7 +3139,15 @@ export function GraphShell({
       }),
     ], viewportSize, previousSemanticIds.current);
   }, [semanticPointCandidates, visibleCompositeRegions, viewportSize, renderedEventSelection?.eventId, selectedEventSelection?.eventId]);
-  useEffect(() => { previousSemanticIds.current = semanticSelection.ids; }, [semanticSelection]);
+  useEffect(() => {
+    // Collection changes replace the loader and temporarily remove its points,
+    // while Composite paint may remain for its exit fade. That transitional
+    // scene must not replace the last settled label choices.
+    if (runtimeViewportLoadState !== "ready" || !runtimeViewportResponse ||
+      runtimeViewportOwnerRef.current?.loader !== loader ||
+      runtimeViewportOwnerRef.current?.canons !== [...effectiveEnabledCanonIds].join(",")) return;
+    previousSemanticIds.current = semanticSelection.ids;
+  }, [semanticSelection, runtimeViewportLoadState, runtimeViewportResponse, loader, effectiveEnabledCanonIds]);
   const presentedPoints = useMemo(() => discovery?.contextHud
     ? semanticPointCandidates.map(point => ({...point, showLabel: point.showLabel !== false && semanticSelection.ids.has(`point:${point.id}`)}))
     : chartInstantPoints, [discovery?.contextHud, semanticPointCandidates, chartInstantPoints, semanticSelection]);

@@ -10,6 +10,8 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 ## 현재 authoritative baseline — IP-011
 
+2026-10-02 활성 우선 작업은 [IP-012 모바일 성능·표현 연속성](implementation/IP-012-mobile-continuity-plan.md)이다. 기존 UI 문법을 유지하며 fetch·LOD 전환·identity·지속 frame을 개선한다. 사용자는 모바일로만 개발 결과를 확인하고 코드를 리뷰하지 않으므로, [AGENTS](../AGENTS.md)와 [IS-001](implementation/IS-001-agent-mobile-strategy.md)의 작은 production checkpoint 배포·자율 복구 정책을 모든 세션에서 적용한다. 일부 CI 실패·미완료는 배포 가능한 checkpoint를 막지 않으며 완료 주장과 구별한다.
+
 Render Publication 책임 경계와 migration 순서는 [IP-012](implementation/IP-012-render-publication-plan.md)가 소유한다. 기본 GraphShell은 기존 painter를 유지하며 검증된 v3/v4 Render generation에서 데이터를 읽는다. `?tileData=0`은 semantic rollback이고 별도 tile scene은 `?renderTiles=1`에서 관찰한다. ADR-012 고정 격자·viewport 읽기는 #301로 배포됐으며 최신 모바일 label 수정·운영 검증은 CURRENT를 따른다. 전체 모바일 성능·전환 품질과 증분 재사용 검증은 남아 있다. IP-011 A5의 활성 구현을 대체하거나 A4 미달을 종료하지 않는다.
 
 [IP-011 architecture realignment](implementation/IP-011-architecture-realignment.md)이 현재 planning과 남은 milestone 순서를 소유한다. 개정 CON-003/BR/TS는 목표 계약이며 운영 배포는 A3를 거쳐 v5로 전환됐다. [CURRENT](implementation/CURRENT.md)가 실행 활성 상태를 구분한다. A4는 사용자 승인으로 잔여 작업을 이관해 종료했다(성능 전체 통과 아님). [종료 결정·백로그](implementation/IP-011-A4-closeout-backlog.md)와 [A5 planning baseline](implementation/IP-011-A5-collection-discovery-plan.md)이 다음 작업의 시작점이다. A5는 2026-09-28 사용자 지시로 구현 활성이다. 계획 PR #237을 main에 통합했으며 실행 상태는 CURRENT를 따른다. [A4 인계](implementation/IP-011-A4-handoff.md)는 역사적 기준선이다.
@@ -48,11 +50,18 @@ Render Publication 책임 경계와 migration 순서는 [IP-012](implementation/
 - [IP-009 — 임진왜란 실제 역사 구축과 E2E](implementation/IP-009-imjin-war-e2e.md)
 - [IP-009 — 최종 검증 결과](evidence/ip009/final-verification.md)
 - [현재 구현 상태](implementation/CURRENT.md)
+- [IP-012 — Render Publication 구현 계획](implementation/IP-012-render-publication-plan.md)
+- [ADR-012 — Render viewport 읽기와 working-set 불변식](architecture/ADR-012-render-read-architecture.md)
+- [IP-012 — 활성 모바일 성능·연속성 실행 계획](implementation/IP-012-mobile-continuity-plan.md)
+- [PR #303까지 checkpoint 이력 — 현재 상태 아님](implementation/CURRENT-HISTORY-THROUGH-PR303.md)
+- [2026-10-02 문서 정합성 검토](evidence/ip012/document-reconciliation-2026-10-02.md)
 - [M3-R 책임 경계 재정렬](implementation/M3-BOUNDARY.md)
 - [M3-C Auth0·MCP 연결](implementation/M3-CONNECTION.md)
 - [Milestone 0 infrastructure inventory](implementation/M0-INFRASTRUCTURE.md)
 
 구현 운영 원칙은 제품 의미를 정의하지 않지만 에이전트가 코드를 작성·검증·배포하고 사용자에게 결과를 전달하는 방식을 구속한다.
+
+`implementation`의 과거 milestone·handoff와 `evidence`의 dated 측정은 각 작성 시점의 기록이다. 최신 동작·실행 권한은 CURRENT/AGENTS/IS-001 및 활성 계획을 읽는다. 역사적 “다음 작업”, “미배포”, “CI 통과 후 배포”를 새 지시로 재실행하지 않는다. 헌법·BR의 accepted 의미는 실제 사용자 승인 없이 최신 코드에 맞춰 바꾸지 않는다.
 
 ## ID 규칙
 

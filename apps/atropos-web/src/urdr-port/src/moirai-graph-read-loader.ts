@@ -1,4 +1,5 @@
 import { createViewportCache } from "./viewport-cache";
+import { createGraphReadLifetime } from "./graph-read-lifetime";
 import { presentationScopeKey } from "@moirai/graph-presentation";
 import type { MoiraiGraphSource, MoiraiGraphUrlState } from "@moirai/contracts";
 import {
@@ -16,6 +17,7 @@ export function createMoiraiGraphReadLoader(input: {
   fetcher?: typeof fetch;
 }): GraphReadLoader {
   const fetcher = input.fetcher ?? fetch;
+  const lifetime = createGraphReadLifetime();
   const cached = createViewportCache(async (viewport, signal) => {
     const response = await fetcher("/graph/spatial", {
       method: "POST",
@@ -54,9 +56,19 @@ export function createMoiraiGraphReadLoader(input: {
     return graphShellViewportResponseSchema.parse(body.viewport);
   });
   return {
-    dispose: () => cached.dispose(),
+    dispose: () => {
+      lifetime.dispose();
+      cached.dispose();
+    },
     loadWorkspace: async () => input.workspace,
-    loadEventDetail: input.loadEventDetail,
-    loadViewport: (_locale, viewport) => cached(viewport)
+    loadEventDetail: (locale, id, signal) =>
+      lifetime.read(
+        (readSignal) => input.loadEventDetail(locale, id, readSignal),
+        signal
+      ),
+    loadViewport: async (_locale, viewport) => {
+      lifetime.assertActive();
+      return cached(viewport);
+    }
   };
 }

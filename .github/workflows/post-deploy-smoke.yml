@@ -56,6 +56,19 @@ jobs:
         run: pnpm exec playwright install --with-deps webkit
       - name: Verify live mobile A3 navigation
         run: pnpm exec playwright test --config playwright.ip011-live.config.ts
+      - name: Retain public mobile failure evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-deploy-public-mobile-${{ env.EXPECTED_COMMIT_SHA }}
+          # This suite reads public/synthetic data without authenticated state.
+          # Only failure captures from this suite are retained, before the
+          # separately credentialed authoring smoke runs.
+          path: |
+            test-results/ip011-a3-live/**/test-failed-*.png
+            test-results/ip011-a3-live/**/trace.zip
+          if-no-files-found: ignore
+          retention-days: 7
       - name: Build Clotho CLI
         id: clotho-build
         if: ${{ !cancelled() && steps.readiness.outcome == 'success' }}

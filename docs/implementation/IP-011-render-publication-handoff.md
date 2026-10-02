@@ -2,7 +2,7 @@
 
 Status: planning handoff, not yet authoritative architecture
 
-Disposition (2026-09-29): verified implementation plan is [IP-012](IP-012-render-publication-plan.md). Preserve this handoff as decision history; use IP-012 for migration boundaries and exit gates.
+Disposition (updated 2026-10-02): verified implementation plan is [IP-012](IP-012-render-publication-plan.md), normal viewport read decisions are [ADR-012](../architecture/ADR-012-render-read-architecture.md), and the active follow-up is [mobile performance/continuity](IP-012-mobile-continuity-plan.md). Preserve this handoff as decision history. Its next-Work-session/planning-only/global-manifest wording is not a current execution restriction; default GraphShell Render integration has already shipped. Use CURRENT for deployed state.
 Date: 2026-09-28
 Repository: neocjmix/moirai
 

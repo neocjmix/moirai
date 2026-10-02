@@ -5,6 +5,8 @@ Date: 2026-09-29
 Scope: Render Publication read architecture and Atropos working-set invariants.
 This document records decisions only. It intentionally does not prescribe implementation sequencing or detailed algorithms.
 
+2026-10-02 reconciliation: fixed signed addressing and viewport-first metadata/geometry reads are implemented. Exact runtime state is in [CURRENT](../implementation/CURRENT.md), with active [mobile continuity gates](../implementation/IP-012-mobile-continuity-plan.md). The original dated payload/request observations below remain historical measurements, not current performance results.
+
 ## 1. Purpose
 
 Render Publication exists to move World-stable render decisions out of Atropos runtime while preserving the established Atropos visual and interaction language.
@@ -165,6 +167,10 @@ For example, when a Composite is currently represented as a point, its hull geom
 The buffer applies in both spatial and scale dimensions.
 
 Buffered fetches must not block the active scene and may be aborted when navigation changes direction.
+
+### 2026-10-02 continuity requirement
+
+A normal read must preserve the identity and presentation history of the same authored object across tile/level/response boundaries. Loading a replacement coverage must not blank an already prepared scene or restart its label/visibility history. Keep the consistent prepared counterpart until the new one is drawable, while distinguishing explicit selection removal, authoritative empty results and revision changes. Hull ↔ ordinary point ↔ small point ↔ hidden transitions may use bounded XY/scale prefetch, local computation/interpolation and caches in any combination justified by measurement. These are implementation options, not required infrastructure. Existing UI grammar remains the constraint; request sequencing and renderer internals may change.
 
 ## 10. Collection selection
 

@@ -749,31 +749,65 @@ function isPointWithinViewport(point: ViewportCoordinate, viewport: ViewportExte
 
 function getLongestVisiblePathInterval(path: ReturnType<typeof measurePolyline>, viewport: ViewportExtent, margin: number) {
   const {totalLength} = path;
-  if (totalLength <= AREA_EPSILON) {
+  if (totalLength <= AREA_EPSILON || viewport.width < margin * 2 || viewport.height < margin * 2) {
     return { start: 0, end: 0, span: 0 };
   }
 
   const sampleCount = Math.max(12, Math.ceil(totalLength / 6));
-  let currentStart: number | null = null;
+  let currentStart = -1;
+  let currentEnd = -1;
   let bestStart = 0;
   let bestEnd = 0;
-
-  for (let index = 0; index <= sampleCount; index += 1) {
-    const distance = (totalLength * index) / sampleCount;
-    const sample = getPointAtDistanceOnPolyline(path, distance);
-    const visible = isPointWithinViewport(sample.point, viewport, margin);
-    if (visible && currentStart === null) {
-      currentStart = distance;
+  const finishInterval = () => {
+    if (currentStart < 0) return;
+    const start = (totalLength * currentStart) / sampleCount;
+    const end = (totalLength * currentEnd) / sampleCount;
+    if (end - start > bestEnd - bestStart) {
+      bestStart = start;
+      bestEnd = end;
     }
-    if ((!visible || index === sampleCount) && currentStart !== null) {
-      const intervalEnd = visible && index === sampleCount ? distance : (totalLength * Math.max(index - 1, 0)) / sampleCount;
-      if (intervalEnd - currentStart > bestEnd - bestStart) {
-        bestStart = currentStart;
-        bestEnd = intervalEnd;
+  };
+  const visibleAt = (index: number) => isPointWithinViewport(
+    getPointAtDistanceOnPolyline(path, (totalLength * index) / sampleCount).point,
+    viewport,
+    margin,
+  );
+
+  // Clip each line segment, then keep precisely the same six-pixel sample
+  // indices as the old full-path scan. Work now depends on segment count, not
+  // an arbitrarily long offscreen hull perimeter at high zoom. Verify the two
+  // boundary samples to preserve inclusion at floating-point viewport edges.
+  for (const {start, end, length, traversed} of path.segments) {
+    let enter = 0;
+    let leave = 1;
+    for (const [from, delta, lower, upper] of [
+      [start.x, end.x - start.x, margin, viewport.width - margin],
+      [start.y, end.y - start.y, margin, viewport.height - margin],
+    ]) {
+      if (delta === 0) {
+        if (from < lower || from > upper) leave = -1;
+      } else {
+        const first = (lower - from) / delta;
+        const last = (upper - from) / delta;
+        enter = Math.max(enter, Math.min(first, last));
+        leave = Math.min(leave, Math.max(first, last));
       }
-      currentStart = null;
+    }
+    if (leave < enter) continue;
+    let firstIndex = Math.max(0, Math.ceil(((traversed + length * enter) / totalLength) * sampleCount) - 1);
+    let lastIndex = Math.min(sampleCount, Math.floor(((traversed + length * leave) / totalLength) * sampleCount) + 1);
+    while (firstIndex <= lastIndex && !visibleAt(firstIndex)) firstIndex++;
+    while (lastIndex >= firstIndex && !visibleAt(lastIndex)) lastIndex--;
+    if (firstIndex > lastIndex) continue;
+    if (currentStart >= 0 && firstIndex <= currentEnd + 1) {
+      currentEnd = Math.max(currentEnd, lastIndex);
+    } else {
+      finishInterval();
+      currentStart = firstIndex;
+      currentEnd = lastIndex;
     }
   }
+  finishInterval();
 
   return { start: bestStart, end: bestEnd, span: Math.max(0, bestEnd - bestStart) };
 }

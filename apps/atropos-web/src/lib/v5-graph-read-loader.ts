@@ -1,5 +1,6 @@
 import type { GraphReadLoader } from "../urdr-port/src/graph-read-loader";
 import { createViewportCache } from "../urdr-port/src/viewport-cache";
+import { createGraphReadLifetime } from "../urdr-port/src/graph-read-lifetime";
 import { viewportCompleteness } from "../urdr-port/src/viewport-completeness";
 import { v5ViewportCursorSchema } from "./v5-viewport-cursor";
 import type { createV5RenderTileClient } from "./v5-render-tile-client";
@@ -28,7 +29,9 @@ export function createV5GraphReadLoader(input: {
   fetcher?: typeof fetch;
 }): GraphReadLoader {
   const fetcher = input.fetcher ?? fetch;
+  const lifetime = createGraphReadLifetime();
   const call = async (query: Record<string, unknown>, signal?: AbortSignal) => {
+    lifetime.assertActive(signal);
     const response = await fetcher("/graph/v5/shell", {
       method: "POST",
       signal: signal ?? null,
@@ -158,17 +161,33 @@ export function createV5GraphReadLoader(input: {
   return {
     ...(input.renderTiles ? { renderTiles: input.renderTiles } : {}),
     viewportMode: "snapshot",
-    dispose: () => cached.dispose(),
+    dispose: () => {
+      lifetime.dispose();
+      cached.dispose();
+    },
     inspectViewport: () => cached.inspect(),
     loadWorkspace: async () => input.workspace,
-    loadViewport: (_locale, viewport) => cached(viewport),
-    loadEventDetail: async (_locale, event_id) =>
-      event_id.startsWith("collection:")
-        ? call({
-            kind: "collection",
-            collection_id: event_id.slice(11),
-            page: input.readPage ?? 0
-          })
-        : call({ kind: "detail", event_id, page: input.readPage ?? 0 })
+    loadViewport: async (_locale, viewport) => {
+      lifetime.assertActive();
+      return cached(viewport);
+    },
+    loadEventDetail: (_locale, event_id, signal) =>
+      lifetime.read(
+        (readSignal) =>
+          event_id.startsWith("collection:")
+            ? call(
+                {
+                  kind: "collection",
+                  collection_id: event_id.slice(11),
+                  page: input.readPage ?? 0
+                },
+                readSignal
+              )
+            : call(
+                { kind: "detail", event_id, page: input.readPage ?? 0 },
+                readSignal
+              ),
+        signal
+      )
   };
 }

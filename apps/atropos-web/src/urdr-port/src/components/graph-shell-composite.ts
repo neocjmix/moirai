@@ -282,15 +282,43 @@ export function advanceCompositeFadePresence<T extends CompositeFadeCarrier>(
   now = performance.now(),
 ): CompositeFadePresence<T>[] {
   if (items.length === 0) return items;
-  return items.map((item) => ({
-    ...item,
-    ...(item.visibilityState === "exiting" ? {exitStartedAt: item.exitStartedAt ?? now} : {}),
-    renderedOpacity: item.visibilityState === "exiting" ? 0 : item.opacity,
-    visibilityState: item.visibilityState === "exiting" ? "exiting" : "present"
-  }));
+  let changed = false;
+  const next = items.map((item) => {
+    const exiting = item.visibilityState === "exiting";
+    const renderedOpacity = exiting ? 0 : item.opacity;
+    const visibilityState = exiting ? "exiting" : "present";
+    // Camera updates schedule this RAF while paint is already settled. Keep
+    // the state reference on a no-op so React does not render the SVG again.
+    if (item.renderedOpacity === renderedOpacity && item.visibilityState === visibilityState &&
+        (!exiting || item.exitStartedAt !== undefined)) return item;
+    changed = true;
+    return {
+      ...item,
+      ...(exiting ? {exitStartedAt: item.exitStartedAt ?? now} : {}),
+      renderedOpacity,
+      visibilityState,
+    };
+  });
+  return changed ? next : items;
 }
 
 export function pruneExitedCompositeFadePresence<T extends CompositeFadeCarrier>(items: CompositeFadePresence<T>[], now = performance.now(), duration = 220) {
   const retained = items.filter((item) => !(item.visibilityState === "exiting" && item.renderedOpacity <= 0.001 && item.exitStartedAt !== undefined && now >= item.exitStartedAt + duration));
   return retained.length === items.length ? items : retained;
+}
+
+/** Exit paint keeps its last geometry, but must follow the live camera while
+ * its opacity settles. Transform screen coordinates through the original view
+ * back into World space and then through the current view. */
+export function retainedCompositePaintTransform(
+  previous: {x: number; y: number; scaleX: number; scaleY: number},
+  previousSize: {width: number; height: number},
+  current: {x: number; y: number; scaleX: number; scaleY: number},
+  currentSize: {width: number; height: number},
+) {
+  const sx = current.scaleX / previous.scaleX;
+  const sy = current.scaleY / previous.scaleY;
+  const tx = currentSize.width / 2 + current.x - sx * (previousSize.width / 2 + previous.x);
+  const ty = currentSize.height / 2 + current.y - sy * (previousSize.height / 2 + previous.y);
+  return `matrix(${sx} 0 0 ${sy} ${tx} ${ty})`;
 }

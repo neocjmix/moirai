@@ -57,6 +57,37 @@ export function selectRenderDensity(
       renderDensity: { ...small, opacity, pointScale: 0.2 + 0.15 * opacity }
     };
   });
+  // Keep a bounded paint buffer outside the exact screen. The loader already
+  // owns a larger spatial working set, but discarding it here caused points to
+  // disappear at the screen edge until the next read completed. Offscreen
+  // candidates must not consume the visible scene's 128 density ranks.
+  const dx = (viewport.maxX - viewport.minX) * 0.05;
+  const dy = (viewport.maxY - viewport.minY) * 0.05;
+  const paintBounds = {
+    minX: viewport.minX - dx,
+    maxX: viewport.maxX + dx,
+    minY: viewport.minY - dy,
+    maxY: viewport.maxY + dy
+  };
+  const buffered = primitives
+    .filter(
+      (p) =>
+        p.entity.kind !== "relation" &&
+        !overlaps(p.bounds, viewport) &&
+        overlaps(p.bounds, paintBounds)
+    )
+    .sort(
+      (a, b) =>
+        (a.visibility?.priority ?? a.id).localeCompare(
+          b.visibility?.priority ?? b.id
+        ) || a.id.localeCompare(b.id)
+    )
+    .slice(0, 32)
+    .map((p): ResolvedRenderPrimitive => ({
+      ...p,
+      renderDensity: previous.get(p.id) ?? normal
+    }));
+  result.push(...buffered);
   const entities = new Set(
     result
       .filter((p) => (p.renderDensity?.opacity ?? 1) > 0)

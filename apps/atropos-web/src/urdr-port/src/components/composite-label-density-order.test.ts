@@ -86,3 +86,38 @@ it("queries only the best geometric candidate when its neighborhood is empty", (
   expect(placement).toEqual(resolve(polygon, 72, 14, { width: 390, height: 664 }));
   expect(queries).toBe(1);
 });
+
+it("preserves the six-pixel visibility grid for long and viewport-edge paths", () => {
+  const outputs: CompositeEdgeLabelPlacement[] = [];
+  for (const viewport of [
+    { width: 390, height: 664 },
+    { width: 24, height: 48 },
+    { width: 10, height: 10 }
+  ]) {
+    for (const polygon of [
+      [{ x: 7, y: 7 }, { x: 383, y: 7 }, { x: 383, y: 657 }, { x: 7, y: 657 }],
+      [{ x: -100000, y: 200 }, { x: 100000, y: 201 }, { x: 100000, y: 500 }, { x: -100000, y: 499 }],
+      [{ x: 7, y: 7 }, { x: 200, y: 7 }, { x: 200, y: 8 }],
+      [{ x: 7, y: 7 }, { x: 383, y: 657 }],
+      [{ x: 7, y: 7 }, { x: 7, y: 7 }],
+      []
+    ]) {
+      let previous: CompositeEdgeLabelPlacement | undefined;
+      for (const offset of [-0.002, -0.001, 0, 0.001, 0.002, 6, 12]) {
+        previous = resolve(
+          polygon.map(point => ({ x: point.x + offset, y: point.y + offset })),
+          72,
+          14,
+          viewport,
+          10,
+          6,
+          [],
+          previous
+        );
+        outputs.push(previous);
+      }
+    }
+  }
+  expect(createHash("sha256").update(JSON.stringify(outputs)).digest("hex"))
+    .toBe("f7389ef2d383934ef41c387fb3129bc757a89dc5b85ef9a162456a520d7e21a3"); // pragma: allowlist secret -- synthetic geometry SHA-256
+});

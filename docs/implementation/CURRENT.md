@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-10-02 모바일 label 연속성 수정: Collection 선택으로 viewport loader가 교체되는 동안 임시로 비는 point 후보가 semantic label 이력을 덮어쓰지 않게 한다. 운영 `920e16c`의 iPhone WebKit에서 30→29→30 후 정상 크기 사건 9개와 camera는 유지되지만 사건 hit target이 1→0으로 바뀌는 현상을 재현했다. 수정 후 충돌하는 Event/Composite fixture의 label·camera·keyboard 상세 열기 회귀시험이 통과하며 원래 renderer에서는 실패한다. 전체 로컬 모바일 시험은 29 통과·5 실패·1 skip으로 전체 UX 승인 상태는 아니다. [원인·검증·남은 실패](../evidence/ip012/mobile-label-continuity-2026-10-02.md). 운영 배포 SHA와 live 재검증은 해당 PR의 배포 증거를 따른다.
+
 2026-10-01 IP-012 작업 브랜치 checkpoint (미배포): 고정 signed 격자·manifest 없는 viewport 조회, 큰 hull/관계의 coarse overflow, 후보 128개/cell 및 승인된 point→작은 무문자 point→숨김 정책을 구현·검증 중이다. Composite는 hull→point 전환과 작성된 ancestry를 유지한다. 이 항목은 배포·모바일 전환 품질 승인이나 IP-012 전체 완료를 뜻하지 않는다. [격자·bounded visibility 근거](../evidence/ip012/fixed-grid-visibility-2026-10-01.md)
 
 2026-09-29 IP-012 GraphShell 보존형 타일 마이그레이션: PR #298 (`a73b146`)은 작성된 Composite의 자식·support 메타데이터와 concave hull을 compiler v3에 넣고 기존 GraphShell에 fine tile 데이터를 공급한다. 격자 cluster를 사건으로 그리지 않는다. 운영 World Revision 62는 독립 generation `fdeac556…`으로 백필했다(worker `render_backfill: served`, 163문서·2,353,065바이트). `?tileData=1`과 기존 semantic 화면의 동일 시점·30개 Collection에서 영역 14개, SVG 경로 25개, 주요 클릭 대상 7개가 같았고 사건 서랍과 30→29→30 선택 토글이 작동했다. 아래 이전 checkpoint의 "다음 cutover"는 당시 기록이다. v3 generation만 기본 사용하고 `?tileData=0`으로 semantic 롤백하는 전환은 별도 배포 중이다. 이는 시각·상호작용 확인이지 모바일 프레임 예산·100k 규모·고정 격자·증분 인밸리데이션 완료 증거가 아니다. 백필 1회성 worker 변수는 비웠다.

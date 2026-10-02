@@ -279,40 +279,50 @@ async function readRender(request: Request): Promise<Response> {
     if (query.kind === "assets") {
       const assets = [];
       let bytes = 0;
-      for (const asset of query.assets) {
-        if (
-          asset.kind === "tile" &&
-          asset.bucket_kind === "overflow" &&
-          !summary
-        )
-          return error("invalid_render_query", 400);
-        if (
-          asset.kind === "tile" &&
-          !summary &&
-          (asset.level < 0 ||
-            asset.level > 16 ||
-            asset.x < 0 ||
-            asset.y < 0 ||
-            asset.x >= 2 ** asset.level ||
-            asset.y >= 2 ** asset.level)
-        )
-          return error("invalid_render_query", 400);
-        const key =
-          asset.kind === "tile"
-            ? `${prefix}${asset.bucket_kind === "overflow" ? "overflow/" : ""}${asset.level}/${asset.x}/${asset.y}.json`
-            : `${prefix}geometry/${asset.sha256}.json`;
-        const value = await readAsset(key);
-        if (!value) return error("render_asset_not_found", 404);
-        if (asset.kind === "geometry" && value.sha256 !== asset.sha256)
-          throw Error("render_manifest_digest_mismatch");
-        bytes += Buffer.byteLength(value.body);
-        if (bytes > 4 * 1024 * 1024)
-          return error("render_batch_too_large", 413);
-        assets.push({
-          key,
-          sha256: value.sha256,
-          body: JSON.parse(value.body)
-        });
+      // Geometry payloads are small, but a serial object-store RTT per hull
+      // delays the whole scene. Match the viewport's bounded eight-read waves.
+      for (let offset = 0; offset < query.assets.length; offset += 8) {
+        const batch = query.assets.slice(offset, offset + 8);
+        const values = await Promise.allSettled(
+          batch.map(async (asset) => {
+            if (
+              asset.kind === "tile" &&
+              ((asset.bucket_kind === "overflow" && !summary) ||
+                (!summary &&
+                  (asset.level < 0 ||
+                    asset.level > 16 ||
+                    asset.x < 0 ||
+                    asset.y < 0 ||
+                    asset.x >= 2 ** asset.level ||
+                    asset.y >= 2 ** asset.level)))
+            )
+              throw Error("invalid_render_query");
+            const key =
+              asset.kind === "tile"
+                ? `${prefix}${asset.bucket_kind === "overflow" ? "overflow/" : ""}${asset.level}/${asset.x}/${asset.y}.json`
+                : `${prefix}geometry/${asset.sha256}.json`;
+            return { key, value: await readAsset(key) };
+          })
+        );
+        // Preserve request order and its first error even when later reads
+        // finish first. No next wave starts after a failed or oversized batch.
+        for (let index = 0; index < batch.length; index++) {
+          const result = values[index]!;
+          if (result.status === "rejected") throw result.reason;
+          const { key, value } = result.value;
+          const asset = batch[index]!;
+          if (!value) return error("render_asset_not_found", 404);
+          if (asset.kind === "geometry" && value.sha256 !== asset.sha256)
+            throw Error("render_manifest_digest_mismatch");
+          bytes += Buffer.byteLength(value.body);
+          if (bytes > 4 * 1024 * 1024)
+            return error("render_batch_too_large", 413);
+          assets.push({
+            key,
+            sha256: value.sha256,
+            body: JSON.parse(value.body)
+          });
+        }
       }
       return Response.json(
         {

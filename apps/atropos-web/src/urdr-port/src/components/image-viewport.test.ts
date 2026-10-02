@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { addViewportPointer, createImageViewportState, getPinchSpanInfluence, moveViewportPointer, removeViewportPointer } from "./image-viewport";
+import { addViewportPointer, createImageViewportState, getPinchSpanInfluence, moveViewportPointer, removeViewportPointer, resetViewportView } from "./image-viewport";
 
 describe("M4.6 copied pointer state machine", () => {
   it("pans without altering independent axis scales", () => {
@@ -31,5 +31,27 @@ describe("M4.6 copied pointer state machine", () => {
     expect(getPinchSpanInfluence(0)).toBe(0);
     expect(getPinchSpanInfluence(150)).toBe(Math.log1p(6) / Math.log1p(12));
     expect(getPinchSpanInfluence(300)).toBe(1);
+  });
+
+  it("keeps idle reset identity while applying an actual restored camera", () => {
+    const initial = createImageViewportState();
+    expect(resetViewportView(initial)).toBe(initial);
+    const restored = resetViewportView(initial, {x: 20, y: 30, scaleX: 2, scaleY: 3});
+    expect(restored.view).toEqual({x: 20, y: 30, scaleX: 2, scaleY: 3});
+    expect(resetViewportView(restored, {...restored.view})).toBe(restored);
+  });
+
+  it("rebases an active pan even when reset keeps the same camera", () => {
+    let state = addViewportPointer(createImageViewportState({scaleX: 2, scaleY: 3}), 1, {x: 10, y: 20});
+    state = moveViewportPointer(state, 1, {x: 50, y: 70});
+    const before = state;
+    state = resetViewportView(state, {...state.view});
+    expect(state).not.toBe(before);
+    expect(state.view).toBe(before.view);
+    expect(state.activePointers).toBe(before.activePointers);
+    expect(state.gestureBaseline).not.toBe(before.gestureBaseline);
+    expect(state.gestureBaseline?.view).toBe(state.view);
+    state = moveViewportPointer(state, 1, {x: 60, y: 90});
+    expect(state.view).toEqual({...before.view, x: before.view.x + 10, y: before.view.y + 20});
   });
 });

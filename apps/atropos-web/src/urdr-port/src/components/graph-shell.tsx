@@ -1,7 +1,7 @@
 // @ts-nocheck -- Next.js adapter: URDR was authored under its own TS config.
 "use client";
 
-import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 
 import { chartPlaneDiagnosticSchema, eventDetailResponseSchema, graphShellChartPlaneEntitySchema, graphShellChartPlaneRegionEntitySchema, graphShellViewportResponseSchema, type EventDetailResponse, type EventRecord, type GraphShellChartPlane, type GraphShellChartPlaneEntity, type GraphShellChartPlaneRegionEntity, type GraphShellWorkspaceShell, type WorldAnchor } from "@urdr/contracts";
 import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
@@ -18,6 +18,7 @@ import { pointDensityDisplay } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
 import { reconcileLabelPaint, LABEL_PAINT_EXIT_MS } from "./label-paint-presence";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
+import { needsCompositePaintFrame, reconcileCompositeFramePaint } from "./composite-frame-paint";
 import { createViewportReadScheduler } from "./viewport-read-scheduler";
 import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-disposal";
 import { reconcileViewport } from "../viewport-cache";
@@ -43,11 +44,8 @@ import {
   resetViewportView,
 } from "./image-viewport";
 import {
-  advanceCompositeFadePresence,
   getCompositeChildrenOpacity,
-  pruneExitedCompositeFadePresence,
   reconcileCompositeColorAssignments,
-  reconcileCompositeFadePresence,
   retainedCompositePaintTransform,
   type CompositeColorAssignment,
   type CompositeFadePresence,
@@ -2282,7 +2280,8 @@ export function GraphShell({
   const [enabledCanonIds, setEnabledCanonIds] = useState<ReadonlySet<string>>(() => new Set(defaultShellSlice.enabledCanonIds));
   const [imageViewportState, setImageViewportState] = useState(() => createImageViewportState());
   const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
-  const [visibleCompositeRegions, setVisibleCompositeRegions] = useState<CompositeFadePresence<CompositeRegion>[]>([]);
+  const [compositePaintClock, setCompositePaintClock] = useState({frame: 0, prune: 0});
+  const compositePaintHistoryRef = useRef({regions: [] as CompositeFadePresence<CompositeRegion>[], frame: 0});
   const [visibleCompositeColorAssignments, setVisibleCompositeColorAssignments] = useState<CompositeColorAssignment[]>([]);
   const initialEventSelection = externalFocus
     ? { eventId: externalFocus.id, label: externalFocus.label, requestKey: 0 }
@@ -2302,7 +2301,23 @@ export function GraphShell({
 
   const runtimeViewportOwnerRef = useRef(null);
   const parsedRuntimeViewportRef = useRef(null);
-  const graphWorkCountsRef = useRef({worldGeometryBatches: 0, pointTransforms: 0, regionTransforms: 0, labelQueries: 0});
+  const graphWorkCountsRef = useRef({worldGeometryBatches: 0, pointTransforms: 0, regionTransforms: 0, labelQueries: 0,
+    renders: 0, commits: 0, viewportBatches: 0, compositePaintPasses: 0, compositeFrameTicks: 0, compositePruneTicks: 0,
+    semanticPasses: 0, staleSemanticRegionPasses: 0});
+  graphWorkCountsRef.current.renders++;
+  useLayoutEffect(() => { graphWorkCountsRef.current.commits++; });
+  const [graphPhaseProfiling] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("gsProfile") === "1");
+  const graphPhaseTimingsRef = useRef({});
+  const measureGraphPhase = useCallback((phase, run) => {
+    if (!graphPhaseProfiling) return run();
+    const started = performance.now();
+    try { return run(); } finally {
+      const timing = graphPhaseTimingsRef.current[phase] ?? {calls: 0, totalMs: 0};
+      timing.calls++;
+      timing.totalMs += performance.now() - started;
+      graphPhaseTimingsRef.current[phase] = timing;
+    }
+  }, [graphPhaseProfiling]);
   const compositePanGeometryCache = useMemo(() => createCompositePanGeometryCache(), [loader]);
   const graphInspectionRef = useRef(null);
   useEffect(() => {
@@ -2473,7 +2488,14 @@ export function GraphShell({
   }, [bootstrapChartPlane, effectiveEnabledCanonIds]);
 
   const navigationBounds = useMemo(() => composeNavigationBounds(workspace.navigationScopes ?? [], [...effectiveEnabledCanonIds]), [workspace, effectiveEnabledCanonIds]);
-  const { view, activePointers } = imageViewportState;
+  const { activePointers } = imageViewportState;
+  // React may replay a queued gesture/restore updater with identical numeric
+  // output. Projection and viewport reads depend on camera values, so retain
+  // their input identity until one of the four camera coordinates changes.
+  const view = useMemo(() => imageViewportState.view, [
+    imageViewportState.view.x, imageViewportState.view.y,
+    imageViewportState.view.scaleX, imageViewportState.view.scaleY,
+  ]);
   useEffect(() => () => { if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current); }, [loader]);
   const navigationPointerCount = Object.keys(activePointers).length;
   // Settle from the committed final pointer state. A pointerup can share a React
@@ -2594,9 +2616,9 @@ export function GraphShell({
       }
     };
 
-    const isGestureActive = Object.keys(activePointers).length > 0 || navigationAnimationRef.current !== null;
+    const isGestureActive = navigationPointerCount > 0 || navigationAnimationRef.current !== null;
     viewportReadScheduler.request(loadViewport, isGestureActive ? VIEWPORT_FETCH_GESTURE_SETTLE_MS : 0);
-  }, [activePointers, effectiveEnabledCanonIds, hasHydratedRestorableState, loader, locale, selectedEventSelection, usesLoadingWorkspace, view, viewportSize]);
+  }, [navigationPointerCount, effectiveEnabledCanonIds, hasHydratedRestorableState, loader, locale, selectedEventSelection, usesLoadingWorkspace, view, viewportSize]);
 
   const runtimeLinearEntities = useMemo(() => {
     if (!runtimeViewportResponse) {
@@ -2872,7 +2894,7 @@ export function GraphShell({
       },
     };
   }, [allWorldInstantPoints, view, viewportSize]);
-  const allProjectedInstantPoints = useMemo(() => {
+  const allProjectedInstantPoints = useMemo(() => measureGraphPhase("pointProjection", () => {
     // An open detail fragment keeps its existing context. Otherwise project
     // only visible point candidates and endpoints needed by crossing edges.
     if (renderedEventSelection || selectedEventSelection) return allWorldInstantPoints.map(pointProjection.project);
@@ -2883,7 +2905,7 @@ export function GraphShell({
       if (point) candidates.set(id, point);
     }
     return [...candidates.values()].sort((a, b) => a.y - b.y || a.x - b.x).map(pointProjection.project);
-  }, [allWorldInstantPoints, worldPointQuery, pointProjection, chartRelationSegments, renderedEventSelection, selectedEventSelection, view, viewportSize]);
+  }), [allWorldInstantPoints, worldPointQuery, pointProjection, chartRelationSegments, renderedEventSelection, selectedEventSelection, view, viewportSize, measureGraphPhase]);
   const queryProjectedLabelPoints = useCallback((screenBounds) => {
     graphWorkCountsRef.current.labelQueries++;
     return worldPointQuery.query(worldBoundsForScreenBounds(screenBounds, view, viewportSize)).map(pointProjection.project);
@@ -2892,8 +2914,8 @@ export function GraphShell({
   );
 
   const preparedWorldCompositeRegions = useMemo(
-    () => { graphWorkCountsRef.current.worldGeometryBatches++; return prepareCompositeWorldGeometry(worldGeometryEntities, allWorldInstantPoints, compositeHullMode); },
-    [worldGeometryEntities, allWorldInstantPoints, compositeHullMode],
+    () => { graphWorkCountsRef.current.worldGeometryBatches++; return measureGraphPhase("worldPreparation", () => prepareCompositeWorldGeometry(worldGeometryEntities, allWorldInstantPoints, compositeHullMode)); },
+    [worldGeometryEntities, allWorldInstantPoints, compositeHullMode, measureGraphPhase],
   );
   const worldCompositeRegions = useMemo(() => {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) return [];
@@ -2907,7 +2929,7 @@ export function GraphShell({
   }, [preparedWorldCompositeRegions, view, viewportSize]);
 
   const compositePlacementHistoryRef = useRef({loader, entries: new Map()});
-  const chartCompositeRegions = useMemo(() => {
+  const chartCompositeRegions = useMemo(() => measureGraphPhase("regionProjectionAndLabels", () => {
     const placements = new Map();
     const history = compositePlacementHistoryRef.current.loader === loader ? compositePlacementHistoryRef.current.entries : new Map();
     const zoomBucket = getEditorialZoomBucket(view.scaleY);
@@ -3028,10 +3050,66 @@ export function GraphShell({
       .map((region) => region.id);
 
     return { regions, activeColorRegionIds, descendantOpacityById, placements } satisfies CompositeRenderState;
-  }, [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache]);
+  }), [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache, measureGraphPhase]);
   useEffect(() => {
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
   }, [loader, chartCompositeRegions]);
+
+  const compositePaintTargets = useMemo(() => selectCompositePaintTargets(chartCompositeRegions.regions), [chartCompositeRegions.regions]);
+  const visibleCompositeRegions = useMemo(() => {
+    graphWorkCountsRef.current.compositePaintPasses++;
+    return reconcileCompositeFramePaint(
+      compositePaintHistoryRef.current.regions, compositePaintTargets, performance.now(),
+      compositePaintClock.frame !== compositePaintHistoryRef.current.frame, COMPOSITE_FADE_DURATION_MS,
+    );
+  }, [compositePaintTargets, compositePaintClock]);
+  // Store only committed lifecycle history. Current geometry already supplies
+  // this render, so pan does not enqueue another state-copy render and semantic
+  // point/region label boxes are evaluated in the same camera coordinates.
+  useLayoutEffect(() => {
+    compositePaintHistoryRef.current = {regions: visibleCompositeRegions, frame: compositePaintClock.frame};
+  }, [visibleCompositeRegions, compositePaintClock.frame]);
+  const compositeFadeFrameRef = useRef(null);
+  useEffect(() => {
+    if (!needsCompositePaintFrame(visibleCompositeRegions)) {
+      if (compositeFadeFrameRef.current !== null) window.cancelAnimationFrame(compositeFadeFrameRef.current);
+      compositeFadeFrameRef.current = null;
+      return;
+    }
+    // Ongoing pan must not cancel the frame that advances a committed enter or
+    // exit. A genuinely fresh identity arriving with that tick still mounts0.
+    if (compositeFadeFrameRef.current === null) {
+      compositeFadeFrameRef.current = window.requestAnimationFrame(() => {
+        compositeFadeFrameRef.current = null;
+        graphWorkCountsRef.current.compositeFrameTicks++;
+        setCompositePaintClock(current => ({...current, frame: current.frame + 1}));
+      });
+    }
+  }, [visibleCompositeRegions]);
+  useEffect(() => () => {
+    if (compositeFadeFrameRef.current !== null) window.cancelAnimationFrame(compositeFadeFrameRef.current);
+    compositeFadeFrameRef.current = null;
+  }, []);
+  const nextCompositeExitDeadline = visibleCompositeRegions.reduce((deadline, region) =>
+    region.visibilityState === "exiting" && region.exitStartedAt !== undefined
+      ? Math.min(deadline, region.exitStartedAt + COMPOSITE_FADE_DURATION_MS) : deadline,
+    Infinity,
+  );
+  useEffect(() => {
+    if (!Number.isFinite(nextCompositeExitDeadline)) return;
+    let timer;
+    const pruneAtDeadline = () => {
+      const now = performance.now();
+      if (now < nextCompositeExitDeadline) {
+        timer = window.setTimeout(pruneAtDeadline, Math.max(1, Math.ceil(nextCompositeExitDeadline - now)));
+        return;
+      }
+      graphWorkCountsRef.current.compositePruneTicks++;
+      setCompositePaintClock(current => ({...current, prune: current.prune + 1}));
+    };
+    timer = window.setTimeout(pruneAtDeadline, Math.max(1, Math.ceil(nextCompositeExitDeadline - performance.now())));
+    return () => window.clearTimeout(timer);
+  }, [nextCompositeExitDeadline]);
 
 
   // Read candidates before paint suppression; geometry and camera stay untouched.
@@ -3157,7 +3235,12 @@ export function GraphShell({
     ? chartInstantPoints.map(point => ({...point, renderedLabel: fitSemanticText(point.renderedLabel ?? point.label, point.x + 10, viewportSize.width)}))
     : chartInstantPoints, [discovery?.contextHud, chartInstantPoints, viewportSize.width]);
   const previousSemanticIds = useRef<ReadonlySet<string>>(new Set());
-  const semanticSelection = useMemo(() => {
+  const semanticSelection = useMemo(() => measureGraphPhase("semanticAdmission", () => {
+    graphWorkCountsRef.current.semanticPasses++;
+    if (visibleCompositeRegions.some(region => region.visibilityState === "present" && region.renderedOpacity > 0 && region.paintView &&
+      (region.paintView.x !== view.x || region.paintView.y !== view.y || region.paintView.scaleX !== view.scaleX || region.paintView.scaleY !== view.scaleY))) {
+      graphWorkCountsRef.current.staleSemanticRegionPasses++;
+    }
     const selectedId = renderedEventSelection?.eventId ?? selectedEventSelection?.eventId;
     const textWidth = semanticTextWidth;
     return selectSemanticLabels([
@@ -3178,7 +3261,7 @@ export function GraphShell({
         };
       }),
     ], viewportSize, previousSemanticIds.current);
-  }, [semanticPointCandidates, visibleCompositeRegions, viewportSize, renderedEventSelection?.eventId, selectedEventSelection?.eventId]);
+  }), [semanticPointCandidates, visibleCompositeRegions, viewportSize, renderedEventSelection?.eventId, selectedEventSelection?.eventId, measureGraphPhase]);
   useEffect(() => {
     // Collection changes replace the loader and temporarily remove its points,
     // while Composite paint may remain for its exit fade. That transitional
@@ -3402,43 +3485,6 @@ export function GraphShell({
     // read changes only with Event/loader/locale or an explicit Retry action.
   }, [eventDetailRetryVersion, hasHydratedRestorableState, initialEventDetail, loader, locale, renderedEventSelection?.eventId, usesLoadingWorkspace]);
 
-  const compositeFadeFrameRef = useRef(null);
-  const compositePaintTargets = useMemo(() => selectCompositePaintTargets(chartCompositeRegions.regions), [chartCompositeRegions.regions]);
-  useEffect(() => {
-    setVisibleCompositeRegions((current) => reconcileCompositeFadePresence(current, compositePaintTargets));
-    // A moving viewport must not keep cancelling the frame that starts exits.
-    if (compositeFadeFrameRef.current === null) {
-      compositeFadeFrameRef.current = window.requestAnimationFrame(() => {
-        compositeFadeFrameRef.current = null;
-        const now = performance.now();
-        setVisibleCompositeRegions((current) => advanceCompositeFadePresence(current, now));
-      });
-    }
-  }, [compositePaintTargets]);
-  useEffect(() => () => {
-    if (compositeFadeFrameRef.current !== null) window.cancelAnimationFrame(compositeFadeFrameRef.current);
-    compositeFadeFrameRef.current = null;
-  }, []);
-  const nextCompositeExitDeadline = visibleCompositeRegions.reduce((deadline, region) =>
-    region.visibilityState === "exiting" && region.exitStartedAt !== undefined
-      ? Math.min(deadline, region.exitStartedAt + COMPOSITE_FADE_DURATION_MS) : deadline,
-    Infinity,
-  );
-  useEffect(() => {
-    if (!Number.isFinite(nextCompositeExitDeadline)) return;
-    let timer;
-    const pruneAtDeadline = () => {
-      const now = performance.now();
-      if (now < nextCompositeExitDeadline) {
-        timer = window.setTimeout(pruneAtDeadline, Math.max(1, Math.ceil(nextCompositeExitDeadline - now)));
-        return;
-      }
-      setVisibleCompositeRegions(current => pruneExitedCompositeFadePresence(current, now, COMPOSITE_FADE_DURATION_MS));
-    };
-    timer = window.setTimeout(pruneAtDeadline, Math.max(1, Math.ceil(nextCompositeExitDeadline - performance.now())));
-    return () => window.clearTimeout(timer);
-  }, [nextCompositeExitDeadline]);
-
   useEffect(() => {
     setVisibleCompositeColorAssignments((current) =>
       reconcileCompositeColorAssignments(
@@ -3591,6 +3637,7 @@ export function GraphShell({
     // Read stage geometry once per input batch, before scheduling a render.
     const bounds = viewportMoveTargetRef.current?.getBoundingClientRect();
     if (!bounds) return;
+    graphWorkCountsRef.current.viewportBatches++;
     setImageViewportState(current => {
       let next = current;
       for (const [id, point] of moves) next = moveViewportPointer(next, id, {
@@ -3965,6 +4012,7 @@ export function GraphShell({
     },
     cache: loader.inspectViewport?.() ?? null,
     hullCache: compositePanGeometryCache.inspect(),
+    phaseTiming: graphPhaseProfiling ? graphPhaseTimingsRef.current : null,
     work: {...graphWorkCountsRef.current, hullBuilds: compositePanGeometryCache.inspect().builds, hullCacheHits: compositePanGeometryCache.inspect().hits},
   });
 

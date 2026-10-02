@@ -22,10 +22,17 @@ const delay = Number(process.env.IP012_FETCH_DELAY_MS ?? 0);
 const visits = Number(process.env.IP012_VISITS ?? 30);
 const frames = Number(process.env.IP012_FRAMES ?? 602);
 const readyTimeout = Number(process.env.IP012_READY_TIMEOUT_MS ?? 30_000);
+const disableBlend = process.env.IP012_DISABLE_BLEND === "1";
+const staticControl = process.env.IP012_STATIC_CONTROL === "1";
+const profileCpu = process.env.IP012_TIMING === "1";
+const deviceScaleFactor = process.env.IP012_DEVICE_SCALE_FACTOR
+  ? Number(process.env.IP012_DEVICE_SCALE_FACTOR)
+  : devices["iPhone 14"].deviceScaleFactor;
 const proxy = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY;
 const browser = await webkit.launch();
 const context = await browser.newContext({
   ...devices["iPhone 14"],
+  deviceScaleFactor,
   baseURL,
   ...(proxy && !baseURL.includes("127.0.0.1")
     ? { proxy: { server: proxy } }
@@ -167,30 +174,34 @@ async function panSample(name: string) {
     );
   });
   await page.mouse.down();
-  const intervals = await page.evaluate(async (count) => {
-    const target = document.querySelector('[data-testid="graph-stage"]')!;
-    const id = (window as ProfileWindow).__ip012Contact;
-    if (id === undefined) throw Error("native_contact_missing");
-    const values: number[] = [];
-    let last = performance.now();
-    for (let i = 0; i < count; i++) {
-      const now = await new Promise<number>(requestAnimationFrame);
-      values.push(now - last);
-      last = now;
-      const phase = ((i % 120) / 120) * Math.PI * 2;
-      target.dispatchEvent(
-        new PointerEvent("pointermove", {
-          bubbles: true,
-          pointerId: id,
-          pointerType: "mouse",
-          buttons: 1,
-          clientX: 65 + 35 * Math.sin(phase),
-          clientY: 510 + 55 * Math.sin(phase)
-        })
-      );
-    }
-    return values;
-  }, frames);
+  const intervals = await page.evaluate(
+    async ({ count, staticControl }) => {
+      const target = document.querySelector('[data-testid="graph-stage"]')!;
+      const id = (window as ProfileWindow).__ip012Contact;
+      if (id === undefined) throw Error("native_contact_missing");
+      const values: number[] = [];
+      let last = performance.now();
+      for (let i = 0; i < count; i++) {
+        const now = await new Promise<number>(requestAnimationFrame);
+        values.push(now - last);
+        last = now;
+        const phase = ((i % 120) / 120) * Math.PI * 2;
+        if (!staticControl)
+          target.dispatchEvent(
+            new PointerEvent("pointermove", {
+              bubbles: true,
+              pointerId: id,
+              pointerType: "mouse",
+              buttons: 1,
+              clientX: 65 + 35 * Math.sin(phase),
+              clientY: 510 + 55 * Math.sin(phase)
+            })
+          );
+      }
+      return values;
+    },
+    { count: frames, staticControl }
+  );
   await page.mouse.up();
   const after = await settle();
   console.info(
@@ -219,6 +230,12 @@ const result: Record<string, unknown> = {
   visits,
   frames,
   ready_timeout_ms: readyTimeout,
+  device_scale_factor: deviceScaleFactor,
+  diagnostic: {
+    disable_blend: disableBlend,
+    static_control: staticControl,
+    profile_cpu: profileCpu
+  },
   errors,
   network,
   heap: "not measured"
@@ -226,10 +243,18 @@ const result: Record<string, unknown> = {
 try {
   result.health = await (await context.request.get("/health")).json();
   const initialTime = performance.now();
-  await page.goto(`/graph/v5?world=${world}&gsViewport=0,209900,1600,36000`, {
-    waitUntil: "domcontentloaded"
-  });
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=0,209900,1600,36000${profileCpu ? "&gsProfile=1" : ""}`,
+    {
+      waitUntil: "domcontentloaded"
+    }
+  );
   await page.getByTestId("graph-stage").waitFor();
+  if (disableBlend)
+    await page.addStyleTag({
+      content:
+        "[data-composite-paint-id] path { mix-blend-mode: normal !important; }"
+    });
   const initial = await settle();
   result.cold_ms = performance.now() - initialTime;
   result.initial = initial;

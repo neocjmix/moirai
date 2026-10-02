@@ -12,16 +12,19 @@
 
 ## 현재 checkpoint와 우선 작업
 
-2026-10-02 네 번째 checkpoint인 서버 전용 PR [#307](https://github.com/neocjmix/moirai/pull/307), 구현 `7c10614`은 main `eaa9002769fa1a4a9f9499ae05761006413c9a00`로 Atropos 배포 SUCCESS를 확인했다. UI 수정은 아직 commit·배포되지 않은 다섯 번째 checkpoint로 분리한다. 앞선 PR #306 `de8d608…`의 격리 profile 두 번은 loading timeout이었고 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 실패 JSON과 함께 보존한다. **성능 완료는 아니다.** 새 서버 전용 profile은 진행 중이며 initial ready 2099.7ms/Render 4회, 첫 602-frame p95 68ms/max 119ms로 frame gate 실패를 관측했다. 전체 30회 왕복 결과는 아직 판정하지 않는다.
+2026-10-02 다섯 번째 UI checkpoint PR [#308](https://github.com/neocjmix/moirai/pull/308), 구현 `559c11e`은 main `a8e5f5abba4429015e07026ea10f6e009e33c4ff`로 Atropos 배포 SUCCESS·exact-SHA smoke 및 main CI/A5 public mobile/post-deploy SUCCESS를 확인했다. 기존 actual compiler/4 browser fixture도 4.1초에 통과했다. 앞선 PR #306 loading timeout 두 번과 PR #307 서버 전용 30회 profile의 frame p95 68/76/96ms 실패는 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 보존한다. **기능 검증 성공과 성능 완료는 별개다.** 최신 같은-SHA short control에서도 일반 pan p95 57/53ms로 미달이다.
 
 | 상태 | 현재 범위와 다음 검증 |
 | --- | --- |
 | 구현·배포됨, 전체 gate 열림 | metadata LRU/공간 margin, finer-level prefetch 안쪽 readiness 경계, authored paint owner·hull/point fade, bounded pan hull/path 재사용, response structural sharing, 넓은 camera 복원. 중간 개선과 뒤이은 regression을 함께 보존 |
-| 네 번째 서버 checkpoint 배포됨, 측정 중 | Render generation hash 경로의 immutable cache 적용, 동시 동일 object 읽기 병합, Render route `Server-Timing`. 초기 23 tests와 후속 혼합 cache/paint 30 tests·strict root·lint·format 통과는 로컬 검증 범위로 표시. 운영 profile의 시작 frame은 미달이며 전체 결과 대기 |
-| 다섯 번째 UI checkpoint 미commit·미배포 | corrected browser batch 24/27, fresh history 2회·idle work 안정과 후속 label/point/history 시험 성공. detail 요청 1회 기대/2회 관측은 열림. network loader와 presentation identity 분리의 신규 검증도 대기 |
-| 남은 운영·UI 검증 | 서버 전용 30회 profile을 먼저 완료해 cache 효과와 잔여 frame 비용을 분리. UI 수정은 별도 tests·commit·배포 후 identity·label/primary target·history·detail 요청을 재검증. 일부 초기 준비 성공을 전체 latency/frame 통과로 표시하지 않음 |
+| 네 번째 서버 checkpoint 배포·측정 완료, frame 미달 | generation hash immutable cache·동일 object coalescing·Server-Timing. 30회 profile ready 2099.7ms/4요청, 전체 68요청, frame p95 68/76/96ms. 반복 서버 reads 감소와 잔여 client frame 비용을 구분 |
+| 다섯 번째 UI checkpoint 배포·기능 검사 성공 | network detail identity와 drawer presentation history 분리, history quota/중복 detail 회귀 및 label/point paint entrance·exit·reversal·prune 검증. main CI/public A5/post-deploy와 actual compiler/4 기존 fixture 성공. 성능 gate는 계속 열림 |
+| 같은 SHA short 진단 완료 | 일반 blend p95 57/53ms·max 89/148ms, blend-off p95 49/45ms·max 64/72ms, 정지 scene RAF p95 17/17ms·max 17/18ms. 모두 0 visits short control이며 full 30회 gate나 실기기 동등성 증거 아님 |
+| 여섯 번째 slice 구현·검증 중, 미배포 | Composite 현재 좌표 one-pass/HUD memo와 bounded 8-asset 병렬 읽기, focused 27 tests. actual compiler/4 지연-fetch 경계 시험 확장 중. 브라우저·배포 후 성능 개선은 아직 미검증 |
 
 운영 Render 응답 3.4–11.9초, canonical 응답 8–120ms의 차이와 낮은 관측 CPU/메모리 사용은 server object I/O/cache 경로를 우선 조사할 근거다. 이 관측만으로 storage만이 유일한 원인이거나 CPU/메모리·browser lifecycle 문제가 없다고 단정하지 않는다. scale overfetch·geometry compression·서버 증설에 앞서 immutable cache 적용 여부, 반복 object reads, request coalescing, resolved metadata 이후 pending scene 상태를 확인한다.
+
+위 서버 지연은 cache 적용 전 관측이며 최신 서버 timing과 구분한다. 다섯 번째 checkpoint의 blend-off도 frame 기준을 만족하지 못했으므로 기존 blend 표현을 유지하고 changing-scene 계산·reconciliation·paint를 더 줄인다. 정지 RAF가 빠르다는 사실을 gesture 성능 통과로 바꾸지 않는다.
 
 ## 측정 시나리오
 
@@ -60,9 +63,11 @@
 
 - [x] 서버 cache/계측을 PR #307 `eaa9002`로 배포하고30회 격리 profile을 마쳤다. ready2099.7ms/4요청, 전체68요청, frame p95=68/76/96ms로 미달이다.
 - [x] history quota·상세 read feedback을 분리했다. 최종 모바일3개에서 초기/Collection/Retry 각1회와 Back/Forward 단계 복원 통과. 라벨·point fade/reversal/prune/re-entry도 로컬 통과했다.
-- [ ] UI checkpoint를 배포하고 실제 compiler/4·운영 모바일 동작을 독립 확인한다.
-- [ ] Composite 현재 좌표와 paint 이력을 분리하여 보통 pan의 중복 render를 없애고 adapter의 반복 World geometry 재구축 원인을 수정한다.
-- [ ] 다시30회 방문·복귀 및250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
+- [x] UI checkpoint를 PR #308 `a8e5f5…`로 배포하고 exact-SHA smoke·main CI·public A5·post-deploy와 actual compiler/4 기존 fixture 통과를 확인했다.
+- [x] 같은 SHA에서 normal/blend-off/static short control을 격리 측정했다. blend는 유지하며 일반·blend-off 모두 frame p95 미달을 기록했다.
+- [ ] 여섯 번째 slice의 Composite 현재 좌표 one-pass/HUD memo, paint history 유지와 bounded 8-asset 병렬 읽기를 검증한다. focused 27 tests를 browser frame 증거로 확대하지 않는다.
+- [ ] actual compiler/4 지연-fetch 시험을 확장해 warm-cache 성공 외에 지연·반전·identity·retained scene을 검증한다.
+- [ ] 작은 checkpoint를 배포한 뒤 같은 조건 short 및30회 방문·복귀,250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
 
 ## 중지·인계 기준
 

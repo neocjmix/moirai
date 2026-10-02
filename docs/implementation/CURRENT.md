@@ -17,9 +17,9 @@
 
 ## 현재 checkpoint와 조사 기준선
 
-- **현재 운영:** [PR #307](https://github.com/neocjmix/moirai/pull/307), `eaa9002769fa1a4a9f9499ae05761006413c9a00`. Render generation immutable cache·동시 읽기 병합·Server-Timing을 배포했다. #306의 prefetch refill·pan hull cache·World geometry 공유·넓은 viewport 복원도 포함한다.
-- **지속 성능 미달:** 격리30 visits/start·middle·return602frame p95=68/76/96ms, max119/148/192ms. 초기 준비2099.7ms/4요청, 전체68요청으로 #305의382요청 증폭은 줄었으나 frame gate는 여전히 실패한다. #306의 초기 loading timeout2회도 evidence에 보존했다.
-- **UI 후속 검증 완료·배포 준비:** 라벨·point paint 진입/퇴장/reversal, 초기 상세·Collection·Retry 각1회, canonical Back/Forward 단계 복원 검증. 네트워크 read와 drawer presentation identity를 분리했다. 다음 원인은 camera당 Composite 중복 render와 cache 응답의 반복 World geometry 재구축이다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
+- **현재 운영:** [PR #308](https://github.com/neocjmix/moirai/pull/308), `a8e5f5abba4429015e07026ea10f6e009e33c4ff`. 라벨·point 진입/퇴장/reversal, 상세 read와 drawer history identity 분리, URL no-op 갱신 제거를 배포했다. 일반 CI·A5 운영 모바일·exact-SHA smoke 모두 성공했다. #307의 Render generation immutable cache와 Server-Timing도 포함한다.
+- **지속 성능 미달:** #307 격리30 visits/start·middle·return602frame p95=68/76/96ms, max119/148/192ms. 초기 준비2099.7ms/4요청, 전체68요청으로 #305의382요청 증폭은 줄었으나 frame gate는 여전히 실패한다. 현재 #308 짧은602frame start/return도57/53ms로 미달이다. 정지 RAF는17ms이며 blend 제거만으로는 기준에 못 미쳐 기존 표현을 유지한다.
+- **다음 slice 검증 중:** Composite 현재 좌표와 paint 이력을 분리한 한 번의 frame 계산, 동일 숫자 camera의 안정된 참조, HUD memo, 최대8개 geometry 병렬 읽기. 실제 compiler/4의250/750ms 지연·XY/scale 반전 검증과 A4 benchmark의 오래된 selector/locale/cursor 가정을 함께 수정 중이다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
 - 기능 출발점은 [#302](https://github.com/neocjmix/moirai/pull/302) `19de027`의 Collection 변경 시 semantic label 연속성이며, 조사 기준선은 [#303](https://github.com/neocjmix/moirai/pull/303) `91cffca`다. #304 `8f9e31a`의 isolated602frame p95=49/49ms도33.4ms 기준 미달이다. 과거 checkpoint와 개별 검증 범위는 evidence에 보존한다.
 - World `01995c2a-7b00-7000-8000-000000000101`: Revision 62, 30 Collection, 677 placed/2 unplaced Event. 공개 Render generation은 `render-compiler/4`, `7b3c2fd8…`다. 데이터 수량은 새 입력·백필 전 다시 확인한다.
 

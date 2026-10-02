@@ -260,10 +260,16 @@ export function removeViewportPointer(state: ImageViewportState, pointerId: numb
 }
 
 export function resetViewportView(state: ImageViewportState, nextView?: Partial<ImageViewportView>): ImageViewportState {
-  const view = {
+  const requestedView = {
     ...DEFAULT_VIEW,
     ...nextView
   };
+  const unchanged = state.view.x === requestedView.x && state.view.y === requestedView.y &&
+    state.view.scaleX === requestedView.scaleX && state.view.scaleY === requestedView.scaleY;
+  // An idle restore can be replayed by React without creating another camera
+  // change. During a gesture, reset must still rebase at the current pointers.
+  if (unchanged && Object.keys(state.activePointers).length === 0) return state;
+  const view = unchanged ? state.view : requestedView;
 
   return {
     view,

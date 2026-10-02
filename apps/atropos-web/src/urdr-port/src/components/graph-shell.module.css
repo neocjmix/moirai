@@ -1504,6 +1504,19 @@
   stroke-dasharray: 3 4;
 }
 
+.chartInstantPointPaint {
+  animation: chartPointEnter 180ms ease-out;
+}
+
+@keyframes chartPointEnter {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .chartInstantPointPaint { animation: none; }
+}
+
 .chartInstantPoint {
   fill: var(--graph-point-fill);
   stroke: var(--graph-point-stroke);

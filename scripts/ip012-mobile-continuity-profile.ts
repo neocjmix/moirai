@@ -35,14 +35,33 @@ await context.addInitScript(
 );
 const page = await context.newPage();
 const errors: string[] = [];
-const network: { kind: string; ms: number; bytes: number; status: number }[] =
-  [];
+const network: {
+  kind: string;
+  ms: number;
+  bytes: number;
+  status: number;
+  phase: string;
+  level?: number;
+  viewport?: unknown;
+}[] = [];
 const pending: Promise<void>[] = [];
-const started = new WeakMap<object, number>();
+let phase = "cold";
+const started = new WeakMap<
+  object,
+  { time: number; phase: string; level?: number; viewport?: unknown }
+>();
 let lastInspection: Inspection | null = null;
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("request", (r) => {
-  if (r.url().includes("/graph/v5/render")) started.set(r, performance.now());
+  if (r.url().includes("/graph/v5/render")) {
+    const request = r.postDataJSON();
+    started.set(r, {
+      time: performance.now(),
+      phase,
+      ...(request.level === undefined ? {} : { level: request.level }),
+      ...(request.viewport === undefined ? {} : { viewport: request.viewport })
+    });
+  }
 });
 page.on("response", (r) => {
   const start = started.get(r.request());
@@ -52,14 +71,16 @@ page.on("response", (r) => {
       try {
         network.push({
           kind: r.request().postDataJSON()?.kind ?? "unknown",
-          ms: performance.now() - start,
+          ...start,
+          ms: performance.now() - start.time,
           bytes: (await r.body()).byteLength,
           status: r.status()
         });
       } catch {
         network.push({
           kind: "aborted",
-          ms: performance.now() - start,
+          ...start,
+          ms: performance.now() - start.time,
           bytes: 0,
           status: r.status()
         });
@@ -91,7 +112,13 @@ async function settle() {
     if (state?.loadState === "error") throw Error("viewport_load_error");
     if (state?.loadState === "ready" && !state.cache?.pending) {
       await page.waitForTimeout(260);
-      return (await inspect(page))!;
+      const confirmed = await inspect(page);
+      if (
+        confirmed?.loadState === "ready" &&
+        !confirmed.cache?.pending &&
+        !confirmed.counts?.exitingRegions
+      )
+        return confirmed;
     }
     await page.waitForTimeout(100);
   }
@@ -110,6 +137,7 @@ const quantile = (values: number[], fraction: number) =>
   [...values].sort((a, b) => a - b)[Math.ceil(values.length * fraction) - 1] ??
   null;
 async function panSample(name: string) {
+  phase = name;
   const before = await settle();
   await page.mouse.move(65, 510);
   await page.evaluate(() => {
@@ -186,6 +214,7 @@ try {
   const home = [0, 209900, 1600, 36000];
   const trips = [];
   for (let i = 0; i < visits; i++) {
+    phase = `visit-${i}`;
     const before = network.length;
     const began = performance.now();
     const spanY = 2400 * 2 ** (i % 4);

@@ -190,4 +190,7 @@ test("full, narrow and incomplete support all receive a ranked representative", 
     "고정된 맥락"
   );
   await expect(page.getByTestId("graph-context-hud")).toBeVisible();
+  // The scheduled camera reader may still be inside route.fetch(). Let that
+  // fixture response finish before Playwright disposes its API response body.
+  await page.unrouteAll({ behavior: "wait" });
 });

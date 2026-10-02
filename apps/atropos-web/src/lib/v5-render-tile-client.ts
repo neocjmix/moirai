@@ -355,6 +355,7 @@ export function createV5RenderTileClient(input: {
   };
   return {
     loadViewport: viewportClient.load,
+    inspectViewport: viewportClient.inspect,
     load,
     loadExact: (
       viewport: Box,

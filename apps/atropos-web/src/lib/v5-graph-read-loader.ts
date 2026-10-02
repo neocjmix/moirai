@@ -165,7 +165,22 @@ export function createV5GraphReadLoader(input: {
       lifetime.dispose();
       cached.dispose();
     },
-    inspectViewport: () => cached.inspect(),
+    inspectViewport: () => {
+      const render = input.tileViewport?.inspectViewport();
+      return {
+        ...cached.inspect(),
+        ...(render
+          ? {
+              renderBytes: render.bytes,
+              renderMaxBytes: render.maxBytes,
+              renderSnapshots: render.snapshots,
+              renderGeometry: render.geometry,
+              renderPendingGeometry: Number(render.pendingGeometry),
+              renderPendingLevel: Number(render.pendingLevel)
+            }
+          : {})
+      };
+    },
     loadWorkspace: async () => input.workspace,
     loadViewport: async (_locale, viewport) => {
       lifetime.assertActive();

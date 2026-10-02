@@ -10,8 +10,10 @@ import type { AppLocale } from "../locale";
 import { elapsedGregorianDateToWorldY, elapsedWorldYToGregorianDate } from "./gregorian-axis-coordinate";
 import { composeNavigationBounds, constrainNavigation, restoreNavigation } from "./viewport-navigation";
 import { prepareCompositeWorldGeometry, selectCompositeWorldRegions } from "./graph-shell-world";
+import { shareWorldGeometryEntities } from "./world-geometry-identity";
 import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
 import { compositePointDisplay, compositeRepresentationDisplay } from "./composite-point-display";
+import { createCompositePanGeometryCache } from "./composite-pan-geometry";
 import { pointDensityDisplay } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
@@ -161,6 +163,7 @@ type CompositeRegion = {
   label: string;
   renderedLabel: string;
   path: string;
+  pathTransform?: string;
   labelPath?: string;
   projectedPoints: ViewportCoordinate[];
   labelAttachX: number;
@@ -2298,6 +2301,7 @@ export function GraphShell({
   const runtimeViewportOwnerRef = useRef(null);
   const parsedRuntimeViewportRef = useRef(null);
   const graphWorkCountsRef = useRef({worldGeometryBatches: 0, pointTransforms: 0, regionTransforms: 0, labelQueries: 0});
+  const compositePanGeometryCache = useMemo(() => createCompositePanGeometryCache(), [loader]);
   const graphInspectionRef = useRef(null);
   useEffect(() => {
     const inspect = () => window.dispatchEvent(new CustomEvent("moirai:graph-inspection", {detail: structuredClone(graphInspectionRef.current?.())}));
@@ -2811,8 +2815,15 @@ export function GraphShell({
 
   const densityById = useMemo(() => new Map(visibleChartPlaneEntities.map(entity => [entity.id, entity.renderDensity])), [visibleChartPlaneEntities]);
 
+  const worldGeometryIdentityRef = useRef({workspace, entities: []});
+  const worldGeometryEntities = useMemo(() => shareWorldGeometryEntities(
+    worldGeometryIdentityRef.current.workspace === workspace ? worldGeometryIdentityRef.current.entities : [],
+    visibleChartPlaneEntities,
+  ), [workspace, visibleChartPlaneEntities]);
+  useEffect(() => { worldGeometryIdentityRef.current = {workspace, entities: worldGeometryEntities}; }, [workspace, worldGeometryEntities]);
+
   const allWorldInstantPoints = useMemo(() => {
-    return visibleChartPlaneEntities
+    return worldGeometryEntities
       .filter(
         (entity) =>
           entity.geometryKind === "point" &&
@@ -2831,7 +2842,7 @@ export function GraphShell({
         y: entity.position.y,
       }))
       .sort((left, right) => left.y - right.y || left.x - right.x);
-  }, [visibleChartPlaneEntities]);
+  }, [worldGeometryEntities]);
 
   const worldPointQuery = useMemo(() => createWorldPointQuery(allWorldInstantPoints), [allWorldInstantPoints]);
   const pointProjection = useMemo(() => {
@@ -2869,8 +2880,8 @@ export function GraphShell({
   );
 
   const preparedWorldCompositeRegions = useMemo(
-    () => { graphWorkCountsRef.current.worldGeometryBatches++; return prepareCompositeWorldGeometry(visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode); },
-    [visibleChartPlaneEntities, allWorldInstantPoints, compositeHullMode],
+    () => { graphWorkCountsRef.current.worldGeometryBatches++; return prepareCompositeWorldGeometry(worldGeometryEntities, allWorldInstantPoints, compositeHullMode); },
+    [worldGeometryEntities, allWorldInstantPoints, compositeHullMode],
   );
   const worldCompositeRegions = useMemo(() => {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) return [];
@@ -2890,12 +2901,15 @@ export function GraphShell({
     const zoomBucket = getEditorialZoomBucket(view.scaleY);
     const projectedRawRegions = worldCompositeRegions.map((region) => {
       graphWorkCountsRef.current.regionTransforms += region.points.length;
-      const projectedHullPoints = region.points.map((point) => projectWorldPoint(view, viewportSize, point));
+      const geometry = compositePanGeometryCache.project({
+        id: region.id, points: region.points, view, viewport: viewportSize,
+        padding: getCompositeRegionPadding(region.depth), tuning: compositeSplineTuning,
+      });
+      const {projectedHullPoints, projectedPoints} = geometry;
       const representation = compositeRepresentationDisplay(projectedHullPoints, region.hullPending);
       const compactPoint = region.hullPending
         ? representation?.point
         : compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
-      const projectedPoints = expandPolygon(projectedHullPoints, getCompositeRegionPadding(region.depth));
       const coverage = getPolygonArea(clipPolygonAgainstViewport(projectedPoints, viewportSize)) / Math.max(viewportSize.width * viewportSize.height, 1);
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
       const placement = compactPoint ? {
@@ -2920,7 +2934,8 @@ export function GraphShell({
         renderedLabel,
         // Keep both shapes attached to the same authored identity. A geometry
         // fetch or representation switch must not replace the SVG paint owner.
-        path: region.hullPending ? "" : buildClosedSplinePath(projectedPoints, compositeSplineTuning),
+        path: region.hullPending ? "" : geometry.path,
+        pathTransform: geometry.pathTransform,
         compactPoint,
         representation,
         paintView: view,
@@ -3001,7 +3016,7 @@ export function GraphShell({
       .map((region) => region.id);
 
     return { regions, activeColorRegionIds, descendantOpacityById, placements } satisfies CompositeRenderState;
-  }, [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById]);
+  }, [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache]);
   useEffect(() => {
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
   }, [loader, chartCompositeRegions]);
@@ -3888,7 +3903,8 @@ export function GraphShell({
       primaryRegionTargets: presentedRegions.filter(region => region.renderedOpacity > 0 && region.pointDisplay.interactive && (region.compactPoint || region.surfaceOpacity > 0) && (!discovery?.contextHud || region.showLabel)).length,
     },
     cache: loader.inspectViewport?.() ?? null,
-    work: {...graphWorkCountsRef.current},
+    hullCache: compositePanGeometryCache.inspect(),
+    work: {...graphWorkCountsRef.current, hullBuilds: compositePanGeometryCache.inspect().builds, hullCacheHits: compositePanGeometryCache.inspect().hits},
   });
 
   return (
@@ -3978,6 +3994,7 @@ export function GraphShell({
                     const hullOpacity = region.representation?.hullOpacity ?? (region.compactPoint ? 0 : 1);
                     const pointOpacity = region.representation?.pointOpacity ?? (region.compactPoint ? 1 : 0);
                     return <g key={region.id} data-composite-paint-id={region.id}
+                      aria-hidden={region.visibilityState === "exiting" || undefined}
                       transform={region.paintView !== view && region.paintView ? retainedCompositePaintTransform(region.paintView, region.paintViewport, view, viewportSize) : undefined}>
                       <path
                         className={styles.chartCompositeRegion}
@@ -3986,6 +4003,7 @@ export function GraphShell({
                         data-representation={!region.compactPoint ? (region.showLabel ? "semantic" : "geographic") : undefined}
                         aria-hidden={Boolean(region.compactPoint) || (discovery?.contextHud && !region.showLabel) ? true : undefined}
                         d={region.path}
+                        transform={region.pathTransform}
                         onPointerDown={region.visibilityState !== "exiting" && !region.compactPoint && !discovery?.contextHud ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
                           fill: compositeStyle?.fill,
@@ -4087,7 +4105,7 @@ export function GraphShell({
                       <g key={point.id} data-event-paint-id={point.id}
                         transform={point.paintView !== view ? retainedCompositePaintTransform(point.paintView, point.paintViewport, view, viewportSize) : undefined}
                         data-point-density={point.pointDisplay.state}
-                        data-representation={point.showLabel !== false ? "semantic" : "geographic"}
+                        data-representation={point.opacity > 0 && point.showLabel !== false ? "semantic" : "geographic"}
                         aria-hidden={point.opacity === 0 || (discovery?.contextHud && point.showLabel === false) ? true : undefined}>
                         {point.opacity > 0 && point.pointDisplay.interactive && (!discovery?.contextHud || point.showLabel !== false) ? <rect
                           className={styles.chartInstantPointHitTarget}

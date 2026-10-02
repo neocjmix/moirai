@@ -1,0 +1,5468 @@
+{
+  "health": {
+    "status": "ok",
+    "service": "atropos-web",
+    "version": "0.0.0-dev",
+    "commit_sha": "3ec0e1c7db7856c280c6fb19340a39b7fe968fc9"
+  },
+  "device": "iPhone 14 WebKit emulation; hybrid captured pointer with continuous RAF moves",
+  "delay_ms": 0,
+  "visits": 30,
+  "frames": 602,
+  "heap": "not measured",
+  "errors": [],
+  "cold_ms": 1675.9207769999998,
+  "cold_requests": 4,
+  "network": [
+    {
+      "kind": "viewport",
+      "ms": 233.46481300000005,
+      "bytes": 314500,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 418.99124400000005,
+      "bytes": 13609,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 178.22652900000003,
+      "bytes": 858,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 311.18829700000015,
+      "bytes": 515576,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 262.6566660000003,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 244.7927319999999,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 197.12924900000007,
+      "bytes": 1267,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 229.42361200000005,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 165.35813499999995,
+      "bytes": 1262,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 517.1746140000005,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 273.70199800000046,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 367.4281710000005,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 474.19409799999994,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 227.86798199999976,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 245.19228199999998,
+      "bytes": 3281,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 219.90639199999987,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 243.5147539999998,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 241.67329900000004,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 240.45976000000064,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 211.8929449999996,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 189.9078300000001,
+      "bytes": 1248,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 193.12339599999905,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 377.86794499999996,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 232.09355999999934,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 194.83948299999975,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 188.17745099999956,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 215.86888700000054,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 214.81840400000146,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 219.50145200000043,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 216.0574460000007,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 220.8267790000009,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 452.07693800000015,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 237.70135200000004,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 205.87444999999934,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 195.14582400000108,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 221.68365200000153,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 195.83340000000135,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 240.55789200000072,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 220.90275900000051,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 248.39622600000075,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 242.00353799999903,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 218.07242099999894,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 202.50032699999792,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 241.52473299999838,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 211.89331400000083,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 200.51818899999853,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 220.37432099999933,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 223.02506200000062,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 232.0050650000012,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 244.84875900000043,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 215.4125929999973,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 197.36057900000014,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 219.01040999999896,
+      "bytes": 515576,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 210.1373679999997,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 212.4052550000015,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 205.48238099999799,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 309.40040899999804,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 232.76847799999814,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 252.63772600000084,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 196.12527899999986,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 209.4254170000022,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 227.07067000000097,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 188.80696199999875,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 185.39877400000114,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 443.2310929999985,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 247.03933600000164,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 211.27003700000205,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 288.85940499999924,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 203.2508600000001,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 271.5721569999987,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 210.24523299999782,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 215.10195799999929,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 215.96236800000042,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 253.22818299999926,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 278.5938739999983,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 202.36591699999917,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 205.2672590000002,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 195.72910299999785,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 235.26991199999975,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 383.66755399999965,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 228.62629399999787,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 197.56033300000126,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 211.76251799999955,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 213.8495440000006,
+      "bytes": 314527,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 207.09761199999775,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 275.69346099999893,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 401.8073939999995,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 249.99784000000363,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 285.6646000000037,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 217.5717039999945,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 444.02191799999855,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 232.50045300000056,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 218.3953990000009,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 199.05277200000273,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 248.49047199999768,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 219.75632599999517,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 224.01932099999976,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 331.22250299999723,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 458.84368800000084,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 316.07563399999344,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 207.74347099999432,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 197.22520899999654,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 231.06877499999973,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 460.7948519999991,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 261.1664779999992,
+      "bytes": 140861,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 296.332359,
+      "bytes": 515576,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 233.51574300000357,
+      "bytes": 320828,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 311.4510089999967,
+      "bytes": 486020,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 225.40449799999624,
+      "bytes": 196327,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 220.27923400000145,
+      "bytes": 5514,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 375.4743630000012,
+      "bytes": 151281,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 355.83567400000175,
+      "bytes": 11855,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 272.32964399999764,
+      "bytes": 1261,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 269.3891220000005,
+      "bytes": 569265,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 257.3350600000049,
+      "bytes": 159832,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 226.08059499999945,
+      "bytes": 4899,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 216.95336900000257,
+      "bytes": 242422,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 344.1505230000039,
+      "bytes": 10933,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 277.5382890000037,
+      "bytes": 483056,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 325.00758199999837,
+      "bytes": 9923,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 245.6714409999986,
+      "bytes": 210986,
+      "status": 200
+    },
+    {
+      "kind": "assets",
+      "ms": 192.95500000000175,
+      "bytes": 2316,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 384.19829000000027,
+      "bytes": 329378,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 292.437914999995,
+      "bytes": 314528,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 211.6932930000039,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 211.9211279999945,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 259.70758000000205,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 252.7333490000019,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 230.94298799999524,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 243.32685700000002,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 204.73873299999832,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 258.0554650000049,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 257.0531899999987,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 225.8836220000012,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 254.33701599999767,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 246.51849700000457,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 250.6009750000012,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 220.71783700000378,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 225.63325500000064,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 315.48141100000066,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 243.0828049999982,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 213.14025599999877,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 229.150576,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 260.6528150000013,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 208.50146400000085,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 238.40680200000497,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 238.6933990000034,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 238.58327799999824,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 203.25496199999907,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 208.6194269999978,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 209.81521999999677,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 197.10023499999807,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 215.64069899999595,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 242.73639700000058,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 301.0758549999955,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 257.04519900000014,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 245.9815080000044,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 288.4995909999998,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 204.5057269999961,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 240.80082000000402,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 236.72207299999718,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 232.74564000000828,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 294.959468999994,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 297.0244920000114,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 278.6095970000024,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 223.44955299999856,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 192.89904299999762,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 468.2420439999987,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 178.8163910000003,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 216.44816400000127,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 229.49485899999854,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 267.66767699999036,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 221.697296000013,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 186.14423600000737,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 245.72320500000205,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 333.7081560000079,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 236.31411800000933,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 174.70408199999656,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 231.82713400000648,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 211.87480099999812,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 260.22319599999173,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 203.16677500000515,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 447.5377460000018,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 193.66187799999898,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 241.55566399999952,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 229.43525999999838,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 302.5359840000019,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 208.12945300000138,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 210.63559700000042,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 195.00648300000466,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 255.68707900001027,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 227.9680650000082,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 239.05160900000192,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 235.9189059999917,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 258.09248300000036,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 190.0016270000051,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 222.13609300000826,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 256.52516299999843,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 349.4386680000025,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 366.9444919999951,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 250.35920999999507,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 554.110680999991,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 280.45233599998755,
+      "bytes": 314524,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 485.19954600000347,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 254.44899399999122,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 195.40494500000204,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 277.3975610000052,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 549.7365530000097,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 251.5213909999875,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 245.24601200000325,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 287.2468669999944,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 179.45192999999563,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 191.09069399999862,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 244.34495400000014,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 227.77348300001177,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 208.20763799999258,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 218.22731700001168,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 237.66692200000398,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 199.77472500001022,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 206.62433099999907,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 229.34959299999173,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 212.39229600000544,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 337.01993900000525,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 263.5290539999987,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 197.49810399999842,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 264.0865699999995,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 262.0723270000017,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "aborted",
+      "ms": 470.28303200000664,
+      "bytes": 0,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 268.0419910000055,
+      "bytes": 163076,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 293.5264210000023,
+      "bytes": 319156,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 378.09013199999754,
+      "bytes": 0,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 202.41316799999913,
+      "bytes": 140861,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 189.46415300000808,
+      "bytes": 320829,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 258.40830200001074,
+      "bytes": 486020,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 212.96581900000456,
+      "bytes": 170539,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 341.50629600000684,
+      "bytes": 662007,
+      "status": 200
+    },
+    {
+      "kind": "aborted",
+      "ms": 10077.626095,
+      "bytes": 0,
+      "status": 502
+    },
+    {
+      "kind": "viewport",
+      "ms": 265.1283930000063,
+      "bytes": 569265,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 351.855619000009,
+      "bytes": 159831,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 240.29096500000742,
+      "bytes": 242422,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 277.73183699999936,
+      "bytes": 314526,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 275.4339450000116,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 268.0905869999988,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 182.90132900000026,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 229.30595500000345,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 253.03339799999958,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 360.8637860000017,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 295.2130259999976,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 271.61218100000406,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 200.30297799999244,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 255.07250100000238,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 209.03602899999532,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 239.38455699999759,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 220.22039499999664,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 186.53796200000215,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 219.84926600000472,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 502.55644400000165,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 231.97443900001235,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 184.95144200000504,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 275.72511700000905,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 360.64109299999836,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 278.3860069999937,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 255.91588200000115,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 294.6802039999893,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 252.36221599999408,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 230.39650200000324,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 285.9547540000058,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 263.930932999996,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 173.41613399999915,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 212.41914300000644,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 276.10618099999556,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 247.1799580000079,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 193.53526899999997,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 251.50825199999963,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 295.4743589999998,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 354.0934910000069,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 252.76352799999586,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 351.42543000000296,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 236.230126999988,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 294.6427059999987,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 265.8378260000027,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 296.6367709999904,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 238.87942899999325,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 203.36279400000058,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 276.7262159999955,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 296.59563999999955,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 328.2922070000059,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 216.0065190000023,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 250.4227310000133,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 256.5002240000031,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 223.84370399999898,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 300.9916899999953,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 400.7601869999926,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 299.6906149999995,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 197.75315499999851,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 185.34510999999475,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 241.4992429999984,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 452.3228050000034,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 253.83495299999777,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 309.85529900000256,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 406.44808499999635,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 217.90462899999693,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 212.5506449999957,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 269.74600199999986,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 297.26394699999946,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 232.39831700001378,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 274.5315039999841,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 290.2289509999973,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 247.52504300000146,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 208.63440999999875,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 234.36583699999028,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 247.4405609999958,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 216.20031100002234,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 279.1692570000014,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 356.20615400001407,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 290.52167600000394,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 227.9521609999938,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 242.69859400001587,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 278.9018539999961,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 312.72592799999984,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 222.9959820000222,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 205.12817499999073,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 294.4782070000074,
+      "bytes": 314526,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 303.2130109999853,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 212.66074600000866,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 238.3673359999957,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 281.4291969999904,
+      "bytes": 515576,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 269.91743000000133,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 263.7094680000155,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 221.53709299999173,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 297.56133399999817,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 255.7695229999954,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 255.61744400000316,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 306.0011940000113,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 271.3941909999994,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 437.4630409999809,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 406.8007380000199,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 529.9637079999957,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 229.13128899998264,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 300.9131059999927,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 236.8852440000046,
+      "bytes": 515576,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 299.962033000018,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 248.89628499999526,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 241.81383699999424,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 253.72916899999836,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 318.0154610000027,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 260.7164390000107,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 235.8242550000141,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 198.99877800000831,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 264.50469700002577,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 215.34863800002495,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 205.10566699999617,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 248.2393560000055,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 278.1774349999905,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 276.7772790000017,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 450.1813930000062,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 334.8239670000039,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 199.90801099999226,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 278.24017400000594,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 226.3417420000187,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 308.5974489999935,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 261.05564700000104,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 511.7546049999946,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 236.5123190000013,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 314.32225099997595,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 242.022844000021,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 244.03479100001277,
+      "bytes": 515576,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 227.5547699999879,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 259.6426470000006,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 261.1729129999876,
+      "bytes": 515622,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 215.82644499998423,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 208.00159199998598,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 239.255130000005,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 646.6524980000104,
+      "bytes": 515624,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 234.3538539999863,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 262.43428099999437,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 347.0826230000239,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 198.28109199999017,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 289.18095900001936,
+      "bytes": 515626,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 350.81528200002504,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 256.8485230000224,
+      "bytes": 515628,
+      "status": 200
+    },
+    {
+      "kind": "viewport",
+      "ms": 227.20209599999362,
+      "bytes": 515628,
+      "status": 200
+    }
+  ],
+  "condition": "No concurrent build/browser; sustained fetch exposes finer-level prefetch churn. Frame and request gates FAIL.",
+  "checkpoints": [
+    {
+      "name": "start",
+      "p50": 59,
+      "p95": 84,
+      "max": 144,
+      "dom": 642,
+      "intervals": [
+        13,
+        13,
+        14,
+        18,
+        48,
+        62,
+        50,
+        57,
+        49,
+        63,
+        62,
+        66,
+        54,
+        66,
+        63,
+        56,
+        53,
+        82,
+        47,
+        53,
+        73,
+        56,
+        54,
+        62,
+        52,
+        50,
+        57,
+        54,
+        55,
+        42,
+        57,
+        63,
+        62,
+        47,
+        40,
+        67,
+        50,
+        45,
+        42,
+        57,
+        47,
+        49,
+        48,
+        76,
+        55,
+        66,
+        59,
+        41,
+        40,
+        49,
+        56,
+        43,
+        40,
+        48,
+        35,
+        44,
+        40,
+        41,
+        63,
+        72,
+        54,
+        56,
+        46,
+        51,
+        54,
+        54,
+        41,
+        61,
+        45,
+        59,
+        56,
+        45,
+        39,
+        73,
+        46,
+        48,
+        43,
+        53,
+        39,
+        30,
+        44,
+        38,
+        54,
+        53,
+        50,
+        47,
+        52,
+        50,
+        42,
+        48,
+        49,
+        49,
+        49,
+        41,
+        43,
+        52,
+        47,
+        46,
+        60,
+        44,
+        132,
+        43,
+        60,
+        66,
+        59,
+        69,
+        75,
+        64,
+        64,
+        54,
+        69,
+        84,
+        50,
+        57,
+        72,
+        62,
+        61,
+        59,
+        48,
+        52,
+        40,
+        48,
+        52,
+        61,
+        48,
+        44,
+        65,
+        61,
+        60,
+        50,
+        45,
+        31,
+        38,
+        49,
+        56,
+        47,
+        38,
+        38,
+        49,
+        48,
+        63,
+        57,
+        37,
+        75,
+        53,
+        57,
+        63,
+        59,
+        49,
+        59,
+        62,
+        49,
+        49,
+        56,
+        59,
+        60,
+        51,
+        50,
+        56,
+        63,
+        51,
+        52,
+        56,
+        58,
+        54,
+        59,
+        55,
+        61,
+        55,
+        54,
+        52,
+        70,
+        56,
+        52,
+        48,
+        57,
+        64,
+        61,
+        51,
+        58,
+        63,
+        51,
+        51,
+        52,
+        58,
+        52,
+        47,
+        88,
+        54,
+        48,
+        54,
+        60,
+        65,
+        55,
+        50,
+        50,
+        49,
+        77,
+        64,
+        69,
+        59,
+        50,
+        41,
+        53,
+        51,
+        55,
+        53,
+        55,
+        47,
+        48,
+        57,
+        64,
+        52,
+        52,
+        51,
+        47,
+        46,
+        59,
+        51,
+        47,
+        120,
+        71,
+        84,
+        63,
+        61,
+        72,
+        69,
+        58,
+        57,
+        74,
+        69,
+        65,
+        70,
+        64,
+        50,
+        60,
+        54,
+        57,
+        78,
+        67,
+        56,
+        54,
+        63,
+        61,
+        63,
+        56,
+        61,
+        79,
+        57,
+        59,
+        62,
+        53,
+        51,
+        61,
+        71,
+        56,
+        82,
+        69,
+        65,
+        65,
+        54,
+        45,
+        45,
+        60,
+        62,
+        76,
+        74,
+        61,
+        61,
+        72,
+        73,
+        64,
+        67,
+        72,
+        53,
+        62,
+        58,
+        68,
+        63,
+        60,
+        55,
+        64,
+        66,
+        68,
+        60,
+        68,
+        65,
+        61,
+        74,
+        71,
+        59,
+        112,
+        103,
+        78,
+        70,
+        68,
+        49,
+        59,
+        60,
+        70,
+        63,
+        72,
+        67,
+        67,
+        60,
+        58,
+        64,
+        70,
+        57,
+        84,
+        54,
+        80,
+        63,
+        66,
+        65,
+        70,
+        92,
+        83,
+        84,
+        82,
+        79,
+        85,
+        79,
+        51,
+        66,
+        112,
+        87,
+        66,
+        61,
+        73,
+        71,
+        83,
+        65,
+        67,
+        58,
+        78,
+        76,
+        46,
+        42,
+        71,
+        62,
+        65,
+        61,
+        60,
+        67,
+        45,
+        40,
+        73,
+        66,
+        45,
+        52,
+        51,
+        100,
+        71,
+        48,
+        70,
+        76,
+        62,
+        51,
+        53,
+        53,
+        83,
+        47,
+        45,
+        42,
+        66,
+        61,
+        105,
+        71,
+        41,
+        38,
+        60,
+        66,
+        45,
+        65,
+        58,
+        66,
+        82,
+        79,
+        63,
+        74,
+        48,
+        47,
+        71,
+        38,
+        36,
+        44,
+        51,
+        82,
+        72,
+        63,
+        76,
+        46,
+        63,
+        44,
+        68,
+        48,
+        44,
+        40,
+        78,
+        65,
+        46,
+        49,
+        69,
+        68,
+        112,
+        56,
+        56,
+        57,
+        49,
+        50,
+        70,
+        43,
+        76,
+        60,
+        50,
+        46,
+        64,
+        77,
+        88,
+        61,
+        53,
+        50,
+        48,
+        68,
+        66,
+        60,
+        83,
+        74,
+        61,
+        63,
+        47,
+        52,
+        75,
+        66,
+        63,
+        43,
+        85,
+        56,
+        56,
+        86,
+        86,
+        76,
+        44,
+        44,
+        74,
+        44,
+        62,
+        61,
+        83,
+        48,
+        46,
+        62,
+        61,
+        64,
+        47,
+        77,
+        90,
+        62,
+        83,
+        76,
+        75,
+        68,
+        74,
+        55,
+        78,
+        76,
+        78,
+        57,
+        59,
+        86,
+        74,
+        79,
+        57,
+        78,
+        72,
+        76,
+        82,
+        57,
+        86,
+        48,
+        50,
+        45,
+        71,
+        79,
+        78,
+        53,
+        85,
+        73,
+        69,
+        46,
+        49,
+        43,
+        67,
+        67,
+        70,
+        56,
+        46,
+        45,
+        68,
+        66,
+        52,
+        47,
+        115,
+        55,
+        60,
+        96,
+        50,
+        49,
+        49,
+        56,
+        56,
+        77,
+        40,
+        39,
+        69,
+        47,
+        47,
+        43,
+        79,
+        74,
+        80,
+        79,
+        78,
+        85,
+        79,
+        144,
+        95,
+        83,
+        82,
+        98,
+        89,
+        48,
+        68,
+        71,
+        82,
+        50,
+        54,
+        54,
+        49,
+        47,
+        52,
+        51,
+        50,
+        83,
+        48,
+        75,
+        70,
+        48,
+        54,
+        82,
+        74,
+        71,
+        46,
+        54,
+        49,
+        48,
+        48,
+        49,
+        50,
+        55,
+        60,
+        75,
+        83,
+        62,
+        60,
+        70,
+        60,
+        54,
+        74,
+        56,
+        54,
+        66,
+        65,
+        87,
+        74,
+        65,
+        65,
+        73,
+        74,
+        79,
+        68,
+        80,
+        49,
+        76,
+        53,
+        81,
+        54,
+        59,
+        57,
+        80,
+        53,
+        60,
+        81,
+        60,
+        79,
+        53,
+        53,
+        78,
+        82,
+        79,
+        52
+      ],
+      "before": {
+        "counts": {
+          "sourceEntities": 113,
+          "sourceRegions": 15,
+          "sourceEdges": 3,
+          "projectedPoints": 113,
+          "fadeRegions": 15,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "cache": {
+          "entries": 1,
+          "bytes": 69554,
+          "pending": 0,
+          "requests": 1,
+          "hits": 30,
+          "coalesced": 0,
+          "aborted": 0,
+          "maxEntries": 8,
+          "maxBytes": 8388608,
+          "maxPending": 1
+        },
+        "work": {
+          "worldGeometryBatches": 5,
+          "pointTransforms": 3390,
+          "regionTransforms": 6480,
+          "labelQueries": 10110
+        },
+        "representation": {
+          "semanticBudget": 9,
+          "semanticPoints": 3,
+          "semanticRegions": 4,
+          "geographicPoints": 113,
+          "geographicRegions": 15,
+          "vertices": 1521,
+          "primaryPointTargets": 3,
+          "primaryRegionTargets": 3
+        },
+        "view": {
+          "x": 0,
+          "y": -3871.4888888888886,
+          "scaleX": 0.24375,
+          "scaleY": 0.018444444444444444
+        }
+      },
+      "after": {
+        "counts": {
+          "sourceEntities": 113,
+          "sourceRegions": 15,
+          "sourceEdges": 3,
+          "projectedPoints": 113,
+          "fadeRegions": 15,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "cache": {
+          "entries": 8,
+          "bytes": 662993,
+          "pending": 0,
+          "requests": 201,
+          "hits": 55,
+          "coalesced": 0,
+          "aborted": 0,
+          "maxEntries": 8,
+          "maxBytes": 8388608,
+          "maxPending": 1
+        },
+        "work": {
+          "worldGeometryBatches": 221,
+          "pointTransforms": 140088,
+          "regionTransforms": 258540,
+          "labelQueries": 431807
+        },
+        "representation": {
+          "semanticBudget": 9,
+          "semanticPoints": 3,
+          "semanticRegions": 4,
+          "geographicPoints": 113,
+          "geographicRegions": 15,
+          "vertices": 1513,
+          "primaryPointTargets": 3,
+          "primaryRegionTargets": 3
+        },
+        "view": {
+          "scaleX": 0.24375,
+          "scaleY": 0.018444444444444444,
+          "x": 1.8317584685030397,
+          "y": -3868.610411295527
+        }
+      }
+    },
+    {
+      "name": "middle",
+      "p50": 64,
+      "p95": 95,
+      "max": 158,
+      "dom": 637,
+      "intervals": [
+        39,
+        40,
+        40,
+        46,
+        61,
+        53,
+        56,
+        50,
+        48,
+        47,
+        47,
+        47,
+        54,
+        68,
+        84,
+        69,
+        79,
+        78,
+        70,
+        68,
+        71,
+        65,
+        58,
+        68,
+        63,
+        63,
+        69,
+        76,
+        73,
+        64,
+        60,
+        65,
+        67,
+        105,
+        14,
+        16,
+        51,
+        66,
+        57,
+        54,
+        54,
+        55,
+        56,
+        49,
+        62,
+        57,
+        61,
+        55,
+        100,
+        56,
+        58,
+        60,
+        50,
+        47,
+        53,
+        48,
+        47,
+        57,
+        67,
+        53,
+        48,
+        50,
+        47,
+        47,
+        53,
+        59,
+        58,
+        47,
+        51,
+        46,
+        45,
+        54,
+        61,
+        55,
+        46,
+        55,
+        51,
+        50,
+        66,
+        68,
+        55,
+        54,
+        49,
+        45,
+        45,
+        61,
+        59,
+        53,
+        50,
+        87,
+        51,
+        59,
+        53,
+        51,
+        46,
+        44,
+        50,
+        54,
+        60,
+        46,
+        45,
+        87,
+        58,
+        57,
+        56,
+        105,
+        54,
+        53,
+        70,
+        66,
+        54,
+        52,
+        57,
+        63,
+        52,
+        66,
+        61,
+        60,
+        61,
+        91,
+        71,
+        65,
+        60,
+        58,
+        59,
+        71,
+        66,
+        75,
+        68,
+        69,
+        74,
+        49,
+        50,
+        54,
+        51,
+        59,
+        64,
+        61,
+        50,
+        56,
+        55,
+        52,
+        91,
+        137,
+        131,
+        86,
+        85,
+        97,
+        78,
+        73,
+        100,
+        70,
+        83,
+        78,
+        84,
+        74,
+        74,
+        68,
+        91,
+        79,
+        75,
+        76,
+        68,
+        65,
+        64,
+        71,
+        64,
+        67,
+        80,
+        66,
+        68,
+        77,
+        64,
+        72,
+        84,
+        68,
+        59,
+        80,
+        65,
+        57,
+        57,
+        52,
+        52,
+        52,
+        64,
+        54,
+        60,
+        60,
+        58,
+        53,
+        60,
+        49,
+        95,
+        58,
+        75,
+        70,
+        78,
+        61,
+        58,
+        80,
+        72,
+        68,
+        64,
+        56,
+        57,
+        63,
+        58,
+        64,
+        63,
+        54,
+        55,
+        51,
+        108,
+        63,
+        84,
+        61,
+        56,
+        51,
+        93,
+        100,
+        61,
+        50,
+        55,
+        58,
+        54,
+        65,
+        82,
+        63,
+        66,
+        105,
+        66,
+        66,
+        71,
+        158,
+        92,
+        62,
+        57,
+        72,
+        64,
+        97,
+        63,
+        64,
+        52,
+        64,
+        63,
+        58,
+        58,
+        53,
+        107,
+        107,
+        63,
+        53,
+        59,
+        54,
+        54,
+        52,
+        64,
+        69,
+        61,
+        72,
+        67,
+        54,
+        72,
+        66,
+        62,
+        60,
+        56,
+        54,
+        55,
+        65,
+        65,
+        60,
+        56,
+        63,
+        55,
+        51,
+        63,
+        68,
+        56,
+        57,
+        63,
+        53,
+        52,
+        65,
+        63,
+        60,
+        56,
+        122,
+        72,
+        72,
+        66,
+        82,
+        110,
+        66,
+        60,
+        61,
+        53,
+        56,
+        75,
+        64,
+        58,
+        53,
+        51,
+        54,
+        54,
+        72,
+        63,
+        55,
+        52,
+        58,
+        63,
+        50,
+        69,
+        58,
+        60,
+        71,
+        58,
+        57,
+        63,
+        76,
+        67,
+        68,
+        61,
+        52,
+        56,
+        51,
+        51,
+        77,
+        60,
+        56,
+        54,
+        52,
+        59,
+        56,
+        60,
+        57,
+        62,
+        58,
+        53,
+        56,
+        49,
+        62,
+        66,
+        75,
+        56,
+        66,
+        72,
+        74,
+        96,
+        90,
+        76,
+        67,
+        60,
+        62,
+        68,
+        70,
+        69,
+        81,
+        58,
+        61,
+        57,
+        67,
+        80,
+        60,
+        65,
+        59,
+        63,
+        57,
+        65,
+        69,
+        55,
+        60,
+        62,
+        57,
+        57,
+        55,
+        64,
+        68,
+        71,
+        72,
+        79,
+        72,
+        75,
+        85,
+        62,
+        67,
+        90,
+        84,
+        75,
+        72,
+        66,
+        65,
+        79,
+        78,
+        72,
+        69,
+        73,
+        74,
+        62,
+        60,
+        56,
+        55,
+        55,
+        60,
+        71,
+        64,
+        67,
+        67,
+        56,
+        60,
+        57,
+        67,
+        70,
+        72,
+        97,
+        77,
+        71,
+        72,
+        69,
+        82,
+        78,
+        63,
+        58,
+        57,
+        77,
+        66,
+        73,
+        56,
+        55,
+        58,
+        68,
+        71,
+        112,
+        74,
+        75,
+        78,
+        69,
+        60,
+        60,
+        81,
+        79,
+        78,
+        72,
+        73,
+        91,
+        75,
+        98,
+        99,
+        83,
+        71,
+        68,
+        69,
+        64,
+        72,
+        75,
+        75,
+        70,
+        68,
+        71,
+        83,
+        61,
+        58,
+        59,
+        62,
+        62,
+        62,
+        73,
+        117,
+        16,
+        16,
+        71,
+        68,
+        66,
+        65,
+        80,
+        76,
+        66,
+        78,
+        67,
+        77,
+        62,
+        61,
+        64,
+        59,
+        85,
+        70,
+        70,
+        59,
+        61,
+        65,
+        129,
+        67,
+        73,
+        62,
+        58,
+        62,
+        82,
+        69,
+        81,
+        59,
+        59,
+        64,
+        71,
+        77,
+        74,
+        69,
+        81,
+        64,
+        58,
+        61,
+        76,
+        79,
+        72,
+        60,
+        57,
+        64,
+        66,
+        57,
+        81,
+        70,
+        74,
+        63,
+        70,
+        62,
+        58,
+        59,
+        88,
+        67,
+        73,
+        61,
+        61,
+        69,
+        72,
+        73,
+        72,
+        86,
+        92,
+        69,
+        79,
+        79,
+        70,
+        70,
+        90,
+        73,
+        60,
+        79,
+        89,
+        70,
+        67,
+        76,
+        74,
+        86,
+        75,
+        77,
+        79,
+        77,
+        67,
+        64,
+        77,
+        65,
+        66,
+        89,
+        75,
+        74,
+        68,
+        56,
+        69,
+        58,
+        68,
+        79,
+        78,
+        70,
+        66,
+        64,
+        68,
+        71,
+        77,
+        91,
+        60,
+        71,
+        63,
+        53,
+        147,
+        125,
+        88,
+        82,
+        124,
+        16,
+        16,
+        94,
+        113,
+        75,
+        100,
+        89,
+        96,
+        78,
+        93,
+        92,
+        92,
+        100,
+        89,
+        77
+      ],
+      "before": {
+        "counts": {
+          "sourceEntities": 113,
+          "sourceRegions": 15,
+          "sourceEdges": 3,
+          "projectedPoints": 113,
+          "fadeRegions": 15,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "cache": {
+          "entries": 8,
+          "bytes": 695112,
+          "pending": 0,
+          "requests": 217,
+          "hits": 203,
+          "coalesced": 0,
+          "aborted": 9,
+          "maxEntries": 8,
+          "maxBytes": 8388608,
+          "maxPending": 1
+        },
+        "work": {
+          "worldGeometryBatches": 228,
+          "pointTransforms": 163358,
+          "regionTransforms": 303590,
+          "labelQueries": 498959
+        },
+        "representation": {
+          "semanticBudget": 9,
+          "semanticPoints": 3,
+          "semanticRegions": 4,
+          "geographicPoints": 113,
+          "geographicRegions": 15,
+          "vertices": 1523,
+          "primaryPointTargets": 3,
+          "primaryRegionTargets": 3
+        },
+        "view": {
+          "x": 0,
+          "y": -3871.4888888888886,
+          "scaleX": 0.24375,
+          "scaleY": 0.018444444444444444
+        }
+      },
+      "after": {
+        "counts": {
+          "sourceEntities": 113,
+          "sourceRegions": 15,
+          "sourceEdges": 3,
+          "projectedPoints": 113,
+          "fadeRegions": 15,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "cache": {
+          "entries": 8,
+          "bytes": 654209,
+          "pending": 0,
+          "requests": 408,
+          "hits": 230,
+          "coalesced": 0,
+          "aborted": 9,
+          "maxEntries": 8,
+          "maxBytes": 8388608,
+          "maxPending": 1
+        },
+        "work": {
+          "worldGeometryBatches": 437,
+          "pointTransforms": 238291,
+          "regionTransforms": 442000,
+          "labelQueries": 730250
+        },
+        "representation": {
+          "semanticBudget": 9,
+          "semanticPoints": 3,
+          "semanticRegions": 4,
+          "geographicPoints": 113,
+          "geographicRegions": 15,
+          "vertices": 1513,
+          "primaryPointTargets": 3,
+          "primaryRegionTargets": 3
+        },
+        "view": {
+          "scaleX": 0.24375,
+          "scaleY": 0.018444444444444444,
+          "x": 1.8317584685030397,
+          "y": -3868.610411295527
+        }
+      }
+    },
+    {
+      "name": "return",
+      "p50": 86,
+      "p95": 121,
+      "max": 241,
+      "dom": 643,
+      "intervals": [
+        50,
+        49,
+        50,
+        58,
+        76,
+        73,
+        92,
+        99,
+        94,
+        100,
+        94,
+        81,
+        85,
+        84,
+        105,
+        89,
+        87,
+        83,
+        89,
+        77,
+        92,
+        66,
+        69,
+        78,
+        69,
+        89,
+        82,
+        75,
+        107,
+        106,
+        85,
+        89,
+        84,
+        92,
+        73,
+        70,
+        65,
+        72,
+        70,
+        65,
+        79,
+        74,
+        84,
+        101,
+        95,
+        105,
+        98,
+        92,
+        77,
+        88,
+        86,
+        82,
+        67,
+        69,
+        90,
+        72,
+        83,
+        68,
+        66,
+        77,
+        67,
+        80,
+        84,
+        70,
+        62,
+        69,
+        70,
+        64,
+        78,
+        72,
+        70,
+        71,
+        62,
+        66,
+        64,
+        73,
+        82,
+        73,
+        67,
+        75,
+        80,
+        73,
+        76,
+        79,
+        96,
+        100,
+        81,
+        93,
+        89,
+        79,
+        68,
+        67,
+        61,
+        69,
+        196,
+        77,
+        78,
+        120,
+        136,
+        78,
+        87,
+        91,
+        91,
+        86,
+        79,
+        83,
+        85,
+        71,
+        73,
+        72,
+        90,
+        95,
+        79,
+        77,
+        83,
+        76,
+        80,
+        77,
+        112,
+        78,
+        117,
+        96,
+        97,
+        88,
+        87,
+        88,
+        101,
+        98,
+        87,
+        77,
+        71,
+        68,
+        69,
+        66,
+        77,
+        83,
+        74,
+        66,
+        72,
+        78,
+        67,
+        87,
+        75,
+        81,
+        83,
+        75,
+        68,
+        68,
+        96,
+        82,
+        79,
+        76,
+        73,
+        70,
+        69,
+        83,
+        85,
+        115,
+        88,
+        73,
+        86,
+        102,
+        78,
+        79,
+        100,
+        169,
+        102,
+        86,
+        239,
+        98,
+        104,
+        116,
+        100,
+        82,
+        105,
+        108,
+        91,
+        87,
+        125,
+        102,
+        97,
+        97,
+        103,
+        98,
+        78,
+        78,
+        78,
+        73,
+        68,
+        71,
+        102,
+        89,
+        92,
+        86,
+        77,
+        68,
+        72,
+        82,
+        88,
+        78,
+        88,
+        85,
+        79,
+        81,
+        68,
+        67,
+        88,
+        91,
+        82,
+        115,
+        101,
+        73,
+        93,
+        101,
+        85,
+        77,
+        75,
+        78,
+        69,
+        74,
+        67,
+        77,
+        83,
+        78,
+        85,
+        74,
+        78,
+        78,
+        92,
+        82,
+        106,
+        107,
+        102,
+        107,
+        105,
+        93,
+        85,
+        122,
+        85,
+        104,
+        101,
+        104,
+        89,
+        77,
+        78,
+        70,
+        69,
+        77,
+        68,
+        78,
+        81,
+        73,
+        81,
+        97,
+        69,
+        94,
+        92,
+        92,
+        109,
+        115,
+        115,
+        124,
+        112,
+        85,
+        86,
+        116,
+        104,
+        121,
+        98,
+        105,
+        89,
+        83,
+        111,
+        110,
+        97,
+        91,
+        105,
+        83,
+        78,
+        79,
+        71,
+        70,
+        73,
+        71,
+        83,
+        84,
+        115,
+        74,
+        72,
+        71,
+        103,
+        85,
+        82,
+        138,
+        104,
+        93,
+        97,
+        106,
+        84,
+        82,
+        80,
+        83,
+        76,
+        67,
+        83,
+        92,
+        77,
+        74,
+        95,
+        86,
+        88,
+        86,
+        85,
+        74,
+        72,
+        71,
+        94,
+        91,
+        94,
+        133,
+        100,
+        92,
+        94,
+        77,
+        87,
+        76,
+        70,
+        67,
+        75,
+        81,
+        75,
+        71,
+        76,
+        66,
+        69,
+        91,
+        82,
+        80,
+        78,
+        67,
+        68,
+        71,
+        93,
+        84,
+        73,
+        76,
+        87,
+        99,
+        98,
+        108,
+        130,
+        186,
+        105,
+        100,
+        102,
+        82,
+        118,
+        102,
+        97,
+        107,
+        128,
+        97,
+        130,
+        114,
+        103,
+        91,
+        94,
+        101,
+        104,
+        90,
+        85,
+        80,
+        88,
+        98,
+        84,
+        81,
+        130,
+        102,
+        106,
+        94,
+        103,
+        96,
+        86,
+        84,
+        92,
+        94,
+        87,
+        76,
+        89,
+        94,
+        107,
+        109,
+        100,
+        192,
+        100,
+        108,
+        94,
+        86,
+        98,
+        77,
+        75,
+        88,
+        98,
+        99,
+        103,
+        85,
+        100,
+        119,
+        103,
+        109,
+        97,
+        88,
+        82,
+        82,
+        74,
+        93,
+        73,
+        75,
+        93,
+        82,
+        78,
+        74,
+        72,
+        80,
+        72,
+        80,
+        85,
+        94,
+        105,
+        100,
+        98,
+        103,
+        93,
+        78,
+        79,
+        78,
+        82,
+        76,
+        96,
+        110,
+        139,
+        123,
+        114,
+        103,
+        107,
+        109,
+        96,
+        84,
+        83,
+        79,
+        74,
+        72,
+        83,
+        155,
+        126,
+        101,
+        100,
+        99,
+        91,
+        77,
+        75,
+        69,
+        72,
+        80,
+        98,
+        90,
+        89,
+        118,
+        111,
+        112,
+        100,
+        99,
+        87,
+        85,
+        77,
+        86,
+        97,
+        92,
+        79,
+        94,
+        114,
+        101,
+        103,
+        96,
+        84,
+        92,
+        78,
+        72,
+        71,
+        69,
+        85,
+        100,
+        241,
+        110,
+        119,
+        172,
+        18,
+        16,
+        10,
+        91,
+        125,
+        87,
+        102,
+        86,
+        88,
+        117,
+        117,
+        107,
+        116,
+        103,
+        100,
+        141,
+        91,
+        99,
+        81,
+        90,
+        78,
+        97,
+        92,
+        84,
+        81,
+        78,
+        79,
+        78,
+        79,
+        97,
+        91,
+        85,
+        85,
+        81,
+        83,
+        79,
+        97,
+        87,
+        138,
+        115,
+        116,
+        100,
+        108,
+        95,
+        89,
+        80,
+        78,
+        85,
+        79,
+        89,
+        88,
+        86,
+        77,
+        73,
+        76,
+        86,
+        93,
+        84,
+        82,
+        78,
+        94,
+        79,
+        88,
+        106,
+        106,
+        118,
+        118,
+        98,
+        104,
+        91,
+        87,
+        78,
+        78,
+        74,
+        86,
+        95,
+        85,
+        82,
+        81,
+        73,
+        71,
+        78,
+        93,
+        87,
+        75,
+        77,
+        85,
+        80,
+        80,
+        103,
+        139,
+        123,
+        104,
+        114,
+        119,
+        111,
+        97,
+        186,
+        127,
+        113,
+        111,
+        114,
+        127,
+        111,
+        117,
+        154
+      ],
+      "before": {
+        "counts": {
+          "sourceEntities": 166,
+          "sourceRegions": 15,
+          "sourceEdges": 3,
+          "projectedPoints": 166,
+          "fadeRegions": 15,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "cache": {
+          "entries": 8,
+          "bytes": 760226,
+          "pending": 0,
+          "requests": 424,
+          "hits": 341,
+          "coalesced": 0,
+          "aborted": 18,
+          "maxEntries": 8,
+          "maxBytes": 8388608,
+          "maxPending": 1
+        },
+        "work": {
+          "worldGeometryBatches": 449,
+          "pointTransforms": 262866,
+          "regionTransforms": 477186,
+          "labelQueries": 780571
+        },
+        "representation": {
+          "semanticBudget": 9,
+          "semanticPoints": 2,
+          "semanticRegions": 4,
+          "geographicPoints": 166,
+          "geographicRegions": 15,
+          "vertices": 1523,
+          "primaryPointTargets": 2,
+          "primaryRegionTargets": 2
+        },
+        "view": {
+          "x": 0,
+          "y": -3871.4888888888886,
+          "scaleX": 0.24375,
+          "scaleY": 0.018444444444444444
+        }
+      },
+      "after": {
+        "counts": {
+          "sourceEntities": 113,
+          "sourceRegions": 15,
+          "sourceEdges": 3,
+          "projectedPoints": 113,
+          "fadeRegions": 15,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "cache": {
+          "entries": 8,
+          "bytes": 649818,
+          "pending": 0,
+          "requests": 681,
+          "hits": 367,
+          "coalesced": 0,
+          "aborted": 18,
+          "maxEntries": 8,
+          "maxBytes": 8388608,
+          "maxPending": 1
+        },
+        "work": {
+          "worldGeometryBatches": 723,
+          "pointTransforms": 337405,
+          "regionTransforms": 614608,
+          "labelQueries": 1010143
+        },
+        "representation": {
+          "semanticBudget": 9,
+          "semanticPoints": 3,
+          "semanticRegions": 4,
+          "geographicPoints": 113,
+          "geographicRegions": 15,
+          "vertices": 1513,
+          "primaryPointTargets": 3,
+          "primaryRegionTargets": 2
+        },
+        "view": {
+          "scaleX": 0.24375,
+          "scaleY": 0.018444444444444444,
+          "x": 1.8317584685030397,
+          "y": -3868.610411295527
+        }
+      }
+    }
+  ],
+  "trips": [
+    {
+      "i": 0,
+      "ms": 921.0228029999998,
+      "requests": 3,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 3,
+        "fadeRegions": 0,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 643913,
+        "pending": 0,
+        "requests": 203,
+        "hits": 65,
+        "coalesced": 0,
+        "aborted": 1,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 1,
+      "ms": 777.0800579999996,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 8,
+        "fadeRegions": 15,
+        "exitingRegions": 15,
+        "exitOverdueMs": 16
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 643913,
+        "pending": 0,
+        "requests": 204,
+        "hits": 75,
+        "coalesced": 0,
+        "aborted": 2,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 2,
+      "ms": 798.7042890000012,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 39,
+        "fadeRegions": 15,
+        "exitingRegions": 11,
+        "exitOverdueMs": 12
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 643913,
+        "pending": 0,
+        "requests": 205,
+        "hits": 82,
+        "coalesced": 0,
+        "aborted": 3,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 3,
+      "ms": 849.6818700000003,
+      "requests": 0,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 55,
+        "fadeRegions": 9,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 643913,
+        "pending": 0,
+        "requests": 206,
+        "hits": 93,
+        "coalesced": 0,
+        "aborted": 4,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 4,
+      "ms": 754.9527739999976,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 1,
+        "fadeRegions": 0,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 643913,
+        "pending": 0,
+        "requests": 207,
+        "hits": 104,
+        "coalesced": 0,
+        "aborted": 5,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 5,
+      "ms": 749.2896590000018,
+      "requests": 2,
+      "away": {
+        "sourceEntities": 132,
+        "sourceRegions": 8,
+        "sourceEdges": 0,
+        "projectedPoints": 25,
+        "fadeRegions": 8,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 21,
+        "exitingRegions": 6,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 621391,
+        "pending": 0,
+        "requests": 208,
+        "hits": 112,
+        "coalesced": 0,
+        "aborted": 5,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 6,
+      "ms": 796.7617270000046,
+      "requests": 0,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 30,
+        "fadeRegions": 4,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 621391,
+        "pending": 0,
+        "requests": 209,
+        "hits": 123,
+        "coalesced": 0,
+        "aborted": 6,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 7,
+      "ms": 823.0508279999995,
+      "requests": 3,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 61,
+        "fadeRegions": 8,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 635604,
+        "pending": 0,
+        "requests": 210,
+        "hits": 133,
+        "coalesced": 0,
+        "aborted": 6,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 8,
+      "ms": 814.3102990000043,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 0,
+        "fadeRegions": 1,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 635604,
+        "pending": 0,
+        "requests": 211,
+        "hits": 143,
+        "coalesced": 0,
+        "aborted": 7,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 9,
+      "ms": 696.3701269999947,
+      "requests": 2,
+      "away": {
+        "sourceEntities": 155,
+        "sourceRegions": 12,
+        "sourceEdges": 1,
+        "projectedPoints": 71,
+        "fadeRegions": 2,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 25,
+        "exitingRegions": 10,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 626374,
+        "pending": 0,
+        "requests": 212,
+        "hits": 148,
+        "coalesced": 0,
+        "aborted": 7,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 10,
+      "ms": 825.4074050000054,
+      "requests": 0,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 19,
+        "fadeRegions": 15,
+        "exitingRegions": 12,
+        "exitOverdueMs": 24
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 626374,
+        "pending": 0,
+        "requests": 213,
+        "hits": 159,
+        "coalesced": 0,
+        "aborted": 8,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 11,
+      "ms": 865.7036110000045,
+      "requests": 2,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 50,
+        "fadeRegions": 7,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 637550,
+        "pending": 0,
+        "requests": 214,
+        "hits": 168,
+        "coalesced": 0,
+        "aborted": 8,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 12,
+      "ms": 841.3476690000025,
+      "requests": 0,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 9,
+        "fadeRegions": 0,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 637550,
+        "pending": 0,
+        "requests": 215,
+        "hits": 179,
+        "coalesced": 0,
+        "aborted": 9,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 13,
+      "ms": 820.4690709999995,
+      "requests": 2,
+      "away": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 30,
+        "fadeRegions": 4,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 662395,
+        "pending": 0,
+        "requests": 216,
+        "hits": 189,
+        "coalesced": 0,
+        "aborted": 9,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 14,
+      "ms": 787.0564439999944,
+      "requests": 2,
+      "away": {
+        "sourceEntities": 132,
+        "sourceRegions": 31,
+        "sourceEdges": 11,
+        "projectedPoints": 127,
+        "fadeRegions": 15,
+        "exitingRegions": 9,
+        "exitOverdueMs": 66
+      },
+      "back": {
+        "sourceEntities": 113,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 113,
+        "fadeRegions": 36,
+        "exitingRegions": 21,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 695112,
+        "pending": 0,
+        "requests": 217,
+        "hits": 195,
+        "coalesced": 0,
+        "aborted": 9,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 15,
+      "ms": 885.222345000002,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 23,
+        "sourceEdges": 0,
+        "projectedPoints": 116,
+        "fadeRegions": 26,
+        "exitingRegions": 8,
+        "exitOverdueMs": 55
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 26,
+        "exitingRegions": 11,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 659345,
+        "pending": 0,
+        "requests": 410,
+        "hits": 237,
+        "coalesced": 0,
+        "aborted": 9,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 16,
+      "ms": 980.9979900000035,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 9,
+        "fadeRegions": 15,
+        "exitingRegions": 13,
+        "exitOverdueMs": 53
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 659345,
+        "pending": 0,
+        "requests": 411,
+        "hits": 245,
+        "coalesced": 0,
+        "aborted": 10,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 17,
+      "ms": 1012.2019080000027,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 44,
+        "fadeRegions": 4,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 659345,
+        "pending": 0,
+        "requests": 412,
+        "hits": 252,
+        "coalesced": 0,
+        "aborted": 11,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 18,
+      "ms": 971.9308739999979,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 53,
+        "fadeRegions": 6,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 659345,
+        "pending": 0,
+        "requests": 413,
+        "hits": 259,
+        "coalesced": 0,
+        "aborted": 12,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 19,
+      "ms": 852.4947699999902,
+      "requests": 0,
+      "away": {
+        "sourceEntities": 171,
+        "sourceRegions": 20,
+        "sourceEdges": 5,
+        "projectedPoints": 116,
+        "fadeRegions": 17,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 24,
+        "exitingRegions": 9,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 668251,
+        "pending": 0,
+        "requests": 414,
+        "hits": 266,
+        "coalesced": 0,
+        "aborted": 12,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 20,
+      "ms": 929.9407229999924,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 3,
+        "fadeRegions": 15,
+        "exitingRegions": 15,
+        "exitOverdueMs": 52
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 668251,
+        "pending": 0,
+        "requests": 415,
+        "hits": 274,
+        "coalesced": 0,
+        "aborted": 13,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 21,
+      "ms": 841.1853350000019,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 20,
+        "fadeRegions": 15,
+        "exitingRegions": 15,
+        "exitOverdueMs": 37
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 668251,
+        "pending": 0,
+        "requests": 416,
+        "hits": 281,
+        "coalesced": 0,
+        "aborted": 14,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 22,
+      "ms": 931.4342630000028,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 73,
+        "fadeRegions": 15,
+        "exitingRegions": 11,
+        "exitOverdueMs": 54
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 668251,
+        "pending": 0,
+        "requests": 417,
+        "hits": 288,
+        "coalesced": 0,
+        "aborted": 15,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 23,
+      "ms": 909.2754450000066,
+      "requests": 0,
+      "away": {
+        "sourceEntities": 234,
+        "sourceRegions": 30,
+        "sourceEdges": 9,
+        "projectedPoints": 130,
+        "fadeRegions": 29,
+        "exitingRegions": 2,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 35,
+        "exitingRegions": 20,
+        "exitOverdueMs": 41
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 721997,
+        "pending": 0,
+        "requests": 418,
+        "hits": 294,
+        "coalesced": 0,
+        "aborted": 15,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 24,
+      "ms": 883.3466039999912,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 2,
+        "fadeRegions": 15,
+        "exitingRegions": 15,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 721997,
+        "pending": 0,
+        "requests": 419,
+        "hits": 300,
+        "coalesced": 0,
+        "aborted": 16,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 25,
+      "ms": 754.6240470000048,
+      "requests": 0,
+      "away": {
+        "sourceEntities": 146,
+        "sourceRegions": 8,
+        "sourceEdges": 0,
+        "projectedPoints": 29,
+        "fadeRegions": 8,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 21,
+        "exitingRegions": 6,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 715374,
+        "pending": 0,
+        "requests": 420,
+        "hits": 308,
+        "coalesced": 0,
+        "aborted": 16,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 26,
+      "ms": 1059.7529800000048,
+      "requests": 2,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 49,
+        "fadeRegions": 4,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 715374,
+        "pending": 0,
+        "requests": 421,
+        "hits": 315,
+        "coalesced": 0,
+        "aborted": 17,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 27,
+      "ms": 891.1626790000009,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 152,
+        "sourceRegions": 26,
+        "sourceEdges": 8,
+        "projectedPoints": 144,
+        "fadeRegions": 27,
+        "exitingRegions": 5,
+        "exitOverdueMs": 61
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 27,
+        "exitingRegions": 12,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 749554,
+        "pending": 0,
+        "requests": 422,
+        "hits": 321,
+        "coalesced": 0,
+        "aborted": 17,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 28,
+      "ms": 914.1380400000053,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 0,
+        "fadeRegions": 1,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 15,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 749554,
+        "pending": 0,
+        "requests": 423,
+        "hits": 329,
+        "coalesced": 0,
+        "aborted": 18,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    },
+    {
+      "i": 29,
+      "ms": 865.2265460000053,
+      "requests": 1,
+      "away": {
+        "sourceEntities": 155,
+        "sourceRegions": 11,
+        "sourceEdges": 1,
+        "projectedPoints": 71,
+        "fadeRegions": 10,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "back": {
+        "sourceEntities": 166,
+        "sourceRegions": 15,
+        "sourceEdges": 3,
+        "projectedPoints": 166,
+        "fadeRegions": 24,
+        "exitingRegions": 9,
+        "exitOverdueMs": 0
+      },
+      "cache": {
+        "entries": 8,
+        "bytes": 760226,
+        "pending": 0,
+        "requests": 424,
+        "hits": 335,
+        "coalesced": 0,
+        "aborted": 18,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      }
+    }
+  ]
+}

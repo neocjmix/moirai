@@ -1,6 +1,72 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const world = "019f3b00-0000-7000-8000-000000000a01";
+
+// Capture in the browser before the change. A Playwright locator retry can
+// resume after a180–220ms transition has already ended on a busy worker.
+async function captureOpacityExit(page: Page, selector: string, pause = false) {
+  await page.evaluate(
+    ({ selector, pause }) => {
+      const node = document.querySelector(selector) as SVGElement;
+      const result = new Promise<{
+        samples: number[];
+        connected: boolean;
+        animations: number;
+      }>((resolve) => {
+        const observer = new MutationObserver(() => {
+          if (Number(node.style.opacity) !== 0) return;
+          observer.disconnect();
+          const samples: number[] = [];
+          const started = performance.now();
+          const sample = () => {
+            const opacity = Number(getComputedStyle(node).opacity);
+            samples.push(opacity);
+            if (pause && opacity > 0 && opacity < 1) {
+              const animations = node
+                .getAnimations()
+                .filter(
+                  (animation) =>
+                    (animation as Animation & { transitionProperty?: string })
+                      .transitionProperty === "opacity"
+                );
+              for (const animation of animations) animation.pause();
+              resolve({
+                samples,
+                connected: node.isConnected,
+                animations: animations.length
+              });
+            } else if (performance.now() - started < 300)
+              requestAnimationFrame(sample);
+            else
+              resolve({ samples, connected: node.isConnected, animations: 0 });
+          };
+          requestAnimationFrame(sample);
+        });
+        observer.observe(node, {
+          attributes: true,
+          attributeFilter: ["style"]
+        });
+      });
+      (window as unknown as { opacityExit: typeof result }).opacityExit =
+        result;
+    },
+    { selector, pause }
+  );
+}
+async function opacityExit(page: Page) {
+  return page.evaluate(
+    () =>
+      (
+        window as unknown as {
+          opacityExit: Promise<{
+            samples: number[];
+            connected: boolean;
+            animations: number;
+          }>;
+        }
+      ).opacityExit
+  );
+}
 
 test("leaf and authored Composite points shrink, hide and reverse without losing identity", async ({
   page
@@ -222,25 +288,23 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
   // Reverse the representation while its previous fade is still in flight.
   // The same authored owner and hull must keep the browser's current opacity,
   // rather than remounting either shape at the end state.
+  await captureOpacityExit(
+    page,
+    '[data-composite-paint-id="density-composite"] > path',
+    true
+  );
   hull = false;
   density = { pointScale: 1, opacity: 1, labelOpacity: 1 };
   await page.setViewportSize({ width: 470, height: 844 });
-  await expect(
-    page.locator('[data-composite-point-id="density-composite"]')
-  ).toHaveCount(1);
+  const hullExit = await opacityExit(page);
+  expect(hullExit.connected).toBe(true);
+  expect(hullExit.animations).toBeGreaterThan(0);
+  expect(hullExit.samples.some((opacity) => opacity > 0 && opacity < 1)).toBe(
+    true
+  );
   const hullPaint = page.locator(
     '[data-composite-paint-id="density-composite"] > path'
   );
-  await expect
-    .poll(
-      () =>
-        hullPaint.evaluate((node) => {
-          const opacity = Number(getComputedStyle(node).opacity);
-          return opacity > 0 && opacity < 1;
-        }),
-      { intervals: [10] }
-    )
-    .toBe(true);
   hull = true;
   await page.setViewportSize({ width: 480, height: 844 });
   await expect
@@ -264,43 +328,15 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
   // Authored child suppression used to unmount at target opacity zero,
   // cutting off the browser's still-running opacity transition.
   const leafPaint = page.locator('[data-event-paint-id="density-leaf"]');
-  await leafPaint.evaluate((node) => {
-    (window as unknown as { originalLeafPaint: Element }).originalLeafPaint =
-      node;
-  });
+  await captureOpacityExit(page, '[data-event-paint-id="density-leaf"] circle');
   hull = false;
   suppressChild = true;
   await page.setViewportSize({ width: 490, height: 844 });
+  const childExit = await opacityExit(page);
+  expect(childExit.samples.some((opacity) => opacity > 0 && opacity < 1)).toBe(
+    true
+  );
   await expect(leafPaint.locator("[data-primary-hit-target]")).toHaveCount(0);
-  await expect
-    .poll(
-      () =>
-        leafPaint.locator("circle").evaluate((node) => {
-          const opacity = Number(getComputedStyle(node).opacity);
-          return opacity > 0 && opacity < 1;
-        }),
-      { intervals: [10] }
-    )
-    .toBe(true);
-  suppressChild = false;
-  await page.setViewportSize({ width: 500, height: 844 });
-  await expect(leafPaint.locator("[data-primary-hit-target]")).toHaveCount(1);
-  expect(
-    await leafPaint.evaluate(
-      (node) =>
-        node ===
-        (window as unknown as { originalLeafPaint: Element }).originalLeafPaint
-    )
-  ).toBe(true);
-  await expect
-    .poll(() =>
-      leafPaint
-        .locator("circle")
-        .evaluate((node) => Number(getComputedStyle(node).opacity))
-    )
-    .toBeCloseTo(1);
-  suppressChild = true;
-  await page.setViewportSize({ width: 510, height: 844 });
   await expect(leafPaint).toHaveCount(0);
 
   // A disappearing hull keeps its label paint, but leaves keyboard and

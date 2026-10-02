@@ -78,6 +78,7 @@ export function GraphQueryProvider({
   >(
     (update) => {
       const next = typeof update === "function" ? update(state) : update;
+      if (next === state) return;
       setLocalState(next);
       if (v5) {
         const url = new URL(window.location.href);
@@ -99,7 +100,9 @@ export function GraphQueryProvider({
             url.searchParams.set("collection", id.slice(11));
           } else url.searchParams.set("event", id);
         } else url.searchParams.delete("event");
-        window.history.replaceState(window.history.state, "", url);
+        if (url.href !== window.location.href) {
+          window.history.replaceState(window.history.state, "", url);
+        }
         return;
       }
       if (JSON.stringify(next.query) === JSON.stringify(state.query)) return;

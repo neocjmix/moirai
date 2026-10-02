@@ -12,14 +12,14 @@
 
 ## 현재 checkpoint와 우선 작업
 
-2026-10-02 세 번째 checkpoint인 PR [#306](https://github.com/neocjmix/moirai/pull/306), 구현 `c4c2d61`은 main `de8d60811fba7866bc69801c97457f7f957a6261`로 배포됐다. 앞선 두 checkpoint와 이번 로컬 검증의 개선은 [진행 중 실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 기록한다. **성능 완료는 아니다.** 배포 후 격리 production profile 두 번 모두 scene이 `loading`인 상태에서 timeout했고 frame 측정에 진입하지 못했다. 초기 HTTP 200만으로 graph-ready를 판정하지 않는다.
+2026-10-02 네 번째 checkpoint인 서버 전용 PR [#307](https://github.com/neocjmix/moirai/pull/307), 구현 `7c10614`은 main `eaa9002769fa1a4a9f9499ae05761006413c9a00`로 Atropos 배포 SUCCESS를 확인했다. UI 수정은 아직 commit·배포되지 않은 다섯 번째 checkpoint로 분리한다. 앞선 PR #306 `de8d608…`의 격리 profile 두 번은 loading timeout이었고 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 실패 JSON과 함께 보존한다. **성능 완료는 아니다.** 새 서버 전용 profile은 진행 중이며 initial ready 2099.7ms/Render 4회, 첫 602-frame p95 68ms/max 119ms로 frame gate 실패를 관측했다. 전체 30회 왕복 결과는 아직 판정하지 않는다.
 
 | 상태 | 현재 범위와 다음 검증 |
 | --- | --- |
 | 구현·배포됨, 전체 gate 열림 | metadata LRU/공간 margin, finer-level prefetch 안쪽 readiness 경계, authored paint owner·hull/point fade, bounded pan hull/path 재사용, response structural sharing, 넓은 camera 복원. 중간 개선과 뒤이은 regression을 함께 보존 |
-| 네 번째 checkpoint 구현·검증 중, 미배포 | Render generation hash 경로를 기존 immutable server cache가 제외했던 문제 수정, 동시 동일 object 읽기 병합, Render route `Server-Timing`. focused 23 tests 통과만 기록하며 실제 서버 지연 개선은 배포 후 재측정 |
-| 브라우저 blocker 진단 중 | 늦은 detail/Collection 닫기 이후 owner·hydration 재진입, navigation lifetime, semantic label paint 보존. 27개 browser batch에서 발견한 WebKit `history.replaceState` 10초 내 100회 초과 regression은 수정·재검증 전 통과로 표시하지 않음 |
-| 배포 후 반드시 재측정 | cold/warm server object I/O와 app 시간, 초기 scene readiness, 30회 왕복 요청 수와 frame p95/max, 데이터 전환·label/primary target·history identity. 네트워크 결과·서버 자원과 browser lifecycle 원인을 분리 |
+| 네 번째 서버 checkpoint 배포됨, 측정 중 | Render generation hash 경로의 immutable cache 적용, 동시 동일 object 읽기 병합, Render route `Server-Timing`. 초기 23 tests와 후속 혼합 cache/paint 30 tests·strict root·lint·format 통과는 로컬 검증 범위로 표시. 운영 profile의 시작 frame은 미달이며 전체 결과 대기 |
+| 다섯 번째 UI checkpoint 미commit·미배포 | corrected browser batch 24/27, fresh history 2회·idle work 안정과 후속 label/point/history 시험 성공. detail 요청 1회 기대/2회 관측은 열림. network loader와 presentation identity 분리의 신규 검증도 대기 |
+| 남은 운영·UI 검증 | 서버 전용 30회 profile을 먼저 완료해 cache 효과와 잔여 frame 비용을 분리. UI 수정은 별도 tests·commit·배포 후 identity·label/primary target·history·detail 요청을 재검증. 일부 초기 준비 성공을 전체 latency/frame 통과로 표시하지 않음 |
 
 운영 Render 응답 3.4–11.9초, canonical 응답 8–120ms의 차이와 낮은 관측 CPU/메모리 사용은 server object I/O/cache 경로를 우선 조사할 근거다. 이 관측만으로 storage만이 유일한 원인이거나 CPU/메모리·browser lifecycle 문제가 없다고 단정하지 않는다. scale overfetch·geometry compression·서버 증설에 앞서 immutable cache 적용 여부, 반복 object reads, request coalescing, resolved metadata 이후 pending scene 상태를 확인한다.
 
@@ -58,11 +58,11 @@
 
 현재 다음 checkpoint의 구체적 순서는 다음과 같다.
 
-- [ ] `replaceState`를 포함한 history 쓰기의 발생 주체·빈도를 확인하고 gesture 후 최신 camera/selection 복원 의미를 유지하며 browser quota 오류를 제거한다. quota를 넘긴 오류를 숨기거나 URL 동기화를 포기해 통과시키지 않는다.
-- [ ] 늦은 Collection/detail 응답과 close/back/forward의 owner 재진입을 재현하고 request 폭주·취소 실패·scene loading 정체를 검증한다. 같은 수정의 이전 smoke 성공과 재발을 둘 다 남긴다.
-- [ ] 실제 compiler/4 suite와 영향받는 27개 browser batch의 결과를 정리한다. semantic fixture의 CSS fade 성공, 실제 Render data 경로 성공, 운영 성공을 분리한다.
-- [ ] 배포 가능한 서버 cache/계측과 browser 개선을 commit·배포하고 exact SHA를 확인한다. `Server-Timing`의 app wall time, summed object I/O time, object/byte count로 cold/warm을 비교한다. 병렬 I/O 합계는 wall time과 같지 않다.
-- [ ] 격리 production profile을 재실행한다. loading timeout이면 마지막 pending owner/request/metadata/geometry 상태를 보존하고 해결 후 frame 측정을 재개한다. 30회 방문·복귀와 시작/중간/복귀 gate를 만족하기 전 완료로 판정하지 않는다.
+- [x] 서버 cache/계측을 PR #307 `eaa9002`로 배포하고30회 격리 profile을 마쳤다. ready2099.7ms/4요청, 전체68요청, frame p95=68/76/96ms로 미달이다.
+- [x] history quota·상세 read feedback을 분리했다. 최종 모바일3개에서 초기/Collection/Retry 각1회와 Back/Forward 단계 복원 통과. 라벨·point fade/reversal/prune/re-entry도 로컬 통과했다.
+- [ ] UI checkpoint를 배포하고 실제 compiler/4·운영 모바일 동작을 독립 확인한다.
+- [ ] Composite 현재 좌표와 paint 이력을 분리하여 보통 pan의 중복 render를 없애고 adapter의 반복 World geometry 재구축 원인을 수정한다.
+- [ ] 다시30회 방문·복귀 및250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
 
 ## 중지·인계 기준
 

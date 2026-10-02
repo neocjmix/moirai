@@ -17,9 +17,9 @@
 
 ## 현재 checkpoint와 조사 기준선
 
-- **현재 운영:** [PR #306](https://github.com/neocjmix/moirai/pull/306), `de8d60811fba7866bc69801c97457f7f957a6261`. 과도한 prefetch refill 경계 수정, bounded pan hull/spline 재사용, World geometry identity 공유, 넓은 viewport 복원, compiler/4 browser CI를 배포했다. exact-SHA smoke 통과. branch CI는 성공했으나 main CI의 모바일 flow와 A5 운영 checkpoint는 실패했다.
-- **지속 성능 미달·진단 중:** #305의 30 visits/start·middle·return602frame p95=84/95/121ms,382 Render 요청을 재현했다. #306에서 요청 증폭 원인은 수정했지만 운영 재측정 두 번 모두 초기 loading timeout으로 frame 결과를 얻지 못했다. Railway render 응답3.4–11.9초, canonical read8–120ms를 관측했다. 배포 성공을 성능 통과로 해석하지 않는다.
-- **다음 checkpoint 검증 중:** SHA로 고정된 Render generation이 서버 immutable cache에서 빠진 원인을 수정하고 Server-Timing을 추가했다. 상세 read action identity·복원 중복 호출과 라벨/point 등장·퇴장 전환도 모바일 브라우저에서 검증 중이다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
+- **현재 운영:** [PR #307](https://github.com/neocjmix/moirai/pull/307), `eaa9002769fa1a4a9f9499ae05761006413c9a00`. Render generation immutable cache·동시 읽기 병합·Server-Timing을 배포했다. #306의 prefetch refill·pan hull cache·World geometry 공유·넓은 viewport 복원도 포함한다.
+- **지속 성능 미달:** 격리30 visits/start·middle·return602frame p95=68/76/96ms, max119/148/192ms. 초기 준비2099.7ms/4요청, 전체68요청으로 #305의382요청 증폭은 줄었으나 frame gate는 여전히 실패한다. #306의 초기 loading timeout2회도 evidence에 보존했다.
+- **UI 후속 검증 완료·배포 준비:** 라벨·point paint 진입/퇴장/reversal, 초기 상세·Collection·Retry 각1회, canonical Back/Forward 단계 복원 검증. 네트워크 read와 drawer presentation identity를 분리했다. 다음 원인은 camera당 Composite 중복 render와 cache 응답의 반복 World geometry 재구축이다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
 - 기능 출발점은 [#302](https://github.com/neocjmix/moirai/pull/302) `19de027`의 Collection 변경 시 semantic label 연속성이며, 조사 기준선은 [#303](https://github.com/neocjmix/moirai/pull/303) `91cffca`다. #304 `8f9e31a`의 isolated602frame p95=49/49ms도33.4ms 기준 미달이다. 과거 checkpoint와 개별 검증 범위는 evidence에 보존한다.
 - World `01995c2a-7b00-7000-8000-000000000101`: Revision 62, 30 Collection, 677 placed/2 unplaced Event. 공개 Render generation은 `render-compiler/4`, `7b3c2fd8…`다. 데이터 수량은 새 입력·백필 전 다시 확인한다.
 

@@ -193,6 +193,14 @@ async function panSample(name: string) {
   }, frames);
   await page.mouse.up();
   const after = await settle();
+  console.info(
+    JSON.stringify({
+      phase: name,
+      p95: quantile(intervals, 0.95),
+      max: Math.max(...intervals),
+      requests: network.length
+    })
+  );
   return {
     name,
     intervals,
@@ -226,6 +234,13 @@ try {
   result.cold_ms = performance.now() - initialTime;
   result.initial = initial;
   result.cold_requests = network.length;
+  console.info(
+    JSON.stringify({
+      phase: "ready",
+      cold_ms: result.cold_ms,
+      requests: network.length
+    })
+  );
   const checkpoints = [await panSample("start")];
   const home = [0, 209900, 1600, 36000];
   const trips = [];

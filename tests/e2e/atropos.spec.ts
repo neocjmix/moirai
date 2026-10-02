@@ -372,11 +372,13 @@ test("Event detail failure can be retried without presenting stale knowledge", a
   page
 }) => {
   let allowDetail = false;
+  let detailRequests = 0;
   let releaseDetail!: () => void;
   const pendingDetail = new Promise<void>((resolve) => {
     releaseDetail = resolve;
   });
   await page.route("**/graph/detail", async (route) => {
+    detailRequests += 1;
     if (!allowDetail) {
       await pendingDetail;
       await route.abort();
@@ -401,11 +403,14 @@ test("Event detail failure can be retried without presenting stale knowledge", a
     /불러오지 못했습니다|Unable to load event notes/
   );
   await expect(sheet.getByTestId("read-stable-event")).toHaveCount(0);
+  const failedDetailRequests = detailRequests;
+  expect(failedDetailRequests).toBe(1);
   allowDetail = true;
   await sheet
     .getByRole("button", { name: /다시 불러오기|Retry loading/ })
     .click();
   await expect(sheet.getByTestId("read-stable-event")).toBeVisible();
+  expect(detailRequests).toBe(failedDetailRequests + 1);
   await expect(sheet.getByRole("table")).toHaveCount(1);
   await expect(sheet.getByRole("alert")).toHaveCount(0);
   await expect(sheet.getByTestId("event-observation")).not.toBeVisible();

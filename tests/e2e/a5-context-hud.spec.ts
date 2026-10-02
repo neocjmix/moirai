@@ -14,12 +14,14 @@ test("Collection navigation during drawer close settles on one detail request", 
   page
 }) => {
   const detailRequests: string[] = [];
+  const initialEventRequests: string[] = [];
   let releaseDetails: (() => void) | undefined;
   const detailGate = new Promise<void>((resolve) => {
     releaseDetails = resolve;
   });
   await page.route("**/graph/v5/shell", async (route) => {
     const request = route.request().postDataJSON();
+    if (request.kind === "detail") initialEventRequests.push(request.event_id);
     if (request.kind !== "collection") return route.continue();
     detailRequests.push(request.collection_id);
     await detailGate;
@@ -28,6 +30,7 @@ test("Collection navigation during drawer close settles on one detail request", 
   await page.goto(`${graph}&event=${war}`);
   const drawer = page.getByTestId("event-drawer-sheet");
   await expect(drawer).toContainText("임진왜란 서사");
+  expect(initialEventRequests).toEqual([war]);
   await page.getByTestId("event-drawer-close").click();
   // The outgoing drawer still exists during its exit. Incoming Collection
   // focus must take ownership without reporting the outgoing Event upstream.
@@ -110,10 +113,14 @@ test("full, narrow and incomplete support all receive a ranked representative", 
 }) => {
   let complete = true;
   let linear = false;
+  // The synthetic viewport varies only the geometry below. Load immutable
+  // response metadata once so later camera callbacks need no API body read.
+  let responseTemplate: Promise<Record<string, unknown>> | undefined;
   await page.route("**/graph/v5/shell", async (route) => {
     const request = route.request().postDataJSON();
     if (request.kind !== "viewport") return route.continue();
-    const response = await (await route.fetch()).json();
+    responseTemplate ??= route.fetch().then((response) => response.json());
+    const response = await responseTemplate;
     const box = request.viewport.bbox;
     const dx = box.maxX - box.minX;
     const dy = box.maxY - box.minY;
@@ -185,12 +192,17 @@ test("full, narrow and incomplete support all receive a ranked representative", 
     "고정된 맥락"
   );
   complete = false;
+  const finalViewport = page.waitForResponse((response) => {
+    if (!response.url().endsWith("/graph/v5/shell")) return false;
+    const request = response.request().postDataJSON();
+    return (
+      request.kind === "viewport" && request.viewport.viewportWidth === 400
+    );
+  });
   await page.setViewportSize({ width: 400, height: 844 });
+  await (await finalViewport).finished();
   await expect(page.getByTestId("graph-context-topic")).toHaveText(
     "고정된 맥락"
   );
   await expect(page.getByTestId("graph-context-hud")).toBeVisible();
-  // The scheduled camera reader may still be inside route.fetch(). Let that
-  // fixture response finish before Playwright disposes its API response body.
-  await page.unrouteAll({ behavior: "wait" });
 });

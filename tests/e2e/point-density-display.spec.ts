@@ -338,6 +338,42 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
   );
   await expect(leafPaint.locator("[data-primary-hit-target]")).toHaveCount(0);
   await expect(leafPaint).toHaveCount(0);
+  // Reentry after paint pruning is a new DOM mount, so it needs an explicit
+  // entrance fade; an ordinary CSS transition cannot animate its first style.
+  await page.evaluate(() => {
+    const scene = document.querySelector(
+      'svg[aria-label="Projected chart surface"]'
+    )!;
+    const result = new Promise<number[]>((resolve) => {
+      const observer = new MutationObserver(() => {
+        const node = scene.querySelector(
+          '[data-event-paint-id="density-leaf"]'
+        );
+        if (!node) return;
+        observer.disconnect();
+        const values: number[] = [];
+        const start = performance.now();
+        const sample = () => {
+          values.push(Number(getComputedStyle(node).opacity));
+          if (performance.now() - start < 300) requestAnimationFrame(sample);
+          else resolve(values);
+        };
+        requestAnimationFrame(sample);
+      });
+      observer.observe(scene, { childList: true, subtree: true });
+    });
+    (window as unknown as { pointReentry: Promise<number[]> }).pointReentry =
+      result;
+  });
+  suppressChild = false;
+  await page.setViewportSize({ width: 500, height: 844 });
+  const pointReentry = await page.evaluate(
+    () =>
+      (window as unknown as { pointReentry: Promise<number[]> }).pointReentry
+  );
+  expect(pointReentry.some((opacity) => opacity > 0 && opacity < 1)).toBe(true);
+  expect(pointReentry.at(-1)).toBeCloseTo(1);
+  await expect(leafPaint.locator("[data-primary-hit-target]")).toHaveCount(1);
 
   // A disappearing hull keeps its label paint, but leaves keyboard and
   // accessibility surfaces immediately, before the220ms paint exit completes.

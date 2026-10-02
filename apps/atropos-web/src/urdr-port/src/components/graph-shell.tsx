@@ -16,6 +16,7 @@ import { compositePointDisplay, compositeRepresentationDisplay } from "./composi
 import { createCompositePanGeometryCache } from "./composite-pan-geometry";
 import { pointDensityDisplay } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
+import { reconcileLabelPaint, LABEL_PAINT_EXIT_MS } from "./label-paint-presence";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { createViewportReadScheduler } from "./viewport-read-scheduler";
 import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-disposal";
@@ -2294,6 +2295,7 @@ export function GraphShell({
   const [selectedEventRecord, setSelectedEventRecord] = useState<EventDetailResponse | null>(initialEventDetail ?? null);
   const [selectedEventTab, setSelectedEventTab] = useState<EventDrawerTab>("notes");
   const [selectedEventLoadState, setSelectedEventLoadState] = useState<"idle" | "loading" | "ready" | "error">(initialEventDetail ? "ready" : "idle");
+  const [eventDetailRetryVersion, setEventDetailRetryVersion] = useState(0);
   const [runtimeViewportResponse, setRuntimeViewportResponse] = useState<ReturnType<typeof graphShellViewportResponseSchema.parse> | null>(null);
   const [runtimeViewportLoadState, setRuntimeViewportLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
@@ -2335,7 +2337,13 @@ export function GraphShell({
     if(!hasHydratedRestorableState||!externalFocus?.id)return;
     // Incoming focus is an input. Notify its owner only from local gestures or
     // history restoration, never by echoing intermediate rendered state.
-    setSelectedEventSelection(current=>{if(current?.eventId===externalFocus.id)return current;eventSelectionNonceRef.current+=1;pendingRestoredDrawerStageRef.current="peek";return {eventId:externalFocus.id,label:externalFocus.label,requestKey:eventSelectionNonceRef.current};});
+    if(selectedEventSelection?.eventId===externalFocus.id)return;
+    // React may replay a state updater while rebasing concurrent work. Allocate
+    // the read identity once per focus action, never inside that updater.
+    eventSelectionNonceRef.current+=1;
+    pendingRestoredDrawerStageRef.current="peek";
+    const selection={eventId:externalFocus.id,label:externalFocus.label,requestKey:eventSelectionNonceRef.current};
+    setSelectedEventSelection(current=>current?.eventId===selection.eventId?current:selection);
   },[externalFocus?.id,hasHydratedRestorableState]);
 
 
@@ -2350,13 +2358,15 @@ export function GraphShell({
     });
     if (nextState.drawer) {
       pendingRestoredDrawerStageRef.current = nextState.drawer.stage;
+      setEventDrawerStage(nextState.drawer.stage);
       eventSelectionNonceRef.current += 1;
       setSelectedEventTab("notes");
-      setSelectedEventSelection({
+      const selection = {
         eventId: nextState.drawer.eventId,
         label: resolveBootstrapEventLabel(bootstrapChartPlane, nextState.drawer.eventId),
         requestKey: eventSelectionNonceRef.current,
-      });
+      };
+      setSelectedEventSelection(selection);
       onSelectionRef.current?.(nextState.drawer.eventId);
       return;
     }
@@ -2721,7 +2731,9 @@ export function GraphShell({
 
     const updateSize = () => {
       const bounds = node.getBoundingClientRect();
-      setViewportSize({ width: bounds.width, height: bounds.height });
+      const nextSize = { width: bounds.width, height: bounds.height };
+      setViewportSize(current => current.width === nextSize.width && current.height === nextSize.height
+        ? current : nextSize);
     };
 
     updateSize();
@@ -3203,6 +3215,50 @@ export function GraphShell({
     previousCompositePaintLabelsRef.current = new Set(presentedRegions.filter(region => region.showLabel).map(region => region.id));
   }, [presentedRegions]);
 
+  const admittedLabelSources = useMemo(() => [
+    ...presentedPoints.filter(point => point.showLabel !== false && point.opacity > 0).map(point => ({
+      id: `point:${point.id}`, entityId: point.id, kind: "point",
+      label: point.renderedLabel ?? point.label, opacity: point.opacity * point.pointDisplay.labelOpacity,
+    })),
+    ...presentedRegions.filter(region => region.visibilityState !== "exiting" && region.showLabel && region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0)).map(region => ({
+      id: `region:${region.id}:${region.compactPoint ? "point" : "hull"}`, entityId: region.id,
+      kind: region.compactPoint ? "compact" : "hull", label: region.renderedLabel,
+      opacity: region.compactPoint ? region.pointDisplay.labelOpacity : region.renderedOpacity * region.surfaceOpacity * 0.45,
+      region,
+    })),
+  ], [presentedPoints, presentedRegions]);
+  const labelPaintHistoryRef = useRef({workspace, labels: [], tick: 0});
+  const [labelPaintTick, setLabelPaintTick] = useState(0);
+  const [labelPaintPruneClock, setLabelPaintPruneClock] = useState(0);
+  const paintedLabels = useMemo(() => reconcileLabelPaint(
+    labelPaintHistoryRef.current.workspace === workspace ? labelPaintHistoryRef.current.labels : [],
+    admittedLabelSources, performance.now(), labelPaintTick !== labelPaintHistoryRef.current.tick,
+  ), [workspace, admittedLabelSources, labelPaintTick, labelPaintPruneClock]);
+  useEffect(() => { labelPaintHistoryRef.current = {workspace, labels: paintedLabels, tick: labelPaintTick}; }, [workspace, paintedLabels, labelPaintTick]);
+  const labelPaintFrameRef = useRef(null);
+  useEffect(() => {
+    if (paintedLabels.some(label => label.phase === "entering") && labelPaintFrameRef.current === null) {
+      labelPaintFrameRef.current = requestAnimationFrame(() => {
+        labelPaintFrameRef.current = null;
+        setLabelPaintTick(tick => tick + 1);
+      });
+    }
+  }, [paintedLabels]);
+  useEffect(() => () => {
+    if (labelPaintFrameRef.current !== null) cancelAnimationFrame(labelPaintFrameRef.current);
+    labelPaintFrameRef.current = null;
+  }, []);
+  const nextLabelExitDeadline = paintedLabels.reduce((deadline, label) =>
+    label.exitStartedAt === undefined ? deadline : Math.min(deadline, label.exitStartedAt + LABEL_PAINT_EXIT_MS), Infinity);
+  useEffect(() => {
+    if (!Number.isFinite(nextLabelExitDeadline)) return;
+    const timer = window.setTimeout(() => setLabelPaintPruneClock(clock => clock + 1), Math.max(1, Math.ceil(nextLabelExitDeadline - performance.now())));
+    return () => window.clearTimeout(timer);
+  }, [nextLabelExitDeadline]);
+  const pointLabelPaintById = useMemo(() => new Map(paintedLabels.filter(label => label.kind === "point").map(label => [label.entityId, label])), [paintedLabels]);
+  const compactLabelPaintById = useMemo(() => new Map(paintedLabels.filter(label => label.kind === "compact").map(label => [label.entityId, label])), [paintedLabels]);
+  const paintedHullLabels = useMemo(() => paintedLabels.filter(label => label.kind === "hull" && label.region.labelPath), [paintedLabels]);
+
   useEffect(() => {
     selectedEventSelectionRef.current = renderedEventSelection;
   }, [renderedEventSelection]);
@@ -3292,6 +3348,9 @@ export function GraphShell({
   }, [eventDrawerStage, renderedEventSelection, selectedEventSelection]);
 
   useEffect(() => {
+    // App first resolves its locale/workspace and then restores the selection.
+    // A detail read from that provisional shell is immediately superseded.
+    if (usesLoadingWorkspace || !hasHydratedRestorableState) return;
     if (!renderedEventSelection) {
       setSelectedEventRecord(null);
       setSelectedEventTab("notes");
@@ -3318,7 +3377,7 @@ export function GraphShell({
       void loader.loadEventDetail(locale, selectedEventId, abortController.signal)
       .then((eventRecord) => parseEventResponse(eventRecord))
       .then((eventRecord) => {
-        if (selectedEventSelectionRef.current?.requestKey !== renderedEventSelection.requestKey) {
+        if (abortController.signal.aborted || selectedEventSelectionRef.current?.eventId !== selectedEventId) {
           return;
         }
 
@@ -3331,7 +3390,7 @@ export function GraphShell({
         }
 
         console.error("[graph-shell:event-load:error]", error);
-        if (selectedEventSelectionRef.current?.requestKey !== renderedEventSelection.requestKey) {
+        if (selectedEventSelectionRef.current?.eventId !== selectedEventId) {
           return;
         }
 
@@ -3339,7 +3398,9 @@ export function GraphShell({
       });
 
     return () => abortController.abort();
-  }, [initialEventDetail, loader, locale, renderedEventSelection]);
+    // Drawer history has its own presentation action key. The immutable detail
+    // read changes only with Event/loader/locale or an explicit Retry action.
+  }, [eventDetailRetryVersion, hasHydratedRestorableState, initialEventDetail, loader, locale, renderedEventSelection?.eventId, usesLoadingWorkspace]);
 
   const compositeFadeFrameRef = useRef(null);
   const compositePaintTargets = useMemo(() => selectCompositePaintTargets(chartCompositeRegions.regions), [chartCompositeRegions.regions]);
@@ -3976,20 +4037,15 @@ export function GraphShell({
                     <marker id="relation-arrow-soft" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_SOFT_STROKE} />
                     </marker>
-                    {presentedRegions.map((region) =>
-                      region.showLabel && region.labelPath ? (
-                        <path
-                          d={region.labelPath}
-                          data-region-label-path-id={region.id}
-                          id={getCompositeLabelPathId(region.id)}
-                          key={`${region.id}:label-path`}
-                        />
-                      ) : null,
-                    )}
+                    {paintedHullLabels.map(label => <path
+                      d={label.region.labelPath} data-region-label-path-id={label.entityId}
+                      id={getCompositeLabelPathId(label.entityId)} key={`${label.id}:path`}
+                    />)}
                   </defs>
                   <rect className={styles.chartBackdrop} height={viewportSize.height} width={viewportSize.width} x={0} y={0} />
                   {presentedRegions.map((region) => {
                     const compositeStyle = compositeStyleById.get(region.id);
+                    const compactLabelPaint = compactLabelPaintById.get(region.id);
                     const point = region.representation?.point ?? region.compactPoint;
                     const hullOpacity = region.representation?.hullOpacity ?? (region.compactPoint ? 0 : 1);
                     const pointOpacity = region.representation?.pointOpacity ?? (region.compactPoint ? 1 : 0);
@@ -4031,8 +4087,9 @@ export function GraphShell({
                         </rect> : null}
                         <circle className={styles.chartInstantPoint} cx={point.x} cy={point.y} r={region.pointDisplay.radius}
                           style={{r: region.pointDisplay.radius, strokeWidth: region.pointDisplay.strokeWidth, fill: compositeStyle?.label, pointerEvents: "none"}} />
-                        <text aria-hidden={!region.compactPoint || !region.showLabel || undefined} className={styles.chartInstantPointLabel} x={point.x + 10} y={point.y - 10}
-                          style={{opacity: region.compactPoint && region.showLabel ? region.pointDisplay.labelOpacity : 0, fill: compositeStyle?.label, pointerEvents: "none"}}>{region.compactPoint ? region.renderedLabel : ""}</text>
+                        {compactLabelPaint ? <text aria-hidden={compactLabelPaint.phase === "exiting" || !region.compactPoint || !region.showLabel || undefined}
+                          data-label-paint-id={compactLabelPaint.id} className={styles.chartInstantPointLabel} x={point.x + 10} y={point.y - 10}
+                          style={{opacity: compactLabelPaint.renderedOpacity, fill: compositeStyle?.label, pointerEvents: "none"}}>{compactLabelPaint.label}</text> : null}
                       </g> : null}
                     </g>;
                   })}
@@ -4095,6 +4152,7 @@ export function GraphShell({
                     );
                   })}
                   {paintedPoints.map((point) => {
+                    const labelPaint = pointLabelPaintById.get(point.id);
                     // Exact-zero semantic children keep paint for their final
                     // opacity transition, with interaction removed immediately.
                     const labelHitWidth = Math.max((discovery?.contextHud ? [...(point.renderedLabel ?? point.label)].reduce((sum, char) => sum + (char.charCodeAt(0) > 127 ? 13 : 7.5), 0) : point.label.length * 8) + 20, 64);
@@ -4102,7 +4160,7 @@ export function GraphShell({
                     const hitTargetHeight = discovery?.contextHud ? 44 : 36;
 
                     return (
-                      <g key={point.id} data-event-paint-id={point.id}
+                      <g key={point.id} data-event-paint-id={point.id} className={styles.chartInstantPointPaint}
                         transform={point.paintView !== view ? retainedCompositePaintTransform(point.paintView, point.paintViewport, view, viewportSize) : undefined}
                         data-point-density={point.pointDisplay.state}
                         data-representation={point.opacity > 0 && point.showLabel !== false ? "semantic" : "geographic"}
@@ -4133,22 +4191,22 @@ export function GraphShell({
                           r={point.pointDisplay.radius}
                           style={{ r: point.pointDisplay.radius, strokeWidth: point.pointDisplay.strokeWidth, opacity: point.opacity * point.pointDisplay.opacity, pointerEvents: "none" }}
                         />
-                        {point.showLabel !== false || !point.pointDisplay.showLabel ? (
-                          <text aria-hidden={point.showLabel === false || undefined} className={styles.chartInstantPointLabel} style={{ opacity: point.showLabel !== false ? point.opacity * point.pointDisplay.labelOpacity : 0, pointerEvents: "none" }} x={point.x + 10} y={point.y - 10}>{point.renderedLabel ?? point.label}</text>
+                        {labelPaint ? (
+                          <text aria-hidden={labelPaint.phase === "exiting" || point.showLabel === false || undefined}
+                            data-label-paint-id={labelPaint.id} className={styles.chartInstantPointLabel}
+                            style={{ opacity: labelPaint.renderedOpacity, pointerEvents: "none" }} x={point.x + 10} y={point.y - 10}>{labelPaint.label}</text>
                         ) : null}
                       </g>
                     );
                   })}
-                  {presentedRegions.map((region) => {
-                    if (!region.showLabel || !region.labelPath) {
-                      return null;
-                    }
-
+                  {paintedHullLabels.map((labelPaint) => {
+                    const region = labelPaint.region;
                     const compositeStyle = compositeStyleById.get(region.id);
-                    const interactive = region.visibilityState !== "exiting" && region.renderedOpacity * region.surfaceOpacity > 0;
+                    const interactive = labelPaint.phase === "present" && labelPaint.renderedOpacity > 0 && region.visibilityState !== "exiting" && region.renderedOpacity * region.surfaceOpacity > 0;
                     return (
                       <text
                         className={styles.chartCompositeRegionLabel}
+                        data-label-paint-id={labelPaint.id}
                         data-primary-hit-target={interactive ? "composite-label" : undefined}
                         role={interactive && discovery?.contextHud ? "button" : undefined} tabIndex={interactive && discovery?.contextHud ? 0 : undefined}
                         aria-label={interactive && discovery?.contextHud ? region.label : undefined}
@@ -4163,7 +4221,7 @@ export function GraphShell({
                         onPointerDown={interactive ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
                           fill: compositeStyle?.label,
-                          opacity: region.renderedOpacity * region.surfaceOpacity * 0.45,
+                          opacity: labelPaint.renderedOpacity,
                           pointerEvents: interactive ? undefined : "none",
                         }}
                         textAnchor={region.labelAnchor}
@@ -4174,7 +4232,7 @@ export function GraphShell({
                           href={`#${getCompositeLabelPathId(region.id)}`}
                           startOffset={region.textPathStartOffset}
                         >
-                          {region.renderedLabel}
+                          {labelPaint.label}
                         </textPath>
                       </text>
                     );
@@ -4257,7 +4315,13 @@ export function GraphShell({
               readingContext={selectedEventRecord?.readingContext}
               locale={locale}
               onTabChange={setSelectedEventTab}
-              onRetry={() => setSelectedEventSelection(current => current ? {...current, requestKey: ++eventSelectionNonceRef.current} : current)}
+              onRetry={() => {
+                const selection = selectedEventSelectionRef.current;
+                if (!selection) return;
+                eventSelectionNonceRef.current += 1;
+                setEventDetailRetryVersion(version => version + 1);
+                setSelectedEventSelection({...selection, requestKey: eventSelectionNonceRef.current});
+              }}
               selectedEventTitle={selectedEventTitle}
               stage={eventDrawerStage}
               viewportRef={eventDrawerViewportRef}

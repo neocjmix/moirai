@@ -10,7 +10,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 ## 현재 authoritative baseline — IP-011
 
-Render Publication 책임 경계와 migration 순서는 [IP-012](implementation/IP-012-render-publication-plan.md)가 소유한다. sidecar와 별도 tile scene은 운영에 있지만, 기본 GraphShell의 시각 경험을 복원했고 tile scene은 `?renderTiles=1`에서만 볼 수 있다. 기존 painter를 유지한 데이터 공급 전환과 시각 동등성 검증이 남았다. IP-011 A5의 활성 구현을 대체하거나 A4 미달을 종료하지 않는다.
+Render Publication 책임 경계와 migration 순서는 [IP-012](implementation/IP-012-render-publication-plan.md)가 소유한다. 기본 GraphShell은 기존 painter를 유지하며 검증된 v3/v4 Render generation에서 데이터를 읽는다. `?tileData=0`은 semantic rollback이고 별도 tile scene은 `?renderTiles=1`에서 관찰한다. ADR-012 고정 격자·viewport 읽기는 #301로 배포됐으며 최신 모바일 label 수정·운영 검증은 CURRENT를 따른다. 전체 모바일 성능·전환 품질과 증분 재사용 검증은 남아 있다. IP-011 A5의 활성 구현을 대체하거나 A4 미달을 종료하지 않는다.
 
 [IP-011 architecture realignment](implementation/IP-011-architecture-realignment.md)이 현재 planning과 남은 milestone 순서를 소유한다. 개정 CON-003/BR/TS는 목표 계약이며 운영 배포는 A3를 거쳐 v5로 전환됐다. [CURRENT](implementation/CURRENT.md)가 실행 활성 상태를 구분한다. A4는 사용자 승인으로 잔여 작업을 이관해 종료했다(성능 전체 통과 아님). [종료 결정·백로그](implementation/IP-011-A4-closeout-backlog.md)와 [A5 planning baseline](implementation/IP-011-A5-collection-discovery-plan.md)이 다음 작업의 시작점이다. A5는 2026-09-28 사용자 지시로 구현 활성이다. 계획 PR #237을 main에 통합했으며 실행 상태는 CURRENT를 따른다. [A4 인계](implementation/IP-011-A4-handoff.md)는 역사적 기준선이다.
 

@@ -570,6 +570,17 @@ export function createV5RenderViewportClient(input: {
       levelPrefetch = null;
     }
     const nextLevel = metadata.level + 1;
+    // A fetched buffer must have an inner refill threshold. Requiring its
+    // entire two-screen margin to cover the next camera's same-sized margin
+    // refetches hundreds of kilobytes after every subpixel pan.
+    const levelBufferRequired = view
+      ? {
+          minX: view.minX - (view.maxX - view.minX) / 4,
+          maxX: view.maxX + (view.maxX - view.minX) / 4,
+          minY: view.minY - (view.maxY - view.minY) / 4,
+          maxY: view.maxY + (view.maxY - view.minY) / 4
+        }
+      : required;
     if (
       view &&
       level === undefined &&
@@ -582,7 +593,7 @@ export function createV5RenderViewportClient(input: {
         (item) =>
           item.level === undefined &&
           item.metadata.level === nextLevel &&
-          covers(item.box, required)
+          covers(item.box, levelBufferRequired)
       )
     ) {
       const controller = new AbortController();

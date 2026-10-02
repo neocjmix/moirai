@@ -5,8 +5,8 @@ import {
   GRAPH_SHELL_URL_PARAM_EVENT,
   GRAPH_SHELL_URL_PARAM_STAGE,
   GRAPH_SHELL_URL_PARAM_TIMELINE,
-} from "@urdr/domain";
-import type { GraphShellDrawerStage } from "@urdr/domain";
+} from "../../shared/domain-bridge";
+import type { GraphShellDrawerStage } from "../../shared/domain-bridge";
 
 import type { ImageViewportView } from "./image-viewport";
 import type { ViewportSize } from "./chart-surface";
@@ -80,7 +80,6 @@ type ResolveGraphShellRestorableStateArgs = {
   urlState: GraphShellRestorableState;
 };
 
-const MIN_VIEWPORT_SCALE = 0.01;
 const MAX_VIEWPORT_SCALE = 100;
 const MAX_VIEWPORT_CENTER = 1_000_000;
 const MAX_VIEWPORT_TRANSLATION = 10_000_000;
@@ -226,12 +225,14 @@ export function createImageViewportViewFromRestorableSlice(
 
   const scaleX = viewportSize.width / normalizedSlice.spanX;
   const scaleY = viewportSize.height / normalizedSlice.spanY;
+  // The navigation bounds choose the minimum zoom. Broad temporal Worlds
+  // legitimately fit below 0.01; restoring their own saved camera must work.
   if (
     !Number.isFinite(scaleX) ||
     !Number.isFinite(scaleY) ||
-    scaleX < MIN_VIEWPORT_SCALE ||
+    scaleX <= 0 ||
     scaleX > MAX_VIEWPORT_SCALE ||
-    scaleY < MIN_VIEWPORT_SCALE ||
+    scaleY <= 0 ||
     scaleY > MAX_VIEWPORT_SCALE ||
     Math.abs(normalizedSlice.centerX * scaleX) > MAX_VIEWPORT_TRANSLATION ||
     Math.abs(normalizedSlice.centerY * scaleY) > MAX_VIEWPORT_TRANSLATION
@@ -349,9 +350,9 @@ function parseLegacyGraphShellLocalState(raw: GraphShellPersistedStateV2, viewpo
       !isFiniteNumber(raw.viewportCenterY) ||
       !isFiniteNumber(raw.viewportScaleX) ||
       !isFiniteNumber(raw.viewportScaleY) ||
-      raw.viewportScaleX < MIN_VIEWPORT_SCALE ||
+      raw.viewportScaleX <= 0 ||
       raw.viewportScaleX > MAX_VIEWPORT_SCALE ||
-      raw.viewportScaleY < MIN_VIEWPORT_SCALE ||
+      raw.viewportScaleY <= 0 ||
       raw.viewportScaleY > MAX_VIEWPORT_SCALE ||
       viewportSize.width <= 0 ||
       viewportSize.height <= 0 ||

@@ -78,6 +78,21 @@ jobs:
       - run: pnpm exec playwright install --with-deps webkit
       - name: Mobile Atropos flow
         run: pnpm test:e2e
+      - name: Compiler-v4 mobile Render continuity
+        # The prior suite builds Next before testing. Still verify the Render
+        # path when a semantic fixture fails, without compiling Next again.
+        if: ${{ !cancelled() && hashFiles('apps/atropos-web/.next/BUILD_ID') != '' }}
+        env:
+          IP012_CONTINUITY_REUSE_BUILD: "1"
+        run: pnpm exec playwright test --config playwright.ip012-continuity.config.ts
+      - name: Retain compiler-v4 continuity evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: render-continuity-evidence
+          path: test-results/ip012-continuity/
+          if-no-files-found: ignore
+          retention-days: 14
       - name: Imjin public desktop and mobile acceptance
         if: always() && github.event_name == 'pull_request' && (github.head_ref == 'feat/imjin-e2e' || github.head_ref == 'fix/shared-event-focus' || github.head_ref == 'fix/imjin-navigation')
         # This observes the deployed version, not the unmerged PR. Its result is

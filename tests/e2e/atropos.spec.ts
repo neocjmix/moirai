@@ -1,9 +1,34 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Page } from "@playwright/test";
 
 const worldId = "019f3b00-0000-7000-8000-000000000001";
 const canonId = "019f3b00-0000-7000-8000-000000000002";
 const firstEventId = "019f3b00-0000-7000-8000-000000000101";
 const firstEventTitle = "220년에 기록된 사건";
+
+async function expectFixtureViewportReady(page: Page) {
+  // These cases test restored URL/history state. Finish the fixture read before
+  // replacing its document: WebKit can report navigation-cancelled fetches
+  // before pagehide (microsoft/playwright#42823). Cancellation itself has
+  // separate graph-read lifetime coverage; keep the pageerror guard strict.
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        let ready = false;
+        window.addEventListener(
+          "moirai:graph-inspection",
+          ((event: CustomEvent) => {
+            const detail = event.detail;
+            ready =
+              detail?.loadState === "ready" && detail.counts.sourceEntities > 0;
+          }) as EventListener,
+          { once: true }
+        );
+        window.dispatchEvent(new Event("moirai:inspect-graph"));
+        return ready;
+      })
+    )
+    .toBe(true);
+}
 
 test("IP-005 canonical Event URL opens the same Graph drawer and preserves history", async ({
   page
@@ -13,6 +38,7 @@ test("IP-005 canonical Event URL opens the same Graph drawer and preserves histo
   await page.goto("/");
   await expect(page).toHaveURL(/\/graph(?:\?|$)/);
   await expect(page.getByTestId("graph-stage")).toBeVisible();
+  await expectFixtureViewportReady(page);
 
   await page.goto(
     `/graph/events/${worldId}/${firstEventId}?revision=2&canon=${canonId}`
@@ -269,6 +295,10 @@ test("identity-aware search deduplicates shared Events and restores Canon contex
   await expect
     .poll(() => new URL(page.url()).searchParams.get("mq"))
     .toContain("selection");
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(
+    firstEventTitle
+  );
+  await expectFixtureViewportReady(page);
   const focusedUrl = page.url();
   await page.goto(focusedUrl);
   await page

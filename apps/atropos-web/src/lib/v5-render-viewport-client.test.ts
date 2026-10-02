@@ -527,6 +527,36 @@ it("prepares a bounded finer candidate level without blocking paint and promotes
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
 
+it("keeps a finer-level buffer warm during sustained sub-screen pan instead of refetching its whole margin", async () => {
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    const q = JSON.parse(init.body as string);
+    return Response.json(
+      fixedMetadata(q.level ?? 1, true, [point("shared", "one", 6)])
+    );
+  });
+  const c = client(fetcher);
+  for (let frame = 0; frame < 60; frame++) {
+    const shift = frame * 0.01;
+    await c.load(square(shift, 12 + shift), ["one"], undefined, undefined, {
+      scaleX: 1,
+      scaleY: 1,
+      visibleViewport: square(4.5 + shift, 7.5 + shift)
+    });
+    // Let the optional prefetch finish before the next camera update.
+    await new Promise((resolve) => setTimeout(resolve, 0));
+  }
+  expect(
+    fetcher.mock.calls.filter(
+      ([, init]) => JSON.parse(init.body as string).level === undefined
+    )
+  ).toHaveLength(1);
+  expect(
+    fetcher.mock.calls.filter(
+      ([, init]) => JSON.parse(init.body as string).level === 2
+    )
+  ).toHaveLength(1);
+});
+
 it("retains outgoing point identity for the fade duration across frequent camera reads", async () => {
   const now = vi.spyOn(Date, "now").mockReturnValue(1000);
   try {

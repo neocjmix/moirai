@@ -213,7 +213,11 @@ describe("ADR-012 viewport resolver", () => {
     collectionIds: ["collection-a", "collection-b"],
     lod: { visible: [0, 8], groupId: "one" }
   };
-  async function fixture(withVisibility = false, withOverflow = false) {
+  async function fixture(
+    withVisibility = false,
+    withOverflow = false,
+    geometryBodies?: string[]
+  ) {
     const actual = await vi.importActual<typeof Publication>(
       "@moirai/publication/v5"
     );
@@ -269,10 +273,12 @@ describe("ADR-012 viewport resolver", () => {
     const geometryHash = createHash("sha256")
       .update(geometryBody)
       .digest("hex");
-    const geometryDocument = {
-      key: `${prefix}geometry/${geometryHash}.json`,
-      body: geometryBody
-    };
+    const geometryDocuments = (geometryBodies ?? [geometryBody]).map(
+      (body) => ({
+        key: `${prefix}geometry/${createHash("sha256").update(body).digest("hex")}.json`,
+        body
+      })
+    );
     const sourceManifest = {
       format: "render-publication/2",
       worldId: world,
@@ -292,7 +298,10 @@ describe("ADR-012 viewport resolver", () => {
         ...(i === 3 ? { bucketKind: "overflow" } : {}),
         bounds: viewport
       })),
-      geometry: [{ key: geometryDocument.key, sha256: geometryHash }]
+      geometry: geometryDocuments.map((doc) => ({
+        key: doc.key,
+        sha256: createHash("sha256").update(doc.body).digest("hex")
+      }))
     };
     const generated = actual.buildV5RenderGeneration({
       worldId: world,
@@ -305,7 +314,7 @@ describe("ADR-012 viewport resolver", () => {
             key: `${prefix}manifest.json`,
             body: JSON.stringify(sourceManifest)
           },
-          documents: [...documents, geometryDocument]
+          documents: [...documents, ...geometryDocuments]
         }
       ]
     });
@@ -336,7 +345,12 @@ describe("ADR-012 viewport resolver", () => {
       rootBody: "root"
     });
     readGeneration.mockImplementation(actual.readV5RenderGeneration);
-    return { generated, entries, geometryHash };
+    return {
+      generated,
+      entries,
+      geometryHash,
+      geometryHashes: sourceManifest.geometry.map((ref) => ref.sha256)
+    };
   }
   const query = {
     kind: "viewport",
@@ -347,6 +361,151 @@ describe("ADR-012 viewport resolver", () => {
   };
   beforeEach(() => {
     vi.clearAllMocks();
+  });
+  const geometryBodies = (count: number, padding = 0) =>
+    Array.from({ length: count }, (_, ordinal) =>
+      JSON.stringify({
+        format: "render-geometry/1",
+        worldId: world,
+        revision: 7,
+        timeSystemId: "t",
+        geometry: { kind: "polygon", rings: [] },
+        ordinal,
+        ...(padding ? { padding: "x".repeat(padding) } : {})
+      })
+    );
+  const assetQuery = (hashes: string[]) => ({
+    kind: "assets",
+    world_id: world,
+    revision: 7,
+    time_system_id: "t",
+    assets: hashes.map((sha256) => ({ kind: "geometry", sha256 }))
+  });
+  it("overlaps at most eight cold asset reads while preserving order and deduplicating shared reads", async () => {
+    const { geometryHashes } = await fixture(false, false, geometryBodies(17));
+    const read = readObject.getMockImplementation()!;
+    const requested = [...geometryHashes].reverse();
+    requested.push(requested[0]!);
+    let active = 0,
+      peak = 0;
+    const finished: string[] = [];
+    readObject.mockImplementation(async (key: string) => {
+      if (!key.includes("/geometry/")) return read(key);
+      const digest = key.split("/").at(-1)!.slice(0, -5);
+      active++;
+      peak = Math.max(peak, active);
+      await new Promise((resolve) =>
+        setTimeout(resolve, (8 - (requested.indexOf(digest) % 8)) * 10)
+      );
+      active--;
+      finished.push(digest);
+      return read(key);
+    });
+    vi.useFakeTimers();
+    try {
+      const pending = post(assetQuery(requested));
+      await vi.advanceTimersByTimeAsync(0);
+      expect(active).toBe(8);
+      await vi.runAllTimersAsync();
+      const response = await pending;
+      expect(response.status).toBe(200);
+      expect(
+        (await response.json()).assets.map(
+          (asset: { sha256: string }) => asset.sha256
+        )
+      ).toEqual(requested);
+      expect(peak).toBe(8);
+      expect(active).toBe(0);
+      expect(finished[0]).toBe(requested[7]);
+      expect(finished).toHaveLength(17);
+      const keys = readObject.mock.calls.map(([key]) => key);
+      expect(new Set(keys).size).toBe(keys.length);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+  it("rejects a tampered asset without beginning the next eight-read batch", async () => {
+    const { entries, geometryHashes } = await fixture(
+      false,
+      false,
+      geometryBodies(17)
+    );
+    const key = [...entries.keys()].find((key) =>
+      key.endsWith(`/geometry/${geometryHashes[0]}.json`)
+    )!;
+    entries.set(key, "tampered");
+    const response = await post(assetQuery(geometryHashes));
+    expect(response.status).toBe(503);
+    expect(await response.json()).toEqual({
+      error: "render_publication_unavailable"
+    });
+    const reads = readObject.mock.calls
+      .map(([key]) => key as string)
+      .filter((key) => key.includes("/geometry/"));
+    expect(reads).toHaveLength(8);
+    expect(
+      reads.some((key) => key.endsWith(`/${geometryHashes[8]}.json`))
+    ).toBe(false);
+  });
+  it("keeps an earlier missing asset error ahead of a later digest failure", async () => {
+    const { entries, geometryHashes } = await fixture(
+      false,
+      false,
+      geometryBodies(9)
+    );
+    const key = [...entries.keys()].find((key) =>
+      key.endsWith(`/geometry/${geometryHashes[0]}.json`)
+    )!;
+    entries.set(key, "tampered");
+    const response = await post(
+      assetQuery(["0".repeat(64), ...geometryHashes])
+    );
+    expect(response.status).toBe(404);
+    expect(await response.json()).toEqual({ error: "render_asset_not_found" });
+    expect(
+      readObject.mock.calls.some(([key]) =>
+        (key as string).endsWith(`/${geometryHashes[7]}.json`)
+      )
+    ).toBe(false);
+  });
+  it("enforces the four MiB response budget before starting another batch", async () => {
+    const { geometryHashes } = await fixture(
+      false,
+      false,
+      geometryBodies(9, 550_000)
+    );
+    const response = await post(assetQuery(geometryHashes));
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({ error: "render_batch_too_large" });
+    expect(
+      readObject.mock.calls.filter(([key]) =>
+        (key as string).includes("/geometry/")
+      )
+    ).toHaveLength(8);
+    expect(
+      readObject.mock.calls.some(([key]) =>
+        (key as string).endsWith(`/${geometryHashes[8]}.json`)
+      )
+    ).toBe(false);
+  });
+  it("retains the 256 total object-read guard including Merkle metadata", async () => {
+    const { geometryHashes } = await fixture(false, false, geometryBodies(256));
+    const response = await post(assetQuery(geometryHashes));
+    expect(response.status).toBe(413);
+    expect(await response.json()).toEqual({
+      error: "render_viewport_too_large"
+    });
+    expect(readObject).toHaveBeenCalledTimes(256);
+    expect(
+      readObject.mock.calls.filter(([key]) =>
+        (key as string).includes("/geometry/")
+      )
+    ).toHaveLength(248);
+    readObject.mockClear();
+    expect(
+      (await post(assetQuery([...geometryHashes, geometryHashes[0]!]))).status
+    ).toBe(400);
+    expect(readObject).not.toHaveBeenCalled();
   });
   it("returns one deduplicated metadata response without manifest or geometry reads", async () => {
     const { generated } = await fixture();

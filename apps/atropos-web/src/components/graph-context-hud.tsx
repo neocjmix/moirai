@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { useGraphQuery } from "./graph-query-context";
 import type { AppLocale } from "../urdr-port/src/locale";
 import styles from "./graph-context-hud.module.css";
 
 /** S1 orientation and a manual escape. Inference/pins arrive in later slices. */
-export function GraphContextHud({
+function GraphContextHudContent({
   locale,
   topic
 }: Readonly<{
@@ -159,3 +159,11 @@ export function GraphContextHud({
     </>
   );
 }
+
+export const GraphContextHud = memo(
+  GraphContextHudContent,
+  (previous, next) =>
+    previous.locale === next.locale &&
+    previous.topic?.id === next.topic?.id &&
+    previous.topic?.label === next.topic?.label
+);

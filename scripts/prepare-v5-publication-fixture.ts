@@ -26,6 +26,115 @@ export const V5_FIXTURE_IDS = {
   calendar
 };
 
+export const V5_CONTINUITY_COMPOSITE_ID =
+  "019f3b00-0000-7000-8000-000000000b01";
+
+/** The ordinary fixture's one-child Composite has no spatial extent. Only the
+ * compiler/4 continuity fixture adds this explicitly synthetic authored group
+ * so real Publication data can cross hull/point and spatial-level boundaries.
+ * These records are generated in the local fixture directory, never authored
+ * into a canonical service or copied into the normal mobile fixture.
+ */
+function withContinuityGroup(source: CanonicalState): CanonicalState {
+  const cloned = structuredClone(source);
+  const result = {
+    ...cloned,
+    events: [...cloned.events],
+    eventCollectionMemberships: [...cloned.eventCollectionMemberships],
+    relations: [...cloned.relations],
+    narratives: [...cloned.narratives]
+  };
+  const ids = [
+    V5_CONTINUITY_COMPOSITE_ID,
+    ...[2, 3, 4, 5].map(
+      (index) => `019f3b00-0000-7000-8000-000000000b0${index}`
+    )
+  ];
+  for (const [index, id] of ids.entries()) {
+    result.events.push({
+      ...source.events[0]!,
+      id,
+      title: index === 0 ? "합성 연속성 영역" : `합성 연속성 지점 ${index}`
+    });
+    result.eventCollectionMemberships.push({
+      event_id: id,
+      collection_id: joseon
+    });
+    result.narratives.push({
+      ...source.narratives[0]!,
+      id: `019f3b00-0000-7000-8000-000000000b3${index}`,
+      scope_id: id,
+      body: `합성 연속성 검증용 서술 ${index}`
+    });
+  }
+  for (const [index, id] of ids.slice(1).entries()) {
+    // Three nearby lanes form the tracked narrow hull; the fourth nearby
+    // Event remains independent context connected by the authored relations.
+    if (index !== 2)
+      result.relations.push({
+        ...source.relations[0]!,
+        id: `019f3b00-0000-7000-8000-000000000b1${index}`,
+        source_ref: { kind: "event", event_id: ids[0]! },
+        target_ref: { kind: "event", event_id: id }
+      });
+    result.relations.push({
+      ...source.relations[1]!,
+      id: `019f3b00-0000-7000-8000-000000000b2${index}`,
+      source_ref: { kind: "event", event_id: id },
+      target_ref: {
+        kind: "time_event",
+        time_system_ref: { time_system_id: calendar },
+        definition_version: "1",
+        coordinate: `${[1590, 1592, 1592, 1594][index]}-01-01T00:00:00.000000000000Z`
+      }
+    });
+  }
+  for (let from = 1; from < ids.length; from++) {
+    for (let to = from + 1; to < ids.length; to++) {
+      result.relations.push({
+        ...source.relations[0]!,
+        id: `019f3b00-0000-7000-8000-000000000f${from}${to}`,
+        type: "causes",
+        source_ref: { kind: "event", event_id: ids[from]! },
+        target_ref: { kind: "event", event_id: ids[to]! }
+      });
+    }
+  }
+  // Distant synthetic context gives the navigation boundary room for L0 ±
+  // scale changes. The close group itself remains small enough to become a
+  // point. Coincident distant peers also establish a real X layout extent.
+  for (let index = 0; index < 49; index++) {
+    const id = `019f3b00-0000-7000-8000-${(0xc00 + index).toString(16).padStart(12, "0")}`;
+    result.events.push({
+      ...source.events[0]!,
+      id,
+      title: `합성 먼 맥락 ${index}`
+    });
+    result.eventCollectionMemberships.push({
+      event_id: id,
+      collection_id: joseon
+    });
+    result.narratives.push({
+      ...source.narratives[0]!,
+      id: `019f3b00-0000-7000-8000-${(0xd00 + index).toString(16).padStart(12, "0")}`,
+      scope_id: id,
+      body: `합성 먼 맥락 서술 ${index}`
+    });
+    result.relations.push({
+      ...source.relations[1]!,
+      id: `019f3b00-0000-7000-8000-${(0xe00 + index).toString(16).padStart(12, "0")}`,
+      source_ref: { kind: "event", event_id: id },
+      target_ref: {
+        kind: "time_event",
+        time_system_ref: { time_system_id: calendar },
+        definition_version: "1",
+        coordinate: `${index < 48 ? 1500 : 1700}-01-01T00:00:00.000000000000Z`
+      }
+    });
+  }
+  return result;
+}
+
 const state: CanonicalState = {
   world: {
     id: V5_FIXTURE_WORLD_ID,
@@ -172,8 +281,11 @@ export async function prepareV5PublicationFixture(
   root: string,
   options: { renderPublication?: boolean } = {}
 ): Promise<void> {
+  const fixtureState = options.renderPublication
+    ? withContinuityGroup(state)
+    : state;
   const { artifacts } = await buildV5WorldCompleteArtifacts(
-    state,
+    fixtureState,
     31,
     undefined,
     options
@@ -208,7 +320,7 @@ export async function prepareV5PublicationFixture(
     const etag = (body: string) =>
       createHash("sha256").update(body).digest("hex");
     await backfillV5RenderGeneration({
-      state,
+      state: fixtureState,
       revision: 31,
       store: {
         get: async (key) => {

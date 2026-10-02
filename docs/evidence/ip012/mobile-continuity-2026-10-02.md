@@ -65,7 +65,7 @@ The change admits valid World/hash generation paths to the existing bounded cach
 
 The Render route uses the existing publication profiler to emit allowlisted `Server-Timing` app wall time, summed object I/O time, object count and byte count. Object I/O durations overlap for parallel reads and must not be subtracted from app wall time as though they were a serial phase. No credentials, object names, Event text or private topology are added to this timing surface.
 
-Server-only implementation `7c10614` merged through [PR #307](https://github.com/neocjmix/moirai/pull/307) as main `eaa9002769fa1a4a9f9499ae05761006413c9a00`. Atropos Railway deployment `2393bf27-f747-477a-8db3-3ae4c51b81f6` reached **SUCCESS**. The UI source changes described below remain uncommitted and are intended for a separate fifth checkpoint.
+Server-only implementation `7c10614` merged through [PR #307](https://github.com/neocjmix/moirai/pull/307) as main `eaa9002769fa1a4a9f9499ae05761006413c9a00`. Atropos Railway deployment `2393bf27-f747-477a-8db3-3ae4c51b81f6` reached **SUCCESS**. UI source changes were kept out of this server deployment and subsequently shipped in the separate fifth checkpoint below.
 
 The [isolated 30-visit profile](mobile-continuity-checkpoint-eaa9002.json) completed without page errors: initial ready **2099.7ms**, **4 Render calls**; total **68 requests/16,227,968 decoded bytes**, versus the failed second checkpoint's382/183,276,719. Start/middle/return602-frame p95 **68/76/96ms**, max **119/148/192ms** still fail. This single ready sample is not a latency-p95 acceptance result.
 
@@ -73,7 +73,7 @@ Cold metadata reported app475.43ms, summed I/O660.90ms/10objects; first14-geomet
 
 First602 moving frames still rebuilt World geometry116 times (3→119), despite only7 additional HTTP calls. Pan hull paths were largely reused (12 additional builds versus19,077 hits), and returned cache/DOM counts were bounded, but frame time degraded. This identifies remaining adapter identity/reconciliation and duplicate Composite frame work for the next slice. A single sampled WebKit process RSS during the last interaction was about2.15GiB; this is process memory, not a JS heap measurement or a proven leak.
 
-## Fifth checkpoint — UI source pending, not committed or deployed
+## Fifth checkpoint — UI deployed, functional CI and smoke pass
 
 The corrected affected browser batch passed **24 of 27 tests**. It had previously exposed a WebKit `history.replaceState` rate-limit regression exceeding 100 calls within 10 seconds. A fresh follow-up observed **2 history writes with stable idle work**, without that runaway loop. Later focused label/point/history browser tests passed. These are local, specific results, not full browser acceptance or deployed behavior.
 
@@ -81,4 +81,28 @@ The final three focused mobile tests now pass: V5 initial Event1/Collection1 rea
 
 Labels retain bounded noninteractive outgoing paint for260ms, covering their220ms CSS fade. Newly admitted text enters through a dedicated RAF; pruning does not advance an unpainted entry. Actual boundary pan, intermediate-opacity exit/reversal, same text/Event DOM, prune and re-entry tests pass. New point groups also animate their entrance after prior paint has been pruned. StrictMode RAF cleanup clears cancelled handles. Semantic admission, UI roles and target ownership remain unchanged.
 
-These UI results are locally verified and ready for an independently attributable checkpoint. The next slice targets current-coordinate Composite derivation and repeated adapter World geometry rebuilds; all failed sustained gates remain open.
+Implementation `559c11e` merged through [PR #308](https://github.com/neocjmix/moirai/pull/308) as main `a8e5f5abba4429015e07026ea10f6e009e33c4ff`. Atropos Railway deployment `1372943e-0e23-4619-b274-31e5fcb9821b` reached **SUCCESS**, and exact-SHA public smoke passed. GitHub [main CI 36979941038](https://github.com/neocjmix/moirai/actions/runs/36979941038), [A5 public mobile 36979941085](https://github.com/neocjmix/moirai/actions/runs/36979941085) and [post-deploy 36980410885](https://github.com/neocjmix/moirai/actions/runs/36980410885) all completed **SUCCESS**. The existing actual compiler/4 browser fixture passed in **4.1s**. Functional CI/smoke success does not close sustained performance gates.
+
+### Isolated same-SHA short controls
+
+Three separate short diagnostics used the same deployed `a8e5f5…` SHA, World and iPhone 14 WebKit emulation without a concurrent local build/browser workload. Each has **0 visits** and two **602-frame** checkpoints named start/return; this is not the 30-visit acceptance run. All reported zero page errors and no JS heap measurement. The controls modify the observed runtime only and are not deployed visual changes.
+
+| Mode and raw evidence | Start/return p95 (ms) | Start/return max (ms) | Interpretation |
+| --- | --- | --- | --- |
+| [Normal production blend](mobile-continuity-diagnostic-a8e5f5-baseline.json) | 57 / 53 | 89 / 148 | Both p95 checkpoints fail; return max also fails |
+| [Blend disabled for diagnosis](mobile-continuity-diagnostic-a8e5f5-no-blend.json) | 49 / 45 | 64 / 72 | Cheaper in this short observation, but still fails p95 ≤33.4ms |
+| [Unchanged scene RAF control](mobile-continuity-diagnostic-a8e5f5-static.json) | 17 / 17 | 17 / 18 | Host/browser can schedule near 60Hz when scene does not change; this is not active-gesture acceptance |
+
+The visual blend remains enabled. Its removal would not meet the frame gate in this comparison, and the unchanged-scene control cannot establish normal navigation performance or Google Maps parity. These controls support investigating changing-scene computation/reconciliation and paint together; they do not uniquely attribute the remaining cost to one subsystem.
+
+## Sixth slice — locally verified, deployment pending
+
+Current-coordinate Composite paint now derives in the same render as point geometry. Committed refs retain fade history; only new enters, exits and deadline pruning schedule lifecycle state. The HUD memoizes unchanged topic/locale while keeping context and local controls live. Optional `gsProfile=1` records bounded aggregate CPU phase times; it is disabled for acceptance profiles.
+
+New browser instrumentation uncovered a real idle feedback path:452 commits in one idle second and1053 commits during50 tiny pans, despite unchanged camera numbers and no network. Restored camera objects were repeatedly cloned during state rebasing. Camera identity now follows its complete numeric value; idle same-view reset returns the existing state, while active resets still rebase the gesture baseline. Scheduling uses pointer count rather than equivalent pointer-object identity. The original browser regression now passes **zero idle commits over15 RAFs**, **≤78 commits for50 pan batches**, **zero stale semantic region passes** and **zero extra Composite lifecycle ticks**. Unit coverage preserves the next pan delta after an active same-camera reset.
+
+Assets read in waves of at most8, preserving ordered results/first error, digest checks,4MiB response budget and total256 object reads.27 focused tests pass, including duplicate read coalescing and no next batch after an error or oversized result. No geometry membership is artificially retained to improve counters.
+
+The shared production build and root strict typecheck passed. The latest expanded functional batch passed27/28: a legacy initial-detail test intermittently observes3 reads instead of1 and remains open. The new frame regression passes; this is not yet a deployed frame-percentile result. Actual compiler/4 fixture coverage now includes real metadata/geometry responses with0/250/750ms artificial delay, fresh XY/scale coverage and reversal; final test disposition will be recorded after its run.
+
+A separate A4 harness investigation found obsolete locale/UI assumptions and a real dense10k continuation failure: the reader returns a valid20,821-byte cursor, while the shell rejects its21,463-byte request against a16KiB cap. This API contract issue is being fixed at the read boundary; changing a selector alone cannot make that scenario pass. Existing failed evidence and performance thresholds remain intact.

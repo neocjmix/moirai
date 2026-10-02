@@ -73,10 +73,13 @@ export function assertPublicId(value: string): void {
 
 export async function readPublicationObject(key: string): Promise<ObjectRead> {
   const immutable = /^worlds\/([^/]+)\/revisions\/([1-9][0-9]*)\//.exec(key);
+  const generation =
+    /^worlds\/([^/]+)\/render-generations\/([0-9a-f]{64})\//.exec(key);
   const cacheable =
-    immutable &&
-    UUID.test(immutable[1]!) &&
-    Number.isSafeInteger(Number(immutable[2]));
+    (immutable &&
+      UUID.test(immutable[1]!) &&
+      Number.isSafeInteger(Number(immutable[2]))) ||
+    (generation && UUID.test(generation[1]!));
   // The configured store is fixed for this server process; local fixture roots
   // are separate namespaces. Mutable discovery/current pointers always bypass.
   const cacheKey = cacheable
@@ -87,17 +90,19 @@ export async function readPublicationObject(key: string): Promise<ObjectRead> {
         key
       ])
     : null;
-  if (cacheKey) {
-    const existing = immutableObjects.get(cacheKey);
-    if (existing) return existing;
-  }
-  const read = await observePublicationRead(() =>
-    readPublicationObjectValue(key)
-  );
-  // Missing/failed publication can recover at the same revision; never cache it.
-  if (cacheKey && read.status === 200 && read.body !== null)
-    immutableObjects.set(cacheKey, read);
-  return read;
+  const read = () =>
+    observePublicationRead(() => readPublicationObjectValue(key));
+  // Generation roots, Merkle pages, tiles and geometry are immutable under the
+  // complete content hash. Coalesce cold reads without caching mutable World
+  // or render-current pointers; their checks still happen on every request.
+  // Missing/failed objects can recover at the same key and must remain retryable.
+  return cacheKey
+    ? immutableObjects.read(
+        cacheKey,
+        read,
+        (value) => value.status === 200 && value.body !== null
+      )
+    : read();
 }
 
 async function readPublicationObjectValue(key: string): Promise<ObjectRead> {

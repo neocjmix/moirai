@@ -14,6 +14,7 @@ import {
   renderTileBounds
 } from "@moirai/graph-presentation/server";
 import { readPublicationObject } from "../../../../lib/publication";
+import { profilePublicationRoute } from "../../../../lib/publication-profile";
 
 export const dynamic = "force-dynamic";
 const identity = {
@@ -148,7 +149,7 @@ function fixedTiles(
 }
 
 /** Thin immutable spatial resolver. Collection selection and LOD remain local. */
-export async function POST(request: Request): Promise<Response> {
+async function readRender(request: Request): Promise<Response> {
   if (Number(request.headers.get("content-length") ?? 0) > 128 * 1024)
     return error("query_too_large", 413);
   let query: z.infer<typeof requestSchema>;
@@ -510,3 +511,5 @@ export async function POST(request: Request): Promise<Response> {
     return error("render_publication_unavailable", 503);
   }
 }
+
+export const POST = profilePublicationRoute(readRender);

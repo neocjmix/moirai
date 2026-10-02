@@ -77,6 +77,9 @@ describe("revision-pinned render read", () => {
     expect(response.status).toBe(200);
     expect((await response.json()).assets[0].body.format).toBe("render-tile/1");
     expect(response.headers.get("cache-control")).toBe("no-store");
+    const timing =
+      /^app;dur=\d+\.\d{2}, pubio;dur=\d+\.\d{2}, objects;desc="\d+", bytes;desc="\d+"$/;
+    expect(response.headers.get("server-timing")).toMatch(timing);
     const changed = await post({
       kind: "manifest",
       world_id: world,
@@ -84,6 +87,8 @@ describe("revision-pinned render read", () => {
       time_system_id: "t"
     });
     expect(changed.status).toBe(409);
+    expect(changed.headers.get("server-timing")).toMatch(timing);
+    expect(await changed.json()).toEqual({ error: "revision_changed" });
   });
   it("rejects unlisted, malformed and digest-mismatched assets", async () => {
     expect(

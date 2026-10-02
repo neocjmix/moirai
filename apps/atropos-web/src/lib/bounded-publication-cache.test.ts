@@ -57,4 +57,27 @@ describe("rebuildable Publication cache accounting", () => {
     expect(calls).toBe(1);
     expect(cache.metrics().pending).toBe(0);
   });
+  it("coalesces a failed-status read but retries it instead of retaining the response", async () => {
+    const cache = new BoundedPublicationCache<{ status: number }>(2, 1024);
+    let finish!: (value: { status: number }) => void;
+    let calls = 0;
+    const read = () => {
+      calls++;
+      return new Promise<{ status: number }>((resolve) => {
+        finish = resolve;
+      });
+    };
+    const retain = (value: { status: number }) => value.status === 200;
+    const first = cache.read("immutable", read, retain);
+    const second = cache.read("immutable", read, retain);
+    finish({ status: 503 });
+    await Promise.all([first, second]);
+    expect(calls).toBe(1);
+    expect(cache.metrics()).toMatchObject({ entries: 0, pending: 0 });
+    const retry = cache.read("immutable", read, retain);
+    finish({ status: 200 });
+    await retry;
+    expect(calls).toBe(2);
+    expect(cache.metrics()).toMatchObject({ entries: 1, pending: 0 });
+  });
 });

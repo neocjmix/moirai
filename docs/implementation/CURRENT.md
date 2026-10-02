@@ -17,12 +17,10 @@
 
 ## 현재 checkpoint와 조사 기준선
 
-- 첫 개선 checkpoint: [PR #304](https://github.com/neocjmix/moirai/pull/304), `8f9e31a`가 운영 배포됐고 exact-SHA smoke가 통과했다. isolated WebKit602-frame start/return p95는49/49ms로33.4ms 기준 미달이다. 첫 실행의 ready timeout도 기록했다.
-- 두 번째 운영 checkpoint: [PR #305](https://github.com/neocjmix/moirai/pull/305), `3ec0e1c`. 안정된 hull/point paint identity·gesture scheduler·bounded exit paint·상세 선택/history/lifetime 수정. unit567 pass/2 skip, strict root/web typecheck·ESLint·production build, 실제 compiler/4 browser, exact-SHA smoke와 운영 모바일4개 통과. 별도 로컬 모바일5/8 pass의 나머지 원인도 추적 중이다.
-- **지속 성능은 아직 미달이며 두 번째 checkpoint에서 회귀 확인:**30 visits/start·middle·return602frame p95=84/95/121ms,382 Render 요청. 미리 읽기의 재사용 경계 오류가 작은 이동마다 약515KB를 다시 읽는 원인을 재현했다. 다음 checkpoint에서 inner refill margin·bounded pan hull/spline 재사용·넓은 viewport 복원 수정을 검증한다. 전체 완료/CI green으로 해석하지 않는다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
-- 조사 시작 main: PR [#303](https://github.com/neocjmix/moirai/pull/303), `91cffca`. 조사 시작 시 운영 SHA도 동일했다. 이후 checkpoint 결과는 검증 후 이 섹션을 교체한다.
-- 기능 기준: PR [#302](https://github.com/neocjmix/moirai/pull/302), `19de027`, Collection loader 교체 중 semantic label 이력 보존. [검증 근거](../evidence/ip012/mobile-label-continuity-2026-10-02.md#codex-cloud-review-and-rollout).
-- #302의 unit 527 pass/2 skip, 핵심 quality 검사, 운영 모바일 4개와 인증 authoring smoke 성공은 해당 실행 범위의 결과다. 최신 #303 [CI 36961070802](https://github.com/neocjmix/moirai/actions/runs/36961070802)와 [post-deploy 36961544001](https://github.com/neocjmix/moirai/actions/runs/36961544001)는 실패로 확인돼 재진단 중이다. 앞선 smoke 성공으로 최신 실패를 가리지 않는다.
+- **현재 운영:** [PR #306](https://github.com/neocjmix/moirai/pull/306), `de8d60811fba7866bc69801c97457f7f957a6261`. 과도한 prefetch refill 경계 수정, bounded pan hull/spline 재사용, World geometry identity 공유, 넓은 viewport 복원, compiler/4 browser CI를 배포했다. exact-SHA smoke 통과. branch CI는 성공했으나 main CI의 모바일 flow와 A5 운영 checkpoint는 실패했다.
+- **지속 성능 미달·진단 중:** #305의 30 visits/start·middle·return602frame p95=84/95/121ms,382 Render 요청을 재현했다. #306에서 요청 증폭 원인은 수정했지만 운영 재측정 두 번 모두 초기 loading timeout으로 frame 결과를 얻지 못했다. Railway render 응답3.4–11.9초, canonical read8–120ms를 관측했다. 배포 성공을 성능 통과로 해석하지 않는다.
+- **다음 checkpoint 검증 중:** SHA로 고정된 Render generation이 서버 immutable cache에서 빠진 원인을 수정하고 Server-Timing을 추가했다. 상세 read action identity·복원 중복 호출과 라벨/point 등장·퇴장 전환도 모바일 브라우저에서 검증 중이다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
+- 기능 출발점은 [#302](https://github.com/neocjmix/moirai/pull/302) `19de027`의 Collection 변경 시 semantic label 연속성이며, 조사 기준선은 [#303](https://github.com/neocjmix/moirai/pull/303) `91cffca`다. #304 `8f9e31a`의 isolated602frame p95=49/49ms도33.4ms 기준 미달이다. 과거 checkpoint와 개별 검증 범위는 evidence에 보존한다.
 - World `01995c2a-7b00-7000-8000-000000000101`: Revision 62, 30 Collection, 677 placed/2 unplaced Event. 공개 Render generation은 `render-compiler/4`, `7b3c2fd8…`다. 데이터 수량은 새 입력·백필 전 다시 확인한다.
 
 ## 읽기 구조와 불변식

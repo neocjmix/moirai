@@ -44,6 +44,19 @@ async function snapshot(x = 0, truncated = true): Promise<Viewport> {
 }
 afterEach(() => vi.useRealTimers());
 
+it("does not start queued viewport or detail HTTP requests after page disposal", async () => {
+  const fetcher = vi.fn<typeof fetch>();
+  const loader = await setup(fetcher);
+  loader.dispose?.();
+  await expect(loader.loadViewport("ko", query())).rejects.toMatchObject({
+    name: "AbortError"
+  });
+  await expect(
+    loader.loadEventDetail("ko", "collection:collection")
+  ).rejects.toMatchObject({ name: "AbortError" });
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
 const continuation = (offset: number) => ({
   selection_digest: "a".repeat(64),
   spatial: {
@@ -263,7 +276,14 @@ it("aborts a superseded request and page exit, and ignores late transport result
   pending.forEach((p) => p.resolve(Response.json(value)));
   await Promise.all([rejectedFirst, rejectedSecond]);
   fetcher.mockImplementation(async () => Response.json(value));
-  await loader.loadViewport("ko", query());
+  await expect(loader.loadViewport("ko", query())).rejects.toMatchObject({
+    name: "AbortError"
+  });
+  expect(fetcher).toHaveBeenCalledTimes(2);
+  // A new screen gets a fresh lifetime; late data from the disposed screen
+  // cannot refill a cache that survives navigation.
+  const next = await setup(fetcher);
+  await next.loadViewport("ko", query());
   expect(fetcher).toHaveBeenCalledTimes(3);
-  loader.dispose?.();
+  next.dispose?.();
 });

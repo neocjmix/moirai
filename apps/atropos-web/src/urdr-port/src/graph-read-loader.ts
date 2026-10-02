@@ -27,7 +27,8 @@ export type GraphReadLoader = {
   ): Promise<GraphShellViewportResponse>;
   loadEventDetail(
     locale: AppLocale,
-    eventId: string
+    eventId: string,
+    signal?: AbortSignal
   ): Promise<EventDetailResponse>;
 };
 

@@ -53,3 +53,32 @@ it("applies hysteresis in a bounded band and restores sparse points", () => {
     )
   ).toBe(true);
 });
+
+it("retains bounded offscreen paint without reducing visible density capacity", () => {
+  const buffered = points.slice(0, 80).map((p, i) => ({
+    ...p,
+    id: `buffer-${i}`,
+    entity: { ...p.entity, id: `buffer-${i}` },
+    bounds: { minX: -0.25, maxX: -0.25, minY: 5, maxY: 5 }
+  }));
+  const far = {
+    ...buffered[0]!,
+    id: "far",
+    bounds: { minX: -2, maxX: -2, minY: 5, maxY: 5 }
+  };
+  const previous = new Map([
+    ["buffer-0", { pointScale: 0.35, opacity: 1, labelOpacity: 0 }]
+  ]);
+  const result = selectRenderDensity(
+    [...points, ...buffered, far],
+    box,
+    previous
+  );
+  expect(result).toHaveLength(160);
+  expect(result.filter((p) => p.id.startsWith("e"))).toHaveLength(128);
+  expect(result.filter((p) => p.id.startsWith("buffer-"))).toHaveLength(32);
+  expect(result.find((p) => p.id === "buffer-0")?.renderDensity).toEqual(
+    previous.get("buffer-0")
+  );
+  expect(result.some((p) => p.id === "far")).toBe(false);
+});

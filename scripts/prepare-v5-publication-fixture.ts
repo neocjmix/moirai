@@ -8,6 +8,7 @@ import type {
   V5PublicationPointer
 } from "@moirai/contracts/v5";
 import { buildV5WorldCompleteArtifacts } from "@moirai/graph-presentation/server";
+import { backfillV5RenderGeneration } from "../apps/lachesis-worker/src/render-backfill.js";
 
 export const V5_FIXTURE_WORLD_ID = "019f3b00-0000-7000-8000-000000000a01";
 const joseon = "019f3b00-0000-7000-8000-000000000a02";
@@ -190,17 +191,55 @@ export async function prepareV5PublicationFixture(
       .digest("hex"),
     generated_at: "2026-09-24T00:00:00.000Z"
   };
-  for (const item of [
-    ...artifacts.documents,
-    ...artifacts.index,
-    artifacts.root,
-    {
-      key: `worlds/${V5_FIXTURE_WORLD_ID}/current.json`,
-      body: JSON.stringify(pointer)
-    }
-  ]) {
-    const path = resolve(root, item.key);
+  const objects = new Map(
+    [
+      ...artifacts.documents,
+      ...artifacts.index,
+      artifacts.root,
+      {
+        key: `worlds/${V5_FIXTURE_WORLD_ID}/current.json`,
+        body: JSON.stringify(pointer)
+      }
+    ].map((item) => [item.key, item.body])
+  );
+  if (options.renderPublication) {
+    // Exercise the worker's actual generation/pointer publication, not merely
+    // embedded render documents (which the normal browser reader ignores).
+    const etag = (body: string) =>
+      createHash("sha256").update(body).digest("hex");
+    await backfillV5RenderGeneration({
+      state,
+      revision: 31,
+      store: {
+        get: async (key) => {
+          const body = objects.get(key);
+          return {
+            status: body === undefined ? 404 : 200,
+            body: body ?? null,
+            etag: body === undefined ? null : etag(body)
+          };
+        },
+        put: async (key, body, policy) => {
+          const previous = objects.get(key);
+          if (
+            (previous !== undefined &&
+              (policy?.immutable || policy?.ifNoneMatch)) ||
+            (policy?.ifMatch &&
+              (previous === undefined || etag(previous) !== policy.ifMatch))
+          )
+            return {
+              status: 412,
+              etag: previous === undefined ? null : etag(previous)
+            };
+          objects.set(key, body);
+          return { status: 201, etag: etag(body) };
+        }
+      }
+    });
+  }
+  for (const [key, body] of objects) {
+    const path = resolve(root, key);
     await mkdir(resolve(path, ".."), { recursive: true });
-    await writeFile(path, item.body);
+    await writeFile(path, body);
   }
 }

@@ -125,3 +125,34 @@ it("bridges a density-omitted intermediate Composite using compiled ancestry", (
     childrenComplete: true
   });
 });
+
+it("keeps authored Composite identity across separately fetched point and hull representations", () => {
+  const compact: RenderPrimitive = {
+    ...hull,
+    id: "different-tile-variant",
+    geometry: { kind: "point", xy: { x: 50, y: 40 } },
+    composite: { ...hull.composite!, hullBounds: box }
+  };
+  const responses = [compact, hull, compact].map((primitive) =>
+    renderTileViewport({
+      worldId: "world",
+      revision: 7,
+      primitives: [primitive],
+      relationTypes: []
+    })
+  );
+  expect(
+    responses.map((response) =>
+      response.regions.map((region) => ({
+        id: region.id,
+        eventId: region.eventId,
+        kind: region.geometryKind,
+        contains: region.contains
+      }))
+    )
+  ).toEqual(
+    Array.from({ length: 3 }, () => [
+      { id: "outer", eventId: "outer", kind: "region", contains: ["a", "b"] }
+    ])
+  );
+});

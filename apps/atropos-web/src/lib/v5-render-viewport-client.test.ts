@@ -199,6 +199,8 @@ describe("viewport-first render reads", () => {
     await expect(c.load(box(), ["one", "two"])).rejects.toThrow(
       "render_working_set_budget_exceeded"
     );
+    expect(c.inspect().bytes).toBeLessThanOrEqual(budget);
+    expect(c.inspect().geometry).toBe(1);
   });
 });
 it("keeps dormant Composite hulls off the critical path and prefetches near transition", async () => {
@@ -523,4 +525,236 @@ it("prepares a bounded finer candidate level without blocking paint and promotes
   expect((await zoom).primitives.map((p) => p.id)).toEqual(["new", "shared"]);
   await load(true);
   expect(fetcher).toHaveBeenCalledTimes(2);
+});
+
+it("retains outgoing point identity for the fade duration across frequent camera reads", async () => {
+  const now = vi.spyOn(Date, "now").mockReturnValue(1000);
+  try {
+    const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+      const q = JSON.parse(init.body as string);
+      return Response.json(
+        metadata([
+          point(q.viewport.minX === 0 ? "a" : "b", "one", q.viewport.minX + 1)
+        ])
+      );
+    });
+    const c = client(fetcher);
+    await c.load(box(), ["one"]);
+    now.mockReturnValue(1100);
+    const away = await c.load(box(20, 30), ["one"]);
+    expect(
+      away.primitives.find((p) => p.id === "a")?.renderDensity?.opacity
+    ).toBe(0);
+    now.mockReturnValue(1250);
+    const duringFade = await c.load(box(20, 30), ["one"]);
+    expect(duringFade.primitives.some((p) => p.id === "a")).toBe(true);
+    now.mockReturnValue(1321);
+    const afterFade = await c.load(box(20, 30), ["one"]);
+    expect(afterFade.primitives.some((p) => p.id === "a")).toBe(false);
+    expect(fetcher).toHaveBeenCalledTimes(2);
+  } finally {
+    now.mockRestore();
+  }
+});
+
+describe.each([250, 750])("delayed %ims render lifecycle", (latency) => {
+  it("keeps a cached reversal authoritative when the old viewport completes late", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+        const q = JSON.parse(init.body as string);
+        if (q.viewport.minX !== 0)
+          await new Promise((resolve) => setTimeout(resolve, latency));
+        return Response.json(
+          metadata([
+            point(
+              q.viewport.minX === 0 ? "home" : "away",
+              "one",
+              q.viewport.minX + 1
+            )
+          ])
+        );
+      });
+      const c = client(fetcher);
+      const home = await c.load(box(), ["one"]);
+      const away = c.load(box(20, 30), ["one"]);
+      const rejected = expect(away).rejects.toThrow("Superseded");
+      await vi.advanceTimersByTimeAsync(100);
+      const reversal = await c.load(box(), ["one"]);
+      expect(reversal.primitives[0]).toBe(home.primitives[0]);
+      await vi.advanceTimersByTimeAsync(latency);
+      await rejected;
+      expect(c.inspect()).toMatchObject({ snapshots: 1, geometry: 0 });
+      expect(
+        (await c.load(box(), ["one"])).primitives.map((p) => p.id)
+      ).toEqual(["home"]);
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("does not cache an aborted hull buffer after reversing below its useful scale", async () => {
+    vi.useFakeTimers();
+    try {
+      const p: RenderPrimitive = {
+        ...external("h", "one"),
+        entity: { kind: "composite", id: "h" },
+        bounds: box(),
+        composite: {
+          childEventIds: [],
+          supportComplete: true,
+          worldBounds: box(),
+          hullBounds: box()
+        }
+      };
+      let bufferSignal: AbortSignal | null | undefined;
+      const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+        if (JSON.parse(init.body as string).kind === "viewport")
+          return Response.json(metadata([p]));
+        bufferSignal = init.signal;
+        // The transport deliberately ignores abort, exercising a late response.
+        await new Promise((resolve) => setTimeout(resolve, latency));
+        return Response.json({
+          revision: 7,
+          generation: "g",
+          assets: [geom("h")]
+        });
+      });
+      const c = client(fetcher);
+      const load = (scale: number) =>
+        c.load(box(), ["one"], undefined, undefined, {
+          scaleX: scale,
+          scaleY: scale
+        });
+      await load(2);
+      expect(c.inspect().pendingGeometry).toBe(true);
+      await vi.advanceTimersByTimeAsync(100);
+      await load(1);
+      expect(bufferSignal?.aborted).toBe(true);
+      await vi.advanceTimersByTimeAsync(latency);
+      expect(c.inspect()).toMatchObject({
+        geometry: 0,
+        pendingGeometry: false
+      });
+      expect((await load(1)).primitives[0]!.geometry.kind).toBe("point");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("prevents late disposed metadata from entering the next revision client", async () => {
+    vi.useFakeTimers();
+    try {
+      const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+        const q = JSON.parse(init.body as string);
+        if (q.revision === 7)
+          await new Promise((resolve) => setTimeout(resolve, latency));
+        return Response.json({
+          ...metadata([point(q.revision === 7 ? "old" : "new", "one")]),
+          revision: q.revision,
+          generation: q.revision === 7 ? "g" : "next"
+        });
+      });
+      const old = client(fetcher);
+      const pending = old.load(box(), ["one"]);
+      const rejected = expect(pending).rejects.toThrow("Superseded");
+      old.dispose();
+      const next = createV5RenderViewportClient({
+        worldId: "w",
+        revision: 8,
+        timeSystemId: "t",
+        fetcher: fetcher as typeof fetch
+      });
+      expect(
+        (await next.load(box(), ["one"])).primitives.map((p) => p.id)
+      ).toEqual(["new"]);
+      await vi.advanceTimersByTimeAsync(latency);
+      await rejected;
+      expect(old.inspect()).toMatchObject({
+        entries: 0,
+        bytes: 0,
+        pendingGeometry: false,
+        pendingLevel: false
+      });
+      expect((await next.load(box(), ["one"])).metadata).toMatchObject({
+        revision: 8,
+        generation: "next"
+      });
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it("clears finer-level prefetch ownership on dispose even when transport completes late", async () => {
+    vi.useFakeTimers();
+    try {
+      let pendingSignal: AbortSignal | null | undefined;
+      const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+        const q = JSON.parse(init.body as string);
+        if (q.level !== undefined) {
+          pendingSignal = init.signal;
+          await new Promise((resolve) => setTimeout(resolve, latency));
+        }
+        return Response.json(
+          fixedMetadata(q.level ?? 1, q.level === undefined, [
+            point("shared", "one", 8)
+          ])
+        );
+      });
+      const c = client(fetcher);
+      await c.load(square(0, 16), ["one"], undefined, undefined, {
+        scaleX: 1,
+        scaleY: 1,
+        visibleViewport: square(6, 10)
+      });
+      expect(c.inspect().pendingLevel).toBe(true);
+      c.dispose();
+      expect(pendingSignal?.aborted).toBe(true);
+      await vi.advanceTimersByTimeAsync(latency);
+      expect(c.inspect()).toMatchObject({
+        entries: 0,
+        bytes: 0,
+        pendingGeometry: false,
+        pendingLevel: false
+      });
+      await expect(c.load(square(0, 16), ["one"])).rejects.toThrow(
+        "Superseded"
+      );
+      expect(fetcher).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+});
+
+it("never carries deselected point memberships into the fade-out band", async () => {
+  const shared = { ...point("shared", "one"), collectionIds: ["one", "two"] };
+  const c = client(
+    vi.fn(async () => Response.json(metadata([shared, point("other", "two")])))
+  );
+  await c.load(box(), ["one", "two"]);
+  const filtered = await c.load(box(), ["one"]);
+  expect(filtered.primitives.map((p) => p.id)).toEqual(["shared"]);
+  expect((await c.load(box(), [])).primitives).toHaveLength(0);
+});
+
+it("rejects a same-revision metadata generation change without replacing cached identity", async () => {
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    const q = JSON.parse(init.body as string);
+    return Response.json({
+      ...metadata([point("a", "one", q.viewport.minX + 1)]),
+      generation: q.viewport.minX === 0 ? "g" : "changed"
+    });
+  });
+  const c = client(fetcher);
+  const first = await c.load(box(), ["one"]);
+  await expect(c.load(box(20, 30), ["one"])).rejects.toThrow(
+    "render_generation_changed"
+  );
+  expect(c.inspect().snapshots).toBe(1);
+  expect((await c.load(box(), ["one"])).primitives[0]).toBe(
+    first.primitives[0]
+  );
 });

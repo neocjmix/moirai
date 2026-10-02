@@ -160,21 +160,29 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       initialViewportCenter={props.center}
       externalFocus={focus ? { id: focus, label: focus } : null}
       onSelection={(id) =>
-        setState((current) => ({
-          ...current,
-          focus: id
-            ? {
-                kind: "event",
-                world_id: props.worldId,
-                served_revision: props.revision,
-                canon_id:
-                  current.query.sources[0]?.canon_ids[0] ??
-                  props.catalog.worlds[0]?.canons[0]?.id ??
-                  props.worldId,
-                event_ref: { kind: "event", event_id: id }
-              }
-            : null
-        }))
+        setState((current) => {
+          const selectedId =
+            current.focus?.kind === "event" &&
+            current.focus.event_ref.kind === "event"
+              ? current.focus.event_ref.event_id
+              : null;
+          if (selectedId === id) return current;
+          return {
+            ...current,
+            focus: id
+              ? {
+                  kind: "event",
+                  world_id: props.worldId,
+                  served_revision: props.revision,
+                  canon_id:
+                    current.query.sources[0]?.canon_ids[0] ??
+                    props.catalog.worlds[0]?.canons[0]?.id ??
+                    props.worldId,
+                  event_ref: { kind: "event", event_id: id }
+                }
+              : null
+          };
+        })
       }
     />
   );

@@ -10,6 +10,42 @@ test.beforeEach(async ({ page }) => {
   );
 });
 
+test("Collection navigation during drawer close settles on one detail request", async ({
+  page
+}) => {
+  const detailRequests: string[] = [];
+  let releaseDetails: (() => void) | undefined;
+  const detailGate = new Promise<void>((resolve) => {
+    releaseDetails = resolve;
+  });
+  await page.route("**/graph/v5/shell", async (route) => {
+    const request = route.request().postDataJSON();
+    if (request.kind !== "collection") return route.continue();
+    detailRequests.push(request.collection_id);
+    await detailGate;
+    await route.continue();
+  });
+  await page.goto(`${graph}&event=${war}`);
+  const drawer = page.getByTestId("event-drawer-sheet");
+  await expect(drawer).toContainText("임진왜란 서사");
+  await page.getByTestId("event-drawer-close").click();
+  // The outgoing drawer still exists during its exit. Incoming Collection
+  // focus must take ownership without reporting the outgoing Event upstream.
+  await page.getByRole("button", { name: /^컬렉션/ }).click();
+  await page.getByRole("button", { name: "일본사 설명", exact: true }).click();
+  await expect.poll(() => detailRequests.length).toBe(1);
+  await page.waitForTimeout(250);
+  expect(detailRequests).toHaveLength(1);
+  releaseDetails!();
+  await expect(drawer).toContainText("일본사 컬렉션 서사");
+  expect(detailRequests).toHaveLength(1);
+  await expect(page).toHaveURL(/collection=/);
+  await page.getByTestId("event-drawer-stage-toggle").click();
+  await expect(drawer).toHaveAttribute("data-stage", "full");
+  await expect(drawer).toContainText("일본사 컬렉션 서사");
+  expect(detailRequests).toHaveLength(1);
+});
+
 test("A5 mobile escape, shared detail, all-off, camera restore and legacy flag", async ({
   page
 }, info) => {

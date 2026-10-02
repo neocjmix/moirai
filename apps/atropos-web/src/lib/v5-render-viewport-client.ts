@@ -95,10 +95,30 @@ export function createV5RenderViewportClient(input: {
     promise: Promise<RenderViewportMetadata>;
   } | null = null;
   let lastScene: ResolvedRenderPrimitive[] = [];
+  const outgoingPoints = new Map<
+    string,
+    { primitive: ResolvedRenderPrimitive; expiresAt: number }
+  >();
   let densityHistory = new Map<string, RenderDensity>();
   const cacheBytes = () =>
     snapshots.reduce((sum, item) => sum + item.bytes, 0) +
     [...geometry.values()].reduce((sum, item) => sum + item.bytes, 0);
+  const trimCache = (pinned: ReadonlySet<string> = new Set()) => {
+    let bytes = cacheBytes();
+    while (bytes > maxBytes && snapshots.length > 1) {
+      const index = snapshots.findIndex((item) => item !== snapshot);
+      if (index < 0) break;
+      bytes -= snapshots.splice(index, 1)[0]!.bytes;
+    }
+    for (const [key, item] of geometry) {
+      if (bytes <= maxBytes) break;
+      if (!pinned.has(key)) {
+        geometry.delete(key);
+        bytes -= item.bytes;
+      }
+    }
+    return bytes;
+  };
   const validateMetadata = (value: RenderViewportMetadata) => {
     if (
       value.format !== "render-viewport/1" ||
@@ -335,6 +355,7 @@ export function createV5RenderViewportClient(input: {
       if (prefetchedIndex >= 0) snapshots.splice(prefetchedIndex, 1);
       snapshots.push(snapshot);
       while (snapshots.length > 6) snapshots.shift();
+      trimCache();
     }
     const selected = new Set(collectionIds);
     const visible = metadata.primitives.filter(
@@ -433,8 +454,22 @@ export function createV5RenderViewportClient(input: {
       assertCurrent(ticket, signal);
       // Validate the entire response before making any cache changes.
       validateAssets(fetched, new Map(missing));
-      for (const asset of fetched)
-        geometry.set(asset.key, { asset, bytes: bytesOf(asset.body) });
+      const incoming = new Map(
+        fetched.map((asset) => [
+          asset.key,
+          { asset, bytes: bytesOf(asset.body) }
+        ])
+      );
+      const incomingActiveBytes =
+        snapshot!.bytes +
+        [...refs.keys()].reduce(
+          (sum, key) =>
+            sum + (incoming.get(key)?.bytes ?? geometry.get(key)?.bytes ?? 0),
+          0
+        );
+      if (incomingActiveBytes > maxBytes)
+        throw Error("render_working_set_budget_exceeded");
+      for (const [key, item] of incoming) geometry.set(key, item);
     }
     assertCurrent(ticket, signal);
     // Pin ALL active refs, including previously cached ones, before eviction.
@@ -449,19 +484,7 @@ export function createV5RenderViewportClient(input: {
     }
     if (activeBytes > maxBytes)
       throw Error("render_working_set_budget_exceeded");
-    let bytes = cacheBytes();
-    while (bytes > maxBytes && snapshots.length > 1) {
-      const index = snapshots.findIndex((item) => item !== snapshot);
-      if (index < 0) break;
-      bytes -= snapshots.splice(index, 1)[0]!.bytes;
-    }
-    for (const [key, item] of geometry) {
-      if (bytes <= maxBytes) break;
-      if (!refs.has(key)) {
-        geometry.delete(key);
-        bytes -= item.bytes;
-      }
-    }
+    const bytes = trimCache(new Set(refs.keys()));
     let primitives: ResolvedRenderPrimitive[] = scene
       .map((p) =>
         p.geometry.kind === "external"
@@ -473,18 +496,39 @@ export function createV5RenderViewportClient(input: {
       )
       .sort((a, b) => a.id.localeCompare(b.id));
     const nextIds = new Set(primitives.map((p) => p.id));
-    const outgoing = lastScene
-      .filter((p) => !nextIds.has(p.id) && p.geometry.kind === "point")
-      .map((p) => ({ ...p, renderDensity: hiddenRenderDensity }));
+    const transitionNow = Date.now();
+    for (const p of lastScene)
+      if (!nextIds.has(p.id) && p.geometry.kind === "point")
+        outgoingPoints.set(p.id, {
+          primitive: p,
+          expiresAt: transitionNow + 220
+        });
+    for (const [id, outgoing] of outgoingPoints)
+      if (
+        nextIds.has(id) ||
+        outgoing.expiresAt <= transitionNow ||
+        !outgoing.primitive.collectionIds.some((collection) =>
+          selected.has(collection)
+        )
+      )
+        outgoingPoints.delete(id);
+    while (outgoingPoints.size > 160)
+      outgoingPoints.delete(outgoingPoints.keys().next().value!);
     densityHistory = new Map(
       primitives.flatMap((p) =>
         p.renderDensity ? [[p.id, p.renderDensity] as const] : []
       )
     );
     lastScene = primitives;
-    // Keep exactly one outgoing frame so CSS can animate disappearance. This
-    // never accumulates navigation history or fetches geometry for removed dots.
-    primitives = [...primitives, ...outgoing];
+    // A time window survives several fast camera reads long enough for the
+    // 180ms CSS fade. Reappearing identities reclaim their existing paint key.
+    primitives = [
+      ...primitives,
+      ...[...outgoingPoints.values()].map(({ primitive }) => ({
+        ...primitive,
+        renderDensity: hiddenRenderDensity
+      }))
+    ];
     if (buffered.size && !prefetch) {
       const controller = new AbortController();
       // Optional nearby-scale hull fetch is deliberately outside the active await.
@@ -591,6 +635,15 @@ export function createV5RenderViewportClient(input: {
   };
   return {
     load,
+    inspect: () => ({
+      entries: geometry.size + snapshots.length,
+      snapshots: snapshots.length,
+      geometry: geometry.size,
+      bytes: cacheBytes(),
+      maxBytes,
+      pendingGeometry: prefetch !== null,
+      pendingLevel: levelPrefetch !== null
+    }),
     dispose() {
       disposed = true;
       prefetch?.controller.abort();
@@ -602,6 +655,7 @@ export function createV5RenderViewportClient(input: {
       snapshots.length = 0;
       geometry.clear();
       lastScene = [];
+      outgoingPoints.clear();
       densityHistory.clear();
     }
   };

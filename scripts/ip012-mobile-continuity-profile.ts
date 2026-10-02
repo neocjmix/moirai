@@ -39,6 +39,7 @@ const network: { kind: string; ms: number; bytes: number; status: number }[] =
   [];
 const pending: Promise<void>[] = [];
 const started = new WeakMap<object, number>();
+let lastInspection: Inspection | null = null;
 page.on("pageerror", (e) => errors.push(e.message));
 page.on("request", (r) => {
   if (r.url().includes("/graph/v5/render")) started.set(r, performance.now());
@@ -86,6 +87,7 @@ async function inspect(page: Page) {
 async function settle() {
   for (let i = 0; i < 150; i++) {
     const state = await inspect(page);
+    lastInspection = state;
     if (state?.loadState === "error") throw Error("viewport_load_error");
     if (state?.loadState === "ready" && !state.cache?.pending) {
       await page.waitForTimeout(260);
@@ -208,6 +210,7 @@ try {
   result.final = await settle();
 } catch (e) {
   errors.push(String(e));
+  result.lastInspection = lastInspection;
 } finally {
   await Promise.all(pending);
   await browser.close();

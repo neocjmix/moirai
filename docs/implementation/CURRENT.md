@@ -17,7 +17,8 @@
 
 ## 현재 checkpoint와 조사 기준선
 
-- 첫 개선 checkpoint: [PR #304](https://github.com/neocjmix/moirai/pull/304), `8f9e31a`가 main에 병합됐고 운영 배포 중이다. bounded viewport/level cache·geometry prefetch 재사용과 기존 배치 결과를 보존하는 label 계산 축소를 포함한다. hull 전환·서랍 요청 생명주기 수정과 운영 재측정은 진행 중이다.
+- 첫 개선 checkpoint: [PR #304](https://github.com/neocjmix/moirai/pull/304), `8f9e31a`가 운영 배포됐고 exact-SHA smoke가 통과했다. isolated WebKit602-frame start/return p95는49/49ms로33.4ms 기준 미달이다. 첫 실행의 ready timeout도 기록했다.
+- 두 번째 checkpoint 구현: 안정된 hull/point paint identity, 연속 gesture의 single-flight read, bounded exit paint, label path 계산 축소, 상세 선택·history·loader lifetime 수정. unit567 pass/2 skip, strict root/web typecheck·ESLint·production build 통과. 실제 compiler/4 fixture의 warm pan 동일 DOM·Collection reversal 추가 metadata0·drawer browser 검증 통과. 별도 모바일 묶음은5/8 pass: legacy navigation teardown·far-away fixture·새 childfade 관측 assertion3개 실패를 수정 중이다. 전체 완료/CI green으로 해석하지 않는다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
 - 조사 시작 main: PR [#303](https://github.com/neocjmix/moirai/pull/303), `91cffca`. 조사 시작 시 운영 SHA도 동일했다. 이후 checkpoint 결과는 검증 후 이 섹션을 교체한다.
 - 기능 기준: PR [#302](https://github.com/neocjmix/moirai/pull/302), `19de027`, Collection loader 교체 중 semantic label 이력 보존. [검증 근거](../evidence/ip012/mobile-label-continuity-2026-10-02.md#codex-cloud-review-and-rollout).
 - #302의 unit 527 pass/2 skip, 핵심 quality 검사, 운영 모바일 4개와 인증 authoring smoke 성공은 해당 실행 범위의 결과다. 최신 #303 [CI 36961070802](https://github.com/neocjmix/moirai/actions/runs/36961070802)와 [post-deploy 36961544001](https://github.com/neocjmix/moirai/actions/runs/36961544001)는 실패로 확인돼 재진단 중이다. 앞선 smoke 성공으로 최신 실패를 가리지 않는다.

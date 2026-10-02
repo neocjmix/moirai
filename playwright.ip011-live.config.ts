@@ -7,7 +7,7 @@ export default defineConfig({
   retries: 0,
   timeout: 120_000,
   expect: { timeout: 20_000 },
-  reporter: "list",
+  reporter: process.env.CI ? [["github"], ["list"]] : "list",
   outputDir: "test-results/ip011-a3-live",
   use: {
     baseURL: "https://moirai-production-8ed1.up.railway.app",

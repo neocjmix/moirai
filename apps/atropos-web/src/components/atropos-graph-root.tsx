@@ -118,9 +118,10 @@ function MoiraiGraphApp({
       state: requestState,
       workspace: selectedSpatial.workspace,
       maxEntities: Math.min(2500, requestState.query.budget.max_entities),
-      loadEventDetail: async (_locale, id) => {
+      loadEventDetail: async (_locale, id, signal) => {
         const response = await fetch("/graph/detail", {
           method: "POST",
+          signal: signal ?? null,
           headers: { "content-type": "application/json" },
           body: JSON.stringify({ state: requestState, id })
         });

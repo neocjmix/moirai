@@ -136,7 +136,9 @@ for (const item of [
   await mkdir(resolve(path, ".."), { recursive: true });
   await writeFile(path, item.body);
 }
-await prepareV5PublicationFixture(root);
+await prepareV5PublicationFixture(root, {
+  renderPublication: process.env.IP012_RENDER_FIXTURE === "1"
+});
 process.stdout.write(
   "Prepared isolated v4 and v5 browser Publication fixtures\n"
 );

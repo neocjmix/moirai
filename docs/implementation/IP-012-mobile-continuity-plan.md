@@ -10,6 +10,19 @@
 
 기존 UI 문법, 작성된 contains/Composite, 공유 Event identity, World 좌표·temporal order, 별도 Narrative, Collection 선택과 camera 복원, HUD·relation·drawer·primary interaction을 유지한다. text와 graphic density는 독립이다. 성능을 위한 작은 표현 차이·approximation은 허용한다. 내부 API·publication·cache·frame pipeline·renderer 선택은 필요에 따라 변경할 수 있다. 사용자가 제시한 overfetch·FE 계산은 해결책 예시이며 고정된 구현 지시가 아니다.
 
+## 현재 checkpoint와 우선 작업
+
+2026-10-02 세 번째 checkpoint인 PR [#306](https://github.com/neocjmix/moirai/pull/306), 구현 `c4c2d61`은 main `de8d60811fba7866bc69801c97457f7f957a6261`로 배포됐다. 앞선 두 checkpoint와 이번 로컬 검증의 개선은 [진행 중 실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 기록한다. **성능 완료는 아니다.** 배포 후 격리 production profile 두 번 모두 scene이 `loading`인 상태에서 timeout했고 frame 측정에 진입하지 못했다. 초기 HTTP 200만으로 graph-ready를 판정하지 않는다.
+
+| 상태 | 현재 범위와 다음 검증 |
+| --- | --- |
+| 구현·배포됨, 전체 gate 열림 | metadata LRU/공간 margin, finer-level prefetch 안쪽 readiness 경계, authored paint owner·hull/point fade, bounded pan hull/path 재사용, response structural sharing, 넓은 camera 복원. 중간 개선과 뒤이은 regression을 함께 보존 |
+| 네 번째 checkpoint 구현·검증 중, 미배포 | Render generation hash 경로를 기존 immutable server cache가 제외했던 문제 수정, 동시 동일 object 읽기 병합, Render route `Server-Timing`. focused 23 tests 통과만 기록하며 실제 서버 지연 개선은 배포 후 재측정 |
+| 브라우저 blocker 진단 중 | 늦은 detail/Collection 닫기 이후 owner·hydration 재진입, navigation lifetime, semantic label paint 보존. 27개 browser batch에서 발견한 WebKit `history.replaceState` 10초 내 100회 초과 regression은 수정·재검증 전 통과로 표시하지 않음 |
+| 배포 후 반드시 재측정 | cold/warm server object I/O와 app 시간, 초기 scene readiness, 30회 왕복 요청 수와 frame p95/max, 데이터 전환·label/primary target·history identity. 네트워크 결과·서버 자원과 browser lifecycle 원인을 분리 |
+
+운영 Render 응답 3.4–11.9초, canonical 응답 8–120ms의 차이와 낮은 관측 CPU/메모리 사용은 server object I/O/cache 경로를 우선 조사할 근거다. 이 관측만으로 storage만이 유일한 원인이거나 CPU/메모리·browser lifecycle 문제가 없다고 단정하지 않는다. scale overfetch·geometry compression·서버 증설에 앞서 immutable cache 적용 여부, 반복 object reads, request coalescing, resolved metadata 이후 pending scene 상태를 확인한다.
+
 ## 측정 시나리오
 
 각 결과에 commit/deployed SHA, World/Revision/Render generation, browser/version, viewport/device emulation 여부, network/CPU 조건, selection, cache 상태를 기록한다. 실제 단말과 Playwright emulation을 구분한다.
@@ -42,6 +55,14 @@
 4. 브라우저 profile에서 geometry·labels·React·SVG paint 중 지배 비용을 찾아 줄인다. World-stable 계산은 Publication으로 이동할 수 있고 gesture-time은 transform·bounded visibility·interpolation 중심으로 좁힐 수 있다. 내부 구조 보존이 목표가 아니다.
 5. 작은 checkpoint마다 diff review·관련 tests/build·secret 검사 후 commit/merge/deploy한다. deployed SHA·readiness·모바일 pan/zoom/selection/drawer를 확인하고 evidence와 CURRENT를 갱신한다. 전체 gate를 기다리지 않고 중간 URL을 제공한다.
 6. 동일 profile before/after와 normal/delayed fetch, warm return, scale regression을 비교한다. 미달이면 원인을 따라 다음 구조적 변경까지 이어간다. 최종적으로 통과 범위·미달·측정 불가·실제 사용자 판단이 필요한 한계를 분리한다.
+
+현재 다음 checkpoint의 구체적 순서는 다음과 같다.
+
+- [ ] `replaceState`를 포함한 history 쓰기의 발생 주체·빈도를 확인하고 gesture 후 최신 camera/selection 복원 의미를 유지하며 browser quota 오류를 제거한다. quota를 넘긴 오류를 숨기거나 URL 동기화를 포기해 통과시키지 않는다.
+- [ ] 늦은 Collection/detail 응답과 close/back/forward의 owner 재진입을 재현하고 request 폭주·취소 실패·scene loading 정체를 검증한다. 같은 수정의 이전 smoke 성공과 재발을 둘 다 남긴다.
+- [ ] 실제 compiler/4 suite와 영향받는 27개 browser batch의 결과를 정리한다. semantic fixture의 CSS fade 성공, 실제 Render data 경로 성공, 운영 성공을 분리한다.
+- [ ] 배포 가능한 서버 cache/계측과 browser 개선을 commit·배포하고 exact SHA를 확인한다. `Server-Timing`의 app wall time, summed object I/O time, object/byte count로 cold/warm을 비교한다. 병렬 I/O 합계는 wall time과 같지 않다.
+- [ ] 격리 production profile을 재실행한다. loading timeout이면 마지막 pending owner/request/metadata/geometry 상태를 보존하고 해결 후 frame 측정을 재개한다. 30회 방문·복귀와 시작/중간/복귀 gate를 만족하기 전 완료로 판정하지 않는다.
 
 ## 중지·인계 기준
 

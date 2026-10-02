@@ -21,6 +21,7 @@ const output =
 const delay = Number(process.env.IP012_FETCH_DELAY_MS ?? 0);
 const visits = Number(process.env.IP012_VISITS ?? 30);
 const frames = Number(process.env.IP012_FRAMES ?? 602);
+const readyTimeout = Number(process.env.IP012_READY_TIMEOUT_MS ?? 30_000);
 const proxy = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY;
 const browser = await webkit.launch();
 const context = await browser.newContext({
@@ -38,8 +39,11 @@ const errors: string[] = [];
 const network: {
   kind: string;
   ms: number;
+  headers_ms?: number;
   bytes: number;
   status: number;
+  serverTiming?: string;
+  transferredBytes?: number;
   phase: string;
   level?: number;
   viewport?: unknown;
@@ -68,12 +72,22 @@ page.on("response", (r) => {
   if (start === undefined) return;
   pending.push(
     (async () => {
+      const headersMs = performance.now() - start.time;
       try {
+        const bytes = (await r.body()).byteLength;
+        const completeMs = performance.now() - start.time;
         network.push({
           kind: r.request().postDataJSON()?.kind ?? "unknown",
           ...start,
-          ms: performance.now() - start.time,
-          bytes: (await r.body()).byteLength,
+          ms: completeMs,
+          headers_ms: headersMs,
+          bytes,
+          serverTiming: r.headers()["server-timing"] ?? "",
+          ...(await r
+            .request()
+            .sizes()
+            .then((sizes) => ({ transferredBytes: sizes.responseBodySize }))
+            .catch(() => ({}))),
           status: r.status()
         });
       } catch {
@@ -106,7 +120,8 @@ async function inspect(page: Page) {
   });
 }
 async function settle() {
-  for (let i = 0; i < 150; i++) {
+  const deadline = performance.now() + readyTimeout;
+  while (performance.now() < deadline) {
     const state = await inspect(page);
     lastInspection = state;
     if (state?.loadState === "error") throw Error("viewport_load_error");
@@ -195,6 +210,7 @@ const result: Record<string, unknown> = {
   delay_ms: delay,
   visits,
   frames,
+  ready_timeout_ms: readyTimeout,
   errors,
   network,
   heap: "not measured"

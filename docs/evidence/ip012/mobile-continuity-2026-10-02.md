@@ -38,7 +38,7 @@ Full compiler scale evidence retains identical local tile payload across1k/10k/1
 
 The dedicated `playwright.ip012-continuity.config.ts` fixture publishes an actual render generation through the worker. It verifies the default compiler/4 path, same DOM identity on warm pan and no metadata requests for cached Collection reversal; semantic-route mocks remain separate transition tests. Post-deploy CI now retains public mobile failure screenshots/traces and structured GitHub annotations for future sessions.
 
-## Third checkpoint — implementation verification
+## Third checkpoint — deployed, production loading failure retained
 
 - A separate inner readiness margin for finer-level prefetch prevents subpixel refill churn. A60-camera regression reproduced60 speculative requests before the fix and1 after it.
 - Bounded per-loader pan geometry retains the padded hull and SVG spline `d` while applying translation. Exact raw support still drives LOD, and labels/coverage use current screen coordinates.600 pan frames require1 build/600 hits. Measured approximation against repeated Clipper evaluation is<0.003px for padded vertices and<0.01px for label anchors; entries, total vertices and path characters have explicit caps.
@@ -49,4 +49,22 @@ The dedicated `playwright.ip012-continuity.config.ts` fixture publishes an actua
 
 Production-body replay for21 camera positions changed21 requests (20 speculative) into2 (1 speculative), with metadata cache2.89MiB→830,076bytes.58 focused tests, root strict typecheck, lint and formatting passed; production build passed. The mobile batch passed21/26, including actual point/hull fades and the corrected broad camera. The delayed Collection-close race recurred with1,545 requests in5 seconds, so the selection-lifetime fix is **not complete**; hydration/owner reentry is being investigated. Other remaining navigation/fixture failures remain visible. Another confirmed next task is paint-only semantic label retention: admission changes still unmount text before its CSS fade.
 
-Deployed frame/request verification of this checkpoint is pending; synthetic/local results do not replace it. Checkpoints continue while these focused follow-ups remain open.
+Implementation `c4c2d61` merged through [PR #306](https://github.com/neocjmix/moirai/pull/306) as main `de8d60811fba7866bc69801c97457f7f957a6261`. Railway deployment succeeded. This establishes deployment, not a new performance pass.
+
+Two isolated production profile attempts both failed with `viewport_settle_timeout` before the sustained-frame checkpoints. Both public health responses confirmed the deployed `de8d608…` SHA. Each recorded one successful cold viewport metadata response of 314,500 bytes, taking **9065ms** and **9737ms** respectively; the last inspection still showed `loadState: loading`, no active points/regions, one pending loader read, one cached Render snapshot and no cached geometry. Initial scene readiness and frame percentiles were therefore **not obtained**. The declared `30 visits`/`602 frames` in the profile header are requested scenario parameters, not completed samples.
+
+The failed observations are retained as [first cold attempt](mobile-continuity-checkpoint-de8d608-cold-failure.json) and [cold retry](mobile-continuity-checkpoint-de8d608-cold-retry-failure.json). Earlier baseline/checkpoint JSON files remain unchanged.
+
+The same investigation's Railway response observations were **3.4–11.9s for Render reads**, versus **8–120ms for canonical reads**. Observed CPU max was **0.361 cores of 8** and memory **0.357GiB of 8GiB**. These observations motivate separating publication object I/O/cache misses from app/browser work; they do not prove that server capacity is exhausted or that storage alone explains the pending scene. Correlated request timing and the browser's pending lifecycle remain to verify.
+
+## Fourth checkpoint — implementation in progress, not deployed
+
+The shared immutable-object cache recognized `worlds/{World}/revisions/{Revision}/…` but excluded independent `render-generations/{64-character hash}/…` assets. This meant immutable generation roots/index pages/tiles/geometry repeatedly reached the object store even when canonical assets could be reused.
+
+The pending change admits valid World/hash generation paths to the existing bounded cache and coalesces concurrent reads of the same immutable object. Mutable World/Render-current pointers still bypass retention, generation namespaces remain separate, and missing/failed reads are retryable rather than negatively cached. Focused publication/cache/Render route verification reports **23 tests passing**. This is local correctness evidence, not measured deployed latency improvement.
+
+The Render route now uses the existing publication profiler to emit allowlisted `Server-Timing` app wall time, summed object I/O time, object count and byte count. Object I/O durations overlap for parallel reads and must not be subtracted from app wall time as though they were a serial phase. No credentials, object names, Event text or private topology are added to this timing surface. Before/after production cold/warm measurements remain pending deployment.
+
+The affected **27-test browser batch is still under investigation**. It exposed a WebKit `history.replaceState` rate-limit regression exceeding 100 calls within 10 seconds. A fix and rerun are required before claiming browser success. Delayed Collection-close/detail feedback, navigation cancellation, paint-only semantic-label continuity and actual compiler/4 behavior remain part of the same follow-up; earlier narrow successes do not close those reproduced failures.
+
+Next evidence must tie a deployed SHA to scene readiness, cold/warm server timing and object counts, and then complete the isolated 30-visit frame/request run. Checkpoint deployment continues under the user's development observation policy while all unmet gates remain explicit.

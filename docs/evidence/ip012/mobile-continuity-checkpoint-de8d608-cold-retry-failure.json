@@ -1,0 +1,121 @@
+{
+  "device": "iPhone 14 WebKit emulation; hybrid captured pointer with continuous RAF moves",
+  "delay_ms": 0,
+  "visits": 30,
+  "frames": 602,
+  "errors": [
+    "Error: viewport_settle_timeout"
+  ],
+  "network": [
+    {
+      "kind": "viewport",
+      "time": 5152.780492,
+      "phase": "cold",
+      "viewport": {
+        "minX": -3200,
+        "maxX": 3200,
+        "minY": 137899.99999999994,
+        "maxY": 281900.00000000006
+      },
+      "ms": 9736.935331,
+      "bytes": 314500,
+      "status": 200
+    }
+  ],
+  "heap": "not measured",
+  "health": {
+    "status": "ok",
+    "service": "atropos-web",
+    "version": "0.0.0-dev",
+    "commit_sha": "de8d60811fba7866bc69801c97457f7f957a6261"
+  },
+  "lastInspection": {
+    "revision": null,
+    "selection": [
+      "01995c2a-7b00-7000-8000-000000000101"
+    ],
+    "view": {
+      "x": 0,
+      "y": -3871.4888888888886,
+      "scaleX": 0.24375,
+      "scaleY": 0.018444444444444444
+    },
+    "viewportSize": {
+      "width": 390,
+      "height": 664
+    },
+    "navigationBounds": {
+      "minX": -518.3856235724263,
+      "minY": 193258.39681855205,
+      "maxX": 521.8964338263181,
+      "maxY": 226585.40558669923
+    },
+    "completeness": null,
+    "loadState": "loading",
+    "activeIds": {
+      "points": [],
+      "regions": [],
+      "edges": []
+    },
+    "geometry": [],
+    "counts": {
+      "sourceEntities": 0,
+      "sourceRegions": 0,
+      "sourceEdges": 0,
+      "projectedPoints": 0,
+      "fadeRegions": 0,
+      "exitingRegions": 0,
+      "exitOverdueMs": 0
+    },
+    "context": {
+      "policyVersion": "a5-s1-v3",
+      "enabled": true,
+      "candidateCount": 0,
+      "topicId": null
+    },
+    "representation": {
+      "semanticBudget": 9,
+      "semanticPoints": 0,
+      "semanticRegions": 0,
+      "geographicPoints": 0,
+      "geographicRegions": 0,
+      "vertices": 0,
+      "primaryPointTargets": 0,
+      "primaryRegionTargets": 0
+    },
+    "cache": {
+      "entries": 0,
+      "bytes": 0,
+      "pending": 1,
+      "requests": 1,
+      "hits": 0,
+      "coalesced": 1,
+      "aborted": 0,
+      "maxEntries": 8,
+      "maxBytes": 8388608,
+      "maxPending": 1,
+      "renderBytes": 314500,
+      "renderMaxBytes": 16777216,
+      "renderSnapshots": 1,
+      "renderGeometry": 0,
+      "renderPendingGeometry": 0,
+      "renderPendingLevel": 0
+    },
+    "hullCache": {
+      "entries": 0,
+      "vertices": 0,
+      "pathCharacters": 0,
+      "builds": 0,
+      "hits": 0,
+      "evictions": 0
+    },
+    "work": {
+      "worldGeometryBatches": 2,
+      "pointTransforms": 0,
+      "regionTransforms": 0,
+      "labelQueries": 0,
+      "hullBuilds": 0,
+      "hullCacheHits": 0
+    }
+  }
+}

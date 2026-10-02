@@ -56,7 +56,11 @@ export class BoundedPublicationCache<T> {
     this.values.set(key, { value, bytes });
     this.bytes += bytes;
   }
-  async read(key: string, build: () => Promise<T>): Promise<T> {
+  async read(
+    key: string,
+    build: () => Promise<T>,
+    retain: (value: T) => boolean = () => true
+  ): Promise<T> {
     const existing = this.get(key);
     if (existing !== undefined) return existing;
     const pending = this.pending.get(key);
@@ -67,7 +71,7 @@ export class BoundedPublicationCache<T> {
     if (this.pending.size < this.maxEntries) this.pending.set(key, promise);
     try {
       const value = await promise;
-      this.set(key, value);
+      if (retain(value)) this.set(key, value);
       return value;
     } finally {
       if (this.pending.get(key) === promise) this.pending.delete(key);

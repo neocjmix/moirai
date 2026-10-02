@@ -20,6 +20,56 @@ afterEach(() => {
 });
 
 describe("Atropos publication reader", () => {
+  it("coalesces and caches immutable generation assets while observing pointer changes and retrying misses", async () => {
+    const directory = await mkdtemp(join(tmpdir(), "moirai-generation-cache-"));
+    delete process.env.AWS_ACCESS_KEY_ID;
+    process.env.LOCAL_PUBLICATION_FIXTURE_DIR = directory;
+    const prefix = `worlds/${TEMPORAL_EXPRESSIVENESS_WORLD_ID}`;
+    const first = `${prefix}/render-generations/${"a".repeat(64)}/t/0/0/0.json`;
+    const second = `${prefix}/render-generations/${"b".repeat(64)}/t/0/0/0.json`;
+    const missing = `${prefix}/render-generations/${"a".repeat(64)}/t/geometry/new.json`;
+    const malformed = `${prefix}/render-generations/not-a-content-hash/t/0/0/0.json`;
+    const pointer = `${prefix}/render-current.json`;
+    const put = async (key: string, value: string) => {
+      const file = join(directory, key);
+      await mkdir(dirname(file), { recursive: true });
+      await writeFile(file, value);
+    };
+    try {
+      await put(first, "generation a");
+      await put(second, "generation b");
+      await put(pointer, "a");
+      const burst = await profilePublication(() =>
+        Promise.all(
+          Array.from({ length: 8 }, () => readPublicationObject(first))
+        )
+      );
+      expect(burst.metrics.objects).toBe(1);
+      expect(burst.value.every((value) => value.body === "generation a")).toBe(
+        true
+      );
+      expect(
+        (await profilePublication(() => readPublicationObject(first))).metrics
+          .objects
+      ).toBe(0);
+      expect((await readPublicationObject(second)).body).toBe("generation b");
+      expect((await readPublicationObject(pointer)).body).toBe("a");
+      await put(pointer, "b");
+      expect((await readPublicationObject(pointer)).body).toBe("b");
+      expect((await readPublicationObject(first)).body).toBe("generation a");
+      expect((await readPublicationObject(missing)).status).toBe(404);
+      await put(missing, "repaired geometry");
+      expect((await readPublicationObject(missing)).body).toBe(
+        "repaired geometry"
+      );
+      await put(malformed, "uncached");
+      await readPublicationObject(malformed);
+      await put(malformed, "changed");
+      expect((await readPublicationObject(malformed)).body).toBe("changed");
+    } finally {
+      await rm(directory, { recursive: true });
+    }
+  });
   it("reuses immutable objects while observing pointer updates and retrying missing artifacts", async () => {
     const directory = await mkdtemp(join(tmpdir(), "moirai-cache-boundary-"));
     delete process.env.AWS_ACCESS_KEY_ID;

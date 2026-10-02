@@ -9,6 +9,8 @@ layer: implementation-plan
 
 ## 1. 상태·권한·근거
 
+2026-10-02 후속: A5·IP-012는 활성·미완료이고, 사용자는 기존 UI 문법을 유지하는 모바일 성능·표현 연속성 개선을 자율 진행하도록 명시 지시했다. 현재 우선 실행은 [IP-012 모바일 계획](IP-012-mobile-continuity-plan.md), 매 세션 배포·권한 규칙은 AGENTS/IS-001을 따른다. production의 미완료·CI 실패 checkpoint 공개와 incident 대응은 승인 범위이며 A6/M5를 자동 활성화하지 않는다.
+
 A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 실행과 쓰기·삭제·수정·병합·배포를 위임했다. 이 과거 실행 위임은 최신 사용자 지시보다 우선하지 않는다. 2026-09-28 후속 명시적 시작 지시로 A5 구현·merge·checkpoint 배포가 활성화됐다. 실행 시 A1부터의 dependency와 rehearsal/backup/검증 gate를 지킨다. 기존 M5의 별도 후속 범위는 활성화하지 않는다.
 
 [실제 상태](../evidence/ip011/reconstruction.md), [데이터 감사](../evidence/ip011/data-audit.json), [자기검증](../evidence/ip011/review.md)을 근거로 한다. A0 당시 관측된 v4와 target v5의 차이는 migration backlog였다. A3에서 운영 v5 전환을 완료했다. 2026-09-28 A4는 사용자 승인으로 잔여 작업을 이관하여 종료했으며 성능 전체 통과는 아니다. 최신 단계 상태는 CURRENT, 종료 예외와 잔여 완료 조건은 [A4 종료·백로그](IP-011-A4-closeout-backlog.md)를 따른다.

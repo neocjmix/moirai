@@ -268,6 +268,8 @@ budget을 넘기면 cell을 전부 생성한 뒤 숨기지 않고 더 낮은 LOD
 
 ## TS-008.16 application 배포와 rollback
 
+현재 production은 정식 릴리즈 이전의 모바일 개발 관측면이다. 2026-10-02 사용자 지시에 따라 [IS-001](../implementation/IS-001-agent-mobile-strategy.md)의 frequent checkpoint 정책을 적용한다. 아래 검증을 수행·보고하되 일부 CI 실패·미완료·미충족 성능 exit만으로 배포 가능한 작은 checkpoint를 막지 않는다. 배포된 commit과 공개 SHA를 확인하고 장애는 승인된 범위에서 수정·rollback한다. 전체 gate 통과와 release readiness는 checkpoint 공개와 별도다. 보안·정본 무결성 요구를 통과한 것처럼 표시하지 않는다.
+
 1. contract와 migration compatibility test
 2. artifact build, SBOM과 dependency scan
 3. migration dry-run 또는 shadow database 검증
@@ -378,6 +380,8 @@ alert에는 World ID와 Revision은 포함할 수 있지만 Narrative·원자료
 9. 전체 test suite가 background process를 남기지 않고 종료한다.
 10. Change commit에서 공개 route까지의 synthetic test가 production 배포 후 통과한다.
 
-## TS-008.17 IP-011 성능 적용
+## TS-008.22 IP-011 성능 적용
 
 위 100k/500k/1GB/1,000-reader는 출시 목표이며 달성된 상태가 아니다. A1에서 TS-006의 stage metrics와 고정 환경을 정하고 기존 graph budget(1,000 entities/250 labels/초기 압축500KB/interaction 30fps 하한)을 회귀 기준으로 유지한다. TS-006의 1MiB는 개별 viewport 응답의 상한으로 초기 압축 artifact500KB와 다른 측정이다. latency는 측정 후 A4 시작 전 고정하며 baseline 이후 임의 완화하지 않는다.
+
+2026-10-02 활성 [IP-012 모바일 연속성 계획](../implementation/IP-012-mobile-continuity-plan.md)은 동일 고정 profile의 A4 p95 ≤33.4ms/max ≤100ms와 fetch-induced blank·identity reset·LOD gap 회귀를 함께 검증한다. Google Maps는 질적 기준이며 직접 비교하지 않은 실기기 성능 동등성을 주장하지 않는다. 이전 중복 heading `TS-008.17 IP-011 성능 적용`은 ID 충돌을 해소해 이 절로 옮겼으며 test 전략의 TS-008.17은 유지한다.

@@ -7,6 +7,8 @@ layer: implementation-plan
 
 # IP-011 A5 — Graph 중심 Collection Discovery
 
+2026-10-02 실행 정합성: 아래 2026-09-28 코드·데이터 조사는 당시 planning baseline이다. HUD·선택 제한 제거·Semantic/Geographic 분리 일부는 배포됐고 기본 GraphShell의 데이터 공급은 IP-012 Render viewport로 전환됐다. 현재 우선 작업은 [모바일 성능·연속성](IP-012-mobile-continuity-plan.md)이며 A5 capacity/가독성 검증을 뒷받침한다. 기존 SVG/Publication을 전제로 한 당시 구현 선택은 현 구조를 보존해야 할 제품 불변식이 아니다. UI 문법·domain 의미·pin/자동 relevance의 수용 기준은 유지하고 실제 단계·배포 결과는 CURRENT를 따른다.
+
 2026-09-28 KST. 사용자 최신 A5 지시를 반영한 planning baseline. 조사 기준 `8937cb4142215b439d4430e61b9db1ae15f218c8` (PR #236). 계획 PR #237은 main `55cae82`에 통합됐다. **2026-09-28 구현 시작 지시로 A5 S0–S7 구현·merge·checkpoint 배포가 활성화됐다.** A6/M5·대량 역사 입력·canonical migration·새 유료 서비스는 비활성이다. 진행·검증 결과는 CURRENT와 a5-execution이 소유하며 아래 planning 조사와 제안/실측 구분은 유지한다.
 
 상위 의미는 CON-003/CORE-MODEL, 독자 수용은 BR-003/JRN-004, 읽기 계약은 TS-005/006, 단계 의존성은 IP-011이 소유한다. 이 문서는 실행 순서·실험·채택 판정을 소유한다. 사용자 확정 방향과 아래 제안된 초기 실험 파라미터를 구별한다.

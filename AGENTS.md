@@ -17,13 +17,15 @@
 
 ## Execution model
 
-- The user works primarily from mobile and should not be required to run a local full-stack environment.
+- The user works only from mobile and does not review code. The deployed production URL is their primary way to see development progress; do not require local commands or code review.
+- Actual implementation and verification run in Codex Cloud. Begin each session by reconciling current code, documents, commit/PR/CI and deployed SHA; prior chat claims are handoff context, not evidence.
 - Define each task as a small externally verifiable outcome, preferably a vertical slice.
 - State the relevant document IDs, observable behavior, automated checks and deployment route before deep implementation.
 - Keep unrelated refactors, dependency upgrades and feature changes in separate commits.
 - Do not stop at code generation: self-review the full diff, test, commit, push, deploy and verify when these actions are within the approved task and available authority.
 - Do not claim success from a build alone. Verify the deployed commit through the public surface and synthetic smoke test.
 - Keep `docs/implementation/CURRENT.md` short and current when implementation status, deployed URLs or the active milestone changes. Do not turn it into an execution log.
+- Keep dated evidence and superseded plans as history with an explicit disposition. Update active authority and its inbound links rather than rewriting past measurements as present success.
 
 ## Connected tools
 
@@ -82,10 +84,12 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 - Prefer the public cloud integration environment for user verification; local execution remains an agent diagnostic tool.
 - Until the production environment is explicitly declared a public service, treat it as the primary development observation surface. Deploy small checkpoints as often as practical so the user can see the current implementation state.
 - During that period, a failing check, incomplete slice or unmet exit condition does not by itself block deployment. Keep each deployment attributable to a commit and report its known failures and incomplete behavior plainly; continue fixing forward from the deployed checkpoint.
+- A clean tree or all-green CI is not a prerequisite for a reviewable checkpoint. Create an attributable commit for the intended deployable slice without discarding unrelated work. Deploy independently useful runtime improvements throughout sustained tasks, rather than waiting for the whole milestone or documentation closeout.
+- The 2026-10-02 user instruction preauthorizes writes, merges, deployments and incident recovery needed for the active performance/transition task. Do not request the same permission again. A broken development deployment is a reason to diagnose, roll back or fix forward, not to wait for user code review.
 - Preserve readiness healthchecks and run the relevant CI, smoke and security checks, but use their results as visible implementation evidence rather than a prerequisite for exposing the current work. Never describe a failing or partial deployment as complete.
 - Keep Atropos public. Expose only Clotho HTTP/MCP for authenticated operational clients; keep Lachesis application internal. Do not give the worker or PostgreSQL a public application route.
 - Reuse the dedicated URDR Railway resources where safe, but do not copy URDR's application architecture or data model.
-- For Atropos visual and interaction work, inspect and copy the corresponding URDR UI implementation by default. Preserve its visual identity and behavior unless accepted Moirai documents, an explicit user direction or a documented defect requires a change.
+- For Atropos visual and interaction work, preserve the current authoritative Moirai GraphShell's UI grammar, authored hierarchy, hull/point/label/relation roles, HUD, camera, selection and drawer. URDR is provenance and a reference for missing or regressed behavior, not an instruction to replace evolved Moirai behavior with an older copy.
 - Record the URDR source path and commit for non-trivial UI copies, but do not make URDR a runtime dependency or the source of product meaning.
 - The URDR repository must remain. Its deployed services, database contents and artifacts do not require preservation.
 - Before repurposing or deleting infrastructure, inventory exact targets and confirm they are not shared. Do not delete adjacent workspace resources.
@@ -118,9 +122,16 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 - Do not implement Tenant, ACL, private Publication, E2EE or raw telemetry ingestion now.
 - Choose reversible boundaries, not placeholder systems.
 
+## Active performance and continuity work
+
+- The 2026-10-02 user instruction activates autonomous diagnosis and improvement under `docs/implementation/IP-012-mobile-continuity-plan.md`, alongside active A5 and IP-012. Continue through measurement, implementation, browser verification, documentation, commit and frequent deployment until the declared gates pass or a demonstrated limit or genuinely new human decision blocks progress.
+- Aim for ordinary mobile vector-map exploration: smooth pan/zoom and hull → ordinary point → small point → hidden transitions, without fetch-induced blanks or identity resets. Google Maps is a qualitative experience reference, not a measured parity claim.
+- Preserve product/domain/UI invariants, not incidental architecture. Publication boundaries, caches, APIs, scheduling and rendering internals may change based on evidence; bounded XY/scale prefetch and frontend interpolation/cache are options, not mandatory solutions.
+- Separate server latency, request count/waterfall, bytes, decode, geometry/layout/labels, renderer/frame and memory costs; compare cold and warm wide-view many-Collection scenarios. Keep A4's p95 ≤33.4ms/max ≤100ms gates and report real-device/heap limits honestly.
+
 ## Stop and ask
 
-Stop for user direction when work would:
+First apply explicit session authorization, including the task-specific delegation above. Ask only when an unresolved decision falls outside that authorization and work would:
 
 - change accepted product meaning;
 - activate a deferred roadmap feature;

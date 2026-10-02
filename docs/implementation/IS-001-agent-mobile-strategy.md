@@ -10,12 +10,12 @@ scope: execution
 
 ## IS-001.1 목적
 
-Moirai는 사용자가 주로 모바일에서 에이전트를 지시하고 배포된 결과를 확인하는 방식으로 개발한다. 사용자가 로컬 full-stack 환경을 직접 운영하거나 모든 diff를 line-by-line으로 검토하는 것을 품질 보증의 전제로 삼지 않는다.
+Moirai의 사용자는 모바일로만 작업하며 코드를 직접 리뷰하지 않는다. 실제 구현·검증은 Codex Cloud에서 수행하고, 사용자는 운영 URL에 배포된 최신 동작으로 피드백한다. 로컬 full-stack 운영, terminal 명령, GitHub diff 검토를 사용자 검수의 전제로 삼지 않는다. 이 원칙은 2026-10-02 사용자 지시로 재확인했으며 이후 세션에도 적용한다.
 
 따라서 구현 과정은 다음을 보장해야 한다.
 
 - 작은 단위의 결과가 클라우드에서 빠르게 실행된다.
-- 사용자는 모바일 브라우저와 공개 GitHub 화면만으로 핵심 동작을 확인할 수 있다.
+- 사용자는 모바일 운영 URL만으로 핵심 동작을 확인할 수 있다. GitHub는 보조 증거다.
 - 에이전트가 스스로 diff, test, log와 배포 결과를 검증하고 압축된 증거를 제공한다.
 - 공개 저장소와 공개 관측면 어디에도 비밀정보나 비공개 데이터가 남지 않는다.
 - 현재 승인된 요구사항과 기술 명세를 구현하되 미래 로드맵을 선행 구현하지 않는다.
@@ -136,12 +136,16 @@ Raw infrastructure log, trace와 metric은 문제 해결을 위한 운영 표면
 
 기본 흐름은 작고 자주 배포되는 public integration environment다.
 
+현재 이름이 production인 환경은 정식 릴리즈가 아니라 **개발 관측면**이다. 실행 가능한 작은 checkpoint가 생길 때마다 배포한다. 작업 전체 완료, clean working tree, 모든 CI 성공, milestone exit를 기다리느라 피드백을 늦추지 않는다. 의도한 변경을 식별 가능한 commit으로 만들고 관련 없는 진행 중 변경을 버리지 않는다. 검증은 계속 수행하고 실패·미완료를 그대로 공개한다. 배포 성공과 품질 gate 완료는 별개다.
+
+2026-10-02 사용자는 활성 성능·표현 전환 개선에 필요한 모든 쓰기·merge·배포와 production incident 대응을 사전 승인했다. 이 범위의 배포/복구 승인을 반복해서 요청하지 않는다. 운영이 깨지면 진단하고 수정 배포 또는 rollback을 이어간다. 목표가 끝나지 않았다는 이유로 동작하는 중간 결과를 사용자에게 감추지 않는다.
+
 1. 에이전트가 관련 문서와 현재 구현 계획을 읽는다.
 2. 작은 변경과 자동 test를 함께 작성한다.
 3. diff self-review와 secret scan을 수행한다.
 4. commit하고 public GitHub에 push한다.
 5. CI가 typecheck, test, build와 보안 gate를 실행한다.
-6. 비공개 development observation 단계는 AGENTS.md의 checkpoint 배포 정책을 따른다. CI 실패와 미완료는 명시하며 완료로 보고하지 않는다. 공개 서비스 전환 후에는 승인된 release gate를 적용한다.
+6. 현재 development observation 단계는 위 checkpoint 배포 정책을 따른다. URL이 공개라는 사실이 정식 release를 뜻하지 않는다. CI 실패와 미완료는 명시하며 완료로 보고하지 않는다. 사용자가 정식 서비스 전환을 선언한 뒤 승인된 release gate를 적용한다.
 7. healthcheck가 성공한 뒤 새 deployment로 traffic을 전환한다.
 8. post-deploy smoke test가 공개 URL에서 핵심 scenario를 확인한다.
 9. 에이전트가 URL, commit과 증거 요약을 사용자에게 전달한다.
@@ -222,7 +226,7 @@ URDR repository는 역사적 참고 자료로 보존한다. URDR의 기존 runti
 
 ### Atropos UI 계승 원칙
 
-Atropos의 시각적 표현과 interaction은 URDR UI를 기본 reference implementation으로 삼는다. 새로 재해석하거나 비슷하게 다시 만드는 대신, 작업 시작 시 URDR의 대응 화면과 동작을 확인하고 관련 component, style, asset과 interaction 구현을 Moirai로 복사한 뒤 필요한 차이만 명시적으로 변경한다.
+현재 Atropos의 authoritative Moirai GraphShell을 시각·interaction 기준으로 삼는다. URDR는 이식 출처와 regression 조사용 reference이며, 이미 진화한 Moirai UI를 구형 URDR로 다시 덮어쓰라는 지시가 아니다. 누락·회귀 동작을 복원할 때 대응 URDR 구현을 조사하고 필요한 차이를 명시한다. 성능 개선으로 작은 시각적 차이는 허용하지만 기존 hull·point·label·relation, HUD·camera·drawer의 주된 표현과 탐색 문법을 임의 재설계하지 않는다.
 
 기본적으로 계승하는 범위는 다음과 같다.
 
@@ -244,7 +248,7 @@ Atropos의 시각적 표현과 interaction은 URDR UI를 기본 reference implem
 복사된 UI component의 prop, loader와 workspace shape도 Moirai의 새 public/query
 contract가 아니다. 이 UI를 연결하기 위해 translation이 필요하면 renderer 직전의
 단방향 반부패 계층에 격리하고 표현하지 못한 의미를 diagnostic으로 남긴다. Moirai의
-EventReference, Relation, Time System, Canon 경계, projection evidence와 lossless
+Event identity, Relation, Time System, World 경계, projection evidence와 lossless
 coordinate를 URDR UI가 받을 수 있는 형태로 축소했다는 이유로 upstream 계약까지
 같은 형태로 바꾸지 않는다. 2026-09-12 승인된 M4.6에서는 이 단방향 presentation
 projection을 유지한다. renderer 교체나 반부패 계층 제거는 종료조건이 아니다.
@@ -304,10 +308,10 @@ Railway는 private S3-compatible [Storage Buckets](https://docs.railway.com/stor
 
 ## IS-001.10 데이터와 환경 정책
 
-개발 초기 public environment에는 합성 fixture만 사용한다.
+초기 환경은 합성 fixture로 시작했다. 현재 개발 World에는 공개 역사 dogfooding과 사용자 승인 합성 corpus가 함께 있으며, 최신 수량·Revision은 CURRENT와 실행 증거를 따른다. 테스트·부하 입력은 합성 또는 명백한 공개 자료를 사용한다.
 
 - fixture는 작고 결정적이며 repository에서 생성 과정을 검토할 수 있어야 한다.
-- graph, Canon 비교, 철회, projection 지연과 복구를 검증할 수 있는 사례를 포함한다.
+- graph, Collection 선택과 공유 Event identity, 철회, projection 지연과 복구를 검증할 수 있는 사례를 포함한다.
 - fixture ID는 안정적이어야 하며 공개 확인 URL을 반복 사용할 수 있어야 한다.
 - test와 public environment의 fixture가 달라져 같은 버그를 재현하지 못하는 상황을 피한다.
 - CI는 격리된 ephemeral PostgreSQL을 사용하고 shared deployed DB에 쓰지 않는다.
@@ -329,7 +333,9 @@ Railway는 private S3-compatible [Storage Buckets](https://docs.railway.com/stor
 
 승인된 구현 계획 안의 통상적인 code, test, commit, push와 development deployment는 에이전트가 끝까지 수행한다. 사용자가 모바일에서 terminal 작업을 대신하도록 넘기지 않는다.
 
-다음 경우에는 추정해서 진행하지 않고 대상을 설명한 뒤 사용자 결정을 요청한다.
+2026-10-02 활성 작업은 [IP-012 모바일 연속성 계획](IP-012-mobile-continuity-plan.md)에 따라 측정 가능한 목표를 세우고 스스로 원인을 추적·개선한다. 더 나은 구조적 해결책이 있으면 기존 내부 구현이나 예시 해결책에 얽매이지 않는다. 기존 UX 문법과 domain invariant를 보존하며, 목표 통과 또는 증거로 확인한 한계·새로운 인간 판단이 필요한 blocker까지 계속한다. Google Maps 벡터 모바일 지도는 체감 기준이며 직접 비교 측정 없이 동등 성능을 주장하지 않는다.
+
+아래 항목도 먼저 현재 작업에 대한 명시적 사용자 승인이 이미 있는지 확인한다. 승인 범위 밖에서 새 판단이 필요한 경우에만 대상을 설명하고 결정을 요청한다. 이번 성능 작업의 쓰기·배포·incident 대응 승인을 재요청하지 않는다.
 
 - 승인된 요구사항이나 기술 명세의 의미를 바꿔야 하는 경우
 - roadmap 기능을 현재 scope로 끌어와야 하는 경우
@@ -360,4 +366,4 @@ Railway는 private S3-compatible [Storage Buckets](https://docs.railway.com/stor
 9. secret, private data와 내부 diagnostic이 public repository·artifact·surface에 없음을 확인했다.
 10. 알려진 위험과 다음 단계가 기록됐다.
 
-문서만 변경하는 작업처럼 runtime 결과가 없는 경우에는 배포를 강제하지 않는다. 이때는 링크·ID·trace·format 검사와 public GitHub commit을 관측 가능한 결과로 삼는다.
+문서만 변경해 runtime 결과가 없는 경우에는 링크·ID·trace·format 검사와 commit을 완료 증거로 삼는다. runtime 변경이 함께 있으면 문서 closeout을 기다리지 않고 중간 배포한다. 사용자가 특정 baseline의 배포를 요청했거나 코드·운영 SHA 정합성 확인이 필요하면 문서 commit도 배포할 수 있다.

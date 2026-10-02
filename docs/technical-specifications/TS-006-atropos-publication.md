@@ -7,7 +7,7 @@ layer: technical-specifications
 
 # TS-006 — Publication과 확장 가능한 탐색 읽기
 
-Render-read clarification (2026-09-29): [IP-012](../implementation/IP-012-render-publication-plan.md) defines the migration to Lachesis-compiled immutable X/Y/Level vector tiles. Implementation is active: the compiler and digest-verified, revision-pinned sidecar are opt-in at publication time, and a separate Atropos preview reads prepared tiles. The catalog/index/membership/adjacency query below remains the ordinary v5 GraphShell path **until cutover** and afterwards supports explicit discovery and semantic detail reads; it is not a requirement for Atropos to traverse the domain graph during ordinary rendering. The render contract is renderer-neutral; viewport-dependent camera, final label collision and interaction remain in Atropos. A historical served Revision without this sidecar is not retroactively changed. The preview and shadow worker do not establish GraphShell cutover, A5 acceptance or A4 performance completion.
+Render-read clarification (2026-10-02): [IP-012](../implementation/IP-012-render-publication-plan.md) and [ADR-012](../architecture/ADR-012-render-read-architecture.md) define Lachesis-compiled immutable X/Y/Level Render Publication. The default GraphShell now reads bounded viewport representation metadata and missing geometry from a verified revision/generation, while preserving the existing painter. Compiler v4 uses a fixed signed spatial frame; a complete tile manifest is not required in the normal viewport critical path. The catalog/index/membership/adjacency query below serves semantic discovery/detail and explicit rollback (`?tileData=0`), not mandatory runtime graph traversal for drawing. Atropos owns camera, local visibility/interpolation, final label collision and interaction. Historical immutable revisions are not rewritten. Default Render integration is implemented; A5 acceptance, mobile continuity and A4 performance remain independently verified gates in CURRENT and the [active mobile plan](../implementation/IP-012-mobile-continuity-plan.md).
 
 2026-09-28 12:21 KST 후속 정정(이전 HUD 조건보다 우선): 화면과 관련된 Composite 후보 전체를 상대 평가하여 가장 적합한 하나를 대표 제목으로 선택한다. 면적·중심 포함·완전성의 합격 threshold나 동률을 이유로 제목을 비우지 않는다. 거리·화면 scale 적합성·contains 구체성·근거 완전성·직전 제목 안정성은 점수 신호다. 동점은 안정적인 ID 순으로 해소하며 실제 화면 후보가 없을 때만 World 단독으로 표시한다. 부분 support는 낮은 확신의 대표 맥락이지 사실/geometry 완전성 주장이 아니다.
 
@@ -19,13 +19,13 @@ Atropos는 공개 allowlist Publication만 읽고 canonical DB/private provenanc
 
 A1 당시 v4는 spatial bands·bounded payload·on-demand Event detail·LRU cache가 있었지만 cold query가 World 규모에 의존했다. A3에서 운영 v5로 전환했고 A4에서 bounded full-route 읽기를 검증했다. 최신 증거와 잔여 성능 항목은 CURRENT와 A4 종료·백로그를 따른다. 실제 경로와 측정 한계는 [조사](../evidence/ip011/reconstruction.md)를 참조한다. 기존 100/1k/10k 회귀와 spatial 100k 결과를 end-to-end scalability 증명으로 확대 해석하지 않는다.
 
-## TS-006.2 read 계약
+## TS-006.2 semantic read 계약
 
 입력은 World/revision vector, active Collection IDs, viewport/time range, scale, 선택 Event, bounded neighborhood depth 및 node/edge/bytes/read budget이다. pagination·continuation은 동일 query digest와 Revision에 고정한다. 응답에는 하나의 World/Event node, matched memberships, edges, Composite child completeness, Collection overlays, source revision/algorithm, truncated/continuation/diagnostics를 포함한다.
 
 effective active Collections는 사용자 pin/수동 활성과 안정된 contextual activation에서 파생하고 명시적 제외·auto pause를 준수한다. 그 합집합으로 Event를 선택하되 node를 복제하지 않는다. 모두 OFF이면 빈 선택을 보여주며 무제한 World scan으로 해석하지 않는다. World 검색·직접 Event URL·명시적 bounded neighborhood는 membership 없는 Event에도 접근 가능하다. 선택 이웃이 Collection 밖에 있으면 그 이유를 표시한다. temporal/contains 진실은 hidden endpoint나 Collection OFF로 바뀌지 않는다.
 
-## TS-006.3 target data path
+## TS-006.3 semantic data path와 Render 경계
 
 Worker가 World-level temporal/contains/identity 결과와 안정된 layout을 생성한다. 공개 store에는 bounded root catalog, paged Collection summaries/membership posting lists, temporal/spatial/scale shards, adjacency pages, Event detail을 둔다. shard manifest도 계층화하여 root가 World 전체 문서 목록을 실어 나르지 않게 한다. 큰 Collection과 고차수 Event도 paging/budget을 적용한다. row/byte/object-read 상한을 넘으면 continuation 또는 명시적 partial을 반환한다.
 
@@ -33,9 +33,13 @@ Worker가 World-level temporal/contains/identity 결과와 안정된 layout을 �
 
 Atropos query는 catalog → 필요한 index pages → intersecting shards → membership intersection/union → bounded neighbors 순으로 선택하며 전체 World/Collection materialization을 금지한다. storage는 기존 Publication store와 typed index seam을 우선 사용한다. 별도 graph DB/search service는 측정된 필요 없이 추가하지 않는다. offline full rebuild 비용은 별도 budget과 측정 대상이며 interactive path와 분리한다.
 
+위 순서는 semantic discovery/detail/rollback query다. 일반 Render 읽기는 World+Revision/generation+viewport+spatial level로 이미 발행된 bounded candidate bucket을 해석한다. metadata의 Collection membership을 클라이언트에서 dedupe/filter한 뒤 visibility·인접 전환 buffer에 필요한 미보유 geometry만 읽는다. 서버는 immutable bucket resolver이며 정본/contains graph나 hull을 요청 시 재구축하지 않는다. cold 약 2회·warm 약 1회·cache 내 Collection toggle 0회의 critical round trip이 ADR-012 목표이며 추가 background prefetch 비용을 별도 기록한다.
+
 ## TS-006.4 cache와 incremental UX
 
 immutable cache key는 World/revision/algorithm/shard/filter를 포함한다. pointer는 revalidation하며 서로 다른 Revision fragment를 섞지 않는다. 요청 coalescing·byte 제한·eviction·negative error TTL을 명시한다. pan/zoom 시 유지 범위의 node/edge를 keyed delta로 보존하고 bounded overscan을 사용한다. stale request는 취소하거나 sequence로 무시한다. 매 gesture마다 전체 layout·React tree를 재구축하지 않는다. 줌은 준비된 scale projection을 선택하며 사실을 재계산하지 않는다.
+
+Render metadata cache는 selection-independent이며 Collection visibility 변경만으로 폐기하지 않는다. World/Event identity와 representation identity를 transport response·tile·공간 level·요청 시각과 분리한다. 인접 XY와 scale의 bounded buffer, 준비된 local interpolation과 cache를 필요에 따라 사용한다. 새 fetch가 진행 중이라는 이유로 이미 준비된 같은 Revision의 scene·label history·transition을 초기화하지 않는다. 명시적 all-off, authoritative empty, World/Revision 변경은 구별한다. hull ↔ ordinary point ↔ small point ↔ hidden 전환에서 drawable counterpart와 필요한 support가 준비되기 전 화면을 비우지 않으며, error/partial은 빈 세계로 해석하지 않는다. 구·신 Revision 또는 generation을 임의로 섞어 continuity를 가장하지 않는다.
 
 ## TS-006.5 discovery
 

@@ -1,0 +1,200 @@
+{
+  "readyMs": 466.4332670000001,
+  "target": {
+    "id": "019f5000-1300-7000-8001-000000000115",
+    "kind": "event",
+    "x": 248,
+    "y": 330
+  },
+  "state": {
+    "inspection": {
+      "revision": 31,
+      "selection": [
+        "019f5000-1300-7000-8000-000000000001"
+      ],
+      "view": {
+        "x": 513.5145537436807,
+        "y": -203420.2481912702,
+        "scaleX": 1,
+        "scaleY": 1
+      },
+      "viewportSize": {
+        "width": 390,
+        "height": 664
+      },
+      "navigationBounds": {
+        "minX": -559.3491294961915,
+        "minY": 203420.2481912702,
+        "maxX": 563.8829485326312,
+        "maxY": 282670.49973647646
+      },
+      "completeness": {
+        "entities": true,
+        "regions": true,
+        "edges": false,
+        "regionSupport": true
+      },
+      "loadState": "ready",
+      "activeIds": {
+        "points": [
+          "019f5000-1300-7000-8001-000000000001",
+          "019f5000-1300-7000-8001-000000000002",
+          "019f5000-1300-7000-8001-000000000019",
+          "019f5000-1300-7000-8001-00000000001a",
+          "019f5000-1300-7000-8001-000000000031",
+          "019f5000-1300-7000-8001-000000000032",
+          "019f5000-1300-7000-8001-000000000033",
+          "019f5000-1300-7000-8001-000000000034",
+          "019f5000-1300-7000-8001-000000000056",
+          "019f5000-1300-7000-8001-000000000061",
+          "019f5000-1300-7000-8001-000000000062",
+          "019f5000-1300-7000-8001-000000000063",
+          "019f5000-1300-7000-8001-000000000064",
+          "019f5000-1300-7000-8001-000000000091",
+          "019f5000-1300-7000-8001-000000000092",
+          "019f5000-1300-7000-8001-000000000093",
+          "019f5000-1300-7000-8001-0000000000b5",
+          "019f5000-1300-7000-8001-0000000000cd",
+          "019f5000-1300-7000-8001-0000000000ce",
+          "019f5000-1300-7000-8001-0000000000e5",
+          "019f5000-1300-7000-8001-0000000000e8",
+          "019f5000-1300-7000-8001-0000000000ef",
+          "019f5000-1300-7000-8001-0000000000fd",
+          "019f5000-1300-7000-8001-0000000000fe",
+          "019f5000-1300-7000-8001-000000000100",
+          "019f5000-1300-7000-8001-000000000115",
+          "019f5000-1300-7000-8001-000000000116",
+          "019f5000-1300-7000-8001-000000000117"
+        ],
+        "regions": [],
+        "edges": []
+      },
+      "geometry": [],
+      "counts": {
+        "sourceEntities": 262,
+        "sourceRegions": 0,
+        "sourceEdges": 0,
+        "projectedPoints": 28,
+        "fadeRegions": 0,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "context": {
+        "policyVersion": "a5-s1-v3",
+        "enabled": true,
+        "candidateCount": 0,
+        "topicId": null
+      },
+      "representation": {
+        "semanticBudget": 9,
+        "semanticPoints": 2,
+        "semanticRegions": 0,
+        "geographicPoints": 28,
+        "geographicRegions": 0,
+        "vertices": 0,
+        "primaryPointTargets": 2,
+        "primaryRegionTargets": 0
+      },
+      "cache": {
+        "entries": 1,
+        "bytes": 86025,
+        "pending": 0,
+        "requests": 1,
+        "hits": 0,
+        "coalesced": 0,
+        "aborted": 0,
+        "maxEntries": 8,
+        "maxBytes": 8388608,
+        "maxPending": 1
+      },
+      "hullCache": {
+        "entries": 0,
+        "vertices": 0,
+        "pathCharacters": 0,
+        "builds": 0,
+        "hits": 0,
+        "evictions": 0
+      },
+      "phaseTiming": null,
+      "work": {
+        "worldGeometryBatches": 5,
+        "pointTransforms": 290,
+        "regionTransforms": 0,
+        "labelQueries": 0,
+        "renders": 29,
+        "commits": 25,
+        "viewportBatches": 2,
+        "compositePaintPasses": 15,
+        "compositeFrameTicks": 0,
+        "compositePruneTicks": 0,
+        "semanticPasses": 19,
+        "staleSemanticRegionPasses": 0,
+        "hullBuilds": 0,
+        "hullCacheHits": 0
+      }
+    },
+    "points": 28,
+    "primaryTargets": 2,
+    "trusted": 2,
+    "url": "http://127.0.0.1:3311/graph?world=019f5000-1300-7000-8000-000000000001&collections=019f5000-1300-7000-8004-000000000001%2C019f5000-1300-7000-8004-000000000002&gsTimeline=019f5000-1300-7000-8005-000000000001&gsCanons=019f5000-1300-7000-8000-000000000001&gsViewport=-513.514554%2C203420.248191%2C390%2C664"
+  },
+  "responses": [
+    {
+      "status": 200,
+      "kind": "viewport",
+      "requestBytes": 806,
+      "cursor": false,
+      "entityCount": 160,
+      "nextCursor": true
+    },
+    {
+      "status": 200,
+      "kind": "viewport",
+      "requestBytes": 21623,
+      "cursor": true,
+      "entityCount": 102,
+      "nextCursor": false
+    },
+    {
+      "status": 200,
+      "kind": "viewport",
+      "requestBytes": 863,
+      "cursor": false,
+      "entityCount": 160,
+      "nextCursor": true
+    },
+    {
+      "status": 200,
+      "kind": "detail",
+      "requestBytes": 140,
+      "cursor": false,
+      "nextCursor": false
+    },
+    {
+      "status": 200,
+      "kind": "viewport",
+      "requestBytes": 21680,
+      "cursor": true,
+      "entityCount": 102,
+      "nextCursor": false
+    },
+    {
+      "status": 200,
+      "kind": "viewport",
+      "requestBytes": 806,
+      "cursor": false,
+      "entityCount": 160,
+      "nextCursor": true
+    },
+    {
+      "status": 200,
+      "kind": "viewport",
+      "requestBytes": 21623,
+      "cursor": true,
+      "entityCount": 102,
+      "nextCursor": false
+    }
+  ],
+  "errors": [],
+  "failures": []
+}

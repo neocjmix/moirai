@@ -1,5 +1,9 @@
 import { expect, test } from "@playwright/test";
 
+// This legacy Publication compatibility fixture still uses the source island.
+// Its Korean reading/search assertions must not race navigator.language.
+test.use({ locale: "ko-KR" });
+
 test.skip(
   !process.env.IP004_BROWSER_SCALE,
   "Explicit synthetic scale workflow only"

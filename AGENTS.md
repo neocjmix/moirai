@@ -18,6 +18,7 @@
 ## Execution model
 
 - The user works only from mobile and does not review code. The deployed production URL is their primary way to see development progress; do not require local commands or code review.
+- The user's actual device is iPhone 17, using Safari and the installed PWA (confirmed 2026-10-02). Preserve both modes when assessing touch, navigation and lifecycle behavior. Current automated iPhone 14 WebKit emulation is a separate test profile, not real iPhone 17 evidence.
 - Actual implementation and verification run in Codex Cloud. Begin each session by reconciling current code, documents, commit/PR/CI and deployed SHA; prior chat claims are handoff context, not evidence.
 - Define each task as a small externally verifiable outcome, preferably a vertical slice.
 - State the relevant document IDs, observable behavior, automated checks and deployment route before deep implementation.

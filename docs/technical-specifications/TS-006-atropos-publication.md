@@ -23,6 +23,8 @@ A1 당시 v4는 spatial bands·bounded payload·on-demand Event detail·LRU cach
 
 입력은 World/revision vector, active Collection IDs, viewport/time range, scale, 선택 Event, bounded neighborhood depth 및 node/edge/bytes/read budget이다. pagination·continuation은 동일 query digest와 Revision에 고정한다. 응답에는 하나의 World/Event node, matched memberships, edges, Composite child completeness, Collection overlays, source revision/algorithm, truncated/continuation/diagnostics를 포함한다.
 
+semantic shell의 일반 query body 예산은 16KiB다. 발행된 viewport continuation을 반환받을 때는 schema-valid cursor에 한해 기존 response 상한 1MiB까지 별도 허용하고, cursor를 제외한 query는 계속 16KiB 이하로 제한한다. 전체 stream은 1MiB+16KiB에서 중단하며 search/detail/Collection·cursor 없는 요청의 예산을 늘리지 않는다. cursor 전송 크기와 실제 page/node/object 작업량 예산을 별개로 유지한다. 이 정정의 실제 배포·검증 상태는 [2026-10-02 실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)를 따른다.
+
 effective active Collections는 사용자 pin/수동 활성과 안정된 contextual activation에서 파생하고 명시적 제외·auto pause를 준수한다. 그 합집합으로 Event를 선택하되 node를 복제하지 않는다. 모두 OFF이면 빈 선택을 보여주며 무제한 World scan으로 해석하지 않는다. World 검색·직접 Event URL·명시적 bounded neighborhood는 membership 없는 Event에도 접근 가능하다. 선택 이웃이 Collection 밖에 있으면 그 이유를 표시한다. temporal/contains 진실은 hidden endpoint나 Collection OFF로 바뀌지 않는다.
 
 ## TS-006.3 semantic data path와 Render 경계

@@ -377,6 +377,24 @@ test("Event detail failure can be retried without presenting stale knowledge", a
   const pendingDetail = new Promise<void>((resolve) => {
     releaseDetail = resolve;
   });
+  let selectionResponses = 0;
+  let releaseSelection!: () => void;
+  const pendingSelection = new Promise<void>((resolve) => {
+    releaseSelection = resolve;
+  });
+  // Hold the selected query's RSC shell until its detail read has begun. The
+  // same serialized workspace must not replace the loader or restart that read.
+  await page.route("**/graph?**", async (route) => {
+    const request = route.request();
+    if (request.headers().rsc !== "1") {
+      await route.continue();
+      return;
+    }
+    const response = await route.fetch();
+    selectionResponses += 1;
+    await pendingSelection;
+    await route.fulfill({ response });
+  });
   await page.route("**/graph/detail", async (route) => {
     detailRequests += 1;
     if (!allowDetail) {
@@ -398,6 +416,22 @@ test("Event detail failure can be retried without presenting stale knowledge", a
   await expect(sheet.getByRole("status")).toBeVisible();
   await expect(sheet).not.toContainText(firstEventId);
   await expect(sheet.getByRole("table")).toHaveCount(0);
+  await expect.poll(() => selectionResponses).toBe(1);
+  const selectionResponse = page.waitForResponse(
+    (response) => response.request().headers().rsc === "1"
+  );
+  releaseSelection();
+  await (await selectionResponse).finished();
+  await page
+    .getByRole("button", { name: /소스 쿼리 열기|Open source query/ })
+    .first()
+    .click();
+  await expect(
+    page.getByTestId("moirai-source-island").locator("[aria-busy]")
+  ).toHaveAttribute("aria-busy", "false");
+  await page
+    .getByRole("button", { name: /소스 쿼리 접기|Collapse source query/ })
+    .click();
   releaseDetail();
   await expect(sheet.getByRole("alert")).toContainText(
     /불러오지 못했습니다|Unable to load event notes/

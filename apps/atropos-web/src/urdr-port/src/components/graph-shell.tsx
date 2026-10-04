@@ -2307,17 +2307,26 @@ export function GraphShell({
   graphWorkCountsRef.current.renders++;
   useLayoutEffect(() => { graphWorkCountsRef.current.commits++; });
   const [graphPhaseProfiling] = useState(() => typeof window !== "undefined" && new URLSearchParams(window.location.search).get("gsProfile") === "1");
+  const graphRenderStartedAt = graphPhaseProfiling ? performance.now() : 0;
   const graphPhaseTimingsRef = useRef({});
+  const recordGraphPhase = useCallback((phase, elapsed) => {
+    const timing = graphPhaseTimingsRef.current[phase] ?? {calls: 0, totalMs: 0};
+    timing.calls++;
+    timing.totalMs += elapsed;
+    graphPhaseTimingsRef.current[phase] = timing;
+  }, []);
   const measureGraphPhase = useCallback((phase, run) => {
     if (!graphPhaseProfiling) return run();
     const started = performance.now();
     try { return run(); } finally {
-      const timing = graphPhaseTimingsRef.current[phase] ?? {calls: 0, totalMs: 0};
-      timing.calls++;
-      timing.totalMs += performance.now() - started;
-      graphPhaseTimingsRef.current[phase] = timing;
+      recordGraphPhase(phase, performance.now() - started);
     }
-  }, [graphPhaseProfiling]);
+  }, [graphPhaseProfiling, recordGraphPhase]);
+  useLayoutEffect(() => {
+    // Includes preparation, JSX creation, React reconciliation and DOM commit;
+    // scheduler yields can also contribute. Only committed renders are counted.
+    if (graphPhaseProfiling) recordGraphPhase("shellRenderThroughCommit", performance.now() - graphRenderStartedAt);
+  });
   const compositePanGeometryCache = useMemo(() => createCompositePanGeometryCache(), [loader]);
   const graphInspectionRef = useRef(null);
   useEffect(() => {
@@ -3486,16 +3495,17 @@ export function GraphShell({
   }, [eventDetailRetryVersion, hasHydratedRestorableState, initialEventDetail, loader, locale, renderedEventSelection?.eventId, usesLoadingWorkspace]);
 
   useEffect(() => {
-    setVisibleCompositeColorAssignments((current) =>
-      reconcileCompositeColorAssignments(
-        current,
-        chartCompositeRegions.activeColorRegionIds,
-        // Geometry/color identity survives transparent SVG pruning; a hidden
-        // current region must not steal a new color when it becomes visible.
-        [...new Set([...chartCompositeRegions.regions.map((region) => region.id), ...visibleCompositeRegions.map((region) => region.id)])],
-      ),
+    const next = reconcileCompositeColorAssignments(
+      visibleCompositeColorAssignments,
+      chartCompositeRegions.activeColorRegionIds,
+      // Geometry/color identity survives transparent SVG pruning; a hidden
+      // current region must not steal a new color when it becomes visible.
+      [...new Set([...chartCompositeRegions.regions.map((region) => region.id), ...visibleCompositeRegions.map((region) => region.id)])],
     );
-  }, [chartCompositeRegions.activeColorRegionIds, chartCompositeRegions.regions, visibleCompositeRegions]);
+    // A no-op dispatch can still enter this large component before React bails
+    // out. Pan changes geometry each frame, but usually keeps the same colors.
+    if (next !== visibleCompositeColorAssignments) setVisibleCompositeColorAssignments(next);
+  }, [chartCompositeRegions.activeColorRegionIds, chartCompositeRegions.regions, visibleCompositeRegions, visibleCompositeColorAssignments]);
 
   const visibleRelationSegments = useMemo<RelationSegment[]>(
     () => {
@@ -4015,6 +4025,10 @@ export function GraphShell({
     phaseTiming: graphPhaseProfiling ? graphPhaseTimingsRef.current : null,
     work: {...graphWorkCountsRef.current, hullBuilds: compositePanGeometryCache.inspect().builds, hullCacheHits: compositePanGeometryCache.inspect().hits},
   });
+
+  // Includes the detailed projection/admission phases above, for every render
+  // attempt; unlike shellRenderThroughCommit this excludes JSX and DOM work.
+  if (graphPhaseProfiling) recordGraphPhase("shellPreparation", performance.now() - graphRenderStartedAt);
 
   return (
     <>

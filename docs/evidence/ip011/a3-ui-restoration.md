@@ -1,5 +1,7 @@
 # A3 Atropos UI restoration
 
+> Historical 2026-09-25 evidence. The 16KiB universal request-body observation below describes that checkpoint. The 2026-10-02 [dense viewport continuation correction](../ip012/mobile-continuity-2026-10-02.md) separates the unchanged 16KiB query budget from a bounded server-issued cursor; its implementation, verification and deployment status are recorded there. The original A3 measurements and claims remain unchanged.
+
 ## User correction and baseline
 
 2026-09-25: the user rejected A3's replacement interface and directed a complete UI rollback followed by surgical data adaptation. A4 is paused.

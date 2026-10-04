@@ -9,7 +9,10 @@ type Inspection = {
   counts: Record<string, number>;
   [key: string]: unknown;
 };
-type ProfileWindow = Window & { __ip012Contact?: number };
+type ProfileWindow = Window & {
+  __ip012Contact?: number;
+  __ip012Bounds?: { calls: number; totalMs: number; maxMs: number };
+};
 
 const baseURL =
   process.env.PUBLIC_INTEGRATION_URL ??
@@ -25,6 +28,10 @@ const readyTimeout = Number(process.env.IP012_READY_TIMEOUT_MS ?? 30_000);
 const disableBlend = process.env.IP012_DISABLE_BLEND === "1";
 const staticControl = process.env.IP012_STATIC_CONTROL === "1";
 const profileCpu = process.env.IP012_TIMING === "1";
+const measureBounds = process.env.IP012_MEASURE_BOUNDS === "1";
+const svgControl = process.env.IP012_SVG_CONTROL ?? "visible";
+if (!["visible", "hidden", "none"].includes(svgControl))
+  throw Error("invalid_svg_control");
 const deviceScaleFactor = process.env.IP012_DEVICE_SCALE_FACTOR
   ? Number(process.env.IP012_DEVICE_SCALE_FACTOR)
   : devices["iPhone 14"].deviceScaleFactor;
@@ -41,6 +48,22 @@ const context = await browser.newContext({
 await context.addInitScript(
   "globalThis.__name = (target, value) => Object.defineProperty(target, 'name', { value, configurable: true });"
 );
+if (measureBounds)
+  await context.addInitScript(`(() => {
+  const original = Element.prototype.getBoundingClientRect;
+  window.__ip012Bounds = {calls: 0, totalMs: 0, maxMs: 0};
+  Element.prototype.getBoundingClientRect = function() {
+    if (this.getAttribute('data-testid') !== 'graph-stage') return original.call(this);
+    const start = performance.now();
+    try { return original.call(this); }
+    finally {
+      const duration = performance.now() - start;
+      const metrics = window.__ip012Bounds;
+      metrics.calls++; metrics.totalMs += duration;
+      metrics.maxMs = Math.max(metrics.maxMs, duration);
+    }
+  };
+})();`);
 const page = await context.newPage();
 const errors: string[] = [];
 const network: {
@@ -112,7 +135,21 @@ page.on("response", (r) => {
 if (delay)
   await page.route("**/graph/v5/render", async (route) => {
     await new Promise((resolve) => setTimeout(resolve, delay));
-    await route.continue();
+    if (route.request().failure()) {
+      await route.fallback();
+      return;
+    }
+    try {
+      await route.continue();
+    } catch (error) {
+      if (
+        !route.request().failure() ||
+        !(error instanceof Error) ||
+        !error.message.includes("Route is already handled")
+      )
+        throw error;
+      await route.fallback();
+    }
   });
 async function inspect(page: Page) {
   return page.evaluate(() => {
@@ -123,7 +160,12 @@ async function inspect(page: Page) {
     addEventListener("moirai:graph-inspection", listen, { once: true });
     dispatchEvent(new Event("moirai:inspect-graph"));
     removeEventListener("moirai:graph-inspection", listen);
-    return value as Inspection | null;
+    return value
+      ? {
+          ...(value as Inspection),
+          boundsTiming: (window as ProfileWindow).__ip012Bounds ?? null
+        }
+      : null;
   });
 }
 async function settle() {
@@ -234,7 +276,9 @@ const result: Record<string, unknown> = {
   diagnostic: {
     disable_blend: disableBlend,
     static_control: staticControl,
-    profile_cpu: profileCpu
+    profile_cpu: profileCpu,
+    measure_bounds: measureBounds,
+    svg_control: svgControl
   },
   errors,
   network,
@@ -250,6 +294,10 @@ try {
     }
   );
   await page.getByTestId("graph-stage").waitFor();
+  if (svgControl !== "visible")
+    await page.addStyleTag({
+      content: `svg[aria-label="Projected chart surface"] { ${svgControl === "none" ? "display: none" : "visibility: hidden"} !important; }`
+    });
   if (disableBlend)
     await page.addStyleTag({
       content:
@@ -266,9 +314,19 @@ try {
       requests: network.length
     })
   );
-  const checkpoints = [await panSample("start")];
+  const checkpoints: Awaited<ReturnType<typeof panSample>>[] = [];
+  result.checkpoints = checkpoints;
+  checkpoints.push(await panSample("start"));
   const home = [0, 209900, 1600, 36000];
-  const trips = [];
+  const trips: {
+    i: number;
+    ms: number;
+    requests: number;
+    away: Record<string, number>;
+    back: Record<string, number>;
+    cache: Record<string, number>;
+  }[] = [];
+  result.trips = trips;
   for (let i = 0; i < visits; i++) {
     phase = `visit-${i}`;
     const before = network.length;
@@ -293,6 +351,18 @@ try {
   result.checkpoints = checkpoints;
   await page.screenshot({ path: output.replace(/\.json$/, ".png") });
   result.final = await settle();
+  // Probe only after all frame samples; creating a context is not part of them.
+  result.graphics = await page.evaluate(() => {
+    const canvas = document.createElement("canvas");
+    const gl = canvas.getContext("webgl2") ?? canvas.getContext("webgl");
+    if (!gl) return { webgl: false };
+    const info = gl.getExtension("WEBGL_debug_renderer_info");
+    return {
+      webgl: true,
+      vendor: info ? gl.getParameter(info.UNMASKED_VENDOR_WEBGL) : null,
+      renderer: info ? gl.getParameter(info.UNMASKED_RENDERER_WEBGL) : null
+    };
+  });
 } catch (e) {
   errors.push(String(e));
   result.lastInspection = lastInspection;
@@ -313,3 +383,5 @@ try {
     })
   );
 }
+
+if (errors.length) process.exitCode = 1;

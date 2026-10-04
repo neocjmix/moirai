@@ -50,6 +50,55 @@ type Tween = { from: number; target: number; value: number; started: number };
 const MAX_RASTER_SCALE = 1.5;
 const MAX_PATHS = 128;
 const MAX_PATH_CHARACTERS = 1_000_000;
+const CAMERA_BUFFER = 96;
+const MAX_BITMAP_PIXELS = 4_000_000;
+
+// Screen coordinates move during a pan, but authored geometry and density do
+// not. Compare the paint material in World coordinates, independently of the
+// current camera. Tiny alpha changes may share a raster until the next step.
+function materialKey(scene: Props) {
+  const rounded = (value: number) => Math.round(value * 10_000) / 10_000;
+  const alpha = (value: number) => Math.round(value * 64) / 64;
+  const world = (point: { x: number; y: number }, view: View, size: Size) => [
+    rounded((point.x - size.width / 2 - view.x) / view.scaleX),
+    rounded((point.y - size.height / 2 - view.y) / view.scaleY)
+  ];
+  return JSON.stringify([
+    scene.fillOpacity,
+    scene.strokeOpacity,
+    scene.points.map((point) => [
+      point.id,
+      world(point, point.paintView, point.paintViewport),
+      point.pointDisplay,
+      alpha(point.opacity)
+    ]),
+    scene.regions.map((region) => {
+      const view = region.paintView || scene.view;
+      const size = region.paintViewport || scene.size;
+      const offset = region.pathTransform?.startsWith("translate(")
+        ? region.pathTransform
+            .slice(10, -1)
+            .split(/[,\s]+/)
+            .map(Number)
+        : [0, 0];
+      const point = region.representation?.point ?? region.compactPoint;
+      return [
+        region.id,
+        region.path,
+        world({ x: offset[0] || 0, y: offset[1] || 0 }, view, size),
+        region.pathTransform?.startsWith("matrix(")
+          ? region.pathTransform
+          : null,
+        point ? world(point, view, size) : null,
+        region.pointDisplay,
+        alpha(region.renderedOpacity * region.surfaceOpacity),
+        region.representation?.hullOpacity,
+        region.representation?.pointOpacity,
+        scene.colors.get(region.id)
+      ];
+    })
+  ]);
+}
 
 export function GeographicCanvas(props: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -59,6 +108,9 @@ export function GeographicCanvas(props: Props) {
   const frameRef = useRef<number | null>(null);
   const paintRef = useRef<(now: number) => void>(() => {});
   const paletteRef = useRef<{ fill: string; stroke: string } | null>(null);
+  const captureRef = useRef<{ view: View; size: Size; key: string } | null>(
+    null
+  );
 
   useLayoutEffect(() => {
     const canvas = canvasRef.current;
@@ -68,9 +120,35 @@ export function GeographicCanvas(props: Props) {
       return;
     }
     sceneRef.current = props;
-    const density = Math.min(window.devicePixelRatio || 1, MAX_RASTER_SCALE);
-    const width = Math.max(1, Math.ceil(props.size.width * density));
-    const height = Math.max(1, Math.ceil(props.size.height * density));
+    const cssWidth = props.size.width + CAMERA_BUFFER * 2;
+    const cssHeight = props.size.height + CAMERA_BUFFER * 2;
+    const density = Math.min(
+      window.devicePixelRatio || 1,
+      MAX_RASTER_SCALE,
+      Math.sqrt(MAX_BITMAP_PIXELS / Math.max(1, cssWidth * cssHeight))
+    );
+    const width = Math.max(1, Math.floor(cssWidth * density));
+    const height = Math.max(1, Math.floor(cssHeight * density));
+    const key = materialKey(props);
+    const capture = captureRef.current;
+    // Reuse only at the same scale: point radius and stroke stay screen-sized.
+    if (
+      capture &&
+      capture.key === key &&
+      capture.size.width === props.size.width &&
+      capture.size.height === props.size.height &&
+      capture.view.scaleX === props.view.scaleX &&
+      capture.view.scaleY === props.view.scaleY &&
+      Math.abs(props.view.x - capture.view.x) < CAMERA_BUFFER / 2 &&
+      Math.abs(props.view.y - capture.view.y) < CAMERA_BUFFER / 2 &&
+      frameRef.current === null
+    ) {
+      canvas.style.transform = `translate(${props.view.x - capture.view.x - CAMERA_BUFFER}px, ${props.view.y - capture.view.y - CAMERA_BUFFER}px)`;
+      canvas.dataset.cameraReuses = String(
+        Number(canvas.dataset.cameraReuses || 0) + 1
+      );
+      return;
+    }
     if (canvas.width !== width || canvas.height !== height) {
       canvas.width = width;
       canvas.height = height;
@@ -208,7 +286,8 @@ export function GeographicCanvas(props: Props) {
         context.globalCompositeOperation = "source-over";
         context.globalAlpha = 0.15;
         context.fillStyle = "white";
-        context.fillRect(0, 0, scene.size.width, scene.size.height);
+        context.fillRect(0, 0, canvas.width / density, canvas.height / density);
+        context.translate(CAMERA_BUFFER, CAMERA_BUFFER);
         for (const region of scene.regions) {
           const color = scene.colors.get(region.id);
           const hullOpacity =
@@ -299,6 +378,14 @@ export function GeographicCanvas(props: Props) {
         canvas.dataset.pointCount = String(scene.points.length);
         canvas.dataset.regionCount = String(scene.regions.length);
         canvas.dataset.rasterScale = String(density);
+        canvas.style.width = `${cssWidth}px`;
+        canvas.style.height = `${cssHeight}px`;
+        canvas.style.transform = `translate(${-CAMERA_BUFFER}px, ${-CAMERA_BUFFER}px)`;
+        captureRef.current = {
+          view: scene.view,
+          size: scene.size,
+          key: materialKey(scene)
+        };
         scene.onDraw?.(performance.now() - started);
         if (animating)
           frameRef.current = requestAnimationFrame((t) => {
@@ -331,7 +418,8 @@ export function GeographicCanvas(props: Props) {
         width: "100%",
         height: "100%",
         zIndex: 1,
-        pointerEvents: "none"
+        pointerEvents: "none",
+        willChange: "transform"
       }}
     />
   );

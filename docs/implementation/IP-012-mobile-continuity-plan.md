@@ -81,7 +81,8 @@
 - [x] shared build·28개 기능 시험 성공을 PR #310으로 배포하고 exact-SHA smoke와 전체 CI 성공을 확인했다. 유효 cursor만 별도 허용하며 query·traversal 상한을 무제한 확대하지 않는다.
 - [x] actual compiler/4 지연·반전·retained scene과 synthetic persisted 복원5개가 통과했다. 실제 iOS suspension/process eviction 검증은 별도로 열려 있다.
 - [x] hull/text 분리 control과 Canvas/SVG 비교를 근거로 배경 graphics painter를 구현했다. Canvas ink·identity·rollback을 포함한6개 및 전체 모바일37개가 통과했다.
-- [ ] Canvas painter를 운영에 배포한 뒤 원래 DPR3/602frame/30회 profile과 지연 시나리오를 확인한다. 배경 raster 근사와 전체 device DPR 변경을 혼동하지 않는다.
+- [x] Canvas painter를 PR #311로 배포해 원래 DPR3/602frame/30회 profile을 측정했다. p95=62/59/60ms, max=122/125/75ms로 개선하지 못했다. 배경 raster 근사와 전체 device DPR 변경을 혼동하지 않는다.
+- [ ] buffered background raster의 camera-only pan 재사용을 배포·측정하고 branch steady-pan CI와 sustained1000 실패를 진단·복구한다. 기능 시험 성공을 frame 통과로 바꾸지 않는다.
 - [ ] 작은 checkpoint를 배포한 뒤 계측을 끈 같은 기본 profile의 short 및30회 방문·복귀,250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
 
 ## 중지·인계 기준

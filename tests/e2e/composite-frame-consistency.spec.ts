@@ -83,6 +83,15 @@ test("steady pan uses current Composite label coordinates without a second paint
   // Allow independent viewport response/label lifecycle commits. A copied
   // Composite state on every camera frame would require at least100 commits.
   expect(delta("commits")).toBeLessThanOrEqual(78);
+  // A camera-only pan must reuse actual background pixels while text and hit
+  // geometry continue updating. Native-path caching alone does not meet this.
+  expect(
+    await page
+      .getByTestId("geographic-canvas")
+      .evaluate((node) =>
+        Number((node as HTMLCanvasElement).dataset.cameraReuses || 0)
+      )
+  ).toBeGreaterThan(0);
   expect(
     await hull.evaluate((node, previous) => node === previous, original)
   ).toBe(true);

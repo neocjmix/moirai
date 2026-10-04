@@ -82,6 +82,42 @@ it("reuses equal fetched support but rebuilds when geometry, scale or styling ch
   }
 });
 
+it("reuses label contours while preserving current clipping, density and edge decisions", () => {
+  for (const polygon of [points, [...points].reverse(), [{x:-2000,y:-90},{x:2000,y:-89},{x:2000,y:90},{x:-2000,y:89}],
+    [{x:-120,y:-100},{x:0,y:-30},{x:120,y:-100},{x:100,y:120},{x:-100,y:120}]]) {
+    for (const labelWidth of [72,196,360]) {
+      const cache = createCompositePanGeometryCache();
+      let cachedPrevious;
+      let baselinePrevious;
+      for (const scale of [{scaleX:1,scaleY:1},{scaleX:.7,scaleY:1.3}]) {
+        let prepared;
+        for (const offset of [0,.0003,.0005,-.0005,4.5,-25.1,100.121,280.9,-120.135,0]) {
+          const camera = {...view,...scale,x:offset,y:offset/3};
+          const shape = cache.project({...request,points:polygon,view:camera,labelHeight:14,labelGap:6});
+          if (prepared) expect(shape.labelPathFrame!.prepared).toBe(prepared);
+          prepared = shape.labelPathFrame!.prepared;
+          const nearby = Array.from({length:30},(_,i) => project({x:(i*37)%350-175,y:(i*61)%600-300},camera));
+          const baseline = resolveCompositeEdgeLabelPlacement(shape.projectedPoints,labelWidth,14,viewport,10,6,nearby,baselinePrevious);
+          const actual = resolveCompositeEdgeLabelPlacement(shape.projectedPoints,labelWidth,14,viewport,10,6,nearby,cachedPrevious,shape.labelPathFrame);
+          expect(actual.edgeIndex).toBe(baseline.edgeIndex);
+          expect(actual.side).toBe(baseline.side);
+          expect(actual.labelX).toBeCloseTo(baseline.labelX,6);
+          expect(actual.labelY).toBeCloseTo(baseline.labelY,6);
+          expect(actual.labelAngle).toBeCloseTo(baseline.labelAngle,6);
+          expect(actual.textPathStartOffset).toBe(baseline.textPathStartOffset);
+          expect(actual.pathPoints).toHaveLength(baseline.pathPoints.length);
+          for (let i=0;i<actual.pathPoints.length;i++) {
+            expect(actual.pathPoints[i]!.x).toBeCloseTo(baseline.pathPoints[i]!.x,6);
+            expect(actual.pathPoints[i]!.y).toBeCloseTo(baseline.pathPoints[i]!.y,6);
+          }
+          baselinePrevious=baseline;cachedPrevious=actual;
+        }
+      }
+      expect(cache.inspect()).toMatchObject({labelPathBuilds:2,labelPathHits:18});
+    }
+  }
+});
+
 it("bounds visited regions and drops oversized geometry from the cache", () => {
   const cache = createCompositePanGeometryCache({maxEntries: 2});
   for (const id of ["a", "b", "a", "c", "a"]) cache.project({...request, id});

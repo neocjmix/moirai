@@ -144,6 +144,57 @@ test("WebGL context loss restores SVG ink without replacing semantic identity", 
   expect(await hull.evaluate((node, old) => node === old, original)).toBe(true);
 });
 
+test("viewport resize does not stretch a previously painted frame before camera commit", async ({
+  page
+}) => {
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}`
+  );
+  const canvas = page.getByTestId("geographic-webgl");
+  await expect(canvas).toBeVisible();
+  await expect
+    .poll(() => canvas.getAttribute("data-paint-revision"))
+    .not.toBeNull();
+  const before = await canvas.evaluate((node) => {
+    const canvas = node as HTMLCanvasElement;
+    const parent = canvas.parentElement!;
+    const svg = parent.querySelector(
+      'svg[aria-label="Projected chart surface"]'
+    ) as SVGSVGElement;
+    const width = canvas.getBoundingClientRect().width;
+    const height = canvas.getBoundingClientRect().height;
+    parent.style.width = `${parent.getBoundingClientRect().width - 40}px`;
+    parent.style.height = `${parent.getBoundingClientRect().height - 80}px`;
+    // Force layout before ResizeObserver/React can publish the next camera.
+    // The last complete frame must retain its own dimensions in this gap.
+    return {
+      width,
+      height,
+      canvasWidth: canvas.getBoundingClientRect().width,
+      canvasHeight: canvas.getBoundingClientRect().height,
+      svgWidth: svg.getBoundingClientRect().width,
+      svgHeight: svg.getBoundingClientRect().height
+    };
+  });
+  expect(before.canvasWidth).toBe(before.width);
+  expect(before.canvasHeight).toBe(before.height);
+  expect(before.svgWidth).toBe(before.width);
+  expect(before.svgHeight).toBe(before.height);
+  await expect
+    .poll(() =>
+      canvas.evaluate((node) => {
+        const canvas = node as HTMLCanvasElement;
+        const bounds = canvas.getBoundingClientRect(),
+          parent = canvas.parentElement!.getBoundingClientRect();
+        return (
+          Math.abs(bounds.width - parent.width) +
+          Math.abs(bounds.height - parent.height)
+        );
+      })
+    )
+    .toBeLessThan(1);
+});
+
 test("unavailable WebGL falls back to the native painter", async ({ page }) => {
   await page.addInitScript(() => {
     const original = HTMLCanvasElement.prototype.getContext;

@@ -180,6 +180,8 @@ The whole-scene gesture-cache experiment was **rejected after production verific
 
 The WebGL2 painter tessellates the existing authored spline, caches native mesh buffers per Composite ID/path, and applies camera transforms in shaders. It was first deployed opt-in, then selected for the default path after existing UI regression checks and a same-SHA software comparison (55/51ms versus Canvas62/60ms); this selection does not close the33.4ms frame gate. `?gsGraphics=canvas` and `?gsGraphics=svg` retain explicit diagnostic rollback. Curves use a bounded0.35 CSS-pixel flattening approximation; points use instanced circle shaders with screen-sized radii/strokes, independent of XY camera scale. Per-ID reversal tweens retain the180/220ms timings. Native SVG owns text, relations and interaction, and unsupported/context-lost/invalid geometry falls back to the same SVG scene. Background density is capped at1.5, backing pixels at4 million and live mesh bytes at8 million/128 hulls. This initial painter uses premultiplied source-over for overlapping background ink, a minor approximation to the earlier darken composition; it does not change authored colors or semantic visibility. Acceptance still requires production frame and visual evidence.
 
+Canvas CSS extent, backing dimensions and the native SVG viewBox/extent must use the same committed viewport. Percentage sizing must not stretch an old painted frame during the interval before ResizeObserver publishes a new camera, including browser chrome and orientation changes. Retain the last frame's dimensions until the next matching geometry is committed.
+
 ## 10. Collection selection
 
 Collection selection is an Atropos visibility/filter operation over already fetched representation metadata.

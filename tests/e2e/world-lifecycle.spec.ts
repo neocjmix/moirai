@@ -32,6 +32,12 @@ for (const size of [
     await expect(
       page.getByRole("link", { name: "Synthetic reference" })
     ).toHaveAttribute("href", "https://example.test/source");
+    await expect(page.getByLabel("Synthetic uncertainty")).toContainText(
+      "The exact time is deliberately unspecified."
+    );
+    await expect(
+      page.getByRole("link", { name: "Note reference" })
+    ).toHaveAttribute("href", "https://example.test/note");
     await page.reload();
     await expect(page.getByLabel("선택한 사건")).toContainText(
       "Synthetic narrative remains readable"

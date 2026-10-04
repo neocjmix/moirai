@@ -55,7 +55,18 @@ export async function prepareWorldLifecycleFixture(root: string) {
                     url: "https://example.test/source"
                   }
                 ],
-                notes: []
+                notes: [
+                  {
+                    title: "Synthetic uncertainty",
+                    body: "The exact time is deliberately unspecified.",
+                    public_references: [
+                      {
+                        label: "Note reference",
+                        url: "https://example.test/note"
+                      }
+                    ]
+                  }
+                ]
               }
             ]
           : []

@@ -78,6 +78,17 @@ export default async function EventsPage({
               <a href={ref.url}>{ref.label}</a>
             </p>
           ))}
+          {selected.narrative.notes.map((note, index) => (
+            <section key={index} aria-label={note.title ?? "사건 주석"}>
+              {note.title && <h3>{note.title}</h3>}
+              <p style={{ whiteSpace: "pre-wrap" }}>{note.body}</p>
+              {note.public_references.map((ref, i) => (
+                <p key={i}>
+                  <a href={ref.url}>{ref.label}</a>
+                </p>
+              ))}
+            </section>
+          ))}
           <a href={`/graph/v5?world=${worldId}&event=${selected.event.id}`}>
             그래프에서 보기
           </a>

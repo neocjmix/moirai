@@ -77,3 +77,15 @@ test("explicit World URLs distinguish withdrawal, pending and malformed IDs", as
     page.getByRole("heading", { name: "404", exact: true })
   ).toBeVisible();
 });
+
+test("duplicate explicit World parameters never select the default World", async ({
+  page
+}) => {
+  for (const path of ["/graph", "/graph/settings", "/graph/v5"]) {
+    await page.goto(`${path}?world=${id(1)}&world=${id(1)}`);
+    await expect(
+      page.getByRole("heading", { name: "404", exact: true })
+    ).toBeVisible();
+    await expect(page.getByText("실제 세계사", { exact: true })).toHaveCount(0);
+  }
+});

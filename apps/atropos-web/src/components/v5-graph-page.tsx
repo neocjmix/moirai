@@ -25,7 +25,8 @@ export default async function V5GraphPage({
     typeof params.readPage === "string" ? Number(params.readPage) : 0;
   if (!Number.isSafeInteger(readPage) || readPage < 0 || readPage > 1000000)
     notFound();
-  if (typeof worldId !== "string") redirect("/worlds");
+  if (worldId === undefined) redirect("/worlds");
+  if (typeof worldId !== "string") notFound();
   try {
     assertPublicId(worldId);
   } catch {

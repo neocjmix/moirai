@@ -13,7 +13,7 @@
 [IP-013 실제 역사 기반 병행 계획](IP-013-real-history-development-plan.md)이 기존 A5 전체 완료→A6 순서를 대체한다. 계획 문서 #322 병합 후 **현재 W/C 구현·검증 중**이다. 사용자는 PR-first가 충돌 확인을 뜻한다고 명확히 했으며 검토·필수 CI 통과 후 merge를 승인했다. 데이터 입력은 W/C 운영 수용 후 dot의 제한 pilot부터 시작한다.
 
 - **IP-011 A1–A3 완료, A4 종료·이관:** 전체 성능 통과 아님. A4-B01–03과 #321 종료 결정을 유지한다.
-- **W→C 선행, PR #323 검증 중:** create/withdraw/restore, 인증된 전 World 접근의 opt-in, World/Event 선택과 빈 상태를 구현했다. [로컬 근거](../evidence/world-lifecycle/implementation.md): 통합49개, WebKit3개 통과. 기존 main에서도 재현되는 Mac golden 실패1건은 별도 기록했다. PR CI·배포·운영 권한 활성화·실제 Clotho 종단간 확인 전까지 W/C 운영 수용은 미완료다.
+- **W→C 선행, PR #323 검증 중:** create/withdraw/restore, 인증된 전 World 접근의 opt-in, World/Event 선택과 빈 상태를 구현했다. [로컬 근거](../evidence/world-lifecycle/implementation.md): 통합49개, WebKit4개 통과. 기존 main에서도 재현되는 Mac golden 실패1건은 별도 기록했다. PR CI·배포·운영 권한 활성화·실제 Clotho 종단간 확인 전까지 W/C 운영 수용은 미완료다.
 - **W/C 수용 후 D1∥R:** dot는 깨끗한 production history World에 제한 조선/임진왜란·인접국 pilot을 축적하고 Codex는 그 실제 사례로 Composite 줌 표현·전환·눈으로 조정 가능한 threshold를 개발·검증한다. pilot 사용자 검토 전 자율 광역 확장·인물별 구성은 보류한다.
 - **다음 L, 이후 A:** Composite 수용 후 production main UX와 격리된 X 배치 실험실, 이후 Collection 자동 ON/OFF·discovery. 수동 읽기·선택·camera 보존은 선행 검증에 필요한 범위에서 유지한다.
 - **A5 부분 구현/나머지 재배치:** HUD·표현 분리·선택 제한 제거는 보존. 전체 S0–S7 자동화 완료는 역사 입력 gate가 아니다. [A5 disposition](IP-011-A5-collection-discovery-plan.md)을 따른다.

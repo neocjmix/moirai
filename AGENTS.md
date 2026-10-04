@@ -123,9 +123,9 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 - Do not implement Tenant, ACL, private Publication, E2EE or raw telemetry ingestion now.
 - Choose reversible boundaries, not placeholder systems.
 
-## Active performance and continuity work
+## Performance and continuity closeout
 
-- The 2026-10-02 user instruction activates autonomous diagnosis and improvement under `docs/implementation/IP-012-mobile-continuity-plan.md`, alongside active A5 and IP-012. Continue through measurement, implementation, browser verification, documentation, commit and frequent deployment until the declared gates pass or a demonstrated limit or genuinely new human decision blocks progress.
+- On 2026-10-04 the user accepted the current production experience on iPhone 17 and explicitly ended performance tuning. `docs/implementation/IP-012-mobile-continuity-closeout.md` supersedes the earlier instruction to keep optimizing until all gates pass. Preserve the stabilized baseline and evidence; do not automatically resume tuning solely because the original frame gate remains unmet. New user direction or a concrete regression can reactivate scoped work. A5 and publication backlog are separate; this closeout does not complete or automatically start those features.
 - Aim for ordinary mobile vector-map exploration: smooth pan/zoom and hull → ordinary point → small point → hidden transitions, without fetch-induced blanks or identity resets. Google Maps is a qualitative experience reference, not a measured parity claim.
 - Preserve product/domain/UI invariants, not incidental architecture. Publication boundaries, caches, APIs, scheduling and rendering internals may change based on evidence; bounded XY/scale prefetch and frontend interpolation/cache are options, not mandatory solutions.
 - Separate server latency, request count/waterfall, bytes, decode, geometry/layout/labels, renderer/frame and memory costs; compare cold and warm wide-view many-Collection scenarios. Keep A4's p95 ≤33.4ms/max ≤100ms gates and report real-device/heap limits honestly.

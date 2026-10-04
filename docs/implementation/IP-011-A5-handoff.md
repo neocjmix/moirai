@@ -1,6 +1,6 @@
 # IP-011 A5 implementation handoff
 
-> 역사 인계 문서. A5는 이미 활성화됐고 기본 GraphShell은 IP-012 Render 데이터를 사용한다. 2026-10-02 이후 새 세션의 실행은 [CURRENT](CURRENT.md), [IS-001](IS-001-agent-mobile-strategy.md), [모바일 성능·연속성 계획](IP-012-mobile-continuity-plan.md)을 따른다. 아래 “다음 세션”·planning-only·미병합 설명은 당시 기록이며 재승인 요구가 아니다.
+> 역사 인계 문서. A5는 이미 활성화됐고 기본 GraphShell은 IP-012 Render 데이터를 사용한다. 2026-10-02 이후 새 세션의 실행은 [CURRENT](CURRENT.md), [IS-001](IS-001-agent-mobile-strategy.md), [모바일 성능 종료 결정](IP-012-mobile-continuity-closeout.md)을 따른다. 아래 “다음 세션”·planning-only·미병합 설명은 당시 기록이며 재승인 요구가 아니다.
 
 2026-09-28 KST. 준비 세션은 문서만 작성했다. 구현·운영 데이터 변경·merge·deployment는 실행하지 않았다. 다음 세션에서 사용자가 아래 시작 지시를 전달하면 planning-only 제한을 대체하여 A5 구현을 활성화한다. 활성화 전 CURRENT/AGENTS의 계획 전용 상태를 명시적으로 갱신한다.
 

@@ -210,32 +210,6 @@ async function inspect(page: Page) {
                   regions: Number(canvas.dataset.regionCount)
                 }
               : null;
-          })(),
-          graphicsGesture: (() => {
-            const svg = document.querySelector<SVGSVGElement>(
-              'svg[aria-label="Projected chart surface"]'
-            );
-            const canvases = [
-              ...document.querySelectorAll<HTMLCanvasElement>(
-                '[data-testid="gesture-graph-cache"]'
-              )
-            ];
-            return {
-              state: svg?.dataset.gestureCache ?? null,
-              updates: Number(svg?.dataset.gestureCacheUpdates || 0),
-              preparationCalls: Number(
-                svg?.dataset.gesturePreparationCalls || 0
-              ),
-              preparationMs: Number(svg?.dataset.gesturePreparationMs || 0),
-              backingBytes: canvases.reduce(
-                (sum, canvas) => sum + canvas.width * canvas.height * 4,
-                0
-              ),
-              captures: canvases.reduce(
-                (sum, canvas) => sum + Number(canvas.dataset.captures || 0),
-                0
-              )
-            };
           })()
         }
       : null;

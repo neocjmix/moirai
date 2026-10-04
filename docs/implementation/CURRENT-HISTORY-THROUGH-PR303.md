@@ -1,6 +1,6 @@
 # 구현 checkpoint 이력 — PR #303까지
 
-> 2026-10-02 CURRENT 정리 시 보존한 역사 기록이다. 아래의 현재·다음·미배포·미완료 표현은 각 checkpoint 당시 상태이며 현재 실행 지시나 배포 판정이 아니다. 최신 상태는 [CURRENT](CURRENT.md), 활성 성능 작업은 [IP-012 모바일 연속성 계획](IP-012-mobile-continuity-plan.md)을 따른다. 과거 실패와 좁은 범위의 성공을 현재 전체 통과로 바꾸지 않는다.
+> 2026-10-02 CURRENT 정리 시 보존한 역사 기록이다. 아래의 현재·다음·미배포·미완료 표현은 각 checkpoint 당시 상태이며 현재 실행 지시나 배포 판정이 아니다. 최신 상태는 [CURRENT](CURRENT.md), 모바일 성능 작업의 최신 disposition은 [종료 결정](IP-012-mobile-continuity-closeout.md)을 따른다. 과거 실패와 좁은 범위의 성공을 현재 전체 통과로 바꾸지 않는다.
 
 2026-10-02 검증 기준선: [PR #302](https://github.com/neocjmix/moirai/pull/302), runtime `19de027c588a2277e9cc38b6cda3ea63d69958f7`를 Railway production web/API/worker에 배포했고 모두 SUCCESS다. 공개 health는 같은 SHA를 확인했다. Collection loader 교체 중 label 이력을 보존하는 수정은 새 iPhone WebKit 충돌 fixture와 운영 모바일 4개 시험을 통과했다. unit 527 pass/2 skip, lint·format·root/web typecheck 및 PR CI 핵심 quality·secret 검사가 통과했다. [A5 public mobile](https://github.com/neocjmix/moirai/actions/runs/36960707808)와 [정확한 SHA의 post-deploy smoke](https://github.com/neocjmix/moirai/actions/runs/36960825977)는 모바일 탐색·인증 authoring까지 성공했다. 전체 모바일 CI와 A4 성능 gate 통과를 뜻하지 않는다. [리뷰·배포·남은 한계](../evidence/ip012/mobile-label-continuity-2026-10-02.md#codex-cloud-review-and-rollout).
 

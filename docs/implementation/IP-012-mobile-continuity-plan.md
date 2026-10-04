@@ -1,6 +1,6 @@
 # IP-012 — 모바일 성능과 표현 연속성 후속 계획
 
-상태: **2026-10-02 사용자 지시로 구현 활성**. IP-011 A5와 IP-012의 후속 성능 작업이며 A6/M5를 활성화하지 않는다. [CURRENT](CURRENT.md)가 실행·배포 상태, [IP-012](IP-012-render-publication-plan.md)가 migration 순서, [ADR-012](../architecture/ADR-012-render-read-architecture.md)가 책임 경계를 소유한다. [A4-B01–03](IP-011-A4-closeout-backlog.md)의 미달과 수치 기준을 유지한다.
+상태: **2026-10-04 사용자 체감 수용으로 종료·잔여 이관**. [종료 결정](IP-012-mobile-continuity-closeout.md)이 아래의 목표 달성까지 자율 실행 지시를 대체한다. 수치 미달을 통과로 바꾸지 않으며 별도 요청·구체적 회귀 없이 튜닝을 재개하지 않는다. IP-011 A5와 IP-012의 후속 성능 작업이며 A6/M5를 활성화하지 않는다. [CURRENT](CURRENT.md)가 실행·배포 상태, [IP-012](IP-012-render-publication-plan.md)가 migration 순서, [ADR-012](../architecture/ADR-012-render-read-architecture.md)가 책임 경계를 소유한다. [A4-B01–03](IP-011-A4-closeout-backlog.md)의 미달과 수치 기준을 유지한다.
 
 ## 목표와 권한
 
@@ -14,7 +14,7 @@
 
 ## 현재 checkpoint와 우선 작업
 
-2026-10-04 업데이트: 최신 운영은 PR #319 `03d324e…`다. WebGL2 배경 vector·native SVG label/input을 기본으로 사용하고 context loss/미지원 시 SVG로 복귀한다. resize 시 이전 frame의 CSS extent를 먼저 늘리는 구간도 제거했다. 전체 화면 gesture image cache는 번쩍임·왜곡·성능 퇴행으로 폐기했다. WebGL 운영30회 p95=48/48/47ms로 원래 기준은 미달이며 Cloud native driver는 llvmpipe software다. label contour cache는 배포 후 CPU 비용을6.7–6.9→4.0–4.3ms/회로 줄였고 짧은 frame p95는50/48ms다. #317/#318 CI의 WebGL steady-pan 초과는 동일 응답 publication을 고쳐50회 이동=50 commits로 개선했고 main/branch CI가 통과했다. 후속 native label immutable path+평행 이동 후보는 글자 비율·이동량·identity 검증을 통과했으며 운영 측정이 다음 작업이다. 최신 실행 상태는 CURRENT, 아래 이전 checkpoint는 역사적 진단 맥락이다.
+2026-10-04 종료 기준선: PR #320 `d3e79d7…`, WebGL2 배경 vector·native SVG label/input과 SVG fallback, atomic resize, bounded contour cache, 동일 응답 no-op publication, immutable label path 평행 이동이 배포됐다. 사용자가 운영 경험을 충분히 원활하다고 확인해 추가 튜닝을 종료했다. 최신 검증·잔여 disposition은 [종료 문서](IP-012-mobile-continuity-closeout.md)와 CURRENT를 따른다. 아래 checkpoint·unchecked 항목은 실행 이력과 이관 backlog이며 현재 자율 실행 지시가 아니다.
 
 2026-10-02 여섯 번째 checkpoint 구현 `1d768af`는 main `0069c094308acdf0636f593dd0d56570d0c91bc9`로 배포됐다. actual compiler/4의 0/250/750ms 지연과 touch 4개 시험은 13.3초에 통과했고 persisted 복원 증거는 다음 실행 대기다. 앞선 checkpoint의 CI·smoke 성공, loading 실패와 30회 frame 미달은 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 보존한다. **기능 검증 성공과 성능 완료는 별개다.** 새 기본 DPR 3의 계측 short profile p95 55/54ms는 여전히 미달이다.
 
@@ -76,8 +76,8 @@
 - [x] 같은 SHA에서 normal/blend-off/static short control을 격리 측정했다. blend는 유지하며 일반·blend-off 모두 frame p95 미달을 기록했다.
 - [x] 여섯 번째 one-pass/HUD·idle camera·bounded 8-read 변경을 `0069c09…`로 배포하고 actual compiler/4 지연/touch 4개 시험을 확인했다. persisted 복원 완료는 별도다.
 - [x] 같은 SHA에서 기본/DPR 1 CPU phase 및 visible/hidden/display-none 대조 실험을 기록했다. 기본 profile p95 미달·숨김 control 비수용을 명시했다.
-- [ ] 기존 SVG 표현·blend·primary interaction을 유지하면서 drawing·React의 changing-scene 비용을 낮춘다. World preparation·bounds read를 주원인으로 오인하지 않는다.
-- [x] dense10k continuation budget 수정을 built-app mobile에서 검증했다. 실제 drawer/HUD·262 Event·160+102 continuation·오류 0과 cold/repeat 관측을 보존했다. 별도 배포는 아직 대기다.
+- [x] 기존 UI·primary interaction을 유지하며 WebGL/contour cache/no-op publication/native label translation으로 drawing·React 비용을 낮췄다. 원래 frame 기준 미달은 A4-B01로 이관한다.
+- [x] dense10k continuation budget 수정을 built-app mobile에서 검증했다. 실제 drawer/HUD·262 Event·160+102 continuation·오류 0과 cold/repeat 관측을 보존했다. PR #310으로 배포됐다.
 - [x] shared build·28개 기능 시험 성공을 PR #310으로 배포하고 exact-SHA smoke와 전체 CI 성공을 확인했다. 유효 cursor만 별도 허용하며 query·traversal 상한을 무제한 확대하지 않는다.
 - [x] actual compiler/4 지연·반전·retained scene과 synthetic persisted 복원5개가 통과했다. 실제 iOS suspension/process eviction 검증은 별도로 열려 있다.
 - [x] hull/text 분리 control과 Canvas/SVG 비교를 근거로 배경 graphics painter를 구현했다. Canvas ink·identity·rollback을 포함한6개 및 전체 모바일37개가 통과했다.
@@ -85,9 +85,9 @@
 - [x] buffered background raster를 PR #312로 배포·측정했다. main/branch CI는 성공했지만 짧은 phase profile62/62ms·A4 sustained1000 frame 실패는 남았다. 기능 시험 성공을 frame 통과로 바꾸지 않는다.
 - [x] gesture 전체 화면 cache를 #313에 배포·검증했다. 짧은 정상 profile90/88ms와 사용자 번쩍임·비율 왜곡 보고로 철회한다. glyph/input 기능 통과는 성능·시각 품질 통과가 아니었다.
 - [x] native SVG text/input을 유지하는 WebGL background vector painter를 #315에 배포했다. compiler/4 10개와 full unit607개를 통과했다. 운영30회/각602frame p95=55/52/51ms, max76/70/70ms로33.4ms는 미달이지만 동일 SHA Canvas 시작/복귀62/60ms보다 낮았다. Cloud EGL은 llvmpipe software이므로 실제 GPU 지원으로 해석하지 않는다.
-- [ ] WebGL 기본 경로의 운영 검증과 iPhone17 Safari/PWA 실제 GPU·장시간/heap·시각 피드백을 확인한다. 기존 UI·camera·detail 회귀와 context loss/SVG 복귀를 유지하고 원래 frame gate를 종료하지 않는다.
-- [ ] 작은 checkpoint를 배포한 뒤 계측을 끈 같은 기본 profile의 short 및30회 방문·복귀,250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
+- [x] WebGL 기본 운영·fallback·기존 UI 회귀 검증과 사용자의 원활한 실사용 체감 수용을 확인했다. instrumented iPhone17 GPU·장시간/heap은 A4-B03으로 이관한다.
+- [x] short 및30회 방문·복귀와250/750ms 지연 경계를 측정했다. #319 p95=48/48/47ms, #320 short49/48ms로 원래 frame 미달을 보존한다.
 
-## 중지·인계 기준
+## 종료·인계 기준
 
-코드 작성, unit 성공, build 성공, 일부 smoke 성공만으로 완료하지 않는다. 명시한 목표 통과, 실측으로 확인한 환경/기기 한계, 또는 승인 범위 밖의 제품 의미·정책 결정이 blocker일 때 상태와 근거를 남긴다. 실기기 접근이 없으면 A4-B03을 열린 상태로 유지하며 독립적으로 가능한 코드·브라우저·운영 검증은 끝까지 수행한다. 장애·flaky·CI 실패는 먼저 에이전트가 진단·수정할 작업이다.
+2026-10-04 사용자의 명시적 체감 수용과 종료 지시를 적용했다. [종료 결정](IP-012-mobile-continuity-closeout.md)의 검증·잔여 backlog가 이후 세션 기준이다. unit/build/smoke만으로 수치 gate 성공을 주장하지 않으며, 안정화 이후 성능 탐색은 자동 재개하지 않는다. 구체적 버그는 정상적인 진단·수정·회귀 검증으로 처리한다.

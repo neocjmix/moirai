@@ -17,10 +17,10 @@
 
 ## 현재 checkpoint와 조사 기준선
 
-- **현재 운영:** [PR #314](https://github.com/neocjmix/moirai/pull/314), `105e6530045ba66a8d4c525b223f2d41327f35ce`. Railway SUCCESS와 exact-SHA smoke를 확인했다. #313의 gesture 화면 이미지 cache는 p95=90/88ms 퇴행 및 사용자 번쩍임·비율 왜곡 보고로 제거했다. native SVG text를 항상 표시하고 release/boundary race 수정은 유지한다.
+- **현재 운영:** [PR #315](https://github.com/neocjmix/moirai/pull/315), `61671ddf4e4b60301998903ff09b796b8fe0dddf`. Railway SUCCESS와 exact-SHA smoke를 확인했다. 기본은 #314에서 복구한 Canvas/native SVG이고 `?gsGraphics=webgl`은 선택 가능한 WebGL2 vector 경로다. #313의 gesture 화면 이미지 cache는 p95=90/88ms 퇴행 및 사용자 번쩍임·비율 왜곡 보고로 제거했다. native SVG text를 항상 표시하고 release/boundary race 수정은 유지한다.
 - **지속 성능 미달:** #307 격리30 visits/start·middle·return602frame p95=68/76/96ms, 초기 준비2099.7ms/4요청, 전체68요청. #305의382요청 증폭은 줄었다. #309의 짧은0 visits/602frame start·return은 p95=55/54ms로33.4ms 기준 미달이다. 같은 DPR3에서 SVG paint만 숨긴 진단은25/24ms, display 제거는25/23ms여서 남은 주된 비용은 그리기다. 이 진단과 DPR1 결과를 정상 화면의 통과로 계산하지 않는다.
 - **연속성 검증:** 실제 compiler/4 publication의0/250/750ms 지연·새 XY/scale coverage·이동과 hull/point 반전에서 동일 DOM/path와 paint가 유지됐다. hull 글자의 실제 glyph hit에 모바일 터치해 올바른 Narrative가 열리는4개 테스트가 통과했다. iPhone17 Safari/PWA에서 사용자는 체감상 많이 개선됐다고 확인했으며 자동 검증은 별도의 iPhone14 WebKit emulation이다.
-- **현재 성능 조사:** 전체 화면 raster cache는 실패한 실험이다. WebGL background vector geometry와 기존 native SVG text/input을 분리한 선택 경로(`?gsGraphics=webgl`)는 로컬 compiler/4 브라우저10개와 tessellation4개를 통과했다. context loss/미지원은 SVG로 복귀한다. 운영 WebGL 배포·frame 비교는 아직 대기다. Cloud context 지원과 실제 GPU 가속은 다른 증거이며 현재 `/dev/dri`가 없다. 원래 DPR3·600+frame·30회 기준을 유지한다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
+- **현재 성능 조사:** 전체 화면 raster cache는 실패한 실험이다. WebGL background vector geometry와 기존 native SVG text/input을 분리한 선택 경로는 로컬 compiler/4 브라우저10개와 unit607개를 통과했다. context loss/미지원은 SVG로 복귀한다. 운영 WebGL 30회 frame 비교를 진행한다. Cloud native EGL은 llvmpipe software driver이며 iPhone17 하드웨어 성능 증거가 아니다. 원래 DPR3·600+frame·30회 기준을 유지한다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
 - 기능 출발점은 [#302](https://github.com/neocjmix/moirai/pull/302) `19de027`의 Collection 변경 시 semantic label 연속성이며, 조사 기준선은 [#303](https://github.com/neocjmix/moirai/pull/303) `91cffca`다. #304 `8f9e31a`의 isolated602frame p95=49/49ms도33.4ms 기준 미달이다. 과거 checkpoint와 개별 검증 범위는 evidence에 보존한다.
 - World `01995c2a-7b00-7000-8000-000000000101`: Revision 62, 30 Collection, 677 placed/2 unplaced Event. 공개 Render generation은 `render-compiler/4`, `7b3c2fd8…`다. 데이터 수량은 새 입력·백필 전 다시 확인한다.
 

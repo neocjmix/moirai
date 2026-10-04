@@ -112,6 +112,8 @@ function createPainter(canvas: HTMLCanvasElement) {
     bytes: number;
   };
   const cache = new Map<string, Mesh>();
+  let meshBuilds = 0;
+  let meshReuses = 0;
   const tweens = new Map<
     string,
     { from: number; target: number; start: number }
@@ -290,6 +292,9 @@ function createPainter(canvas: HTMLCanvasElement) {
                 bytes: mesh.fill.byteLength + mesh.stroke.byteLength
               };
               cache.set(region.id, entry);
+              meshBuilds++;
+            } else {
+              meshReuses++;
             }
             let tx = 0,
               ty = 0;
@@ -421,6 +426,8 @@ function createPainter(canvas: HTMLCanvasElement) {
         canvas.dataset.rasterScale = String(density);
         canvas.dataset.meshBytes = String(bytes);
         canvas.dataset.meshCount = String(cache.size);
+        canvas.dataset.meshBuilds = String(meshBuilds);
+        canvas.dataset.meshReuses = String(meshReuses);
         canvas.dataset.pointCount = String(dots.length / 9);
         canvas.dataset.regionCount = String(scene.regions.length);
         return animating;

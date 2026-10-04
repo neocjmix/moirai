@@ -214,7 +214,7 @@ test("geographic canvas paints ink while SVG retains authored touch targets and 
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
   await page.goto(
-    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}`
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}&gsGraphics=canvas`
   );
   const canvas = page.getByTestId("geographic-canvas");
   await expect(canvas).toBeVisible();

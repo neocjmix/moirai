@@ -84,7 +84,8 @@
 - [x] Canvas painter를 PR #311로 배포해 원래 DPR3/602frame/30회 profile을 측정했다. p95=62/59/60ms, max=122/125/75ms로 개선하지 못했다. 배경 raster 근사와 전체 device DPR 변경을 혼동하지 않는다.
 - [x] buffered background raster를 PR #312로 배포·측정했다. main/branch CI는 성공했지만 짧은 phase profile62/62ms·A4 sustained1000 frame 실패는 남았다. 기능 시험 성공을 frame 통과로 바꾸지 않는다.
 - [x] gesture 전체 화면 cache를 #313에 배포·검증했다. 짧은 정상 profile90/88ms와 사용자 번쩍임·비율 왜곡 보고로 철회한다. glyph/input 기능 통과는 성능·시각 품질 통과가 아니었다.
-- [ ] native SVG text/input을 유지하는 WebGL background vector painter를 구현하고 context loss/rollback·비율·identity·원래 frame 기준으로 검증한다. Cloud의 context 지원을 실제 GPU 지원으로 해석하지 않는다.
+- [x] native SVG text/input을 유지하는 WebGL background vector painter를 #315에 배포했다. compiler/4 10개와 full unit607개를 통과했다. 운영30회/각602frame p95=55/52/51ms, max76/70/70ms로33.4ms는 미달이지만 동일 SHA Canvas 시작/복귀62/60ms보다 낮았다. Cloud EGL은 llvmpipe software이므로 실제 GPU 지원으로 해석하지 않는다.
+- [ ] WebGL 기본 경로의 운영 검증과 iPhone17 Safari/PWA 실제 GPU·장시간/heap·시각 피드백을 확인한다. 기존 UI·camera·detail 회귀와 context loss/SVG 복귀를 유지하고 원래 frame gate를 종료하지 않는다.
 - [ ] 작은 checkpoint를 배포한 뒤 계측을 끈 같은 기본 profile의 short 및30회 방문·복귀,250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
 
 ## 중지·인계 기준

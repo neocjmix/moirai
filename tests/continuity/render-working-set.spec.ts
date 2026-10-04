@@ -8,6 +8,107 @@ const continuityComposite = "019f3b00-0000-7000-8000-000000000b01";
 const closeCamera = [-289, 222880, 800, 6000];
 const wideCamera = [-289, 222880, 2000, 24000];
 
+test("gesture cache contains real glyph ink, keeps native hit identity and restores full SVG", async ({
+  page
+}, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() =>
+    localStorage.setItem("urdr:app-language-override", "ko")
+  );
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}`
+  );
+  const svg = page.locator('svg[aria-label="Projected chart surface"]');
+  const hull = page.locator(
+    `[data-composite-paint-id="${continuityComposite}"] > path`
+  );
+  await expect(hull).toBeVisible();
+  await restoreCamera(page, wideCamera);
+  await expect
+    .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
+    .toBeLessThan(0.01);
+  await restoreCamera(page, closeCamera);
+  await expect
+    .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
+    .toBeGreaterThan(0.95);
+  const label = page.locator(
+    `text[data-region-id="${continuityComposite}"][data-primary-hit-target="composite-label"]`
+  );
+  await expect(label).toBeVisible();
+  const original = await label.elementHandle();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: info.outputPath("native-before-gesture.png") });
+  await page.mouse.move(75, 520);
+  await page.mouse.down();
+  await page.mouse.move(77, 520, { steps: 3 });
+  await expect(svg).toHaveAttribute("data-gesture-cache", "raster");
+  const proof = await label.evaluate((node) => {
+    const label = node as SVGTextElement;
+    const bounds = label.getBoundingClientRect();
+    const canvases = [
+      ...document.querySelectorAll<HTMLCanvasElement>(
+        '[data-testid="gesture-graph-cache"]'
+      )
+    ].filter(
+      (canvas) =>
+        getComputedStyle(canvas).display !== "none" &&
+        Number(getComputedStyle(canvas).opacity) > 0.05
+    );
+    let ink = 0;
+    for (const canvas of canvases) {
+      const box = canvas.getBoundingClientRect();
+      const sx = canvas.width / box.width;
+      const sy = canvas.height / box.height;
+      const x = Math.max(0, Math.floor((bounds.left - box.left) * sx));
+      const y = Math.max(0, Math.floor((bounds.top - box.top) * sy));
+      const width = Math.min(canvas.width - x, Math.ceil(bounds.width * sx));
+      const height = Math.min(canvas.height - y, Math.ceil(bounds.height * sy));
+      if (width <= 0 || height <= 0) continue;
+      const pixels = canvas
+        .getContext("2d")!
+        .getImageData(x, y, width, height).data;
+      for (let p = 0; p < pixels.length; p += 4)
+        if (pixels[p + 3]! > 80 && pixels[p]! < 180 && pixels[p + 1]! < 180)
+          ink++;
+    }
+    const matrix = label.getScreenCTM()!;
+    let hit = false;
+    for (let i = 0; i < label.getNumberOfChars(); i++) {
+      const char = label.getExtentOfChar(i);
+      const point = new DOMPoint(
+        char.x + char.width / 2,
+        char.y + char.height / 2
+      ).matrixTransform(matrix);
+      const target = document.elementFromPoint(point.x, point.y);
+      if (target && (target === label || label.contains(target))) hit = true;
+    }
+    return {
+      ink,
+      hit,
+      pixels: canvases.map((canvas) => canvas.width * canvas.height),
+      sameSvgOpacity: getComputedStyle(label.ownerSVGElement!).opacity
+    };
+  });
+  expect(proof.ink).toBeGreaterThan(3);
+  expect(proof.hit).toBe(true);
+  expect(proof.sameSvgOpacity).toBe("0");
+  expect(proof.pixels.every((pixels) => pixels <= 4_000_000)).toBe(true);
+  expect(await label.evaluate((node, old) => node === old, original)).toBe(
+    true
+  );
+  await page.screenshot({ path: info.outputPath("gesture-cache.png") });
+  await page.mouse.up();
+  await expect(svg).toHaveAttribute("data-gesture-cache", "native");
+  expect(await svg.evaluate((node) => getComputedStyle(node).opacity)).toBe(
+    "1"
+  );
+  expect(await label.evaluate((node, old) => node === old, original)).toBe(
+    true
+  );
+  expect(errors).toEqual([]);
+});
+
 test("geographic canvas paints ink while SVG retains authored touch targets and fallback", async ({
   page
 }, info) => {

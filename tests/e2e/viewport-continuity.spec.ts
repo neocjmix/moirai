@@ -88,6 +88,82 @@ test("repeated outward drags settle at a stable boundary", async ({ page }) => {
     .toBe(settled);
 });
 
+for (const reducedMotion of ["reduce", "no-preference"] as const) {
+  test(`a whole gesture released in one task settles its final camera (${reducedMotion})`, async ({
+    page
+  }) => {
+    await page.emulateMedia({ reducedMotion });
+    await page.goto("/graph?gsViewport=999000%2C999000%2C400%2C800");
+    await expect
+      .poll(() => page.locator('[data-event-point-id^="m_event_"]').count())
+      .toBeGreaterThan(0);
+    await page.getByTestId("graph-stage").evaluate((stage) => {
+      // No native contact exists for this synthetic same-task burst. Stub
+      // capture only; exercise the real React input, batching and settle path.
+      const original = stage.setPointerCapture;
+      stage.setPointerCapture = () => {};
+      try {
+        for (const [type, x, y] of [
+          ["pointerdown", 30, 350],
+          ["pointermove", 5000, 5000],
+          ["pointerup", 5000, 5000]
+        ] as const)
+          stage.dispatchEvent(
+            new PointerEvent(type, {
+              bubbles: true,
+              pointerId: 4242,
+              pointerType: "touch",
+              buttons: type === "pointerup" ? 0 : 1,
+              clientX: x,
+              clientY: y
+            })
+          );
+      } finally {
+        stage.setPointerCapture = original;
+      }
+    });
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          let state:
+            | {
+                view: { x: number; y: number; scaleX: number; scaleY: number };
+                navigationBounds: {
+                  minX: number;
+                  maxX: number;
+                  minY: number;
+                  maxY: number;
+                };
+              }
+            | undefined;
+          addEventListener(
+            "moirai:graph-inspection",
+            ((event: CustomEvent) => {
+              state = event.detail;
+            }) as EventListener,
+            { once: true }
+          );
+          dispatchEvent(new Event("moirai:inspect-graph"));
+          if (!state?.navigationBounds) return false;
+          const x = -state.view.x / state.view.scaleX,
+            y = -state.view.y / state.view.scaleY;
+          const b = state.navigationBounds;
+          // Navigation expands a narrower scope to a minimum120-unit span.
+          // That fitted range is valid, not elastic overscroll.
+          const padX = Math.max(0, (120 - (b.maxX - b.minX)) / 2);
+          const padY = Math.max(0, (120 - (b.maxY - b.minY)) / 2);
+          return (
+            x >= b.minX - padX - 0.001 &&
+            x <= b.maxX + padX + 0.001 &&
+            y >= b.minY - padY - 0.001 &&
+            y <= b.maxY + padY + 0.001
+          );
+        })
+      )
+      .toBe(true);
+  });
+}
+
 test("publication pinch preserves independent axes with navigation bounds", async ({
   page
 }) => {

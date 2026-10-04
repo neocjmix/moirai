@@ -14,6 +14,8 @@
 
 ## 현재 checkpoint와 우선 작업
 
+2026-10-04 업데이트: PR #310 `f8143ae…`가 운영에 배포됐고 일반 CI·A5·post-deploy·IP-004·A4 worker/mobile matrix가 모두 성공했다. 계측을 끈 운영30회 profile은 p95=53/57/60ms로 계속 미달이다. 후속 Canvas 배경 hull/point painter는 기존 SVG text·authored DOM·interaction을 유지하며 배경 raster만1.5배로 제한한다. 로컬 모바일37개와 compiler/4 6개가 통과했고 SVG 기준 이미지와 비교했다. 이 painter의 운영 성능 검증이 현재 다음 작업이다.
+
 2026-10-02 여섯 번째 checkpoint 구현 `1d768af`는 main `0069c094308acdf0636f593dd0d56570d0c91bc9`로 배포됐다. actual compiler/4의 0/250/750ms 지연과 touch 4개 시험은 13.3초에 통과했고 persisted 복원 증거는 다음 실행 대기다. 앞선 checkpoint의 CI·smoke 성공, loading 실패와 30회 frame 미달은 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 보존한다. **기능 검증 성공과 성능 완료는 별개다.** 새 기본 DPR 3의 계측 short profile p95 55/54ms는 여전히 미달이다.
 
 | 상태 | 현재 범위와 다음 검증 |
@@ -76,8 +78,10 @@
 - [x] 같은 SHA에서 기본/DPR 1 CPU phase 및 visible/hidden/display-none 대조 실험을 기록했다. 기본 profile p95 미달·숨김 control 비수용을 명시했다.
 - [ ] 기존 SVG 표현·blend·primary interaction을 유지하면서 drawing·React의 changing-scene 비용을 낮춘다. World preparation·bounds read를 주원인으로 오인하지 않는다.
 - [x] dense10k continuation budget 수정을 built-app mobile에서 검증했다. 실제 drawer/HUD·262 Event·160+102 continuation·오류 0과 cold/repeat 관측을 보존했다. 별도 배포는 아직 대기다.
-- [ ] shared build·28개 기능 시험 성공을 다음 작은 checkpoint로 배포하고 exact-SHA 모바일 증거를 추가한다. 유효 cursor만 별도 허용하며 query·traversal 상한을 무제한 확대하지 않는다.
-- [ ] actual compiler/4 persisted 복원과 지연·반전·retained scene의 다음 증거를 확정한다.
+- [x] shared build·28개 기능 시험 성공을 PR #310으로 배포하고 exact-SHA smoke와 전체 CI 성공을 확인했다. 유효 cursor만 별도 허용하며 query·traversal 상한을 무제한 확대하지 않는다.
+- [x] actual compiler/4 지연·반전·retained scene과 synthetic persisted 복원5개가 통과했다. 실제 iOS suspension/process eviction 검증은 별도로 열려 있다.
+- [x] hull/text 분리 control과 Canvas/SVG 비교를 근거로 배경 graphics painter를 구현했다. Canvas ink·identity·rollback을 포함한6개 및 전체 모바일37개가 통과했다.
+- [ ] Canvas painter를 운영에 배포한 뒤 원래 DPR3/602frame/30회 profile과 지연 시나리오를 확인한다. 배경 raster 근사와 전체 device DPR 변경을 혼동하지 않는다.
 - [ ] 작은 checkpoint를 배포한 뒤 계측을 끈 같은 기본 profile의 short 및30회 방문·복귀,250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
 
 ## 중지·인계 기준

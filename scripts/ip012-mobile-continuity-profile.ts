@@ -30,8 +30,15 @@ const staticControl = process.env.IP012_STATIC_CONTROL === "1";
 const profileCpu = process.env.IP012_TIMING === "1";
 const measureBounds = process.env.IP012_MEASURE_BOUNDS === "1";
 const svgControl = process.env.IP012_SVG_CONTROL ?? "visible";
+const hullControl = process.env.IP012_HULL_CONTROL ?? "visible";
+const textControl = process.env.IP012_TEXT_CONTROL ?? "visible";
 if (!["visible", "hidden", "none"].includes(svgControl))
   throw Error("invalid_svg_control");
+if (
+  !["visible", "hidden"].includes(hullControl) ||
+  !["visible", "hidden"].includes(textControl)
+)
+  throw Error("invalid_paint_control");
 const deviceScaleFactor = process.env.IP012_DEVICE_SCALE_FACTOR
   ? Number(process.env.IP012_DEVICE_SCALE_FACTOR)
   : devices["iPhone 14"].deviceScaleFactor;
@@ -278,7 +285,9 @@ const result: Record<string, unknown> = {
     static_control: staticControl,
     profile_cpu: profileCpu,
     measure_bounds: measureBounds,
-    svg_control: svgControl
+    svg_control: svgControl,
+    hull_control: hullControl,
+    text_control: textControl
   },
   errors,
   network,
@@ -297,6 +306,16 @@ try {
   if (svgControl !== "visible")
     await page.addStyleTag({
       content: `svg[aria-label="Projected chart surface"] { ${svgControl === "none" ? "display: none" : "visibility: hidden"} !important; }`
+    });
+  if (hullControl === "hidden")
+    await page.addStyleTag({
+      content:
+        "[data-composite-paint-id] > path { visibility: hidden !important; mix-blend-mode: normal !important; }"
+    });
+  if (textControl === "hidden")
+    await page.addStyleTag({
+      content:
+        'svg[aria-label="Projected chart surface"] text { visibility: hidden !important; }'
     });
   if (disableBlend)
     await page.addStyleTag({

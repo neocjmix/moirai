@@ -1431,6 +1431,15 @@
   fill-opacity: 0.15;
 }
 
+/* Keep SVG text and hit geometry at native density; the Canvas owns only ink. */
+.chartSurface[data-graphics-painter="canvas"] .chartBackdrop,
+.chartSurface[data-graphics-painter="canvas"] .chartInstantPoint,
+.chartSurface[data-graphics-painter="canvas"] .chartCompositeRegion {
+  fill: none !important;
+  stroke: none !important;
+  mix-blend-mode: normal !important;
+}
+
 .chartAnchorLine {
   stroke: var(--graph-anchor-line);
   stroke-width: 1;

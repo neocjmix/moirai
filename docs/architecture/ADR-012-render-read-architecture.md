@@ -172,6 +172,8 @@ Buffered fetches must not block the active scene and may be aborted when navigat
 
 A normal read must preserve the identity and presentation history of the same authored object across tile/level/response boundaries. Loading a replacement coverage must not blank an already prepared scene or restart its label/visibility history. Keep the consistent prepared counterpart until the new one is drawable, while distinguishing explicit selection removal, authoritative empty results and revision changes. Hull ↔ ordinary point ↔ small point ↔ hidden transitions may use bounded XY/scale prefetch, local computation/interpolation and caches in any combination justified by measurement. These are implementation options, not required infrastructure. Existing UI grammar remains the constraint; request sequencing and renderer internals may change.
 
+The 2026-10-04 painter checkpoint separates background hull/point ink into a bounded Canvas surface while retaining full-device-density SVG text, authored paint groups and interaction geometry. Both consume the same viewport/transition inputs; this does not move domain or publication decisions into Canvas. Background raster density may be capped independently of text density, with a small antialiasing approximation. Native paths and transient animation identities remain bounded, and unsupported Canvas falls back to the SVG painter (`?gsGraphics=svg`). Production frame acceptance remains subject to the original measurements and thresholds.
+
 ## 10. Collection selection
 
 Collection selection is an Atropos visibility/filter operation over already fetched representation metadata.

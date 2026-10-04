@@ -8,6 +8,68 @@ const continuityComposite = "019f3b00-0000-7000-8000-000000000b01";
 const closeCamera = [-289, 222880, 800, 6000];
 const wideCamera = [-289, 222880, 2000, 24000];
 
+test("geographic canvas paints ink while SVG retains authored touch targets and fallback", async ({
+  page
+}, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}`
+  );
+  const canvas = page.getByTestId("geographic-canvas");
+  await expect(canvas).toBeVisible();
+  await expect(page.locator('svg[data-graphics-painter="canvas"]')).toHaveCount(
+    1
+  );
+  const ink = () =>
+    canvas.evaluate((node) => {
+      const canvas = node as HTMLCanvasElement;
+      const pixels = canvas
+        .getContext("2d")!
+        .getImageData(0, 0, canvas.width, canvas.height).data;
+      let ink = 0;
+      for (let i = 0; i < pixels.length; i += 4)
+        if (pixels[i]! < 230 || pixels[i + 1]! < 230 || pixels[i + 2]! < 230)
+          if (pixels[i + 3]! > 0) ink++;
+      return {
+        ink,
+        scale: Number(canvas.dataset.rasterScale),
+        revision: Number(canvas.dataset.paintRevision)
+      };
+    });
+  await expect.poll(async () => (await ink()).ink).toBeGreaterThan(100);
+  const before = await ink();
+  expect(before.scale).toBe(1.5);
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: info.outputPath("canvas-appearance.png") });
+  const original = await canvas.elementHandle();
+  await page.mouse.move(75, 520);
+  await page.mouse.down();
+  await page.mouse.move(92, 529, { steps: 6 });
+  await page.mouse.up();
+  await expect
+    .poll(async () => (await ink()).revision)
+    .toBeGreaterThan(before.revision);
+  expect(await canvas.evaluate((node, old) => node === old, original)).toBe(
+    true
+  );
+  expect((await ink()).ink).toBeGreaterThan(100);
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}&gsGraphics=svg`
+  );
+  await expect(canvas).toHaveCount(0);
+  const hull = page.locator(
+    `[data-composite-paint-id="${continuityComposite}"] > path`
+  );
+  await expect(hull).toBeVisible();
+  expect(await hull.evaluate((node) => getComputedStyle(node).fill)).not.toBe(
+    "none"
+  );
+  await page.waitForTimeout(300);
+  await page.screenshot({ path: info.outputPath("svg-appearance.png") });
+  expect(errors).toEqual([]);
+});
+
 async function restoreCamera(page: Page, camera: number[]) {
   // Exercise the supported browser-history camera seam, then use a native
   // captured pointer for XY motion. WebKit has no multi-touch injection API.

@@ -4,6 +4,10 @@
  * and RAF-driven PointerEvents (explicitly hybrid, not real-device touch).
  */
 import { devices, webkit, type Page } from "@playwright/test";
+import {
+  restartViewportQuery,
+  waitForGraphReadTarget
+} from "./ip011-a4-browser-contract.js";
 
 type Bounds = { minX: number; maxX: number; minY: number; maxY: number };
 type Inspection = {
@@ -187,6 +191,7 @@ async function sample(page: Page, name: string) {
 try {
   const context = await browser.newContext({
     ...devices["iPhone 14"],
+    locale: "ko-KR",
     baseURL
   });
   // Match tsx/esbuild's name helper in serialized browser callbacks (test-only).
@@ -218,13 +223,10 @@ try {
       })()
     );
   });
-  await page.goto(`/graph/v5?discovery=legacy&world=${world}`, {
+  await page.goto(`/graph/v5?world=${world}`, {
     waitUntil: "domcontentloaded"
   });
-  await page
-    .locator("[data-event-point-id]")
-    .first()
-    .waitFor({ state: "visible" });
+  await waitForGraphReadTarget(page);
   const initial = await settled(page);
   if (!viewportRequest) throw Error("viewport_request_missing");
   // A full-world query is intentionally capped and cannot enumerate the
@@ -239,12 +241,12 @@ try {
       maxY: all.minY + ((all.maxY - all.minY) * (band + 1)) / 32
     };
     const setup = await context.request.post("/graph/v5/shell", {
-      data: {
-        ...viewportRequest,
-        viewport: { ...(viewportRequest.viewport as object), bbox }
-      }
+      data: restartViewportQuery(viewportRequest, bbox)
     });
-    if (!setup.ok()) throw Error("fixture_neighborhood_query_failed");
+    if (!setup.ok())
+      throw Error(
+        `fixture_neighborhood_query_failed:${setup.status()}:${await setup.text()}`
+      );
     const body = await setup.body();
     const fixture = JSON.parse(body.toString()) as {
       regions: { id: string; worldBounds: Bounds }[];
@@ -335,8 +337,10 @@ try {
   await sample(page, "return");
   // Toggle after the no-reset history test so a loader replacement cannot hide
   // growth from the preceding 30 visits.
-  await page.getByRole("button", { name: "소스 쿼리 열기" }).first().click();
-  await page.getByText("탐색 범위와 시간 기준", { exact: true }).click();
+  await page.getByRole("button", { name: /^컬렉션/ }).click();
+  await page
+    .getByRole("dialog", { name: "컬렉션", exact: true })
+    .waitFor({ state: "visible" });
   const checkbox = page.getByRole("checkbox", { name: "a", exact: true });
   await checkbox.scrollIntoViewIfNeeded();
   await checkbox.uncheck();
@@ -344,7 +348,7 @@ try {
   if (Object.values(off.activeIds).some((ids) => ids.length))
     failures.push("all_off_not_empty");
   await checkbox.check();
-  await page.getByRole("button", { name: "소스 쿼리 접기" }).click();
+  await page.getByRole("button", { name: "닫기", exact: true }).click();
   const toggled = await restore(page, home);
   if (JSON.stringify(toggled.activeIds) !== JSON.stringify(start.activeIds))
     failures.push("toggle_restore_ids");

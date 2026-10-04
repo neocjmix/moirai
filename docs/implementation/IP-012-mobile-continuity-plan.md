@@ -6,13 +6,15 @@
 
 모바일 사용자가 평범한 네트워크·단말 조건에서 pan/zoom을 할 때 추가 fetch를 의식하지 않고 세계를 탐색할 수 있어야 한다. hull ↔ ordinary point(big dot) ↔ small point ↔ hidden은 동일한 작성 identity의 자연스러운 표현 변화다. Google Maps 벡터 모바일 지도를 질적 경험 기준으로 사용하지만 동일 구현 방식이나 직접 측정하지 않은 정량 동등성을 요구·주장하지 않는다.
 
+사용자의 실제 환경은 **iPhone 17 Safari 및 설치된 PWA**다. 현재 자동 시험·profile의 iPhone 14 WebKit emulation은 별도 조건으로 기록하며 실제 iPhone 17 성능이나 PWA 검증을 대체하지 않는다.
+
 사용자는 코드 리뷰를 하지 않는다. 작은 구현 checkpoint를 운영에 자주 배포하고 URL·SHA·검증·남은 실패를 제공한다. 쓰기·merge·배포·incident 대응은 이 목표 내에서 사전 승인됐다. CI 실패나 부분 완료는 otherwise deployable checkpoint의 배포 금지가 아니다. 알려진 실패를 통과로 표시하거나 milestone 완료 조건을 낮추지는 않는다.
 
 기존 UI 문법, 작성된 contains/Composite, 공유 Event identity, World 좌표·temporal order, 별도 Narrative, Collection 선택과 camera 복원, HUD·relation·drawer·primary interaction을 유지한다. text와 graphic density는 독립이다. 성능을 위한 작은 표현 차이·approximation은 허용한다. 내부 API·publication·cache·frame pipeline·renderer 선택은 필요에 따라 변경할 수 있다. 사용자가 제시한 overfetch·FE 계산은 해결책 예시이며 고정된 구현 지시가 아니다.
 
 ## 현재 checkpoint와 우선 작업
 
-2026-10-02 다섯 번째 UI checkpoint PR [#308](https://github.com/neocjmix/moirai/pull/308), 구현 `559c11e`은 main `a8e5f5abba4429015e07026ea10f6e009e33c4ff`로 Atropos 배포 SUCCESS·exact-SHA smoke 및 main CI/A5 public mobile/post-deploy SUCCESS를 확인했다. 기존 actual compiler/4 browser fixture도 4.1초에 통과했다. 앞선 PR #306 loading timeout 두 번과 PR #307 서버 전용 30회 profile의 frame p95 68/76/96ms 실패는 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 보존한다. **기능 검증 성공과 성능 완료는 별개다.** 최신 같은-SHA short control에서도 일반 pan p95 57/53ms로 미달이다.
+2026-10-02 여섯 번째 checkpoint 구현 `1d768af`는 main `0069c094308acdf0636f593dd0d56570d0c91bc9`로 배포됐다. actual compiler/4의 0/250/750ms 지연과 touch 4개 시험은 13.3초에 통과했고 persisted 복원 증거는 다음 실행 대기다. 앞선 checkpoint의 CI·smoke 성공, loading 실패와 30회 frame 미달은 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 보존한다. **기능 검증 성공과 성능 완료는 별개다.** 새 기본 DPR 3의 계측 short profile p95 55/54ms는 여전히 미달이다.
 
 | 상태 | 현재 범위와 다음 검증 |
 | --- | --- |
@@ -20,11 +22,16 @@
 | 네 번째 서버 checkpoint 배포·측정 완료, frame 미달 | generation hash immutable cache·동일 object coalescing·Server-Timing. 30회 profile ready 2099.7ms/4요청, 전체 68요청, frame p95 68/76/96ms. 반복 서버 reads 감소와 잔여 client frame 비용을 구분 |
 | 다섯 번째 UI checkpoint 배포·기능 검사 성공 | network detail identity와 drawer presentation history 분리, history quota/중복 detail 회귀 및 label/point paint entrance·exit·reversal·prune 검증. main CI/public A5/post-deploy와 actual compiler/4 기존 fixture 성공. 성능 gate는 계속 열림 |
 | 같은 SHA short 진단 완료 | 일반 blend p95 57/53ms·max 89/148ms, blend-off p95 49/45ms·max 64/72ms, 정지 scene RAF p95 17/17ms·max 17/18ms. 모두 0 visits short control이며 full 30회 gate나 실기기 동등성 증거 아님 |
-| 여섯 번째 slice 구현·검증 중, 미배포 | Composite 현재 좌표 one-pass/HUD memo와 bounded 8-asset 병렬 읽기, focused 27 tests. actual compiler/4 지연-fetch 경계 시험 확장 중. 브라우저·배포 후 성능 개선은 아직 미검증 |
+| 여섯 번째 checkpoint 배포·진단 중 | Composite one-pass/HUD memo·idle camera identity·bounded 8-asset 읽기. actual compiler/4 지연/touch 4 tests 성공. 기본 DPR 3 p95 55/54ms·max 71/88ms, DPR 1 control 34/32ms·max 86/47ms. 둘 다 원래 profile의 성능 완료 증거 아님 |
+| SVG 대조 실험 완료, draw/React 개선 진행 | 같은 DPR 3에서 visible p95 56/54ms, hidden 25/24ms, display-none 25/23ms. 표시 SVG/paint 비용이 큰 구성 요소임을 확인했으나 화면을 숨긴 control은 acceptance 아님. bounds read 약 0.6ms/frame만으로 전체 지연 설명 불가 |
+| dense10k semantic continuation 수정, mobile 통과·미배포 | 유효 cursor 예산과 query·traversal 제한을 분리. 실제 built-app WebKit에서 262 Event가 160+102로 완결되고 21.6KB continuation을 수용. cold 786ms/repeat 466ms, 실제 drawer·HUD 2회 toggle·오류 0. 전체 A4 matrix 성능 통과는 아님 |
+| 다음 slice shared build·28개 기능 시험 성공, 미배포 | legacy RSC initial-detail 1회·명시 Retry 1회 검증을 결정적으로 정리하고 unchanged color setter no-op 적용. actual compiler/4 synthetic pagehide 포함 5개 재시험은 결과 대기 |
 
 운영 Render 응답 3.4–11.9초, canonical 응답 8–120ms의 차이와 낮은 관측 CPU/메모리 사용은 server object I/O/cache 경로를 우선 조사할 근거다. 이 관측만으로 storage만이 유일한 원인이거나 CPU/메모리·browser lifecycle 문제가 없다고 단정하지 않는다. scale overfetch·geometry compression·서버 증설에 앞서 immutable cache 적용 여부, 반복 object reads, request coalescing, resolved metadata 이후 pending scene 상태를 확인한다.
 
 위 서버 지연은 cache 적용 전 관측이며 최신 서버 timing과 구분한다. 다섯 번째 checkpoint의 blend-off도 frame 기준을 만족하지 못했으므로 기존 blend 표현을 유지하고 changing-scene 계산·reconciliation·paint를 더 줄인다. 정지 RAF가 빠르다는 사실을 gesture 성능 통과로 바꾸지 않는다.
+
+여섯 번째 CPU 계측의 첫 602 frame에서 World preparation은 4ms, region projection/label은 4413ms였다. 호출 수만으로 준비 단계를 병목으로 단정하지 않는다. Cloud에 `/dev/dri`가 없고 WPE가 Mesa EGL/LLVM을 로드한 사실도 특정 active driver나 실기기 원인을 증명하지 않는다. 기본 DPR/화면을 유지하는 drawing·React 개선을 우선하고 원래 실패 기준을 보존한다.
 
 ## 측정 시나리오
 
@@ -65,9 +72,13 @@
 - [x] history quota·상세 read feedback을 분리했다. 최종 모바일3개에서 초기/Collection/Retry 각1회와 Back/Forward 단계 복원 통과. 라벨·point fade/reversal/prune/re-entry도 로컬 통과했다.
 - [x] UI checkpoint를 PR #308 `a8e5f5…`로 배포하고 exact-SHA smoke·main CI·public A5·post-deploy와 actual compiler/4 기존 fixture 통과를 확인했다.
 - [x] 같은 SHA에서 normal/blend-off/static short control을 격리 측정했다. blend는 유지하며 일반·blend-off 모두 frame p95 미달을 기록했다.
-- [ ] 여섯 번째 slice의 Composite 현재 좌표 one-pass/HUD memo, paint history 유지와 bounded 8-asset 병렬 읽기를 검증한다. focused 27 tests를 browser frame 증거로 확대하지 않는다.
-- [ ] actual compiler/4 지연-fetch 시험을 확장해 warm-cache 성공 외에 지연·반전·identity·retained scene을 검증한다.
-- [ ] 작은 checkpoint를 배포한 뒤 같은 조건 short 및30회 방문·복귀,250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
+- [x] 여섯 번째 one-pass/HUD·idle camera·bounded 8-read 변경을 `0069c09…`로 배포하고 actual compiler/4 지연/touch 4개 시험을 확인했다. persisted 복원 완료는 별도다.
+- [x] 같은 SHA에서 기본/DPR 1 CPU phase 및 visible/hidden/display-none 대조 실험을 기록했다. 기본 profile p95 미달·숨김 control 비수용을 명시했다.
+- [ ] 기존 SVG 표현·blend·primary interaction을 유지하면서 drawing·React의 changing-scene 비용을 낮춘다. World preparation·bounds read를 주원인으로 오인하지 않는다.
+- [x] dense10k continuation budget 수정을 built-app mobile에서 검증했다. 실제 drawer/HUD·262 Event·160+102 continuation·오류 0과 cold/repeat 관측을 보존했다. 별도 배포는 아직 대기다.
+- [ ] shared build·28개 기능 시험 성공을 다음 작은 checkpoint로 배포하고 exact-SHA 모바일 증거를 추가한다. 유효 cursor만 별도 허용하며 query·traversal 상한을 무제한 확대하지 않는다.
+- [ ] actual compiler/4 persisted 복원과 지연·반전·retained scene의 다음 증거를 확정한다.
+- [ ] 작은 checkpoint를 배포한 뒤 계측을 끈 같은 기본 profile의 short 및30회 방문·복귀,250/750ms 지연 경계를 측정한다. frame 미달이나 loading timeout을 보존하며 전체 gate 전에 완료로 판정하지 않는다.
 
 ## 중지·인계 기준
 

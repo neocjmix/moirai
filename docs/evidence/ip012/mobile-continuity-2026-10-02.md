@@ -2,6 +2,8 @@
 
 Active authority: [mobile continuity plan](../../implementation/IP-012-mobile-continuity-plan.md). This is ongoing investigation, not acceptance.
 
+Actual user environment confirmed on 2026-10-02: **iPhone 17, Safari and installed PWA**. The automated observations below use iPhone 14 WebKit emulation unless explicitly stated otherwise. They are not physical iPhone 17 or installed-PWA measurements.
+
 ## Before
 
 Production `91cffca`, World Revision 62, 30 Collections, compiler/4. iPhone 14 WebKit emulation in Codex Cloud, default GraphShell, broad viewport `(0,209900,1600,36000)`. Script: `scripts/ip012-mobile-continuity-profile.ts`. Thirty history-based visits/returns, each of start/middle/return includes 602 continuous RAF moves on a native captured pointer. This hybrid input is not physical iPhone evidence. Another local build/test used the host during this initial run, so these frame values are diagnostic and require an isolated comparison.
@@ -95,7 +97,7 @@ Three separate short diagnostics used the same deployed `a8e5f5…` SHA, World a
 
 The visual blend remains enabled. Its removal would not meet the frame gate in this comparison, and the unchanged-scene control cannot establish normal navigation performance or Google Maps parity. These controls support investigating changing-scene computation/reconciliation and paint together; they do not uniquely attribute the remaining cost to one subsystem.
 
-## Sixth slice — locally verified, deployment pending
+## Sixth checkpoint — deployed, default-DPR frame remains above budget
 
 Current-coordinate Composite paint now derives in the same render as point geometry. Committed refs retain fade history; only new enters, exits and deadline pruning schedule lifecycle state. The HUD memoizes unchanged topic/locale while keeping context and local controls live. Optional `gsProfile=1` records bounded aggregate CPU phase times; it is disabled for acceptance profiles.
 
@@ -103,6 +105,47 @@ New browser instrumentation uncovered a real idle feedback path:452 commits in o
 
 Assets read in waves of at most8, preserving ordered results/first error, digest checks,4MiB response budget and total256 object reads.27 focused tests pass, including duplicate read coalescing and no next batch after an error or oversized result. No geometry membership is artificially retained to improve counters.
 
-The shared production build and root strict typecheck passed. The latest expanded functional batch passed27/28: a legacy initial-detail test intermittently observes3 reads instead of1 and remains open. The new frame regression passes; this is not yet a deployed frame-percentile result. Actual compiler/4 fixture coverage now includes real metadata/geometry responses with0/250/750ms artificial delay, fresh XY/scale coverage and reversal; final test disposition will be recorded after its run.
+The shared production build and root strict typecheck passed. The latest expanded functional batch passed27/28: a legacy initial-detail test intermittently observes3 reads instead of1 and remains open. The new frame regression passes. Actual compiler/4 fixture coverage with real metadata/geometry responses at **0/250/750ms artificial delay**, fresh XY/scale coverage and reversal, plus the touch scenario, passed **4 tests in 13.3s**. Persisted camera/selection restoration proof is still pending its next run; these four cases do not imply that separate proof passed.
 
-A separate A4 harness investigation found obsolete locale/UI assumptions and a real dense10k continuation failure: the reader returns a valid20,821-byte cursor, while the shell rejects its21,463-byte request against a16KiB cap. This API contract issue is being fixed at the read boundary; changing a selector alone cannot make that scenario pass. Existing failed evidence and performance thresholds remain intact.
+Implementation `1d768af` is deployed as main `0069c094308acdf0636f593dd0d56570d0c91bc9`. The following short production diagnostics both confirm that SHA in public health. They use **0 visits**, two **602-frame** start/return checkpoints and opt-in `gsProfile=1` CPU instrumentation. These are diagnostic profiles, not the uninstrumented 30-visit acceptance run.
+
+| Profile and raw evidence | Start/return p95 (ms) | Start/return max (ms) | Interpretation |
+| --- | --- | --- | --- |
+| [Default iPhone emulation DPR 3](mobile-continuity-phase-0069c09-dpr3.json) | 55 / 54 | 71 / 88 | Both p95 checkpoints remain above 33.4ms |
+| [DPR 1 control](mobile-continuity-phase-0069c09-dpr1.json) | 34 / 32 | 86 / 47 | Start p95 still exceeds the gate; altered DPR is not the baseline profile |
+
+In the first default-DPR 602-frame checkpoint, measured World preparation increased by only **4ms** (3→7ms total), while region projection/label work increased by **4413ms** (44→4457ms). The count of preparation calls alone therefore overstated this phase's current measured CPU importance. Aggregate JavaScript phase timers do not account for all browser layout/paint/compositing or instrumentation cost. The DPR control supports further investigation of changing geometry and raster/compositing work; it does not establish a real-device bottleneck or justify a quality change by itself. Existing blend and UI grammar remain in place. The follow-up SVG controls below narrow the investigation further; there is no new performance-pass claim.
+
+### Same-DPR SVG visibility controls
+
+The follow-up controls use the same deployed SHA, DPR 3 and two 602-frame checkpoints. The normal visible SVG remains the real product condition; hiding/removing it is diagnostic only.
+
+| SVG control and raw evidence | Start/return p95 (ms) | Start/return max (ms) |
+| --- | --- | --- |
+| [Visible](mobile-continuity-svg-control-0069c09-visible.json) | 56 / 54 | 77 / 71 |
+| [Hidden](mobile-continuity-svg-control-0069c09-hidden.json) | 25 / 24 | 35 / 37 |
+| [Display none](mobile-continuity-svg-control-0069c09-none.json) | 25 / 23 | 52 / 40 |
+
+Keeping the same camera-update workload while suppressing SVG display removed much of the measured frame cost. This identifies the displayed SVG/paint path as a dominant component in this emulated environment, while the remaining hidden-scene work still deserves optimization. Neither hidden nor display-none is a product or acceptance pass. Separately, 604 bounds reads totaled **380/362ms** across the two samples (roughly 0.6ms/frame), so those reads do not explain the observed frame cost on their own.
+
+The Cloud host has no `/dev/dri`; the active WPE process loaded Mesa EGL and `libLLVM19.1`. This is environment evidence, not proof of a particular active graphics driver or parity with iPhone 17 hardware. Preserve the original failed gate and investigate drawing/React cost without claiming an environment exemption. Existing hull/point/label/relations, blend, hit targets and mobile interaction remain required.
+
+### Dense 10k semantic continuation — built-app mobile proof passed, deployment pending
+
+A separate A4 harness investigation found obsolete locale/UI assumptions and a real dense10k continuation failure: the reader issued a valid **20,821-byte cursor with 78 references**, while the shell rejected its **21,463-byte continuation request** against the old generic 16KiB body cap. The first response was valid; the rejected second request produced the blank graph. Changing a selector alone cannot fix this API contract mismatch.
+
+The pending correction keeps the cursor-stripped query within **16KiB**, and admits at most the existing **1MiB response budget** as extra cursor data only for a schema-valid viewport continuation. Total streamed body remains bounded by **1MiB + 16KiB**. Search, detail, Collection and non-continuation queries retain the 16KiB budget. The 16-page traversal, 64-node page and 1,024-object limits are unchanged.
+
+The actual dense10k canonical/layout selection contains **262 Events**. The local complete Publication→route→client regression now receives two HTTP 200 responses with **160 + 102 Events**, and the second response has no cursor. **16 focused tests**, ESLint and app/root typechecks passed, including exact identity parity, the object-read limit and cache reuse. This correction remains separate from the deployed sixth checkpoint; its new built-app proof is recorded below and deployment evidence is still pending. The old [A3 16KiB observation](../ip011/a3-ui-restoration.md) remains a dated record, not the current continuation policy.
+
+The shared built app was then exercised with fresh mobile WebKit: scene readiness **786ms cold / 466ms repeat**, the actual Event Narrative drawer opened, and two trusted Collection toggles used the current HUD. Closing the drawer returned to `ready` with **262 source Events, 28 painted points and 2 primary targets**. Browser continuation requests of **21,623–21,680 bytes** were accepted; each viewport completed its **160 + 102** pages with no remaining cursor. All recorded responses were HTTP 200, with zero page errors or failed requests. [Retained raw mobile proof](mobile-continuity-dense10k-fixed-mobile.json) contains the repeat run (466.4ms), response sizes/counts, trusted-input count and final inspection; the cold value is the preceding fresh-run observation. This is a targeted functional proof, not the 20-navigation/600-frame A4 acceptance matrix or real iPhone 17 evidence. Partial relation completeness in the inspection remains explicit.
+
+### Next slice — shared build and 28-test functional batch passed, not deployed
+
+The shared build and the complete affected **28-test batch passed**. The formerly intermittent legacy detail fixture now deterministically covers the RSC initial state with **one failed detail request and one explicit Retry request**; those count assertions remain intact. A no-op color setter skips unchanged state dispatch. Commit/deployment and new performance measurements remain pending for this slice.
+
+### 2026-10-04 resumed verification
+
+The actual compiler/4 suite passed **all five cases in 16.1s** using the shared production build. It includes 0/250/750ms monotonic-delay reads, XY/scale reversal, real glyph-hit touchscreen activation, warm Collection reversal and synthetic persisted pagehide/pageshow. The lifecycle case verifies application disposal ownership and subsequent successful coverage reads; it does not establish actual iOS suspension, process eviction or bfcache eligibility. The three delayed-read per-frame records are retained as [0ms](compiler4-continuity-2026-10-04-0ms.json), [250ms](compiler4-continuity-2026-10-04-250ms.json) and [750ms](compiler4-continuity-2026-10-04-750ms.json).
+
+The resumed focused route/cursor/harness batch passed 7 tests, including the complete dense10k route/client test. Root and Atropos strict typechecks, repository ESLint, full formatting and service boundary checks passed after correcting explicit types in the measurement script. No product assertion or performance threshold was weakened. General CI and the full scale matrix must be rerun against the forthcoming commit; the previous deployed SHA's failures remain historical failures.

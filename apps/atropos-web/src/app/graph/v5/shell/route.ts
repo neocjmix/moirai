@@ -45,7 +45,9 @@ const input = z.discriminatedUnion("kind", [
 export async function POST(request: Request) {
   let parsed;
   try {
-    parsed = input.safeParse(await readV5ShellRequest(request));
+    parsed = input.safeParse(
+      await readV5ShellRequest(request, { allowViewportContinuation: true })
+    );
   } catch {
     return Response.json({ error: "invalid_query" }, { status: 400 });
   }

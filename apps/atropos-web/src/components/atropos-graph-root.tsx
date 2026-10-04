@@ -107,6 +107,23 @@ function MoiraiGraphApp({
     () => selectGraphSpatialBootstrap(spatial, state),
     [queryKey, spatial]
   );
+  // A query's RSC response can serialize the same shell again. Its object
+  // identity must not cancel reads already owned by that immutable workspace.
+  // Compare the full shell: source revisions alone omit frame/label changes.
+  const workspaceKey = JSON.stringify(selectedSpatial.workspace);
+  const workspace = useMemo(
+    () => JSON.parse(workspaceKey) as GraphSpatialBootstrap["workspace"],
+    [workspaceKey]
+  );
+  const centerX = selectedSpatial.center?.x;
+  const centerY = selectedSpatial.center?.y;
+  const center = useMemo(
+    () =>
+      centerX === undefined || centerY === undefined
+        ? null
+        : { x: centerX, y: centerY },
+    [centerX, centerY]
+  );
   const loader = useMemo(() => {
     const requestState = {
       version: 1 as const,
@@ -116,7 +133,7 @@ function MoiraiGraphApp({
     return createMoiraiGraphReadLoader({
       sources: requestState.query.sources,
       state: requestState,
-      workspace: selectedSpatial.workspace,
+      workspace,
       maxEntities: Math.min(2500, requestState.query.budget.max_entities),
       loadEventDetail: async (_locale, id, signal) => {
         const response = await fetch("/graph/detail", {
@@ -129,7 +146,7 @@ function MoiraiGraphApp({
         return response.json();
       }
     });
-  }, [queryKey, selectedSpatial.workspace]);
+  }, [queryKey, workspace]);
   const focus =
     state.focus?.kind === "event"
       ? {
@@ -189,10 +206,10 @@ function MoiraiGraphApp({
   );
   return (
     <App
-      key={selectedSpatial.workspace.buildRevision}
+      key={workspace.buildRevision}
       initialScreen={initialScreen}
       loader={loader}
-      initialViewportCenter={selectedSpatial.center}
+      initialViewportCenter={center}
       externalFocus={focus}
       {...(initialEventDetail ? { initialEventDetail } : {})}
       {...(initialDrawerStage ? { initialDrawerStage } : {})}

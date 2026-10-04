@@ -16,11 +16,13 @@ test("steady pan uses current Composite label coordinates without a second paint
       addEventListener("moirai:graph-inspection", listener, { once: true });
       dispatchEvent(new Event("moirai:inspect-graph"));
       removeEventListener("moirai:graph-inspection", listener);
-      if (commits === undefined) throw new Error("Graph inspection is unavailable");
+      if (commits === undefined)
+        throw new Error("Graph inspection is unavailable");
       return commits;
     };
     const before = inspect();
-    for (let frame = 0; frame < 15; frame++) await new Promise(requestAnimationFrame);
+    for (let frame = 0; frame < 15; frame++)
+      await new Promise(requestAnimationFrame);
     return inspect() - before;
   });
   expect(idleCommits).toBe(0);

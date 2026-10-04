@@ -1,5 +1,5 @@
 /** Shared synthetic shape for real worker and browser scale acceptance. */
-import type { CanonicalState } from "@moirai/contracts/v5";
+import type { CanonicalState } from "../packages/contracts/src/v5";
 export function scaleFixture(count: number, density: string): CanonicalState {
   if (
     ![1000, 10000, 100000].includes(count) ||

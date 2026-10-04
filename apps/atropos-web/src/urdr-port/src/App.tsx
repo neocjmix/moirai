@@ -127,7 +127,15 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
   const loadingWorkspace = useMemo(() => createLoadingWorkspace(locale), [locale]);
   const [workspace, setWorkspace] = useState<GraphShellWorkspaceShell | null>(null);
   const [workspaceStatus, setWorkspaceStatus] = useState<"loading" | "ready" | "unavailable">("loading");
-  const graphWorkspace = workspace ?? (workspaceStatus === "loading" && !renderGraphPage ? loadingWorkspace : null);
+  const [workspaceOwner, setWorkspaceOwner] = useState<{loader: GraphReadLoader; locale: AppLocale} | null>(null);
+  const ownsWorkspace = localePreferenceLoaded && workspaceOwner?.loader === loader && workspaceOwner.locale === locale;
+  const currentWorkspaceStatus = ownsWorkspace ? workspaceStatus : "loading";
+  // A child passive effect runs before the parent's workspace-read effect.
+  // Hide a previous loader's ready shell during render, before it can start a
+  // detail read that the following loading render would immediately cancel.
+  const canRetainWorkspace = localePreferenceLoaded && preserveWorkspaceOnLoaderChange && workspaceOwner?.locale === locale;
+  const graphWorkspace = ((ownsWorkspace || canRetainWorkspace) ? workspace : null)
+    ?? (currentWorkspaceStatus === "loading" && !renderGraphPage ? loadingWorkspace : null);
   const GraphPageContent = () =>
     graphWorkspace ? renderGraphPage ? (
       <>{renderGraphPage({ workspace: graphWorkspace, locale, compositeHullMode, compositeSplineTuning })}</>
@@ -158,14 +166,10 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
   }, []);
 
   useEffect(() => {
-    // V5 source changes keep the same immutable workspace shell. Retaining it
-    // avoids loading/ready renders and graph re-hydration on every toggle.
-    if (!preserveWorkspaceOnLoaderChange) {
-      setWorkspaceStatus("loading");
-      setWorkspace(null);
-    }
+    if (!localePreferenceLoaded) return;
 
     const abortController = new AbortController();
+    const owner = {loader, locale};
     let active = true;
 
     const loadWorkspace = async () => {
@@ -178,6 +182,7 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
               : parsed
           );
           setWorkspaceStatus("ready");
+          setWorkspaceOwner(owner);
         }
       } catch (error) {
         if (!active || abortController.signal.aborted) {
@@ -185,6 +190,7 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
         }
         setWorkspace(null);
         setWorkspaceStatus("unavailable");
+        setWorkspaceOwner(owner);
       }
     };
 
@@ -194,7 +200,7 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
       active = false;
       abortController.abort();
     };
-  }, [loader, locale, preserveWorkspaceOnLoaderChange]);
+  }, [loader, locale, localePreferenceLoaded, preserveWorkspaceOnLoaderChange]);
 
   useEffect(() => {
     if (localePreferenceLoaded) {
@@ -225,7 +231,7 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
 
   const renderPage = () => {
     if (activePage === "graph") {
-      if (workspaceStatus === "unavailable") {
+      if (currentWorkspaceStatus === "unavailable") {
         return (
           <div className={appShellStyles.shellPage}>
             <div className={appShellStyles.shellPageSurface}>

@@ -1,0 +1,547 @@
+{
+  "delay": 750,
+  "metadata": [
+    {
+      "level": 1,
+      "algorithmVersion": "render-compiler/4",
+      "viewport": {
+        "minX": -1889,
+        "maxX": 1311,
+        "minY": 210880,
+        "maxY": 234880
+      }
+    },
+    {
+      "level": -1,
+      "algorithmVersion": "render-compiler/4",
+      "viewport": {
+        "minX": -4289,
+        "maxX": 3711,
+        "minY": 174880,
+        "maxY": 270880
+      }
+    }
+  ],
+  "delayed": [
+    {
+      "kind": "viewport",
+      "started": 9560.226898,
+      "released": 10310.564319
+    },
+    {
+      "kind": "assets",
+      "started": 10323.293435,
+      "released": 0
+    },
+    {
+      "kind": "assets",
+      "started": 10424.596865,
+      "released": 0
+    }
+  ],
+  "evidence": {
+    "running": false,
+    "reverse": true,
+    "reversed": true,
+    "samples": [
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.905204,
+        "point": 0.194393,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.823792,
+        "point": 0.276484,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.621907,
+        "point": 0.430524,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.523378,
+        "point": 0.502459,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.380075,
+        "point": 0.616601,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.304708,
+        "point": 0.684643,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.193116,
+        "point": 0.800472,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.144884,
+        "point": 0.857371,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.091823,
+        "point": 0.9245,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.059235,
+        "point": 0.965913,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.02558,
+        "point": 0.998586,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.003759,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.081294,
+        "point": 0.822445,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0,
+        "point": 1,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.124715,
+        "point": 0.772356,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.274565,
+        "point": 0.644818,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.428424,
+        "point": 0.533077,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.589206,
+        "point": 0.409301,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.688967,
+        "point": 0.321344,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.7885,
+        "point": 0.220066,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.855116,
+        "point": 0.142629,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.913397,
+        "point": 0.068759,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.948486,
+        "point": 0.024907,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.97442,
+        "point": 0.001414,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.990623,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 0.998358,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      },
+      {
+        "hull": 1,
+        "point": 0,
+        "same": true,
+        "visible": true
+      }
+    ]
+  }
+}

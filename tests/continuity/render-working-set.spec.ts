@@ -1,4 +1,5 @@
 import { expect, test, type Page } from "@playwright/test";
+import { mkdir, writeFile } from "node:fs/promises";
 
 const world = "019f3b00-0000-7000-8000-000000000a01";
 const event = "019f3b00-0000-7000-8000-000000000a12";
@@ -17,6 +18,79 @@ async function restoreCamera(page: Page, camera: number[]) {
     dispatchEvent(new PopStateEvent("popstate", { state: history.state }));
   }, camera);
 }
+
+test("synthetic persisted page lifecycle keeps the live reader and authored identity", async ({
+  page
+}) => {
+  // This exercises the application's pagehide.persisted contract only. It does
+  // not suspend WebKit, establish real bfcache eligibility, or reproduce iOS
+  // Safari/Home Screen process eviction and foreground scheduling.
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}`
+  );
+  const owner = page.locator(
+    `[data-composite-paint-id="${continuityComposite}"]`
+  );
+  await expect(owner).toHaveCount(1);
+  await expect
+    .poll(() =>
+      owner
+        .locator(":scope > path")
+        .evaluate((node) => Number(getComputedStyle(node).opacity))
+    )
+    .toBeGreaterThan(0.95);
+  const original = await owner.elementHandle();
+  await page.evaluate(() => {
+    dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+  });
+  // Keep the events in separate tasks so disposal mistakenly triggered by the
+  // hide event has a chance to run before the cached page is restored.
+  await page.evaluate(() => {
+    dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+  });
+  const widerRead = page.waitForResponse((response) => {
+    if (new URL(response.url()).pathname !== "/graph/v5/render") return false;
+    const request = response.request().postDataJSON();
+    return (
+      request.kind === "viewport" &&
+      request.viewport.maxY - request.viewport.minY > 40000
+    );
+  });
+  await restoreCamera(page, wideCamera);
+  const response = await widerRead;
+  expect(response.status()).toBe(200);
+  expect((await response.json()).algorithmVersion).toBe("render-compiler/4");
+  await expect(
+    owner.locator(`[data-composite-point-id="${continuityComposite}"]`)
+  ).toHaveCount(1);
+  expect(
+    await owner.evaluate((node, original) => node === original, original)
+  ).toBe(true);
+  await page.mouse.move(75, 520);
+  await page.mouse.down();
+  await page.mouse.move(87, 528, { steps: 6 });
+  await page.mouse.up();
+  await expect
+    .poll(() =>
+      page.evaluate(() => {
+        let ready = false;
+        const inspect = (event: Event) => {
+          ready = (event as CustomEvent).detail?.loadState === "ready";
+        };
+        addEventListener("moirai:graph-inspection", inspect, { once: true });
+        dispatchEvent(new Event("moirai:inspect-graph"));
+        removeEventListener("moirai:graph-inspection", inspect);
+        return ready;
+      })
+    )
+    .toBe(true);
+  expect(
+    await owner.evaluate((node, original) => node === original, original)
+  ).toBe(true);
+  expect(errors).toEqual([]);
+});
 
 for (const delay of [0, 250, 750]) {
   test(`compiler4 keeps authored paint across XY/scale coverage and reversal with ${delay}ms reads`, async ({
@@ -148,20 +222,45 @@ for (const delay of [0, 250, 750]) {
     await page.route("**/graph/v5/render", async (route) => {
       const read: (typeof delayed)[number] = {
         kind: route.request().postDataJSON().kind as string,
-        started: Date.now(),
+        started: performance.now(),
         released: 0
       };
       delayed.push(read);
-      if (delay) await new Promise((resolve) => setTimeout(resolve, delay));
-      read.released = Date.now();
+      const deadline = read.started + delay;
+      // Node timers may wake just before their requested duration. Measure a
+      // monotonic deadline and finish any remainder so every released request
+      // really receives the claimed network delay.
+      while (performance.now() < deadline) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, Math.ceil(deadline - performance.now()))
+        );
+      }
+      read.released = performance.now();
       // A rapid reversal can cancel an older request while this real-network
       // delay is pending. WebKit has already disposed its route in that case.
       const failure = route.request().failure();
       if (failure) {
         read.cancelled = failure.errorText;
+        // Complete Playwright's handler bookkeeping; returning without any
+        // routing action leaves its handled promise unresolved after abort.
+        await route.fallback();
         return;
       }
-      await route.continue();
+      try {
+        await route.continue();
+      } catch (error) {
+        // Cancellation can race the IPC continue after the check above. Only
+        // that already-failed route is released; all other failures propagate.
+        const cancelled = route.request().failure();
+        if (
+          !cancelled ||
+          !(error instanceof Error) ||
+          !error.message.includes("Route is already handled")
+        )
+          throw error;
+        read.cancelled = cancelled.errorText;
+        await route.fallback();
+      }
     });
     const coverageRead = page.waitForResponse(
       (response) =>
@@ -214,8 +313,8 @@ for (const delay of [0, 250, 750]) {
         hull.evaluate((node) => Number(getComputedStyle(node).opacity))
       )
       .toBeGreaterThan(0.95);
-    await page.unrouteAll({ behavior: "wait" });
-    await Promise.all(reads);
+    // The widened coverage response above was explicitly awaited. Cancelled
+    // prefetches belong to the context lifetime, not a blocking teardown gate.
     const evidence = await page.evaluate(() => {
       const probe = (
         window as unknown as {
@@ -234,8 +333,15 @@ for (const delay of [0, 250, 750]) {
       probe.running = false;
       return probe;
     });
-    await info.attach(`compiler4-${delay}ms-continuity.json`, {
-      body: JSON.stringify({ delay, metadata, delayed, evidence }),
+    const evidenceName = `compiler4-${delay}ms-continuity.json`;
+    const evidencePath = info.outputPath(evidenceName);
+    await mkdir(info.outputDir, { recursive: true });
+    await writeFile(
+      evidencePath,
+      JSON.stringify({ delay, metadata, delayed, evidence }, null, 2)
+    );
+    await info.attach(evidenceName, {
+      path: evidencePath,
       contentType: "application/json"
     });
     expect(evidence.samples.length).toBeGreaterThan(8);
@@ -257,14 +363,61 @@ for (const delay of [0, 250, 750]) {
     expect(
       metadata.every((item) => item.algorithmVersion === "render-compiler/4")
     ).toBe(true);
-    expect(delayed.every((read) => read.released - read.started >= delay)).toBe(
-      true
+    const releasedReads = delayed.filter((read) => read.released > 0);
+    expect(
+      releasedReads.some((read) => read.kind === "viewport" && !read.cancelled)
+    ).toBe(true);
+    expect(
+      releasedReads.every((read) => read.released - read.started >= delay)
+    ).toBe(true);
+    const semanticLabel = page.locator(
+      `text[data-region-id="${continuityComposite}"][data-primary-hit-target="composite-label"]`
     );
-    await page
-      .locator(
-        `text[data-region-id="${continuityComposite}"][data-primary-hit-target="composite-label"]`
+    await expect(semanticLabel).toBeVisible();
+    // A curved textPath's whole bounding-box center may be empty space.
+    // Find actual painted glyph pixels using native hit testing, then perform
+    // a real mobile tap. A label with no hittable pixels remains a failure.
+    const hit = await semanticLabel.evaluate((node) => {
+      const label = node as SVGTextElement;
+      const matrix = label.getScreenCTM();
+      if (!matrix) return null;
+      const probe = (x: number, y: number) => {
+        const hit = document.elementFromPoint(x, y);
+        return hit && (hit === label || label.contains(hit)) ? { x, y } : null;
+      };
+      for (let index = 0; index < label.getNumberOfChars(); index++) {
+        const glyph = label.getExtentOfChar(index);
+        for (const fx of [0.5, 0.25, 0.75])
+          for (const fy of [0.5, 0.25, 0.75]) {
+            const point = new DOMPoint(
+              glyph.x + glyph.width * fx,
+              glyph.y + glyph.height * fy
+            ).matrixTransform(matrix);
+            const hit = probe(point.x, point.y);
+            if (hit) return hit;
+          }
+      }
+      const bounds = label.getBoundingClientRect();
+      for (
+        let y = Math.max(0, bounds.top);
+        y < Math.min(innerHeight, bounds.bottom);
+        y += 2
       )
-      .click();
+        for (
+          let x = Math.max(0, bounds.left);
+          x < Math.min(innerWidth, bounds.right);
+          x += 2
+        ) {
+          const hit = probe(x, y);
+          if (hit) return hit;
+        }
+      return null;
+    });
+    expect(
+      hit,
+      "authored hull label must expose real mobile hit pixels"
+    ).not.toBeNull();
+    await page.touchscreen.tap(hit!.x, hit!.y);
     await expect(page.getByTestId("event-drawer-sheet")).toContainText(
       "합성 연속성 검증용 서술 0"
     );

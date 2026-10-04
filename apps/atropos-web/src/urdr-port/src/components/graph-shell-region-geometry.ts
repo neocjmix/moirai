@@ -747,7 +747,7 @@ function isPointWithinViewport(point: ViewportCoordinate, viewport: ViewportExte
   );
 }
 
-function getLongestVisiblePathInterval(path: ReturnType<typeof measurePolyline>, viewport: ViewportExtent, margin: number) {
+function getLongestVisiblePathInterval(path: ReturnType<typeof measurePolyline>, viewport: ViewportExtent, margin: number, offset = {x: 0, y: 0}) {
   const {totalLength} = path;
   if (totalLength <= AREA_EPSILON || viewport.width < margin * 2 || viewport.height < margin * 2) {
     return { start: 0, end: 0, span: 0 };
@@ -767,11 +767,10 @@ function getLongestVisiblePathInterval(path: ReturnType<typeof measurePolyline>,
       bestEnd = end;
     }
   };
-  const visibleAt = (index: number) => isPointWithinViewport(
-    getPointAtDistanceOnPolyline(path, (totalLength * index) / sampleCount).point,
-    viewport,
-    margin,
-  );
+  const visibleAt = (index: number) => {
+    const point = getPointAtDistanceOnPolyline(path, (totalLength * index) / sampleCount).point;
+    return isPointWithinViewport({x: point.x + offset.x, y: point.y + offset.y}, viewport, margin);
+  };
 
   // Clip each line segment, then keep precisely the same six-pixel sample
   // indices as the old full-path scan. Work now depends on segment count, not
@@ -781,8 +780,8 @@ function getLongestVisiblePathInterval(path: ReturnType<typeof measurePolyline>,
     let enter = 0;
     let leave = 1;
     for (const [from, delta, lower, upper] of [
-      [start.x, end.x - start.x, margin, viewport.width - margin],
-      [start.y, end.y - start.y, margin, viewport.height - margin],
+      [start.x, end.x - start.x, margin - offset.x, viewport.width - margin - offset.x],
+      [start.y, end.y - start.y, margin - offset.y, viewport.height - margin - offset.y],
     ]) {
       if (delta === 0) {
         if (from < lower || from > upper) leave = -1;
@@ -915,6 +914,26 @@ function getCompositeSidePriority(centroid: ViewportCoordinate, viewport: Viewpo
   return [vertical, horizontal, horizontal === "left" ? "right" : "left", vertical === "top" ? "bottom" : "top"] as const;
 }
 
+// These local edge contours and arc lengths depend on shape/scale and text
+// height, not on pan, viewport clipping, label width or nearby point density.
+// The bounded pan-geometry owner retains them; every admission decision below
+// still uses the current viewport and current spatial point query.
+export function prepareCompositeLabelPaths(points: ViewportCoordinate[], labelHeight: number, labelGap: number) {
+  const normalizedPoints = dedupeOrderedPoints(points);
+  const clockwise = getPolygonSignedArea(normalizedPoints) < 0;
+  return {
+    points: normalizedPoints,
+    labelHeight,
+    labelGap,
+    paths: normalizedPoints.map((_, index) => measurePolyline(getCompositeLabelPathPoints(normalizedPoints, index, labelGap + labelHeight * 0.5, clockwise))),
+  };
+}
+
+export type CompositeLabelPathFrame = {
+  prepared: ReturnType<typeof prepareCompositeLabelPaths>;
+  offset: ViewportCoordinate;
+};
+
 export function resolveCompositeEdgeLabelPlacement(
   points: ViewportCoordinate[],
   labelWidth: number,
@@ -924,8 +943,32 @@ export function resolveCompositeEdgeLabelPlacement(
   labelGap = 6,
   nearbyPoints: ViewportCoordinate[] | ((bounds: {minX: number; maxX: number; minY: number; maxY: number}) => ViewportCoordinate[]) = [],
   previous?: CompositeEdgeLabelPlacement,
+  pathFrame?: CompositeLabelPathFrame,
 ): CompositeEdgeLabelPlacement {
-  const normalizedPoints = dedupeOrderedPoints(points);
+  // At a half-grid translation, toFixed can round different source vertices
+  // in opposite directions. Recompute that rare case with the original path.
+  const halfGrid = (value: number) => Math.abs(Math.abs(value * 1000) % 1 - 0.5) < 0.000001;
+  const preparedFrame = pathFrame?.prepared.labelHeight === labelHeight && pathFrame?.prepared.labelGap === labelGap &&
+    !halfGrid(pathFrame.offset.x) && !halfGrid(pathFrame.offset.y) ? pathFrame : undefined;
+  // The existing resolver normalizes source vertices to the 0.001px grid.
+  // Retain that grid when translating prepared contours through fractional pan.
+  const offset = preparedFrame ? {
+    x: Number(preparedFrame.offset.x.toFixed(POINT_SNAP_PRECISION)),
+    y: Number(preparedFrame.offset.y.toFixed(POINT_SNAP_PRECISION)),
+  } : {x: 0, y: 0};
+  const normalizedPoints = preparedFrame
+    ? preparedFrame.prepared.points.map(point => ({x: point.x + offset.x, y: point.y + offset.y}))
+    : dedupeOrderedPoints(points);
+  const projectedPaths = new Map();
+  const screenPath = (candidate) => {
+    if (!preparedFrame) return candidate.pathPoints;
+    let projected = projectedPaths.get(candidate.pathPoints);
+    if (!projected) {
+      projected = candidate.pathPoints.map(point => ({x: point.x + offset.x, y: point.y + offset.y}));
+      projectedPaths.set(candidate.pathPoints, projected);
+    }
+    return projected;
+  };
   const centroid = getPolygonCentroid(normalizedPoints);
 
   if (normalizedPoints.length === 0) {
@@ -1006,12 +1049,12 @@ export function resolveCompositeEdgeLabelPlacement(
       labelAnchor,
       labelAngle,
       edgeIndex: index,
-      pathPoints: getCompositeLabelPathPoints(normalizedPoints, index, labelGap + labelHeight * 0.5, isClockwise),
+      pathPoints: preparedFrame?.prepared.paths[index]?.points ?? getCompositeLabelPathPoints(normalizedPoints, index, labelGap + labelHeight * 0.5, isClockwise),
       side,
     };
-    const measuredPath = measurePolyline(placement.pathPoints);
+    const measuredPath = preparedFrame?.prepared.paths[index] ?? measurePolyline(placement.pathPoints);
     const totalPathLength = measuredPath.totalLength;
-    const visibleInterval = getLongestVisiblePathInterval(measuredPath, viewport, labelHeight * 0.5);
+    const visibleInterval = getLongestVisiblePathInterval(measuredPath, viewport, labelHeight * 0.5, offset);
     const minVisibleSpan = labelWidth * 0.72;
     const fitClass: 0 | 1 | 2 = visibleInterval.span >= labelWidth + 8 ? 0 : visibleInterval.span >= minVisibleSpan ? 1 : 2;
     const halfLabel = labelWidth / 2;
@@ -1022,8 +1065,8 @@ export function resolveCompositeEdgeLabelPlacement(
     const centerSample = getPointAtDistanceOnPolyline(measuredPath, centerDistance);
     const fittedPlacement = {
       ...placement,
-      labelX: centerSample.point.x,
-      labelY: centerSample.point.y,
+      labelX: centerSample.point.x + offset.x,
+      labelY: centerSample.point.y + offset.y,
       labelAngle: getReadableEdgeAngle(centerSample.tangent.x, centerSample.tangent.y),
       textPathStartOffset: `${formatSvgCoordinate(centerDistance)}`,
     } satisfies CompositeEdgeLabelPlacement;
@@ -1078,7 +1121,7 @@ export function resolveCompositeEdgeLabelPlacement(
   let selected = rankedCandidates[0]!;
   let bestDensity = Number.POSITIVE_INFINITY;
   for (const candidate of rankedCandidates) {
-    candidate.densityScore = getCandidateDensityScore(getCompositeLabelBounds(candidate, labelWidth, labelHeight), candidate.pathPoints, nearbyPoints, labelHeight);
+    candidate.densityScore = getCandidateDensityScore(getCompositeLabelBounds(candidate, labelWidth, labelHeight), screenPath(candidate), nearbyPoints, labelHeight);
     if (candidate.densityScore < bestDensity) {
       selected = candidate;
       bestDensity = candidate.densityScore;
@@ -1092,7 +1135,7 @@ export function resolveCompositeEdgeLabelPlacement(
     ? candidates.find(candidate => candidate.edgeIndex === previous.edgeIndex)
     : undefined;
   if (incumbent && incumbent !== selected) {
-    const density = getCandidateDensityScore(getCompositeLabelBounds(incumbent, labelWidth, labelHeight), incumbent.pathPoints, nearbyPoints, labelHeight, 8);
+    const density = getCandidateDensityScore(getCompositeLabelBounds(incumbent, labelWidth, labelHeight), screenPath(incumbent), nearbyPoints, labelHeight, 8);
     if (incumbent.visibleSpan >= labelWidth * 0.72 - 16 &&
         incumbent.overflow <= 16 &&
         density <= selected.densityScore &&
@@ -1113,7 +1156,7 @@ export function resolveCompositeEdgeLabelPlacement(
     labelY: selected.labelY,
     labelAnchor: selected.labelAnchor,
     labelAngle: selected.labelAngle,
-    pathPoints: selected.pathPoints,
+    pathPoints: screenPath(selected),
     textPathStartOffset: selected.textPathStartOffset,
     side: selected.side,
   } satisfies CompositeEdgeLabelPlacement;

@@ -1,6 +1,7 @@
 import {
   buildClosedSplinePath,
   expandPolygon,
+  prepareCompositeLabelPaths,
   type CompositeSplineTuning
 } from "./graph-shell-region-geometry";
 import type { ViewportCoordinate } from "./graph-shell-composite";
@@ -14,6 +15,8 @@ type Request = {
   viewport: Size;
   padding: number;
   tuning: CompositeSplineTuning;
+  labelHeight?: number;
+  labelGap?: number;
 };
 type Entry = {
   support: readonly ViewportCoordinate[];
@@ -25,6 +28,7 @@ type Entry = {
   expanded: ViewportCoordinate[];
   path: string;
   vertices: number;
+  labelPaths?: ReturnType<typeof prepareCompositeLabelPaths>;
 };
 
 function sameSupport(left: readonly ViewportCoordinate[], right: readonly ViewportCoordinate[]) {
@@ -48,6 +52,8 @@ export function createCompositePanGeometryCache({
   let builds = 0;
   let hits = 0;
   let evictions = 0;
+  let labelPathBuilds = 0;
+  let labelPathHits = 0;
   const remove = (id: string) => {
     const entry = entries.get(id);
     if (!entry) return;
@@ -57,7 +63,7 @@ export function createCompositePanGeometryCache({
   };
 
   return {
-    project({id, points, view, viewport, padding, tuning}: Request) {
+    project({id, points, view, viewport, padding, tuning, labelHeight, labelGap}: Request) {
       const origin = {x: viewport.width / 2 + view.x, y: viewport.height / 2 + view.y};
       // Keep point/composite LOD coordinates exact. Only expensive padded hull
       // geometry and its SVG path are reused through a pure translation.
@@ -104,10 +110,17 @@ export function createCompositePanGeometryCache({
       }
       const dx = origin.x - entry.origin.x;
       const dy = origin.y - entry.origin.y;
+      if (labelHeight !== undefined && labelGap !== undefined) {
+        if (!entry.labelPaths || entry.labelPaths.labelHeight !== labelHeight || entry.labelPaths.labelGap !== labelGap) {
+          entry.labelPaths = prepareCompositeLabelPaths(entry.expanded, labelHeight, labelGap);
+          labelPathBuilds++;
+        } else labelPathHits++;
+      }
       return {
         projectedHullPoints,
         projectedPoints: dx === 0 && dy === 0 ? entry.expanded : entry.expanded.map(point => ({x: point.x + dx, y: point.y + dy})),
         path: entry.path,
+        labelPathFrame: entry.labelPaths ? {prepared: entry.labelPaths, offset: {x: dx, y: dy}} : undefined,
         pathTransform: dx === 0 && dy === 0 ? undefined : `translate(${dx} ${dy})`
       };
     },
@@ -117,7 +130,8 @@ export function createCompositePanGeometryCache({
       pathCharacters = 0;
     },
     inspect() {
-      return {entries: entries.size, vertices, pathCharacters, builds, hits, evictions};
+      return {entries: entries.size, vertices, pathCharacters, builds, hits, evictions, labelPathBuilds, labelPathHits,
+        labelPathPoints: [...entries.values()].reduce((sum, entry) => sum + (entry.labelPaths?.paths.reduce((total, path) => total + path.points.length, 0) ?? 0), 0)};
     }
   };
 }

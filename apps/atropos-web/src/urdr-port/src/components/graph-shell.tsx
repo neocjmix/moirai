@@ -2958,6 +2958,7 @@ export function GraphShell({
       const geometry = compositePanGeometryCache.project({
         id: region.id, points: region.points, view, viewport: viewportSize,
         padding: getCompositeRegionPadding(region.depth), tuning: compositeSplineTuning,
+        labelHeight: COMPOSITE_LABEL_LINE_HEIGHT, labelGap: COMPOSITE_LABEL_GAP,
       });
       const {projectedHullPoints, projectedPoints} = geometry;
       const representation = compositeRepresentationDisplay(projectedHullPoints, region.hullPending);
@@ -2980,6 +2981,7 @@ export function GraphShell({
         COMPOSITE_LABEL_GAP,
         queryProjectedLabelPoints,
         history.get(region.id)?.label === renderedLabel ? history.get(region.id).placement : undefined,
+        geometry.labelPathFrame,
       );
       placements.set(region.id, {label: renderedLabel, placement, compactPoint});
       return {

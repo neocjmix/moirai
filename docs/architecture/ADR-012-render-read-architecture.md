@@ -174,6 +174,8 @@ A normal read must preserve the identity and presentation history of the same au
 
 The 2026-10-04 painter checkpoint separates background hull/point ink into a bounded Canvas surface while retaining full-device-density SVG text, authored paint groups and interaction geometry. Both consume the same viewport/transition inputs; this does not move domain or publication decisions into Canvas. Background raster density may be capped independently of text density, with a small antialiasing approximation. Native paths and transient animation identities remain bounded, and unsupported Canvas falls back to the SVG painter (`?gsGraphics=svg`). Production frame acceptance remains subject to the original measurements and thresholds.
 
+Camera-only pan may reuse a buffered background raster by applying the current camera translation. Reuse must validate authored World positions and paint material, refresh on scale changes to preserve screen-sized point/stroke density, and refresh before its overscan is exhausted. The current implementation bounds one bitmap to4,000,000 pixels and keeps SVG text/targets current independently. This is a reversible renderer optimization, not a new semantic LOD or publication contract; its performance still requires the original browser gates.
+
 ## 10. Collection selection
 
 Collection selection is an Atropos visibility/filter operation over already fetched representation metadata.

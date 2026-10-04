@@ -170,7 +170,26 @@ async function inspect(page: Page) {
     return value
       ? {
           ...(value as Inspection),
-          boundsTiming: (window as ProfileWindow).__ip012Bounds ?? null
+          boundsTiming: (window as ProfileWindow).__ip012Bounds ?? null,
+          graphicsPainter:
+            document
+              .querySelector('svg[aria-label="Projected chart surface"]')
+              ?.getAttribute("data-graphics-painter") ?? null,
+          graphicsCanvas: (() => {
+            const canvas = document.querySelector<HTMLCanvasElement>(
+              '[data-testid="geographic-canvas"]'
+            );
+            return canvas
+              ? {
+                  rasterScale: Number(canvas.dataset.rasterScale),
+                  backingBytes: canvas.width * canvas.height * 4,
+                  paints: Number(canvas.dataset.paintRevision || 0),
+                  cameraReuses: Number(canvas.dataset.cameraReuses || 0),
+                  points: Number(canvas.dataset.pointCount),
+                  regions: Number(canvas.dataset.regionCount)
+                }
+              : null;
+          })()
         }
       : null;
   });

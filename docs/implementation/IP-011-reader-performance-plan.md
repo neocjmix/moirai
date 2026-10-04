@@ -1,5 +1,8 @@
 # IP-011 A4 종료와 A5 탐색 실험 재계획
 
+> 2026-10-04 순서 대체: 아래 활성화·다음 단계·A5→A6·합성 입력 지시는 당시 인계/계획 이력이다. [IP-013](IP-013-real-history-development-plan.md)의 W/C 수용→실제 역사 pilot∥Composite→격리 X 실험→자동화/discovery가 우선한다. 현재 작업은 문서·draft PR 전용이며 [CURRENT](CURRENT.md)가 실행 상태를 소유한다.
+
+
 2026-09-28 KST. 사용자 요청에 따른 실행 범위 분리. 상위 계획은 [IP-011](IP-011-architecture-realignment.md), 현재 실행은 [CURRENT](CURRENT.md), 기존 성능 계약은 [TS-006](../technical-specifications/TS-006-atropos-publication.md)과 [A1 budget](../evidence/ip011/a1-execution.md)이다. A4는 이후 같은 날 사용자 승인으로 종료됐다. [종료 결정·백로그](IP-011-A4-closeout-backlog.md)가 미충족 항목을 소유한다. 아래 R1–R3는 원래 실행·측정 계획이며 자동 재개하지 않는다. A5-E1~E3는 같은 날 후속 사용자 지시에 따라 [IP-011-A5-collection-discovery-plan.md](IP-011-A5-collection-discovery-plan.md)의 S0~S7로 대체됐다. A5는 후속 명시적 지시로 구현 활성이다.
 
 ## 1. 목표와 경계

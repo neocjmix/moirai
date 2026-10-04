@@ -43,7 +43,7 @@ For a runtime change, hand off:
 - public mobile URL;
 - commit and deployed build SHA;
 - tests and post-deploy smoke result;
-- synthetic fixture used;
+- real-history case/snapshot used for exploratory acceptance, plus relevant synthetic regression fixtures;
 - known risk or unverified area;
 - next smallest step.
 
@@ -145,10 +145,12 @@ First apply explicit session authorization, including the task-specific delegati
 
 Ordinary code failures, test failures and deployment errors are not reasons to hand work back prematurely. Diagnose and recover safely within scope.
 
-## IP-011 planning authority
+## Current planning authority — IP-013
 
-2026-09-28 12:21 KST follow-up: HUD must rank all screen-related Composite candidates and select exactly one when candidates exist, not select only candidates exceeding eligibility/confidence thresholds. Completeness and specificity are relative ranking signals, not exclusion gates. Area/fade are not title eligibility. Existing paint suppression and camera invariants remain.
+The 2026-10-04 user replan in [IP-013](docs/implementation/IP-013-real-history-development-plan.md) supersedes the old A5 S0–S7 completion → A6 history dependency and synthetic-scale-led product validation. The current task is documentation and a draft PR only: no feature implementation, data/config changes, merge or deployment. Earlier broad execution permissions do not override this scope.
 
-2026-09-28 A5 feedback override: the user explicitly authorized synthetic corpus mutations directly in the current development World (release data will be reset separately). A5 corpus writes are allowed through the existing v5 policy/transaction boundary, with synthetic labeling and idempotent batches; this is not authorization for a schema migration or A6/M5. HUD topic selection is independent of area/fade eligibility and may duplicate a visible graph label.
+The user separately authorized resuming the paused World implementation and history work after this documentation task; retain PR-first and no automatic merge. For that follow-up: accept World management and end-to-end Clotho input/publication readiness first; then dot builds a limited real-history pilot in a clean production history World while Codex develops and validates Composite representation/transitions against those real cases. After Composite review, build a separate X-layout experimentation environment; Collection automatic on/off and discovery follow it. Keep manual reading/selection/camera controls needed for validation without requiring all old A5 automation. Pilot user review precedes autonomous broad expansion/person compositions. CURRENT records activation; adopting planning prose alone does not start writes.
 
-Read CON-003, entities/CORE-MODEL, TS-002/004/005/006 and IP-011 for the target model. CURRENT distinguishes accepted contracts, the deployed v5 baseline and deferred work. A4 was closed by explicit user decision on 2026-09-28 with unmet performance gates transferred to `docs/implementation/IP-011-A4-closeout-backlog.md`; this is not a full performance pass. A5 implementation is active by explicit user instruction on 2026-09-28 under `docs/implementation/IP-011-A5-collection-discovery-plan.md` (S0–S7). Code/document changes, tests, commits, push, PR merge and frequent production checkpoints are authorized; report failing checks without blocking otherwise deployable checkpoints. A6/M5, bulk historical input, canonical migration and new paid services remain inactive. Historical IP-003/IP-007 requirements do not restore Canon-specific Narrative ownership. The user authorized IP-011 execution on 2026-09-22 after merging #129, including writes, corrections, deletion, merge and deployment. The latest implementation-start instruction replaces the previous planning-only restriction. Any later authorized implementation follows A1–A6 dependency order and retains rehearsal/backup/validation gates before canonical migration.
+Read CON-003, CORE-MODEL, TS-002/004/005/006/010, IP-011/A5 disposition and IP-013 for the unchanged domain contracts and new order. Temporal semantics, Event identity, Collection membership and camera/selection intent remain fixed. Layout experiments may be slower and must stay separate from production main UX; only reviewed algorithms/parameters advance to canonical Publication generation/backfill. Avoid speculative multi-publication product choices. Preserve synthetic fixtures as regression tests and dated A4/A5 evidence as history. IP-012 integrity/recovery needed for actual writes is a gate; every incremental optimization is not.
+
+The 2026-09-28 HUD decision remains: rank all screen-related Composite candidates and select exactly one when candidates exist; completeness/specificity rank rather than exclude, and paint area/fade do not determine title eligibility. Earlier synthetic corpus write permission and A5 activation are historical and do not authorize writes in this documentation task. A1–A3 migration evidence, A4 closeout, and #321 mobile acceptance remain intact; numeric frame gates alone never reopen tuning. M5, canonical migration and new paid services remain inactive.

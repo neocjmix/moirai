@@ -8,13 +8,13 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 헌법은 비즈니스 요구사항보다 우선하고 비즈니스 요구사항은 기술 명세보다 우선한다. 하위 계층이 상위 계층과 충돌하면 하위 문서를 수정하거나 상위 계층의 변경을 명시적으로 결정해야 한다.
 
-## 현재 authoritative baseline — IP-011
+## 현재 authoritative baseline — 실제 역사 기반 재계획
 
-2026-10-04 사용자는 운영 체감을 수용하고 [IP-012 모바일 성능·연속성 작업을 종료](implementation/IP-012-mobile-continuity-closeout.md)했다. 기존33.4ms 수치 미달과 실기기 heap 한계는 이관하며 자동 튜닝을 재개하지 않는다. 사용자는 모바일로만 개발 결과를 확인하므로 [AGENTS](../AGENTS.md)와 [IS-001](implementation/IS-001-agent-mobile-strategy.md)의 작은 production checkpoint 배포·자율 복구 정책은 유지한다. 최신 baseline과 별도 A5/publication backlog는 CURRENT를 따른다.
+[IP-013 실제 역사 기반 병행 개발](implementation/IP-013-real-history-development-plan.md)이 남은 우선순위를 소유한다. **World 관리→Clotho·발행 검증 후 dot의 제한 역사 pilot과 Codex의 Composite 표현·전환 개발을 병행**한다. 다음은 production main UX와 격리된 X 배치 실험실, 그 뒤 Collection 자동 ON/OFF·discovery다. 전체 A5 완료→A6 입력 순서는 대체됐다. 사용자 pilot 검토 전 자율 광역/인물 확장은 보류한다. 합성 규모 사례는 회귀용이고 실제 역사가 주 탐색·수용 자료다.
 
-Render Publication 책임 경계와 migration 순서는 [IP-012](implementation/IP-012-render-publication-plan.md)가 소유한다. 기본 GraphShell은 기존 painter를 유지하며 검증된 v3/v4 Render generation에서 데이터를 읽는다. `?tileData=0`은 semantic rollback이고 별도 tile scene은 `?renderTiles=1`에서 관찰한다. ADR-012 고정 격자·viewport 읽기는 #301로 배포됐으며 최신 모바일 label 수정·운영 검증은 CURRENT를 따른다. 모바일 체감 개선 작업은 사용자 수용으로 종료했고 수치 성능·실기기 증거와 증분 재사용은 이관 backlog다. IP-011 A5의 활성 구현을 대체하거나 A4 미달을 종료하지 않는다.
+[CURRENT](implementation/CURRENT.md)는 현재 문서·draft PR 전용 범위와 후속 실행 gate를 소유한다. 이번 작업은 입력·구현·merge·배포를 시작하지 않는다. [IP-011](implementation/IP-011-architecture-realignment.md)과 [A5 disposition](implementation/IP-011-A5-collection-discovery-plan.md)은 새 순서로 연결하며 기존 구현·증거를 보존한다.
 
-[IP-011 architecture realignment](implementation/IP-011-architecture-realignment.md)이 현재 planning과 남은 milestone 순서를 소유한다. 개정 CON-003/BR/TS는 목표 계약이며 운영 배포는 A3를 거쳐 v5로 전환됐다. [CURRENT](implementation/CURRENT.md)가 실행 활성 상태를 구분한다. A4는 사용자 승인으로 잔여 작업을 이관해 종료했다(성능 전체 통과 아님). [종료 결정·백로그](implementation/IP-011-A4-closeout-backlog.md)와 [A5 planning baseline](implementation/IP-011-A5-collection-discovery-plan.md)이 다음 작업의 시작점이다. A5는 2026-09-28 사용자 지시로 구현 활성이다. 계획 PR #237을 main에 통합했으며 실행 상태는 CURRENT를 따른다. [A4 인계](implementation/IP-011-A4-handoff.md)는 역사적 기준선이다.
+#321의 [모바일 성능 종료](implementation/IP-012-mobile-continuity-closeout.md)는 유지한다. 사용자는 iPhone 17 운영 체감을 수용했으며 수치 frame/heap 미달은 deferred이고 자동 재개 이유가 아니다. [IP-012](implementation/IP-012-render-publication-plan.md)는 Render 기술 경계와 승격/backfill을 소유한다. 실제 쓰기의 무결성·발행·복구는 선행 검증하되 모든 증분 최적화를 history gate로 삼지 않는다. 기본 GraphShell/Render와 [ADR-012](architecture/ADR-012-render-read-architecture.md)의 배포 기준선은 CURRENT를 따른다.
 
 - [Domain glossary](business-requirements/entities/INDEX.md), [관계·ownership](business-requirements/entities/CORE-MODEL.md)
 - [Authoring policy](technical-specifications/TS-004-clotho-contract.md), [read scalability·discovery](technical-specifications/TS-006-atropos-publication.md)

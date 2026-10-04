@@ -7,11 +7,20 @@ layer: implementation-plan
 
 # IP-011 A5 — Graph 중심 Collection Discovery
 
-2026-10-02 실행 정합성: 아래 2026-09-28 코드·데이터 조사는 당시 planning baseline이다. HUD·선택 제한 제거·Semantic/Geographic 분리 일부는 배포됐고 기본 GraphShell의 데이터 공급은 IP-012 Render viewport로 전환됐다. 현재 우선 작업은 [모바일 성능·연속성](IP-012-mobile-continuity-plan.md)이며 A5 capacity/가독성 검증을 뒷받침한다. 기존 SVG/Publication을 전제로 한 당시 구현 선택은 현 구조를 보존해야 할 제품 불변식이 아니다. UI 문법·domain 의미·pin/자동 relevance의 수용 기준은 유지하고 실제 단계·배포 결과는 CURRENT를 따른다.
+## 2026-10-04 disposition — 기존 실행 순서 대체
 
-2026-09-28 KST. 사용자 최신 A5 지시를 반영한 planning baseline. 조사 기준 `8937cb4142215b439d4430e61b9db1ae15f218c8` (PR #236). 계획 PR #237은 main `55cae82`에 통합됐다. **2026-09-28 구현 시작 지시로 A5 S0–S7 구현·merge·checkpoint 배포가 활성화됐다.** A6/M5·대량 역사 입력·canonical migration·새 유료 서비스는 비활성이다. 진행·검증 결과는 CURRENT와 a5-execution이 소유하며 아래 planning 조사와 제안/실측 구분은 유지한다.
+[IP-013](IP-013-real-history-development-plan.md)이 S0–S7 전체 완료→A6 역사 입력 순서를 대체한다. World 관리와 Clotho/발행 수용 후 실제 역사 pilot과 Composite 표현 개발을 병행한다. Composite 표현·전환→격리된 X 배치 실험실 다음에 Collection 자동 ON/OFF·discovery를 한다. 현재 작업은 문서·draft PR까지만이며 입력·구현은 미착수다.
 
-상위 의미는 CON-003/CORE-MODEL, 독자 수용은 BR-003/JRN-004, 읽기 계약은 TS-005/006, 단계 의존성은 IP-011이 소유한다. 이 문서는 실행 순서·실험·채택 판정을 소유한다. 사용자 확정 방향과 아래 제안된 초기 실험 파라미터를 구별한다.
+| 기존 범위 | 현재 처리 |
+| --- | --- |
+| S0 synthetic baseline·규모 확대 | 기존 회귀/부하 증거 보존. 제품 탐색·수용의 주 입력은 실제 역사 pilot |
+| S1 HUD, S2 표현 분리, S3 선택 제한 제거 | 구현된 부분 보존. 남은 Composite 단계·전환·눈으로 조절 가능한 threshold는 IP-013 R 우선 |
+| S3 capacity, S4 수동 control | 역사 읽기·선택·camera·오류 회복에 필요한 최소 범위를 W/C/R에서 검증. 전체 pin/catalog 제품 완료는 선행 gate 아님 |
+| S5 contextual 자동화, S6 discovery, S7 통합 | R/L 이후 IP-013 A에서 재활성화. 자동 ON/OFF·discovery를 역사 입력보다 먼저 요구하지 않음 |
+| S7 read-only 역사, A6까지 새 역사 금지 | W/C 수용 후 D1 제한 pilot 가능. 사용자 pilot 검토 후 D2 확장; 즉시 bulk 입력 승인은 아님 |
+| A4 frame/heap gate | #321 사용자 체감 수용으로 종료·이관. 숫자만으로 자동 재개하지 않음 |
+
+상위 CON/BR/TS의 identity·시간·contains·membership·camera 의미와 HUD 후보 상대 순위 결정은 유지한다. 아래 2026-09-28 조사·S0–S7·수치·권한 표현은 **당시 planning/실행 이력과 deferred 요구**다. 현재 활성 지시나 IP-013 선행 gate로 읽지 않는다. 변경되지 않은 자동화 요구는 후속 A의 backlog이며 완료로 표시하지 않는다. [CURRENT](CURRENT.md)가 구현/수용/계획 상태를 구분한다.
 
 ## 1. 실제 기준선과 조사 한계
 

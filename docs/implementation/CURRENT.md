@@ -4,16 +4,21 @@
 
 ## 실행 원칙과 종료 결정
 
-사용자는 iPhone 17 Safari/PWA로만 작업하고 코드를 직접 리뷰하지 않는다. Codex Cloud에서 구현·검증하며 운영에 작은 checkpoint를 자주 배포한다. 통상적인 쓰기·merge·배포·incident 대응의 사전 승인과 미완료 checkpoint 공개 정책은 [AGENTS](../../AGENTS.md)/[IS-001](IS-001-agent-mobile-strategy.md)을 따른다.
+사용자는 iPhone 17 Safari/PWA로만 작업하고 코드를 직접 리뷰하지 않는다. Codex Cloud에서 구현·검증하며 운영에 작은 checkpoint를 자주 배포한다. 후속 구현의 checkpoint 정책은 [AGENTS](../../AGENTS.md)/[IS-001](IS-001-agent-mobile-strategy.md)을 따른다. **현재 요청은 계획 문서 갱신·draft PR까지이며 코드·데이터 변경, merge·배포는 금지다.** 이전 실행 위임이 이 범위를 넓히지 않는다.
 
 **모바일 성능·연속성 튜닝은 2026-10-04 사용자 체감 수용과 명시적 지시로 종료했다.** 사용자는 운영이 상당히 원활하다고 확인했다. [종료 결정·검증·잔여 backlog](IP-012-mobile-continuity-closeout.md)가 이전 목표 달성까지 자율 튜닝하라는 지시를 대체한다. 기존 p9533.4ms 미달을 통과로 바꾸지 않으며 숫자 미달만으로 자동 재개하지 않는다. 이후 구체적 버그는 정상적인 수정·회귀 검증으로 처리한다.
 
-## 단계
+## 새 우선순위와 단계
 
-- **IP-011 A1–A3 완료, A4 종료·이관:** 전체 성능 통과 아님. [A4-B01–03](IP-011-A4-closeout-backlog.md)은 deferred/partial 상태다.
-- **A5 활성·미완료:** HUD·Semantic/Geographic 분리·label/interaction 개선이 구현됐다. capacity·200% text/접근성·pin/context/catalog 등은 별도 제품 backlog다. 이번 안정화에서 자동 착수하지 않는다.
-- **IP-012 publication 미완료, 모바일 튜닝 후속 종료:** 기본 GraphShell에 Render 데이터를 공급하고 signed grid/manifest 없는 viewport 읽기가 배포됐다. 증분 재사용·invalidation·재시작 scheduling 검증은 별도 backlog다.
-- A6/M5·대량 역사 입력은 비활성이다.
+[IP-013 실제 역사 기반 병행 계획](IP-013-real-history-development-plan.md)이 기존 A5 전체 완료→A6 순서를 대체한다. **현재는 planning-only**이며 사용자는 이 문서 작업 이후 중단된 World 구현과 실제 역사 작업 재개를 별도 승인했다. 후속 작업은 PR-first·자동 merge 금지를 유지하고, 데이터 입력은 W/C 수용 후 제한 pilot부터 시작한다.
+
+- **IP-011 A1–A3 완료, A4 종료·이관:** 전체 성능 통과 아님. A4-B01–03과 #321 종료 결정을 유지한다.
+- **W→C 선행, 계획됨:** World 생성·선택·복구 가능한 삭제 정책·빈 World bootstrap→첫 Event와 Clotho validate/commit/retry→발행·읽기를 검증한다. v5 create/delete와 빈 World 경로는 미완료다. `task-3/moirai`의 미병합 구현은 재사용 후보일 뿐 완료 증거가 아니다.
+- **W/C 수용 후 D1∥R:** dot는 깨끗한 production history World에 제한 조선/임진왜란·인접국 pilot을 축적하고 Codex는 그 실제 사례로 Composite 줌 표현·전환·눈으로 조정 가능한 threshold를 개발·검증한다. pilot 사용자 검토 전 자율 광역 확장·인물별 구성은 보류한다.
+- **다음 L, 이후 A:** Composite 수용 후 production main UX와 격리된 X 배치 실험실, 이후 Collection 자동 ON/OFF·discovery. 수동 읽기·선택·camera 보존은 선행 검증에 필요한 범위에서 유지한다.
+- **A5 부분 구현/나머지 재배치:** HUD·표현 분리·선택 제한 제거는 보존. 전체 S0–S7 자동화 완료는 역사 입력 gate가 아니다. [A5 disposition](IP-011-A5-collection-discovery-plan.md)을 따른다.
+- **IP-012 부분 구현:** 실제 입력의 무결성·발행·복구는 C gate다. 증분 재사용/선택 compile 등 최적화 전체 완료는 pilot 선행 조건이 아니다.
+- A6의 새 입력 경로는 IP-013 D로 대체하며 **현재 데이터 입력은 미착수**다. M5·새 governance/다중 Publication 제품은 비활성이다. 합성 fixture는 회귀용, 실제 역사는 주 탐색·수용 자료다.
 
 ## 안정화 기준선
 

@@ -11,6 +11,10 @@ implementation_scope: future
 
 > IP-011 이후 domain 의미는 CON-003/CORE-MODEL이 소유한다. 이 미래 호환성 문서의 Canon 표기는 당시 용어이며 Collection별 사실·Narrative ownership을 재도입하지 않는다. Tenant/ACL/private Publication은 계속 비활성이다.
 
+## 현재 우선순위와의 경계
+
+2026-10-04 [IP-013](../implementation/IP-013-real-history-development-plan.md)의 World 관리·Clotho 수용→실제 역사 pilot∥Composite 표현→격리 X 배치 실험→Collection 자동화/discovery가 현재 제품 계획이다. 이 로드맵의 Tenant/ACL/private·다중 Publication 제품을 선행하지 않는다. 깨끗한 역사 World는 하나의 실제 reality를 담고 국가/시대는 Collection과 coverage로 구성한다. 실험실은 검토된 알고리즘만 정식 publication/backfill로 승격하며 사용자용 여러 공개본 선택 기능을 미리 만들지 않는다. 이번 문서 작업은 구현·데이터 입력을 활성화하지 않는다.
+
 ## 문서 효력
 
 > **현재 구현 범위가 아니다.** 이 문서는 미래 확장을 불필요하게 막는 결정을 피하기 위한 비규범적 로드맵이다. 아래 기능을 현재 backlog, 수용 기준, schema, API 또는 UI에 선행 구현하라는 지시로 해석해서는 안 된다.

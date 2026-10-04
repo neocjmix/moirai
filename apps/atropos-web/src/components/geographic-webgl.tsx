@@ -490,8 +490,10 @@ export function GeographicWebGL(props: GeographicPainterProps) {
       style={{
         position: "absolute",
         inset: 0,
-        width: "100%",
-        height: "100%",
+        // Publish CSS extent with the camera/backing buffer. Percentage sizing
+        // would stretch the old frame before ResizeObserver commits the new one.
+        width: props.size.width,
+        height: props.size.height,
         zIndex: 1,
         pointerEvents: "none"
       }}

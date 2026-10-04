@@ -2321,7 +2321,7 @@ export function GraphShell({
   }, []);
   const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
   const [useGeographicWebGL,setUseGeographicWebGL] = useState(false);
-  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(typeof Path2D !== "undefined" && graphics !== "svg");setUseGeographicWebGL(graphics === "webgl");},[]);
+  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[]);
   const handleGraphicsUnavailable=useCallback(()=>{setUseGeographicCanvas(false);setUseGeographicWebGL(false);},[]);
   const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
   const measureGraphPhase = useCallback((phase, run) => {

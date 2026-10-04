@@ -46,3 +46,10 @@ The October 2 results above are historical. Rebased without conflicts to `d0f935
 Exact activation target: Railway project **Moirai** (`67754889-5b80-4503-b368-95e7d0768d84`), environment **production** (`990773c0-31d9-435c-8d36-21c15352fe51`), Clotho service **desirable-vitality** (`fe402236-354f-4088-8182-aaf5f7b34a99`). Change only the existing OIDC JSON flag described above after exact approval. One API replica may briefly reconnect during redeploy. No worker/database restart is needed for this config change. Existing unrelated Railway staged changes must not be accepted. The plugin exposes variable names only; the operator's human-readable identity could not be resolved through that read-only interface.
 
 Proposed disposable production verification World: `world-lifecycle-smoke-20261004` / “World lifecycle verification 2026-10-04”; preserve it through recoverable withdrawal after smoke, never purge or mutate the existing World. Production verification and permission activation are not claimed by these local results.
+
+
+### Secret-preserving activation alternative
+
+The existing OIDC JSON is unreadable through connected OAuth, so replacing it is unsafe. The implementation also accepts a separate, strictly boolean **`CLOTHO_OIDC_ALL_WORLDS`** environment variable. `true` adds the same internal flag only after parsing the existing OIDC mapping; all existing identity/audience/JWKS fields and token validation remain unchanged. `false` explicitly disables full access; omission preserves the JSON configuration. A malformed value or true without OIDC fails startup. Six OIDC tests include preservation, defaults, invalid flags and token-scope enforcement.
+
+This alternative requires exact approval for **`CLOTHO_OIDC_ALL_WORLDS=true`**, then one supported service variable write with no JSON replacement and no accept-all-staged action. The proposed rollback is `false` (or removal when the original JSON has no all-World flag). The alternate live setting is not activated by this PR.

@@ -1,3 +1,4 @@
+import { loadConfig } from "./config.js";
 import { generateKeyPair, SignJWT } from "jose";
 import { describe, expect, it } from "vitest";
 import {
@@ -31,6 +32,29 @@ async function sign(overrides: Record<string, unknown> = {}) {
 }
 
 describe("OIDC resource authentication", () => {
+  it("applies a separate server access flag without replacing the existing OIDC mapping", () => {
+    const environment = {
+      DATABASE_URL: "postgres://fixture.invalid/test",
+      CLOTHO_OIDC_JSON: JSON.stringify(config)
+    };
+    expect(loadConfig(environment).oidc).toEqual(config);
+    expect(
+      loadConfig({ ...environment, CLOTHO_OIDC_ALL_WORLDS: "true" }).oidc
+    ).toEqual({ ...config, all_worlds: true });
+    expect(
+      loadConfig({ ...environment, CLOTHO_OIDC_ALL_WORLDS: "false" }).oidc
+    ).toEqual({ ...config, all_worlds: false });
+    expect(environment.CLOTHO_OIDC_JSON).toBe(JSON.stringify(config));
+    expect(() =>
+      loadConfig({ ...environment, CLOTHO_OIDC_ALL_WORLDS: "yes" })
+    ).toThrow("Invalid Clotho OIDC World access configuration");
+    expect(() =>
+      loadConfig({
+        DATABASE_URL: environment.DATABASE_URL,
+        CLOTHO_OIDC_ALL_WORLDS: "true"
+      })
+    ).toThrow("OIDC configuration required");
+  });
   it("maps only an explicitly allowed operator to an internal actor and fixed World", async () => {
     const authenticate = oidcAuthenticator(
       config,

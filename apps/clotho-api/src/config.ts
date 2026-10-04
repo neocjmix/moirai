@@ -21,10 +21,20 @@ export function loadConfig(environment: NodeJS.ProcessEnv): RuntimeConfig {
     throw new Error("Invalid Clotho contract mode");
   }
 
+  const fullAccess = environment.CLOTHO_OIDC_ALL_WORLDS;
+  if (fullAccess !== undefined && !["true", "false"].includes(fullAccess))
+    throw new Error("Invalid Clotho OIDC World access configuration");
+  const oidc = parseOidcConfig(environment.CLOTHO_OIDC_JSON);
+  if (fullAccess === "true" && !oidc)
+    throw new Error("OIDC configuration required for full World access");
+
   return {
     contractMode: contractMode as NonNullable<RuntimeConfig["contractMode"]>,
     credentials: parseCredentials(environment.CLOTHO_CREDENTIALS_JSON),
-    oidc: parseOidcConfig(environment.CLOTHO_OIDC_JSON),
+    oidc:
+      oidc && fullAccess !== undefined
+        ? { ...oidc, all_worlds: fullAccess === "true" }
+        : oidc,
     appVersion: environment.APP_VERSION ?? "0.0.0-dev",
     commitSha:
       environment.DEPLOY_COMMIT_SHA ??

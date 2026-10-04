@@ -22,6 +22,8 @@ export default async function GraphPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }>) {
   const params = await searchParams;
+  if (typeof params.world === "string")
+    return V5GraphPage({ searchParams: Promise.resolve(params) });
   const cutoverWorld =
     typeof params.world === "string"
       ? params.world

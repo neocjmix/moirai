@@ -22,17 +22,19 @@ export async function queryV5Authoring(
   db: MoiraiDatabase,
   method: V5ReadMethod,
   input: Record<string, unknown>,
-  allowedWorlds: readonly string[]
+  allowedWorlds: readonly string[],
+  allWorlds = false
 ) {
   const worldId = String(input.world_id ?? "");
-  if (method !== "world.list" && !allowedWorlds.includes(worldId))
+  if (method !== "world.list" && !allWorlds && !allowedWorlds.includes(worldId))
     fail("forbidden", "world_id");
   const signature = createHash("sha256")
     .update(
       stableStringify({
         method,
         input: { ...input, cursor: undefined },
-        worlds: [...allowedWorlds].sort()
+        worlds: [...allowedWorlds].sort(),
+        allWorlds
       })
     )
     .digest("hex");
@@ -82,13 +84,13 @@ export async function queryV5Authoring(
         };
       };
       if (method === "world.list") {
-        if (!allowedWorlds.length) return page([], 0);
+        if (!allWorlds && !allowedWorlds.length) return page([], 0);
         const pattern = `%${String(input.query ?? "").replace(/[\\%_]/g, "\\$&")}%`;
         const rows = (
           await sql<{
             id: string;
             current_revision: number;
-          }>`select id,slug,title,description,current_revision,publication_target_revision from worlds where id in (${sql.join(allowedWorlds)}) and withdrawn_revision is null and id > ${after} and title ilike ${pattern} order by id limit ${limit + 1}`.execute(
+          }>`select id,slug,title,description,current_revision,publication_target_revision,withdrawn_revision from worlds where ${allWorlds ? sql`true` : sql`id in (${sql.join(allowedWorlds)})`} and (${input.include_withdrawn === true} or withdrawn_revision is null) and id > ${after} and title ilike ${pattern} order by id limit ${limit + 1}`.execute(
             tx
           )
         ).rows;
@@ -99,7 +101,7 @@ export async function queryV5Authoring(
         await sql<{
           id: string;
           current_revision: number;
-        }>`select w.id,w.slug,w.title,w.description,w.current_revision,w.publication_target_revision,coalesce(p.served_revision,0) as served_revision from worlds w left join world_publication_state p on p.world_id=w.id where w.id=${worldId} and w.withdrawn_revision is null`.execute(
+        }>`select w.id,w.slug,w.title,w.description,w.withdrawn_revision,w.current_revision,w.publication_target_revision,coalesce(p.served_revision,0) as served_revision from worlds w left join world_publication_state p on p.world_id=w.id where w.id=${worldId} and (${method === "world.get" && input.include_withdrawn === true} or w.withdrawn_revision is null)`.execute(
           tx
         )
       ).rows[0];

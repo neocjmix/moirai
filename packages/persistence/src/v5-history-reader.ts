@@ -46,6 +46,7 @@ export function foldV5RevisionOperations(
     string,
     { event_id: string; collection_id: string }
   >();
+  let worldStatus: "active" | "withdrawn" = "active";
   let baseline: number | null = null;
   let previousRevision = 0;
   let previousIndex = -1;
@@ -58,6 +59,17 @@ export function foldV5RevisionOperations(
       throw Error("v5_history_order_invalid");
     previousRevision = operation.revision;
     previousIndex = operation.operation_index;
+    if (operation.entity_type === "world_lifecycle") {
+      const status = (operation.after as { status?: unknown })?.status;
+      if (
+        baseline === null ||
+        operation.entity_id !== worldId ||
+        (status !== "active" && status !== "withdrawn")
+      )
+        throw Error("v5_history_lifecycle_invalid");
+      worldStatus = status;
+      continue;
+    }
     if (operation.entity_type === "relation_canon_membership") {
       if (
         operation.operation_kind !== "retire_applicability" ||
@@ -95,7 +107,15 @@ export function foldV5RevisionOperations(
       if (baseline !== null && baseline !== operation.revision)
         throw Error("v5_history_baseline_repeated");
       baseline = operation.revision;
-    } else if (baseline === null) throw Error("v5_history_baseline_missing");
+    } else if (baseline === null) {
+      if (
+        operation.revision === 1 &&
+        type === "world" &&
+        operation.operation_kind === "create"
+      )
+        baseline = 1;
+      else throw Error("v5_history_baseline_missing");
+    }
     const destination = maps[type] as Map<string, EntityRecords[EntityType]>;
     if (operation.operation_kind === "withdraw") {
       if (
@@ -121,6 +141,7 @@ export function foldV5RevisionOperations(
     throw Error("v5_history_world_missing");
   const state: CanonicalState = {
     world,
+    ...(worldStatus === "withdrawn" ? { worldStatus } : {}),
     collections: [...maps.collection.values()],
     timeSystems: [...maps.time_system.values()],
     collectionTimeSystems: [...maps.collection_time_system.values()],
@@ -142,7 +163,7 @@ export async function readV5WorldAtRevision(
   const baseline = (
     await sql<{
       revision: number;
-    }>`select min(revision)::integer as revision from change_operations where world_id=${worldId} and entity_type='world' and operation_kind='migration'`.execute(
+    }>`select coalesce(min(o.revision) filter (where o.operation_kind='migration'),min(o.revision) filter (where o.operation_kind='create' and o.revision=1 and c.contract_version='5'))::integer as revision from change_operations o join change_sets c on c.id=o.change_set_id where o.world_id=${worldId} and o.entity_type='world'`.execute(
       db
     )
   ).rows[0]?.revision;

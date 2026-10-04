@@ -43,6 +43,14 @@ const errorResult = (code: string, error?: ChangeSetError) => ({
   ]
 });
 const descriptions: Record<V5Method, string> = {
+  "authoring.schema.get":
+    "Retrieve the full, current machine-readable input schema for an authoring method, including every operation/value variant and relation type. Use when the connector display abbreviates operations. No guessed shapes or policy prose substitutes.",
+  "world.create":
+    "Create a new public World atomically, optionally with Events and Time Systems. Use expected_revision 0 and an explicit World create operation with entity_id matching world_id.",
+  "world.delete":
+    "Recoverably withdraw a World from current publication. Preserves canonical content and history; use world.restore to restore. Requires current revision and policy.",
+  "world.restore":
+    "Restore a withdrawn World at a new revision with its original identities and content.",
   "authoring.policy.get":
     "Read the complete authoritative v5 policy before each authoring task and after policy mismatch.",
   "world.list":
@@ -190,10 +198,14 @@ export function registerV5McpRoutes(
             type: "object";
             [key: string]: unknown;
           },
-          annotations:
-            method === "change.commit"
-              ? { destructiveHint: true, idempotentHint: true }
-              : { readOnlyHint: true }
+          annotations: [
+            "change.commit",
+            "world.create",
+            "world.delete",
+            "world.restore"
+          ].includes(method)
+            ? { destructiveHint: true, idempotentHint: true }
+            : { readOnlyHint: true }
         }))
       }));
       server.setRequestHandler(CallToolRequestSchema, async ({ params }) => {

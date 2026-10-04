@@ -8,7 +8,9 @@ description: Explore and author Moirai Worlds through the authenticated Clotho v
 Use `node skills/clotho/dist/cli.js v5 <method>` from the built Moirai repository.
 Send one JSON input on stdin; stdout is JSON, stderr contains safe errors.
 Inspect the current contract with `node skills/clotho/dist/cli.js v5 schema <method>`.
-Do not duplicate or guess the versioned schema.
+Do not duplicate or guess the versioned schema. Connected clients may call
+`authoring.schema.get` with contract_version 5 and the method name to retrieve
+the complete JSON input schema if tool discovery abbreviates operations.
 
 `CLOTHO_API_URL` and `CLOTHO_TOKEN` must already be injected by the operator's
 secret store. Never request, print, paste into a prompt, or pass a token in argv.
@@ -73,3 +75,17 @@ budget error. Do not describe partial pages as a complete export. The legacy CLI
 `export` / `import-preview` helpers use v4; do not use them against production.
 If connected tools still show Canon or contract versions 2/3/4, refresh the
 plugin catalogue; do not adapt v5 writes to the stale schema or bypass policy.
+
+## World lifecycle
+
+For a new authorized World, choose its UUID, retrieve policy for that prospective
+World ID, and validate a v5 plan at expected_revision 0 containing an explicit
+World create operation with entity_id equal to world_id. `world.create` commits
+that plan atomically; include Events and their Narratives when desired.
+
+`world.delete` recoverably withdraws a World; it does not erase history or child
+content. `world.restore` restores it at a new revision. Inspect their current
+schemas and use a new Change Set ID, current revision, intent and policy identity.
+Use `world.get/list` with include_withdrawn true for recovery. Confirm served
+revision and the public selector after asynchronous propagation. Do not describe
+withdrawal as privacy erasure.

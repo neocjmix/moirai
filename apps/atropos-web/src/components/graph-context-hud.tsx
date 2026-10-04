@@ -49,7 +49,16 @@ function GraphContextHudContent({
   return (
     <>
       <div className={styles.hud} data-testid="graph-context-hud">
-        <div className={styles.world}>{world.label[locale]}</div>
+        <a
+          className={styles.world}
+          href="/worlds"
+          aria-label={ko ? "월드 선택" : "Select World"}
+        >
+          {world.label[locale]} ▾
+        </a>
+        <a className={styles.events} href={`/worlds/${world.id}/events`}>
+          {ko ? "사건 목록" : "Events"}
+        </a>
         {topic ? (
           <div
             className={styles.topic}

@@ -86,6 +86,20 @@ describe("production v5 transport parity", () => {
               t.name === method.replaceAll(".", "_").replaceAll("-", "_")
           ).inputSchema
         ).toEqual(V5_INPUT_SCHEMAS[method]);
+      for (const method of [
+        "world.create",
+        "world.delete",
+        "world.restore",
+        "change.commit"
+      ] as const) {
+        const args = { contract_version: 5, method };
+        const response = (await http("authoring.schema.get", args)).json();
+        expect(response.result.input_schema).toEqual(V5_INPUT_SCHEMAS[method]);
+        expect(
+          (await mcp("authoring_schema_get", args)).json().result
+            .structuredContent
+        ).toEqual(response);
+      }
       for (const [method, args] of [
         ["world.list", { contract_version: 5 }],
         ["world.get", { contract_version: 5, world_id: world }],
@@ -128,7 +142,8 @@ describe("production v5 transport parity", () => {
       expect(query).toHaveBeenCalledWith(
         "world.list",
         { contract_version: 5 },
-        [world]
+        [world],
+        false
       );
       expect((await http("change.validate", plan)).json().result.valid).toBe(
         true

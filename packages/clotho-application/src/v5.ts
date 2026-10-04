@@ -11,7 +11,7 @@ import {
 } from "@moirai/contracts/v5-wire";
 import { ChangeSetError } from "@moirai/domain";
 import { authorizeActor, type ActorContext } from "@moirai/lachesis";
-import type { V5DraftChange } from "@moirai/lachesis/v5";
+import type { V5DraftChange, WorldLifecycleInput } from "@moirai/lachesis/v5";
 import { Ajv } from "ajv";
 
 const valid = new Ajv({
@@ -28,6 +28,11 @@ const validDetail = new Ajv({
   removeAdditional: false
 }).compile(V5_EVENT_DETAIL_SCHEMA);
 export interface V5LachesisBoundary {
+  lifecycle?(
+    action: "delete" | "restore",
+    input: WorldLifecycleInput,
+    actor: ActorContext
+  ): Promise<unknown>;
   query?(
     method: V5ReadMethod,
     input: Record<string, unknown>,
@@ -143,8 +148,13 @@ export function createV5Clotho(boundary: V5LachesisBoundary) {
           : {};
       authorizeActor(
         actor,
-        method.startsWith("change.") ? "world:write" : "world:read",
-        method === "world.list" ? undefined : input.world_id
+        method.startsWith("change.") ||
+          ["world.create", "world.delete", "world.restore"].includes(method)
+          ? "world:write"
+          : "world:read",
+        method === "world.list" || method === "authoring.schema.get"
+          ? undefined
+          : input.world_id
       );
       if (!validators[method])
         throw new ChangeSetError("unknown_tool", "method", "Unknown method");
@@ -171,8 +181,41 @@ export function createV5Clotho(boundary: V5LachesisBoundary) {
           "input",
           "Invalid v5 input"
         );
+      if (method === "authoring.schema.get")
+        return {
+          contract_version: 5,
+          method: input.method,
+          input_schema: V5_INPUT_SCHEMAS[input.method as V5Method]
+        };
       if (method === "authoring.policy.get")
         return service.policy(String(input.world_id), actor);
+      if (method === "world.create") {
+        if (
+          input.expected_revision !== 0 ||
+          !(
+            input.operations as Array<{ kind: string; entity_type: string }>
+          ).some((op) => op.kind === "create" && op.entity_type === "world")
+        )
+          throw new ChangeSetError(
+            "invalid_request",
+            "world.create",
+            "Create requires revision zero and a World create operation"
+          );
+        return service.commit(input, actor);
+      }
+      if (method === "world.delete" || method === "world.restore") {
+        if (!boundary.lifecycle)
+          throw new ChangeSetError(
+            "unsupported_method",
+            "method",
+            "Lifecycle unavailable"
+          );
+        return boundary.lifecycle(
+          method === "world.delete" ? "delete" : "restore",
+          input as unknown as WorldLifecycleInput,
+          actor
+        );
+      }
       if (method === "change.commit") return service.commit(input, actor);
       if (method === "change.validate") {
         if (!boundary.validateDraft)

@@ -44,6 +44,32 @@ describe("OIDC resource authentication", () => {
     });
     expect(JSON.stringify(principal)).not.toContain(config.operator_subject);
   });
+  it("enables full World access only from server configuration, retaining token scopes", async () => {
+    const authenticate = oidcAuthenticator(
+      { ...config, all_worlds: true },
+      async () => (await keys).publicKey
+    );
+    expect(
+      await authenticate(`Bearer ${await sign({ scope: "world:read" })}`)
+    ).toMatchObject({ all_worlds: true, scopes: ["world:read"] });
+    expect(
+      await authenticate(`Bearer ${await sign({ sub: "other" })}`)
+    ).toBeUndefined();
+    const scoped = oidcAuthenticator(
+      config,
+      async () => (await keys).publicKey
+    );
+    expect(
+      (await scoped(`Bearer ${await sign({ all_worlds: true })}`))?.all_worlds
+    ).toBeUndefined();
+    expect(
+      parseOidcConfig(JSON.stringify({ ...config, all_worlds: true }))
+        ?.all_worlds
+    ).toBe(true);
+    expect(() =>
+      parseOidcConfig(JSON.stringify({ ...config, all_worlds: "true" }))
+    ).toThrow();
+  });
   it("rejects signature, issuer, audience, subject, lifetime and scope violations", async () => {
     const authenticate = oidcAuthenticator(
       config,

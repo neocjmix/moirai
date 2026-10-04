@@ -204,6 +204,18 @@ export function buildV5ContentPages(
         time_systems: items
       }
     });
+  for (const [index, items] of page(
+    events.map((event) => ({
+      id: event.id,
+      title: event.title,
+      summary: event.summary
+    }))
+  ).entries()) {
+    documents.push({
+      key: `${prefix}/events/pages/${index}.json`,
+      value: { world_id: state.world.id, revision, page: index, events: items }
+    });
+  }
   documents.push({
     key: `${prefix}/world.json`,
     value: {
@@ -213,6 +225,7 @@ export function buildV5ContentPages(
       collection_count: collections.length,
       collection_page_count: Math.ceil(collections.length / PAGE_SIZE),
       event_count: events.length,
+      event_page_count: Math.ceil(events.length / PAGE_SIZE),
       relation_count: relations.length,
       time_system_count: systems.length,
       time_system_page_count: Math.ceil(systems.length / PAGE_SIZE),

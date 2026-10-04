@@ -18,7 +18,8 @@ export async function publishV5CompleteArtifacts(
   store: ObjectStore,
   artifacts: V5StagedArtifacts,
   generatedAt: string,
-  assertActive?: () => Promise<void>
+  assertActive?: () => Promise<void>,
+  withdrawn = false
 ): Promise<V5PublicationPointer> {
   verifyV5StagedIndex(artifacts);
   const root = JSON.parse(artifacts.root.body) as {
@@ -40,6 +41,7 @@ export async function publishV5CompleteArtifacts(
     current_revision: root.revision,
     publication_target_revision: root.revision,
     projection_status: "ready",
+    ...(withdrawn ? { withdrawn: true } : {}),
     manifest_key: artifacts.root.key,
     manifest_sha256: createHash("sha256")
       .update(artifacts.root.body)
@@ -105,7 +107,8 @@ export async function publishV5CompleteArtifacts(
 
 export async function readV5ServedRoot(
   store: Pick<ObjectStore, "get">,
-  worldId: string
+  worldId: string,
+  allowWithdrawn = false
 ): Promise<{ pointer: V5PublicationPointer; rootBody: string }> {
   if (!/^[a-zA-Z0-9-]+$/.test(worldId))
     throw Error("v5_publication_world_invalid");
@@ -113,6 +116,8 @@ export async function readV5ServedRoot(
   if (pointerRead.status !== 200 || !pointerRead.body)
     throw Error("v5_publication_pointer_unavailable");
   const pointer = JSON.parse(pointerRead.body) as V5PublicationPointer;
+  if (pointer.withdrawn === true && !allowWithdrawn)
+    throw Error("v5_world_withdrawn");
   const rootKey = `worlds/${worldId}/revisions/${pointer.served_revision}/v5/complete/manifest.json`;
   if (
     pointer.format_version !== "v5-publication/1" ||

@@ -11,7 +11,11 @@ export function registerV5ClothoRoutes(
   service: ReturnType<typeof createV5Clotho>
 ): void {
   for (const kind of V5_METHODS) {
-    const scope = kind.startsWith("change.") ? "world:write" : "world:read";
+    const scope =
+      kind.startsWith("change.") ||
+      ["world.create", "world.delete", "world.restore"].includes(kind)
+        ? "world:write"
+        : "world:read";
     app.post(
       `/v2/clotho/${kind}`,
       {

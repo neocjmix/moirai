@@ -59,6 +59,7 @@ export interface EventCollectionMembership {
 /** Final active state, after all atomic Change Set operations. */
 export interface CanonicalState {
   readonly world: PublicWorld;
+  readonly worldStatus?: "active" | "withdrawn";
   readonly collections: readonly Collection[];
   readonly timeSystems: readonly PublicTimeSystem[];
   readonly collectionTimeSystems: readonly CollectionTimeSystem[];
@@ -76,6 +77,7 @@ export interface V5PublicationPointer {
   readonly current_revision: number;
   readonly publication_target_revision: number;
   readonly projection_status: "ready";
+  readonly withdrawn?: boolean;
   readonly manifest_key: string;
   readonly manifest_sha256: string;
   readonly generated_at: string;

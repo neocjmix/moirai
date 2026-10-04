@@ -20,7 +20,7 @@ const databaseUrl = process.env.DATABASE_URL;
       const worldId = `01a0f012-0000-7000-8000-${suffix}`;
       try {
         // Only the two tables touched before the target guard are required.
-        await sql`create table worlds(id uuid primary key, publication_target_revision integer not null)`.execute(
+        await sql`create table worlds(id uuid primary key, publication_target_revision integer not null, withdrawn_revision integer)`.execute(
           db
         );
         await sql`create table world_publication_state(world_id uuid primary key, served_revision integer not null)`.execute(
@@ -42,6 +42,11 @@ const databaseUrl = process.env.DATABASE_URL;
             throw Error("intermediate_render_write");
           }
         };
+        expect(await processNextRenderGeneration(db, store)).toBe(false);
+        expect(reads).toBe(0);
+        await sql`update worlds set publication_target_revision=58, withdrawn_revision=58 where id=${worldId}`.execute(
+          db
+        );
         expect(await processNextRenderGeneration(db, store)).toBe(false);
         expect(reads).toBe(0);
       } finally {

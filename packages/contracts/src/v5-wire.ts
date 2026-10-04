@@ -194,7 +194,7 @@ export const V5_CHANGE_PLAN_SCHEMA: Schema = object({
   world_id: id,
   expected_revision: {
     type: "integer",
-    minimum: 1,
+    minimum: 0,
     maximum: Number.MAX_SAFE_INTEGER
   },
   intent: string(2000),
@@ -214,6 +214,7 @@ export const V5_CHANGE_PLAN_SCHEMA: Schema = object({
     ...list(
       {
         oneOf: [
+          ...create("world", world),
           ...create("collection", collection),
           ...create("event", event),
           ...create("relation", relation),
@@ -251,13 +252,18 @@ const worldRead = {
 };
 export const V5_READ_SCHEMAS = {
   "world.list": object(
-    { contract_version: { const: 5 }, query: string(160), ...page },
+    {
+      contract_version: { const: 5 },
+      query: string(160),
+      include_withdrawn: { type: "boolean" },
+      ...page
+    },
     ["contract_version"]
   ),
-  "world.get": object({ ...worldRead, ...page }, [
-    "contract_version",
-    "world_id"
-  ]),
+  "world.get": object(
+    { ...worldRead, include_withdrawn: { type: "boolean" }, ...page },
+    ["contract_version", "world_id"]
+  ),
   "collection.list": object({ ...worldRead, ...page }, [
     "contract_version",
     "world_id"
@@ -304,7 +310,37 @@ export const V5_READ_SCHEMAS = {
   "world.export": object(worldRead, ["contract_version", "world_id"])
 } as const;
 export type V5ReadMethod = keyof typeof V5_READ_SCHEMAS;
+export const V5_WORLD_LIFECYCLE_SCHEMA = object({
+  contract_version: { const: 5 },
+  world_id: id,
+  change_set_id: id,
+  expected_revision: revision,
+  intent: string(2000),
+  policy_version: string(64),
+  policy_digest: { type: "string", pattern: "^[0-9a-f]{64}$" }
+});
 export const V5_INPUT_SCHEMAS = {
+  "authoring.schema.get": object({
+    contract_version: { const: 5 },
+    method: enumOf(
+      "world.create",
+      "world.delete",
+      "world.restore",
+      "change.validate",
+      "change.commit",
+      "world.list",
+      "world.get",
+      "event.get",
+      "event.search",
+      "collection.list",
+      "collection.get",
+      "context.slice",
+      "time-event.resolve"
+    )
+  }),
+  "world.create": V5_CHANGE_PLAN_SCHEMA,
+  "world.delete": V5_WORLD_LIFECYCLE_SCHEMA,
+  "world.restore": V5_WORLD_LIFECYCLE_SCHEMA,
   ...V5_READ_SCHEMAS,
   "authoring.policy.get": object({
     contract_version: { const: 5 },

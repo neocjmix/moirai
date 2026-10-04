@@ -1,3 +1,4 @@
+import { equalJsonValue } from "./json-value-identity";
 import type {
   GraphShellViewportQuery as Query,
   GraphShellViewportResponse as Response
@@ -172,9 +173,12 @@ export function reconcileViewport(
 ): Response {
   // v5 returns a bounded snapshot, never a delta. A partial snapshot remains
   // partial; unrelated historical entities must not fill its missing slots.
-  if (mode === "snapshot") return incoming;
-  if (!previous || (!incoming.truncated && !incoming.cache.stale))
-    return incoming;
+  if (
+    mode === "snapshot" ||
+    !previous ||
+    (!incoming.truncated && !incoming.cache.stale)
+  )
+    return equalJsonValue(previous, incoming) ? previous! : incoming;
   let remaining = 2500;
   const merge = (a: Response["entities"], b: Response["entities"]) => {
     const values = [

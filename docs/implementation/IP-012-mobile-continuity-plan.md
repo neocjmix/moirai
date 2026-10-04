@@ -14,7 +14,7 @@
 
 ## 현재 checkpoint와 우선 작업
 
-2026-10-04 업데이트: 최신 운영은 PR #317 `4df5ce0…`다. WebGL2 배경 vector·native SVG label/input을 기본으로 사용하고 context loss/미지원 시 SVG로 복귀한다. resize 시 이전 frame의 CSS extent를 먼저 늘리는 구간도 제거했다. 전체 화면 gesture image cache는 번쩍임·왜곡·성능 퇴행으로 폐기했다. WebGL 운영30회 p95=55/52/51ms로 원래 기준은 미달이며 Cloud native driver는 llvmpipe software다. 후속 bounded label contour cache는 로컬 배치8개·모바일40개·compiler/4 11개 검증을 통과했고 운영 측정이 다음 작업이다. #317 CI의 WebGL steady-pan commit86/81회(기준78회) 실패는 조사 중이다. 최신 실행 상태는 CURRENT, 아래 이전 checkpoint는 역사적 진단 맥락이다.
+2026-10-04 업데이트: 최신 운영은 PR #318 `c1bf7b6…`다. WebGL2 배경 vector·native SVG label/input을 기본으로 사용하고 context loss/미지원 시 SVG로 복귀한다. resize 시 이전 frame의 CSS extent를 먼저 늘리는 구간도 제거했다. 전체 화면 gesture image cache는 번쩍임·왜곡·성능 퇴행으로 폐기했다. WebGL 운영30회 p95=55/52/51ms로 원래 기준은 미달이며 Cloud native driver는 llvmpipe software다. label contour cache는 배포 후 CPU 비용을6.7–6.9→4.0–4.3ms/회로 줄였고 짧은 frame p95는50/48ms다. #317/#318 CI의 WebGL steady-pan 초과는 동일 응답 publication을 고쳐 로컬50회 이동=50 commits로 개선했다. 모바일40개·compiler/4 11개가 통과했으며 CI·운영 재확인이 다음 작업이다. 최신 실행 상태는 CURRENT, 아래 이전 checkpoint는 역사적 진단 맥락이다.
 
 2026-10-02 여섯 번째 checkpoint 구현 `1d768af`는 main `0069c094308acdf0636f593dd0d56570d0c91bc9`로 배포됐다. actual compiler/4의 0/250/750ms 지연과 touch 4개 시험은 13.3초에 통과했고 persisted 복원 증거는 다음 실행 대기다. 앞선 checkpoint의 CI·smoke 성공, loading 실패와 30회 frame 미달은 [실행 근거](../evidence/ip012/mobile-continuity-2026-10-02.md)에 보존한다. **기능 검증 성공과 성능 완료는 별개다.** 새 기본 DPR 3의 계측 short profile p95 55/54ms는 여전히 미달이다.
 

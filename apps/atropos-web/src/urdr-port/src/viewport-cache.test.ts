@@ -96,6 +96,29 @@ it("partial updates retain existing edges, complete updates evict them", () => {
   expect(reconcileViewport(old, response(true)).edges).toEqual(old.edges);
   expect(reconcileViewport(old, response()).edges).toEqual([]);
 });
+it("retains identical parsed snapshots but publishes every changed response field", () => {
+  const old = {
+    ...response(),
+    entities: [{ id: "event", renderDensity: { opacity: 0.5 } }]
+  } as unknown as R;
+  for (const mode of ["snapshot", "incremental"] as const) {
+    expect(reconcileViewport(old, structuredClone(old), mode)).toBe(old);
+    for (const changed of [
+      { ...old, revision: 2 },
+      { ...old, canonicalRevision: 2 },
+      { ...old, lodLevel: 1 },
+      { ...old, entities: [{ id: "event", renderDensity: { opacity: 0.4 } }] },
+      { ...old, diagnostics: [{ message: "changed" }] },
+      { ...old, entities: [] },
+      { ...old, nextSuggestedLod: 2 }
+    ] as R[]) {
+      expect(reconcileViewport(old, changed, mode)).toBe(changed);
+    }
+  }
+  const partial = { ...old, truncated: true, cache: { stale: true } };
+  expect(reconcileViewport(old, partial, "snapshot")).toBe(partial);
+  expect(reconcileViewport(null, old, "snapshot")).toBe(old);
+});
 it("disposes pending reads on page exit without retaining a late response", async () => {
   let finish!: (value: R) => void;
   let signal!: AbortSignal;

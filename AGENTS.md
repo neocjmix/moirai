@@ -129,6 +129,7 @@ Do not weaken a requirement or delete a meaningful assertion just to make a gate
 - Aim for ordinary mobile vector-map exploration: smooth pan/zoom and hull → ordinary point → small point → hidden transitions, without fetch-induced blanks or identity resets. Google Maps is a qualitative experience reference, not a measured parity claim.
 - Preserve product/domain/UI invariants, not incidental architecture. Publication boundaries, caches, APIs, scheduling and rendering internals may change based on evidence; bounded XY/scale prefetch and frontend interpolation/cache are options, not mandatory solutions.
 - Separate server latency, request count/waterfall, bytes, decode, geometry/layout/labels, renderer/frame and memory costs; compare cold and warm wide-view many-Collection scenarios. Keep A4's p95 ≤33.4ms/max ≤100ms gates and report real-device/heap limits honestly.
+- The 2026-10-04 whole-scene gesture image cache was rejected for flashing/aspect distortion and frame regression. Keep native labels live; do not reintroduce anisotropically stretched glyph snapshots as a continuity fix. WebGL background vectors are an authorized renderer candidate. Report actual Cloud driver/GPU evidence separately from context availability or emulated vendor strings.
 
 ## Stop and ask
 

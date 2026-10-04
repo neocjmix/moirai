@@ -8,6 +8,166 @@ const continuityComposite = "019f3b00-0000-7000-8000-000000000b01";
 const closeCamera = [-289, 222880, 800, 6000];
 const wideCamera = [-289, 222880, 2000, 24000];
 
+test("WebGL paints bounded vector ink and retains native labels through unequal XY zoom", async ({
+  page
+}, info) => {
+  const errors: string[] = [];
+  page.on("pageerror", (error) => errors.push(error.message));
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<typeof original>
+    ) {
+      const context = original.apply(this, args);
+      if (args[0] === "webgl2" && context) {
+        const gl = context as WebGL2RenderingContext;
+        const draw = gl.drawArraysInstanced.bind(gl);
+        gl.drawArraysInstanced = (...values) => {
+          draw(...values);
+          const pixels = new Uint8Array(
+            gl.drawingBufferWidth * gl.drawingBufferHeight * 4
+          );
+          gl.readPixels(
+            0,
+            0,
+            gl.drawingBufferWidth,
+            gl.drawingBufferHeight,
+            gl.RGBA,
+            gl.UNSIGNED_BYTE,
+            pixels
+          );
+          let ink = 0;
+          for (let i = 0; i < pixels.length; i += 4)
+            if (pixels[i + 3]! > 50 && pixels[i]! < 220) ink++;
+          (gl.canvas as HTMLCanvasElement).dataset.verifiedInk = String(ink);
+          (gl.canvas as HTMLCanvasElement).dataset.verifiedError = String(
+            gl.getError()
+          );
+        };
+      }
+      return context;
+    } as typeof original;
+  });
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}&gsGraphics=webgl`
+  );
+  const canvas = page.getByTestId("geographic-webgl");
+  await expect(canvas).toBeVisible();
+  await expect(page.locator('svg[data-graphics-painter="webgl"]')).toHaveCount(
+    1
+  );
+  await expect
+    .poll(() => canvas.evaluate((n) => Number(n.dataset.verifiedInk)))
+    .toBeGreaterThan(100);
+  const svg = page.locator('svg[aria-label="Projected chart surface"]');
+  const original = await canvas.elementHandle();
+  const hull = page.locator(
+    `[data-composite-paint-id="${continuityComposite}"] > path`
+  );
+  await expect(hull).toBeVisible();
+  await restoreCamera(page, wideCamera);
+  await expect
+    .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
+    .toBeLessThan(0.01);
+  await restoreCamera(page, closeCamera);
+  await expect
+    .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
+    .toBeGreaterThan(0.95);
+  const label = page
+    .locator(`text[data-region-id="${continuityComposite}"]`)
+    .first();
+  await expect(label).toBeVisible();
+  const labelOwner = await label.elementHandle();
+  const before = await canvas.getAttribute("data-paint-revision");
+  await restoreCamera(page, [-289, 222880, 900, 7000]);
+  await expect
+    .poll(() => canvas.getAttribute("data-paint-revision"))
+    .not.toBe(before);
+  expect(await canvas.evaluate((node, old) => node === old, original)).toBe(
+    true
+  );
+  expect(await label.evaluate((node, old) => node === old, labelOwner)).toBe(
+    true
+  );
+  expect(await svg.evaluate((node) => getComputedStyle(node).opacity)).toBe(
+    "1"
+  );
+  expect(
+    await canvas.evaluate((node) => ({
+      pixels:
+        (node as HTMLCanvasElement).width * (node as HTMLCanvasElement).height,
+      bytes: Number(node.dataset.meshBytes),
+      error: node.dataset.verifiedError
+    }))
+  ).toEqual({
+    pixels: expect.any(Number),
+    bytes: expect.any(Number),
+    error: "0"
+  });
+  const bounds = await canvas.evaluate((node) => ({
+    pixels:
+      (node as HTMLCanvasElement).width * (node as HTMLCanvasElement).height,
+    bytes: Number(node.dataset.meshBytes)
+  }));
+  expect(bounds.pixels).toBeLessThanOrEqual(4_000_000);
+  expect(bounds.bytes).toBeLessThanOrEqual(8_000_000);
+  await page.screenshot({ path: info.outputPath("webgl-appearance.png") });
+  expect(errors).toEqual([]);
+});
+
+test("WebGL context loss restores SVG ink without replacing semantic identity", async ({
+  page
+}) => {
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}&gsGraphics=webgl`
+  );
+  const canvas = page.getByTestId("geographic-webgl");
+  await expect(canvas).toBeVisible();
+  const hull = page.locator(
+    `[data-composite-paint-id="${continuityComposite}"] > path`
+  );
+  await expect(hull).toBeVisible();
+  const original = await hull.elementHandle();
+  await canvas.evaluate((node) => {
+    const extension = (node as HTMLCanvasElement)
+      .getContext("webgl2")!
+      .getExtension("WEBGL_lose_context");
+    if (!extension) throw Error("context_loss_extension_missing");
+    extension.loseContext();
+  });
+  await expect(page.locator('svg[data-graphics-painter="svg"]')).toHaveCount(1);
+  await expect(canvas).toHaveCount(0);
+  expect(await hull.evaluate((node) => getComputedStyle(node).fill)).not.toBe(
+    "none"
+  );
+  expect(await hull.evaluate((node, old) => node === old, original)).toBe(true);
+});
+
+test("unavailable WebGL falls back to the native painter", async ({ page }) => {
+  await page.addInitScript(() => {
+    const original = HTMLCanvasElement.prototype.getContext;
+    HTMLCanvasElement.prototype.getContext = function (
+      this: HTMLCanvasElement,
+      ...args: Parameters<typeof original>
+    ) {
+      return args[0] === "webgl2" ? null : original.apply(this, args);
+    } as typeof original;
+  });
+  await page.goto(
+    `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}&gsGraphics=webgl`
+  );
+  await expect(page.locator('svg[data-graphics-painter="svg"]')).toHaveCount(1);
+  await expect(page.getByTestId("geographic-webgl")).toHaveCount(0);
+  const hull = page.locator(
+    `[data-composite-paint-id="${continuityComposite}"] > path`
+  );
+  await expect(hull).toBeVisible();
+  expect(await hull.evaluate((node) => getComputedStyle(node).fill)).not.toBe(
+    "none"
+  );
+});
+
 test("native labels stay visible and retain identity during camera movement", async ({
   page
 }) => {

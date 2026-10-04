@@ -33,6 +33,7 @@ const svgControl = process.env.IP012_SVG_CONTROL ?? "visible";
 const hullControl = process.env.IP012_HULL_CONTROL ?? "visible";
 const textControl = process.env.IP012_TEXT_CONTROL ?? "visible";
 const canvasControl = process.env.IP012_CANVAS_CONTROL ?? "visible";
+const graphicsPainter = process.env.IP012_GRAPHICS_PAINTER ?? "default";
 const inkEffectsControl = process.env.IP012_INK_EFFECTS_CONTROL === "1";
 const gridControl = process.env.IP012_GRID_CONTROL === "hidden";
 if (!["visible", "hidden", "none"].includes(svgControl))
@@ -194,6 +195,22 @@ async function inspect(page: Page) {
                 }
               : null;
           })(),
+          graphicsWebGL: (() => {
+            const canvas = document.querySelector<HTMLCanvasElement>(
+              '[data-testid="geographic-webgl"]'
+            );
+            return canvas
+              ? {
+                  rasterScale: Number(canvas.dataset.rasterScale),
+                  backingBytes: canvas.width * canvas.height * 4,
+                  paints: Number(canvas.dataset.paintRevision || 0),
+                  meshBytes: Number(canvas.dataset.meshBytes),
+                  meshCount: Number(canvas.dataset.meshCount),
+                  points: Number(canvas.dataset.pointCount),
+                  regions: Number(canvas.dataset.regionCount)
+                }
+              : null;
+          })(),
           graphicsGesture: (() => {
             const svg = document.querySelector<SVGSVGElement>(
               'svg[aria-label="Projected chart surface"]'
@@ -330,6 +347,7 @@ const result: Record<string, unknown> = {
   ready_timeout_ms: readyTimeout,
   device_scale_factor: deviceScaleFactor,
   diagnostic: {
+    graphics_painter: graphicsPainter,
     disable_blend: disableBlend,
     static_control: staticControl,
     profile_cpu: profileCpu,
@@ -349,7 +367,7 @@ try {
   result.health = await (await context.request.get("/health")).json();
   const initialTime = performance.now();
   await page.goto(
-    `/graph/v5?world=${world}&gsViewport=0,209900,1600,36000${profileCpu ? "&gsProfile=1" : ""}`,
+    `/graph/v5?world=${world}&gsViewport=0,209900,1600,36000${profileCpu ? "&gsProfile=1" : ""}${graphicsPainter !== "default" ? `&gsGraphics=${encodeURIComponent(graphicsPainter)}` : ""}`,
     {
       waitUntil: "domcontentloaded"
     }

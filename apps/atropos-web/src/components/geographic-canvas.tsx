@@ -32,7 +32,7 @@ type Region = {
   };
 };
 type Color = { fill: string; label: string };
-type Props = {
+export type GeographicPainterProps = {
   regions: readonly Region[];
   points: readonly Point[];
   colors: ReadonlyMap<string, Color>;
@@ -43,6 +43,7 @@ type Props = {
   onUnavailable: () => void;
   onDraw?: (ms: number) => void;
 };
+type Props = GeographicPainterProps;
 type Tween = { from: number; target: number; value: number; started: number };
 
 // Geometry tolerates a lower raster density than text. SVG retains full-device

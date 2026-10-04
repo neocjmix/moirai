@@ -1,5 +1,6 @@
+import { WorldUnavailable } from "./world-unavailable";
 import { collectionDiscoveryConfig } from "../lib/collection-discovery-config";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { readV5StagedDocument } from "@moirai/publication/v5";
 import { readV5RenderGeneration } from "@moirai/publication/v5";
 import { assertPublicId } from "../lib/publication";
@@ -24,9 +25,14 @@ export default async function V5GraphPage({
     typeof params.readPage === "string" ? Number(params.readPage) : 0;
   if (!Number.isSafeInteger(readPage) || readPage < 0 || readPage > 1000000)
     notFound();
+  if (worldId === undefined) redirect("/worlds");
   if (typeof worldId !== "string") notFound();
   try {
     assertPublicId(worldId);
+  } catch {
+    notFound();
+  }
+  try {
     const shell = await v5ShellReader(worldId);
     const { store, pointer, rootBody, reader } = shell;
     const [catalog, systems, summaryBody] = await Promise.all([
@@ -64,7 +70,15 @@ export default async function V5GraphPage({
     const spatial = timeSystemId
       ? await reader.spatialSummary(timeSystemId)
       : null;
-    if (!timeSystemId) notFound();
+    if (!timeSystemId)
+      return (
+        <main style={{ padding: "24px", maxWidth: 720, margin: "auto" }}>
+          <a href="/worlds">월드 선택</a>
+          <h1>{summary.world.title}</h1>
+          <p>아직 시간축이 없는 월드입니다.</p>
+          <a href={`/worlds/${worldId}/events`}>사건 목록 보기</a>
+        </main>
+      );
     // Use the preserved GraphShell painter with revision-pinned tiles when
     // the generation carries authored Composite metadata. Older generations
     // and absent sidecars stay on the semantic reader; tileData=0 is a
@@ -134,6 +148,7 @@ export default async function V5GraphPage({
             : null;
     return (
       <V5AtroposRoot
+        key={worldId}
         renderEnabled={renderEnabled}
         tileDataEnabled={tileDataEnabled}
         discovery={collectionDiscoveryConfig(
@@ -244,9 +259,12 @@ export default async function V5GraphPage({
         }}
       />
     );
-  } catch {
-    // A v4 pointer, incomplete root, or missing object does not expose a
-    // half-migrated explorer. The active /graph page continues serving v4.
-    notFound();
+  } catch (cause) {
+    if (
+      cause instanceof Error &&
+      cause.message.startsWith("NEXT_HTTP_ERROR_FALLBACK")
+    )
+      throw cause;
+    return <WorldUnavailable worldId={worldId} cause={cause} />;
   }
 }

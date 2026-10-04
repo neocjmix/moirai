@@ -1,3 +1,4 @@
+import { prepareWorldLifecycleFixture } from "./prepare-world-lifecycle-fixture.js";
 import { buildSpatialArtifacts } from "../packages/graph-presentation/src/artifacts.js";
 import { queryFromPublicationDocuments } from "../packages/graph-query/src/index.js";
 /** CI-only publication fixture. This is not evidence of a live Clotho commit. */
@@ -139,6 +140,7 @@ for (const item of [
 await prepareV5PublicationFixture(root, {
   renderPublication: process.env.IP012_RENDER_FIXTURE === "1"
 });
+await prepareWorldLifecycleFixture(root);
 process.stdout.write(
   "Prepared isolated v4 and v5 browser Publication fixtures\n"
 );

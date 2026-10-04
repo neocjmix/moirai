@@ -1,3 +1,4 @@
+import { notFound } from "next/navigation";
 import { graphSpatialBootstrap } from "../../lib/graph-spatial-bootstrap";
 import { graphReaderState } from "../../lib/event-reading-navigation";
 import { AtroposGraphRoot } from "../../components/atropos-graph-root";
@@ -22,10 +23,11 @@ export default async function GraphPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }>) {
   const params = await searchParams;
-  const cutoverWorld =
-    typeof params.world === "string"
-      ? params.world
-      : process.env.ATROPOS_CUTOVER_WORLD_ID;
+  if (params.world !== undefined && typeof params.world !== "string")
+    notFound();
+  if (typeof params.world === "string")
+    return V5GraphPage({ searchParams: Promise.resolve(params) });
+  const cutoverWorld = process.env.ATROPOS_CUTOVER_WORLD_ID;
   if (cutoverWorld) {
     let v5Served = false;
     try {

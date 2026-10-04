@@ -12,6 +12,8 @@ export interface ActorContext {
   readonly actor_id: string;
   readonly scopes: readonly ClothoScope[];
   readonly world_ids: readonly string[];
+  /** Trusted server configuration only; never accepted from request bodies. */
+  readonly all_worlds?: boolean;
   readonly expires_at: string;
 }
 export type QueryMethod = Exclude<
@@ -60,10 +62,12 @@ export function authorizeActor(
     !Array.isArray(actor.scopes) ||
     !actor.scopes.includes(scope) ||
     !Array.isArray(actor.world_ids) ||
-    !actor.world_ids.length ||
+    (!actor.world_ids.length && actor.all_worlds !== true) ||
     actor.world_ids.some((id) => !uuid.test(id)) ||
     (world !== undefined &&
-      (typeof world !== "string" || !actor.world_ids.includes(world)))
+      (typeof world !== "string" ||
+        !uuid.test(world) ||
+        (actor.all_worlds !== true && !actor.world_ids.includes(world))))
   )
     throw new ChangeSetError("forbidden", "authorization", "Access denied");
 }

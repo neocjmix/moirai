@@ -61,6 +61,52 @@ const plan = {
 };
 
 describe("inactive v5 HTTP transport", () => {
+  it("exposes recoverable lifecycle with write authorization and server-derived actor", async () => {
+    const lifecycle = vi.fn().mockResolvedValue({ current_revision: 32 });
+    const app = Fastify();
+    registerV5ClothoRoutes(
+      app,
+      credentials,
+      createV5Clotho(createV5Lachesis({ commit: vi.fn(), lifecycle }))
+    );
+    const input = {
+      contract_version: 5,
+      world_id: worldId,
+      change_set_id: plan.change_set_id,
+      expected_revision: 31,
+      intent: "Synthetic retirement",
+      policy_version: plan.policy_version,
+      policy_digest: plan.policy_digest
+    };
+    try {
+      for (const method of ["world.delete", "world.restore"]) {
+        const send = (payload: unknown, authenticated = true) =>
+          app.inject({
+            method: "POST",
+            url: `/v2/clotho/${method}`,
+            headers: authenticated
+              ? {
+                  authorization: `Bearer ${token}`,
+                  "content-type": "application/json"
+                }
+              : { "content-type": "application/json" },
+            payload: JSON.stringify(payload)
+          });
+        expect((await send(input, false)).statusCode).toBe(401);
+        expect((await send({ ...input, all_worlds: true })).statusCode).toBe(
+          422
+        );
+        expect((await send({ ...input, world_id: actorId })).statusCode).toBe(
+          403
+        );
+        expect((await send(input)).statusCode).toBe(200);
+      }
+      expect(lifecycle).toHaveBeenCalledTimes(2);
+      expect(lifecycle.mock.calls[0]?.[2]).toBe(actorId);
+    } finally {
+      await app.close();
+    }
+  });
   it("serves bounded World candidate search with strict read authorization", async () => {
     const search = vi.fn().mockResolvedValue({
       source_revision: 31,

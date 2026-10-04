@@ -12,11 +12,25 @@ import {
 } from "./v5-client-resolver.js";
 export type { V5DraftChange } from "./v5-client-resolver.js";
 
+export interface WorldLifecycleInput {
+  world_id: string;
+  change_set_id: string;
+  expected_revision: number;
+  intent: string;
+  policy_version: string;
+  policy_digest: string;
+}
 export interface V5CanonicalStore {
+  lifecycle?(
+    action: "delete" | "restore",
+    input: WorldLifecycleInput,
+    actor: string
+  ): Promise<unknown>;
   query?(
     method: V5ReadMethod,
     input: Record<string, unknown>,
-    worlds: readonly string[]
+    worlds: readonly string[],
+    allWorlds?: boolean
   ): Promise<unknown>;
   validate?(input: ResolvedV5Change): Promise<unknown>;
   commit(input: ResolvedV5Change): Promise<unknown>;
@@ -36,6 +50,20 @@ export interface V5CanonicalStore {
 
 export function createV5Lachesis(store: V5CanonicalStore) {
   return {
+    lifecycle(
+      action: "delete" | "restore",
+      input: WorldLifecycleInput,
+      actor: ActorContext
+    ) {
+      authorizeActor(actor, "world:write", input.world_id);
+      if (!store.lifecycle)
+        throw new ChangeSetError(
+          "unsupported_method",
+          "method",
+          "Lifecycle unavailable"
+        );
+      return store.lifecycle(action, input, actor.actor_id);
+    },
     query(
       method: V5ReadMethod,
       input: Record<string, unknown>,
@@ -52,7 +80,12 @@ export function createV5Lachesis(store: V5CanonicalStore) {
           "method",
           "Query unavailable"
         );
-      return store.query(method, input, actor.world_ids);
+      return store.query(
+        method,
+        input,
+        actor.world_ids,
+        actor.all_worlds === true
+      );
     },
     validateDraft(plan: V5DraftChange, actor: ActorContext) {
       authorizeActor(actor, "world:write", plan?.world_id);

@@ -22,6 +22,7 @@ export async function v5ShellReader(worldId: string) {
     }
   };
   const { pointer, rootBody } = await readV5ServedRoot(store, worldId);
+  if (pointer.withdrawn) throw Error("v5_world_withdrawn");
   const reader = createV5StagedAtroposReader(
     store,
     rootBody,

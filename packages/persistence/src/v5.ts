@@ -1,5 +1,6 @@
 /** Internal-only v5 persistence entry points. Default v4 migrator/readers
  * remain separate until IP-011 A3. */
+export { changeV5WorldLifecycle } from "./v5-world-lifecycle.js";
 export { queryV5Authoring } from "./v5-authoring-query.js";
 export { commitV5Resolved, validateV5Resolved } from "./v5-change.js";
 export { readActiveV5State } from "./v5-read.js";

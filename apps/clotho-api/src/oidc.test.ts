@@ -1,3 +1,4 @@
+import { loadConfig } from "./config.js";
 import { generateKeyPair, SignJWT } from "jose";
 import { describe, expect, it } from "vitest";
 import {
@@ -31,6 +32,29 @@ async function sign(overrides: Record<string, unknown> = {}) {
 }
 
 describe("OIDC resource authentication", () => {
+  it("applies a separate server access flag without replacing the existing OIDC mapping", () => {
+    const environment = {
+      DATABASE_URL: "postgres://fixture.invalid/test",
+      CLOTHO_OIDC_JSON: JSON.stringify(config)
+    };
+    expect(loadConfig(environment).oidc).toEqual(config);
+    expect(
+      loadConfig({ ...environment, CLOTHO_OIDC_ALL_WORLDS: "true" }).oidc
+    ).toEqual({ ...config, all_worlds: true });
+    expect(
+      loadConfig({ ...environment, CLOTHO_OIDC_ALL_WORLDS: "false" }).oidc
+    ).toEqual({ ...config, all_worlds: false });
+    expect(environment.CLOTHO_OIDC_JSON).toBe(JSON.stringify(config));
+    expect(() =>
+      loadConfig({ ...environment, CLOTHO_OIDC_ALL_WORLDS: "yes" })
+    ).toThrow("Invalid Clotho OIDC World access configuration");
+    expect(() =>
+      loadConfig({
+        DATABASE_URL: environment.DATABASE_URL,
+        CLOTHO_OIDC_ALL_WORLDS: "true"
+      })
+    ).toThrow("OIDC configuration required");
+  });
   it("maps only an explicitly allowed operator to an internal actor and fixed World", async () => {
     const authenticate = oidcAuthenticator(
       config,
@@ -43,6 +67,32 @@ describe("OIDC resource authentication", () => {
       scopes: ["world:read", "world:write"]
     });
     expect(JSON.stringify(principal)).not.toContain(config.operator_subject);
+  });
+  it("enables full World access only from server configuration, retaining token scopes", async () => {
+    const authenticate = oidcAuthenticator(
+      { ...config, all_worlds: true },
+      async () => (await keys).publicKey
+    );
+    expect(
+      await authenticate(`Bearer ${await sign({ scope: "world:read" })}`)
+    ).toMatchObject({ all_worlds: true, scopes: ["world:read"] });
+    expect(
+      await authenticate(`Bearer ${await sign({ sub: "other" })}`)
+    ).toBeUndefined();
+    const scoped = oidcAuthenticator(
+      config,
+      async () => (await keys).publicKey
+    );
+    expect(
+      (await scoped(`Bearer ${await sign({ all_worlds: true })}`))?.all_worlds
+    ).toBeUndefined();
+    expect(
+      parseOidcConfig(JSON.stringify({ ...config, all_worlds: true }))
+        ?.all_worlds
+    ).toBe(true);
+    expect(() =>
+      parseOidcConfig(JSON.stringify({ ...config, all_worlds: "true" }))
+    ).toThrow();
   });
   it("rejects signature, issuer, audience, subject, lifetime and scope violations", async () => {
     const authenticate = oidcAuthenticator(

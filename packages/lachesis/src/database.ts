@@ -6,6 +6,7 @@ import {
   type MoiraiDatabase
 } from "@moirai/persistence";
 import {
+  changeV5WorldLifecycle,
   commitV5Resolved,
   validateV5Resolved,
   queryV5Authoring,
@@ -27,10 +28,12 @@ export function databaseLachesis(db: MoiraiDatabase): Lachesis {
 /** Production v5 database wiring. */
 export function databaseV5Lachesis(db: MoiraiDatabase) {
   return createV5Lachesis({
+    lifecycle: (action, input, actor) =>
+      changeV5WorldLifecycle(db, action, input, actor),
     commit: (input) => commitV5Resolved(db, input),
     validate: (input) => validateV5Resolved(db, input),
-    query: (method, input, worlds) =>
-      queryV5Authoring(db, method, input, worlds),
+    query: (method, input, worlds, allWorlds) =>
+      queryV5Authoring(db, method, input, worlds, allWorlds),
     search: (input) => searchV5WorldEvents(db, input),
     detail: (input) => getV5EventEvidence(db, input)
   });

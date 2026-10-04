@@ -224,7 +224,7 @@ async function executeV5Resolved(
     !uuid.test(input.world_id) ||
     !uuid.test(input.actor) ||
     !Number.isSafeInteger(input.expected_revision) ||
-    input.expected_revision < 1 ||
+    input.expected_revision < 0 ||
     !input.intent ||
     !Array.isArray(input.origins) ||
     !Array.isArray(input.operations) ||
@@ -302,34 +302,60 @@ async function executeV5Resolved(
     const world = (
       await sql<{
         current_revision: number;
-      }>`select current_revision from worlds where id=${input.world_id} and withdrawn_revision is null for update`.execute(
+        withdrawn_revision: number | null;
+      }>`select current_revision,withdrawn_revision from worlds where id=${input.world_id} for update`.execute(
         tx
       )
     ).rows[0];
-    if (!world)
+    if (world?.withdrawn_revision != null)
+      throw new ChangeSetError(
+        "world_missing",
+        "world_id",
+        "World is withdrawn; use world.restore"
+      );
+    if (!world && input.expected_revision !== 0)
       throw new ChangeSetError(
         "world_missing",
         "world_id",
         "World does not exist"
       );
-    if (world.current_revision !== input.expected_revision)
+    if ((world?.current_revision ?? 0) !== input.expected_revision)
       throw new ChangeSetError(
         "revision_conflict",
         "expected_revision",
         "Refresh World context",
         [input.world_id],
         true,
-        { action: "refresh_context", current_revision: world.current_revision }
+        {
+          action: "refresh_context",
+          current_revision: world?.current_revision ?? 0
+        }
       );
-    const existing = await readActiveV5State(tx, input.world_id);
+    const existing = world ? await readActiveV5State(tx, input.world_id) : null;
     const candidate = applyV5Operations(
       existing,
       input.world_id,
       input.operations
     );
-    const revision = world.current_revision + 1;
+    const revision = (world?.current_revision ?? 0) + 1;
     const changes: HistoryChange[] = [];
-    if (stableStringify(existing.world) !== stableStringify(candidate.world)) {
+    if (!existing) {
+      await sql`insert into worlds(id,slug,title,description,current_revision,publication_target_revision,created_revision,updated_revision) values (${input.world_id},${candidate.world.slug},${candidate.world.title},${candidate.world.description},1,1,1,1)`.execute(
+        tx
+      );
+      await sql`insert into world_publication_state(world_id,projection_status) values (${input.world_id},'building')`.execute(
+        tx
+      );
+      changes.push({
+        entity_type: "world",
+        entity_id: input.world_id,
+        operation_kind: "create",
+        before: null,
+        after: candidate.world
+      });
+    } else if (
+      stableStringify(existing.world) !== stableStringify(candidate.world)
+    ) {
       await sql`update worlds set slug=${candidate.world.slug},title=${candidate.world.title},description=${candidate.world.description},updated_revision=${revision} where id=${input.world_id}`.execute(
         tx
       );
@@ -352,7 +378,7 @@ async function executeV5Resolved(
     // Withdraw dependents before owners. All final-state constraints are deferred.
     for (const [type, key] of [...types].reverse()) {
       const nextIds = new Set(candidate[key].map((v) => v.id));
-      for (const old of existing[key]) {
+      for (const old of existing?.[key] ?? []) {
         if (nextIds.has(old.id)) continue;
         await sql`update ${sql.table(type === "time_system" ? "time_systems" : type === "collection_time_system" ? "collection_time_systems" : `${type}s`)} set withdrawn_revision=${revision},updated_revision=${revision} where id=${old.id} and withdrawn_revision is null`.execute(
           tx
@@ -367,7 +393,7 @@ async function executeV5Resolved(
       }
     }
     const oldMemberships = new Map(
-      existing.eventCollectionMemberships.map((m) => [pair(m), m])
+      (existing?.eventCollectionMemberships ?? []).map((m) => [pair(m), m])
     );
     const newMemberships = new Map(
       candidate.eventCollectionMemberships.map((m) => [pair(m), m])
@@ -392,7 +418,7 @@ async function executeV5Resolved(
         });
       }
     for (const [type, key] of types) {
-      const old = new Map(existing[key].map((v) => [v.id, v]));
+      const old = new Map((existing?.[key] ?? []).map((v) => [v.id, v]));
       for (const value of candidate[key]) {
         const before = old.get(value.id);
         if (before && stableStringify(before) === stableStringify(value))

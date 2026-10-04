@@ -4,7 +4,7 @@ import {
   type LegacyPublicEvent,
   type LegacyPublicRelation
 } from "@moirai/graph-query";
-import { readFile } from "node:fs/promises";
+import { readFile, readdir } from "node:fs/promises";
 import { join } from "node:path";
 import { observePublicationRead } from "./publication-profile";
 import { BoundedPublicationCache } from "./bounded-publication-cache";
@@ -532,4 +532,23 @@ export async function readRelationalTime(
       normalizePublicRelation(relation, worldId)
     )
   };
+}
+
+/** Discover published World identities without canonical DB access. */
+export async function publishedWorldIds(): Promise<string[]> {
+  if (!hasPublicationStoreConfig()) {
+    const fixture = process.env.LOCAL_PUBLICATION_FIXTURE_DIR;
+    if (!fixture) return [];
+    return (await readdir(join(fixture, "worlds")).catch(() => []))
+      .filter((id) => UUID.test(id))
+      .sort();
+  }
+  objectStore ??= new S3ObjectStore();
+  const { prefixes } = await objectStore.listCommonPrefixes("worlds/");
+  return prefixes
+    .flatMap((prefix) => {
+      const id = prefix.split("/")[1];
+      return id && UUID.test(id) ? [id] : [];
+    })
+    .sort();
 }

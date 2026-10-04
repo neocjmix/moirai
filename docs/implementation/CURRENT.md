@@ -4,16 +4,16 @@
 
 ## 실행 원칙과 종료 결정
 
-사용자는 iPhone 17 Safari/PWA로만 작업하고 코드를 직접 리뷰하지 않는다. Codex Cloud에서 구현·검증하며 운영에 작은 checkpoint를 자주 배포한다. 후속 구현의 checkpoint 정책은 [AGENTS](../../AGENTS.md)/[IS-001](IS-001-agent-mobile-strategy.md)을 따른다. **현재 요청은 계획 문서 갱신·draft PR까지이며 코드·데이터 변경, merge·배포는 금지다.** 이전 실행 위임이 이 범위를 넓히지 않는다.
+사용자는 iPhone 17 Safari/PWA로만 작업하고 코드를 직접 리뷰하지 않는다. Codex Cloud에서 구현·검증하며 운영에 작은 checkpoint를 자주 배포한다. 후속 구현의 checkpoint 정책은 [AGENTS](../../AGENTS.md)/[IS-001](IS-001-agent-mobile-strategy.md)을 따른다. **후속 사용자 지시로 World 관리 구현과 검증 후 merge·정상 배포가 승인됐다.** PR #323은 W/C 범위로 진행하며 새 개발 세션·표현/배치/Collection 자동화는 시작하지 않는다. 운영 인증 권한 확대는 정확한 설정별 승인을 따로 받는다.
 
 **모바일 성능·연속성 튜닝은 2026-10-04 사용자 체감 수용과 명시적 지시로 종료했다.** 사용자는 운영이 상당히 원활하다고 확인했다. [종료 결정·검증·잔여 backlog](IP-012-mobile-continuity-closeout.md)가 이전 목표 달성까지 자율 튜닝하라는 지시를 대체한다. 기존 p9533.4ms 미달을 통과로 바꾸지 않으며 숫자 미달만으로 자동 재개하지 않는다. 이후 구체적 버그는 정상적인 수정·회귀 검증으로 처리한다.
 
 ## 새 우선순위와 단계
 
-[IP-013 실제 역사 기반 병행 계획](IP-013-real-history-development-plan.md)이 기존 A5 전체 완료→A6 순서를 대체한다. **현재는 planning-only**이며 사용자는 이 문서 작업 이후 중단된 World 구현과 실제 역사 작업 재개를 별도 승인했다. 후속 작업은 PR-first·자동 merge 금지를 유지하고, 데이터 입력은 W/C 수용 후 제한 pilot부터 시작한다.
+[IP-013 실제 역사 기반 병행 계획](IP-013-real-history-development-plan.md)이 기존 A5 전체 완료→A6 순서를 대체한다. 계획 문서 #322 병합 후 **현재 W/C 구현·검증 중**이다. 사용자는 PR-first가 충돌 확인을 뜻한다고 명확히 했으며 검토·필수 CI 통과 후 merge를 승인했다. 데이터 입력은 W/C 운영 수용 후 dot의 제한 pilot부터 시작한다.
 
 - **IP-011 A1–A3 완료, A4 종료·이관:** 전체 성능 통과 아님. A4-B01–03과 #321 종료 결정을 유지한다.
-- **W→C 선행, 계획됨:** World 생성·선택·복구 가능한 삭제 정책·빈 World bootstrap→첫 Event와 Clotho validate/commit/retry→발행·읽기를 검증한다. v5 create/delete와 빈 World 경로는 미완료다. `task-3/moirai`의 미병합 구현은 재사용 후보일 뿐 완료 증거가 아니다.
+- **W→C 선행, PR #323 검증 중:** create/withdraw/restore, 인증된 전 World 접근의 opt-in, World/Event 선택과 빈 상태를 구현했다. [로컬 근거](../evidence/world-lifecycle/implementation.md): 통합49개, WebKit4개 통과. 기존 main에서도 재현되는 Mac golden 실패1건은 별도 기록했다. PR CI·배포·운영 권한 활성화·실제 Clotho 종단간 확인 전까지 W/C 운영 수용은 미완료다.
 - **W/C 수용 후 D1∥R:** dot는 깨끗한 production history World에 제한 조선/임진왜란·인접국 pilot을 축적하고 Codex는 그 실제 사례로 Composite 줌 표현·전환·눈으로 조정 가능한 threshold를 개발·검증한다. pilot 사용자 검토 전 자율 광역 확장·인물별 구성은 보류한다.
 - **다음 L, 이후 A:** Composite 수용 후 production main UX와 격리된 X 배치 실험실, 이후 Collection 자동 ON/OFF·discovery. 수동 읽기·선택·camera 보존은 선행 검증에 필요한 범위에서 유지한다.
 - **A5 부분 구현/나머지 재배치:** HUD·표현 분리·선택 제한 제거는 보존. 전체 S0–S7 자동화 완료는 역사 입력 gate가 아니다. [A5 disposition](IP-011-A5-collection-discovery-plan.md)을 따른다.

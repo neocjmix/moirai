@@ -140,7 +140,8 @@ async function processNextJob(): Promise<boolean> {
       // move the canonical pointer backwards. Validate the served root first.
       const servedBefore = await readV5ServedRoot(
         publicationStore,
-        job.worldId
+        job.worldId,
+        true
       ).catch((cause: unknown) => {
         if (
           cause instanceof Error &&
@@ -183,7 +184,18 @@ async function processNextJob(): Promise<boolean> {
       const renderEnabled = renderMode === "shadow";
       let renderStart = 0;
       const { artifacts } = await buildV5WorldCompleteArtifacts(
-        state,
+        state.worldStatus === "withdrawn"
+          ? {
+              ...state,
+              events: [],
+              collections: [],
+              timeSystems: [],
+              collectionTimeSystems: [],
+              eventCollectionMemberships: [],
+              relations: [],
+              narratives: []
+            }
+          : state,
         job.targetRevision,
         (phase) => {
           if (phase === "complete_finalized") renderStart = performance.now();
@@ -219,9 +231,14 @@ async function processNextJob(): Promise<boolean> {
         publicationStore,
         artifacts,
         new Date().toISOString(),
-        assertActive
+        assertActive,
+        state.worldStatus === "withdrawn"
       );
-      const served = await readV5ServedRoot(publicationStore, job.worldId);
+      const served = await readV5ServedRoot(
+        publicationStore,
+        job.worldId,
+        true
+      );
       if (
         served.pointer.served_revision !== job.targetRevision ||
         served.pointer.manifest_sha256 !== pointer.manifest_sha256

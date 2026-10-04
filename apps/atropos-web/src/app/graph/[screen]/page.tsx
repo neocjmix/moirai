@@ -33,6 +33,8 @@ export default async function GraphScreenPage({
 }>) {
   const { screen } = await params;
   const queryParams = await searchParams;
+  if (queryParams.world !== undefined && typeof queryParams.world !== "string")
+    notFound();
   const v5World =
     typeof queryParams.world === "string"
       ? queryParams.world

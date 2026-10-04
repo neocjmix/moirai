@@ -33,7 +33,7 @@ export async function processNextRenderGeneration(
           world.publication_target_revision as target_revision
         from world_publication_state as state
         join worlds as world on world.id = state.world_id
-        where state.served_revision > 0 order by state.world_id
+        where state.served_revision > 0 and world.withdrawn_revision is null order by state.world_id
       `.execute(connection);
       for (const world of worlds.rows) {
         // A burst may be committed in seconds while canonical publication
@@ -42,7 +42,8 @@ export async function processNextRenderGeneration(
         if (world.target_revision > world.served_revision) continue;
         const retry = retries.get(world.world_id);
         if (retry && Date.now() < retry.eligibleAt) continue;
-        const root = await readV5ServedRoot(store, world.world_id);
+        const root = await readV5ServedRoot(store, world.world_id, true);
+        if (root.pointer.withdrawn) continue;
         const revision = root.pointer.served_revision;
         if (revision !== world.served_revision) continue;
         try {

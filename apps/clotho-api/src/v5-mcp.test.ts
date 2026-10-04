@@ -215,7 +215,7 @@ describe("inactive v5 MCP transport", () => {
     try {
       const publicList = await send("tools/list", undefined, undefined, false);
       expect(publicList.statusCode).toBe(200);
-      expect(publicList.json().result.tools).toHaveLength(13);
+      expect(publicList.json().result.tools).toHaveLength(17);
       expect(
         (
           await send(
@@ -246,6 +246,10 @@ describe("inactive v5 MCP transport", () => {
         expect(
           (await client.listTools()).tools.map((tool) => tool.name)
         ).toEqual([
+          "authoring_schema_get",
+          "world_create",
+          "world_delete",
+          "world_restore",
           "world_list",
           "world_get",
           "collection_list",
@@ -268,6 +272,10 @@ describe("inactive v5 MCP transport", () => {
       expect(
         listing.json().result.tools.map((tool: { name: string }) => tool.name)
       ).toEqual([
+        "authoring_schema_get",
+        "world_create",
+        "world_delete",
+        "world_restore",
         "world_list",
         "world_get",
         "collection_list",

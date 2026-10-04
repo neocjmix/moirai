@@ -9,6 +9,7 @@ export interface OidcConfig {
   readonly resource: string;
   readonly operator_subject: string;
   readonly actor_id: string;
+  readonly all_worlds?: boolean;
 }
 
 function publicHttps(value: unknown): URL {
@@ -36,10 +37,18 @@ export function parseOidcConfig(
     const config = JSON.parse(value) as OidcConfig;
     if (!config || Array.isArray(config)) throw new Error();
     if (
-      Object.keys(config).sort().join() !==
+      Object.keys(config)
+        .filter((key) => key !== "all_worlds")
+        .sort()
+        .join() !==
       ["issuer", "jwks_uri", "resource", "operator_subject", "actor_id"]
         .sort()
         .join()
+    )
+      throw new Error();
+    if (
+      config.all_worlds !== undefined &&
+      typeof config.all_worlds !== "boolean"
     )
       throw new Error();
     const issuer = publicHttps(config.issuer);
@@ -113,6 +122,7 @@ export function oidcAuthenticator(
       return {
         actor_id: config.actor_id,
         world_ids: [CLOTHO_CONNECTION_WORLD],
+        ...(config.all_worlds === true ? { all_worlds: true } : {}),
         scopes,
         expires_at: new Date(payload.exp * 1000).toISOString()
       };

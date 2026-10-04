@@ -48,6 +48,6 @@
 | A4-B03 실기기 장시간·heap | 체감 수용 확인; instrumented device/GPU/heap 증거는 미수집으로 이관 |
 | A5 capacity·200% text·접근성·pin/context/catalog | 별도 제품 backlog. 이번 안정화 범위의 미완성 runtime 코드로 혼동하지 않음 |
 | IP-012 incremental publication/invalidation·재시작 scheduling | 별도 architecture backlog. full compile을 증분 완료로 표시하지 않음 |
-| A6/M5·대량 역사 입력 | 비활성 유지 |
+| A6/M5·대량 역사 입력 | 이 종료 당시 비활성. 후속 [IP-013](IP-013-real-history-development-plan.md)이 A6 순서를 W/C 수용 후 제한 pilot으로 대체. 현재 입력 미착수·pilot 검토 전 자율 대량 확장 보류, M5 비활성 |
 
 [Atropos 운영](https://moirai-production-8ed1.up.railway.app/graph/v5?world=01995c2a-7b00-7000-8000-000000000101). 새로운 버그는 구체적인 trigger·재현·수정·회귀 검증으로 처리하며, 이 종료 결정은 통상적인 bug fix를 막지 않는다.

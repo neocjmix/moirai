@@ -1,5 +1,8 @@
 # Render Publication Architecture Handoff
 
+> 2026-10-04 순서 대체: 아래 활성화·다음 단계·A5→A6·합성 입력 지시는 당시 인계/계획 이력이다. [IP-013](IP-013-real-history-development-plan.md)의 W/C 수용→실제 역사 pilot∥Composite→격리 X 실험→자동화/discovery가 우선한다. 현재 작업은 문서·draft PR 전용이며 [CURRENT](CURRENT.md)가 실행 상태를 소유한다.
+
+
 Status: planning handoff, not yet authoritative architecture
 
 Disposition (updated 2026-10-02): verified implementation plan is [IP-012](IP-012-render-publication-plan.md), normal viewport read decisions are [ADR-012](../architecture/ADR-012-render-read-architecture.md), and the active follow-up is [mobile performance/continuity](IP-012-mobile-continuity-plan.md). Preserve this handoff as decision history. Its next-Work-session/planning-only/global-manifest wording is not a current execution restriction; default GraphShell Render integration has already shipped. Use CURRENT for deployed state.

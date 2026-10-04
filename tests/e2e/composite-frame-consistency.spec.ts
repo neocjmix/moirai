@@ -85,8 +85,14 @@ for (const graphics of ["canvas", "webgl"]) {
         return { before, after: inspect() };
       });
     await page.mouse.up();
+    await test.info().attach("pan-work", {
+      body: JSON.stringify(result),
+      contentType: "application/json"
+    });
     const delta = (key: string) => result.after[key]! - result.before[key]!;
     expect(delta("viewportBatches")).toBe(50);
+    // No-op publication must not achieve fewer commits by starving reads.
+    expect(delta("viewportReadResults")).toBeGreaterThan(0);
     expect(delta("staleSemanticRegionPasses")).toBe(0);
     expect(delta("compositeFrameTicks")).toBe(0);
     // Allow independent viewport response/label lifecycle commits. A copied

@@ -1,26 +1,15 @@
+import { equalJsonValue } from "../json-value-identity";
 import type { GraphShellChartPlaneEntity } from "../../shared/contracts";
 
 /** Parsed viewport responses are fresh objects, including fresh hull vertices.
  * Compare only the bounded current working set once per response, preserving
  * all source metadata while allowing independent screen-density updates.
  */
-function equalValue(a: unknown, b: unknown): boolean {
-  if (a === b) return true;
-  if (!a || !b || typeof a !== "object" || typeof b !== "object") return false;
-  if (Array.isArray(a) || Array.isArray(b))
-    return Array.isArray(a) && Array.isArray(b) && a.length === b.length &&
-      a.every((item, index) => equalValue(item, b[index]));
-  const left = a as Record<string, unknown>;
-  const right = b as Record<string, unknown>;
-  const keys = Object.keys(left);
-  return keys.length === Object.keys(right).length && keys.every(key =>
-    Object.prototype.hasOwnProperty.call(right, key) && equalValue(left[key], right[key]));
-}
 function sameSource(a: GraphShellChartPlaneEntity, b: GraphShellChartPlaneEntity) {
   if (a === b) return true;
   const keys = Object.keys(a).filter(key => key !== "renderDensity");
   return keys.length === Object.keys(b).filter(key => key !== "renderDensity").length &&
-    keys.every(key => Object.prototype.hasOwnProperty.call(b, key) && equalValue(
+    keys.every(key => Object.prototype.hasOwnProperty.call(b, key) && equalJsonValue(
       a[key as keyof GraphShellChartPlaneEntity], b[key as keyof GraphShellChartPlaneEntity],
     ));
 }

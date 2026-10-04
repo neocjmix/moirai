@@ -2306,7 +2306,7 @@ export function GraphShell({
   const runtimeViewportOwnerRef = useRef(null);
   const parsedRuntimeViewportRef = useRef(null);
   const graphWorkCountsRef = useRef({worldGeometryBatches: 0, pointTransforms: 0, regionTransforms: 0, labelQueries: 0,
-    renders: 0, commits: 0, viewportBatches: 0, compositePaintPasses: 0, compositeFrameTicks: 0, compositePruneTicks: 0,
+    renders: 0, commits: 0, viewportReadStarts: 0, viewportReadResults: 0, viewportBatches: 0, compositePaintPasses: 0, compositeFrameTicks: 0, compositePruneTicks: 0,
     semanticPasses: 0, staleSemanticRegionPasses: 0});
   graphWorkCountsRef.current.renders++;
   useLayoutEffect(() => { graphWorkCountsRef.current.commits++; });
@@ -2592,8 +2592,14 @@ export function GraphShell({
     }
 
     const loadViewport = async () => {
-      setRuntimeViewportLoadState("loading");
-      setRuntimeViewportErrorMessage(null);
+      graphWorkCountsRef.current.viewportReadStarts++;
+      // A cache hit settles within this task. Do not publish a transient loading
+      // state and repaint an otherwise identical scene for that completed read.
+      const pendingTimer = window.setTimeout(() => {
+        if (!viewportReadScheduler.active) return;
+        setRuntimeViewportLoadState("loading");
+        setRuntimeViewportErrorMessage(null);
+      }, 0);
       try {
         const baseQuery = {
           canonIds,
@@ -2617,8 +2623,10 @@ export function GraphShell({
         if (viewportReadScheduler.active) {
           const sameOwner = runtimeViewportOwnerRef.current?.loader === loader && runtimeViewportOwnerRef.current?.canons === canonIds.join(",");
           runtimeViewportOwnerRef.current = {loader, canons: canonIds.join(",")};
+          graphWorkCountsRef.current.viewportReadResults++;
           setRuntimeViewportResponse(previous => reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode));
           setRuntimeViewportLoadState("ready");
+          setRuntimeViewportErrorMessage(null);
         }
 
       } catch (error) {
@@ -2633,6 +2641,8 @@ export function GraphShell({
               ? "뷰포트 데이터를 불러오지 못했습니다."
               : "Unable to load viewport data.",
         );
+      } finally {
+        window.clearTimeout(pendingTimer);
       }
     };
 

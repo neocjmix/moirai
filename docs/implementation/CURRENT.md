@@ -1,41 +1,34 @@
 # 현재 구현 상태
 
-2026-10-04 KST. 이 파일은 현재 상태만 소유한다. 이전 checkpoint는 [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md), 검증 수치는 각 evidence 문서에 보존한다.
+2026-10-04 UTC. 이 파일은 현재 실행·배포 상태를 소유한다. [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md)과 dated evidence는 역사 기록이다.
 
-## 실행 원칙과 활성 목표
+## 실행 원칙과 종료 결정
 
-사용자는 모바일로만 진행하며 코드를 직접 리뷰하지 않는다. Codex Cloud에서 구현·검증하고 **production에 작은 checkpoint를 자주 배포**한다. 미완료·일부 CI 실패·clean tree 미달은 배포 가능한 checkpoint를 막지 않는다. 이번 성능·표현 전환 작업의 쓰기·merge·배포와 incident 대응은 사전 승인됐다. [AGENTS](../../AGENTS.md)와 [IS-001](IS-001-agent-mobile-strategy.md)이 여러 세션에 적용되는 실행 규칙을 소유한다.
+사용자는 iPhone 17 Safari/PWA로만 작업하고 코드를 직접 리뷰하지 않는다. Codex Cloud에서 구현·검증하며 운영에 작은 checkpoint를 자주 배포한다. 통상적인 쓰기·merge·배포·incident 대응의 사전 승인과 미완료 checkpoint 공개 정책은 [AGENTS](../../AGENTS.md)/[IS-001](IS-001-agent-mobile-strategy.md)을 따른다.
 
-현재 우선 작업은 [IP-012 모바일 성능·표현 연속성](IP-012-mobile-continuity-plan.md)이다. 기존 UI 문법을 유지하며 추가 fetch를 의식하지 않는 탐색과 hull ↔ ordinary point ↔ small point ↔ hidden 전환을 목표로, 진단→개선→실제 브라우저 검증→배포를 반복한다. A4 수치 기준을 완화하지 않는다. Google Maps는 질적 체감 기준이며 실제 측정 없는 동등성 주장은 하지 않는다.
+**모바일 성능·연속성 튜닝은 2026-10-04 사용자 체감 수용과 명시적 지시로 종료했다.** 사용자는 운영이 상당히 원활하다고 확인했다. [종료 결정·검증·잔여 backlog](IP-012-mobile-continuity-closeout.md)가 이전 목표 달성까지 자율 튜닝하라는 지시를 대체한다. 기존 p9533.4ms 미달을 통과로 바꾸지 않으며 숫자 미달만으로 자동 재개하지 않는다. 이후 구체적 버그는 정상적인 수정·회귀 검증으로 처리한다.
 
 ## 단계
 
-- **IP-011 A1–A3 완료. A4 종료·잔여 백로그 이관:** 전체 성능 통과 아님. [A4-B01–03](IP-011-A4-closeout-backlog.md)의 지속 frame, 반복 region 계산, 실기기·heap 증거를 후속 작업에서 판정한다.
-- **A5 활성·미완료:** World/주제 HUD, 선택 수 제한 제거, Semantic/Geographic 분리와 일부 label/interaction 개선 구현. capacity·가독성·pin·자동 relevance·전체 catalog는 열린 상태다.
-- **IP-012 활성·미완료:** 기존 GraphShell에 Render 데이터를 공급한다. 고정 signed grid와 manifest 없는 viewport 읽기는 #301로 병합·배포됐다. 현재 우선순위는 모바일 frame, 데이터/표현 identity, fetch·LOD 전환 연속성이다.
-- A6/M5·대량 역사 입력은 비활성이다. 성능 개선 승인은 이 별도 제품 범위를 자동 활성화하지 않는다.
+- **IP-011 A1–A3 완료, A4 종료·이관:** 전체 성능 통과 아님. [A4-B01–03](IP-011-A4-closeout-backlog.md)은 deferred/partial 상태다.
+- **A5 활성·미완료:** HUD·Semantic/Geographic 분리·label/interaction 개선이 구현됐다. capacity·200% text/접근성·pin/context/catalog 등은 별도 제품 backlog다. 이번 안정화에서 자동 착수하지 않는다.
+- **IP-012 publication 미완료, 모바일 튜닝 후속 종료:** 기본 GraphShell에 Render 데이터를 공급하고 signed grid/manifest 없는 viewport 읽기가 배포됐다. 증분 재사용·invalidation·재시작 scheduling 검증은 별도 backlog다.
+- A6/M5·대량 역사 입력은 비활성이다.
 
-## 현재 checkpoint와 조사 기준선
+## 안정화 기준선
 
-- **현재 runtime checkpoint:** [PR #319](https://github.com/neocjmix/moirai/pull/319), `03d324eb91fc13e58c5d8fd92ce1be55947b18da`. Railway SUCCESS와 exact-SHA smoke를 확인했다. 기본은 WebGL2 background vector와 native SVG text/input이며 미지원·context loss는 SVG로 복귀한다. `?gsGraphics=canvas`/`svg`로 비교할 수 있다. #313의 gesture 전체 화면 cache는 번쩍임·비율 왜곡 및 성능 퇴행으로 제거했고 release/boundary 수정은 유지한다.
-- **지속 성능 미달:** #307 격리30 visits/start·middle·return602frame p95=68/76/96ms, 초기 준비2099.7ms/4요청, 전체68요청. #305의382요청 증폭은 줄었다. #309의 짧은0 visits/602frame start·return은 p95=55/54ms로33.4ms 기준 미달이다. 같은 DPR3에서 SVG paint만 숨긴 진단은25/24ms, display 제거는25/23ms여서 남은 주된 비용은 그리기다. 이 진단과 DPR1 결과를 정상 화면의 통과로 계산하지 않는다.
-- **연속성 검증:** 실제 compiler/4 publication의0/250/750ms 지연·새 XY/scale coverage·이동과 hull/point 반전에서 동일 DOM/path와 paint가 유지됐다. hull 글자의 실제 glyph hit에 모바일 터치해 올바른 Narrative가 열리는4개 테스트가 통과했다. iPhone17 Safari/PWA에서 사용자는 체감상 많이 개선됐다고 확인했으며 자동 검증은 별도의 iPhone14 WebKit emulation이다.
-- **현재 성능 조사:** #319 정상30회/시작·중간·복귀602frame p95=48/48/47ms, max62/60/61ms, 준비2579.9ms/4요청, 전체62요청·오류0이다. #315의55/52/51ms보다 낮지만 원래33.4ms 기준은 미달이다. Cloud native EGL은 llvmpipe software이며 iPhone17 GPU 성능·heap 증거가 아니다. label contour cache는 region/label 비용을6.7–6.9→4.0–4.3ms/회로 줄였다. 동일 응답 publication을 수정해50회 이동=50 commits를 확인했고 main/branch CI·A5·IP-004가 통과했다. 배포된 resize 보호와 compiler/4 지연·touch·fallback 11개도 통과했다. 후속 native label의 immutable path+평행 이동 후보는 글자 크기·이동량 회귀를 통과했으며 운영 측정이 남았다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
-- 기능 출발점은 [#302](https://github.com/neocjmix/moirai/pull/302) `19de027`의 Collection 변경 시 semantic label 연속성이며, 조사 기준선은 [#303](https://github.com/neocjmix/moirai/pull/303) `91cffca`다. #304 `8f9e31a`의 isolated602frame p95=49/49ms도33.4ms 기준 미달이다. 과거 checkpoint와 개별 검증 범위는 evidence에 보존한다.
-- World `01995c2a-7b00-7000-8000-000000000101`: Revision 62, 30 Collection, 677 placed/2 unplaced Event. 공개 Render generation은 `render-compiler/4`, `7b3c2fd8…`다. 데이터 수량은 새 입력·백필 전 다시 확인한다.
+- **마지막 runtime:** [PR #320](https://github.com/neocjmix/moirai/pull/320), `d3e79d7fdd92e6977cf68af0cb8f9a9a85a99521`. Railway SUCCESS와 exact-SHA smoke 확인. main/branch CI·A5·IP-004 성공. 후속 종료 정리 commit은 이 runtime을 유지한다.
+- **표현:** WebGL2 background hull/point + native SVG text·relation·input. 미지원/context loss 시 SVG로 복귀하고 `?gsGraphics=canvas`/`svg` 비교 경로를 유지한다. 전체 화면 gesture cache는 제거됐으며 atomic resize, bounded contour cache, 동일 응답 no-op publication, native label path 평행 이동이 반영됐다.
+- **기능 검증:** 모바일40개 통과/기존 조건부1개 skip, 실제 compiler/4 11개 통과(0/250/750ms reads·identity·glyph touch·camera/Collection 반전·resize·fallback). 기존1008-placement digest 유지. 직전 runtime 전체 unit609개 통과/2개 skip. 동일 응답 commit 회귀는50회 이동=50 commits로 수정했고 #319 main/branch CI·A5·IP-004가 통과했다.
+- **원래 성능 기준은 미달:** #319 정상30회/각602frame p9548/48/47ms, max62/60/61ms, 초기2579.9ms/4요청, 전체62요청·오류0. #320 마지막 short0회/각602frame은49/48ms, max64/60ms, 초기1718.5ms/4요청, 전체11요청·오류0. short를30회 통과로 표시하지 않는다. cache/DOM은 bounded working set 안에 머문다.
+- **증거 한계:** Cloud native EGL은 llvmpipe software다. 사용자 질적 체감 수용과 별개로 실제 iPhone17 GPU frame·장시간 heap은 계측하지 않았다. A4 sustained CI 실패는 이관된 수치 미달이며 기능 CI 성공으로 덮지 않는다. 최신 CI와 raw artifact는 [실행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md)를 따른다.
+- World `01995c2a-7b00-7000-8000-000000000101`: Revision62, 30 Collection, 677 placed/2 unplaced Event, `render-compiler/4`. 데이터 작업 전 수량·revision을 다시 확인한다.
 
-## 읽기 구조와 불변식
+## 구조·불변식
 
-World가 Event identity·transaction·Revision·access 경계다. Collection은 사건 소유자가 아닌 선택 집합이며 공유 Event를 복제하지 않는다. Event/Collection은 각각 독립 Narrative 하나를 갖고 membership 없는 Event는 허용한다. 작성된 contains/Composite 의미, World 좌표, 기존 hull·label·relation·HUD·drawer·camera 동작을 보존한다.
+World가 Event identity·transaction·Revision·access 경계다. Collection은 선택 집합이며 공유 Event를 복제하지 않는다. Event/Collection은 각각 독립 Narrative 하나를 갖고 membership 없는 Event는 허용한다. 작성된 contains/Composite 의미, World 좌표, 기존 hull·label·relation·HUD·drawer·camera 문법을 유지한다.
 
-Lachesis는 bounded 표현 후보·작성된 ancestry·geometry support를 준비하고 Atropos는 화면상의 visibility·보간·interaction을 담당한다. 기본 GraphShell은 검증된 v3/v4 Render 데이터를 기존 painter에 공급한다. compiler v4는 `render-publication/2` 고정 signed grid를 사용하며 viewport representation→필요 geometry의 두 단계 읽기를 지원한다. 전체 manifest는 일반 viewport 읽기의 선행 조건이 아니다. `?tileData=0`은 semantic rollback, `?renderTiles=1`은 별도 tile scene 관측 경로다.
-
-## 남은 주요 작업
-
-1. 활성 [모바일 연속성 계획](IP-012-mobile-continuity-plan.md)의 baseline·delayed-fetch·identity·frame gate와 최신 모바일 실패 진단.
-2. A5 capacity/200% text·접근성 검증 후 pin/contextual activation/전체 catalog와 탐색 surface.
-3. Render generation 증분 재사용·invalidation, 지속 수정/재시작 scheduling 검증. 현재 full compile을 증분 완료로 표현하지 않는다.
-4. 실제 단말 장시간 touch·heap 및 1k/10k/100k 성능 증거. CI WebKit emulation과 직렬화 cache bytes를 실기기·heap으로 대체하지 않는다.
+Lachesis는 bounded 표현 후보·authored ancestry·geometry support를 publication으로 준비하고 Atropos는 현재 화면의 visibility·보간·interaction을 담당한다. compiler/4는 `render-publication/2` signed grid를 사용하고 viewport representation→필요 geometry의 두 단계 읽기를 지원한다. 전체 manifest는 일반 읽기의 선행 조건이 아니다. `?tileData=0`은 semantic rollback, `?renderTiles=1`은 별도 tile scene 관측 경로다. full compile을 증분 구현 완료로 표현하지 않는다.
 
 - [Atropos 모바일](https://moirai-production-8ed1.up.railway.app/graph/v5?world=01995c2a-7b00-7000-8000-000000000101)
 - [Clotho](https://desirable-vitality-production-eb95.up.railway.app)

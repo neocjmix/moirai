@@ -9,7 +9,7 @@ layer: implementation-plan
 
 ## 1. 상태·권한·근거
 
-2026-10-02 후속: A5·IP-012는 활성·미완료이고, 사용자는 기존 UI 문법을 유지하는 모바일 성능·표현 연속성 개선을 자율 진행하도록 명시 지시했다. 현재 우선 실행은 [IP-012 모바일 계획](IP-012-mobile-continuity-plan.md), 매 세션 배포·권한 규칙은 AGENTS/IS-001을 따른다. production의 미완료·CI 실패 checkpoint 공개와 incident 대응은 승인 범위이며 A6/M5를 자동 활성화하지 않는다.
+2026-10-04 후속: A5·IP-012 전체는 미완료이나, 모바일 성능·표현 연속성 개선은 사용자의 운영 체감 수용과 명시적 지시로 [종료·잔여 이관](IP-012-mobile-continuity-closeout.md)했다. 이전 자율 튜닝 지시는 종료 결정으로 대체한다. 새 세션은 CURRENT와 AGENTS/IS-001을 따르며, 별도 A5/publication backlog를 이번 안정화의 미완성 코드와 혼동하거나 자동 착수하지 않는다. 작은 production checkpoint·incident 대응 정책은 유지하며 A6/M5는 비활성이다.
 
 A0는 PR #129 병합으로 완료했다. 2026-09-22 사용자가 IP-011 전체 실행과 쓰기·삭제·수정·병합·배포를 위임했다. 이 과거 실행 위임은 최신 사용자 지시보다 우선하지 않는다. 2026-09-28 후속 명시적 시작 지시로 A5 구현·merge·checkpoint 배포가 활성화됐다. 실행 시 A1부터의 dependency와 rehearsal/backup/검증 gate를 지킨다. 기존 M5의 별도 후속 범위는 활성화하지 않는다.
 

@@ -109,6 +109,10 @@ it("reuses label contours while preserving current clipping, density and edge de
           for (let i=0;i<actual.pathPoints.length;i++) {
             expect(actual.pathPoints[i]!.x).toBeCloseTo(baseline.pathPoints[i]!.x,6);
             expect(actual.pathPoints[i]!.y).toBeCloseTo(baseline.pathPoints[i]!.y,6);
+            if (actual.pathFrame) {
+              expect(actual.pathFrame.points[i]!.x + actual.pathFrame.offset.x).toBeCloseTo(baseline.pathPoints[i]!.x,6);
+              expect(actual.pathFrame.points[i]!.y + actual.pathFrame.offset.y).toBeCloseTo(baseline.pathPoints[i]!.y,6);
+            }
           }
           baselinePrevious=baseline;cachedPrevious=actual;
         }

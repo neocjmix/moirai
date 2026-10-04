@@ -21,6 +21,7 @@ import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { needsCompositePaintFrame, reconcileCompositeFramePaint } from "./composite-frame-paint";
 import { createViewportReadScheduler } from "./viewport-read-scheduler";
 import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-disposal";
+import { GeographicCanvas } from "../../../components/geographic-canvas";
 import { reconcileViewport } from "../viewport-cache";
 import { selectSemanticLabels, fitSemanticText, semanticTextWidth } from "../../../lib/graph-semantic-budget";
 import { GraphContextHud } from "../../../components/graph-context-hud";
@@ -2315,6 +2316,10 @@ export function GraphShell({
     timing.totalMs += elapsed;
     graphPhaseTimingsRef.current[phase] = timing;
   }, []);
+  const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
+  useEffect(() => {setUseGeographicCanvas(typeof Path2D !== "undefined" && new URLSearchParams(window.location.search).get("gsGraphics") !== "svg");},[]);
+  const handleGraphicsUnavailable=useCallback(()=>setUseGeographicCanvas(false),[]);
+  const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
   const measureGraphPhase = useCallback((phase, run) => {
     if (!graphPhaseProfiling) return run();
     const started = performance.now();
@@ -4088,7 +4093,11 @@ export function GraphShell({
                   />
                 </svg>
               ) : chartPlane ? (
-                <svg data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                <>
+                {useGeographicCanvas ? <GeographicCanvas regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                  view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
+                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : null}
+                <svg data-graphics-painter={useGeographicCanvas?"canvas":"svg"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
                   <defs>
                     <marker id="relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_ORDER_STROKE} />
@@ -4125,7 +4134,7 @@ export function GraphShell({
                         onPointerDown={region.visibilityState !== "exiting" && !region.compactPoint && !discovery?.contextHud ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
                           fill: compositeStyle?.fill,
-                          pointerEvents: region.compactPoint || region.renderedOpacity * region.surfaceOpacity === 0 || discovery?.contextHud ? "none" : undefined,
+                          pointerEvents: region.compactPoint || region.renderedOpacity * region.surfaceOpacity === 0 || discovery?.contextHud ? "none" : useGeographicCanvas ? "all" : undefined,
                           mixBlendMode: "darken",
                           opacity: region.renderedOpacity * region.surfaceOpacity * hullOpacity,
                           fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY,
@@ -4328,6 +4337,7 @@ export function GraphShell({
                     ) : null;
                   })}
                 </svg>
+                </>
               ) : null}
             </div>
 

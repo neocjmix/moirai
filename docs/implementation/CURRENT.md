@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-2026-10-02 KST. 이 파일은 현재 상태만 소유한다. 이전 checkpoint는 [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md), 검증 수치는 각 evidence 문서에 보존한다.
+2026-10-04 KST. 이 파일은 현재 상태만 소유한다. 이전 checkpoint는 [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md), 검증 수치는 각 evidence 문서에 보존한다.
 
 ## 실행 원칙과 활성 목표
 
@@ -17,10 +17,10 @@
 
 ## 현재 checkpoint와 조사 기준선
 
-- **현재 운영:** [PR #309](https://github.com/neocjmix/moirai/pull/309), `0069c094308acdf0636f593dd0d56570d0c91bc9`. Composite paint의 중복 frame 계산, 동일 숫자 camera의 참조 불안정, HUD 재계산을 줄이고 geometry를 최대8개씩 병렬 읽는다. A5 운영 모바일·exact-SHA smoke 성공. 일반 CI·A4·IP-004은 실패 항목을 조사·수정 중이며 전체 green 상태가 아니다.
+- **현재 운영:** [PR #310](https://github.com/neocjmix/moirai/pull/310), `f8143aea339410e7d8d477e180667583bdee93e2`. 대량 continuation 예산과 query 상한을 분리하고 legacy workspace/read 소유권·no-op color dispatch를 수정했다. Railway SUCCESS와 exact-SHA smoke 성공. 로컬603 unit·compiler/4 모바일5개·IP-004 100 fixture 성공. 일반 CI의 quality/mobile/secret jobs는 성공했고 규모 matrix는 진행 중이다.
 - **지속 성능 미달:** #307 격리30 visits/start·middle·return602frame p95=68/76/96ms, 초기 준비2099.7ms/4요청, 전체68요청. #305의382요청 증폭은 줄었다. #309의 짧은0 visits/602frame start·return은 p95=55/54ms로33.4ms 기준 미달이다. 같은 DPR3에서 SVG paint만 숨긴 진단은25/24ms, display 제거는25/23ms여서 남은 주된 비용은 그리기다. 이 진단과 DPR1 결과를 정상 화면의 통과로 계산하지 않는다.
 - **연속성 검증:** 실제 compiler/4 publication의0/250/750ms 지연·새 XY/scale coverage·이동과 hull/point 반전에서 동일 DOM/path와 paint가 유지됐다. hull 글자의 실제 glyph hit에 모바일 터치해 올바른 Narrative가 열리는4개 테스트가 통과했다. iPhone17 Safari/PWA에서 사용자는 체감상 많이 개선됐다고 확인했으며 자동 검증은 별도의 iPhone14 WebKit emulation이다.
-- **다음 slice 검증 중:** 대량 viewport의 서버 발급 cursor가16KiB 요청 제한에 걸리는 오류, legacy RSC 갱신으로 상세 read가 반복되는 오류, pan 중 no-op color state 갱신을 수정했다. 실제 dense10k route/client는160+102개를2페이지로 읽어262개 membership을 정확히 복원한다. A4 benchmark의 selector/locale/cursor 가정도 갱신 중이다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
+- **현재 성능 조사:** #310의 계측을 끈30 visits/602frame start·middle·return은 p95=53/57/60ms, max=63/94/90ms다. ready1729.7ms/3요청, 전체64요청/14,735,587 decoded bytes, 오류0. 동일 장면113 Event/15 Composite와 DOM579/579/580으로 복귀하고 cache/pending은 상한 안에 유지됐다. frame p95는 계속 미달이며 hull·text의 그리기 비용을 추가 분리한다. [진행 evidence](../evidence/ip012/mobile-continuity-2026-10-02.md).
 - 기능 출발점은 [#302](https://github.com/neocjmix/moirai/pull/302) `19de027`의 Collection 변경 시 semantic label 연속성이며, 조사 기준선은 [#303](https://github.com/neocjmix/moirai/pull/303) `91cffca`다. #304 `8f9e31a`의 isolated602frame p95=49/49ms도33.4ms 기준 미달이다. 과거 checkpoint와 개별 검증 범위는 evidence에 보존한다.
 - World `01995c2a-7b00-7000-8000-000000000101`: Revision 62, 30 Collection, 677 placed/2 unplaced Event. 공개 Render generation은 `render-compiler/4`, `7b3c2fd8…`다. 데이터 수량은 새 입력·백필 전 다시 확인한다.
 

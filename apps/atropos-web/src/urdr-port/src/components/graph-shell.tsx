@@ -166,6 +166,7 @@ type CompositeRegion = {
   path: string;
   pathTransform?: string;
   labelPath?: string;
+  labelPathTransform?: string;
   projectedPoints: ViewportCoordinate[];
   labelAttachX: number;
   labelAttachY: number;
@@ -3007,7 +3008,10 @@ export function GraphShell({
         paintView: view,
         paintViewport: viewportSize,
         pointDisplay: pointDensityDisplay(densityById.get(region.id)),
-        labelPath: compactPoint ? "" : buildOpenSplinePath(placement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
+        // Keep the referenced contour immutable during pan. Translating live
+        // native text avoids reshaping glyphs on a rewritten path every frame.
+        labelPath: compactPoint ? "" : buildOpenSplinePath(placement.pathFrame?.points ?? placement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
+        labelPathTransform: placement.pathFrame ? `translate(${placement.pathFrame.offset.x} ${placement.pathFrame.offset.y})` : undefined,
         projectedPoints,
         labelAttachX: placement.attachX,
         labelAttachY: placement.attachY,
@@ -4316,7 +4320,7 @@ export function GraphShell({
                         data-depth={region.depth}
                         data-region-id={region.id}
                         data-region-label-anchor={region.labelAnchor}
-                        transform={region.paintView !== view && region.paintView ? retainedCompositePaintTransform(region.paintView, region.paintViewport, view, viewportSize) : undefined}
+                        transform={[region.paintView !== view && region.paintView ? retainedCompositePaintTransform(region.paintView, region.paintViewport, view, viewportSize) : "", region.labelPathTransform].filter(Boolean).join(" ") || undefined}
                         dominantBaseline="middle"
                         key={`${region.id}:label`}
                         onPointerDown={interactive ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}

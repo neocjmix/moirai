@@ -35,6 +35,7 @@ export type CompositeEdgeLabelPlacement = {
   labelAnchor: CompositeLabelAnchor;
   labelAngle: number;
   pathPoints: ViewportCoordinate[];
+  pathFrame?: {points: ViewportCoordinate[]; offset: ViewportCoordinate};
   textPathStartOffset: string;
   side: "top" | "right" | "bottom" | "left";
 };
@@ -1157,6 +1158,7 @@ export function resolveCompositeEdgeLabelPlacement(
     labelAnchor: selected.labelAnchor,
     labelAngle: selected.labelAngle,
     pathPoints: screenPath(selected),
+    ...(preparedFrame ? {pathFrame: {points: selected.pathPoints, offset}} : {}),
     textPathStartOffset: selected.textPathStartOffset,
     side: selected.side,
   } satisfies CompositeEdgeLabelPlacement;

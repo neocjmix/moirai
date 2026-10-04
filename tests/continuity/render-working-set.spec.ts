@@ -243,6 +243,12 @@ test("native labels stay visible and retain identity during camera movement", as
     .first();
   await expect(label).toBeVisible();
   const original = await label.elementHandle();
+  const labelPath = page.locator(
+    `path[data-region-label-path-id="${continuityComposite}"]`
+  );
+  const contour = await labelPath.getAttribute("d");
+  const glyphExtent = await label.boundingBox();
+  expect(glyphExtent).not.toBeNull();
   await page.mouse.move(75, 520);
   await page.mouse.down();
   await page.mouse.move(77, 520, { steps: 3 });
@@ -253,6 +259,13 @@ test("native labels stay visible and retain identity during camera movement", as
   expect(await label.evaluate((node, old) => node === old, original)).toBe(
     true
   );
+  expect(await labelPath.getAttribute("d")).toBe(contour);
+  const movedExtent = await label.boundingBox();
+  expect(movedExtent).not.toBeNull();
+  expect(movedExtent!.width).toBeCloseTo(glyphExtent!.width, 1);
+  expect(movedExtent!.height).toBeCloseTo(glyphExtent!.height, 1);
+  expect(movedExtent!.x - glyphExtent!.x).toBeCloseTo(2, 1);
+  expect(movedExtent!.y).toBeCloseTo(glyphExtent!.y, 1);
   await page.mouse.up();
   expect(await svg.evaluate((node) => getComputedStyle(node).opacity)).toBe(
     "1"

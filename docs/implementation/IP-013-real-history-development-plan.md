@@ -11,6 +11,16 @@ layer: implementation-plan
 
 이번 작업은 문서 정합화와 draft PR까지다. 코드·설정·운영 데이터 변경, merge·배포는 하지 않는다. 이 계획의 채택만으로 입력이나 구현을 시작하지 않는다. 사용자는 이 문서 작업 후 중단된 World 구현과 실제 역사 작업의 재개를 별도로 승인했다. 후속 구현은 PR-first·자동 merge 금지를 유지하며, 아래 선행 수용을 기록한 뒤 제한 pilot을 시작한다. 사용자 pilot 검토 전 자율 대량 확장은 금지한다. [CURRENT](CURRENT.md)가 활성 상태를 소유한다.
 
+## 2026-10-04 후속 실행 정정 — R과 Layout Lab
+
+이번 세션의 명시적 사용자 지시가 위 최초 문서 작업 제한과 기존 R 수용 후 L 착수 순서를 이번 연구 vertical slice에 한해 대체한다. R의 조절 가능한 독립 표현 surface와 L의 실행 가능한 engine/strategy 경계를 함께 구현한다. 최신 main #323은 World 관리를 이미 제공하며 실제 역사 World revision26이 존재한다. 아래 “미구현/미착수”는 #322 작성 시점의 출발점 기록이며 현재 상태는 CURRENT와 [Lab evidence](../evidence/ip013/layout-lab.md)를 따른다.
+
+Lab은 `/labs/layout`이라는 별도 연구 route다. 운영 `/graph/v5`의 dev mode·feature flag가 아니며 GraphShell에 selector/slider를 넣지 않는다. 공개 immutable World snapshot에서 prepared LayoutInput을 한 번 만든 뒤 FE 메모리에서 shared pure TypeScript engine을 실행한다. 각 algorithm은 id/version과 자기 parameter schema를 가진다. baseline force와 deterministic slot reference가 실제로 교체되며, 동일 input/version/params/seed에서 재현된다. Y의 시간 해석은 고정하고 X와 child로부터 파생된 Composite geometry만 연구한다.
+
+Lachesis의 canonical configuration과 Lab candidate는 같은 compute 구현을 사용한다. Lab의 조절은 publication 생성·backfill·served pointer 변경을 호출하지 않는다. A/B는 snapshot·camera·Collection visibility를 공유하고 각 candidate의 표현 policy/history를 비교한다. preset은 World/source·served revision, input digest와 immutable snapshot, algorithm/version/params/seed, 표현 version/thresholds, camera와 active Collections를 local/JSON으로 저장한다.
+
+production active layout은 하나이고 Lab candidate는 여러 개다. 후보 채택 후 canonical config 승격·compiler version 검토·Publication 재생성/backfill은 별도 작업이다. 모든 대체 알고리즘, 다중 publication 제품, 자동 Collection, 성능 튜닝, canonical 역사 수정/World reset은 활성화하지 않는다.
+
 ## 출발점과 상태
 
 - **구현됨:** IP-011 A1–A3, HUD·수동 선택 제한 제거·표현 분리 일부, IP-012 Render 기본 읽기와 generation/scheduler 초기 구현. 상세 범위는 CURRENT 및 기존 evidence를 따른다.

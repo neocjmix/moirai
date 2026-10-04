@@ -1,60 +1,39 @@
-/** Inactive v5 geometry producer. The World owns one layout per selected Time
+/** Active Lachesis v5 geometry producer. The World owns one layout per selected Time
  * System; Collections select Event IDs later and cannot move a shared Event.
  * URDR's canonId below is a private renderer scope token, not ontology. */
 import type { CanonicalState } from "@moirai/contracts/v5";
-import type { CanonicalEventReference } from "@moirai/contracts";
+import type {
+  CanonicalEventReference,
+  PublicTemporalPosition
+} from "@moirai/contracts";
 import type { projectV5WorldTemporal } from "@moirai/projections";
 import { temporalAdapterRegistry } from "@moirai/domain";
-import { buildGraphShellChartPlane } from "./urdr-chart-plane.js";
-import type {
-  Dataset,
-  GraphShellChartPlaneEntity
-} from "./urdr-layout-types.js";
+import {
+  computeLayout,
+  CANONICAL_LAYOUT_SELECTION,
+  type LayoutInput,
+  type LayoutOutput
+} from "./layout-engine.js";
+import type { Dataset } from "./urdr-layout-types.js";
 
-type Temporal = ReturnType<typeof projectV5WorldTemporal>;
-type Geometry =
-  | {
-      readonly event_id: string;
-      readonly kind: "point";
-      readonly position: { readonly x: number; readonly y: number };
-    }
-  | {
-      readonly event_id: string;
-      readonly kind: "segment";
-      readonly start: { readonly x: number; readonly y: number };
-      readonly end: { readonly x: number; readonly y: number };
-    }
-  | {
-      readonly event_id: string;
-      readonly kind: "region";
-      readonly bounds: {
-        readonly minX: number;
-        readonly maxX: number;
-        readonly minY: number;
-        readonly maxY: number;
-      };
-    };
-
-type Shape = Geometry & {
-  readonly read_hint?: {
-    readonly title: string;
-    readonly collection_ids?: readonly string[];
-  };
-};
-
-export interface V5WorldLayout {
+export type V5LayoutCanonicalInput = Pick<
+  CanonicalState,
+  "world" | "events" | "relations" | "timeSystems"
+>;
+export interface V5LayoutTemporalInput {
   readonly world_id: string;
-  readonly revision: number;
-  readonly time_system_id: string;
-  readonly algorithm_version: "v5-world-layout/1" | "v5-world-layout/2";
-  readonly temporal_digest: string;
-  readonly shapes: readonly Shape[];
-  readonly unplaced_event_ids: readonly string[];
-  readonly diagnostics: readonly {
-    readonly code: string;
-    readonly message: string;
-  }[];
+  readonly source_revision: number;
+  readonly semantic_digest: string;
+  readonly composites: readonly { readonly event_id: string }[];
+  readonly positions: readonly (Pick<
+    PublicTemporalPosition,
+    "event_id" | "kind" | "time_event"
+  > & {
+    readonly lower?: { readonly time_event: CanonicalEventReference } | null;
+    readonly upper?: { readonly time_event: CanonicalEventReference } | null;
+  })[];
 }
+export type V5WorldLayout = LayoutOutput;
 
 /** Presentation coordinate, never a canonical Time Event or duration. A
  * different/unsupported Time System is unplaced, not silently translated. */
@@ -85,32 +64,11 @@ function scalar(
   }
 }
 
-function shape(entity: GraphShellChartPlaneEntity): Shape {
-  if (entity.geometryKind === "point")
-    return {
-      event_id: entity.eventId,
-      kind: "point",
-      position: entity.position
-    };
-  if (entity.geometryKind === "segment")
-    return {
-      event_id: entity.eventId,
-      kind: "segment",
-      start: entity.start,
-      end: entity.end
-    };
-  return {
-    event_id: entity.eventId,
-    kind: "region",
-    bounds: entity.worldBounds
-  };
-}
-
-export function buildV5WorldLayout(
-  state: CanonicalState,
-  temporal: Temporal,
+export function prepareV5LayoutInput(
+  state: V5LayoutCanonicalInput,
+  temporal: V5LayoutTemporalInput,
   timeSystemId: string
-): V5WorldLayout {
+): LayoutInput {
   if (temporal.world_id !== state.world.id || temporal.source_revision < 1)
     throw Error("v5_layout_revision_mismatch");
   const system = state.timeSystems.find((item) => item.id === timeSystemId);
@@ -128,7 +86,6 @@ export function buildV5WorldLayout(
   const relations = [...state.relations].sort((a, b) =>
     a.id < b.id ? -1 : a.id > b.id ? 1 : 0
   );
-  const included = new Set(events.map((event) => event.id));
   const children = new Map<string, Set<string>>();
   for (const relation of relations) {
     if (
@@ -211,24 +168,6 @@ export function buildV5WorldLayout(
         }))
     ]
   };
-  const chart = buildGraphShellChartPlane(
-    dataset,
-    {
-      axis: {
-        startYear: 0,
-        endYear: 0,
-        timeSystemId,
-        compatibilityKey: String(system.definition.coordinate_codec)
-      }
-    },
-    {
-      explicitExtents: extents,
-      temporalConstraints: constraints,
-      ...(state.events.length > 500
-        ? { boundedRepulsion: { neighborsPerSide: 24, windowYears: 10 } }
-        : {})
-    }
-  );
   // The renderer can invent fallback positions for unconstrained records.
   // Never present these as Gregorian facts: only anchored Events and regions
   // enclosing an anchored World child enter the calendar plane.
@@ -246,36 +185,39 @@ export function buildV5WorldLayout(
         changed = true;
       }
   }
-  const shapes = chart.entities
-    // The renderer also emits Relation line entities whose eventId points to
-    // an endpoint. A line is not a second World Event node: Relation detail
-    // and adjacency own its identity, while this index contains one Event
-    // geometry per World Event.
-    .filter(
-      (item) =>
-        item.id === item.eventId &&
-        included.has(item.eventId) &&
-        visible.has(item.eventId)
-    )
-    .map(shape)
-    .sort((a, b) =>
-      a.event_id < b.event_id ? -1 : a.event_id > b.event_id ? 1 : 0
-    );
-  const drawn = new Set(shapes.map((item) => item.event_id));
   return {
-    world_id: state.world.id,
+    formatVersion: "layout-input/1",
+    worldId: state.world.id,
     revision: temporal.source_revision,
-    time_system_id: timeSystemId,
-    algorithm_version:
-      state.events.length > 500 ? "v5-world-layout/2" : "v5-world-layout/1",
-    temporal_digest: temporal.semantic_digest,
-    shapes,
-    unplaced_event_ids: events
-      .filter((event) => !drawn.has(event.id))
-      .map((event) => event.id),
-    diagnostics: chart.diagnostics.map(({ code, message }) => ({
-      code,
-      message
-    }))
+    timeSystemId,
+    temporalDigest: temporal.semantic_digest,
+    dataset,
+    board: {
+      axis: {
+        startYear: 0,
+        endYear: 0,
+        timeSystemId,
+        compatibilityKey: String(system.definition.coordinate_codec)
+      }
+    },
+    explicitExtents: [...extents].map(([eventId, extent]) => ({
+      eventId,
+      ...extent
+    })),
+    temporalConstraints: constraints,
+    visibleEventIds: [...visible]
   };
+}
+
+/** Production and research execute the same pure implementation. Only this
+ * fixed selection is used by Lachesis; Lab presets never promote themselves. */
+export function buildV5WorldLayout(
+  state: CanonicalState,
+  temporal: ReturnType<typeof projectV5WorldTemporal>,
+  timeSystemId: string
+): V5WorldLayout {
+  return computeLayout(
+    prepareV5LayoutInput(state, temporal, timeSystemId),
+    CANONICAL_LAYOUT_SELECTION
+  );
 }

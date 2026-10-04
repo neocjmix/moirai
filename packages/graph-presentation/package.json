@@ -11,6 +11,10 @@
     "./server": {
       "types": "./src/artifacts.ts",
       "import": "./dist/artifacts.js"
+    },
+    "./layout-engine": {
+      "types": "./src/layout-engine.ts",
+      "import": "./dist/layout-engine.js"
     }
   },
   "scripts": {

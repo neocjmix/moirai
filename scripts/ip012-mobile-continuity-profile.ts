@@ -32,11 +32,15 @@ const measureBounds = process.env.IP012_MEASURE_BOUNDS === "1";
 const svgControl = process.env.IP012_SVG_CONTROL ?? "visible";
 const hullControl = process.env.IP012_HULL_CONTROL ?? "visible";
 const textControl = process.env.IP012_TEXT_CONTROL ?? "visible";
+const canvasControl = process.env.IP012_CANVAS_CONTROL ?? "visible";
+const inkEffectsControl = process.env.IP012_INK_EFFECTS_CONTROL === "1";
+const gridControl = process.env.IP012_GRID_CONTROL === "hidden";
 if (!["visible", "hidden", "none"].includes(svgControl))
   throw Error("invalid_svg_control");
 if (
   !["visible", "hidden"].includes(hullControl) ||
-  !["visible", "hidden"].includes(textControl)
+  !["visible", "hidden"].includes(textControl) ||
+  !["visible", "hidden"].includes(canvasControl)
 )
   throw Error("invalid_paint_control");
 const deviceScaleFactor = process.env.IP012_DEVICE_SCALE_FACTOR
@@ -189,6 +193,32 @@ async function inspect(page: Page) {
                   regions: Number(canvas.dataset.regionCount)
                 }
               : null;
+          })(),
+          graphicsGesture: (() => {
+            const svg = document.querySelector<SVGSVGElement>(
+              'svg[aria-label="Projected chart surface"]'
+            );
+            const canvases = [
+              ...document.querySelectorAll<HTMLCanvasElement>(
+                '[data-testid="gesture-graph-cache"]'
+              )
+            ];
+            return {
+              state: svg?.dataset.gestureCache ?? null,
+              updates: Number(svg?.dataset.gestureCacheUpdates || 0),
+              preparationCalls: Number(
+                svg?.dataset.gesturePreparationCalls || 0
+              ),
+              preparationMs: Number(svg?.dataset.gesturePreparationMs || 0),
+              backingBytes: canvases.reduce(
+                (sum, canvas) => sum + canvas.width * canvas.height * 4,
+                0
+              ),
+              captures: canvases.reduce(
+                (sum, canvas) => sum + Number(canvas.dataset.captures || 0),
+                0
+              )
+            };
           })()
         }
       : null;
@@ -306,7 +336,10 @@ const result: Record<string, unknown> = {
     measure_bounds: measureBounds,
     svg_control: svgControl,
     hull_control: hullControl,
-    text_control: textControl
+    text_control: textControl,
+    canvas_control: canvasControl,
+    ink_effects_control: inkEffectsControl,
+    grid_control: gridControl
   },
   errors,
   network,
@@ -335,6 +368,21 @@ try {
     await page.addStyleTag({
       content:
         'svg[aria-label="Projected chart surface"] text { visibility: hidden !important; }'
+    });
+  if (canvasControl === "hidden")
+    await page.addStyleTag({
+      content:
+        '[data-testid="geographic-canvas"] { visibility: hidden !important; }'
+    });
+  if (inkEffectsControl)
+    await page.addStyleTag({
+      content:
+        'svg[data-graphics-painter="canvas"] [data-composite-paint-id] > path, svg[data-graphics-painter="canvas"] circle { opacity: 0 !important; transition: none !important; } svg[data-graphics-painter="canvas"] [data-event-paint-id] { animation: none !important; }'
+    });
+  if (gridControl)
+    await page.addStyleTag({
+      content:
+        'svg[aria-label="Projected chart surface"] line[class*="chartGrid"], svg[aria-label="Projected chart surface"] line[class*="chartAnchor"] { visibility: hidden !important; }'
     });
   if (disableBlend)
     await page.addStyleTag({

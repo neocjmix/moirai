@@ -22,6 +22,7 @@ import { needsCompositePaintFrame, reconcileCompositeFramePaint } from "./compos
 import { createViewportReadScheduler } from "./viewport-read-scheduler";
 import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-disposal";
 import { GeographicCanvas } from "../../../components/geographic-canvas";
+import { GestureGraphCache } from "../../../components/gesture-graph-cache";
 import { reconcileViewport } from "../viewport-cache";
 import { selectSemanticLabels, fitSemanticText, semanticTextWidth } from "../../../lib/graph-semantic-budget";
 import { GraphContextHud } from "../../../components/graph-context-hud";
@@ -2275,6 +2276,8 @@ export function GraphShell({
   const externalFocusRef = useRef(externalFocus); externalFocusRef.current = externalFocus;
   const navigationAnimationRef = useRef<number | null>(null);
   const previousNavigationPointerCountRef = useRef(0);
+  const previousNavigationReleaseRef = useRef(0);
+  const [navigationRelease, setNavigationRelease] = useState(0);
   const defaultShellSlice = useMemo(() => createDefaultShellSlice(workspace), [workspace]);
   const [hasHydratedRestorableState, setHasHydratedRestorableState] = useState(false);
   const [selectedTimelineId, setSelectedTimelineId] = useState(defaultShellSlice.selectedTimelineId);
@@ -2317,6 +2320,7 @@ export function GraphShell({
     graphPhaseTimingsRef.current[phase] = timing;
   }, []);
   const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
+  const geographicSvgRef = useRef(null);
   useEffect(() => {setUseGeographicCanvas(typeof Path2D !== "undefined" && new URLSearchParams(window.location.search).get("gsGraphics") !== "svg");},[]);
   const handleGraphicsUnavailable=useCallback(()=>setUseGeographicCanvas(false),[]);
   const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
@@ -2517,12 +2521,14 @@ export function GraphShell({
   useEffect(() => {
     const previousPointerCount = previousNavigationPointerCountRef.current;
     previousNavigationPointerCountRef.current = navigationPointerCount;
-    if (previousPointerCount === 0 || navigationPointerCount > 0 || !navigationBounds) return;
+    const released = previousNavigationReleaseRef.current !== navigationRelease;
+    previousNavigationReleaseRef.current = navigationRelease;
+    if ((!released && previousPointerCount === 0) || navigationPointerCount > 0 || !navigationBounds) return;
     const startView = imageViewportState.view;
     const target = constrainNavigation(startView, viewportSize, navigationBounds);
     if (Object.keys(target).every(key => target[key] === startView[key])) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      setImageViewportState(current => resetViewportView(current, target));
+      setImageViewportState(current => Object.keys(current.activePointers).length || current.view !== startView ? current : resetViewportView(current, target));
       return;
     }
     const started = performance.now();
@@ -2537,7 +2543,7 @@ export function GraphShell({
       if (navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
       navigationAnimationRef.current = null;
     };
-  }, [navigationPointerCount, navigationBounds, viewportSize]);
+  }, [navigationPointerCount, navigationRelease, navigationBounds, viewportSize]);
 
   const viewportReadSchedulerRef = useRef(null);
   useEffect(() => {
@@ -3760,8 +3766,18 @@ export function GraphShell({
       event.currentTarget.releasePointerCapture(event.pointerId);
     }
 
-    setImageViewportState(current => removeViewportPointer(current, event.pointerId));
-  }, [flushViewportMoves, imageViewportState.activePointers, pushPeekSelectionHistory]);
+    const settleImmediately = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    setImageViewportState(current => {
+      const next = removeViewportPointer(current, event.pointerId);
+      // Reduced motion has no rebound animation. Commit the hard boundary with
+      // the last release, so persistence never exposes an elastic final view.
+      return settleImmediately && Object.keys(next.activePointers).length === 0
+        ? {...next, view: constrainNavigation(next.view, viewportSize, navigationBounds)} : next;
+    });
+    // Releases can be batched with the entire gesture before a pointer-count
+    // commit. Still settle that final camera, without losing a later contact.
+    setNavigationRelease(current => current + 1);
+  }, [flushViewportMoves, imageViewportState.activePointers, pushPeekSelectionHistory, viewportSize, navigationBounds]);
 
   const handleCloseSelectedEvent = useCallback(() => {
     if (typeof window !== "undefined") {
@@ -4097,7 +4113,7 @@ export function GraphShell({
                 {useGeographicCanvas ? <GeographicCanvas regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : null}
-                <svg data-graphics-painter={useGeographicCanvas?"canvas":"svg"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                <svg ref={geographicSvgRef} data-graphics-painter={useGeographicCanvas?"canvas":"svg"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
                   <defs>
                     <marker id="relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_ORDER_STROKE} />
@@ -4337,6 +4353,9 @@ export function GraphShell({
                     ) : null;
                   })}
                 </svg>
+                {useGeographicCanvas ? <GestureGraphCache surface={geographicSvgRef} view={view} size={viewportSize}
+                  active={navigationPointerCount > 0 || navigationAnimationRef.current !== null} owner={workspace}
+                  selection={[...effectiveEnabledCanonIds].join(",")}/> : null}
                 </>
               ) : null}
             </div>

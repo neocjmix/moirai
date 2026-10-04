@@ -176,6 +176,8 @@ The 2026-10-04 painter checkpoint separates background hull/point ink into a bou
 
 Camera-only pan may reuse a buffered background raster by applying the current camera translation. Reuse must validate authored World positions and paint material, refresh on scale changes to preserve screen-sized point/stroke density, and refresh before its overscan is exhausted. The current implementation bounds one bitmap to4,000,000 pixels and keeps SVG text/targets current independently. This is a reversible renderer optimization, not a new semantic LOD or publication contract; its performance still requires the original browser gates.
 
+The following gesture-cache experiment retains the live SVG for current semantic input and full-density idle reading, while displaying a bounded raster of geographic ink plus SVG paint during a camera gesture. Camera transforms align both old/new frames in World coordinates; isolated `plus-lighter` crossfades preserve premultiplied alpha without brightness dips. Native paint returns immediately at gesture end, on workspace/Collection changes, decode failure or exhausted coverage. Two frames are bounded to4,000,000 pixels each; the current200ms capture interval and1.5 raster cap are reversible performance approximations, including temporarily softer text during movement. This does not change layout, authored identity, Publication coverage or the original frame gates.
+
 ## 10. Collection selection
 
 Collection selection is an Atropos visibility/filter operation over already fetched representation metadata.

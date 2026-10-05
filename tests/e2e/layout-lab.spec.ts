@@ -38,6 +38,80 @@ async function ready(page: Page) {
   await page.waitForLoadState("networkidle");
 }
 
+test("stage opacity and small-point text controls preserve the pinned input, camera and A/B baseline", async ({
+  page
+}, info) => {
+  await ready(page);
+  const setup = await readPreset(page);
+  const shape = computeLayout(setup.snapshot.input, setup).shapes.find(
+    (s) => s.event_id === "sparse"
+  )!;
+  if (shape.kind !== "point") throw Error("Expected reference point");
+  setup.camera = {
+    x: shape.position.x + 50,
+    y: shape.position.y + 15,
+    spanX: 300,
+    spanY: 180
+  };
+  setup.representation.childRevealHeightPx = 0;
+  await page.getByTestId("lab-preset-json").fill(JSON.stringify(setup));
+  await page.getByTestId("lab-preset-restore").click();
+  await expect(page.locator(".lab-status")).toContainText(
+    "저장한 실험을 다시 열었습니다."
+  );
+  const original = await readPreset(page);
+  const geometry = await coordinates(page, afterName);
+  const requests: string[] = [];
+  page.on("request", (request) => {
+    if (
+      ["fetch", "xhr"].includes(request.resourceType()) ||
+      request.method() !== "GET"
+    )
+      requests.push(request.url());
+  });
+  await openSection(page, "representation");
+  const map = page.getByRole("img", { name: afterName });
+  const point = map.locator('g[data-event-id="sparse"] circle').first();
+  const label = map.locator('text[data-event-id="sparse"]');
+  await page
+    .getByTestId("lab-representation-ordinaryPointOpacityScale")
+    .fill("0.6");
+  await page.getByTestId("lab-representation-ordinaryLabelOpacity").fill("0.8");
+  await expect(point).toHaveAttribute("opacity", "0.6");
+  await expect(label).toHaveAttribute("opacity", "0.48");
+  await page.getByTestId("lab-representation-normalPointCount").fill("0");
+  await page.getByTestId("lab-representation-normalHysteresisCount").fill("0");
+  await page
+    .getByTestId("lab-representation-smallPointOpacityScale")
+    .fill("0.7");
+  await page.getByTestId("lab-representation-smallLabelOpacity").fill("0.9");
+  await expect(map.locator('g[data-event-id="sparse"]')).toHaveAttribute(
+    "data-representation",
+    "small-point"
+  );
+  await expect(point).toHaveAttribute("opacity", "0.7");
+  await expect(label).toHaveAttribute("opacity", "0.63");
+  const tuned = await readPreset(page);
+  expect(tuned.camera).toEqual(original.camera);
+  expect(tuned.snapshot).toEqual(original.snapshot);
+  expect(tuned.before).toEqual(original.before);
+  expect(await coordinates(page, afterName)).toEqual(geometry);
+  await page.getByTestId("lab-preset-save").click();
+  await openSection(page, "comparison");
+  await page.getByTestId("lab-reset-b-defaults").click();
+  await page.getByTestId("lab-preset-load").click();
+  expect((await readPreset(page)).representation).toEqual(tuned.representation);
+  await expect(label).toHaveAttribute("opacity", "0.63");
+  expect(requests).toEqual([]);
+  await openSection(page, "representation");
+  await page
+    .getByTestId("lab-representation-smallLabelOpacity")
+    .scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: info.outputPath("lab-small-point-label-controls.png")
+  });
+});
+
 async function coordinates(page: Page, name: string) {
   return page
     .getByRole("img", { name, includeHidden: true })

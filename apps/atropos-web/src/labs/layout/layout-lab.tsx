@@ -12,6 +12,7 @@ import {
   DEFAULT_REPRESENTATION_CONFIG,
   REPRESENTATION_CONFIG_VERSION,
   REPRESENTATION_PARAMETERS,
+  REPRESENTATION_GROUPS,
   validateRepresentationConfig,
   type RepresentationHistory
 } from "./representation";
@@ -437,7 +438,7 @@ export function LayoutLab({
         className="lab-controls"
         data-testid="lab-section-representation"
       >
-        <summary>B의 묶음 사건 표시 조절</summary>
+        <summary>B의 컴포짓·사건·이름표 가시성 조절</summary>
         <p>
           영역 → 보통 점 → 작은 점 → 숨김이 언제 바뀌는지 살펴보세요. ‘크기’는
           바뀌는 경계, ‘폭’은 서서히 섞이는 구간, ‘시간’은 변화 속도입니다.
@@ -448,60 +449,70 @@ export function LayoutLab({
           순위가 아닙니다. 큰 묶음의 화면 점유율은 감싸는 사각형으로
           어림잡습니다.
         </p>
-        {REPRESENTATION_PARAMETERS.map((field) => {
-          const copy = REPRESENTATION_COPY[field.key];
-          return (
-            <label key={field.key} className="lab-control">
-              <span>
-                {copy.label}
-                <small>{copy.description}</small>
-              </span>
-              {field.type === "boolean" ? (
-                <input
-                  data-testid={`lab-representation-${field.key}`}
-                  aria-label={copy.label}
-                  type="checkbox"
-                  checked={Boolean(after.representation[field.key])}
-                  onChange={(e) =>
-                    setAfter((old) => ({
-                      ...old,
-                      representation: {
-                        ...old.representation,
-                        [field.key]: e.target.checked
+        {REPRESENTATION_GROUPS.map((group) => (
+          <fieldset className="lab-stage" key={group.title}>
+            <legend>{group.title}</legend>
+            <p className="lab-note">{group.description}</p>
+            {REPRESENTATION_PARAMETERS.filter((field) =>
+              group.keys.includes(field.key)
+            ).map((field) => {
+              const copy = REPRESENTATION_COPY[field.key];
+              return (
+                <label key={field.key} className="lab-control">
+                  <span>
+                    {copy.label}
+                    <small>{copy.description}</small>
+                  </span>
+                  {field.type === "boolean" ? (
+                    <input
+                      data-testid={`lab-representation-${field.key}`}
+                      aria-label={copy.label}
+                      type="checkbox"
+                      checked={Boolean(after.representation[field.key])}
+                      onChange={(e) =>
+                        setAfter((old) => ({
+                          ...old,
+                          representation: {
+                            ...old.representation,
+                            [field.key]: e.target.checked
+                          }
+                        }))
                       }
-                    }))
-                  }
-                />
-              ) : (
-                <>
-                  <input
-                    data-testid={`lab-representation-${field.key}`}
-                    aria-label={copy.label}
-                    type="range"
-                    min={field.min}
-                    max={field.max}
-                    step={field.step}
-                    value={Number(after.representation[field.key])}
-                    onChange={(e) => {
-                      try {
-                        const representation = validateRepresentationConfig({
-                          ...after.representation,
-                          [field.key]: Number(e.target.value)
-                        });
-                        setAfter((old) => ({ ...old, representation }));
-                      } catch {
-                        setMessage(
-                          "순위 기준은 ‘보통 점 기준 ≤ 흐려짐 시작 기준 < 숨김 기준’ 순서여야 합니다. 더 뒤쪽 기준을 먼저 늘려 주세요."
-                        );
-                      }
-                    }}
-                  />
-                  <output>{String(after.representation[field.key])}</output>
-                </>
-              )}
-            </label>
-          );
-        })}
+                    />
+                  ) : (
+                    <>
+                      <input
+                        data-testid={`lab-representation-${field.key}`}
+                        aria-label={copy.label}
+                        type="range"
+                        min={field.min}
+                        max={field.max}
+                        step={field.step}
+                        value={Number(after.representation[field.key])}
+                        onChange={(e) => {
+                          try {
+                            const representation = validateRepresentationConfig(
+                              {
+                                ...after.representation,
+                                [field.key]: Number(e.target.value)
+                              }
+                            );
+                            setAfter((old) => ({ ...old, representation }));
+                          } catch {
+                            setMessage(
+                              "순위 기준은 ‘보통 점 기준 ≤ 흐려짐 시작 기준 < 숨김 기준’ 순서여야 합니다. 더 뒤쪽 기준을 먼저 늘려 주세요."
+                            );
+                          }
+                        }}
+                      />
+                      <output>{String(after.representation[field.key])}</output>
+                    </>
+                  )}
+                </label>
+              );
+            })}
+          </fieldset>
+        ))}
       </details>
       <details className="lab-controls" data-testid="lab-section-collections">
         <summary>

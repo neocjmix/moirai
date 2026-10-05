@@ -5,6 +5,7 @@ import {
 } from "@moirai/graph-presentation/layout-engine";
 import {
   REPRESENTATION_CONFIG_VERSION,
+  DEFAULT_REPRESENTATION_CONFIG,
   validateRepresentationConfig,
   type RepresentationConfig,
   type RepresentationHistory
@@ -103,7 +104,8 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
   if (
     (raw.formatVersion !== "layout-lab-preset/1" &&
       raw.formatVersion !== "layout-lab-preset/2") ||
-    raw.representationConfigVersion !== REPRESENTATION_CONFIG_VERSION
+    (raw.representationConfigVersion !== REPRESENTATION_CONFIG_VERSION &&
+      raw.representationConfigVersion !== "lab-representation/1")
   )
     throw Error("지원하지 않는 preset/representation version입니다.");
   const snapshot = validateLabSnapshot(raw.snapshot);
@@ -128,10 +130,35 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
   if (digest !== snapshot.inputDigest)
     throw Error("Snapshot digest가 일치하지 않습니다.");
   const afterLayout = selection(raw);
+  const restoreRepresentation = (value: unknown) => {
+    if (raw.representationConfigVersion !== "lab-representation/1")
+      return representation(value);
+    const legacy = object(value);
+    const added = [
+      "hullOpacityScale",
+      "ordinaryPointOpacityScale",
+      "smallPointOpacityScale",
+      "hullLabelOpacity",
+      "ordinaryLabelOpacity",
+      "smallLabelOpacity"
+    ];
+    if (added.some((key) => key in legacy))
+      throw Error("Invalid legacy representation version");
+    // Version 1 had these exact fixed weights; migration preserves its view.
+    return representation({
+      ...Object.fromEntries(
+        added.map((key) => [
+          key,
+          DEFAULT_REPRESENTATION_CONFIG[key as keyof RepresentationConfig]
+        ])
+      ),
+      ...legacy
+    });
+  };
   const beforeRaw = object(raw.before);
   const before = {
     layout: selection(beforeRaw.layout),
-    representation: representation(beforeRaw.representation)
+    representation: restoreRepresentation(beforeRaw.representation)
   };
   const camera = object(raw.camera) as unknown as LabCamera;
   if (
@@ -173,7 +200,7 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
     servedRevision: snapshot.servedRevision,
     inputDigest: snapshot.inputDigest,
     representationConfigVersion: REPRESENTATION_CONFIG_VERSION,
-    representation: representation(raw.representation),
+    representation: restoreRepresentation(raw.representation),
     before,
     camera,
     viewport: { width: viewport.width, height: viewport.height },

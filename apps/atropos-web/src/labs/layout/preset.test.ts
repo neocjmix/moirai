@@ -63,6 +63,41 @@ const encode = (value: unknown) => JSON.stringify(value);
 afterEach(() => vi.unstubAllGlobals());
 
 describe("reproducible offline Layout Lab presets", () => {
+  it("migrates representation v1 with its original fixed stage opacities", async () => {
+    const original = savedExperiment();
+    const legacy = JSON.parse(encode(original));
+    legacy.representationConfigVersion = "lab-representation/1";
+    const added = [
+      "hullOpacityScale",
+      "ordinaryPointOpacityScale",
+      "smallPointOpacityScale",
+      "hullLabelOpacity",
+      "ordinaryLabelOpacity",
+      "smallLabelOpacity"
+    ];
+    for (const key of added) {
+      delete legacy.representation[key];
+      delete legacy.before.representation[key];
+    }
+    expect(await parseLabPreset(encode(legacy))).toEqual(original);
+    delete legacy.representation.hullFadePx;
+    await expect(parseLabPreset(encode(legacy))).rejects.toThrow("hullFadePx");
+  });
+
+  it("replays independently adjusted stage and label weights exactly", async () => {
+    const original = savedExperiment();
+    original.representation = {
+      ...original.representation,
+      hullOpacityScale: 0.2,
+      hullLabelOpacity: 0.9,
+      ordinaryPointOpacityScale: 0.6,
+      ordinaryLabelOpacity: 0,
+      smallPointOpacityScale: 0.5,
+      smallLabelOpacity: 1
+    };
+    expect(await parseLabPreset(encode(original))).toEqual(original);
+  });
+
   it("restores distinct A/B algorithms, geometry, camera, Collection selection and threshold history without reads", async () => {
     const network = vi.fn(() => {
       throw Error("Preset replay must stay offline");
@@ -185,7 +220,7 @@ describe("reproducible offline Layout Lab presets", () => {
     const original = savedExperiment();
     const invalid = [
       { ...original, formatVersion: "layout-lab-preset/3" },
-      { ...original, representationConfigVersion: "lab-representation/2" },
+      { ...original, representationConfigVersion: "lab-representation/99" },
       { ...original, algorithmVersion: "2" },
       {
         ...original,

@@ -2,9 +2,15 @@
  * are produced here. A caller supplies a complete immutable authored closure,
  * projects it with its camera, and keeps this policy's small history in presets.
  */
-export const REPRESENTATION_CONFIG_VERSION = "lab-representation/1";
+export const REPRESENTATION_CONFIG_VERSION = "lab-representation/2";
 
 export interface RepresentationConfig {
+  hullOpacityScale: number;
+  ordinaryPointOpacityScale: number;
+  smallPointOpacityScale: number;
+  hullLabelOpacity: number;
+  ordinaryLabelOpacity: number;
+  smallLabelOpacity: number;
   showHulls: boolean;
   showOrdinaryPoints: boolean;
   showSmallPoints: boolean;
@@ -37,6 +43,26 @@ type Parameter = {
 );
 
 export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
+  ...(
+    [
+      ["hullOpacityScale", 1],
+      ["hullLabelOpacity", 0.45],
+      ["ordinaryPointOpacityScale", 1],
+      ["ordinaryLabelOpacity", 1],
+      ["smallPointOpacityScale", 1],
+      ["smallLabelOpacity", 0]
+    ] as const
+  ).map(([key, value]) => ({
+    key,
+    label: key,
+    type: "number" as const,
+    default: value,
+    min: 0,
+    max: 1,
+    step: 0.01,
+    description:
+      "Research-only stage opacity. Zero suppresses paint, not facts."
+  })),
   {
     key: "showHulls",
     label: "Hull",
@@ -462,21 +488,26 @@ export function evaluateRepresentationScene(
       const visibility =
         node.visible === false ? 0 : (descendantOpacity.get(node.id) ?? 1);
       const hullOpacity = config.showHulls
-        ? hullWeight * surfaceOpacity * visibility
+        ? hullWeight * surfaceOpacity * visibility * config.hullOpacityScale
         : 0;
       const pointOpacity = (1 - hullWeight) * densityOpacity * visibility;
       const ordinaryPointOpacity =
-        normal && config.showOrdinaryPoints ? pointOpacity : 0;
+        normal && config.showOrdinaryPoints
+          ? pointOpacity * config.ordinaryPointOpacityScale
+          : 0;
       const smallPointOpacity =
-        !normal && config.showSmallPoints ? pointOpacity : 0;
+        !normal && config.showSmallPoints
+          ? pointOpacity * config.smallPointOpacityScale
+          : 0;
       const opacity = unit(
         hullOpacity + ordinaryPointOpacity + smallPointOpacity
       );
       const labelOpacity = !config.showLabels
         ? 0
         : compact
-          ? ordinaryPointOpacity
-          : hullOpacity * 0.45;
+          ? ordinaryPointOpacity * config.ordinaryLabelOpacity +
+            smallPointOpacity * config.smallLabelOpacity
+          : hullOpacity * config.hullLabelOpacity;
       state[node.id] = { compact, normal };
       return {
         id: node.id,
@@ -523,3 +554,68 @@ export function evaluateRepresentationScene(
     }));
   return { nodes, relations, state };
 }
+
+export const REPRESENTATION_GROUPS: readonly {
+  title: string;
+  description: string;
+  keys: readonly (keyof RepresentationConfig)[];
+}[] = [
+  {
+    title: "1 · 영역 단계",
+    description:
+      "충분히 크게 보이는 묶음 사건입니다. 영역과 이름표의 진하기를 따로 비교하세요.",
+    keys: [
+      "showHulls",
+      "hullOpacityScale",
+      "hullLabelOpacity",
+      "compactThresholdPx",
+      "hullFadePx",
+      "compactHysteresisPx",
+      "hullSuppressCoverageStart"
+    ]
+  },
+  {
+    title: "2 · 보통 점 단계",
+    description:
+      "작게 축소된 묶음과 일반 사건이 점으로 보입니다. 점의 진하기와 이름표를 조절하세요.",
+    keys: [
+      "showOrdinaryPoints",
+      "ordinaryPointOpacityScale",
+      "ordinaryLabelOpacity",
+      "normalPointCount",
+      "normalHysteresisCount"
+    ]
+  },
+  {
+    title: "3 · 작은 점 단계",
+    description:
+      "사건이 밀집하면 점을 줄입니다. 이름표는 기본적으로 숨기며, 여기서 켜 보는 실험이 가능합니다.",
+    keys: [
+      "showSmallPoints",
+      "smallPointOpacityScale",
+      "smallLabelOpacity",
+      "smallPointScale",
+      "smallPointCount"
+    ]
+  },
+  {
+    title: "4 · 숨김 단계",
+    description:
+      "밀집 순위가 기준을 넘으면 점과 이름표가 함께 사라집니다. 실제 사건이나 구성 관계를 삭제하지 않습니다.",
+    keys: ["hiddenPointCount", "hiddenPointScale"]
+  },
+  {
+    title: "구성 사건·연결선·전환",
+    description:
+      "이름 전체 표시, 묶음 안의 사건, 연결선과 전환 시간을 함께 조절합니다. 이름이 겹치거나 화면 밖이면 생략합니다.",
+    keys: [
+      "showLabels",
+      "showChildren",
+      "showRelations",
+      "childRevealHeightPx",
+      "childFadeStartRatio",
+      "fadeDurationMs",
+      "labelFadeDurationMs"
+    ]
+  }
+];

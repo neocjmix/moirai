@@ -304,23 +304,64 @@ test("geographic canvas paints ink while SVG retains authored touch targets and 
         revision: Number(canvas.dataset.paintRevision)
       };
     });
+  const paintState = () =>
+    canvas.evaluate((node) => {
+      let view: { x: number; y: number } | undefined;
+      const inspect = (event: Event) => {
+        view = (event as CustomEvent).detail.view;
+      };
+      addEventListener("moirai:graph-inspection", inspect, { once: true });
+      dispatchEvent(new Event("moirai:inspect-graph"));
+      removeEventListener("moirai:graph-inspection", inspect);
+      if (!view) throw Error("Graph camera inspection is unavailable");
+      const matrix = new DOMMatrix(getComputedStyle(node).transform);
+      return {
+        view,
+        revision: Number(node.dataset.paintRevision),
+        reuses: Number(node.dataset.cameraReuses || 0),
+        translation: { x: matrix.e, y: matrix.f }
+      };
+    });
   await expect.poll(async () => (await ink()).ink).toBeGreaterThan(100);
   const before = await ink();
   expect(before.scale).toBe(1.5);
   await page.waitForTimeout(300);
   await page.screenshot({ path: info.outputPath("canvas-appearance.png") });
+  const targets = page.locator(
+    'svg[data-graphics-painter="canvas"] [data-primary-hit-target]'
+  );
+  await expect(targets.first()).toBeVisible();
+  const beforePan = await paintState();
   const original = await canvas.elementHandle();
   await page.mouse.move(75, 520);
   await page.mouse.down();
   await page.mouse.move(92, 529, { steps: 6 });
   await page.mouse.up();
   await expect
-    .poll(async () => (await ink()).revision)
-    .toBeGreaterThan(before.revision);
+    .poll(async () => {
+      const after = await paintState();
+      const dx = after.view.x - beforePan.view.x;
+      const dy = after.view.y - beforePan.view.y;
+      const cameraMoved = Math.abs(dx - 17) < 0.1 && Math.abs(dy - 9) < 0.1;
+      // A settled raster may follow a pan through CSS translation instead of
+      // a new bitmap. A reuse counter alone would also allow stale pixels:
+      // require the actual transform to track both camera axes exactly.
+      const translated =
+        after.reuses > beforePan.reuses &&
+        Math.abs(after.translation.x - beforePan.translation.x - dx) < 0.1 &&
+        Math.abs(after.translation.y - beforePan.translation.y - dy) < 0.1;
+      return cameraMoved && (after.revision > beforePan.revision || translated);
+    })
+    .toBe(true);
+  await info.attach("canvas-pan", {
+    body: JSON.stringify({ before: beforePan, after: await paintState() }),
+    contentType: "application/json"
+  });
   expect(await canvas.evaluate((node, old) => node === old, original)).toBe(
     true
   );
   expect((await ink()).ink).toBeGreaterThan(100);
+  await expect(targets.first()).toBeVisible();
   await page.goto(
     `/graph/v5?world=${world}&gsViewport=${closeCamera.join(",")}&gsGraphics=svg`
   );

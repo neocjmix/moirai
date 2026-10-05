@@ -1,5 +1,6 @@
 import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
+import { computeLayout } from "@moirai/graph-presentation/layout-engine";
 import type { LabPreset } from "../../apps/atropos-web/src/labs/layout/preset";
 
 const beforeName = "A · 기준 화면 지도";
@@ -30,14 +31,16 @@ async function ready(page: Page) {
   ).toBeVisible();
   await waitForCompute(page);
   await expect(
-    page.getByRole("img", { name: beforeName }).locator("g[data-event-id]")
+    page
+      .getByRole("img", { name: beforeName, includeHidden: true })
+      .locator("g[data-event-id]")
   ).toHaveCount(173);
   await page.waitForLoadState("networkidle");
 }
 
 async function coordinates(page: Page, name: string) {
   return page
-    .getByRole("img", { name })
+    .getByRole("img", { name, includeHidden: true })
     .locator("g[data-event-id]")
     .evaluateAll((nodes) =>
       nodes.map((node) => ({
@@ -52,6 +55,54 @@ async function coordinates(page: Page, name: string) {
         )
       }))
     );
+}
+
+async function camera(page: Page) {
+  return JSON.parse(
+    (await page.getByTestId("lab-comparison").getAttribute("data-camera"))!
+  ) as LabPreset["camera"];
+}
+
+async function pinch(page: Page, axis: "x" | "y" | "both", delta: number) {
+  const map = page.getByRole("img", { name: afterName });
+  await map.scrollIntoViewIfNeeded();
+  const box = (await map.boundingBox())!;
+  const first = { x: box.x + box.width * 0.2, y: box.y + box.height * 0.3 };
+  const second = {
+    x: axis === "y" ? first.x : box.x + box.width * 0.62,
+    y: axis === "x" ? first.y : box.y + box.height * 0.65
+  };
+  // WebKit exposes one native touch. Like Atropos's existing pinch regression,
+  // hold a native mouse contact and move the native touch's real pointer ID.
+  // Capture/handlers remain real; this is integration, not a physical iPhone.
+  await page.evaluate(
+    ({ axis, delta }) => {
+      const move = (event: PointerEvent) => {
+        if (event.pointerType !== "touch") return;
+        document.removeEventListener("pointerdown", move);
+        for (let i = 1; i <= 5; i++)
+          (event.target as Element).dispatchEvent(
+            new PointerEvent("pointermove", {
+              bubbles: true,
+              cancelable: true,
+              pointerId: event.pointerId,
+              pointerType: "touch",
+              buttons: 1,
+              clientX: event.clientX + (axis === "y" ? 0 : (delta * i) / 5),
+              clientY: event.clientY + (axis === "x" ? 0 : (delta * i) / 5),
+              isPrimary: event.isPrimary
+            })
+          );
+      };
+      document.addEventListener("pointerdown", move);
+    },
+    { axis, delta }
+  );
+  await page.mouse.move(first.x, first.y);
+  await page.mouse.down();
+  await page.touchscreen.tap(second.x, second.y);
+  await page.mouse.up();
+  await page.evaluate(() => new Promise(requestAnimationFrame));
 }
 
 test("research controls recompute locally, retain algorithm-specific values, and share one camera", async ({
@@ -73,47 +124,28 @@ test("research controls recompute locally, retain algorithm-specific values, and
     await coordinates(page, afterName)
   );
 
-  await page.getByTestId("lab-zoom-x-in").click();
-  const xZoom = await readPreset(page);
-  expect(xZoom.camera.spanX).toBeCloseTo(initial.camera.spanX * 0.7);
-  expect(xZoom.camera.spanY).toBe(initial.camera.spanY);
+  await pinch(page, "x", 40);
+  const xZoom = await camera(page);
+  expect(xZoom.spanX).toBeLessThan(initial.camera.spanX);
+  expect(xZoom.spanY).toBeCloseTo(initial.camera.spanY);
   expect(await coordinates(page, beforeName)).toEqual(
     await coordinates(page, afterName)
   );
-  await page.getByTestId("lab-zoom-y-in").click();
-  const xyZoom = await readPreset(page);
-  expect(xyZoom.camera.spanX).toBe(xZoom.camera.spanX);
-  expect(xyZoom.camera.spanY).toBeCloseTo(initial.camera.spanY * 0.7);
-  await page.getByTestId("lab-zoom-x-out").click();
-  await page.getByTestId("lab-zoom-y-out").click();
-  const restoredCamera = (await readPreset(page)).camera;
-  expect(restoredCamera.spanX).toBeCloseTo(initial.camera.spanX);
-  expect(restoredCamera.spanY).toBeCloseTo(initial.camera.spanY);
-
-  const wheel = async () => {
-    const scene = page.getByRole("img", { name: beforeName });
-    await scene.scrollIntoViewIfNeeded();
-    // Mobile WebKit does not expose hardware wheel input; exercise the policy
-    // handler while real tap/button input above verifies the mobile controls.
-    await scene.dispatchEvent("wheel", { deltaY: 100 });
-  };
-  await wheel();
-  const outward = (await readPreset(page)).camera;
-  expect(outward.spanX).toBeGreaterThan(restoredCamera.spanX);
-  expect(outward.spanY).toBeGreaterThan(restoredCamera.spanY);
-  await page.getByTestId("lab-zoom-reverse").check();
-  await wheel();
-  const reversed = (await readPreset(page)).camera;
-  expect(reversed.spanX).toBeCloseTo(restoredCamera.spanX);
-  expect(reversed.spanY).toBeCloseTo(restoredCamera.spanY);
-  await page.getByTestId("lab-sweep-both").click();
-  await expect(page.getByTestId("lab-sweep-stop")).toBeVisible();
-  await expect(page.getByTestId("lab-sweep-stop")).toHaveCount(0, {
-    timeout: 10_000
-  });
-  const sweepCamera = (await readPreset(page)).camera;
-  expect(sweepCamera).toEqual(reversed);
-
+  await pinch(page, "y", 40);
+  const xyZoom = await camera(page);
+  expect(xyZoom.spanX).toBeCloseTo(xZoom.spanX);
+  expect(xyZoom.spanY).toBeLessThan(xZoom.spanY);
+  await pinch(page, "both", -25);
+  const sweepCamera = await camera(page);
+  expect(sweepCamera.spanX).toBeGreaterThan(xyZoom.spanX);
+  expect(sweepCamera.spanY).toBeGreaterThan(xyZoom.spanY);
+  await expect(page.getByTestId("lab-focus-event")).toHaveValue("");
+  await expect(
+    page.locator(
+      '[data-testid^="lab-zoom-"], [data-testid^="lab-sweep-"], [data-testid="lab-fit-all"]'
+    )
+  ).toHaveCount(0);
+  await openSection(page, "layout");
   await page.getByTestId("lab-layout-parameter-iterations").fill("12");
   await waitForCompute(page);
   await page.getByTestId("lab-algorithm").selectOption("deterministic-slots");
@@ -149,13 +181,14 @@ test("research controls recompute locally, retain algorithm-specific values, and
     page.getByTestId("lab-layout-parameter-slotSpacing")
   ).toHaveValue("170");
   await waitForCompute(page);
+  await openSection(page, "comparison");
   await page.getByTestId("lab-use-b-as-a").click();
   expect(await coordinates(page, beforeName)).toEqual(
     await coordinates(page, afterName)
   );
   expect(requests).toEqual([]);
   expect(errors).toEqual([]);
-  await page.getByRole("img", { name: beforeName }).scrollIntoViewIfNeeded();
+  await page.getByRole("img", { name: afterName }).scrollIntoViewIfNeeded();
   await page.screenshot({
     path: info.outputPath("layout-lab-mobile-comparison.png")
   });
@@ -165,7 +198,7 @@ test("local save and JSON export/import restore immutable input, camera, visibil
   page
 }, info) => {
   await ready(page);
-  await page.getByTestId("lab-zoom-both-in").click();
+  await pinch(page, "both", 40);
   await openSection(page, "representation");
   await page.getByTestId("lab-representation-compactHysteresisPx").fill("35");
   await page.getByTestId("lab-representation-showRelations").uncheck();
@@ -182,8 +215,9 @@ test("local save and JSON export/import restore immutable input, camera, visibil
   await download.saveAs(exportPath);
   expect(JSON.parse(await readFile(exportPath, "utf8"))).toEqual(saved);
 
+  await openSection(page, "comparison");
   await page.getByTestId("lab-reset-b-defaults").click();
-  await page.getByTestId("lab-fit-all").click();
+  await pinch(page, "both", -25);
   await page.getByTestId("lab-collections-none").click();
   await page.getByTestId("lab-preset-load").click();
   await expect(page.locator(".lab-status")).toContainText(
@@ -210,8 +244,20 @@ test("mobile tap selects a visible Event and controls stay within the viewport",
   page
 }, info) => {
   await ready(page);
+  const setup = await readPreset(page);
+  const shape = computeLayout(setup.snapshot.input, setup).shapes.find(
+    (shape) => shape.event_id === "sparse"
+  )!;
+  if (shape.kind !== "point") throw Error("Expected sparse fixture point");
+  setup.camera = { ...shape.position, spanX: 200, spanY: 180 };
+  await page.getByTestId("lab-preset-json").fill(JSON.stringify(setup));
+  await page.getByTestId("lab-preset-restore").click();
+  await expect(page.locator(".lab-status")).toContainText(
+    "저장한 실험을 다시 열었습니다."
+  );
   await openSection(page, "events");
   await page.getByTestId("lab-focus-event").selectOption("sparse");
+  expect(await camera(page)).toEqual(setup.camera);
   const focused = await readPreset(page);
   await page.getByTestId("lab-preset-restore").click();
   await expect(page.locator(".lab-status")).toContainText(
@@ -246,7 +292,7 @@ test("mobile pinned comparison stays visible while tuning and preserves its view
 }, info) => {
   await ready(page);
   const initial = await readPreset(page);
-  await page.getByTestId("lab-pin-preview").check();
+  await openSection(page, "layout");
   await expect(page.getByRole("img", { name: afterName })).toBeVisible();
   await expect(page.getByRole("img", { name: beforeName })).toBeHidden();
   await page.getByTestId("lab-layout-parameter-iterations").fill("10");
@@ -257,10 +303,10 @@ test("mobile pinned comparison stays visible while tuning and preserves its view
   const box = (await page.getByRole("img", { name: afterName }).boundingBox())!;
   expect(box.y).toBeGreaterThanOrEqual(0);
   expect(box.y + box.height).toBeLessThan(page.viewportSize()!.height);
-  await page.getByRole("button", { name: "기준 A 보기", exact: true }).click();
+  await page.getByTestId("lab-show-a").click();
   await expect(page.getByRole("img", { name: beforeName })).toBeVisible();
   await expect(page.getByRole("img", { name: afterName })).toBeHidden();
-  await page.getByRole("button", { name: "바꾼 B 보기", exact: true }).click();
+  await page.getByTestId("lab-show-b").click();
   const tuned = await readPreset(page);
   expect(tuned.parameters.iterations).toBe(10);
   expect(tuned.viewport).toEqual(initial.viewport);
@@ -281,17 +327,17 @@ test("mobile map owns touch movement while controls retain ordinary page gesture
   page.on("pageerror", (error) => errors.push(error.message));
   await ready(page);
   const before = await readPreset(page);
-  const map = page.getByRole("img", { name: beforeName });
+  const map = page.getByRole("img", { name: afterName });
   await map.scrollIntoViewIfNeeded();
   const box = (await map.boundingBox())!;
   const initialScroll = await page.evaluate(() => scrollY);
-  const initialGeometry = await coordinates(page, beforeName);
+  const initialGeometry = await coordinates(page, afterName);
   const cancellation = await map.evaluate((svg) => {
     const inside = new Event("touchmove", { bubbles: true, cancelable: true });
     const outside = new Event("touchmove", { bubbles: true, cancelable: true });
     svg.dispatchEvent(inside);
     document
-      .querySelector('[data-testid="lab-section-camera"]')!
+      .querySelector('[data-testid="lab-section-layout"]')!
       .dispatchEvent(outside);
     return {
       inside: inside.defaultPrevented,
@@ -328,7 +374,7 @@ test("mobile map owns touch movement while controls retain ordinary page gesture
   });
   await page.touchscreen.tap(box.x + box.width / 2, box.y + box.height / 2);
   await expect
-    .poll(() => coordinates(page, beforeName))
+    .poll(() => coordinates(page, afterName))
     .not.toEqual(initialGeometry);
   expect(await page.evaluate(() => scrollY)).toBe(initialScroll);
   expect(await page.evaluate(() => visualViewport?.scale ?? 1)).toBe(1);
@@ -363,7 +409,7 @@ test.describe("desktop WebKit wheel boundary", () => {
     viewport: { width: 1024, height: 900 }
   });
 
-  test("native wheel zooms only the map and the surrounding page still scrolls", async ({
+  test("mobile map ignores wheel zoom while keeping page scrolling outside", async ({
     page
   }, info) => {
     const consoleErrors: string[] = [];
@@ -371,16 +417,15 @@ test.describe("desktop WebKit wheel boundary", () => {
       if (message.type() === "error") consoleErrors.push(message.text());
     });
     await ready(page);
-    const map = page.getByRole("img", { name: beforeName });
+    const map = page.getByRole("img", { name: afterName });
     await map.scrollIntoViewIfNeeded();
     const box = (await map.boundingBox())!;
     const before = {
       scrollY: await page.evaluate(() => scrollY),
-      zoomX: await page.getByTestId("lab-zoom-x").inputValue()
+      camera: await camera(page)
     };
     await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2);
     await page.mouse.wheel(0, 240);
-    await expect(page.getByTestId("lab-zoom-x")).not.toHaveValue(before.zoomX);
     // Observe several frames after the native wheel. An immediate equality
     // could pass before the browser's asynchronous default scroll occurs.
     const scrollSamples = await page.evaluate(
@@ -400,21 +445,20 @@ test.describe("desktop WebKit wheel boundary", () => {
     expect(await coordinates(page, beforeName)).toEqual(
       await coordinates(page, afterName)
     );
-    const outwardZoom = await page.getByTestId("lab-zoom-x").inputValue();
+    expect(await camera(page)).toEqual(before.camera);
     await page.keyboard.down("Control");
     await page.mouse.wheel(0, -120);
     await page.keyboard.up("Control");
-    await expect(page.getByTestId("lab-zoom-x")).not.toHaveValue(outwardZoom);
+    expect(await camera(page)).toEqual(before.camera);
     expect(await page.evaluate(() => scrollY)).toBe(before.scrollY);
     expect(await page.evaluate(() => visualViewport?.scale ?? 1)).toBe(1);
 
-    const zoomOutside = await page.getByTestId("lab-zoom-x").inputValue();
     await page.mouse.move(5, box.y + box.height / 2);
     await page.mouse.wheel(0, 240);
     await expect
       .poll(() => page.evaluate(() => scrollY))
       .toBeGreaterThan(before.scrollY);
-    await expect(page.getByTestId("lab-zoom-x")).toHaveValue(zoomOutside);
+    expect(await camera(page)).toEqual(before.camera);
     expect(consoleErrors).toEqual([]);
     await info.attach("wheel-evidence.json", {
       body: JSON.stringify({

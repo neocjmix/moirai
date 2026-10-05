@@ -18,7 +18,7 @@ function savedExperiment(): LabPreset {
   const after = defaultLayoutSelection("legacy-force");
   const before = defaultLayoutSelection("deterministic-slots");
   return {
-    formatVersion: "layout-lab-preset/1",
+    formatVersion: "layout-lab-preset/2",
     ...after,
     parameters: { ...after.parameters, repulsion: 0.095, maxStep: 0.37 },
     worldId: snapshot.worldId,
@@ -169,10 +169,22 @@ describe("reproducible offline Layout Lab presets", () => {
     );
   });
 
+  it("migrates a saved v1 experiment without changing its original camera, viewport or input", async () => {
+    const original = savedExperiment();
+    const legacy = { ...original, formatVersion: "layout-lab-preset/1" };
+    const restored = await parseLabPreset(encode(legacy));
+    expect(restored).toEqual(original);
+    const mobile = { ...original, viewport: { width: 390, height: 320 } };
+    expect(await parseLabPreset(encode(mobile))).toEqual(mobile);
+    await expect(
+      parseLabPreset(encode({ ...legacy, viewport: mobile.viewport }))
+    ).rejects.toThrow("viewport");
+  });
+
   it("rejects unknown versions, stale pins, digest changes and missing temporal provenance", async () => {
     const original = savedExperiment();
     const invalid = [
-      { ...original, formatVersion: "layout-lab-preset/2" },
+      { ...original, formatVersion: "layout-lab-preset/3" },
       { ...original, representationConfigVersion: "lab-representation/2" },
       { ...original, algorithmVersion: "2" },
       {
@@ -271,7 +283,14 @@ describe("reproducible offline Layout Lab presets", () => {
       { ...original, viewport: { width: 239, height: 430 } },
       { ...original, viewport: { width: 2001, height: 430 } },
       { ...original, viewport: { width: "390", height: 430 } },
-      { ...original, viewport: { width: 390, height: 480 } },
+      { ...original, viewport: { width: 390, height: 199 } },
+      { ...original, viewport: { width: 390, height: 2001 } },
+      { ...original, viewport: { width: 390, height: "320" } },
+      {
+        ...original,
+        formatVersion: "layout-lab-preset/1",
+        viewport: { width: 390, height: 480 }
+      },
       { ...original, activeCollectionIds: ["unknown-collection"] },
       { ...original, includeUncollected: "false" },
       {

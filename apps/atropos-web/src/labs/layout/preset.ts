@@ -23,7 +23,7 @@ export interface LabCandidate {
   representation: RepresentationConfig;
 }
 export interface LabPreset {
-  formatVersion: "layout-lab-preset/1";
+  formatVersion: "layout-lab-preset/2";
   algorithm: string;
   algorithmVersion: string;
   parameters: LayoutSelection["parameters"];
@@ -36,7 +36,7 @@ export interface LabPreset {
   representation: RepresentationConfig;
   before: LabCandidate;
   camera: LabCamera;
-  viewport: { width: number; height: 430 };
+  viewport: { width: number; height: number };
   activeCollectionIds: string[];
   includeUncollected: boolean;
   history: { before: RepresentationHistory; after: RepresentationHistory };
@@ -101,7 +101,8 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
     throw Error("설정 파일은 16 MiB 이하여야 합니다.");
   const raw = object(JSON.parse(text));
   if (
-    raw.formatVersion !== "layout-lab-preset/1" ||
+    (raw.formatVersion !== "layout-lab-preset/1" &&
+      raw.formatVersion !== "layout-lab-preset/2") ||
     raw.representationConfigVersion !== REPRESENTATION_CONFIG_VERSION
   )
     throw Error("지원하지 않는 preset/representation version입니다.");
@@ -144,7 +145,10 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
     !finite(viewport.width) ||
     viewport.width < 240 ||
     viewport.width > 2000 ||
-    viewport.height !== 430
+    !finite(viewport.height) ||
+    viewport.height < 200 ||
+    viewport.height > 2000 ||
+    (raw.formatVersion === "layout-lab-preset/1" && viewport.height !== 430)
   )
     throw Error("지원하지 않는 research viewport입니다.");
   const collectionIds = new Set(snapshot.collections.map((item) => item.id));
@@ -162,7 +166,7 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
   computeLayout(snapshot.input, afterLayout);
   computeLayout(snapshot.input, before.layout);
   return {
-    formatVersion: "layout-lab-preset/1",
+    formatVersion: "layout-lab-preset/2",
     ...afterLayout,
     worldId: snapshot.worldId,
     revision: snapshot.sourceRevision,
@@ -172,7 +176,7 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
     representation: representation(raw.representation),
     before,
     camera,
-    viewport: { width: viewport.width, height: 430 },
+    viewport: { width: viewport.width, height: viewport.height },
     activeCollectionIds: [...new Set(raw.activeCollectionIds as string[])],
     includeUncollected: raw.includeUncollected,
     history: {

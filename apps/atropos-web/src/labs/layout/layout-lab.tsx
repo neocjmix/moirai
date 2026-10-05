@@ -68,14 +68,6 @@ export function LayoutLab({
     return { output, elapsed: performance.now() - start };
   }, [snapshot, computedSelection]);
   const afterOutput = measured.output;
-  const geometry = useMemo(
-    () => layoutGeometry(snapshot, afterOutput),
-    [snapshot, afterOutput]
-  );
-  const initialCamera = useMemo(
-    () => fitCamera(layoutGeometry(snapshot, beforeOutput)),
-    [snapshot, beforeOutput]
-  );
   const [camera, setCamera] = useState<LabCamera>(() =>
     fitCamera(layoutGeometry(snapshot, beforeOutput))
   );
@@ -89,10 +81,9 @@ export function LayoutLab({
   );
   const [text, setText] = useState("");
   const [width, setWidth] = useState(360);
+  const [height, setHeight] = useState(320);
   const [viewportLocked, setViewportLocked] = useState(false);
-  const [pinPreview, setPinPreview] = useState(false);
   const [mobileSide, setMobileSide] = useState<"a" | "b">("b");
-  const [reverseWheel, setReverseWheel] = useState(false);
   const [historyEpoch, setHistoryEpoch] = useState(0);
   const histories = useRef<{
     before: RepresentationHistory;
@@ -100,35 +91,30 @@ export function LayoutLab({
   }>({ before: {}, after: {} });
   const [initialHistories, setInitialHistories] = useState(histories.current);
   const panel = useRef<HTMLDivElement>(null);
-  const sweep = useRef<ReturnType<typeof setInterval> | null>(null);
-  const [sweeping, setSweeping] = useState(false);
   useEffect(() => {
     const element = panel.current;
     if (!element || viewportLocked) return;
-    const observer = new ResizeObserver(() => {
-      if (element.clientWidth > 0)
+    const viewport = element.querySelector<HTMLElement>(
+      `[data-lab-side="${mobileSide}"] .lab-map-viewport`
+    );
+    if (!viewport) return;
+    const measure = () => {
+      if (element.clientWidth > 0 && viewport.clientHeight > 0) {
         setWidth(Math.min(2000, Math.max(240, element.clientWidth)));
-    });
+        setHeight(viewport.clientHeight);
+      }
+    };
+    const observer = new ResizeObserver(measure);
     observer.observe(element);
+    observer.observe(viewport);
+    measure();
     return () => observer.disconnect();
-  }, [viewportLocked]);
-  useEffect(
-    () => () => {
-      if (sweep.current) clearInterval(sweep.current);
-    },
-    []
-  );
+  }, [viewportLocked, mobileSide]);
   const algorithm = getLayoutAlgorithm(after.layout.algorithm);
   const algorithmCopy = LAYOUT_COPY[algorithm.id]!;
   const displayTitle = (id: string, title: string) =>
     labDisplayTitle(snapshot.worldId, id, title);
   const pending = computedSelection !== after.layout;
-  const zoom = (factor: number, axis: "x" | "y" | "both") =>
-    setCamera((old) => ({
-      ...old,
-      spanX: old.spanX * (axis === "y" ? 1 : factor),
-      spanY: old.spanY * (axis === "x" ? 1 : factor)
-    }));
   const resetHistory = (
     next = { before: {}, after: {} } as typeof histories.current
   ) => {
@@ -136,30 +122,8 @@ export function LayoutLab({
     setInitialHistories(next);
     setHistoryEpoch((old) => old + 1);
   };
-  const stopSweep = () => {
-    if (sweep.current) clearInterval(sweep.current);
-    sweep.current = null;
-    setSweeping(false);
-  };
-  const runSweep = (axis: "x" | "y" | "both") => {
-    stopSweep();
-    const start = { ...camera };
-    let step = 0;
-    setSweeping(true);
-    sweep.current = setInterval(() => {
-      step++;
-      const phase = step <= 24 ? step : 48 - step;
-      const factor = 2 ** (-phase / 3);
-      setCamera({
-        ...start,
-        spanX: start.spanX * (axis === "y" ? 1 : factor),
-        spanY: start.spanY * (axis === "x" ? 1 : factor)
-      });
-      if (step >= 48) stopSweep();
-    }, 120);
-  };
   const preset = (): LabPreset => ({
-    formatVersion: "layout-lab-preset/1",
+    formatVersion: "layout-lab-preset/2",
     ...after.layout,
     worldId: snapshot.worldId,
     revision: snapshot.sourceRevision,
@@ -169,7 +133,7 @@ export function LayoutLab({
     representation: after.representation,
     before,
     camera,
-    viewport: { width, height: 430 },
+    viewport: { width, height },
     activeCollectionIds: active,
     includeUncollected,
     history: histories.current,
@@ -179,7 +143,6 @@ export function LayoutLab({
   const restore = async (source: string) => {
     try {
       const saved = await parseLabPreset(source);
-      stopSweep();
       setSnapshot(freezeSnapshot(saved.snapshot));
       setBefore(saved.before);
       const layout = {
@@ -193,6 +156,7 @@ export function LayoutLab({
       parameterSets.current = { [layout.algorithm]: layout };
       setCamera(saved.camera);
       setWidth(saved.viewport.width);
+      setHeight(saved.viewport.height);
       setViewportLocked(true);
       setActive(saved.activeCollectionIds);
       setIncludeUncollected(saved.includeUncollected);
@@ -220,15 +184,6 @@ export function LayoutLab({
       }
     }));
   const selectedEvent = snapshot.events.find((event) => event.id === selected);
-  const focus = (id: string) => {
-    setSelected(id);
-    const item = geometry.find((entry) => entry.id === id);
-    if (item) setCamera(fitCamera([item]));
-    else
-      setMessage(
-        "이 사건은 현재 선택한 시간축에 놓이지 않아 지도에서 위치를 보여줄 수 없습니다."
-      );
-  };
   const changed = afterOutput.shapes.filter(
     (shape, i) =>
       JSON.stringify(shape) !== JSON.stringify(beforeOutput.shapes[i])
@@ -257,238 +212,133 @@ export function LayoutLab({
           {displayTitle(snapshot.worldId, snapshot.worldTitle)} · 사건{" "}
           {snapshot.events.length}개
         </p>
-        <p>
-          A는 비교 기준, B는 값을 바꿔 보는 화면입니다. 먼저 자세히 볼 사건을
-          고르고, 현재 B를 A로 저장한 뒤 아래 값을 조절해 보세요.
-        </p>
-        <p>
-          ‘묶음 사건’은 여러 구성 사건으로 이루어진 사건입니다. ‘사건 모음’은
-          함께 보고 싶은 사건의 선택 목록이며, 같은 사건이 여러 모음에 들어갈 수
-          있습니다.
-        </p>
-        <nav>
-          <a href="/labs/layout?demo=1">연습 자료로 실험하기</a>
-          <a href="/labs/layout?world=01a107fb-4018-7fcb-8390-836a40fa91cc">
-            실제 역사 읽기
-          </a>
-          <a href={`/graph/v5?world=${encodeURIComponent(snapshot.worldId)}`}>
-            실제 읽기 화면
-          </a>
-        </nav>
       </header>
+      <section
+        className={`lab-comparison lab-side-${mobileSide}`}
+        aria-label="같은 위치의 두 화면 비교"
+        data-testid="lab-comparison"
+        data-camera={JSON.stringify(camera)}
+      >
+        <div className="lab-mobile-tabs" role="group" aria-label="비교할 화면">
+          <button
+            data-testid="lab-show-a"
+            aria-pressed={mobileSide === "a"}
+            onClick={() => setMobileSide("a")}
+          >
+            기준 A
+          </button>
+          <button
+            data-testid="lab-show-b"
+            aria-pressed={mobileSide === "b"}
+            onClick={() => setMobileSide("b")}
+          >
+            바꾼 B
+          </button>
+        </div>
+        <div className="lab-scenes" ref={panel}>
+          <div data-lab-side="a">
+            <LabScene
+              name="A · 기준 화면"
+              snapshot={snapshot}
+              output={beforeOutput}
+              camera={camera}
+              width={width}
+              height={height}
+              active={active}
+              includeUncollected={includeUncollected}
+              config={before.representation}
+              initialHistory={initialHistories.before}
+              historyEpoch={historyEpoch}
+              onHistory={(value) => {
+                histories.current.before = value;
+              }}
+              onCamera={setCamera}
+              onSelect={setSelected}
+              interactive={mobileSide === "a"}
+            />
+          </div>
+          <div data-lab-side="b">
+            <LabScene
+              name="B · 바꾼 화면"
+              snapshot={snapshot}
+              output={afterOutput}
+              camera={camera}
+              width={width}
+              height={height}
+              active={active}
+              includeUncollected={includeUncollected}
+              config={after.representation}
+              initialHistory={initialHistories.after}
+              historyEpoch={historyEpoch}
+              onHistory={(value) => {
+                histories.current.after = value;
+              }}
+              onCamera={setCamera}
+              onSelect={setSelected}
+              interactive={mobileSide === "b"}
+            />
+          </div>
+        </div>
+        <p className="lab-gesture-help">
+          한 손가락으로 이동 · 두 손가락으로 확대·축소
+          <br />
+          가로로 벌리면 가로, 세로로 벌리면 시간 방향이 바뀝니다.
+        </p>
+      </section>
       <p role="status" className="lab-status">
         {message}
       </p>
-      <div className="lab-toolbar">
-        <button
-          data-testid="lab-use-b-as-a"
-          disabled={pending}
-          onClick={() => {
-            setBefore(structuredClone(after));
-            resetHistory({
-              before: structuredClone(histories.current.after),
-              after: histories.current.after
-            });
-          }}
-        >
-          지금 B를 비교 기준 A로 저장
-        </button>
-        <button
-          data-testid="lab-reset-b-to-a"
-          onClick={() => {
-            const value = structuredClone(before);
-            setAfter(value);
-            setComputedSelection(value.layout);
-            resetHistory({
-              before: histories.current.before,
-              after: structuredClone(histories.current.before)
-            });
-          }}
-        >
-          B를 기준 A와 같게
-        </button>
-        <button
-          data-testid="lab-reset-b-defaults"
-          onClick={() => {
-            setAfter(initialCandidate());
-            resetHistory({ before: histories.current.before, after: {} });
-          }}
-        >
-          B 설정 처음으로
-        </button>
-        <button
-          data-testid="lab-fit-all"
-          onClick={() => {
-            stopSweep();
-            setCamera(initialCamera);
-          }}
-        >
-          전체 보기
-        </button>
-      </div>
-      <details open className="lab-controls" data-testid="lab-section-camera">
-        <summary>이동·확대하며 비교하기</summary>
+      <details className="lab-controls" data-testid="lab-section-comparison">
+        <summary>비교 기준과 B 설정</summary>
         <p>
-          두 화면은 같은 사건 자료, 같은 위치와 확대 정도, 같은 사건 모음을
-          사용합니다. 가로는 배치, 세로는 시간 방향입니다.
+          A는 비교 기준, B는 값을 바꿔 보는 화면입니다. 두 화면은 같은 사건
+          자료와 같은 위치를 사용합니다. 현재 B를 A로 저장한 뒤 값을 하나씩 바꿔
+          보세요.
         </p>
         <div className="lab-toolbar">
-          {(["both", "x", "y"] as const).map((axis) => (
-            <span key={axis}>
-              <button
-                data-testid={`lab-zoom-${axis}-in`}
-                aria-label={`${axis === "both" ? "가로·세로 함께" : axis === "x" ? "가로" : "시간 방향"} 확대`}
-                onClick={() => zoom(0.7, axis)}
-              >
-                {axis === "both" ? "함께" : axis === "x" ? "가로" : "시간 방향"}{" "}
-                ＋
-              </button>
-              <button
-                data-testid={`lab-zoom-${axis}-out`}
-                aria-label={`${axis === "both" ? "가로·세로 함께" : axis === "x" ? "가로" : "시간 방향"} 축소`}
-                onClick={() => zoom(1 / 0.7, axis)}
-              >
-                －
-              </button>
-            </span>
-          ))}
-        </div>
-        {(["x", "y"] as const).map((axis) => {
-          const key = axis === "x" ? "spanX" : "spanY";
-          const level = Math.log2(initialCamera[key] / camera[key]);
-          return (
-            <label className="lab-control" key={axis}>
-              <span>
-                {axis === "x" ? "가로(X)" : "시간 방향(Y)"} 확대 정도{" "}
-                {level.toFixed(2)}
-              </span>
-              <input
-                data-testid={`lab-zoom-${axis}`}
-                aria-label={`${axis === "x" ? "가로" : "시간 방향"} 확대 정도`}
-                type="range"
-                min={-4}
-                max={16}
-                step={0.05}
-                value={Math.max(-4, Math.min(16, level))}
-                onChange={(e) =>
-                  setCamera((old) => ({
-                    ...old,
-                    [key]: initialCamera[key] / 2 ** Number(e.target.value)
-                  }))
-                }
-              />
-            </label>
-          );
-        })}
-        <div className="lab-toolbar">
-          <button data-testid="lab-sweep-both" onClick={() => runSweep("both")}>
-            함께 확대했다 돌아오기
-          </button>
-          <button data-testid="lab-sweep-x" onClick={() => runSweep("x")}>
-            가로만 확대했다 돌아오기
-          </button>
-          <button data-testid="lab-sweep-y" onClick={() => runSweep("y")}>
-            시간 방향만 확대했다 돌아오기
-          </button>
-          {sweeping && (
-            <button data-testid="lab-sweep-stop" onClick={stopSweep}>
-              자동 확대 중지
-            </button>
-          )}
-          <label>
-            <input
-              type="checkbox"
-              data-testid="lab-zoom-reverse"
-              checked={reverseWheel}
-              onChange={(e) => setReverseWheel(e.target.checked)}
-            />
-            마우스 휠 확대 방향 뒤집기
-          </label>
-        </div>
-        <small>
-          어느 그림에서든 끌면 두 화면이 함께 움직입니다. 자동 확대는 현재
-          위치에서 확대했다 원래 크기로 돌아와, 표시가 바뀌는 경계를 양방향으로
-          보여줍니다.
-        </small>
-        <details>
-          <summary>마우스로 조작하기</summary>
-          <small>
-            휠은 가로·세로를 함께 바꿉니다. Shift를 누르고 돌리면 시간 방향만,
-            Alt를 누르면 가로만 바뀝니다.
-          </small>
-        </details>
-      </details>
-      <label className="lab-check">
-        <input
-          type="checkbox"
-          data-testid="lab-pin-preview"
-          checked={pinPreview}
-          onChange={(e) => setPinPreview(e.target.checked)}
-        />
-        값을 조절하는 동안 비교 그림을 화면에 고정
-      </label>
-      <div
-        className={`lab-comparison${pinPreview ? ` lab-pinned lab-side-${mobileSide}` : ""}`}
-      >
-        {pinPreview && (
-          <div className="lab-mobile-tabs">
-            <button
-              aria-pressed={mobileSide === "a"}
-              onClick={() => setMobileSide("a")}
-            >
-              기준 A 보기
-            </button>
-            <button
-              aria-pressed={mobileSide === "b"}
-              onClick={() => setMobileSide("b")}
-            >
-              바꾼 B 보기
-            </button>
-            <button onClick={() => setPinPreview(false)}>고정 해제</button>
-          </div>
-        )}
-        <div ref={panel}>
-          <LabScene
-            name="A · 기준 화면"
-            snapshot={snapshot}
-            output={beforeOutput}
-            camera={camera}
-            width={width}
-            active={active}
-            includeUncollected={includeUncollected}
-            config={before.representation}
-            initialHistory={initialHistories.before}
-            historyEpoch={historyEpoch}
-            onHistory={(value) => {
-              histories.current.before = value;
+          <button
+            data-testid="lab-use-b-as-a"
+            disabled={pending}
+            onClick={() => {
+              setBefore(structuredClone(after));
+              resetHistory({
+                before: structuredClone(histories.current.after),
+                after: histories.current.after
+              });
             }}
-            onCamera={setCamera}
-            onSelect={setSelected}
-            reverseWheel={reverseWheel}
-          />
+          >
+            지금 B를 비교 기준 A로 저장
+          </button>
+          <button
+            data-testid="lab-reset-b-to-a"
+            onClick={() => {
+              const value = structuredClone(before);
+              setAfter(value);
+              setComputedSelection(value.layout);
+              resetHistory({
+                before: histories.current.before,
+                after: structuredClone(histories.current.before)
+              });
+            }}
+          >
+            B를 기준 A와 같게
+          </button>
+          <button
+            data-testid="lab-reset-b-defaults"
+            onClick={() => {
+              setAfter(initialCandidate());
+              resetHistory({ before: histories.current.before, after: {} });
+            }}
+          >
+            B 설정 처음으로
+          </button>
         </div>
-        <LabScene
-          name="B · 바꾼 화면"
-          snapshot={snapshot}
-          output={afterOutput}
-          camera={camera}
-          width={width}
-          active={active}
-          includeUncollected={includeUncollected}
-          config={after.representation}
-          initialHistory={initialHistories.after}
-          historyEpoch={historyEpoch}
-          onHistory={(value) => {
-            histories.current.after = value;
-          }}
-          onCamera={setCamera}
-          onSelect={setSelected}
-          reverseWheel={reverseWheel}
-        />
-      </div>
+      </details>
       <p className="lab-meta">
-        비교 그림 크기 {width.toFixed(0)} × 430픽셀{" "}
-        {viewportLocked ? "· 저장할 때의 크기 유지" : "· 현재 화면에 맞춤"}{" "}
+        비교 그림 크기 {width.toFixed(0)} × {height.toFixed(0)}픽셀{" "}
+        {viewportLocked
+          ? "· 저장할 때의 크기 유지"
+          : "· 현재 휴대폰 화면에 맞춤"}
         {viewportLocked && (
           <button onClick={() => setViewportLocked(false)}>
             현재 화면 크기 사용
@@ -500,7 +350,7 @@ export function LayoutLab({
         배치가 달라진 사건 {changed}개 · 시간축에 놓이지 않은 사건{" "}
         {afterOutput.unplaced_event_ids.length}개
       </p>
-      <details className="lab-controls" open data-testid="lab-section-layout">
+      <details className="lab-controls" data-testid="lab-section-layout">
         <summary>B의 사건 배치 방식</summary>
         <label className="lab-control">
           <span>배치 방식</span>
@@ -715,9 +565,9 @@ export function LayoutLab({
           data-testid="lab-focus-event"
           aria-label="자세히 볼 사건"
           value={selected ?? ""}
-          onChange={(e) => focus(e.target.value)}
+          onChange={(e) => setSelected(e.target.value || null)}
         >
-          <option value="">사건을 고르면 그 위치로 이동합니다…</option>
+          <option value="">관찰할 사건을 고르세요…</option>
           {snapshot.events.map((event) => (
             <option key={event.id} value={event.id}>
               {event.childIds.length ? "◇ " : "• "}
@@ -731,10 +581,6 @@ export function LayoutLab({
             <br />
             직접 구성 사건 {selectedEvent.childIds.length}개 · 포함된 사건 모음{" "}
             {selectedEvent.collectionIds.length}개
-            <br />
-            <button onClick={() => focus(selectedEvent.id)}>
-              이 사건이 보이도록 이동
-            </button>
           </p>
         )}
       </details>
@@ -844,6 +690,28 @@ export function LayoutLab({
             </>
           )}
         </p>
+      </details>
+      <details className="lab-controls">
+        <summary>사용법·실제 자료로 바꾸기</summary>
+        <p>
+          지도 안을 쓸면 지도가 움직이고, 설정 영역을 쓸면 페이지가 움직입니다.
+          두 손가락을 오므리면 축소합니다. 같은 위치에서 A와 B를 번갈아
+          확인하세요.
+        </p>
+        <p>
+          ‘묶음 사건’은 여러 구성 사건으로 이루어진 사건입니다. ‘사건 모음’은
+          함께 보고 싶은 사건의 선택 목록이며 같은 사건이 여러 모음에 들어갈 수
+          있습니다.
+        </p>
+        <nav>
+          <a href="/labs/layout?demo=1">연습 자료로 실험하기</a>
+          <a href="/labs/layout?world=01a107fb-4018-7fcb-8390-836a40fa91cc">
+            실제 역사 읽기
+          </a>
+          <a href={`/graph/v5?world=${encodeURIComponent(snapshot.worldId)}`}>
+            실제 읽기 화면
+          </a>
+        </nav>
       </details>
       <footer>
         여기서 바꾸는 것은 연구용 화면입니다. 실제 역사 자료나 공개 중인 배치는

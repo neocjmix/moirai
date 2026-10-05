@@ -16,6 +16,7 @@
 - **W/C 구현 배포:** #323의 create/withdraw/restore, World/Event 선택과 빈 상태가 main/운영에 반영됐다. 당시 근거는 [W/C evidence](../evidence/world-lifecycle/implementation.md)에 보존한다.
 - **R + L #324 배포·검증 완료:** `/labs/layout`에서 snapshot 1회 로드 → 브라우저 shared engine 재계산 → 같은 camera의 A/B 비교. force baseline·deterministic slots, schema별 controls, 표현 threshold/fade/hysteresis/density, local/JSON snapshot preset을 구현했다. 운영 r26 input digest 일치·preset 복원·Collection의 visibility 한정·조절 중 network0/오류0을 확인했다. 근거는 [Lab evidence](../evidence/ip013/layout-lab.md)를 따른다. 현재 사용자 표현/후보 채택 수용 전이다.
 - **Lab 조작성 후속 수정:** 지도 안의 휠·터치가 페이지 스크롤로 전파되는 문제를 고치고, 조절 항목·도움말·오류 안내를 쉬운 한국어로 정리했다. [수정 원인·사용법·검증 범위](../evidence/ip013/layout-lab-korean-interaction.md)를 따른다. 최종 배포 SHA와 운영 검증은 해당 수정 PR 본문과 공개 상태 페이지에서 확인한다.
+- **모바일 전용 Lab:** 이동·확대 버튼과 줌 슬라이더를 제거하고 Atropos의 순수 멀티터치 계산으로 한 손가락 이동·축별 핀치를 연결했다. 휴대폰 크기의 단일 A/B 비교, 화면 높이에 맞는 지도, 기존 저장 파일 호환을 제공한다. [동작·검증](../evidence/ip013/layout-lab-mobile-touch.md)과 해당 수정 PR의 배포 근거를 따른다.
 - **실제 역사 read-only:** World `01a107fb-4018-7fcb-8390-836a40fa91cc`, source/served26, Event147·Relation386·Collection3·membership270. dot의 계속되는 입력과 별개로 실험은 고정 snapshot을 쓴다. 대량 확장·인물별 구성·canonical 수정은 수행하지 않는다.
 - **다음:** 실제 Composite의 X/Y 왕복 표현과 baseline/slot 후보를 사용자가 비교한다. constraint/packing/local relaxation, canonical 설정 승격/발행, Collection 자동 ON/OFF·discovery는 별도 후속 범위다.
 - **A5 부분 구현/나머지 재배치:** HUD·표현 분리·선택 제한 제거는 보존. 전체 S0–S7 자동화 완료는 역사 입력 gate가 아니다. [A5 disposition](IP-011-A5-collection-discovery-plan.md)을 따른다.

@@ -11,14 +11,22 @@ import { layoutGeometry, project, type LabGeometry } from "./geometry";
 import type { LabCamera } from "./preset";
 import type { LabSnapshot } from "./types";
 import { labDisplayTitle, labRelationLabel } from "./copy";
+import {
+  addLabPointer,
+  createLabGesture,
+  moveLabPointer,
+  removeLabPointer,
+  resetLabGesture,
+  viewToCamera
+} from "./gestures";
 
-const HEIGHT = 430;
 export function LabScene({
   name,
   snapshot,
   output,
   camera,
   width,
+  height,
   active,
   includeUncollected,
   config,
@@ -27,13 +35,14 @@ export function LabScene({
   onHistory,
   onCamera,
   onSelect,
-  reverseWheel
+  interactive
 }: {
   name: string;
   snapshot: LabSnapshot;
   output: LayoutOutput;
   camera: LabCamera;
   width: number;
+  height: number;
   active: readonly string[];
   includeUncollected: boolean;
   config: RepresentationConfig;
@@ -42,54 +51,74 @@ export function LabScene({
   onHistory: (history: RepresentationHistory) => void;
   onCamera: (camera: LabCamera) => void;
   onSelect: (id: string) => void;
-  reverseWheel: boolean;
+  interactive: boolean;
 }) {
   const svg = useRef<SVGSVGElement>(null);
+  const gesture = useRef(createLabGesture(camera, { width, height }));
+  const lastPublishedCamera = useRef(camera);
+  const previousSize = useRef({ width, height });
+  const tap = useRef<{
+    pointerId: number;
+    x: number;
+    y: number;
+    eventId: string | null;
+  } | null>(null);
+  useLayoutEffect(() => {
+    if (
+      camera !== lastPublishedCamera.current ||
+      width !== previousSize.current.width ||
+      height !== previousSize.current.height
+    ) {
+      gesture.current = resetLabGesture(gesture.current, camera, {
+        width,
+        height
+      });
+    }
+    lastPublishedCamera.current = camera;
+    previousSize.current = { width, height };
+    if (!interactive) {
+      tap.current = null;
+      for (const id of Object.keys(gesture.current.activePointers).map(
+        Number
+      )) {
+        gesture.current = removeLabPointer(gesture.current, id);
+        if (svg.current?.hasPointerCapture(id))
+          svg.current.releasePointerCapture(id);
+      }
+    }
+  }, [camera, width, height, interactive]);
   useLayoutEffect(() => {
     const element = svg.current;
     if (!element) return;
-    // React delegates wheel listeners as passive. Own the browser default here,
-    // scoped to this map, so zoom cannot also scroll or pinch-zoom the page.
-    const wheel = (event: WheelEvent) => {
-      event.preventDefault();
-      event.stopPropagation();
-      const factor = Math.exp(
-        Math.sign(event.deltaY) * (reverseWheel ? -0.12 : 0.12)
-      );
-      onCamera({
-        ...camera,
-        spanX: camera.spanX * (event.shiftKey ? 1 : factor),
-        spanY: camera.spanY * (event.altKey ? 1 : factor)
-      });
-    };
-    // touch-action on the HTML viewport owns touch gestures. This scoped
-    // non-passive fallback also blocks Safari scroll chaining for map touches.
-    const touchMove = (event: TouchEvent) => {
+    // Mobile navigation owns map touches. Keep browser page gestures outside
+    // the map; do not expose wheel or button zoom as a second navigation path.
+    const ownInput = (event: Event) => {
       if (event.cancelable) event.preventDefault();
       event.stopPropagation();
     };
-    element.addEventListener("wheel", wheel, { passive: false });
-    element.addEventListener("touchmove", touchMove, { passive: false });
+    element.addEventListener("wheel", ownInput, { passive: false });
+    element.addEventListener("touchmove", ownInput, { passive: false });
     return () => {
-      element.removeEventListener("wheel", wheel);
-      element.removeEventListener("touchmove", touchMove);
+      element.removeEventListener("wheel", ownInput);
+      element.removeEventListener("touchmove", ownInput);
     };
-  }, [camera, onCamera, reverseWheel]);
+  }, []);
+  const endPointer = (id: number) => {
+    if (tap.current?.pointerId === id) tap.current = null;
+    gesture.current = removeLabPointer(gesture.current, id);
+    if (svg.current?.hasPointerCapture(id))
+      svg.current.releasePointerCapture(id);
+  };
+  const pointerPoint = (x: number, y: number) => {
+    const inverse = svg.current?.getScreenCTM()?.inverse();
+    return inverse ? new DOMPoint(x, y).matrixTransform(inverse) : null;
+  };
   const history = useRef(initialHistory);
   const epoch = useRef(historyEpoch);
   if (epoch.current !== historyEpoch) {
     history.current = initialHistory;
     epoch.current = historyEpoch;
   }
-  const drag = useRef<{
-    x: number;
-    y: number;
-    startX: number;
-    startY: number;
-    moved: boolean;
-    pointerId: number;
-    eventId: string | null;
-  } | null>(null);
   const geometry = useMemo(
     () => layoutGeometry(snapshot, output),
     [snapshot, output]
@@ -99,7 +128,7 @@ export function LabScene({
     [geometry]
   );
   const xy = (point: { x: number; y: number }) =>
-    project(point, camera, width, HEIGHT);
+    project(point, camera, width, height);
   const screenBounds = (item: LabGeometry) => {
     // The region layout box includes layout padding. Representation ownership
     // follows the complete authored hull support, including offscreen children.
@@ -146,9 +175,9 @@ export function LabScene({
           ) *
             Math.max(
               0,
-              Math.min(HEIGHT, bounds.maxY) - Math.max(0, bounds.minY)
+              Math.min(height, bounds.maxY) - Math.max(0, bounds.minY)
             )) /
-          (width * HEIGHT);
+          (width * height);
         return [
           {
             id: event.id,
@@ -162,7 +191,7 @@ export function LabScene({
               bounds.maxX >= 0 &&
               bounds.minX <= width &&
               bounds.maxY >= 0 &&
-              bounds.minY <= HEIGHT,
+              bounds.minY <= height,
             visible: event.collectionIds.length
               ? event.collectionIds.some((id) => active.includes(id))
               : includeUncollected
@@ -215,7 +244,7 @@ export function LabScene({
       box.left >= 0 &&
       box.top >= 0 &&
       box.right <= width &&
-      box.bottom <= HEIGHT &&
+      box.bottom <= height &&
       !occupied.some(
         (b) =>
           box.left < b.right &&
@@ -266,76 +295,96 @@ export function LabScene({
           ref={svg}
           role="img"
           aria-label={`${name} 지도`}
-          viewBox={`0 0 ${width} ${HEIGHT}`}
+          viewBox={`0 0 ${width} ${height}`}
           width="100%"
-          height={HEIGHT}
+          height={height}
           style={{
             touchAction: "none",
+            height: "100%",
             display: "block",
             background: "#fbfaf5"
           }}
-          onPointerDown={(e) => {
-            if (drag.current) return;
-            const eventId =
-              (e.target as Element)
-                .closest("[data-event-id]")
-                ?.getAttribute("data-event-id") ?? null;
-            drag.current = {
-              x: e.clientX,
-              y: e.clientY,
-              startX: e.clientX,
-              startY: e.clientY,
-              moved: false,
-              pointerId: e.pointerId,
-              eventId
-            };
-            e.currentTarget.setPointerCapture(e.pointerId);
+          onPointerDown={(event) => {
+            if (
+              !interactive ||
+              (event.pointerType === "mouse" && event.button !== 0)
+            )
+              return;
+            event.preventDefault();
+            const point = pointerPoint(event.clientX, event.clientY);
+            if (!point) return;
+            const old = gesture.current;
+            const next = addLabPointer(old, event.pointerId, point);
+            if (next === old) {
+              tap.current = null;
+              return;
+            }
+            gesture.current = next;
+            if (Object.keys(next.activePointers).length === 1) {
+              tap.current = {
+                pointerId: event.pointerId,
+                x: event.clientX,
+                y: event.clientY,
+                eventId:
+                  (event.target as Element)
+                    .closest("[data-event-id]")
+                    ?.getAttribute("data-event-id") ?? null
+              };
+            } else tap.current = null;
+            event.currentTarget.setPointerCapture(event.pointerId);
           }}
-          onPointerMove={(e) => {
-            const old = drag.current;
-            if (!old || old.pointerId !== e.pointerId) return;
-            const dx = e.clientX - old.x,
-              dy = e.clientY - old.y;
-            drag.current = {
-              ...old,
-              x: e.clientX,
-              y: e.clientY,
-              moved:
-                old.moved ||
-                Math.hypot(e.clientX - old.startX, e.clientY - old.startY) > 2
-            };
-            const inverse = e.currentTarget.getScreenCTM()?.inverse();
-            if (!inverse) return;
-            const origin = new DOMPoint(0, 0).matrixTransform(inverse);
-            const delta = new DOMPoint(dx, dy).matrixTransform(inverse);
-            onCamera({
-              ...camera,
-              x: camera.x - ((delta.x - origin.x) * camera.spanX) / width,
-              y: camera.y - ((delta.y - origin.y) * camera.spanY) / HEIGHT
-            });
+          onPointerMove={(event) => {
+            if (
+              !interactive ||
+              !gesture.current.activePointers[event.pointerId]
+            )
+              return;
+            event.preventDefault();
+            if (
+              tap.current?.pointerId === event.pointerId &&
+              Math.hypot(
+                event.clientX - tap.current.x,
+                event.clientY - tap.current.y
+              ) > 8
+            )
+              tap.current = null;
+            const point = pointerPoint(event.clientX, event.clientY);
+            if (!point) return;
+            // Refs retain each move synchronously, including a burst and final
+            // release in one React batch. Removing a finger rebases the survivor.
+            gesture.current = moveLabPointer(
+              gesture.current,
+              event.pointerId,
+              point
+            );
+            const next = viewToCamera(gesture.current.view, { width, height });
+            lastPublishedCamera.current = next;
+            onCamera(next);
           }}
-          onPointerUp={(e) => {
-            const current = drag.current;
-            if (!current || current.pointerId !== e.pointerId) return;
-            if (!current.moved && current.eventId) onSelect(current.eventId);
-            drag.current = null;
-            if (e.currentTarget.hasPointerCapture(e.pointerId))
-              e.currentTarget.releasePointerCapture(e.pointerId);
+          onPointerUp={(event) => {
+            const candidate = tap.current;
+            if (
+              candidate?.pointerId === event.pointerId &&
+              candidate.eventId &&
+              Object.keys(gesture.current.activePointers).length === 1 &&
+              Math.hypot(
+                event.clientX - candidate.x,
+                event.clientY - candidate.y
+              ) <= 8
+            )
+              onSelect(candidate.eventId);
+            endPointer(event.pointerId);
           }}
-          onPointerCancel={(e) => {
-            if (drag.current?.pointerId === e.pointerId) drag.current = null;
-          }}
-          onLostPointerCapture={(e) => {
-            if (drag.current?.pointerId === e.pointerId) drag.current = null;
-          }}
+          onPointerCancel={(event) => endPointer(event.pointerId)}
+          onLostPointerCapture={(event) => endPointer(event.pointerId)}
         >
           <g pointerEvents="none">
             {Array.from({ length: 7 }, (_, i) => {
-              const y = 25 + (i * (HEIGHT - 50)) / 6;
+              const y = 25 + (i * (height - 50)) / 6;
               // Shared layout builds its chronology board with startYear=endYear=0;
               // its year coordinate is therefore World Y / CHRONOLOGY_YEAR_SPACING.
               const scalar =
-                (camera.y + (y / HEIGHT - 0.5) * camera.spanY) / 140 +
+                (camera.y + (y / height - 0.5) * camera.spanY) / 140 +
                 (snapshot.input.board.axis.startYear +
                   snapshot.input.board.axis.endYear) /
                   2;
@@ -480,10 +529,7 @@ export function LabScene({
           ))}
         </svg>
       </div>
-      <small>
-        세로축은 시간, 가로축은 사건의 배치입니다. 겹치는 이름은 일부 숨깁니다.
-        지도 안을 끌면 지도가, 지도 밖을 쓸면 페이지가 움직입니다.
-      </small>
+      <small>세로축은 시간 · 가로축은 배치 · 겹치는 이름은 일부 생략</small>
     </section>
   );
 }

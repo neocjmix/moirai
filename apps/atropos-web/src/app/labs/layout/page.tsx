@@ -4,7 +4,7 @@ import { loadLayoutLabSnapshot } from "../../../labs/layout/load-snapshot";
 import { assertPublicId } from "../../../lib/publication";
 
 export const dynamic = "force-dynamic";
-export const metadata = { title: "Moirai · Composite & Layout Lab" };
+export const metadata = { title: "모이라이 · 사건 표현·배치 실험실" };
 
 /** Independent research entry. No GraphShell, tile client, worker, or runtime
  * production layout flag is involved. The client receives one immutable input. */
@@ -45,17 +45,17 @@ export default async function LayoutLabPage({
       error.message === "lab_snapshot_revision_changed";
     return (
       <main style={{ padding: 24, fontFamily: "system-ui", maxWidth: 600 }}>
-        <h1>Layout Lab snapshot</h1>
+        <h1>실험에 쓸 사건 자료를 열 수 없습니다</h1>
         <p>
           {changed
-            ? "요청한 revision과 현재 공개 revision이 다릅니다. 저장한 JSON snapshot을 synthetic Lab에서 import하면 당시 실험을 복원할 수 있습니다."
-            : "이 World의 완전한 공개 snapshot을 읽을 수 없습니다. ID·발행 상태를 확인하거나 synthetic fixture를 사용하세요."}
+            ? "요청한 자료 버전과 지금 공개된 버전이 다릅니다. 전에 저장한 실험 파일이 있다면 연습 자료 화면에서 그 파일을 열어 당시 조건을 복원할 수 있습니다."
+            : "요청한 사건 세계의 공개 자료를 모두 읽지 못했습니다. 주소를 확인하거나 잠시 뒤 다시 열어 주세요. 연습 자료에서는 바로 실험할 수 있습니다."}
         </p>
-        <a href="/labs/layout?demo=1">Synthetic Lab / preset import</a>
+        <a href="/labs/layout?demo=1">연습 자료 열기 · 저장한 실험 다시 열기</a>
         {changed && (
           <p>
             <a href={`/labs/layout?world=${encodeURIComponent(query.world)}`}>
-              현재 공개 revision으로 새 실험 열기
+              지금 공개된 자료로 새 실험 시작하기
             </a>
           </p>
         )}

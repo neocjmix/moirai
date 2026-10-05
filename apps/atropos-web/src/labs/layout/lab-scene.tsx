@@ -10,6 +10,7 @@ import {
 import { layoutGeometry, project, type LabGeometry } from "./geometry";
 import type { LabCamera } from "./preset";
 import type { LabSnapshot } from "./types";
+import { labDisplayTitle, labRelationLabel } from "./copy";
 
 const HEIGHT = 430;
 export function LabScene({
@@ -43,6 +44,37 @@ export function LabScene({
   onSelect: (id: string) => void;
   reverseWheel: boolean;
 }) {
+  const svg = useRef<SVGSVGElement>(null);
+  useLayoutEffect(() => {
+    const element = svg.current;
+    if (!element) return;
+    // React delegates wheel listeners as passive. Own the browser default here,
+    // scoped to this map, so zoom cannot also scroll or pinch-zoom the page.
+    const wheel = (event: WheelEvent) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const factor = Math.exp(
+        Math.sign(event.deltaY) * (reverseWheel ? -0.12 : 0.12)
+      );
+      onCamera({
+        ...camera,
+        spanX: camera.spanX * (event.shiftKey ? 1 : factor),
+        spanY: camera.spanY * (event.altKey ? 1 : factor)
+      });
+    };
+    // touch-action on the HTML viewport owns touch gestures. This scoped
+    // non-passive fallback also blocks Safari scroll chaining for map touches.
+    const touchMove = (event: TouchEvent) => {
+      if (event.cancelable) event.preventDefault();
+      event.stopPropagation();
+    };
+    element.addEventListener("wheel", wheel, { passive: false });
+    element.addEventListener("touchmove", touchMove, { passive: false });
+    return () => {
+      element.removeEventListener("wheel", wheel);
+      element.removeEventListener("touchmove", touchMove);
+    };
+  }, [camera, onCamera, reverseWheel]);
   const history = useRef(initialHistory);
   const epoch = useRef(historyEpoch);
   if (epoch.current !== historyEpoch) {
@@ -166,13 +198,14 @@ export function LabScene({
     bottom: number;
   }[] = [];
   for (const event of snapshot.events) {
+    const title = labDisplayTitle(snapshot.worldId, event.id, event.title);
     const item = projected.get(event.id),
       state = states.get(event.id);
     const point = item?.center ?? { x: 0, y: 0 };
     const box = {
       left: point.x + 8,
       top: point.y - 18,
-      right: point.x + 8 + Math.min(200, [...event.title].length * 10),
+      right: point.x + 8 + Math.min(200, [...title].length * 10),
       bottom: point.y - 3
     };
     const admitted =
@@ -195,7 +228,7 @@ export function LabScene({
     // when density, collisions, or visibility suppress an existing label.
     labels.push({
       id: event.id,
-      title: event.title,
+      title,
       x: box.left,
       y: box.bottom,
       opacity: admitted ? state.labelOpacity : 0
@@ -216,237 +249,240 @@ export function LabScene({
     {} as Record<string, number>
   );
   return (
-    <section className="lab-pane" aria-label={`${name} comparison`}>
+    <section className="lab-pane" aria-label={`${name} 비교`}>
       <div className="lab-pane-heading">
         <strong>{name}</strong>
         <span>
           {Object.entries(counts)
-            .map(([key, value]) => `${key} ${value}`)
+            .map(
+              ([key, value]) =>
+                `${({ hull: "영역", "ordinary-point": "보통 점", "small-point": "작은 점", hidden: "숨김" } as Record<string, string>)[key] ?? key} ${value}`
+            )
             .join(" · ")}
         </span>
       </div>
-      <svg
-        role="img"
-        aria-label={`${name} research geometry`}
-        viewBox={`0 0 ${width} ${HEIGHT}`}
-        width="100%"
-        height={HEIGHT}
-        style={{ touchAction: "none", display: "block", background: "#fbfaf5" }}
-        onPointerDown={(e) => {
-          if (drag.current) return;
-          const eventId =
-            (e.target as Element)
-              .closest("[data-event-id]")
-              ?.getAttribute("data-event-id") ?? null;
-          drag.current = {
-            x: e.clientX,
-            y: e.clientY,
-            startX: e.clientX,
-            startY: e.clientY,
-            moved: false,
-            pointerId: e.pointerId,
-            eventId
-          };
-          e.currentTarget.setPointerCapture(e.pointerId);
-        }}
-        onPointerMove={(e) => {
-          const old = drag.current;
-          if (!old || old.pointerId !== e.pointerId) return;
-          const dx = e.clientX - old.x,
-            dy = e.clientY - old.y;
-          drag.current = {
-            ...old,
-            x: e.clientX,
-            y: e.clientY,
-            moved:
-              old.moved ||
-              Math.hypot(e.clientX - old.startX, e.clientY - old.startY) > 2
-          };
-          const inverse = e.currentTarget.getScreenCTM()?.inverse();
-          if (!inverse) return;
-          const origin = new DOMPoint(0, 0).matrixTransform(inverse);
-          const delta = new DOMPoint(dx, dy).matrixTransform(inverse);
-          onCamera({
-            ...camera,
-            x: camera.x - ((delta.x - origin.x) * camera.spanX) / width,
-            y: camera.y - ((delta.y - origin.y) * camera.spanY) / HEIGHT
-          });
-        }}
-        onPointerUp={(e) => {
-          const current = drag.current;
-          if (!current || current.pointerId !== e.pointerId) return;
-          if (!current.moved && current.eventId) onSelect(current.eventId);
-          drag.current = null;
-          if (e.currentTarget.hasPointerCapture(e.pointerId))
-            e.currentTarget.releasePointerCapture(e.pointerId);
-        }}
-        onPointerCancel={(e) => {
-          if (drag.current?.pointerId === e.pointerId) drag.current = null;
-        }}
-        onLostPointerCapture={(e) => {
-          if (drag.current?.pointerId === e.pointerId) drag.current = null;
-        }}
-        onWheel={(e) => {
-          const factor = Math.exp(
-            Math.sign(e.deltaY) * (reverseWheel ? -0.12 : 0.12)
-          );
-          onCamera({
-            ...camera,
-            spanX: camera.spanX * (e.shiftKey ? 1 : factor),
-            spanY: camera.spanY * (e.altKey ? 1 : factor)
-          });
-        }}
-      >
-        <g pointerEvents="none">
-          {Array.from({ length: 7 }, (_, i) => {
-            const y = 25 + (i * (HEIGHT - 50)) / 6;
-            // Shared layout builds its chronology board with startYear=endYear=0;
-            // its year coordinate is therefore World Y / CHRONOLOGY_YEAR_SPACING.
-            const scalar =
-              (camera.y + (y / HEIGHT - 0.5) * camera.spanY) / 140 +
-              (snapshot.input.board.axis.startYear +
-                snapshot.input.board.axis.endYear) /
-                2;
-            return (
-              <g key={i}>
-                <line
-                  x1={0}
-                  x2={width}
-                  y1={y}
-                  y2={y}
-                  stroke="#d8ddd4"
-                  strokeDasharray="3 5"
-                />
-                <text x={6} y={y - 4} fill="#68786c" fontSize={10}>
-                  {scalar.toFixed(
-                    Math.max(
-                      1,
-                      Math.min(
-                        8,
-                        Math.ceil(-Math.log10(camera.spanY / 140 / 6)) + 1
-                      )
-                    )
-                  )}
-                </text>
-              </g>
-            );
-          })}
-        </g>
-        {snapshot.relations
-          .filter((r) => r.type !== "contains")
-          .map((relation) => {
-            const from = projected.get(relation.sourceId),
-              to = projected.get(relation.targetId);
-            if (!from || !to) return null;
-            const a = from.center,
-              b = to.center;
-            return (
-              <line
-                key={relation.id}
-                data-relation-id={relation.id}
-                x1={a.x}
-                y1={a.y}
-                x2={b.x}
-                y2={b.y}
-                pointerEvents="none"
-                opacity={relationStates.get(relation.id) ?? 0}
-                stroke="#64778a"
-                strokeWidth={1.2}
-                style={{ transition: `opacity ${config.fadeDurationMs}ms` }}
-              >
-                <title>{relation.type}</title>
-              </line>
-            );
-          })}
-        {[...geometry]
-          .sort(
-            (a, b) => Number(b.kind === "region") - Number(a.kind === "region")
-          )
-          .map((item) => {
-            const state = states.get(item.id);
-            if (!state) return null;
-            const point = projected.get(item.id)!.center;
-            const pointOpacity =
-              state.ordinaryPointOpacity + state.smallPointOpacity;
-            return (
-              <g
-                key={item.id}
-                data-event-id={item.id}
-                data-representation={state.state}
-                data-density-rank={state.densityRank ?? "offscreen"}
-                pointerEvents={state.opacity > 0.01 ? undefined : "none"}
-                aria-hidden={state.opacity <= 0.01 || undefined}
-              >
-                {item.kind === "region" && (
-                  <path
-                    d={path(item)}
-                    fill="#c59a48"
-                    fillOpacity={0.12}
-                    stroke="#aa8243"
-                    strokeWidth={1.8}
-                    opacity={state.hullOpacity}
-                    pointerEvents={
-                      state.hullOpacity > 0.01 ? "visiblePainted" : "none"
-                    }
-                    style={{ transition: `opacity ${config.fadeDurationMs}ms` }}
-                  />
-                )}
-                {item.kind === "segment" && (
+      <div className="lab-map-viewport">
+        <svg
+          ref={svg}
+          role="img"
+          aria-label={`${name} 지도`}
+          viewBox={`0 0 ${width} ${HEIGHT}`}
+          width="100%"
+          height={HEIGHT}
+          style={{
+            touchAction: "none",
+            display: "block",
+            background: "#fbfaf5"
+          }}
+          onPointerDown={(e) => {
+            if (drag.current) return;
+            const eventId =
+              (e.target as Element)
+                .closest("[data-event-id]")
+                ?.getAttribute("data-event-id") ?? null;
+            drag.current = {
+              x: e.clientX,
+              y: e.clientY,
+              startX: e.clientX,
+              startY: e.clientY,
+              moved: false,
+              pointerId: e.pointerId,
+              eventId
+            };
+            e.currentTarget.setPointerCapture(e.pointerId);
+          }}
+          onPointerMove={(e) => {
+            const old = drag.current;
+            if (!old || old.pointerId !== e.pointerId) return;
+            const dx = e.clientX - old.x,
+              dy = e.clientY - old.y;
+            drag.current = {
+              ...old,
+              x: e.clientX,
+              y: e.clientY,
+              moved:
+                old.moved ||
+                Math.hypot(e.clientX - old.startX, e.clientY - old.startY) > 2
+            };
+            const inverse = e.currentTarget.getScreenCTM()?.inverse();
+            if (!inverse) return;
+            const origin = new DOMPoint(0, 0).matrixTransform(inverse);
+            const delta = new DOMPoint(dx, dy).matrixTransform(inverse);
+            onCamera({
+              ...camera,
+              x: camera.x - ((delta.x - origin.x) * camera.spanX) / width,
+              y: camera.y - ((delta.y - origin.y) * camera.spanY) / HEIGHT
+            });
+          }}
+          onPointerUp={(e) => {
+            const current = drag.current;
+            if (!current || current.pointerId !== e.pointerId) return;
+            if (!current.moved && current.eventId) onSelect(current.eventId);
+            drag.current = null;
+            if (e.currentTarget.hasPointerCapture(e.pointerId))
+              e.currentTarget.releasePointerCapture(e.pointerId);
+          }}
+          onPointerCancel={(e) => {
+            if (drag.current?.pointerId === e.pointerId) drag.current = null;
+          }}
+          onLostPointerCapture={(e) => {
+            if (drag.current?.pointerId === e.pointerId) drag.current = null;
+          }}
+        >
+          <g pointerEvents="none">
+            {Array.from({ length: 7 }, (_, i) => {
+              const y = 25 + (i * (HEIGHT - 50)) / 6;
+              // Shared layout builds its chronology board with startYear=endYear=0;
+              // its year coordinate is therefore World Y / CHRONOLOGY_YEAR_SPACING.
+              const scalar =
+                (camera.y + (y / HEIGHT - 0.5) * camera.spanY) / 140 +
+                (snapshot.input.board.axis.startYear +
+                  snapshot.input.board.axis.endYear) /
+                  2;
+              return (
+                <g key={i}>
                   <line
-                    x1={xy(item.ends[0]!).x}
-                    y1={xy(item.ends[0]!).y}
-                    x2={xy(item.ends[1]!).x}
-                    y2={xy(item.ends[1]!).y}
-                    stroke="#49677e"
-                    opacity={state.opacity}
-                    pointerEvents={
-                      state.opacity > 0.01 ? "visiblePainted" : "none"
-                    }
+                    x1={0}
+                    x2={width}
+                    y1={y}
+                    y2={y}
+                    stroke="#d8ddd4"
+                    strokeDasharray="3 5"
                   />
-                )}
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={6 * state.radiusScale}
-                  fill={item.kind === "region" ? "#aa8243" : "#324b5c"}
-                  opacity={pointOpacity}
+                  <text x={6} y={y - 4} fill="#68786c" fontSize={10}>
+                    {scalar.toFixed(
+                      Math.max(
+                        1,
+                        Math.min(
+                          8,
+                          Math.ceil(-Math.log10(camera.spanY / 140 / 6)) + 1
+                        )
+                      )
+                    )}
+                  </text>
+                </g>
+              );
+            })}
+          </g>
+          {snapshot.relations
+            .filter((r) => r.type !== "contains")
+            .map((relation) => {
+              const from = projected.get(relation.sourceId),
+                to = projected.get(relation.targetId);
+              if (!from || !to) return null;
+              const a = from.center,
+                b = to.center;
+              return (
+                <line
+                  key={relation.id}
+                  data-relation-id={relation.id}
+                  x1={a.x}
+                  y1={a.y}
+                  x2={b.x}
+                  y2={b.y}
                   pointerEvents="none"
-                  style={{
-                    transition: `opacity ${config.fadeDurationMs}ms, r ${config.fadeDurationMs}ms`
-                  }}
-                />
-                <circle
-                  cx={point.x}
-                  cy={point.y}
-                  r={11}
-                  fill="transparent"
-                  pointerEvents={pointOpacity > 0.01 ? "all" : "none"}
-                />
-              </g>
-            );
-          })}
-        {labels.map((label) => (
-          <text
-            key={label.id}
-            data-event-id={label.id}
-            x={label.x}
-            y={label.y}
-            fill="#263d36"
-            fontSize={12}
-            opacity={label.opacity}
-            aria-hidden={label.opacity === 0 || undefined}
-            pointerEvents={label.opacity > 0.01 ? "visiblePainted" : "none"}
-            style={{ transition: `opacity ${config.labelFadeDurationMs}ms` }}
-          >
-            {label.title.length > 22
-              ? `${label.title.slice(0, 22)}…`
-              : label.title}
-          </text>
-        ))}
-      </svg>
+                  opacity={relationStates.get(relation.id) ?? 0}
+                  stroke="#64778a"
+                  strokeWidth={1.2}
+                  style={{ transition: `opacity ${config.fadeDurationMs}ms` }}
+                >
+                  <title>{labRelationLabel(relation.type)}</title>
+                </line>
+              );
+            })}
+          {[...geometry]
+            .sort(
+              (a, b) =>
+                Number(b.kind === "region") - Number(a.kind === "region")
+            )
+            .map((item) => {
+              const state = states.get(item.id);
+              if (!state) return null;
+              const point = projected.get(item.id)!.center;
+              const pointOpacity =
+                state.ordinaryPointOpacity + state.smallPointOpacity;
+              return (
+                <g
+                  key={item.id}
+                  data-event-id={item.id}
+                  data-representation={state.state}
+                  data-density-rank={state.densityRank ?? "offscreen"}
+                  pointerEvents={state.opacity > 0.01 ? undefined : "none"}
+                  aria-hidden={state.opacity <= 0.01 || undefined}
+                >
+                  {item.kind === "region" && (
+                    <path
+                      d={path(item)}
+                      fill="#c59a48"
+                      fillOpacity={0.12}
+                      stroke="#aa8243"
+                      strokeWidth={1.8}
+                      opacity={state.hullOpacity}
+                      pointerEvents={
+                        state.hullOpacity > 0.01 ? "visiblePainted" : "none"
+                      }
+                      style={{
+                        transition: `opacity ${config.fadeDurationMs}ms`
+                      }}
+                    />
+                  )}
+                  {item.kind === "segment" && (
+                    <line
+                      x1={xy(item.ends[0]!).x}
+                      y1={xy(item.ends[0]!).y}
+                      x2={xy(item.ends[1]!).x}
+                      y2={xy(item.ends[1]!).y}
+                      stroke="#49677e"
+                      opacity={state.opacity}
+                      pointerEvents={
+                        state.opacity > 0.01 ? "visiblePainted" : "none"
+                      }
+                    />
+                  )}
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={6 * state.radiusScale}
+                    fill={item.kind === "region" ? "#aa8243" : "#324b5c"}
+                    opacity={pointOpacity}
+                    pointerEvents="none"
+                    style={{
+                      transition: `opacity ${config.fadeDurationMs}ms, r ${config.fadeDurationMs}ms`
+                    }}
+                  />
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r={11}
+                    fill="transparent"
+                    pointerEvents={pointOpacity > 0.01 ? "all" : "none"}
+                  />
+                </g>
+              );
+            })}
+          {labels.map((label) => (
+            <text
+              key={label.id}
+              data-event-id={label.id}
+              x={label.x}
+              y={label.y}
+              fill="#263d36"
+              fontSize={12}
+              opacity={label.opacity}
+              aria-hidden={label.opacity === 0 || undefined}
+              pointerEvents={label.opacity > 0.01 ? "visiblePainted" : "none"}
+              style={{ transition: `opacity ${config.labelFadeDurationMs}ms` }}
+            >
+              {label.title.length > 22
+                ? `${label.title.slice(0, 22)}…`
+                : label.title}
+            </text>
+          ))}
+        </svg>
+      </div>
       <small>
-        Y: temporal display scalar ×140 (approximate) · X: layout units ·
-        labels: local collision
+        세로축은 시간, 가로축은 사건의 배치입니다. 겹치는 이름은 일부 숨깁니다.
+        지도 안을 끌면 지도가, 지도 밖을 쓸면 페이지가 움직입니다.
       </small>
     </section>
   );

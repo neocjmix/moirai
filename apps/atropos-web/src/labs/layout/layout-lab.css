@@ -2,18 +2,18 @@
   color: #233c34;
   background: #f3f2eb;
   min-height: 100dvh;
-  padding: 20px;
+  padding: 12px;
   font:
     14px/1.5 system-ui,
     sans-serif;
-  max-width: 1600px;
+  max-width: 520px;
   margin: 0 auto;
 }
 .layout-lab * {
   box-sizing: border-box;
 }
 .layout-lab h1 {
-  font-size: clamp(24px, 4vw, 38px);
+  font-size: 24px;
   line-height: 1.1;
   margin: 4px 0 12px;
   letter-spacing: -1px;
@@ -30,7 +30,7 @@
   border: 1px solid #c5cdbf;
   border-radius: 5px;
   padding: 7px 10px;
-  min-height: 36px;
+  min-height: 44px;
 }
 .layout-lab button {
   cursor: pointer;
@@ -120,10 +120,33 @@
   display: block;
   margin: 8px 0;
 }
+/* One phone-sized canvas, with the same gesture space for A and B. */
 .lab-comparison {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  gap: 12px;
+  position: sticky;
+  top: 0;
+  z-index: 5;
+  background: #f3f2eb;
+  box-shadow: 0 4px 8px #233c3420;
+}
+.lab-side-a [data-lab-side="b"],
+.lab-side-b [data-lab-side="a"] {
+  display: none;
+}
+.lab-mobile-tabs {
+  display: flex;
+  gap: 8px;
+  padding: 6px 0;
+}
+.lab-mobile-tabs button {
+  flex: 1;
+}
+.lab-mobile-tabs button[aria-pressed="true"] {
+  background: #d8e1ce;
+  font-weight: 650;
+}
+.lab-gesture-help {
+  padding: 6px 8px;
+  font-size: 12px;
 }
 .lab-pane {
   border: 1px solid #cbd3c5;
@@ -133,11 +156,12 @@
   background: #fbfaf5;
 }
 .lab-map-viewport {
+  height: clamp(240px, 44dvh, 430px);
   touch-action: none;
   overscroll-behavior: none;
 }
 .lab-pane-heading {
-  min-height: 58px;
+  min-height: 42px;
   padding: 8px 10px;
   background: #e7ebdf;
   display: flex;
@@ -175,44 +199,24 @@
   overflow-wrap: anywhere;
   font-size: 11px;
 }
-@media (max-width: 740px) {
-  .layout-lab {
-    padding: 12px;
-  }
+.lab-control > span {
+  flex-basis: 100%;
+}
+.lab-controls select {
+  width: 100%;
+}
+@media (max-height: 600px) {
+  /* A short/rotated phone must still be able to reach its settings. */
   .lab-comparison {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .lab-control > span {
-    flex-basis: 100%;
-  }
-  .lab-controls select {
-    width: 100%;
+    position: static;
   }
 }
-.lab-mobile-tabs {
-  display: none;
-}
-@media (max-width: 740px) {
-  .lab-pinned {
-    position: sticky;
-    top: 0;
-    z-index: 5;
-    background: #f3f2eb;
-    gap: 0;
-    box-shadow: 0 4px 8px #233c3420;
-  }
-  .lab-pinned .lab-mobile-tabs {
-    display: flex;
-    gap: 8px;
-    padding: 6px 0;
-  }
-  .lab-pinned.lab-side-a > .lab-pane {
-    display: none;
-  }
-  .lab-pinned.lab-side-b > div:not(.lab-mobile-tabs) {
-    display: none;
-  }
-  .lab-mobile-tabs button[aria-pressed="true"] {
-    background: #d8e1ce;
-  }
+
+.layout-lab input,
+.layout-lab select,
+.layout-lab textarea,
+.lab-controls summary,
+.lab-controls button {
+  scroll-margin-top: calc(clamp(240px, 44dvh, 430px) + 175px);
+  scroll-margin-bottom: 20px;
 }

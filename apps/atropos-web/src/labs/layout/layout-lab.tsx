@@ -25,6 +25,12 @@ import {
 import { fitCamera, layoutGeometry } from "./geometry";
 import { LabScene } from "./lab-scene";
 import type { LabSnapshot } from "./types";
+import {
+  LAYOUT_COPY,
+  REPRESENTATION_COPY,
+  labDisplayTitle,
+  labRestoreErrorMessage
+} from "./copy";
 import "./layout-lab.css";
 
 const STORAGE = "moirai-layout-lab/preset/1";
@@ -79,7 +85,7 @@ export function LayoutLab({
   const [includeUncollected, setIncludeUncollected] = useState(true);
   const [selected, setSelected] = useState<string | null>(null);
   const [message, setMessage] = useState(
-    "공개 snapshot이 메모리에 고정됐습니다. 설정 변경은 로컬 계산입니다."
+    "같은 사건 자료를 고정해 두었습니다. 값을 바꾸면 이 기기에서 새 모습을 계산합니다."
   );
   const [text, setText] = useState("");
   const [width, setWidth] = useState(360);
@@ -113,6 +119,9 @@ export function LayoutLab({
     []
   );
   const algorithm = getLayoutAlgorithm(after.layout.algorithm);
+  const algorithmCopy = LAYOUT_COPY[algorithm.id]!;
+  const displayTitle = (id: string, title: string) =>
+    labDisplayTitle(snapshot.worldId, id, title);
   const pending = computedSelection !== after.layout;
   const zoom = (factor: number, axis: "x" | "y" | "both") =>
     setCamera((old) => ({
@@ -190,12 +199,10 @@ export function LayoutLab({
       setSelected(null);
       resetHistory(saved.history);
       setMessage(
-        `복원 완료: ${saved.worldId} revision ${saved.revision} · snapshot / camera / A·B / hysteresis`
+        `저장한 실험을 다시 열었습니다. 자료 버전 ${saved.revision}의 사건·화면 위치·A/B 설정·전환 기록을 복원했습니다.`
       );
     } catch (error) {
-      setMessage(
-        error instanceof Error ? error.message : "설정을 복원할 수 없습니다."
-      );
+      setMessage(labRestoreErrorMessage(error));
     }
   };
   const chooseAlgorithm = (id: string) => {
@@ -217,7 +224,10 @@ export function LayoutLab({
     setSelected(id);
     const item = geometry.find((entry) => entry.id === id);
     if (item) setCamera(fitCamera([item]));
-    else setMessage("이 Event는 선택한 시간축에 미배치 상태입니다.");
+    else
+      setMessage(
+        "이 사건은 현재 선택한 시간축에 놓이지 않아 지도에서 위치를 보여줄 수 없습니다."
+      );
   };
   const changed = afterOutput.shapes.filter(
     (shape, i) =>
@@ -234,30 +244,35 @@ export function LayoutLab({
     link.download = `moirai-layout-${snapshot.worldId}-r${snapshot.sourceRevision}.json`;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1000);
-    setMessage("Preset JSON과 immutable snapshot을 내보냈습니다.");
+    setMessage(
+      "실험 설정과 사건 자료를 파일로 내보냈습니다. 같은 파일로 나중에 다시 비교할 수 있습니다."
+    );
   };
   return (
     <main className="layout-lab">
       <header>
-        <p className="lab-eyebrow">MOIRAI · RESEARCH</p>
-        <h1>Composite & Layout Lab</h1>
+        <p className="lab-eyebrow">모이라이 · 연구용</p>
+        <h1>사건 표현·배치 실험실</h1>
         <p>
-          {snapshot.worldTitle} · source {snapshot.sourceRevision} / served{" "}
-          {snapshot.servedRevision} · {snapshot.events.length} Events
+          {displayTitle(snapshot.worldId, snapshot.worldTitle)} · 사건{" "}
+          {snapshot.events.length}개
         </p>
-        <p className="lab-meta">
-          World {snapshot.worldId}
-          <br />
-          Input {snapshot.inputDigest.slice(0, 16)} ·{" "}
-          {REPRESENTATION_CONFIG_VERSION}
+        <p>
+          A는 비교 기준, B는 값을 바꿔 보는 화면입니다. 먼저 자세히 볼 사건을
+          고르고, 현재 B를 A로 저장한 뒤 아래 값을 조절해 보세요.
+        </p>
+        <p>
+          ‘묶음 사건’은 여러 구성 사건으로 이루어진 사건입니다. ‘사건 모음’은
+          함께 보고 싶은 사건의 선택 목록이며, 같은 사건이 여러 모음에 들어갈 수
+          있습니다.
         </p>
         <nav>
-          <a href="/labs/layout?demo=1">Synthetic fixture</a>
+          <a href="/labs/layout?demo=1">연습 자료로 실험하기</a>
           <a href="/labs/layout?world=01a107fb-4018-7fcb-8390-836a40fa91cc">
             실제 역사 읽기
           </a>
           <a href={`/graph/v5?world=${encodeURIComponent(snapshot.worldId)}`}>
-            운영 Graph
+            실제 읽기 화면
           </a>
         </nav>
       </header>
@@ -266,6 +281,7 @@ export function LayoutLab({
       </p>
       <div className="lab-toolbar">
         <button
+          data-testid="lab-use-b-as-a"
           disabled={pending}
           onClick={() => {
             setBefore(structuredClone(after));
@@ -275,9 +291,10 @@ export function LayoutLab({
             });
           }}
         >
-          B → A 고정
+          지금 B를 비교 기준 A로 저장
         </button>
         <button
+          data-testid="lab-reset-b-to-a"
           onClick={() => {
             const value = structuredClone(before);
             setAfter(value);
@@ -288,17 +305,19 @@ export function LayoutLab({
             });
           }}
         >
-          B를 A로 복원
+          B를 기준 A와 같게
         </button>
         <button
+          data-testid="lab-reset-b-defaults"
           onClick={() => {
             setAfter(initialCandidate());
             resetHistory({ before: histories.current.before, after: {} });
           }}
         >
-          B 기본값
+          B 설정 처음으로
         </button>
         <button
+          data-testid="lab-fit-all"
           onClick={() => {
             stopSweep();
             setCamera(initialCamera);
@@ -307,19 +326,26 @@ export function LayoutLab({
           전체 보기
         </button>
       </div>
-      <details open className="lab-controls">
-        <summary>Camera · 같은 입력 / 같은 camera / 같은 Collection</summary>
+      <details open className="lab-controls" data-testid="lab-section-camera">
+        <summary>이동·확대하며 비교하기</summary>
+        <p>
+          두 화면은 같은 사건 자료, 같은 위치와 확대 정도, 같은 사건 모음을
+          사용합니다. 가로는 배치, 세로는 시간 방향입니다.
+        </p>
         <div className="lab-toolbar">
           {(["both", "x", "y"] as const).map((axis) => (
             <span key={axis}>
               <button
-                aria-label={`${axis} zoom in`}
+                data-testid={`lab-zoom-${axis}-in`}
+                aria-label={`${axis === "both" ? "가로·세로 함께" : axis === "x" ? "가로" : "시간 방향"} 확대`}
                 onClick={() => zoom(0.7, axis)}
               >
-                {axis === "both" ? "XY" : axis.toUpperCase()} ＋
+                {axis === "both" ? "함께" : axis === "x" ? "가로" : "시간 방향"}{" "}
+                ＋
               </button>
               <button
-                aria-label={`${axis} zoom out`}
+                data-testid={`lab-zoom-${axis}-out`}
+                aria-label={`${axis === "both" ? "가로·세로 함께" : axis === "x" ? "가로" : "시간 방향"} 축소`}
                 onClick={() => zoom(1 / 0.7, axis)}
               >
                 －
@@ -333,10 +359,12 @@ export function LayoutLab({
           return (
             <label className="lab-control" key={axis}>
               <span>
-                {axis.toUpperCase()} zoom {level.toFixed(2)}
+                {axis === "x" ? "가로(X)" : "시간 방향(Y)"} 확대 정도{" "}
+                {level.toFixed(2)}
               </span>
               <input
-                aria-label={`${axis.toUpperCase()} zoom`}
+                data-testid={`lab-zoom-${axis}`}
+                aria-label={`${axis === "x" ? "가로" : "시간 방향"} 확대 정도`}
                 type="range"
                 min={-4}
                 max={16}
@@ -353,31 +381,51 @@ export function LayoutLab({
           );
         })}
         <div className="lab-toolbar">
-          <button onClick={() => runSweep("both")}>XY 왕복 sweep</button>
-          <button onClick={() => runSweep("x")}>X 왕복</button>
-          <button onClick={() => runSweep("y")}>Y 왕복</button>
-          {sweeping && <button onClick={stopSweep}>중지</button>}
+          <button data-testid="lab-sweep-both" onClick={() => runSweep("both")}>
+            함께 확대했다 돌아오기
+          </button>
+          <button data-testid="lab-sweep-x" onClick={() => runSweep("x")}>
+            가로만 확대했다 돌아오기
+          </button>
+          <button data-testid="lab-sweep-y" onClick={() => runSweep("y")}>
+            시간 방향만 확대했다 돌아오기
+          </button>
+          {sweeping && (
+            <button data-testid="lab-sweep-stop" onClick={stopSweep}>
+              자동 확대 중지
+            </button>
+          )}
           <label>
             <input
               type="checkbox"
+              data-testid="lab-zoom-reverse"
               checked={reverseWheel}
               onChange={(e) => setReverseWheel(e.target.checked)}
             />
-            휠 줌 방향 반전
+            마우스 휠 확대 방향 뒤집기
           </label>
         </div>
         <small>
-          두 그림에서 drag하면 함께 이동합니다. 휠: XY · Shift: Y · Alt: X.
-          왕복은 현재 camera에서 8단계 확대 후 돌아옵니다.
+          어느 그림에서든 끌면 두 화면이 함께 움직입니다. 자동 확대는 현재
+          위치에서 확대했다 원래 크기로 돌아와, 표시가 바뀌는 경계를 양방향으로
+          보여줍니다.
         </small>
+        <details>
+          <summary>마우스로 조작하기</summary>
+          <small>
+            휠은 가로·세로를 함께 바꿉니다. Shift를 누르고 돌리면 시간 방향만,
+            Alt를 누르면 가로만 바뀝니다.
+          </small>
+        </details>
       </details>
       <label className="lab-check">
         <input
           type="checkbox"
+          data-testid="lab-pin-preview"
           checked={pinPreview}
           onChange={(e) => setPinPreview(e.target.checked)}
         />
-        조절 중 비교 화면 고정 (모바일 A/B 전환)
+        값을 조절하는 동안 비교 그림을 화면에 고정
       </label>
       <div
         className={`lab-comparison${pinPreview ? ` lab-pinned lab-side-${mobileSide}` : ""}`}
@@ -388,20 +436,20 @@ export function LayoutLab({
               aria-pressed={mobileSide === "a"}
               onClick={() => setMobileSide("a")}
             >
-              A 보기
+              기준 A 보기
             </button>
             <button
               aria-pressed={mobileSide === "b"}
               onClick={() => setMobileSide("b")}
             >
-              B 보기
+              바꾼 B 보기
             </button>
             <button onClick={() => setPinPreview(false)}>고정 해제</button>
           </div>
         )}
         <div ref={panel}>
           <LabScene
-            name="A · before"
+            name="A · 기준 화면"
             snapshot={snapshot}
             output={beforeOutput}
             camera={camera}
@@ -420,7 +468,7 @@ export function LayoutLab({
           />
         </div>
         <LabScene
-          name="B · candidate"
+          name="B · 바꾼 화면"
           snapshot={snapshot}
           output={afterOutput}
           camera={camera}
@@ -439,8 +487,8 @@ export function LayoutLab({
         />
       </div>
       <p className="lab-meta">
-        Representation viewport {width.toFixed(0)} × 430{" "}
-        {viewportLocked ? "· saved size" : "· current screen"}{" "}
+        비교 그림 크기 {width.toFixed(0)} × 430픽셀{" "}
+        {viewportLocked ? "· 저장할 때의 크기 유지" : "· 현재 화면에 맞춤"}{" "}
         {viewportLocked && (
           <button onClick={() => setViewportLocked(false)}>
             현재 화면 크기 사용
@@ -448,156 +496,175 @@ export function LayoutLab({
         )}
       </p>
       <p className="lab-meta" data-testid="lab-computation">
-        {pending
-          ? "계산 대기…"
-          : mounted
-            ? `${measured.elapsed.toFixed(1)}ms local compute`
-            : "local compute"}{" "}
-        · changed geometry {changed} · unplaced{" "}
-        {afterOutput.unplaced_event_ids.length} · {after.layout.algorithm}@
-        {after.layout.algorithmVersion} · seed null
+        {pending ? "새 배치를 계산하는 중…" : "비교할 준비가 되었습니다."} ·
+        배치가 달라진 사건 {changed}개 · 시간축에 놓이지 않은 사건{" "}
+        {afterOutput.unplaced_event_ids.length}개
       </p>
-      <details className="lab-controls" open>
-        <summary>B layout algorithm · parameters</summary>
+      <details className="lab-controls" open data-testid="lab-section-layout">
+        <summary>B의 사건 배치 방식</summary>
         <label className="lab-control">
-          <span>Algorithm</span>
+          <span>배치 방식</span>
           <select
-            aria-label="Layout algorithm"
+            data-testid="lab-algorithm"
+            aria-label="사건 배치 방식"
             value={algorithm.id}
             onChange={(e) => chooseAlgorithm(e.target.value)}
           >
             {layoutAlgorithms.map((item) => (
               <option key={item.id} value={item.id}>
-                {item.title}
+                {LAYOUT_COPY[item.id]!.title}
               </option>
             ))}
           </select>
         </label>
-        <p>{algorithm.description}</p>
-        {algorithm.parameters.map((field) => (
-          <label key={`${algorithm.id}:${field.key}`} className="lab-control">
-            <span>
-              {field.label}
-              <small>{field.description}</small>
-            </span>
-            {field.kind === "select" ? (
-              <select
-                aria-label={field.label}
-                value={after.layout.parameters[field.key]}
-                onChange={(e) => updateLayout(field.key, e.target.value)}
-              >
-                {field.options.map((option) => (
-                  <option key={option.value} value={option.value}>
-                    {option.label}
-                  </option>
-                ))}
-              </select>
-            ) : (
-              <>
-                <input
-                  aria-label={field.label}
-                  type="range"
-                  min={field.min}
-                  max={field.max}
-                  step={field.step}
+        <p>{algorithmCopy.description}</p>
+        {algorithm.parameters.map((field) => {
+          const copy = algorithmCopy.parameters[field.key]!;
+          return (
+            <label key={`${algorithm.id}:${field.key}`} className="lab-control">
+              <span>
+                {copy.label}
+                <small>{copy.description}</small>
+              </span>
+              {field.kind === "select" ? (
+                <select
+                  data-testid={`lab-layout-parameter-${field.key}`}
+                  aria-label={copy.label}
                   value={after.layout.parameters[field.key]}
+                  onChange={(e) => updateLayout(field.key, e.target.value)}
+                >
+                  {field.options.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {copy.options?.[option.value] ?? option.value}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                <>
+                  <input
+                    data-testid={`lab-layout-range-${field.key}`}
+                    aria-label={copy.label}
+                    type="range"
+                    min={field.min}
+                    max={field.max}
+                    step={field.step}
+                    value={after.layout.parameters[field.key]}
+                    onChange={(e) =>
+                      updateLayout(field.key, Number(e.target.value))
+                    }
+                  />
+                  <input
+                    data-testid={`lab-layout-parameter-${field.key}`}
+                    aria-label={`${copy.label} 직접 입력`}
+                    type="number"
+                    min={field.min}
+                    max={field.max}
+                    step={field.step}
+                    value={after.layout.parameters[field.key]}
+                    onChange={(e) => {
+                      const value = e.target.valueAsNumber;
+                      if (
+                        Number.isFinite(value) &&
+                        value >= field.min &&
+                        value <= field.max &&
+                        (field.step !== 1 || Number.isInteger(value))
+                      )
+                        updateLayout(field.key, value);
+                    }}
+                  />
+                </>
+              )}
+            </label>
+          );
+        })}
+        <p className="lab-note">
+          벌리는 힘·모으는 힘·이동 거리·반복 횟수는 함께 작용합니다. 먼저 한
+          값씩 바꾸며 비교해 보세요. 어떤 방식을 골라도 사건의 시간과 구성
+          관계는 유지됩니다.
+        </p>
+      </details>
+      <details
+        className="lab-controls"
+        data-testid="lab-section-representation"
+      >
+        <summary>B의 묶음 사건 표시 조절</summary>
+        <p>
+          영역 → 보통 점 → 작은 점 → 숨김이 언제 바뀌는지 살펴보세요. ‘크기’는
+          바뀌는 경계, ‘폭’은 서서히 섞이는 구간, ‘시간’은 변화 속도입니다.
+          ‘여유’는 조금 되돌아가도 이전 표시를 유지해 잦은 전환을 줄입니다.
+        </p>
+        <p>
+          사건이 많으면 일정한 식별번호 순서로 점을 줄입니다. 역사적 중요도
+          순위가 아닙니다. 큰 묶음의 화면 점유율은 감싸는 사각형으로
+          어림잡습니다.
+        </p>
+        {REPRESENTATION_PARAMETERS.map((field) => {
+          const copy = REPRESENTATION_COPY[field.key];
+          return (
+            <label key={field.key} className="lab-control">
+              <span>
+                {copy.label}
+                <small>{copy.description}</small>
+              </span>
+              {field.type === "boolean" ? (
+                <input
+                  data-testid={`lab-representation-${field.key}`}
+                  aria-label={copy.label}
+                  type="checkbox"
+                  checked={Boolean(after.representation[field.key])}
                   onChange={(e) =>
-                    updateLayout(field.key, Number(e.target.value))
+                    setAfter((old) => ({
+                      ...old,
+                      representation: {
+                        ...old.representation,
+                        [field.key]: e.target.checked
+                      }
+                    }))
                   }
                 />
-                <input
-                  aria-label={`${field.label} value`}
-                  type="number"
-                  min={field.min}
-                  max={field.max}
-                  step={field.step}
-                  value={after.layout.parameters[field.key]}
-                  onChange={(e) => {
-                    const value = e.target.valueAsNumber;
-                    if (
-                      Number.isFinite(value) &&
-                      value >= field.min &&
-                      value <= field.max &&
-                      (field.step !== 1 || Number.isInteger(value))
-                    )
-                      updateLayout(field.key, value);
-                  }}
-                />
-              </>
-            )}
-          </label>
-        ))}
-        <p className="lab-note">
-          Force의 attraction / repulsion / maxStep / iteration은 서로
-          결합됩니다. 같은 input의 Y와 authored contains는 모든 candidate에서
-          보존합니다. Canonical 설정 승격과 backfill은 별도 채택 작업입니다.
-        </p>
+              ) : (
+                <>
+                  <input
+                    data-testid={`lab-representation-${field.key}`}
+                    aria-label={copy.label}
+                    type="range"
+                    min={field.min}
+                    max={field.max}
+                    step={field.step}
+                    value={Number(after.representation[field.key])}
+                    onChange={(e) => {
+                      try {
+                        const representation = validateRepresentationConfig({
+                          ...after.representation,
+                          [field.key]: Number(e.target.value)
+                        });
+                        setAfter((old) => ({ ...old, representation }));
+                      } catch {
+                        setMessage(
+                          "순위 기준은 ‘보통 점 기준 ≤ 흐려짐 시작 기준 < 숨김 기준’ 순서여야 합니다. 더 뒤쪽 기준을 먼저 늘려 주세요."
+                        );
+                      }
+                    }}
+                  />
+                  <output>{String(after.representation[field.key])}</output>
+                </>
+              )}
+            </label>
+          );
+        })}
       </details>
-      <details className="lab-controls">
+      <details className="lab-controls" data-testid="lab-section-collections">
         <summary>
-          B Composite representation · thresholds / fade / density
+          화면에 표시할 사건 모음 · {active.length}/
+          {snapshot.collections.length}개 선택
         </summary>
         <p>
-          Production 값을 출발점으로 한 연구 정책입니다. density는 안정된 ID
-          순위, 큰 hull 억제는 bounds coverage 근사값입니다. HUD·production
-          label 배치 전체를 복제하지 않습니다.
+          여기서는 볼 사건만 고릅니다. 모음을 켜거나 꺼도 사건의 배치는 다시
+          계산하지 않습니다. 같은 사건이 여러 모음에 있어도 한 번만 표시합니다.
         </p>
-        {REPRESENTATION_PARAMETERS.map((field) => (
-          <label key={field.key} className="lab-control">
-            <span>
-              {field.label}
-              <small>{field.description}</small>
-            </span>
-            {field.type === "boolean" ? (
-              <input
-                aria-label={field.label}
-                type="checkbox"
-                checked={Boolean(after.representation[field.key])}
-                onChange={(e) =>
-                  setAfter((old) => ({
-                    ...old,
-                    representation: {
-                      ...old.representation,
-                      [field.key]: e.target.checked
-                    }
-                  }))
-                }
-              />
-            ) : (
-              <>
-                <input
-                  aria-label={field.label}
-                  type="range"
-                  min={field.min}
-                  max={field.max}
-                  step={field.step}
-                  value={Number(after.representation[field.key])}
-                  onChange={(e) => {
-                    try {
-                      const representation = validateRepresentationConfig({
-                        ...after.representation,
-                        [field.key]: Number(e.target.value)
-                      });
-                      setAfter((old) => ({ ...old, representation }));
-                    } catch {
-                      setMessage(
-                        "Density 순서는 ordinary ≤ small < hidden이어야 합니다. 상위 threshold를 먼저 조절하세요."
-                      );
-                    }
-                  }}
-                />
-                <output>{String(after.representation[field.key])}</output>
-              </>
-            )}
-          </label>
-        ))}
-      </details>
-      <details className="lab-controls">
-        <summary>
-          Collection visibility · {active.length}/{snapshot.collections.length}
-        </summary>
         <div className="lab-toolbar">
           <button
+            data-testid="lab-collections-all"
             onClick={() => {
               setActive(snapshot.collections.map((item) => item.id));
               setIncludeUncollected(true);
@@ -606,6 +673,7 @@ export function LayoutLab({
             모두 켜기
           </button>
           <button
+            data-testid="lab-collections-none"
             onClick={() => {
               setActive([]);
               setIncludeUncollected(false);
@@ -617,6 +685,7 @@ export function LayoutLab({
         {snapshot.collections.map((collection) => (
           <label className="lab-check" key={collection.id}>
             <input
+              data-testid={`lab-collection-${collection.id}`}
               type="checkbox"
               checked={active.includes(collection.id)}
               onChange={(e) =>
@@ -627,7 +696,8 @@ export function LayoutLab({
                 )
               }
             />
-            {collection.title} ({collection.eventIds.length})
+            {displayTitle(collection.id, collection.title)} (
+            {collection.eventIds.length}개)
           </label>
         ))}
         <label className="lab-check">
@@ -636,78 +706,95 @@ export function LayoutLab({
             checked={includeUncollected}
             onChange={(e) => setIncludeUncollected(e.target.checked)}
           />
-          membership 없는 Event
+          어떤 사건 모음에도 속하지 않은 사건
         </label>
       </details>
-      <details className="lab-controls">
-        <summary>Event / Composite 관찰</summary>
+      <details className="lab-controls" data-testid="lab-section-events">
+        <summary>자세히 볼 사건 선택</summary>
         <select
-          aria-label="Focus Event"
+          data-testid="lab-focus-event"
+          aria-label="자세히 볼 사건"
           value={selected ?? ""}
           onChange={(e) => focus(e.target.value)}
         >
-          <option value="">관찰할 Event 선택…</option>
+          <option value="">사건을 고르면 그 위치로 이동합니다…</option>
           {snapshot.events.map((event) => (
             <option key={event.id} value={event.id}>
               {event.childIds.length ? "◇ " : "• "}
-              {event.title}
+              {displayTitle(event.id, event.title)}
             </option>
           ))}
         </select>
         {selectedEvent && (
           <p>
-            {selectedEvent.title}
+            {displayTitle(selectedEvent.id, selectedEvent.title)}
             <br />
-            <code>{selectedEvent.id}</code>
-            <br />
-            authored children {selectedEvent.childIds.length} · Collections{" "}
-            {selectedEvent.collectionIds.length}
+            직접 구성 사건 {selectedEvent.childIds.length}개 · 포함된 사건 모음{" "}
+            {selectedEvent.collectionIds.length}개
             <br />
             <button onClick={() => focus(selectedEvent.id)}>
-              이 Event로 camera 이동
+              이 사건이 보이도록 이동
             </button>
           </p>
         )}
       </details>
-      <details className="lab-controls">
-        <summary>Preset save / load / export · immutable snapshot 포함</summary>
+      <details className="lab-controls" data-testid="lab-section-preset">
+        <summary>실험 저장·다시 열기</summary>
+        <p>
+          사건 자료와 A/B 설정, 화면 위치, 확대 정도, 전환 기록을 함께
+          저장합니다. 파일을 다시 열면 그때와 같은 조건으로 비교할 수 있습니다.
+        </p>
         <div className="lab-toolbar">
           <button
+            data-testid="lab-preset-save"
             disabled={pending}
             onClick={() => {
               try {
                 localStorage.setItem(STORAGE, serialize());
                 setMessage(
-                  "이 브라우저에 snapshot·A/B·camera·history를 저장했습니다."
+                  "이 브라우저에 사건 자료·A/B 설정·화면 위치·전환 기록을 저장했습니다."
                 );
               } catch {
                 setMessage(
-                  "로컬 저장 용량이 부족합니다. JSON export를 사용하세요."
+                  "브라우저에 저장할 공간이 부족합니다. ‘파일로 내보내기’를 사용해 주세요."
                 );
               }
             }}
           >
-            로컬 저장
+            이 기기에 저장
           </button>
           <button
+            data-testid="lab-preset-load"
             onClick={() => {
               const value = localStorage.getItem(STORAGE);
               if (value) void restore(value);
-              else setMessage("저장된 preset이 없습니다.");
+              else
+                setMessage(
+                  "이 브라우저에 저장한 실험이 없습니다. 먼저 저장하거나 파일을 열어 주세요."
+                );
             }}
           >
-            로컬 복원
+            이 기기의 저장 내용 열기
           </button>
-          <button disabled={pending} onClick={exportPreset}>
-            JSON export
+          <button
+            data-testid="lab-preset-export"
+            disabled={pending}
+            onClick={exportPreset}
+          >
+            파일로 내보내기
           </button>
-          <button disabled={pending} onClick={() => setText(serialize())}>
-            JSON 보기
+          <button
+            data-testid="lab-preset-show"
+            disabled={pending}
+            onClick={() => setText(serialize())}
+          >
+            저장 내용 보기
           </button>
         </div>
         <label>
-          JSON 파일 import
+          저장한 파일 열기
           <input
+            data-testid="lab-preset-import"
             type="file"
             accept="application/json,.json"
             onChange={(e) => {
@@ -717,17 +804,51 @@ export function LayoutLab({
           />
         </label>
         <textarea
-          aria-label="Preset JSON"
+          data-testid="lab-preset-json"
+          aria-label="저장 내용 붙여넣기"
           value={text}
           onChange={(e) => setText(e.target.value)}
           rows={8}
-          placeholder="Preset JSON을 붙여넣어 같은 실험을 복원"
+          placeholder="‘저장 내용 보기’로 복사한 내용을 여기에 붙여넣으세요. 직접 수정할 필요는 없습니다."
         />
-        <button onClick={() => void restore(text)}>JSON 복원</button>
+        <button
+          data-testid="lab-preset-restore"
+          onClick={() => void restore(text)}
+        >
+          붙여넣은 내용으로 다시 열기
+        </button>
+      </details>
+      <details className="lab-controls">
+        <summary>실험 정보 자세히 · 재현 확인용</summary>
+        <p className="lab-meta">
+          사건 세계 식별번호: {snapshot.worldId}
+          <br />
+          자료 버전: {snapshot.sourceRevision} · 공개 중인 버전:{" "}
+          {snapshot.servedRevision}
+          <br />
+          자료 확인값: {snapshot.inputDigest}
+          <br />
+          표시 규칙 버전: {REPRESENTATION_CONFIG_VERSION}
+          <br />
+          배치 방식 식별자: {after.layout.algorithm} · 버전:{" "}
+          {after.layout.algorithmVersion}
+          <br />
+          무작위 시작값: 사용하지 않음
+          <br />
+          계산 시간:{" "}
+          {mounted ? `${measured.elapsed.toFixed(1)}밀리초` : "측정 중"}
+          {selectedEvent && (
+            <>
+              <br />
+              선택한 사건 식별번호: {selectedEvent.id}
+            </>
+          )}
+        </p>
       </details>
       <footer>
-        연구 결과만 저장합니다. Snapshot은 read-only이며 algorithm 조절에
-        publication 요청·backfill·canonical 쓰기는 발생하지 않습니다.
+        여기서 바꾸는 것은 연구용 화면입니다. 실제 역사 자료나 공개 중인 배치는
+        바뀌지 않습니다. 결과를 실제 읽기 화면에 적용하는 일은 후보를 선택한 뒤
+        별도로 진행합니다.
       </footer>
     </main>
   );

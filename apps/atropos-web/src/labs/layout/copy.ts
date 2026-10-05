@@ -90,6 +90,36 @@ export const REPRESENTATION_COPY: Record<
   keyof RepresentationConfig,
   ControlCopy
 > = {
+  hullOpacityScale: {
+    label: "영역 진하기",
+    description:
+      "영역 단계에서 묶음의 면과 테두리를 얼마나 진하게 그릴지 정합니다. 0이면 숨기고, 1이면 최대 진하기입니다. 겹치는 이름은 생략될 수 있습니다."
+  },
+  hullLabelOpacity: {
+    label: "영역 단계의 이름표 진하기",
+    description:
+      "영역으로 보이는 묶음의 이름표를 조절합니다. 0이면 숨기고, 1이면 최대 진하기입니다. 겹치는 이름은 생략될 수 있습니다."
+  },
+  ordinaryPointOpacityScale: {
+    label: "보통 점 진하기",
+    description:
+      "보통 점 단계의 사건과 묶음 점을 조절합니다. 0이면 숨기고, 1이면 최대 진하기입니다. 겹치는 이름은 생략될 수 있습니다."
+  },
+  ordinaryLabelOpacity: {
+    label: "보통 점 단계의 이름표 진하기",
+    description:
+      "보통 점으로 보이는 사건과 묶음의 이름표를 조절합니다. 0이면 숨기고, 1이면 최대 진하기입니다. 겹치는 이름은 생략될 수 있습니다."
+  },
+  smallPointOpacityScale: {
+    label: "작은 점 진하기",
+    description:
+      "작은 점 단계의 점을 조절합니다. 밀집도에 따른 흐려짐도 함께 적용됩니다. 0이면 숨기고, 1이면 최대 진하기입니다. 겹치는 이름은 생략될 수 있습니다."
+  },
+  smallLabelOpacity: {
+    label: "작은 점 단계의 이름표 진하기",
+    description:
+      "기본은 0으로 이름을 숨깁니다. 값을 올려 작은 점에도 이름을 붙이는 실험을 할 수 있습니다. 0이면 숨기고, 1이면 최대 진하기입니다. 겹치는 이름은 생략될 수 있습니다."
+  },
   showHulls: {
     label: "묶음 영역 표시",
     description:
@@ -102,7 +132,7 @@ export const REPRESENTATION_COPY: Record<
   showSmallPoints: {
     label: "작은 점 표시",
     description:
-      "사건이 많을 때 줄여 그리는 작은 점을 표시합니다. 작은 점에는 이름이 붙지 않습니다."
+      "사건이 많을 때 줄여 그리는 작은 점을 표시합니다. 이름 표시 여부는 작은 점 단계의 이름표 진하기로 정합니다."
   },
   showLabels: {
     label: "사건 이름 표시",

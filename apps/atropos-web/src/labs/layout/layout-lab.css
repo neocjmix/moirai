@@ -220,3 +220,18 @@
   scroll-margin-top: calc(clamp(240px, 44dvh, 430px) + 175px);
   scroll-margin-bottom: 20px;
 }
+
+.lab-stage {
+  border: 1px solid #d9ded1;
+  border-radius: 6px;
+  margin: 18px 0;
+  padding: 10px;
+  min-width: 0;
+}
+.lab-stage legend {
+  font-weight: 650;
+  padding: 0 6px;
+}
+.lab-loading {
+  padding: 24px 16px;
+}

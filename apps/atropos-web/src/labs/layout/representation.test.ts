@@ -9,6 +9,8 @@ import {
   evaluateRepresentationScene as evaluate,
   validateRepresentationConfig,
   validateRepresentationHistory,
+  REPRESENTATION_GROUPS,
+  REPRESENTATION_PARAMETERS,
   type RepresentationNode
 } from "./representation";
 
@@ -31,6 +33,48 @@ const points = (count: number): RepresentationNode[] =>
   }));
 
 describe("isolated research representation policy", () => {
+  it("covers every parameter once in the stage controls", () => {
+    const keys = REPRESENTATION_GROUPS.flatMap((group) => group.keys);
+    expect(new Set(keys).size).toBe(keys.length);
+    expect([...keys].sort()).toEqual(
+      REPRESENTATION_PARAMETERS.map((p) => p.key).sort()
+    );
+  });
+
+  it("adjusts hull, ordinary and small-point labels independently without changing input or hiding facts", () => {
+    const input = { nodes: [composite(80), ...points(80)] };
+    const source = JSON.stringify(input);
+    const config = {
+      ...defaults,
+      hullOpacityScale: 0.5,
+      hullLabelOpacity: 0.8,
+      ordinaryPointOpacityScale: 0.6,
+      ordinaryLabelOpacity: 0.5,
+      smallPointOpacityScale: 0.7,
+      smallLabelOpacity: 0.9
+    };
+    const result = evaluate(input, config);
+    const hull = result.nodes.find((n) => n.id === "composite")!;
+    expect(hull.hullOpacity).toBe(0.5);
+    expect(hull.labelOpacity).toBe(0.4);
+    const ordinary = result.nodes.find((n) => n.id === "000")!;
+    expect(ordinary.ordinaryPointOpacity).toBe(0.6);
+    expect(ordinary.labelOpacity).toBe(0.3);
+    const small = result.nodes.find((n) => n.id === "070")!;
+    expect(small.smallPointOpacity).toBe(0.7);
+    expect(small.labelOpacity).toBeCloseTo(0.63);
+    const hidden = evaluate(input, {
+      ...config,
+      normalPointCount: 0,
+      normalHysteresisCount: 0,
+      smallPointCount: 1,
+      hiddenPointCount: 2
+    });
+    expect(hidden.nodes.find((n) => n.id === "070")!.labelOpacity).toBe(0);
+    expect(JSON.stringify(input)).toBe(source);
+    expect(result.state).toEqual(evaluate(input).state);
+  });
+
   it("matches production hull blend and compact ownership in both zoom directions", () => {
     let history = {};
     let wasCompact = false;

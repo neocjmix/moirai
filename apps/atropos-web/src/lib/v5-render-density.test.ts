@@ -82,3 +82,127 @@ it("retains bounded offscreen paint without reducing visible density capacity", 
   );
   expect(result.some((p) => p.id === "far")).toBe(false);
 });
+
+it.each([
+  { scaleX: 1, scaleY: 1 },
+  { scaleX: 2, scaleY: 0.5 }
+])(
+  "retains visible full labels beyond the point margin at independent scales %j",
+  (camera) => {
+    const viewport = {
+      minX: 0,
+      maxX: 390 / camera.scaleX,
+      minY: 0,
+      maxY: 664 / camera.scaleY
+    };
+    const point = (
+      id: string,
+      x: number,
+      y: number,
+      label: string
+    ): RenderPrimitive => ({
+      ...points[1]!,
+      id,
+      entity: { kind: "event", id },
+      label,
+      geometry: {
+        kind: "point",
+        xy: { x: x / camera.scaleX, y: y / camera.scaleY }
+      },
+      bounds: {
+        minX: x / camera.scaleX,
+        maxX: x / camera.scaleX,
+        minY: y / camera.scaleY,
+        maxY: y / camera.scaleY
+      }
+    });
+    const input = [
+      point(
+        "left-title",
+        -30,
+        200,
+        "화면 가장자리에서도 끝까지 읽을 수 있는 사건 이름"
+      ),
+      point(
+        "far-left-title",
+        -400,
+        250,
+        "화면 밖에서 시작해도 긴 제목의 끝은 화면 안에 계속 표시되어야 하는 사건 이름"
+      ),
+      point("short-outside", -50, 300, "짧음"),
+      point("right-outside", 420, 200, "화면 밖 제목"),
+      point("bottom-outside", 120, 710, "화면 밖 제목")
+    ];
+    const result = selectRenderDensity(
+      input,
+      viewport,
+      new Map(),
+      undefined,
+      camera
+    );
+    expect(result.map((p) => p.id)).toEqual(["far-left-title", "left-title"]);
+    expect(result.every((p) => p.renderDensity?.labelOpacity === 1)).toBe(true);
+    expect(result[0]!.label).toBe(input[1]!.label);
+  }
+);
+
+it("keeps the 32 offscreen budget while prioritizing glyphs already on screen", () => {
+  const viewport = { minX: 0, maxX: 390, minY: 0, maxY: 664 };
+  const input: RenderPrimitive[] = Array.from({ length: 80 }, (_, index) => {
+    const x = index < 40 ? 395 : -40;
+    return {
+      ...points[1]!,
+      id: `buffer-${index}`,
+      entity: { kind: "event", id: `buffer-${index}` },
+      label: "화면 가장자리의 긴 제목",
+      geometry: { kind: "point", xy: { x, y: 200 } },
+      bounds: { minX: x, maxX: x, minY: 200, maxY: 200 },
+      visibility: {
+        policy: "render-visibility/1",
+        priority: String(index).padStart(3, "0")
+      }
+    };
+  });
+  const result = selectRenderDensity(input, viewport, new Map(), undefined, {
+    scaleX: 1,
+    scaleY: 1
+  });
+  expect(result).toHaveLength(32);
+  expect(result.every((p) => p.bounds.minX === -40)).toBe(true);
+});
+
+it("retains an offscreen Composite title before its external hull is resolved", () => {
+  const viewport = { minX: 0, maxX: 390, minY: 0, maxY: 664 };
+  const bounds = { minX: -55, maxX: -30, minY: 180, maxY: 200 };
+  const composite: RenderPrimitive = {
+    ...points[0]!,
+    geometry: {
+      kind: "external",
+      key: "geometry/edge-composite",
+      sha256: "synthetic"
+    },
+    bounds,
+    label: "화면 밖 컴포짓의 긴 이름도 화면 안까지 이어집니다",
+    composite: {
+      childEventIds: [],
+      supportComplete: true,
+      worldBounds: bounds,
+      hullBounds: bounds,
+      anchor: { x: -42.5, y: 190 }
+    }
+  };
+  const result = selectRenderDensity(
+    [composite],
+    viewport,
+    new Map(),
+    undefined,
+    { scaleX: 1, scaleY: 1 }
+  );
+  expect(result).toHaveLength(1);
+  expect(result[0]).toMatchObject({
+    id: composite.id,
+    geometry: composite.geometry,
+    label: composite.label,
+    renderDensity: { labelOpacity: 1 }
+  });
+});

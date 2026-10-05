@@ -78,7 +78,9 @@ describe("isolated research representation policy", () => {
   it("matches production hull blend and compact ownership in both zoom directions", () => {
     let history = {};
     let wasCompact = false;
-    for (const span of [80, 48, 40, 32, 20, 32, 40, 48, 49, 40, 32, 40]) {
+    for (const span of [
+      80, 48, 42, 36, 32, 28, 24, 20, 12, 20, 24, 28, 29, 36, 48
+    ]) {
       const support = [
         { x: 0, y: 0 },
         { x: span, y: span }
@@ -90,9 +92,42 @@ describe("isolated research representation policy", () => {
         compositePointDisplay(support, wasCompact) !== null;
       expect(node.hullOpacity).toBe(expected.hullOpacity);
       expect(node.ordinaryPointOpacity).toBe(expected.pointOpacity);
+      expect(node.hullStrokeOpacity).toBe(expected.hullStrokeOpacity);
       expect(node.compact).toBe(compact);
       wasCompact = compact;
       history = result.state;
+    }
+  });
+
+  it("keeps the colored hull and readable label after its border disappears, before shrinking to a point", () => {
+    const borderless = evaluate({ nodes: [composite(32)] }).nodes[0]!;
+    expect(borderless.state).toBe("borderless-hull");
+    expect(borderless.hullOpacity).toBe(1);
+    expect(borderless.hullStrokeOpacity).toBe(0);
+    expect(borderless.ordinaryPointOpacity).toBe(0);
+    expect(borderless.labelOpacity).toBe(0.58);
+    const borderFading = evaluate({ nodes: [composite(42)] }).nodes[0]!;
+    expect(borderFading.hullOpacity).toBe(1);
+    expect(borderFading.hullStrokeOpacity).toBe(0.5);
+    expect(borderFading.labelOpacity).toBe(borderless.labelOpacity);
+    const point = evaluate({ nodes: [composite(20)] }).nodes[0]!;
+    expect(point.state).toBe("ordinary-point");
+    expect(point.ordinaryPointOpacity).toBe(1);
+  });
+
+  it("keeps labels visible while hull paint takes over before compact ownership releases", () => {
+    let history = evaluate({ nodes: [composite(16)] }).state;
+    for (const span of [20, 24, 27.99, 28, 28.01, 32]) {
+      const scene = evaluate({ nodes: [composite(span)] }, defaults, history);
+      const node = scene.nodes[0]!;
+      expect(node.labelOpacity).toBeGreaterThanOrEqual(0.58);
+      if (span === 28) {
+        expect(node.compact).toBe(true);
+        expect(node.state).toBe("borderless-hull");
+        expect(node.ordinaryPointOpacity).toBe(0);
+        expect(node.labelOpacity).toBe(0.58);
+      }
+      history = scene.state;
     }
   });
 
@@ -174,7 +209,7 @@ describe("isolated research representation policy", () => {
 
   it("round-trips preset history exactly at hysteresis thresholds and is order-independent", () => {
     const initial = evaluate({ nodes: [composite(20), ...points(80)] });
-    const input = { nodes: [composite(40), ...points(80)] };
+    const input = { nodes: [composite(24), ...points(80)] };
     const config = validateRepresentationConfig(
       JSON.parse(JSON.stringify(defaults))
     );
@@ -245,10 +280,10 @@ describe("isolated research representation policy", () => {
   it("handles zero-width fades and rejects malformed presets rather than changing their meaning", () => {
     const config = { ...defaults, hullFadePx: 0, childFadeStartRatio: 1 };
     expect(
-      evaluate({ nodes: [composite(32)] }, config).nodes[0]!.hullOpacity
+      evaluate({ nodes: [composite(20)] }, config).nodes[0]!.hullOpacity
     ).toBe(0);
     expect(
-      evaluate({ nodes: [composite(33)] }, config).nodes[0]!.hullOpacity
+      evaluate({ nodes: [composite(21)] }, config).nodes[0]!.hullOpacity
     ).toBe(1);
     expect(
       evaluate({ nodes: [composite(100)] }, config).nodes[0]!.childrenOpacity

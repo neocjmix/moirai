@@ -5,24 +5,6 @@ export function semanticTextWidth(text: string) {
   );
 }
 
-/** Keep a readable, bounded label beside the existing point on narrow screens. */
-export function fitSemanticText(
-  text: string,
-  x: number,
-  viewportWidth: number
-) {
-  const available = viewportWidth - x - 8;
-  if (available < 44) return "";
-  if (semanticTextWidth(text) <= available) return text;
-  const characters = [...text];
-  while (
-    characters.length &&
-    semanticTextWidth(characters.join("") + "…") > available
-  )
-    characters.pop();
-  return characters.length ? characters.join("") + "…" : "";
-}
-
 export interface SemanticCandidate {
   id: string;
   x: number;
@@ -30,6 +12,19 @@ export interface SemanticCandidate {
   width: number;
   height: number;
   selected: boolean;
+}
+
+/** Labels keep their text and position; the SVG viewport clips only the paint. */
+export function semanticBoundsIntersectViewport(
+  bounds: Pick<SemanticCandidate, "x" | "y" | "width" | "height">,
+  viewport: { width: number; height: number }
+) {
+  return (
+    bounds.x < viewport.width &&
+    bounds.x + bounds.width > 0 &&
+    bounds.y < viewport.height &&
+    bounds.y + bounds.height > 0
+  );
 }
 
 /** A5 experiment: one viewport-wide text budget, independent of paint count.
@@ -41,15 +36,19 @@ export function selectSemanticLabels(
 ) {
   const budget = Math.max(
     8,
-    Math.min(32, Math.floor((viewport.width * viewport.height) / 28000))
+    Math.min(32, Math.floor((viewport.width * viewport.height) / 23000))
   );
-  const inside = candidates.filter(
-    (c) =>
-      c.x >= 0 &&
-      c.y >= 72 &&
-      c.x + c.width <= viewport.width &&
-      c.y + c.height <= viewport.height - 56
-  );
+  // Offscreen glyphs neither remove the visible part of a label nor block
+  // another label through collisions outside the screen.
+  const inside = candidates
+    .filter((c) => semanticBoundsIntersectViewport(c, viewport))
+    .map((c) => ({
+      ...c,
+      x: Math.max(0, c.x),
+      y: Math.max(0, c.y),
+      width: Math.min(viewport.width, c.x + c.width) - Math.max(0, c.x),
+      height: Math.min(viewport.height, c.y + c.height) - Math.max(0, c.y)
+    }));
   const distance = (c: SemanticCandidate) =>
     Math.hypot(
       (c.x + c.width / 2 - viewport.width / 2) / Math.max(1, viewport.width),
@@ -68,10 +67,10 @@ export function selectSemanticLabels(
     if (
       accepted.some(
         (other) =>
-          candidate.x < other.x + other.width + 8 &&
-          candidate.x + candidate.width + 8 > other.x &&
-          candidate.y < other.y + other.height + 8 &&
-          candidate.y + candidate.height + 8 > other.y
+          candidate.x < other.x + other.width + 4 &&
+          candidate.x + candidate.width + 4 > other.x &&
+          candidate.y < other.y + other.height + 4 &&
+          candidate.y + candidate.height + 4 > other.y
       )
     )
       continue;

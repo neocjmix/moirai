@@ -1,7 +1,6 @@
 import { expect, it } from "vitest";
 import {
   selectSemanticLabels,
-  fitSemanticText,
   semanticTextWidth,
   type SemanticCandidate
 } from "./graph-semantic-budget";
@@ -23,11 +22,11 @@ it("shares one budget across point and Composite labels without modifying geomet
   );
   const original = structuredClone(input);
   const result = selectSemanticLabels(input, viewport, new Set());
-  expect(result.budget).toBe(11);
-  expect(result.ids.size).toBe(11);
+  expect(result.budget).toBe(14);
+  expect(result.ids.size).toBe(14);
   expect(input).toEqual(original);
 });
-it("prioritizes selection over a colliding retained label and reserves navigation chrome", () => {
+it("prioritizes selection over a colliding retained label without hiding screen-edge text", () => {
   const result = selectSemanticLabels(
     [
       candidate("region", 40, 120),
@@ -39,7 +38,7 @@ it("prioritizes selection over a colliding retained label and reserves navigatio
     viewport,
     new Set(["region"])
   );
-  expect([...result.ids]).toEqual(["point"]);
+  expect(result.ids).toEqual(new Set(["point", "hud", "footer", "clipped"]));
 });
 it("keeps admitted labels under small navigation and ignores input order", () => {
   const input = Array.from({ length: 24 }, (_, i) =>
@@ -54,26 +53,51 @@ it("keeps admitted labels under small navigation and ignores input order", () =>
   expect([...after.ids].sort()).toEqual([...before.ids].sort());
 });
 
-it("keeps long centered mobile labels readable instead of dropping every primary target", () => {
+it("admits a long mobile title through the viewport edge without modifying it", () => {
   const title = "[A5 실험 01] 항구의 교역 — 모임 1";
-  const fitted = fitSemanticText(title, 205, 390);
-  expect(fitted.endsWith("…")).toBe(true);
-  expect(fitted.length).toBeGreaterThan(5);
-  expect(semanticTextWidth(fitted)).toBeLessThanOrEqual(177);
-  const selected = selectSemanticLabels(
-    [
-      {
-        id: "point",
-        x: 205,
-        y: 240,
-        width: semanticTextWidth(fitted),
-        height: 44,
-        selected: true
-      }
-    ],
-    viewport,
-    new Set()
+  const width = semanticTextWidth(title);
+  for (const x of [205, 380, -width + 1]) {
+    const input = { id: "point", x, y: 240, width, height: 32, selected: true };
+    expect(
+      selectSemanticLabels([input], viewport, new Set()).ids.has("point")
+    ).toBe(true);
+    expect(input).toEqual({
+      id: "point",
+      x,
+      y: 240,
+      width,
+      height: 32,
+      selected: true
+    });
+  }
+});
+
+it("keeps partially visible labels at all four edges and removes only wholly offscreen text", () => {
+  const input = [
+    candidate("left", -63, 200),
+    candidate("right", 389, 250),
+    candidate("top", 50, -19),
+    candidate("bottom", 100, 843),
+    candidate("off-left", -64, 300),
+    candidate("off-right", 390, 350),
+    candidate("off-top", 150, -20),
+    candidate("off-bottom", 200, 844)
+  ];
+  expect(selectSemanticLabels(input, viewport, new Set()).ids).toEqual(
+    new Set(["left", "right", "top", "bottom"])
   );
-  expect(selected.ids.has("point")).toBe(true);
-  expect(fitSemanticText(title, 380, 390)).toBe("");
+});
+
+it("allows a modestly tighter label density while keeping actual overlaps suppressed", () => {
+  expect(
+    selectSemanticLabels(
+      [
+        candidate("one", 40, 200),
+        candidate("next", 40, 225),
+        candidate("overlap", 40, 202)
+      ],
+      viewport,
+      new Set(["one"])
+    ).ids
+  ).toEqual(new Set(["one", "next"]));
 });

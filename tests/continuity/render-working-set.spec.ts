@@ -229,7 +229,13 @@ test("native labels stay visible and retain identity during camera movement", as
   const hull = page.locator(
     `[data-composite-paint-id="${continuityComposite}"] > path`
   );
+  const label = page
+    .locator(`text[data-region-id="${continuityComposite}"]`)
+    .first();
   await expect(hull).toBeVisible();
+  // Establish the native label before exercising its representation roundtrip.
+  // A mounted hull alone can precede semantic label admission/publication.
+  await expect(label).toBeVisible();
   await restoreCamera(page, wideCamera);
   await expect
     .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
@@ -238,9 +244,6 @@ test("native labels stay visible and retain identity during camera movement", as
   await expect
     .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
     .toBeGreaterThan(0.95);
-  const label = page
-    .locator(`text[data-region-id="${continuityComposite}"]`)
-    .first();
   await expect(label).toBeVisible();
   const original = await label.elementHandle();
   const labelPath = page.locator(

@@ -137,7 +137,7 @@ export const REPRESENTATION_COPY: Record<
   showLabels: {
     label: "사건 이름 표시",
     description:
-      "사건과 묶음 사건의 이름을 표시합니다. 서로 겹치거나 화면을 벗어나는 이름은 생략될 수 있습니다."
+      "사건과 묶음 사건의 이름 전체를 화면 경계까지 표시합니다. 서로 겹치는 이름은 생략될 수 있습니다."
   },
   showChildren: {
     label: "구성 사건 표시",
@@ -157,6 +157,16 @@ export const REPRESENTATION_COPY: Record<
     label: "영역과 점이 겹쳐 바뀌는 폭 · 픽셀",
     description:
       "위 기준 크기부터 이 폭에 걸쳐 점과 영역이 서서히 바뀝니다. 값을 키우면 변화 구간이 넓어집니다. 변화에 걸리는 시간은 아래에서 따로 조절합니다."
+  },
+  hullBorderFadeStartPx: {
+    label: "테두리만 숨기는 크기 · 픽셀",
+    description:
+      "묶음의 가로·세로 길이가 모두 이 값 이하이면 테두리를 숨깁니다. 영역의 색과 이름은 남아 점으로 바뀌기 전까지 보입니다."
+  },
+  hullBorderFadePx: {
+    label: "테두리가 서서히 나타나는 폭 · 픽셀",
+    description:
+      "위 크기에서 이 폭만큼 확대하면 테두리가 완전히 나타납니다. 0이면 테두리를 따로 숨기는 단계를 사용하지 않습니다."
   },
   compactHysteresisPx: {
     label: "다시 확대할 때 점을 유지하는 여유 · 픽셀",

@@ -7,6 +7,9 @@ for (const graphics of ["canvas", "webgl"]) {
     await page.goto(`/graph/demo?gsGraphics=${graphics}`);
     const hull = page.locator('path[data-region-id="region:early-joseon"]');
     await expect(hull).toBeVisible();
+    // Native title paths refresh their measured width after web fonts load.
+    // Measure idle work only after this required initial font settlement.
+    await page.evaluate(() => document.fonts.ready.then(() => undefined));
     await page.waitForTimeout(300);
     const meshBefore =
       graphics === "webgl"

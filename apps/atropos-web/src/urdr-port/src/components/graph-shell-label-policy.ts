@@ -129,42 +129,6 @@ function getTextBudget(zoomBucket: EditorialZoomBucket, editorial?: GraphEntityE
   return 12;
 }
 
-function getCompositeTextBudget(zoomBucket: EditorialZoomBucket, editorial?: GraphEntityEditorial) {
-  if (zoomBucket === "near") {
-    return 999;
-  }
-
-  if (zoomBucket === "mid") {
-    if (editorial?.role === "boundary" || editorial?.importance === "critical") {
-      return 24;
-    }
-    if (editorial?.importance === "major") {
-      return 20;
-    }
-    return 16;
-  }
-
-  if (editorial?.role === "boundary" || editorial?.importance === "critical") {
-    return 16;
-  }
-  if (editorial?.importance === "major") {
-    return 13;
-  }
-  return 11;
-}
-
-function getCompositeConflictBudget(zoomBucket: EditorialZoomBucket, editorial?: GraphEntityEditorial) {
-  if (zoomBucket === "near") {
-    return editorial?.importance === "critical" ? 24 : 18;
-  }
-
-  if (zoomBucket === "mid") {
-    return editorial?.importance === "critical" ? 16 : 12;
-  }
-
-  return editorial?.role === "boundary" || editorial?.importance === "critical" ? 12 : 9;
-}
-
 function shortenLabel(label: string, textBudget: number) {
   if (textBudget <= 0) {
     return "";
@@ -176,20 +140,6 @@ function shortenLabel(label: string, textBudget: number) {
     return label.slice(0, textBudget);
   }
   return `${label.slice(0, textBudget - 1)}...`;
-}
-
-function stripCompositeSuffix(label: string) {
-  return label.replace(/\s+(episode|arc|saga|phase|campaign|process|narrative|에피소드|서사|단계|국면)$/i, "");
-}
-
-function getCompositeCandidateLabel(label: string, textBudget: number) {
-  const stripped = stripCompositeSuffix(label).trim();
-  const candidate = stripped.length >= 6 ? stripped : label;
-  if (candidate.length <= textBudget) {
-    return candidate;
-  }
-
-  return shortenLabel(candidate, textBudget);
 }
 
 function overlaps(a: { minX: number; maxX: number; minY: number; maxY: number }, b: { minX: number; maxX: number; minY: number; maxY: number }) {
@@ -306,12 +256,10 @@ export function applyCompositeLabelVisibilityPolicy(
     .map((candidate) => {
       const priorityScore = getCompositeLabelPriority(candidate.editorial, candidate.depth, candidate.footprint);
       const renderedLabel = formatCompositeDisplayLabel({ label: candidate.label }, zoomBucket, candidate.editorial);
-      const shortenedLabel = getCompositeCandidateLabel(candidate.label, getCompositeConflictBudget(zoomBucket, candidate.editorial));
       return {
         ...candidate,
         priorityScore,
         renderedLabel,
-        shortenedLabel,
       };
     })
     .sort((left, right) => right.priorityScore - left.priorityScore || left.labelY - right.labelY || left.labelX - right.labelX || left.id.localeCompare(right.id));
@@ -321,29 +269,20 @@ export function applyCompositeLabelVisibilityPolicy(
       results.set(candidate.id, {
         id: candidate.id,
         showLabel: false,
-        renderedLabel: "",
+        renderedLabel: candidate.renderedLabel,
         priorityScore: candidate.priorityScore,
       });
       continue;
     }
 
-    const attempts = [candidate.renderedLabel, candidate.shortenedLabel]
-      .filter((label, index, labels) => label.length > 0 && labels.indexOf(label) === index);
-
-    let acceptedLabel = "";
-    for (const label of attempts) {
-      const labelBox = getCompositeLabelBox(candidate, label);
-      if (!placed.some((existing) => overlaps(labelBox, existing))) {
-        placed.push(labelBox);
-        acceptedLabel = label;
-        break;
-      }
-    }
+    const labelBox = getCompositeLabelBox(candidate, candidate.renderedLabel);
+    const showLabel = candidate.renderedLabel.length > 0 && !placed.some((existing) => overlaps(labelBox, existing));
+    if (showLabel) placed.push(labelBox);
 
     results.set(candidate.id, {
       id: candidate.id,
-      showLabel: acceptedLabel.length > 0,
-      renderedLabel: acceptedLabel,
+      showLabel,
+      renderedLabel: candidate.renderedLabel,
       priorityScore: candidate.priorityScore,
     });
   }
@@ -351,7 +290,7 @@ export function applyCompositeLabelVisibilityPolicy(
   return candidates.map((candidate) => results.get(candidate.id) ?? {
     id: candidate.id,
     showLabel: false,
-    renderedLabel: "",
+    renderedLabel: candidate.label,
     priorityScore: getCompositeLabelPriority(candidate.editorial, candidate.depth, candidate.footprint),
   });
 }
@@ -361,10 +300,7 @@ export function formatCompositeDisplayLabel(
   zoomBucket: EditorialZoomBucket,
   editorial?: GraphEntityEditorial,
 ) {
-  if (zoomBucket === "near") {
-    return region.label;
-  }
-
-  const textBudget = getCompositeTextBudget(zoomBucket, editorial);
-  return getCompositeCandidateLabel(region.label, textBudget);
+  // Composite identity remains readable at every scale, including the compact
+  // point representation. Collision policy controls presence, never the title.
+  return region.label;
 }

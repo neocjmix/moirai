@@ -28,6 +28,9 @@
       "@moirai/lachesis": ["./packages/lachesis/src/index.ts"],
       "@moirai/clotho-application/v5": [
         "./packages/clotho-application/src/v5.ts"
+      ],
+      "@moirai/graph-presentation/layout-engine": [
+        "./packages/graph-presentation/src/layout-engine.ts"
       ]
     }
   },

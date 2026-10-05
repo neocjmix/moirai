@@ -1,6 +1,6 @@
 export * from "./v5-render-grid.js";
 import { createHash } from "node:crypto";
-export { buildV5WorldLayout } from "./v5-world-layout.js";
+export { buildV5WorldLayout, prepareV5LayoutInput } from "./v5-world-layout.js";
 export { buildRenderConcaveHull } from "./v5-render-hull.js";
 export {
   compileV5RenderPublication,
@@ -12,7 +12,11 @@ export type {
   RenderTile,
   RenderPrimitive
 } from "./v5-render-publication.js";
-export type { V5WorldLayout } from "./v5-world-layout.js";
+export type {
+  V5WorldLayout,
+  V5LayoutCanonicalInput,
+  V5LayoutTemporalInput
+} from "./v5-world-layout.js";
 export { buildV5SpatialIndex, spatialIntersects } from "./v5-spatial-index.js";
 export type { V5SpatialIndex, V5SpatialNode } from "./v5-spatial-index.js";
 export { readV5WorldViewport } from "./v5-spatial-read.js";

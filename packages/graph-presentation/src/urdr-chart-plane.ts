@@ -931,6 +931,11 @@ type BuildGraphShellChartPlaneOptions = {
   strategy?: ProcessRegionDerivationStrategy;
   getValidationState?: (recordId: string) => "ok" | "warning" | "error";
   xForceLayout?: Partial<ChartPlaneXForceLayoutOptions>;
+  /** Research strategies replace only X after temporal repair and before
+   * derived envelopes/relations. The default force path stays byte-stable. */
+  placePointX?: (
+    points: readonly { eventId: string; year: number; fixed: boolean }[]
+  ) => ReadonlyMap<string, number>;
   /** A bounded World projection may restrict pairwise repulsion to nearby
    * temporal peers. The inherited small-World renderer keeps its exact path. */
   boundedRepulsion?: { neighborsPerSide: number; windowYears: number };
@@ -2047,12 +2052,42 @@ export function buildGraphShellChartPlane(
   placePropagatedInstantEvents(context, chronologyBoard, state);
   redistributePlacedPointClusters(context, chronologyBoard, state);
   repairPointTemporalPlacement(context, chronologyBoard, state);
-  optimizePointXPositions(
-    context,
-    state,
-    xForceLayout,
-    options?.boundedRepulsion
-  );
+  if (options?.placePointX) {
+    const points = [...state.geometryByEventId].flatMap(
+      ([eventId, geometry]) =>
+        geometry.geometryKind === "point"
+          ? [
+              {
+                eventId,
+                year: state.placedYearByEventId.get(eventId)!,
+                fixed: context.eventKindById.get(eventId) === "anchor"
+              }
+            ]
+          : []
+    );
+    const positions = options.placePointX(points);
+    for (const point of points) {
+      const geometry = state.geometryByEventId.get(point.eventId)!;
+      const x = positions.get(point.eventId);
+      if (
+        geometry.geometryKind !== "point" ||
+        x === undefined ||
+        !Number.isFinite(x)
+      )
+        throw Error("layout_strategy_position_invalid");
+      state.geometryByEventId.set(point.eventId, {
+        ...geometry,
+        position: { ...geometry.position, x }
+      });
+    }
+  } else {
+    optimizePointXPositions(
+      context,
+      state,
+      xForceLayout,
+      options?.boundedRepulsion
+    );
+  }
   deriveCompositeRegions(context, state);
   normalizeContainedByAssignments(context, state);
 

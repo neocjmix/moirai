@@ -1,0 +1,25 @@
+{
+  "deployedSha": "290cbbe1ed15b4927a6bbeb964fcd37a40d9bf2d",
+  "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+  "sourceRevision": 26,
+  "servedRevision": 26,
+  "inputDigest": "c7a03e88039ee665e60051739fbefb9182d26d89bfd8c8fe2f8b41668bd3c4ea",
+  "events": 147,
+  "composites": 19,
+  "collections": 3,
+  "algorithm": "deterministic-slots",
+  "algorithmVersion": "1",
+  "parameters": {
+    "slotSpacing": 170,
+    "collisionWindowYears": 0.1
+  },
+  "browserRequestsDuringTuning": 0,
+  "pageErrors": 0,
+  "labConsoleErrors": 0,
+  "productionConsoleErrors": 1,
+  "knownProductionBackdrop404": 1,
+  "productionGraphHasLabUi": false,
+  "immutableSnapshotPreserved": true,
+  "presetRoundtrip": true,
+  "collectionChangesGeometry": false
+}

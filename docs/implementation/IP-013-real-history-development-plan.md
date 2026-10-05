@@ -21,6 +21,8 @@ Lachesis의 canonical configuration과 Lab candidate는 같은 compute 구현을
 
 production active layout은 하나이고 Lab candidate는 여러 개다. 후보 채택 후 canonical config 승격·compiler version 검토·Publication 재생성/backfill은 별도 작업이다. 모든 대체 알고리즘, 다중 publication 제품, 자동 Collection, 성능 튜닝, canonical 역사 수정/World reset은 활성화하지 않는다.
 
+2026-10-05 사용자는 이 R/Layout Lab slice의 자율 merge·배포·검증을 명시적으로 승인했다. 이 범위에서는 최초 계획의 자동 merge 금지를 대체하며 PR 기반 검토와 실제 배포 검증을 계속한다. 후보 채택이나 canonical config 승격·backfill·역사 쓰기를 승인한 것으로 확대하지 않는다. #324 병합과 runtime·문서 commit 및 배포 증거는 CURRENT와 [Lab evidence](../evidence/ip013/layout-lab.md)가 기록한다.
+
 ## 출발점과 상태
 
 - **구현됨:** IP-011 A1–A3, HUD·수동 선택 제한 제거·표현 분리 일부, IP-012 Render 기본 읽기와 generation/scheduler 초기 구현. 상세 범위는 CURRENT 및 기존 evidence를 따른다.

@@ -2,6 +2,7 @@ import { readFile } from "node:fs/promises";
 import { expect, test, type Page } from "@playwright/test";
 import { computeLayout } from "@moirai/graph-presentation/layout-engine";
 import type { LabPreset } from "../../apps/atropos-web/src/labs/layout/preset";
+import { layoutGeometry } from "../../apps/atropos-web/src/labs/layout/geometry";
 
 const beforeName = "A · 기준 화면 지도";
 const afterName = "B · 바꾼 화면 지도";
@@ -110,6 +111,96 @@ test("stage opacity and small-point text controls preserve the pinned input, cam
   await page.screenshot({
     path: info.outputPath("lab-small-point-label-controls.png")
   });
+});
+
+test("complete labels reach the map edge and Composite color survives the borderless and point stages", async ({
+  page
+}, info) => {
+  await ready(page);
+  const setup = await readPreset(page);
+  const output = computeLayout(setup.snapshot.input, setup);
+  const geometry = layoutGeometry(setup.snapshot, output).find(
+    (item) => item.id === "inner-process"
+  )!;
+  const xs = geometry.polygon.map((point) => point.x);
+  const ys = geometry.polygon.map((point) => point.y);
+  const bounds = {
+    minX: Math.min(...xs),
+    maxX: Math.max(...xs),
+    minY: Math.min(...ys),
+    maxY: Math.max(...ys)
+  };
+  const center = {
+    x: (bounds.minX + bounds.maxX) / 2,
+    y: (bounds.minY + bounds.maxY) / 2
+  };
+  setup.representation.childRevealHeightPx = 0;
+  // Keep the dense synthetic children from consuming this stage/color probe's
+  // point budget; density reduction is exercised explicitly at the end.
+  setup.representation.normalPointCount = 200;
+  setup.representation.smallPointCount = 220;
+  setup.representation.hiddenPointCount = 240;
+  const showSpan = async (span: number) => {
+    const spanX = ((bounds.maxX - bounds.minX) * setup.viewport.width) / span;
+    setup.camera = {
+      x:
+        center.x -
+        ((setup.viewport.width / 2 - 24) * spanX) / setup.viewport.width,
+      y: center.y,
+      spanX,
+      spanY: ((bounds.maxY - bounds.minY) * setup.viewport.height) / span
+    };
+    setup.history.after = {};
+    await page.getByTestId("lab-preset-json").fill(JSON.stringify(setup));
+    await page.getByTestId("lab-preset-restore").click();
+    await expect(page.locator(".lab-status")).toContainText(
+      "저장한 실험을 다시 열었습니다."
+    );
+  };
+  await showSpan(32);
+  const map = page.getByRole("img", { name: afterName });
+  const composite = map.locator('g[data-event-id="inner-process"]');
+  const hull = composite.locator("path");
+  const point = composite.locator("circle").first();
+  const label = map.locator('text[data-event-id="inner-process"]');
+  await expect(composite).toHaveAttribute(
+    "data-representation",
+    "borderless-hull"
+  );
+  await expect(hull).toHaveAttribute("opacity", "1");
+  await expect(hull).toHaveAttribute("stroke-opacity", "0");
+  await expect(label).toHaveAttribute("opacity", "0.58");
+  await expect(label).toHaveText("안쪽 묶음 · 이틀 동안의 사건");
+  const textBounds = await label.evaluate((node) => {
+    const box = (node as SVGGraphicsElement).getBBox();
+    return { left: box.x, right: box.x + box.width };
+  });
+  expect(textBounds.left).toBeLessThan(setup.viewport.width);
+  expect(textBounds.right).toBeGreaterThan(setup.viewport.width);
+  await expect(map.locator('text[data-event-id="dense-process"]')).toHaveText(
+    "밀집 묶음 · 촘촘한 사건 160개와 공유 사건"
+  );
+  const fill = await hull.getAttribute("fill");
+  await expect(point).toHaveAttribute("fill", fill!);
+  await map.scrollIntoViewIfNeeded();
+  await page.screenshot({
+    path: info.outputPath("lab-borderless-edge-label.png")
+  });
+  await showSpan(52);
+  await expect(hull).toHaveAttribute("stroke-opacity", "1");
+  await showSpan(16);
+  await expect(composite).toHaveAttribute(
+    "data-representation",
+    "ordinary-point"
+  );
+  await expect(point).toHaveAttribute("opacity", "1");
+  await expect(point).toHaveAttribute("fill", fill!);
+  setup.representation.normalPointCount = 0;
+  setup.representation.normalHysteresisCount = 0;
+  await showSpan(16);
+  await expect(composite).toHaveAttribute("data-representation", "small-point");
+  await expect(point).toHaveAttribute("fill", fill!);
+  expect(Number(await point.getAttribute("r"))).toBeCloseTo(2.1);
 });
 
 async function coordinates(page: Page, name: string) {

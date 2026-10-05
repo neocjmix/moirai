@@ -3,6 +3,7 @@
 import { useLayoutEffect, useRef } from "react";
 import type { GeographicPainterProps } from "./geographic-canvas";
 import { geographicMesh } from "./geographic-mesh";
+import { DEFAULT_COMPOSITE_FILL } from "../urdr-port/src/components/graph-shell-composite";
 
 const vertex = `#version 300 es
 precision highp float;
@@ -355,13 +356,15 @@ function createPainter(canvas: HTMLCanvasElement) {
               entry.stroke,
               entry.strokeCount,
               c?.label || "#7a3a29",
-              alpha * scene.strokeOpacity,
+              alpha *
+                scene.strokeOpacity *
+                (region.representation?.hullStrokeOpacity ?? 1),
               1.15
             );
             draw(
               entry.fill,
               entry.fillCount,
-              c?.fill || "rgba(214,120,92,.12)",
+              c?.fill || DEFAULT_COMPOSITE_FILL,
               alpha * scene.fillOpacity,
               0
             );
@@ -375,7 +378,7 @@ function createPainter(canvas: HTMLCanvasElement) {
               region.renderedOpacity *
                 (region.representation?.pointOpacity ??
                   (region.compactPoint ? 1 : 0)),
-              c ? color(c.label) : pointFill,
+              color(c?.fill || DEFAULT_COMPOSITE_FILL),
               transform
             );
         }

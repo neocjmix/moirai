@@ -17,6 +17,10 @@ export type CompositeColorAssignment = {
   label: string;
 };
 
+// Palette overflow and the initial color-assignment frame keep the same ink
+// through hull, ordinary point and small point representations.
+export const DEFAULT_COMPOSITE_FILL = "rgb(214, 120, 92)";
+
 const COMPOSITE_COLOR_PALETTE = [
   { fill: "hsl(14 76% 63%)", stroke: "hsl(14 78% 44%)", label: "hsl(14 82% 22%)" },
   { fill: "hsl(42 82% 60%)", stroke: "hsl(42 84% 42%)", label: "hsl(38 88% 20%)" },

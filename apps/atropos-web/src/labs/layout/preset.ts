@@ -5,7 +5,6 @@ import {
 } from "@moirai/graph-presentation/layout-engine";
 import {
   REPRESENTATION_CONFIG_VERSION,
-  DEFAULT_REPRESENTATION_CONFIG,
   validateRepresentationConfig,
   type RepresentationConfig,
   type RepresentationHistory
@@ -105,6 +104,7 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
     (raw.formatVersion !== "layout-lab-preset/1" &&
       raw.formatVersion !== "layout-lab-preset/2") ||
     (raw.representationConfigVersion !== REPRESENTATION_CONFIG_VERSION &&
+      raw.representationConfigVersion !== "lab-representation/2" &&
       raw.representationConfigVersion !== "lab-representation/1")
   )
     throw Error("지원하지 않는 preset/representation version입니다.");
@@ -131,29 +131,28 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
     throw Error("Snapshot digest가 일치하지 않습니다.");
   const afterLayout = selection(raw);
   const restoreRepresentation = (value: unknown) => {
-    if (raw.representationConfigVersion !== "lab-representation/1")
+    if (raw.representationConfigVersion === REPRESENTATION_CONFIG_VERSION)
       return representation(value);
     const legacy = object(value);
-    const added = [
-      "hullOpacityScale",
-      "ordinaryPointOpacityScale",
-      "smallPointOpacityScale",
-      "hullLabelOpacity",
-      "ordinaryLabelOpacity",
-      "smallLabelOpacity"
-    ];
-    if (added.some((key) => key in legacy))
+    const added = {
+      hullBorderFadeStartPx: 0,
+      hullBorderFadePx: 0,
+      ...(raw.representationConfigVersion === "lab-representation/1"
+        ? {
+            hullOpacityScale: 1,
+            ordinaryPointOpacityScale: 1,
+            smallPointOpacityScale: 1,
+            hullLabelOpacity: 0.45,
+            ordinaryLabelOpacity: 1,
+            smallLabelOpacity: 0
+          }
+        : {})
+    };
+    if (Object.keys(added).some((key) => key in legacy))
       throw Error("Invalid legacy representation version");
-    // Version 1 had these exact fixed weights; migration preserves its view.
-    return representation({
-      ...Object.fromEntries(
-        added.map((key) => [
-          key,
-          DEFAULT_REPRESENTATION_CONFIG[key as keyof RepresentationConfig]
-        ])
-      ),
-      ...legacy
-    });
+    // Keep saved thresholds/weights and the original continuously stroked hull.
+    // Version 1's fixed weights are independent of today's research defaults.
+    return representation({ ...added, ...legacy });
   };
   const beforeRaw = object(raw.before);
   const before = {

@@ -65,6 +65,14 @@ afterEach(() => vi.unstubAllGlobals());
 describe("reproducible offline Layout Lab presets", () => {
   it("migrates representation v1 with its original fixed stage opacities", async () => {
     const original = savedExperiment();
+    for (const representation of [
+      original.representation,
+      original.before.representation
+    ]) {
+      representation.hullLabelOpacity = 0.45;
+      representation.hullBorderFadeStartPx = 0;
+      representation.hullBorderFadePx = 0;
+    }
     const legacy = JSON.parse(encode(original));
     legacy.representationConfigVersion = "lab-representation/1";
     const added = [
@@ -73,7 +81,9 @@ describe("reproducible offline Layout Lab presets", () => {
       "smallPointOpacityScale",
       "hullLabelOpacity",
       "ordinaryLabelOpacity",
-      "smallLabelOpacity"
+      "smallLabelOpacity",
+      "hullBorderFadeStartPx",
+      "hullBorderFadePx"
     ];
     for (const key of added) {
       delete legacy.representation[key];
@@ -82,6 +92,50 @@ describe("reproducible offline Layout Lab presets", () => {
     expect(await parseLabPreset(encode(legacy))).toEqual(original);
     delete legacy.representation.hullFadePx;
     await expect(parseLabPreset(encode(legacy))).rejects.toThrow("hullFadePx");
+  });
+
+  it("keeps saved v2 thresholds and stroke visibility independent of new defaults", async () => {
+    const original = savedExperiment();
+    for (const representation of [
+      original.representation,
+      original.before.representation
+    ]) {
+      representation.compactThresholdPx = 32;
+      representation.hullFadePx = 16;
+      representation.compactHysteresisPx = 16;
+      representation.hullBorderFadeStartPx = 0;
+      representation.hullBorderFadePx = 0;
+    }
+    const legacy = JSON.parse(encode(original));
+    legacy.representationConfigVersion = "lab-representation/2";
+    for (const representation of [
+      legacy.representation,
+      legacy.before.representation
+    ]) {
+      delete representation.hullBorderFadeStartPx;
+      delete representation.hullBorderFadePx;
+    }
+    const restored = await parseLabPreset(encode(legacy));
+    expect(restored).toEqual(original);
+    const result = evaluateRepresentationScene(
+      {
+        nodes: [
+          {
+            id: "inner-process",
+            kind: "composite",
+            bounds: { minX: 0, maxX: 36, minY: 0, maxY: 36 }
+          }
+        ]
+      },
+      restored.representation
+    ).nodes[0]!;
+    expect(result.hullStrokeOpacity).toBe(1);
+    expect(result.hullOpacity).toBeGreaterThan(0);
+    expect(result.hullOpacity).toBeLessThan(1);
+    legacy.representation.hullBorderFadePx = 12;
+    await expect(parseLabPreset(encode(legacy))).rejects.toThrow(
+      "legacy representation"
+    );
   });
 
   it("replays independently adjusted stage and label weights exactly", async () => {

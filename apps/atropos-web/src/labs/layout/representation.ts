@@ -2,7 +2,7 @@
  * are produced here. A caller supplies a complete immutable authored closure,
  * projects it with its camera, and keeps this policy's small history in presets.
  */
-export const REPRESENTATION_CONFIG_VERSION = "lab-representation/2";
+export const REPRESENTATION_CONFIG_VERSION = "lab-representation/3";
 
 export interface RepresentationConfig {
   hullOpacityScale: number;
@@ -19,6 +19,8 @@ export interface RepresentationConfig {
   showRelations: boolean;
   compactThresholdPx: number;
   hullFadePx: number;
+  hullBorderFadeStartPx: number;
+  hullBorderFadePx: number;
   compactHysteresisPx: number;
   childRevealHeightPx: number;
   childFadeStartRatio: number;
@@ -46,7 +48,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
   ...(
     [
       ["hullOpacityScale", 1],
-      ["hullLabelOpacity", 0.45],
+      ["hullLabelOpacity", 0.58],
       ["ordinaryPointOpacityScale", 1],
       ["ordinaryLabelOpacity", 1],
       ["smallPointOpacityScale", 1],
@@ -110,7 +112,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "compactThresholdPx",
     label: "Hull → point (px)",
     type: "number",
-    default: 32,
+    default: 20,
     min: 0,
     max: 200,
     step: 1,
@@ -121,7 +123,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "hullFadePx",
     label: "Hull fade interval (px)",
     type: "number",
-    default: 16,
+    default: 8,
     min: 0,
     max: 160,
     step: 1,
@@ -129,10 +131,32 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
       "Smooth hull/point blend above the compact threshold; independent of ownership hysteresis."
   },
   {
+    key: "hullBorderFadeStartPx",
+    label: "Borderless hull span (px)",
+    type: "number",
+    default: 36,
+    min: 0,
+    max: 400,
+    step: 1,
+    description:
+      "Maximum raw screen span at which the hull border is fully hidden. Fill and labels remain."
+  },
+  {
+    key: "hullBorderFadePx",
+    label: "Hull border fade interval (px)",
+    type: "number",
+    default: 12,
+    min: 0,
+    max: 160,
+    step: 1,
+    description:
+      "Border fade above the borderless span. Zero disables the separate border fade for legacy presets."
+  },
+  {
     key: "compactHysteresisPx",
     label: "Compact hysteresis (px)",
     type: "number",
-    default: 16,
+    default: 8,
     min: 0,
     max: 160,
     step: 1,
@@ -357,8 +381,10 @@ export function validateRepresentationHistory(
 
 export interface RepresentationResult {
   id: string;
-  state: "hull" | "ordinary-point" | "small-point" | "hidden";
+  state:
+    "hull" | "borderless-hull" | "ordinary-point" | "small-point" | "hidden";
   hullOpacity: number;
+  hullStrokeOpacity: number;
   ordinaryPointOpacity: number;
   smallPointOpacity: number;
   hiddenOpacity: number;
@@ -454,6 +480,12 @@ export function evaluateRepresentationScene(
           : config.hullFadePx === 0
             ? Number(span > config.compactThresholdPx)
             : smooth((span - config.compactThresholdPx) / config.hullFadePx);
+      const hullStrokeOpacity =
+        config.hullBorderFadePx === 0
+          ? 1
+          : smooth(
+              (span - config.hullBorderFadeStartPx) / config.hullBorderFadePx
+            );
       const rank = ranks.get(node.id);
       const prior = previous[node.id];
       const threshold =
@@ -504,10 +536,9 @@ export function evaluateRepresentationScene(
       );
       const labelOpacity = !config.showLabels
         ? 0
-        : compact
-          ? ordinaryPointOpacity * config.ordinaryLabelOpacity +
-            smallPointOpacity * config.smallLabelOpacity
-          : hullOpacity * config.hullLabelOpacity;
+        : hullOpacity * config.hullLabelOpacity +
+          ordinaryPointOpacity * config.ordinaryLabelOpacity +
+          smallPointOpacity * config.smallLabelOpacity;
       state[node.id] = { compact, normal };
       return {
         id: node.id,
@@ -515,13 +546,18 @@ export function evaluateRepresentationScene(
           opacity <= 0.001
             ? "hidden"
             : !compact && hullOpacity > 0
-              ? "hull"
+              ? hullStrokeOpacity === 0
+                ? "borderless-hull"
+                : "hull"
               : ordinaryPointOpacity > 0
                 ? "ordinary-point"
                 : smallPointOpacity > 0
                   ? "small-point"
-                  : "hull",
+                  : hullStrokeOpacity === 0
+                    ? "borderless-hull"
+                    : "hull",
         hullOpacity,
+        hullStrokeOpacity,
         ordinaryPointOpacity,
         smallPointOpacity,
         hiddenOpacity: 1 - opacity,
@@ -575,7 +611,13 @@ export const REPRESENTATION_GROUPS: readonly {
     ]
   },
   {
-    title: "2 · 보통 점 단계",
+    title: "2 · 테두리 없는 영역 단계",
+    description:
+      "점으로 줄어들기 전에 테두리만 사라지고 영역의 색과 이름은 남습니다.",
+    keys: ["hullBorderFadeStartPx", "hullBorderFadePx"]
+  },
+  {
+    title: "3 · 보통 점 단계",
     description:
       "작게 축소된 묶음과 일반 사건이 점으로 보입니다. 점의 진하기와 이름표를 조절하세요.",
     keys: [
@@ -587,7 +629,7 @@ export const REPRESENTATION_GROUPS: readonly {
     ]
   },
   {
-    title: "3 · 작은 점 단계",
+    title: "4 · 작은 점 단계",
     description:
       "사건이 밀집하면 점을 줄입니다. 이름표는 기본적으로 숨기며, 여기서 켜 보는 실험이 가능합니다.",
     keys: [
@@ -599,7 +641,7 @@ export const REPRESENTATION_GROUPS: readonly {
     ]
   },
   {
-    title: "4 · 숨김 단계",
+    title: "5 · 숨김 단계",
     description:
       "밀집 순위가 기준을 넘으면 점과 이름표가 함께 사라집니다. 실제 사건이나 구성 관계를 삭제하지 않습니다.",
     keys: ["hiddenPointCount", "hiddenPointScale"]
@@ -607,7 +649,7 @@ export const REPRESENTATION_GROUPS: readonly {
   {
     title: "구성 사건·연결선·전환",
     description:
-      "이름 전체 표시, 묶음 안의 사건, 연결선과 전환 시간을 함께 조절합니다. 이름이 겹치거나 화면 밖이면 생략합니다.",
+      "이름 전체 표시, 묶음 안의 사건, 연결선과 전환 시간을 함께 조절합니다. 이름은 화면 경계까지 표시하며, 서로 겹치는 이름은 일부 생략합니다.",
     keys: [
       "showLabels",
       "showChildren",

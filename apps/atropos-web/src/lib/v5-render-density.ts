@@ -1,4 +1,5 @@
 import type { RenderPrimitive } from "@moirai/graph-presentation/server";
+import { semanticTextWidth } from "./graph-semantic-budget";
 export type RenderDensity = {
   pointScale: number;
   opacity: number;
@@ -22,7 +23,8 @@ export function selectRenderDensity(
   primitives: readonly RenderPrimitive[],
   viewport: Box,
   previous: ReadonlyMap<string, RenderDensity>,
-  selectedId?: string
+  selectedId?: string,
+  camera?: { scaleX: number; scaleY: number }
 ): ResolvedRenderPrimitive[] {
   if (!primitives.some((p) => p.visibility?.policy === "render-visibility/1"))
     return [...primitives];
@@ -69,21 +71,63 @@ export function selectRenderDensity(
     minY: viewport.minY - dy,
     maxY: viewport.maxY + dy
   };
+  const labelIntersects = (primitive: RenderPrimitive) => {
+    if (
+      !camera ||
+      !Number.isFinite(camera.scaleX) ||
+      camera.scaleX <= 0 ||
+      !Number.isFinite(camera.scaleY) ||
+      camera.scaleY <= 0
+    )
+      return false;
+    if (primitive.entity.kind === "composite") {
+      // A hull label can continue past any edge, including while external
+      // support is still pending. Keep only candidates in the existing bounded
+      // working set; final native label placement decides glyph intersection.
+      const bounds = primitive.composite?.hullBounds ?? primitive.bounds;
+      const reach = semanticTextWidth(primitive.label) + 24;
+      return overlaps(
+        {
+          minX: bounds.minX - reach / camera.scaleX,
+          maxX: bounds.maxX + reach / camera.scaleX,
+          minY: bounds.minY - reach / camera.scaleY,
+          maxY: bounds.maxY + reach / camera.scaleY
+        },
+        viewport
+      );
+    }
+    if (primitive.geometry.kind !== "point") return false;
+    const { x, y } = primitive.geometry.xy;
+    // Match the native point label's screen offsets and full glyph width.
+    // X/Y scales are independent; a percentage margin cannot represent text.
+    return overlaps(
+      {
+        minX: x + 10 / camera.scaleX,
+        maxX: x + (10 + semanticTextWidth(primitive.label)) / camera.scaleX,
+        minY: y - 24 / camera.scaleY,
+        maxY: y - 6 / camera.scaleY
+      },
+      viewport
+    );
+  };
   const buffered = primitives
+    .map((p) => ({ primitive: p, labelVisible: labelIntersects(p) }))
     .filter(
-      (p) =>
+      ({ primitive: p, labelVisible }) =>
         p.entity.kind !== "relation" &&
         !overlaps(p.bounds, viewport) &&
-        overlaps(p.bounds, paintBounds)
+        (labelVisible || overlaps(p.bounds, paintBounds))
     )
     .sort(
       (a, b) =>
-        (a.visibility?.priority ?? a.id).localeCompare(
-          b.visibility?.priority ?? b.id
-        ) || a.id.localeCompare(b.id)
+        Number(b.labelVisible) - Number(a.labelVisible) ||
+        (a.primitive.visibility?.priority ?? a.primitive.id).localeCompare(
+          b.primitive.visibility?.priority ?? b.primitive.id
+        ) ||
+        a.primitive.id.localeCompare(b.primitive.id)
     )
     .slice(0, 32)
-    .map((p): ResolvedRenderPrimitive => ({
+    .map(({ primitive: p }): ResolvedRenderPrimitive => ({
       ...p,
       renderDensity: previous.get(p.id) ?? normal
     }));

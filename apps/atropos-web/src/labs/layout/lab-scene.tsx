@@ -234,17 +234,17 @@ export function LabScene({
     const box = {
       left: point.x + 8,
       top: point.y - 18,
-      right: point.x + 8 + Math.min(200, [...title].length * 10),
+      right: point.x + 8 + [...title].length * 12,
       bottom: point.y - 3
     };
     const admitted =
       item &&
       state &&
       state.labelOpacity >= 0.01 &&
-      box.left >= 0 &&
-      box.top >= 0 &&
-      box.right <= width &&
-      box.bottom <= height &&
+      box.right > 0 &&
+      box.bottom > 0 &&
+      box.left < width &&
+      box.top < height &&
       !occupied.some(
         (b) =>
           box.left < b.right &&
@@ -285,7 +285,7 @@ export function LabScene({
           {Object.entries(counts)
             .map(
               ([key, value]) =>
-                `${({ hull: "영역", "ordinary-point": "보통 점", "small-point": "작은 점", hidden: "숨김" } as Record<string, string>)[key] ?? key} ${value}`
+                `${({ hull: "영역", "borderless-hull": "테두리 없는 영역", "ordinary-point": "보통 점", "small-point": "작은 점", hidden: "숨김" } as Record<string, string>)[key] ?? key} ${value}`
             )
             .join(" · ")}
         </span>
@@ -466,12 +466,13 @@ export function LabScene({
                       fillOpacity={0.12}
                       stroke="#aa8243"
                       strokeWidth={1.8}
+                      strokeOpacity={state.hullStrokeOpacity}
                       opacity={state.hullOpacity}
                       pointerEvents={
                         state.hullOpacity > 0.01 ? "visiblePainted" : "none"
                       }
                       style={{
-                        transition: `opacity ${config.fadeDurationMs}ms`
+                        transition: `opacity ${config.fadeDurationMs}ms, stroke-opacity ${config.fadeDurationMs}ms`
                       }}
                     />
                   )}
@@ -492,7 +493,7 @@ export function LabScene({
                     cx={point.x}
                     cy={point.y}
                     r={6 * state.radiusScale}
-                    fill={item.kind === "region" ? "#aa8243" : "#324b5c"}
+                    fill={item.kind === "region" ? "#c59a48" : "#324b5c"}
                     opacity={pointOpacity}
                     pointerEvents="none"
                     style={{
@@ -522,9 +523,7 @@ export function LabScene({
               pointerEvents={label.opacity > 0.01 ? "visiblePainted" : "none"}
               style={{ transition: `opacity ${config.labelFadeDurationMs}ms` }}
             >
-              {label.title.length > 22
-                ? `${label.title.slice(0, 22)}…`
-                : label.title}
+              {label.title}
             </text>
           ))}
         </svg>

@@ -18,6 +18,7 @@
 - **Lab 조작성 후속 수정:** 지도 안의 휠·터치가 페이지 스크롤로 전파되는 문제를 고치고, 조절 항목·도움말·오류 안내를 쉬운 한국어로 정리했다. [수정 원인·사용법·검증 범위](../evidence/ip013/layout-lab-korean-interaction.md)를 따른다. 최종 배포 SHA와 운영 검증은 해당 수정 PR 본문과 공개 상태 페이지에서 확인한다.
 - **모바일 전용 Lab:** 이동·확대 버튼과 줌 슬라이더를 제거하고 Atropos의 순수 멀티터치 계산으로 한 손가락 이동·축별 핀치를 연결했다. 휴대폰 크기의 단일 A/B 비교, 화면 높이에 맞는 지도, 기존 저장 파일 호환을 제공한다. [동작·검증](../evidence/ip013/layout-lab-mobile-touch.md)과 해당 수정 PR의 배포 근거를 따른다.
 - **Lab 진입·단계별 가시성:** 긴 snapshot 읽기 동안 로딩 안내를 제공하고, 영역·보통 점·작은 점의 그림/이름표 진하기와 숨김 기준을 묶어 시험한다. 기존 preset 표시를 보존하며 [검증·배포 근거](../evidence/ip013/layout-lab-stage-visibility.md)를 따른다.
+- **텍스트·Composite 표현 후속:** 화면 가장자리와 짧은 Hull에서 제목을 유지하고 이름표 억제를 완화한다. 영역→테두리 없는 영역→보통 점→작은 점 순서와 색상 유지, 더 늦은 점 전환을 운영 GraphShell과 Lab 기본 표현에 적용한다. [동작·검증·배포 근거](../evidence/ip013/layout-text-composite-visibility.md)를 따른다. 배치 좌표·Publication·역사 정본을 바꾸는 작업은 아니다.
 - **실제 역사 read-only:** World `01a107fb-4018-7fcb-8390-836a40fa91cc`, source/served26, Event147·Relation386·Collection3·membership270. dot의 계속되는 입력과 별개로 실험은 고정 snapshot을 쓴다. 대량 확장·인물별 구성·canonical 수정은 수행하지 않는다.
 - **다음:** 실제 Composite의 X/Y 왕복 표현과 baseline/slot 후보를 사용자가 비교한다. constraint/packing/local relaxation, canonical 설정 승격/발행, Collection 자동 ON/OFF·discovery는 별도 후속 범위다.
 - **A5 부분 구현/나머지 재배치:** HUD·표현 분리·선택 제한 제거는 보존. 전체 S0–S7 자동화 완료는 역사 입력 gate가 아니다. [A5 disposition](IP-011-A5-collection-discovery-plan.md)을 따른다.

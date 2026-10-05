@@ -1,7 +1,10 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
-import { retainedCompositePaintTransform } from "../urdr-port/src/components/graph-shell-composite";
+import {
+  DEFAULT_COMPOSITE_FILL,
+  retainedCompositePaintTransform
+} from "../urdr-port/src/components/graph-shell-composite";
 
 type View = { x: number; y: number; scaleX: number; scaleY: number };
 type Size = { width: number; height: number };
@@ -28,6 +31,7 @@ type Region = {
   representation?: {
     point?: { x: number; y: number };
     hullOpacity: number;
+    hullStrokeOpacity: number;
     pointOpacity: number;
   };
 };
@@ -94,6 +98,7 @@ function materialKey(scene: Props) {
         region.pointDisplay,
         alpha(region.renderedOpacity * region.surfaceOpacity),
         region.representation?.hullOpacity,
+        region.representation?.hullStrokeOpacity,
         region.representation?.pointOpacity,
         scene.colors.get(region.id)
       ];
@@ -336,13 +341,16 @@ export function GeographicCanvas(props: Props) {
             const shape = path(region.path);
             context.globalCompositeOperation = "darken";
             // Match the SVG's paint-order: stroke fill.
-            context.globalAlpha = alpha * scene.strokeOpacity;
+            context.globalAlpha =
+              alpha *
+              scene.strokeOpacity *
+              (region.representation?.hullStrokeOpacity ?? 1);
             context.strokeStyle = color?.label || "#7a3a29";
             context.lineWidth = 1.15;
             context.lineJoin = "round";
             context.stroke(shape);
             context.globalAlpha = alpha * scene.fillOpacity;
-            context.fillStyle = color?.fill || "rgba(214,120,92,.12)";
+            context.fillStyle = color?.fill || DEFAULT_COMPOSITE_FILL;
             context.fill(shape);
             context.restore();
           }
@@ -353,7 +361,7 @@ export function GeographicCanvas(props: Props) {
               point,
               region.pointDisplay,
               region.renderedOpacity * pointOpacity,
-              color?.label || paletteRef.current!.fill,
+              color?.fill || DEFAULT_COMPOSITE_FILL,
               false
             );
           context.restore();

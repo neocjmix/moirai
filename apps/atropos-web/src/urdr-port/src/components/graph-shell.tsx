@@ -14,6 +14,7 @@ import { shareWorldGeometryEntities } from "./world-geometry-identity";
 import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
 import { compositePointDisplay, compositeRepresentationDisplay } from "./composite-point-display";
 import { createCompositePanGeometryCache } from "./composite-pan-geometry";
+import { COMPOSITE_LABEL_FONT, createCompositeLabelWidthMeasure, extendCompositeLabelTextPath } from "./composite-label-text-path";
 import { pointDensityDisplay } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
 import { reconcileLabelPaint, LABEL_PAINT_EXIT_MS } from "./label-paint-presence";
@@ -24,7 +25,7 @@ import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-dispo
 import { GeographicCanvas } from "../../../components/geographic-canvas";
 import { GeographicWebGL } from "../../../components/geographic-webgl";
 import { reconcileViewport } from "../viewport-cache";
-import { selectSemanticLabels, fitSemanticText, semanticTextWidth } from "../../../lib/graph-semantic-budget";
+import { selectSemanticLabels, semanticBoundsIntersectViewport, semanticTextWidth } from "../../../lib/graph-semantic-budget";
 import { GraphContextHud } from "../../../components/graph-context-hud";
 import { selectGraphContext, polygonContainsCenter, contextViewportMetrics, CONTEXT_DWELL_MS } from "../../../lib/graph-context-policy";
 import { GraphSourceIsland } from "../../../components/graph-source-island";
@@ -48,6 +49,7 @@ import {
 import {
   getCompositeChildrenOpacity,
   reconcileCompositeColorAssignments,
+  DEFAULT_COMPOSITE_FILL,
   retainedCompositePaintTransform,
   type CompositeColorAssignment,
   type CompositeFadePresence,
@@ -208,7 +210,6 @@ type CompositeRenderState = {
 };
 
 const COMPOSITE_LABEL_LINE_HEIGHT = 18;
-const COMPOSITE_LABEL_CHAR_WIDTH = 8;
 const COMPOSITE_LABEL_GAP = 4;
 const COMPOSITE_LABEL_GUIDE_LENGTH = 8;
 const EDGE_POINT_BACKOFF = 12;
@@ -2910,6 +2911,7 @@ export function GraphShell({
   }, [worldGeometryEntities]);
 
   const worldPointQuery = useMemo(() => createWorldPointQuery(allWorldInstantPoints), [allWorldInstantPoints]);
+  const pointLabelReach = useMemo(() => allWorldInstantPoints.reduce((width, point) => Math.max(width, semanticTextWidth(point.label) + 10), 16), [allWorldInstantPoints]);
   const pointProjection = useMemo(() => {
     const projectedById = new Map();
     return {
@@ -2929,14 +2931,14 @@ export function GraphShell({
     // An open detail fragment keeps its existing context. Otherwise project
     // only visible point candidates and endpoints needed by crossing edges.
     if (renderedEventSelection || selectedEventSelection) return allWorldInstantPoints.map(pointProjection.project);
-    const bounds = worldBoundsForScreenBounds({minX: -16, minY: -16, maxX: viewportSize.width + 16, maxY: viewportSize.height + 16}, view, viewportSize);
+    const bounds = worldBoundsForScreenBounds({minX: -pointLabelReach, minY: -16, maxX: viewportSize.width + 16, maxY: viewportSize.height + 32}, view, viewportSize);
     const candidates = new Map(worldPointQuery.query(bounds).map(point => [point.id, point]));
     for (const segment of chartRelationSegments) for (const id of segment.endpointIds) {
       const point = worldPointQuery.byId.get(id);
       if (point) candidates.set(id, point);
     }
     return [...candidates.values()].sort((a, b) => a.y - b.y || a.x - b.x).map(pointProjection.project);
-  }), [allWorldInstantPoints, worldPointQuery, pointProjection, chartRelationSegments, renderedEventSelection, selectedEventSelection, view, viewportSize, measureGraphPhase]);
+  }), [allWorldInstantPoints, worldPointQuery, pointLabelReach, pointProjection, chartRelationSegments, renderedEventSelection, selectedEventSelection, view, viewportSize, measureGraphPhase]);
   const queryProjectedLabelPoints = useCallback((screenBounds) => {
     graphWorkCountsRef.current.labelQueries++;
     return worldPointQuery.query(worldBoundsForScreenBounds(screenBounds, view, viewportSize)).map(pointProjection.project);
@@ -2948,16 +2950,36 @@ export function GraphShell({
     () => { graphWorkCountsRef.current.worldGeometryBatches++; return measureGraphPhase("worldPreparation", () => prepareCompositeWorldGeometry(worldGeometryEntities, allWorldInstantPoints, compositeHullMode)); },
     [worldGeometryEntities, allWorldInstantPoints, compositeHullMode, measureGraphPhase],
   );
+  const compositeLabelWidths = useMemo(() => {
+    const context = typeof document === "undefined" ? null : document.createElement("canvas").getContext("2d");
+    if (context) context.font = COMPOSITE_LABEL_FONT;
+    return createCompositeLabelWidthMeasure(text => context?.measureText(text).width ?? 0);
+  }, []);
+  const [compositeLabelFontEpoch, setCompositeLabelFontEpoch] = useState(0);
+  useEffect(() => {
+    const loaded = () => {
+      compositeLabelWidths.clear();
+      setCompositeLabelFontEpoch(epoch => epoch + 1);
+    };
+    document.fonts.addEventListener("loadingdone", loaded);
+    return () => document.fonts.removeEventListener("loadingdone", loaded);
+  }, [compositeLabelWidths]);
+  const compositeLabelReach = useMemo(() => preparedWorldCompositeRegions.regions.reduce((reach, region) => Math.max(reach, compositeLabelWidths.width(region.label) + 32), 16), [preparedWorldCompositeRegions, compositeLabelWidths, compositeLabelFontEpoch]);
   const worldCompositeRegions = useMemo(() => {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) return [];
     const bounds = getVisibleWorldBounds(view, viewportSize);
-    return selectCompositeWorldRegions(preparedWorldCompositeRegions, bounds, {
+    return selectCompositeWorldRegions(preparedWorldCompositeRegions, {
+      minX: bounds.minX - compositeLabelReach / view.scaleX,
+      maxX: bounds.maxX + compositeLabelReach / view.scaleX,
+      minY: bounds.minY - compositeLabelReach / view.scaleY,
+      maxY: bounds.maxY + compositeLabelReach / view.scaleY,
+    }, {
       minX: bounds.minX - 16 / view.scaleX,
       maxX: bounds.maxX + 16 / view.scaleX,
       minY: bounds.minY - 16 / view.scaleY,
       maxY: bounds.maxY + 16 / view.scaleY,
     });
-  }, [preparedWorldCompositeRegions, view, viewportSize]);
+  }, [preparedWorldCompositeRegions, compositeLabelReach, view, viewportSize]);
 
   const compositePlacementHistoryRef = useRef({loader, entries: new Map()});
   const chartCompositeRegions = useMemo(() => measureGraphPhase("regionProjectionAndLabels", () => {
@@ -2978,6 +3000,7 @@ export function GraphShell({
         : compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
       const coverage = getPolygonArea(clipPolygonAgainstViewport(projectedPoints, viewportSize)) / Math.max(viewportSize.width * viewportSize.height, 1);
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
+      const labelWidth = Math.max(semanticTextWidth(renderedLabel), 72);
       const placement = compactPoint ? {
         pathPoints: [], attachX: compactPoint.x, attachY: compactPoint.y,
         guideX: compactPoint.x, guideY: compactPoint.y, labelX: compactPoint.x + 10,
@@ -2985,7 +3008,7 @@ export function GraphShell({
         textPathStartOffset: "0%"
       } : resolveCompositeEdgeLabelPlacement(
         projectedPoints,
-        Math.max(renderedLabel.length * COMPOSITE_LABEL_CHAR_WIDTH, 72),
+        labelWidth,
         COMPOSITE_LABEL_LINE_HEIGHT,
         viewportSize,
         COMPOSITE_LABEL_GUIDE_LENGTH,
@@ -2995,6 +3018,7 @@ export function GraphShell({
         geometry.labelPathFrame,
       );
       placements.set(region.id, {label: renderedLabel, placement, compactPoint});
+      const textPlacement = compactPoint ? placement : extendCompositeLabelTextPath(placement, compositeLabelWidths.width(renderedLabel), COMPOSITE_LABEL_LINE_HEIGHT);
       return {
         id: region.id,
         label: region.label,
@@ -3010,7 +3034,7 @@ export function GraphShell({
         pointDisplay: pointDensityDisplay(densityById.get(region.id)),
         // Keep the referenced contour immutable during pan. Translating live
         // native text avoids reshaping glyphs on a rewritten path every frame.
-        labelPath: compactPoint ? "" : buildOpenSplinePath(placement.pathFrame?.points ?? placement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
+        labelPath: compactPoint ? "" : buildOpenSplinePath(textPlacement.pathFrame?.points ?? textPlacement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
         labelPathTransform: placement.pathFrame ? `translate(${placement.pathFrame.offset.x} ${placement.pathFrame.offset.y})` : undefined,
         projectedPoints,
         labelAttachX: placement.attachX,
@@ -3021,7 +3045,7 @@ export function GraphShell({
         labelY: placement.labelY,
         labelAnchor: placement.labelAnchor,
         labelAngle: placement.labelAngle,
-        textPathStartOffset: placement.textPathStartOffset,
+        textPathStartOffset: textPlacement.textPathStartOffset,
         depth: region.depth,
         contains: region.contains,
         containedBy: region.containedBy,
@@ -3086,7 +3110,7 @@ export function GraphShell({
       .map((region) => region.id);
 
     return { regions, activeColorRegionIds, descendantOpacityById, placements } satisfies CompositeRenderState;
-  }), [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache, measureGraphPhase]);
+  }), [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache, measureGraphPhase, compositeLabelWidths, compositeLabelFontEpoch]);
   useEffect(() => {
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
   }, [loader, chartCompositeRegions]);
@@ -3246,7 +3270,8 @@ export function GraphShell({
 
   const chartInstantPoints = useMemo(() => {
     const visiblePoints = allProjectedInstantPoints
-      .filter((point) => point.x >= -16 && point.x <= viewportSize.width + 16 && point.y >= -16 && point.y <= viewportSize.height + 16)
+      .filter((point) => (point.x >= -16 && point.x <= viewportSize.width + 16 && point.y >= -16 && point.y <= viewportSize.height + 16) ||
+        semanticBoundsIntersectViewport({x: point.x + 10, y: point.y - 24, width: semanticTextWidth(point.label), height: 18}, viewportSize))
       .filter((point) => !farZoomElisionState.hiddenPointIds.has(point.id))
       .map((point) => ({
         ...point,
@@ -3267,9 +3292,7 @@ export function GraphShell({
     });
   }, [allProjectedInstantPoints, chartCompositeRegions.descendantOpacityById, farZoomElisionState.hiddenPointIds, viewportSize.height, viewportSize.width, view.scaleY, densityById]);
 
-  const semanticPointCandidates = useMemo(() => discovery?.contextHud
-    ? chartInstantPoints.map(point => ({...point, renderedLabel: fitSemanticText(point.renderedLabel ?? point.label, point.x + 10, viewportSize.width)}))
-    : chartInstantPoints, [discovery?.contextHud, chartInstantPoints, viewportSize.width]);
+  const semanticPointCandidates = chartInstantPoints;
   const previousSemanticIds = useRef<ReadonlySet<string>>(new Set());
   const semanticSelection = useMemo(() => measureGraphPhase("semanticAdmission", () => {
     graphWorkCountsRef.current.semanticPasses++;
@@ -3282,7 +3305,7 @@ export function GraphShell({
     return selectSemanticLabels([
       ...semanticPointCandidates.filter(point => point.showLabel !== false && point.opacity > 0 && (point.renderedLabel ?? point.label).length > 0).map(point => ({
         id: `point:${point.id}`, x: point.x + 10, y: point.y - 24,
-        width: textWidth(point.renderedLabel ?? point.label), height: 44, selected: point.eventId === selectedId,
+        width: textWidth(point.renderedLabel ?? point.label), height: 32, selected: point.eventId === selectedId,
       })),
       ...visibleCompositeRegions.filter(region => region.visibilityState !== "exiting" && region.showLabel && region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0)).map(region => {
         const width = textWidth(region.renderedLabel);
@@ -3293,7 +3316,7 @@ export function GraphShell({
           id: `region:${region.id}`,
           x: region.compactPoint ? region.compactPoint.x + 10 : region.labelX - (region.labelAnchor === "end" ? rotatedWidth : region.labelAnchor === "middle" ? rotatedWidth / 2 : 0),
           y: region.compactPoint ? region.compactPoint.y - 24 : region.labelY - rotatedHeight / 2,
-          width: rotatedWidth, height: Math.max(44, rotatedHeight), selected: region.id === selectedId,
+          width: rotatedWidth, height: Math.max(32, rotatedHeight), selected: region.id === selectedId,
         };
       }),
     ], viewportSize, previousSemanticIds.current);
@@ -3342,7 +3365,7 @@ export function GraphShell({
     ...presentedRegions.filter(region => region.visibilityState !== "exiting" && region.showLabel && region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0)).map(region => ({
       id: `region:${region.id}:${region.compactPoint ? "point" : "hull"}`, entityId: region.id,
       kind: region.compactPoint ? "compact" : "hull", label: region.renderedLabel,
-      opacity: region.compactPoint ? region.pointDisplay.labelOpacity : region.renderedOpacity * region.surfaceOpacity * 0.45,
+      opacity: region.compactPoint ? region.pointDisplay.labelOpacity : region.renderedOpacity * region.surfaceOpacity * 0.58,
       region,
     })),
   ], [presentedPoints, presentedRegions]);
@@ -4167,13 +4190,13 @@ export function GraphShell({
                         transform={region.pathTransform}
                         onPointerDown={region.visibilityState !== "exiting" && !region.compactPoint && !discovery?.contextHud ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
-                          fill: compositeStyle?.fill,
+                          fill: compositeStyle?.fill ?? DEFAULT_COMPOSITE_FILL,
                           pointerEvents: region.compactPoint || region.renderedOpacity * region.surfaceOpacity === 0 || discovery?.contextHud ? "none" : useGeographicCanvas ? "all" : undefined,
                           mixBlendMode: "darken",
                           opacity: region.renderedOpacity * region.surfaceOpacity * hullOpacity,
                           fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY,
                           stroke: compositeStyle?.label,
-                          strokeOpacity: COMPOSITE_SURFACE_STROKE_OPACITY,
+                          strokeOpacity: COMPOSITE_SURFACE_STROKE_OPACITY * (region.representation?.hullStrokeOpacity ?? 1),
                         }}
                       />
                       {point ? <g data-composite-point-id={region.compactPoint ? region.id : undefined}
@@ -4191,7 +4214,7 @@ export function GraphShell({
                           <title>{region.label}</title>
                         </rect> : null}
                         <circle className={styles.chartInstantPoint} cx={point.x} cy={point.y} r={region.pointDisplay.radius}
-                          style={{r: region.pointDisplay.radius, strokeWidth: region.pointDisplay.strokeWidth, fill: compositeStyle?.label, pointerEvents: "none"}} />
+                          style={{r: region.pointDisplay.radius, strokeWidth: region.pointDisplay.strokeWidth, fill: compositeStyle?.fill ?? DEFAULT_COMPOSITE_FILL, pointerEvents: "none"}} />
                         {compactLabelPaint ? <text aria-hidden={compactLabelPaint.phase === "exiting" || !region.compactPoint || !region.showLabel || undefined}
                           data-label-paint-id={compactLabelPaint.id} className={styles.chartInstantPointLabel} x={point.x + 10} y={point.y - 10}
                           style={{opacity: compactLabelPaint.renderedOpacity, fill: compositeStyle?.label, pointerEvents: "none"}}>{compactLabelPaint.label}</text> : null}
@@ -4325,6 +4348,7 @@ export function GraphShell({
                         key={`${region.id}:label`}
                         onPointerDown={interactive ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
+                          font: COMPOSITE_LABEL_FONT,
                           fill: compositeStyle?.label,
                           opacity: labelPaint.renderedOpacity,
                           pointerEvents: interactive ? undefined : "none",

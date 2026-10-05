@@ -79,7 +79,7 @@ async function exitEvidence(page: Page) {
   );
 }
 
-test("semantic label admission fades and reverses at the HUD boundary without replacing Event paint", async ({
+test("semantic label admission fades and reverses at the viewport boundary without replacing Event paint", async ({
   page
 }) => {
   let fixed = false;
@@ -95,10 +95,10 @@ test("semantic label admission fades and reverses at the HUD boundary without re
       position = {
         x:
           (box.minX + box.maxX) / 2 +
-          ((100 - width / 2) * (box.maxX - box.minX)) / (width * 4),
+          ((width - 16 - width / 2) * (box.maxX - box.minX)) / (width * 4),
         y:
           (box.minY + box.maxY) / 2 +
-          ((100 - height / 2) * (box.maxY - box.minY)) / (height * 4)
+          ((400 - height / 2) * (box.maxY - box.minY)) / (height * 4)
       };
     }
     await route.fulfill({
@@ -153,7 +153,7 @@ test("semantic label admission fades and reverses at the HUD boundary without re
   await captureLabelExit(page, true);
   await page.mouse.move(220, 500);
   await page.mouse.down();
-  await page.mouse.move(220, 488);
+  await page.mouse.move(232, 500);
   const reversed = await exitEvidence(page);
   await page.mouse.move(220, 500);
   await page.mouse.up();
@@ -169,7 +169,7 @@ test("semantic label admission fades and reverses at the HUD boundary without re
   await captureLabelExit(page, false);
   await page.mouse.move(220, 500);
   await page.mouse.down();
-  await page.mouse.move(220, 488);
+  await page.mouse.move(232, 500);
   const exit = await exitEvidence(page);
   await page.mouse.up();
   expect(exit.disabledAtExit).toBe(true);
@@ -209,7 +209,7 @@ test("semantic label admission fades and reverses at the HUD boundary without re
   }, pointId);
   await page.mouse.move(220, 500);
   await page.mouse.down();
-  await page.mouse.move(220, 512);
+  await page.mouse.move(208, 500);
   const entry = await page.evaluate(
     async () =>
       (

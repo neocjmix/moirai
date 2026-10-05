@@ -1,3 +1,14 @@
+export const COMPOSITE_COMPACT_THRESHOLD_PX = 20;
+export const COMPOSITE_COMPACT_HYSTERESIS_PX = 8;
+export const COMPOSITE_HULL_FADE_PX = 8;
+export const COMPOSITE_BORDERLESS_SPAN_PX = 36;
+export const COMPOSITE_BORDER_FADE_PX = 12;
+
+const smooth = (value: number) => {
+  const progress = Math.max(0, Math.min(1, value));
+  return progress * progress * (3 - 2 * progress);
+};
+
 /** Screen-only representation; the center is not a canonical Time Event.
  * Separate enter/exit thresholds prevent flicker during a small pinch. */
 export function compositePointDisplay(
@@ -12,7 +23,7 @@ export function compositePointDisplay(
     minY = Math.min(minY, point.y);
     maxY = Math.max(maxY, point.y);
   }
-  const threshold = wasCompact ? 48 : 32;
+  const threshold = COMPOSITE_COMPACT_THRESHOLD_PX + (wasCompact ? COMPOSITE_COMPACT_HYSTERESIS_PX : 0);
   if (maxX - minX > threshold || maxY - minY > threshold) return null;
   return { x: (minX + maxX) / 2, y: (minY + maxY) / 2 };
 }
@@ -34,11 +45,14 @@ export function compositeRepresentationDisplay(
     maxY = Math.max(maxY, point.y);
   }
   const span = Math.max(maxX - minX, maxY - minY);
-  const progress = hullPending ? 0 : Math.max(0, Math.min(1, (span - 32) / 16));
-  const hullOpacity = progress * progress * (3 - 2 * progress);
+  const hullOpacity = hullPending ? 0 : smooth((span - COMPOSITE_COMPACT_THRESHOLD_PX) / COMPOSITE_HULL_FADE_PX);
+  // Let a small Composite keep its colored area after its outline disappears.
+  // This band is separate from the later area/point blend in both zoom directions.
+  const hullStrokeOpacity = hullPending ? 0 : smooth((span - COMPOSITE_BORDERLESS_SPAN_PX) / COMPOSITE_BORDER_FADE_PX);
   return {
     point: { x: (minX + maxX) / 2, y: (minY + maxY) / 2 },
     hullOpacity,
+    hullStrokeOpacity,
     pointOpacity: 1 - hullOpacity,
   };
 }

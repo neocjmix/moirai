@@ -59,6 +59,40 @@ const client = (fetcher: ReturnType<typeof vi.fn>, maxBytes?: number) =>
     fetcher: fetcher as typeof fetch,
     ...(maxBytes ? { maxBytes } : {})
   });
+it("keeps a left-edge label on a cold bounded Render read", async () => {
+  const p: RenderPrimitive = {
+    ...point("edge-label", "one", -30),
+    geometry: { kind: "point", xy: { x: -30, y: 200 } },
+    bounds: { minX: -30, maxX: -30, minY: 200, maxY: 200 },
+    label: "화면 밖 사건의 제목도 화면 경계까지 계속 읽을 수 있습니다",
+    visibility: { policy: "render-visibility/1", priority: "001" }
+  };
+  const visibleViewport = { minX: 0, maxX: 390, minY: 0, maxY: 664 };
+  const requested = { minX: -585, maxX: 975, minY: -996, maxY: 1660 };
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    const request = JSON.parse(init.body as string);
+    expect(request).toMatchObject({ kind: "viewport", viewport: requested });
+    return Response.json({ ...metadata([p]), coverage: [requested] });
+  });
+  const result = await client(fetcher).load(
+    requested,
+    ["one"],
+    undefined,
+    undefined,
+    {
+      scaleX: 1,
+      scaleY: 1,
+      visibleViewport
+    }
+  );
+  expect(result.primitives).toHaveLength(1);
+  expect(result.primitives[0]).toMatchObject({
+    id: p.id,
+    label: p.label,
+    renderDensity: { labelOpacity: 1 }
+  });
+  expect(fetcher).toHaveBeenCalledTimes(1);
+});
 describe("viewport-first render reads", () => {
   it("has two cold requests and zero warm/toggle metadata requests, selecting geometry locally", async () => {
     const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
@@ -226,24 +260,61 @@ it("keeps dormant Composite hulls off the critical path and prefetches near tran
   });
   const c = client(fetcher);
   const cold = await c.load(box(), ["one"], undefined, undefined, {
-    scaleX: 1,
-    scaleY: 1
+    scaleX: 0.5,
+    scaleY: 0.5
   });
   expect(cold.primitives[0]!.geometry.kind).toBe("point");
   expect(fetcher).toHaveBeenCalledTimes(1);
   const near = await c.load(box(), ["one"], undefined, undefined, {
-    scaleX: 2.5,
-    scaleY: 2.5
+    scaleX: 1.5,
+    scaleY: 1.5
   });
   expect(near.primitives[0]!.geometry.kind).toBe("point");
   expect(fetcher).toHaveBeenCalledTimes(2);
   finish(Response.json({ revision: 7, generation: "g", assets: [geom("h")] }));
   await new Promise((resolve) => setTimeout(resolve, 0));
   const active = await c.load(box(), ["one"], undefined, undefined, {
-    scaleX: 4,
-    scaleY: 4
+    scaleX: 2.4,
+    scaleY: 2.4
   });
   expect(active.primitives[0]!.geometry.kind).toBe("polygon");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+it("loads a cold 24px Composite hull despite an older published 32px point threshold", async () => {
+  const p: RenderPrimitive = {
+    ...external("h", "one"),
+    entity: { kind: "composite", id: "h" },
+    bounds: box(),
+    composite: {
+      childEventIds: [],
+      supportComplete: true,
+      worldBounds: box(),
+      hullBounds: box(),
+      transitions: {
+        pointEnterMaxSizePx: 32,
+        pointExitMaxSizePx: 48,
+        childFadeHeightPx: [58, 100],
+        paddingBasePx: 6,
+        paddingPerDepthPx: 5
+      }
+    }
+  };
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) =>
+    Response.json(
+      JSON.parse(init.body as string).kind === "viewport"
+        ? metadata([p])
+        : { revision: 7, generation: "g", assets: [geom("h")] }
+    )
+  );
+  const c = client(fetcher);
+  const result = await c.load(box(), ["one"], undefined, undefined, {
+    scaleX: 2.4,
+    scaleY: 2.4
+  });
+  expect(result.primitives[0]!.geometry.kind).toBe("polygon");
+  expect(
+    result.primitives[0]!.composite?.transitions?.pointEnterMaxSizePx
+  ).toBe(32);
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
 it("refreshes a finer level when zoom stays inside cached coarse coverage", async () => {
@@ -404,9 +475,9 @@ it("promotes a pending hull buffer read across camera changes without abort or d
       scaleX: scale,
       scaleY: scale
     });
-  expect((await load(2.5)).primitives[0]!.geometry.kind).toBe("point");
-  expect((await load(2.8)).primitives[0]!.geometry.kind).toBe("point");
-  const active = load(4);
+  expect((await load(1.5)).primitives[0]!.geometry.kind).toBe("point");
+  expect((await load(1.8)).primitives[0]!.geometry.kind).toBe("point");
+  const active = load(2.4);
   expect(bufferSignal?.aborted).toBe(false);
   expect(fetcher).toHaveBeenCalledTimes(2);
   finish(Response.json({ revision: 7, generation: "g", assets: [geom("h")] }));
@@ -657,17 +728,17 @@ describe.each([250, 750])("delayed %ims render lifecycle", (latency) => {
           scaleX: scale,
           scaleY: scale
         });
-      await load(2);
+      await load(1.5);
       expect(c.inspect().pendingGeometry).toBe(true);
       await vi.advanceTimersByTimeAsync(100);
-      await load(1);
+      await load(0.5);
       expect(bufferSignal?.aborted).toBe(true);
       await vi.advanceTimersByTimeAsync(latency);
       expect(c.inspect()).toMatchObject({
         geometry: 0,
         pendingGeometry: false
       });
-      expect((await load(1)).primitives[0]!.geometry.kind).toBe("point");
+      expect((await load(0.5)).primitives[0]!.geometry.kind).toBe("point");
     } finally {
       vi.useRealTimers();
     }

@@ -59,6 +59,7 @@ function savedExperiment(): LabPreset {
 }
 
 const legacyStageFields = {
+  stagedHierarchy: false,
   hullBorderlessOpacityScale: 1,
   compositePointSizeStages: false,
   smallCompositeSpanPx: 6,
@@ -74,6 +75,55 @@ const encode = (value: unknown) => JSON.stringify(value);
 afterEach(() => vi.unstubAllGlobals());
 
 describe("reproducible offline Layout Lab presets", () => {
+  it("preserves v4 raw-axis stages and child reveal instead of silently adopting the new hierarchy", async () => {
+    const original = savedExperiment();
+    for (const config of [
+      original.representation,
+      original.before.representation
+    ])
+      Object.assign(config, {
+        stagedHierarchy: false,
+        compactThresholdPx: 12,
+        hullFadePx: 8,
+        compactHysteresisPx: 8,
+        hullBorderFadeStartPx: 32,
+        hullBorderFadePx: 12,
+        childRevealHeightPx: 40,
+        childFadeStartRatio: 0.4
+      });
+    const legacy = JSON.parse(encode(original));
+    legacy.representationConfigVersion = "lab-representation/4";
+    delete legacy.representation.stagedHierarchy;
+    delete legacy.before.representation.stagedHierarchy;
+    const restored = await parseLabPreset(encode(legacy));
+    expect(restored).toEqual(original);
+    const input: { nodes: RepresentationNode[] } = {
+      nodes: [
+        {
+          id: "parent",
+          kind: "composite",
+          childIds: ["child"],
+          bounds: { minX: 0, maxX: 28, minY: 0, maxY: 1 }
+        },
+        {
+          id: "child",
+          kind: "composite",
+          bounds: { minX: 0, maxX: 40, minY: 0, maxY: 40 }
+        }
+      ]
+    };
+    const result = evaluateRepresentationScene(input, restored.representation);
+    expect(
+      result.nodes.find((node) => node.id === "parent")!.childrenOpacity
+    ).toBeCloseTo(0.5);
+    expect(
+      result.nodes.find((node) => node.id === "child")!.hullOpacity
+    ).toBeCloseTo(0.5);
+    expect((await parseLabPreset(encode(restored))).representation).toEqual(
+      original.representation
+    );
+  });
+
   it("migrates representation v1 with its original fixed stage opacities", async () => {
     const original = savedExperiment();
     for (const representation of [

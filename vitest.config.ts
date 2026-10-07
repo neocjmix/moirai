@@ -4,6 +4,12 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@moirai/graph-presentation/render-primitive-admission": fileURLToPath(
+        new URL(
+          "./packages/graph-presentation/src/render-primitive-admission.ts",
+          import.meta.url
+        )
+      ),
       "@moirai/graph-presentation/composite-padding-profile": fileURLToPath(
         new URL(
           "./packages/graph-presentation/src/composite-padding-profile.ts",

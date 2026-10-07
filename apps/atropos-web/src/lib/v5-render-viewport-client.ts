@@ -1,10 +1,12 @@
 import {
   selectRenderDensity,
+  resolveRenderCompositeSpans,
   hiddenRenderDensity,
   type ResolvedRenderPrimitive,
   type RenderDensity
 } from "./v5-render-density";
 import type { RenderPrimitive } from "@moirai/graph-presentation/server";
+import { selectRenderPrimitiveClosure } from "@moirai/graph-presentation/render-primitive-admission";
 import { COMPOSITE_COMPACT_THRESHOLD_PX } from "../urdr-port/src/components/composite-point-display";
 
 type Box = { minX: number; maxX: number; minY: number; maxY: number };
@@ -323,13 +325,20 @@ export function createV5RenderViewportClient(input: {
           : []),
         ...value.primitives
       ]) {
-        if (!overlaps(primitive.bounds, readBox)) continue;
         const old = merged.get(primitive.id);
         if (old && JSON.stringify(old) !== JSON.stringify(primitive))
           throw Error("render_replica_mismatch");
         merged.set(primitive.id, primitive);
       }
-      metadata = { ...value, primitives: [...merged.values()] };
+      const available = [...merged.values()];
+      metadata = {
+        ...value,
+        primitives: selectRenderPrimitiveClosure(
+          available.filter((primitive) => overlaps(primitive.bounds, readBox)),
+          available.length,
+          { available }
+        )
+      };
       if (
         delta &&
         !pending &&
@@ -359,14 +368,18 @@ export function createV5RenderViewportClient(input: {
       trimCache();
     }
     const selected = new Set(collectionIds);
-    const visible = metadata.primitives.filter(
+    const eligible = metadata.primitives.filter(
       (p) =>
-        overlaps(p.bounds, viewport) &&
         p.collectionIds.some((id) => selected.has(id)) &&
         (!p.endpointCollectionIds ||
           p.endpointCollectionIds.every((ids) =>
             ids.some((id) => selected.has(id))
           ))
+    );
+    const visible = selectRenderPrimitiveClosure(
+      eligible.filter((p) => overlaps(p.bounds, viewport)),
+      eligible.length,
+      { available: eligible }
     );
     const buffered = new Map<string, GeometryRef>();
     const densityScene = camera?.visibleViewport
@@ -378,6 +391,9 @@ export function createV5RenderViewportClient(input: {
           camera
         )
       : visible;
+    const compositeSpans = camera
+      ? resolveRenderCompositeSpans(visible, camera)
+      : new Map<string, number>();
     const scene = densityScene.map((p): ResolvedRenderPrimitive => {
       if (
         !camera ||
@@ -387,10 +403,7 @@ export function createV5RenderViewportClient(input: {
       )
         return p;
       const b = p.composite.hullBounds ?? p.bounds;
-      const span = Math.max(
-        (b.maxX - b.minX) * camera.scaleX,
-        (b.maxY - b.minY) * camera.scaleY
-      );
+      const span = compositeSpans.get(p.entity.id) ?? 0;
       // Immutable publications can carry the older, larger compact threshold.
       // Fetch support when the current painter needs an area, without rewriting
       // that publication or leaving a cold small Composite stuck as a point.

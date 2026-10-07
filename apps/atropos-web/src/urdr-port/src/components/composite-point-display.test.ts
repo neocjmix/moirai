@@ -39,13 +39,13 @@ it("large point, small point and hidden are ordered by span even when density ra
   expect(point(2)).toMatchObject({opacity:0.5,strokeWidth:0,state:"small-point"});
   expect(point(1)).toMatchObject({opacity:0,state:"hidden"});
 });
-it("child points shrink and labels leave while the parent still has hull coverage", () => {
+it("child points shrink and labels leave before the parent point disappears", () => {
   const expanded = compositeRepresentationDisplay(box(40))!;
-  const handoff = compositeRepresentationDisplay(box(28))!;
-  const collapsed = compositeRepresentationDisplay(box(16))!;
+  const handoff = compositeRepresentationDisplay(box(10))!;
+  const collapsed = compositeRepresentationDisplay(box(4))!;
   expect(expanded.childrenOpacity).toBe(1);
   expect(handoff.childrenOpacity).toBe(0.5);
-  expect(handoff.hullOpacity).toBe(1);
+  expect(handoff.pointOpacity).toBe(1);
   expect(collapsed.childrenOpacity).toBe(0);
   expect(collapsed.hullOpacity + collapsed.pointOpacity).toBe(1);
   const child = withParentPointHandoff(pointDensityDisplay(), handoff.childrenOpacity);
@@ -61,7 +61,7 @@ it("keeps the pending point visible and suppresses premature child paint on cold
   const pending = compositeRepresentationDisplay(box(100), true)!;
   const ready = compositeRepresentationDisplay(box(100))!;
   expect(pending.point).toEqual(ready.point);
-  expect(pending).toMatchObject({hullOpacity:0,hullStrokeOpacity:0,pointOpacity:1,childrenOpacity:0});
+  expect(pending).toMatchObject({hullOpacity:0,hullStrokeOpacity:0,pointOpacity:1,childrenOpacity:1});
   expect(compositePointDensityDisplay(pending, {pointScale:0.2,opacity:0,labelOpacity:0}).opacity).toBe(1);
   expect(ready).toMatchObject({hullOpacity:1,hullStrokeOpacity:1,pointOpacity:0,childrenOpacity:1});
   expect(compositeRepresentationDisplay([])).toBeNull();
@@ -70,5 +70,18 @@ it("preserves co-located authored Composites as colored point candidates at ever
   const representation = compositeRepresentationDisplay(box(0))!;
   expect(representation).toMatchObject({degenerate:true,hullOpacity:0,pointOpacity:1,pointVisibility:1});
   expect(compositePointDensityDisplay(representation)).toMatchObject({radius:6,opacity:1,state:"point"});
-  expect(compositePointDensityDisplay(representation, {pointScale:0.35,opacity:1,labelOpacity:0})).toMatchObject({opacity:1,strokeWidth:0,state:"small-point"});
+  expect(compositePointDensityDisplay(representation, {pointScale:0,opacity:0,labelOpacity:0})).toMatchObject({radius:6,opacity:1,state:"point"});
+});
+it("zero-extent Composite support always paints a point while inherited size controls its complete fade",()=>{
+  for(const [span,expectedScale,expectedVisibility] of [[200,1,1],[12,1,1],[6,0.35,1],[2,0.35,0.5],[0.5,0.35,0]] as const) {
+    const display=compositeRepresentationDisplay(box(0),false,span)!;
+    expect(display).toMatchObject({degenerate:true,hullOpacity:0,hullStrokeOpacity:0,pointOpacity:1,pointScale:expectedScale,pointVisibility:expectedVisibility});
+    expect(compositePointDisplay(box(0),false,span)).toEqual({x:10,y:20});
+    const dot=compositePointDensityDisplay(display,{pointScale:0,opacity:0,labelOpacity:0});
+    expect(dot.radius).toBeCloseTo(expectedScale*6);
+    expect(dot.opacity).toBe(expectedVisibility);
+  }
+  // A narrow but tall contour retains its area representation.
+  expect(compositeRepresentationDisplay(box(0,100),false,200)).toMatchObject({degenerate:false,hullOpacity:1,pointOpacity:0});
+  expect(compositePointDisplay(box(0,100),false,200)).toBeNull();
 });

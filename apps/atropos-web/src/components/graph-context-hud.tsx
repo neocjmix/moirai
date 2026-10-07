@@ -5,7 +5,7 @@ import { useGraphQuery } from "./graph-query-context";
 import type { AppLocale } from "../urdr-port/src/locale";
 import styles from "./graph-context-hud.module.css";
 
-/** S1 orientation and a manual escape. Inference/pins arrive in later slices. */
+/** World, active context and Collection controls share the right screen edge. */
 function GraphContextHudContent({
   locale,
   topic
@@ -58,27 +58,6 @@ function GraphContextHudContent({
             <span>{world.label[locale]}</span>
             <span aria-hidden="true">⌄</span>
           </a>
-          <a
-            className={styles.events}
-            href={`/worlds/${world.id}/events`}
-            aria-label={ko ? "사건 목록" : "Events"}
-          >
-            <svg
-              width="15"
-              height="15"
-              viewBox="0 0 20 20"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="1.5"
-              aria-hidden="true"
-            >
-              <path
-                d="M7 5h10M7 10h10M7 15h10M3 5h.1M3 10h.1M3 15h.1"
-                strokeLinecap="round"
-              />
-            </svg>
-            {ko ? "목록" : "Events"}
-          </a>
         </div>
         {topic ? (
           <div
@@ -90,17 +69,35 @@ function GraphContextHudContent({
             {topic.label}
           </div>
         ) : null}
+        <button
+          ref={trigger}
+          className={styles.trigger}
+          type="button"
+          data-testid="graph-collection-trigger"
+          aria-label={`${ko ? "컬렉션" : "Collections"} ${selected.length}`}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          onClick={() => setOpen(true)}
+        >
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.6"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <path d="m12 3 9 5-9 5-9-5 9-5Z" />
+            <path d="m3 12 9 5 9-5M3 16l9 5 9-5" />
+          </svg>
+          <span className={styles.badge} aria-hidden="true">
+            {selected.length}
+          </span>
+        </button>
       </div>
-      <button
-        ref={trigger}
-        className={styles.trigger}
-        type="button"
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        onClick={() => setOpen(true)}
-      >
-        {ko ? "컬렉션" : "Collections"} <span>{selected.length}</span>
-      </button>
       <dialog
         ref={dialog}
         className={styles.dialog}

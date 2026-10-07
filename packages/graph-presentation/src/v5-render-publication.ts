@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import type { V5WorldLayout } from "./v5-world-layout.js";
 import { buildRenderConcaveHull } from "./v5-render-hull.js";
+import { selectRenderPrimitiveClosure } from "./render-primitive-admission.js";
 import {
   buildCompositePaddingProfile,
   type CompositePaddingProfile
@@ -57,7 +58,7 @@ export type RenderPrimitive = Readonly<{
       pointExitMaxSizePx: number;
       /** Legacy height-only reader policy; retained for older publications/readers. */
       childFadeHeightPx: readonly [number, number];
-      /** Current children handoff uses the longest projected hull dimension. */
+      /** Leaf handoff by Y-dominant span; Composite children keep their own stages. */
       childFadeSpanPx?: readonly [number, number];
       paddingBasePx: number;
       paddingPerDepthPx: number;
@@ -454,7 +455,7 @@ export function compileV5RenderPublication(
           pointEnterMaxSizePx: 12,
           pointExitMaxSizePx: 20,
           childFadeHeightPx: [58, 100] as const,
-          childFadeSpanPx: [16, 40] as const,
+          childFadeSpanPx: [4, 16] as const,
           paddingBasePx: 6,
           paddingPerDepthPx: 5
         }
@@ -658,6 +659,11 @@ export function compileV5RenderPublication(
     homeLevels.set(primitive.id, homeLevel);
   }
   const tiles: RenderTile[] = [];
+  const authoredOwners = new Map(
+    renderPrimitives
+      .filter((primitive) => primitive.entity.kind === "composite")
+      .map((primitive) => [primitive.entity.id, primitive])
+  );
   const overflowLevels = new Set<number>();
   // Spatial resolution is independent of semantic LOD. In particular a signed
   // negative cell level must not silently erase authored hulls or Events.
@@ -710,20 +716,35 @@ export function compileV5RenderPublication(
     >();
     const represented = new Set<string>();
     for (const bucket of orderedBuckets) {
-      // Reserve room for both authored Composite context and individual Events.
-      // Spare capacity is shared; these are paint budgets, not ontology ranks.
+      // A child bucket also carries its prepared authored owners. A large
+      // parent's coarse overflow bucket has an independent candidate budget;
+      // relying on it can leave fine children visible with their parent absent.
+      // Only metadata is replicated into existing buckets; geometry stays
+      // content-addressed and every output bucket retains the same 128 cap.
+      const available = new Map(
+        bucket.primitives.map((item) => [item.id, item])
+      );
+      for (const item of bucket.primitives)
+        if (item.entity.kind !== "relation")
+          for (const id of item.ancestorCompositeIds ??
+            item.parentCompositeIds ??
+            []) {
+            const parent = authoredOwners.get(id);
+            if (parent) available.set(parent.id, parent);
+          }
+      bucket.primitives = [...available.values()];
+      // Preserve authored context before ranking leaves. Random owner omission
+      // must not erase a still-large hull at a spatial tile-level boundary.
       const composites = bucket.primitives
         .filter((item) => item.entity.kind === "composite")
         .sort(priority);
       const events = bucket.primitives
         .filter((item) => item.entity.kind === "event")
         .sort(priority);
-      const chosen = [...composites.slice(0, 32), ...events.slice(0, 80)];
-      const chosenIds = new Set(chosen.map((item) => item.id));
-      const remainder = [...composites, ...events]
-        .filter((item) => !chosenIds.has(item.id))
-        .sort(priority);
-      chosen.push(...remainder.slice(0, 112 - chosen.length));
+      const chosen = selectRenderPrimitiveClosure(
+        [...composites, ...events],
+        112
+      );
       selectedByBucket.set(bucket, chosen);
       for (const primitive of chosen) represented.add(primitive.entity.id);
     }
@@ -744,7 +765,18 @@ export function compileV5RenderPublication(
           (item) => item.entity.kind !== "relation" && !chosenIds.has(item.id)
         )
         .sort(priority);
-      chosen.push(...remainingEntities.slice(0, 128 - chosen.length));
+      chosen.push(
+        ...selectRenderPrimitiveClosure(
+          remainingEntities,
+          128 - chosen.length,
+          {
+            available: bucket.primitives.filter(
+              (item) => item.entity.kind !== "relation"
+            ),
+            already: chosen.filter((item) => item.entity.kind !== "relation")
+          }
+        )
+      );
       chosen.sort(priority);
       const address = {
         level,

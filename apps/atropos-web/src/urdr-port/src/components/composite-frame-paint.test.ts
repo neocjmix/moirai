@@ -1,9 +1,11 @@
 import { expect, it } from "vitest";
 import {
+  hasVisiblePaintLifetime,
   needsCompositePaintFrame as needsFrame,
   reconcileCompositeFramePaint as paint
 } from "./composite-frame-paint";
 import { retainedCompositePaintTransform } from "./graph-shell-composite";
+import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
 
 const region = (id: string, pan = 0, opacity = 1) => ({
   id,
@@ -93,4 +95,48 @@ it("prunes old coverage during continuous changes and clears an all-off scene", 
   scene = paint(scene, [], 10_236);
   expect(scene).toEqual([]);
   expect(needsFrame(scene)).toBe(false);
+});
+it("paints a newly admitted parent immediately when an authored child is already visible",()=>{
+  let scene=paint([], [{...region("child"),contains:[]}],0);
+  scene=paint(scene,[{...region("child"),contains:[]}],16,true);
+  const parent={...region("parent"),contains:["child"]};
+  const next=paint(scene,[parent,{...region("child"),contains:[]}],32);
+  expect(next.find(item=>item.id==="parent")).toMatchObject({renderedOpacity:1,visibilityState:"present"});
+  expect(next.find(item=>item.id==="child")?.renderedOpacity).toBe(1);
+  const leafParent=paint([], [{...region("leaf-parent"),contains:["leaf"]}],32,false,220,new Set(["leaf"]));
+  expect(leafParent[0]?.renderedOpacity).toBe(1);
+});
+it("cold parent and child scenes enter together without replaying an old zoom",()=>{
+  const incoming=[{...region("parent"),contains:["child"]},{...region("child"),contains:[]}];
+  const cold=paint([],incoming,0);
+  expect(cold.map(item=>item.renderedOpacity)).toEqual([0,0]);
+  const next=paint(cold,incoming,16,true);
+  expect(next.map(item=>item.renderedOpacity)).toEqual([1,1]);
+});
+
+it("a new parent owns retained Composite exits until their paint deadline", () => {
+  const child = {...region("child"), contains: []};
+  let scene = paint([], [child], 0);
+  scene = paint(scene, [child], 16, true);
+  scene = paint(scene, [], 32);
+  scene = paint(scene, [], 48, true);
+  expect(scene[0]).toMatchObject({renderedOpacity: 0, exitStartedAt: 48});
+  const parent = {...region("parent"), contains: ["child"]};
+  const incoming = paint(scene, [parent], 64);
+  expect(incoming.find(item => item.id === "parent")).toMatchObject({renderedOpacity: 1, visibilityState: "present"});
+  expect(incoming.find(item => item.id === "child")?.exitStartedAt).toBe(48);
+  // A spent history entry cannot keep the immediate-ownership exception alive.
+  const expired = paint(scene, [parent], 268);
+  expect(expired).toHaveLength(1);
+  expect(expired[0]).toMatchObject({renderedOpacity: 0, visibilityState: "entering"});
+});
+
+it("a new parent owns a fading retained leaf without extending its lifetime", () => {
+  const retained = retainPointPaint<{id: string; opacity: number}>([{id: "leaf", opacity: 1}], [], 48);
+  expect(retained[0]).toMatchObject({opacity: 0, exitStartedAt: 48});
+  const parent = {...region("parent"), contains: ["leaf"]};
+  const pointIds = (now: number) => new Set(retained.filter(point => hasVisiblePaintLifetime(point.opacity, point.exitStartedAt, now, POINT_PAINT_FADE_MS)).map(point => point.id));
+  expect(paint([], [parent], 64, false, 220, pointIds(64))[0]?.renderedOpacity).toBe(1);
+  expect(paint([], [parent], 268, false, 220, pointIds(268))[0]?.renderedOpacity).toBe(0);
+  expect(retainPointPaint(retained, [], 268)).toEqual([]);
 });

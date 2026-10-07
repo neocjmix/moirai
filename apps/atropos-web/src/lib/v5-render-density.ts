@@ -1,6 +1,11 @@
 import type { RenderPrimitive } from "@moirai/graph-presentation/server";
+import { selectRenderPrimitiveClosure } from "@moirai/graph-presentation/render-primitive-admission";
 import { semanticTextWidth } from "./graph-semantic-budget";
 import { COMPOSITE_HIDDEN_SPAN_PX } from "../urdr-port/src/components/composite-point-display";
+import {
+  compositeStageSpan,
+  resolveCompositeHierarchySpans
+} from "../urdr-port/src/components/composite-visibility-policy";
 export type RenderDensity = {
   pointScale: number;
   opacity: number;
@@ -15,6 +20,44 @@ const overlaps = (a: Box, b: Box) =>
 const normal: RenderDensity = { pointScale: 1, opacity: 1, labelOpacity: 1 };
 const small: RenderDensity = { pointScale: 0.35, opacity: 1, labelOpacity: 0 };
 const hidden: RenderDensity = { pointScale: 0.2, opacity: 0, labelOpacity: 0 };
+
+/** Use the same ordered authored spans for admission and geometry prefetch.
+ * Reverse ancestry also covers Composite child lists capped in Publication. */
+export function resolveRenderCompositeSpans(
+  primitives: readonly RenderPrimitive[],
+  camera: { scaleX: number; scaleY: number }
+): Map<string, number> {
+  const children = new Map<string, Set<string>>();
+  for (const primitive of primitives) {
+    if (primitive.entity.kind !== "composite") continue;
+    const own = children.get(primitive.entity.id) ?? new Set<string>();
+    for (const child of primitive.composite?.childEventIds ?? [])
+      own.add(child);
+    children.set(primitive.entity.id, own);
+    for (const ancestor of primitive.ancestorCompositeIds ??
+      primitive.parentCompositeIds ??
+      []) {
+      const ids = children.get(ancestor) ?? new Set<string>();
+      ids.add(primitive.entity.id);
+      children.set(ancestor, ids);
+    }
+  }
+  return resolveCompositeHierarchySpans(
+    primitives
+      .filter((primitive) => primitive.entity.kind === "composite")
+      .map((primitive) => {
+        const bounds = primitive.composite?.hullBounds ?? primitive.bounds;
+        return {
+          id: primitive.entity.id,
+          span: compositeStageSpan(
+            (bounds.maxX - bounds.minX) * camera.scaleX,
+            (bounds.maxY - bounds.minY) * camera.scaleY
+          ),
+          childIds: [...(children.get(primitive.entity.id) ?? [])]
+        };
+      })
+  );
+}
 
 /** Visibility is presentation, never a synthetic entity or canonical importance.
  * Publication already bounds candidates; this final local budget does not hide
@@ -32,16 +75,15 @@ export function selectRenderDensity(
   const candidates = primitives.filter(
     (p) => p.entity.kind !== "relation" && overlaps(p.bounds, viewport)
   );
+  const compositeSpans = camera
+    ? resolveRenderCompositeSpans(primitives, camera)
+    : new Map<string, number>();
   // Keep the authored owner through its hull, large-point and small-point
   // handoff before density ranks individual children. Releasing priority at
   // compact entry would drop the replacement point in the very same frame.
   const visibleComposite = (p: RenderPrimitive) => {
     if (!camera || p.entity.kind !== "composite" || !p.composite) return false;
-    const b = p.composite.hullBounds ?? p.bounds;
-    const span = Math.max(
-      (b.maxX - b.minX) * camera.scaleX,
-      (b.maxY - b.minY) * camera.scaleY
-    );
+    const span = compositeSpans.get(p.entity.id) ?? 0;
     return span === 0 || span > COMPOSITE_HIDDEN_SPAN_PX;
   };
   candidates.sort(
@@ -53,8 +95,12 @@ export function selectRenderDensity(
       ) ||
       a.id.localeCompare(b.id)
   );
-  const admitted = candidates.slice(0, 128);
+  const available = primitives.filter((p) => p.entity.kind !== "relation");
+  const admitted = selectRenderPrimitiveClosure(candidates, 128, { available });
   const result = admitted.map((p, rank): ResolvedRenderPrimitive => {
+    // Ancestors enter before a selected descendant. Its explicit focus must
+    // still retain normal paint even when a deep closure uses many ranks.
+    if (p.entity.id === selectedId) return { ...p, renderDensity: normal };
     const old = previous.get(p.id);
     const threshold =
       candidates.length <= 64
@@ -124,7 +170,7 @@ export function selectRenderDensity(
       viewport
     );
   };
-  const buffered = primitives
+  const bufferedCandidates = primitives
     .map((p) => ({ primitive: p, labelVisible: labelIntersects(p) }))
     .filter(
       ({ primitive: p, labelVisible }) =>
@@ -140,11 +186,14 @@ export function selectRenderDensity(
         ) ||
         a.primitive.id.localeCompare(b.primitive.id)
     )
-    .slice(0, 32)
-    .map(({ primitive: p }): ResolvedRenderPrimitive => ({
-      ...p,
-      renderDensity: previous.get(p.id) ?? normal
-    }));
+    .map(({ primitive }) => primitive);
+  const buffered = selectRenderPrimitiveClosure(bufferedCandidates, 32, {
+    available,
+    already: admitted
+  }).map((p): ResolvedRenderPrimitive => ({
+    ...p,
+    renderDensity: previous.get(p.id) ?? normal
+  }));
   result.push(...buffered);
   const entities = new Set(
     result

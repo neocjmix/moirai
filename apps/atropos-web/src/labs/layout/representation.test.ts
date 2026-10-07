@@ -6,6 +6,8 @@ import {
 import {
   DEFAULT_REPRESENTATION_CONFIG as defaults,
   evaluateRepresentationScene as evaluate,
+  advanceRepresentationStages,
+  representationStageSpans,
   validateRepresentationConfig,
   validateRepresentationHistory,
   REPRESENTATION_GROUPS,
@@ -137,7 +139,7 @@ describe("isolated research representation policy", () => {
     }
   });
 
-  it("uses the raw parent span to reveal wide and shallow authored descendants", () => {
+  it("uses the time-axis span for default reveal and retains legacy raw-span controls", () => {
     for (const span of [0, 12, 16, 28, 40, 100]) {
       const wide = evaluate({ nodes: [composite(span, 1)] }).nodes[0]!;
       const tall = evaluate({ nodes: [composite(1, span)] }).nodes[0]!;
@@ -146,7 +148,24 @@ describe("isolated research representation policy", () => {
         { x: span, y: 1 }
       ])!;
       expect(wide.childrenOpacity).toBeCloseTo(expected.childrenOpacity);
-      expect(wide.childrenOpacity).toBe(tall.childrenOpacity);
+      const expectedTall = compositeRepresentationDisplay([
+        { x: 0, y: 0 },
+        { x: 1, y: span }
+      ])!;
+      expect(tall.childrenOpacity).toBeCloseTo(expectedTall.childrenOpacity);
+      const legacy = {
+        ...defaults,
+        stagedHierarchy: false,
+        childRevealHeightPx: 40,
+        childFadeStartRatio: 0.4
+      };
+      expect(
+        evaluate({ nodes: [composite(span, 1)] }, legacy).nodes[0]!
+          .childrenOpacity
+      ).toBe(
+        evaluate({ nodes: [composite(1, span)] }, legacy).nodes[0]!
+          .childrenOpacity
+      );
     }
     expect(
       evaluate({ nodes: [composite(300, 1)] }).nodes[0]!.childrenOpacity
@@ -191,7 +210,12 @@ describe("isolated research representation policy", () => {
       relations: [{ id: "relation", endpointIds: ["leaf", "shared"] }]
     };
     const before = JSON.stringify(input);
-    const result = evaluate(input);
+    const result = evaluate(input, {
+      ...defaults,
+      stagedHierarchy: false,
+      childRevealHeightPx: 40,
+      childFadeStartRatio: 0.4
+    });
     expect(
       result.nodes.find((node) => node.id === "leaf")!.opacity
     ).toBeCloseTo(0.5);
@@ -210,9 +234,9 @@ describe("isolated research representation policy", () => {
           { id: "child", kind: "event", bounds: bounds(0, 0) }
         ]
       }).nodes.find((node) => node.id === "child")!;
-    const open = sample(40),
-      half = sample(28),
-      closed = sample(16);
+    const open = sample(16),
+      half = sample(10),
+      closed = sample(4);
     expect(open.radiusScale).toBe(1);
     expect(open.labelOpacity).toBe(1);
     expect(half.state).toBe("small-point");
@@ -222,16 +246,16 @@ describe("isolated research representation policy", () => {
     expect(closed.state).toBe("hidden");
   });
 
-  it("retains zero-extent authored Composites as density-budgeted points on cold restore", () => {
+  it("retains zero-extent root Composites as visible points on cold restore", () => {
     expect(evaluate({ nodes: [composite(0)] }).nodes[0]!.state).toBe(
       "ordinary-point"
     );
     const node = evaluate({ nodes: [composite(0), ...points(80)] }).nodes.find(
       (node) => node.id === "composite"
     )!;
-    expect(node.state).toBe("small-point");
+    expect(node.state).toBe("ordinary-point");
     expect(node.opacity).toBe(1);
-    expect(node.radiusScale).toBe(0.35);
+    expect(node.radiusScale).toBe(1);
   });
 
   it("exposes ordinary/small/fading/hidden density ranks and retention hysteresis", () => {
@@ -352,4 +376,119 @@ describe("isolated research representation policy", () => {
       validateRepresentationHistory({ x: { compact: "true", normal: true } })
     ).toThrow("history entry");
   });
+});
+
+it("keeps each Composite stage independent and its parent visible later, including malformed bounds and zero-span children", () => {
+  for (const span of [100, 44, 32, 20, 12, 8, 6, 3, 2, 1, 0.5]) {
+    const nodes: RepresentationNode[] = [
+      { ...composite(1, span / 3), id: "parent", childIds: ["child"] },
+      { ...composite(1, span), id: "child", childIds: ["leaf"] },
+      { id: "leaf", kind: "event", bounds: bounds(0, 0) }
+    ];
+    const spans = representationStageSpans(nodes, defaults);
+    expect(spans.get("parent")).toBeGreaterThanOrEqual(
+      spans.get("child")! * 1.35
+    );
+    const result = evaluate({ nodes });
+    const parent = result.nodes.find((node) => node.id === "parent")!;
+    const child = result.nodes.find((node) => node.id === "child")!;
+    const expected = compositeRepresentationDisplay(
+      [
+        { x: 0, y: 0 },
+        { x: 1, y: span }
+      ],
+      false,
+      spans.get("child")
+    )!;
+    expect(child.opacity).toBeCloseTo(
+      expected.hullOpacity + expected.pointOpacity * expected.pointVisibility
+    );
+    if (parent.state === "hidden") expect(child.state).toBe("hidden");
+    const zeroChild = evaluate({
+      nodes: nodes.map((node) =>
+        node.id === "child" ? { ...node, bounds: bounds(0, 0) } : node
+      )
+    });
+    if (
+      zeroChild.nodes.find((node) => node.id === "parent")!.state === "hidden"
+    )
+      expect(zeroChild.nodes.find((node) => node.id === "child")!.state).toBe(
+        "hidden"
+      );
+  }
+});
+
+it("traverses all representation stages after a camera jump and reverses with the current camera geometry", () => {
+  let prior = representationStageSpans([composite(120)], defaults);
+  let history = {};
+  for (const target of [0.5, 120]) {
+    const seen = new Set<string>();
+    for (let frame = 0; frame < 80; frame++) {
+      const input = [composite(target)];
+      const next = advanceRepresentationStages(input, defaults, prior, 16);
+      const scene = evaluate({ nodes: next.nodes }, defaults, history);
+      expect(next.nodes[0]!.bounds).toBe(input[0]!.bounds);
+      seen.add(scene.nodes[0]!.state);
+      history = scene.state;
+      prior = next.spans;
+      if (!next.active) break;
+    }
+    for (const state of [
+      "hull",
+      "borderless-hull",
+      "ordinary-point",
+      "small-point",
+      "hidden"
+    ])
+      expect(seen.has(state), `${target}: ${state}`).toBe(true);
+  }
+  const legacy = { ...defaults, stagedHierarchy: false };
+  expect(
+    advanceRepresentationStages([composite(0.5)], legacy, prior, 0).active
+  ).toBe(false);
+  const reduced = advanceRepresentationStages(
+    [composite(0.5)],
+    defaults,
+    prior,
+    0,
+    true
+  );
+  expect(reduced.active).toBe(false);
+  expect(reduced.spans.get("composite")).toBe(0.5);
+});
+
+it("keeps co-located Composite support as a point even when its inherited stage span is large", () => {
+  for (const [span, expectedState] of [
+    [200, "ordinary-point"],
+    [12, "ordinary-point"],
+    [6, "small-point"],
+    [2, "small-point"],
+    [0.5, "hidden"]
+  ] as const) {
+    const input = {
+      nodes: [
+        { ...composite(0, span * 1.35), id: "parent", childIds: ["child"] },
+        { ...composite(0), id: "child" }
+      ]
+    };
+    const original = JSON.stringify(input);
+    const result = evaluate(input).nodes.find((node) => node.id === "child")!;
+    const expected = compositeRepresentationDisplay(
+      [{ x: 0, y: 0 }],
+      false,
+      span
+    )!;
+    expect(result.state).toBe(expectedState);
+    expect(result.compact).toBe(true);
+    expect(result.hullOpacity).toBe(0);
+    expect(result.hullStrokeOpacity).toBe(0);
+    expect(result.ordinaryPointOpacity + result.smallPointOpacity).toBeCloseTo(
+      expected.pointVisibility
+    );
+    expect(result.radiusScale).toBeCloseTo(expected.pointScale);
+    expect(JSON.stringify(input)).toBe(original);
+  }
+  const line = evaluate({ nodes: [composite(0, 200)] }).nodes[0]!;
+  expect(line.hullOpacity).toBe(1);
+  expect(line.compact).toBe(false);
 });

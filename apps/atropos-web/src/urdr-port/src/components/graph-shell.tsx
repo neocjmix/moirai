@@ -12,14 +12,15 @@ import { composeNavigationBounds, constrainNavigation, restoreNavigation } from 
 import { prepareCompositeWorldGeometry, selectCompositeWorldRegions } from "./graph-shell-world";
 import { shareWorldGeometryEntities } from "./world-geometry-identity";
 import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
-import { compositePointDisplay, compositeRepresentationDisplay, compositePointDensityDisplay } from "./composite-point-display";
+import { compositePointDisplay, compositeRepresentationDisplay, compositePointDensityDisplay, compositeScreenBounds } from "./composite-point-display";
+import { compositeStageSpan, resolveCompositeHierarchySpans, advanceCompositeStageSpan } from "./composite-visibility-policy";
 import { createCompositePanGeometryCache } from "./composite-pan-geometry";
 import { COMPOSITE_LABEL_FONT, createCompositeLabelWidthMeasure, extendCompositeLabelTextPath } from "./composite-label-text-path";
 import { pointDensityDisplay, withParentPointHandoff } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
 import { reconcileLabelPaint, LABEL_PAINT_EXIT_MS } from "./label-paint-presence";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
-import { needsCompositePaintFrame, reconcileCompositeFramePaint } from "./composite-frame-paint";
+import { hasVisiblePaintLifetime, needsCompositePaintFrame, reconcileCompositeFramePaint } from "./composite-frame-paint";
 import { createViewportReadScheduler } from "./viewport-read-scheduler";
 import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-disposal";
 import { graphSessionStorage, readWorldGraphState, rememberGraphWorld, workspaceWorldId } from "../../../lib/graph-session-state";
@@ -789,11 +790,10 @@ function getCompositeSurfaceOpacityScale(coverage: number) {
   if (coverage <= 0.35) {
     return 1;
   }
-  if (coverage >= 1) {
-    return 0;
-  }
-  const progress = (coverage - 0.35) / 0.65;
-  return 1 - progress;
+  // A large parent keeps a quiet wash while descendants remain visible.
+  // Full viewport coverage cannot remove its paint owner ahead of children.
+  const progress = Math.max(0, Math.min(1, (coverage - 0.35) / 0.65));
+  return 1 - progress * 0.82;
 }
 
 type GraphShellProps = {
@@ -3038,10 +3038,32 @@ export function GraphShell({
   }, [preparedWorldCompositeRegions, compositeLabelReach, view, viewportSize]);
 
   const compositePlacementHistoryRef = useRef({loader, entries: new Map()});
+  const compositeStageHistoryRef = useRef({loader, spans: new Map(), at: 0});
+  const pointPaintHistoryRef = useRef({workspace, points: []});
+  const [compositeStageClock, setCompositeStageClock] = useState(0);
   const chartCompositeRegions = useMemo(() => measureGraphPhase("regionProjectionAndLabels", () => {
     const placements = new Map();
     const history = compositePlacementHistoryRef.current.loader === loader ? compositePlacementHistoryRef.current.entries : new Map();
     const zoomBucket = getEditorialZoomBucket(view.scaleY);
+    const stageNow = performance.now();
+    const reducedMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const stageHistory = compositeStageHistoryRef.current.loader === loader ? compositeStageHistoryRef.current : {spans: new Map(), at: stageNow};
+    const stageNodes = worldCompositeRegions.map(region => {
+      const bounds = compositeScreenBounds(region.points);
+      return {id: region.id, childIds: region.contains, span: bounds ? compositeStageSpan(bounds.width * view.scaleX, bounds.height * view.scaleY) : 0};
+    });
+    const targetStageSpans = resolveCompositeHierarchySpans(stageNodes);
+    let stageActive = false;
+    const advancingStages = stageNodes.map(node => {
+      const target = targetStageSpans.get(node.id) ?? node.span;
+      const next = advanceCompositeStageSpan(stageHistory.spans.get(node.id), target, stageNow - stageHistory.at, reducedMotion);
+      stageActive ||= next.active;
+      return {...node, span: next.span};
+    });
+    // Reapply ancestry after interpolation: a newly loaded parent also outlives
+    // a child whose previous representation is still finishing its transition.
+    const stageSpans = resolveCompositeHierarchySpans(advancingStages);
+    for (const [id, span] of stageSpans) if (Math.abs(span - (targetStageSpans.get(id) ?? span)) > 0.0001) stageActive = true;
     const projectedRawRegions = worldCompositeRegions.map((region) => {
       graphWorkCountsRef.current.regionTransforms += region.points.length;
       const geometry = compositePanGeometryCache.project({
@@ -3050,10 +3072,10 @@ export function GraphShell({
         labelHeight: COMPOSITE_LABEL_LINE_HEIGHT, labelGap: COMPOSITE_LABEL_GAP,
       });
       const {projectedHullPoints, projectedPoints} = geometry;
-      const representation = compositeRepresentationDisplay(projectedHullPoints, region.hullPending);
+      const representation = compositeRepresentationDisplay(projectedHullPoints, region.hullPending, stageSpans.get(region.id));
       const compactPoint = region.hullPending
         ? representation?.point
-        : compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint));
+        : compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint), stageSpans.get(region.id));
       const coverage = getPolygonArea(clipPolygonAgainstViewport(projectedPoints, viewportSize)) / Math.max(viewportSize.width * viewportSize.height, 1);
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
       const labelWidth = Math.max(semanticTextWidth(renderedLabel), 72);
@@ -3125,6 +3147,9 @@ export function GraphShell({
 
       const descendantIds = collectRegionDescendantIds(region.id, regionById as unknown as Map<string, GraphShellChartPlaneRegionEntity>, new Set<string>());
       for (const descendantId of descendantIds) {
+        // Every Composite follows its own full stage sequence. Applying its
+        // parent's leaf fade here used to skip straight from a tall hull to 0.
+        if (regionById.has(descendantId)) continue;
         descendantOpacityById.set(descendantId, Math.min(descendantOpacityById.get(descendantId) ?? 1, opacity));
       }
     }
@@ -3150,7 +3175,7 @@ export function GraphShell({
     const regions = projectedRawRegions
       .map((region) => {
         const policy = labelPolicyById.get(region.id);
-        const pointDisplay = withParentPointHandoff(region.pointDisplay, descendantOpacityById.get(region.id) ?? 1);
+        const pointDisplay = region.pointDisplay;
         return {
           ...region,
           renderedLabel: policy?.renderedLabel ?? region.renderedLabel,
@@ -3167,18 +3192,28 @@ export function GraphShell({
       .sort((left, right) => left.depth - right.depth || left.id.localeCompare(right.id))
       .map((region) => region.id);
 
-    return { regions, activeColorRegionIds, descendantOpacityById, placements } satisfies CompositeRenderState;
-  }), [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache, measureGraphPhase, compositeLabelWidths, compositeLabelFontEpoch]);
+    return { regions, activeColorRegionIds, descendantOpacityById, placements, stageSpans, stageAt: stageNow, stageActive } satisfies CompositeRenderState;
+  }), [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache, measureGraphPhase, compositeLabelWidths, compositeLabelFontEpoch, compositeStageClock]);
   useEffect(() => {
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
   }, [loader, chartCompositeRegions]);
+  useLayoutEffect(() => {
+    compositeStageHistoryRef.current = {loader, spans: chartCompositeRegions.stageSpans, at: chartCompositeRegions.stageAt};
+  }, [loader, chartCompositeRegions]);
+  useEffect(() => {
+    if (!chartCompositeRegions.stageActive) return;
+    const frame = requestAnimationFrame(() => setCompositeStageClock(performance.now()));
+    return () => cancelAnimationFrame(frame);
+  }, [chartCompositeRegions]);
 
   const compositePaintTargets = useMemo(() => selectCompositePaintTargets(chartCompositeRegions.regions), [chartCompositeRegions.regions]);
   const visibleCompositeRegions = useMemo(() => {
     graphWorkCountsRef.current.compositePaintPasses++;
+    const now = performance.now();
     return reconcileCompositeFramePaint(
-      compositePaintHistoryRef.current.regions, compositePaintTargets, performance.now(),
+      compositePaintHistoryRef.current.regions, compositePaintTargets, now,
       compositePaintClock.frame !== compositePaintHistoryRef.current.frame, COMPOSITE_FADE_DURATION_MS,
+      new Set(pointPaintHistoryRef.current.workspace === workspace ? pointPaintHistoryRef.current.points.filter(point => hasVisiblePaintLifetime(point.opacity * point.pointDisplay.opacity, point.exitStartedAt, now, POINT_PAINT_FADE_MS)).map(point => point.id) : []),
     );
   }, [compositePaintTargets, compositePaintClock]);
   // Store only committed lifecycle history. Current geometry already supplies
@@ -3391,7 +3426,6 @@ export function GraphShell({
   const presentedPoints = useMemo(() => discovery?.contextHud
     ? semanticPointCandidates.map(point => ({...point, showLabel: point.showLabel !== false && semanticSelection.ids.has(`point:${point.id}`)}))
     : chartInstantPoints, [discovery?.contextHud, semanticPointCandidates, chartInstantPoints, semanticSelection]);
-  const pointPaintHistoryRef = useRef({workspace, points: []});
   const [pointPaintClock, setPointPaintClock] = useState(0);
   const paintedPoints = useMemo(() => retainPointPaint(
     pointPaintHistoryRef.current.workspace === workspace ? pointPaintHistoryRef.current.points : [],

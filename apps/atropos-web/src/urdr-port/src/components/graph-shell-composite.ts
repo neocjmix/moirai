@@ -7,6 +7,7 @@ export type ViewportCoordinate = {
 export type CompositeFadeCarrier = {
   id: string;
   opacity: number;
+  contains?: readonly string[];
 };
 
 export type CompositeColorAssignment = {

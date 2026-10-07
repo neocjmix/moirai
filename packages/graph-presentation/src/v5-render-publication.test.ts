@@ -129,7 +129,7 @@ describe("render publication compiler", () => {
         pointEnterMaxSizePx: 12,
         pointExitMaxSizePx: 20,
         childFadeHeightPx: [58, 100],
-        childFadeSpanPx: [16, 40]
+        childFadeSpanPx: [4, 16]
       }
     });
     expect(primitives.get("event:a:point")?.parentCompositeIds).toEqual([
@@ -679,10 +679,10 @@ describe("render publication compiler", () => {
       tile.primitives.filter(
         (primitive) => primitive.entity.kind === "composite"
       ).length
-    ).toBe(127);
+    ).toBe(128);
     expect(
       tile.primitives.some((primitive) => primitive.entity.id === "support")
-    ).toBe(true);
+    ).toBe(false);
     expect(tile.visibility?.omittedCount).toBe(173);
   });
 
@@ -716,14 +716,15 @@ describe("render publication compiler", () => {
     expect(overflow.length).toBeGreaterThan(0);
     expect(overflow.length).toBeLessThanOrEqual(16);
     expect(publication.overflowLevels).toHaveLength(1);
+    // A fine child bucket retains its prepared owner even when that owner's
+    // coarse overflow bucket is independently crowded. Geometry is still one
+    // shared immutable asset, and no extra fine buckets are introduced.
+    const fine = tiles.filter((tile) => tile.level === 12);
+    expect(fine).toHaveLength(3);
     expect(
-      tiles
-        .filter((tile) => tile.level === 12)
-        .every((tile) =>
-          tile.primitives.every(
-            (primitive) => primitive.entity.kind === "event"
-          )
-        )
+      fine.every((tile) =>
+        tile.primitives.some((primitive) => primitive.entity.id === "region")
+      )
     ).toBe(true);
     const visible = selectRenderScene(
       publication,

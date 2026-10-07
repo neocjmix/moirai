@@ -26,7 +26,9 @@ import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-dispo
 import { graphSessionStorage, readWorldGraphState, rememberGraphWorld, workspaceWorldId } from "../../../lib/graph-session-state";
 import { createPanInertiaTracker, panInertiaFrame, type PanVelocity } from "../../../lib/pan-inertia";
 import { GeographicCanvas } from "../../../components/geographic-canvas";
-import { GeographicWebGL } from "../../../components/geographic-webgl";
+import { GeographicRenderer } from "../../../components/geographic-renderer/host";
+import { RendererControls } from "../../../components/geographic-renderer/settings";
+import { useRendererPreferences } from "../../../components/geographic-renderer/preferences";
 import { hullFeatherLayers, hullLayerOpacity, HULL_FEATHER_WIDTH_PX } from "../../../components/hull-feather";
 import { pigmentCssColor } from "../../../lib/spectral-pigment";
 import { reconcileViewport } from "../viewport-cache";
@@ -2333,9 +2335,12 @@ export function GraphShell({
     timing.totalMs += elapsed;
     graphPhaseTimingsRef.current[phase] = timing;
   }, []);
+  const rendererPreferences = useRendererPreferences();
+  const [activeRenderer,setActiveRenderer] = useState("custom-webgl2");
+  const handleBackendChange = useCallback((renderer)=>setActiveRenderer(renderer),[]);
   const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
   const [useGeographicWebGL,setUseGeographicWebGL] = useState(false);
-  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[]);
+  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[rendererPreferences.renderer]);
   const handleGraphicsUnavailable=useCallback(()=>{setUseGeographicCanvas(false);setUseGeographicWebGL(false);},[]);
   const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
   const measureGraphPhase = useCallback((phase, run) => {
@@ -4180,6 +4185,7 @@ export function GraphShell({
   return (
     <>
       {discovery?.contextHud ? <GraphContextHud locale={locale} topic={contextTopic} /> : <GraphSourceIsland locale={locale} />}
+      {!loader.renderTiles ? <RendererControls locale={locale} /> : null}
 
       <div className={styles.canvasFrame}>
           <div
@@ -4231,12 +4237,12 @@ export function GraphShell({
                 </svg>
               ) : chartPlane ? (
                 <>
-                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicWebGL regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer key={rendererPreferences.renderer} renderer={rendererPreferences.renderer} edge={rendererPreferences.edge} onBackendChange={handleBackendChange} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/>) : null}
-                <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?"spectral-6band":"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?(activeRenderer === "custom-webgl2"?"webgl":activeRenderer):"canvas"):"svg"} data-renderer={useGeographicCanvas?(useGeographicWebGL?activeRenderer:"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?(activeRenderer === "custom-webgl2"?"spectral-6band":"normalized-optical-density"):"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
                   <defs>
                     <marker id="relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_ORDER_STROKE} />

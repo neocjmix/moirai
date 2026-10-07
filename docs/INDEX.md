@@ -50,6 +50,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-009 — 임진왜란 실제 역사 구축과 E2E](implementation/IP-009-imjin-war-e2e.md)
 - [IP-009 — 최종 검증 결과](evidence/ip009/final-verification.md)
 - [현재 구현 상태](implementation/CURRENT.md)
+- [IP-014 — Pluggable renderer 비교 handoff](implementation/IP-014-pluggable-renderer-handoff.md)
 - [IP-012 — Render Publication 구현 계획](implementation/IP-012-render-publication-plan.md)
 - [ADR-012 — Render viewport 읽기와 working-set 불변식](architecture/ADR-012-render-read-architecture.md)
 - [IP-012 — 모바일 성능 종료 결정·이관 backlog](implementation/IP-012-mobile-continuity-closeout.md)

@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-2026-10-07 UTC, IP-013 최소 배율 안료 렌더링 비용 개선. 이 파일은 현재 실행·배포 상태를 소유한다. [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md)과 dated evidence는 역사 기록이다.
+2026-10-07 UTC, IP-014 renderer 비교 checkpoint. 이 파일은 현재 실행·배포 상태를 소유한다. [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md)과 dated evidence는 역사 기록이다.
 
 ## 실행 원칙과 종료 결정
 
@@ -9,6 +9,8 @@
 **모바일 성능·연속성 튜닝은 2026-10-04 사용자 체감 수용과 명시적 지시로 종료했다.** 사용자는 운영이 상당히 원활하다고 확인했다. [종료 결정·검증·잔여 backlog](IP-012-mobile-continuity-closeout.md)가 이전 목표 달성까지 자율 튜닝하라는 지시를 대체한다. 기존 p9533.4ms 미달을 통과로 바꾸지 않으며 숫자 미달만으로 자동 재개하지 않는다. 이후 구체적 버그는 정상적인 수정·회귀 검증으로 처리한다.
 
 ## 새 우선순위와 단계
+
+**IP-014 활성 renderer 비교 slice:** 사용자 지시와 [handoff](IP-014-pluggable-renderer-handoff.md)에 따라 `3bfb4a4` baseline을 보존하고 PixiJS 8·Three.js 두 대체 renderer, 공통 scene/backend 경계, 설정 전환·local preference·가벼운 diagnostics를 구현했다. 동일 World/revision·Collection·카메라·선택과 native SVG text/input을 유지한다. 이 범위의 renderer 실험 UI는 이전 production 실험 UI 금지의 명시적 예외이며 layout 실험·canonical/Publication/역사 쓰기를 활성화하지 않는다. 승자를 고르거나 exhaustive benchmark/미세 최적화를 하지 않고 사용자가 실제 iPhone에서 비교할 checkpoint에서 멈춘다. 구현 PR의 배포·공개 smoke 기록과 `/__status`가 최종 deployed SHA를 소유하며 다음 단계는 사용자 기기 비교 후 선정이다. [조사](../evidence/ip014/renderer-research-2026-10-07.md), [코드 audit](../evidence/ip014/pipeline-audit-2026-10-07.md), [checkpoint 검증](../evidence/ip014/checkpoint-2026-10-07.md)을 따른다.
 
 **2026-10-07 최소 배율 성능 회귀 — 개선 구현:** 사용자는 [#335](https://github.com/neocjmix/moirai/pull/335)의 시각 결과를 수용하면서 최소 배율 회귀와 경미한 효과 열화를 허용했다. `e8420f75`/새 세계사 r51 기준으로 혼색 표면을 CSS 1px·30만 pixel, GPU feather를 2겹으로 줄이고 VAO·오차 제한 Hull mesh 재사용과 불필요한 라벨 준비 생략을 구현했다. Cloud WebKit 최소 배율 핀치 중앙값은 329→182ms, mesh rebuild는 74%, upload는 84% 감소했다. 패닝 개선은 작고 기존 frame gate는 미달이다. 정확한 글자·점·선택·계층 단계와 정본/발행은 보존하며 A4 전체나 backend/역사 작업을 재개하지 않는다. [측정·개선 기록](../evidence/ip013/minimum-zoom-pigment-performance-2026-10-07.md)과 해당 PR의 최종 CI·deployed SHA·공개 검증 기록이 closeout을 소유한다.
 

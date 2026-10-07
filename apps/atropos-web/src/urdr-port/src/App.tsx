@@ -12,6 +12,7 @@ import {
 } from "../../lib/atropos-screen-registry";
 
 import appShellStyles from "./app-shell.module.css";
+import { RendererSettings } from "../../components/geographic-renderer/settings";
 import { GraphShell } from "./components/graph-shell";
 import { RuntimeErrorBoundary } from "./components/runtime-error-boundary";
 import shellStyles from "./components/graph-shell.module.css";
@@ -229,8 +230,8 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
     setActivePage(page);
   }, []);
 
-  const renderPage = () => {
-    if (activePage === "graph") {
+  const renderPage = (page = activePage) => {
+    if (page === "graph") {
       if (currentWorkspaceStatus === "unavailable") {
         return (
           <div className={appShellStyles.shellPage}>
@@ -274,10 +275,11 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
       );
     }
 
-    if (activePage === "settings") {
+    if (page === "settings") {
       return (
         <div className={appShellStyles.shellPage}>
           <div className={appShellStyles.shellPageSurface}>
+            <RendererSettings locale={locale} />
             <div className={appShellStyles.shellSectionTitle}>{copy.settingsTitle}</div>
             <div className={appShellStyles.shellSectionBody}>{copy.settingsBody}</div>
             <div className={appShellStyles.shellLanguagePanel}>
@@ -336,7 +338,14 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
 
   return (
     <div className={appShellStyles.shell}>
-      <div className={appShellStyles.body}>{renderPage()}</div>
+      <div className={appShellStyles.body}>
+        {/* Keep camera/selection and the SVG identity alive while comparing in settings. */}
+        <div aria-hidden={activePage !== "graph"} inert={activePage !== "graph" ? true : undefined}
+          style={{position:"absolute",inset:0,visibility:activePage === "graph"?"visible":"hidden",pointerEvents:activePage === "graph"?"auto":"none"}}>
+          {renderPage("graph")}
+        </div>
+        {activePage !== "graph" ? renderPage() : null}
+      </div>
 
       <div className={appShellStyles.bottomTabDock} data-collapsed={tabBarCollapsed ? "true" : "false"}>
         <div className={appShellStyles.bottomTabRail}>

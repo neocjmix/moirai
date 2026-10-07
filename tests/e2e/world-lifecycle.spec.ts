@@ -10,15 +10,15 @@ for (const size of [
   }) => {
     await page.setViewportSize(size);
     await page.goto("/worlds");
+    const worldLink = (name: string) =>
+      page.getByRole("link").filter({
+        has: page.getByRole("heading", { name, exact: true })
+      });
     await expect(
       page.getByRole("heading", { name: "월드 선택" })
     ).toBeVisible();
-    await expect(
-      page.getByRole("link", { name: "Lifecycle World 3", exact: true })
-    ).toHaveCount(0);
-    await page
-      .getByRole("link", { name: "Lifecycle World 1", exact: true })
-      .click();
+    await expect(worldLink("Lifecycle World 3")).toHaveCount(0);
+    await worldLink("Lifecycle World 1").click();
     await expect(
       page.getByText("아직 시간축이 없는 월드입니다.")
     ).toBeVisible();
@@ -43,9 +43,7 @@ for (const size of [
       "Synthetic narrative remains readable"
     );
     await page.getByRole("link", { name: "월드 선택" }).click();
-    await page
-      .getByRole("link", { name: "Lifecycle World 2", exact: true })
-      .click();
+    await worldLink("Lifecycle World 2").click();
     await page.getByRole("link", { name: "사건 목록 보기" }).click();
     await expect(page.getByText("아직 사건이 없습니다.")).toBeVisible();
     await expect(

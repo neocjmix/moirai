@@ -72,6 +72,7 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
   page
 }, info) => {
   let density = { pointScale: 1, opacity: 1, labelOpacity: 1 };
+  let compositeSpan = 12;
   let hull = false;
   let suppressChild = false;
   let omitComposite = false;
@@ -95,12 +96,16 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
       renderDensity: density
     };
     const rx = cx + dx * 0.05;
-    const span = hull ? 0.035 : 0.001;
+    // The reader requests four viewports of support. Express the Composite's
+    // authored span in screen pixels: its size stage is independent of rank.
+    const halfSpan = (hull ? 96 : compositeSpan) / 2;
+    const halfWidth = (halfSpan * dx) / (request.viewport.viewportWidth * 4);
+    const halfHeight = (halfSpan * dy) / (request.viewport.viewportHeight * 4);
     const bounds = {
-      minX: rx - dx * span,
-      maxX: rx + dx * span,
-      minY: cy - dy * span,
-      maxY: cy + dy * span
+      minX: rx - halfWidth,
+      maxX: rx + halfWidth,
+      minY: cy - halfHeight,
+      maxY: cy + halfHeight
     };
     await route.fulfill({
       json: {
@@ -148,6 +153,12 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
   await page.goto(`/graph/v5?world=${world}&tileData=0`);
   const groups = page.locator("[data-point-density]");
   await expect(groups).toHaveCount(2);
+  const leafCircle = page.locator(
+    '[data-event-paint-id="density-leaf"] circle'
+  );
+  const compositePoint = page.locator(
+    '[data-composite-point-id="density-composite"]'
+  );
   const normalIds = await groups.evaluateAll((nodes) =>
     nodes
       .map(
@@ -165,6 +176,7 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
     "small-point",
     "point"
   ].entries()) {
+    compositeSpan = stage === "point" ? 12 : stage === "small-point" ? 6 : 0.5;
     density =
       stage === "point"
         ? { pointScale: 1, opacity: 1, labelOpacity: 1 }
@@ -195,12 +207,23 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
     }
     await expect
       .poll(async () =>
-        groups
-          .locator("circle")
-          .first()
-          .evaluate((node) => parseFloat(getComputedStyle(node).r))
+        leafCircle.evaluate((node) => parseFloat(getComputedStyle(node).r))
       )
       .toBeCloseTo(6 * density.pointScale, 1);
+    await expect
+      .poll(() =>
+        compositePoint
+          .locator("circle")
+          .evaluate((node) => parseFloat(getComputedStyle(node).r))
+      )
+      .toBeCloseTo(stage === "point" ? 6 : 2.1, 1);
+    for (const paint of [leafCircle, compositePoint]) {
+      await expect
+        .poll(() =>
+          paint.evaluate((node) => Number(getComputedStyle(node).opacity))
+        )
+        .toBe(stage === "hidden" ? 0 : 1);
+    }
     await page.screenshot({
       path: info.outputPath(`density-${index}-${stage}.png`)
     });
@@ -217,6 +240,21 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
       .sort()
   );
   expect(restoredIds).toEqual(normalIds);
+  // Density may remove a Composite label, but cannot hide its authored point
+  // while its own support still occupies the ordinary-point band.
+  density = { pointScale: 0, opacity: 0, labelOpacity: 0 };
+  await page.setViewportSize({ width: 450, height: 844 });
+  await expect(compositePoint).toHaveAttribute("data-point-density", "point");
+  await expect
+    .poll(() =>
+      compositePoint.evaluate((node) => Number(getComputedStyle(node).opacity))
+    )
+    .toBe(1);
+  await expect
+    .poll(() =>
+      leafCircle.evaluate((node) => Number(getComputedStyle(node).opacity))
+    )
+    .toBe(0);
   // Observe the same paint owner while a later fetch replaces the tiny hull
   // with expanded geometry. Replacing <g> with <path> restarts identity and
   // cannot animate opacity, even if the two elements happen to share a key.

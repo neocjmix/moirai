@@ -1,6 +1,12 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import { pigmentCssColor } from "../lib/spectral-pigment";
+import {
+  HULL_FEATHER_WIDTH_PX,
+  hullFeatherLayers,
+  hullLayerOpacity
+} from "./hull-feather";
 import {
   DEFAULT_COMPOSITE_FILL,
   retainedCompositePaintTransform
@@ -54,7 +60,9 @@ type Tween = { from: number; target: number; value: number; started: number };
 // Geometry tolerates a lower raster density than text. SVG retains full-device
 // text, interaction and authored DOM identity; only background ink moves here.
 const MAX_RASTER_SCALE = 1.5;
-const MAX_PATHS = 128;
+// A region keeps at most four feather coats. Preserve the total character
+// budget while allowing those coats to remain hot alongside the original.
+const MAX_PATHS = 512;
 const MAX_PATH_CHARACTERS = 1_000_000;
 const CAMERA_BUFFER = 96;
 const MAX_BITMAP_PIXELS = 4_000_000;
@@ -292,9 +300,6 @@ export function GeographicCanvas(props: Props) {
           canvas.height / density
         );
         context.globalCompositeOperation = "source-over";
-        context.globalAlpha = 0.15;
-        context.fillStyle = "white";
-        context.fillRect(0, 0, canvas.width / density, canvas.height / density);
         context.translate(CAMERA_BUFFER, CAMERA_BUFFER);
         for (const region of scene.regions) {
           const color = scene.colors.get(region.id);
@@ -341,7 +346,7 @@ export function GeographicCanvas(props: Props) {
               else throw Error("unsupported_graphics_transform");
             }
             const shape = path(region.path);
-            context.globalCompositeOperation = "darken";
+            context.globalCompositeOperation = "multiply";
             // Match the SVG's paint-order: stroke fill.
             context.globalAlpha =
               alpha *
@@ -351,12 +356,31 @@ export function GeographicCanvas(props: Props) {
             context.lineWidth = 1.15;
             context.lineJoin = "round";
             context.stroke(shape);
-            context.globalAlpha =
+            const fillAlpha =
               alpha *
               scene.fillOpacity *
               (region.representation?.hullFillOpacity ?? 1);
-            context.fillStyle = color?.fill || DEFAULT_COMPOSITE_FILL;
-            context.fill(shape);
+            context.fillStyle = pigmentCssColor(
+              color?.fill || DEFAULT_COMPOSITE_FILL
+            );
+            const matrix = context.getTransform();
+            const pathScale =
+              Math.max(
+                Math.hypot(matrix.a, matrix.b),
+                Math.hypot(matrix.c, matrix.d)
+              ) / density;
+            // Insetting in path space keeps the authored outer contour fixed;
+            // compensate retained anisotropic cameras so the widest feather
+            // remains 2.4 CSS pixels, independent of the raster density.
+            const layers = hullFeatherLayers(
+              region.path,
+              1 - (region.representation?.hullStrokeOpacity ?? 1),
+              HULL_FEATHER_WIDTH_PX / Math.max(0.0001, pathScale)
+            );
+            for (const layer of layers) {
+              context.globalAlpha = hullLayerOpacity(fillAlpha, layer.weight);
+              context.fill(path(layer.contours.join(" ")));
+            }
             context.restore();
           }
           const point = region.representation?.point ?? region.compactPoint;

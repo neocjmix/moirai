@@ -227,7 +227,12 @@ for (const pointerType of ["touch", "pen"] as const) {
     expect(released.x - before.x).toBeGreaterThan(20);
     await page.waitForTimeout(120);
     const coasting = await view(page);
-    expect(coasting.x - released.x).toBeGreaterThan(3);
+    // This diagonal flick can reach the fixture's X camera clamp before the
+    // protocol reads release. Its remaining Y coast must still count as
+    // inertia; requiring more X travel rejects correct boundary handling.
+    expect(
+      Math.hypot(coasting.x - released.x, coasting.y - released.y)
+    ).toBeGreaterThan(3);
     await page.waitForTimeout(1300);
     const settled = await view(page);
     await page.waitForTimeout(100);

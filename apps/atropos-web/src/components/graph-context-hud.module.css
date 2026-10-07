@@ -26,9 +26,9 @@
 }
 .navigation,
 .topic {
-  background: rgb(248 245 238 / 94%);
+  background: rgb(255 255 255 / 94%);
   border-radius: 4px;
-  box-shadow: 0 0 0 3px rgb(248 245 238 / 94%);
+  box-shadow: 0 0 0 3px rgb(255 255 255 / 94%);
 }
 .world {
   display: inline-flex;
@@ -76,7 +76,7 @@
   padding: 8px;
   border: 1px solid rgb(84 101 87 / 16%);
   border-radius: 12px;
-  background: rgb(250 251 247 / 88%);
+  background: rgb(255 255 255 / 94%);
   color: #303c35;
   font: inherit;
   white-space: nowrap;
@@ -91,7 +91,7 @@
   min-width: 18px;
   height: 18px;
   padding-inline: 4px;
-  border: 2px solid #f8f5ee;
+  border: 2px solid #fff;
   border-radius: 999px;
   background: #536c58;
   color: #fff;

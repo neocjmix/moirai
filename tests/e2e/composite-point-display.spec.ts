@@ -4,7 +4,8 @@ test("a tiny composite is one tappable point and expands back to its area", asyn
   page
 }, testInfo) => {
   const id = "region:early-joseon";
-  await page.goto("/graph/demo?gsViewport=-27.5,-106,8000,16000");
+  // Keep authored support inside the new 10–12px ordinary-point band.
+  await page.goto("/graph/demo?gsViewport=-27.5,-106,12000,24000");
   const compact = page.locator(`[data-composite-point-id="${id}"]`);
   await expect(compact).toBeVisible();
   await expect(page.locator(`[data-region-id="${id}"]`)).toHaveCount(0);

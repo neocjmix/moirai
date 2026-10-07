@@ -33,3 +33,13 @@ Lab 기본 정책도 동일하게 맞추고 v5 preset을 사용한다. 기존 v1
 새 세계사의 위 재현 camera와 X/Y 비대칭 축소를 실제 수용 자료로 사용한다. 합성 검사는 중첩·여러 부모·불완전 bounds·0면적 Composite·큰 줌 변화·순서 반전·Collection OFF를 검증한다. 오른쪽 정렬과 세로 순서, 숫자 배지, dialog·키보드 focus와 좁은 화면, 텍스트의 경계 유지와 증가한 bounded 예산도 확인한다.
 
 발행 후보 수정은 이 World의 동일 source revision Render generation에만 적용하고 source/root/input digest 불변을 재확인한다. 최종 commit·테스트·CI·배포·운영 결과는 해당 PR의 완료 기록이 소유한다. Cloud WebKit 결과를 실제 iPhone 17 Safari/PWA의 수동 검증으로 표현하지 않는다.
+
+## 운영 확인
+
+[PR #333](https://github.com/neocjmix/moirai/pull/333)의 `8c82fcf097b372a106e79135b02ccad64044877d`가 Atropos·Clotho·worker에 SUCCESS로 배포됐다. 공개 readiness smoke와 새 세계사 실제 화면 검사 **70/70**을 통과했다. 같은 r51 Render generation은 `edf71cde5940743f5104df4e36ca5ba8ec5036b89fb8a53cfa95959de8c3ac4f`이며 원본 source/root/input digest는 유지됐다. 대상 World와 revision을 지정한 worker 변수 두 개는 served 결과 확인 후 빈 값으로 정리했다.
+
+재현 부모 3개와 503개 화면 내 부모·자식 비교에서 순서를 확인했다. 94.425px 세로 Hull은 X만 10배 축소해도 유지됐다. Y 단계 60→38→26→16→11→8→4→2와 급격한 왕복 확대·축소, 면적 없는 점과 초기 복원도 통과했다. 운영 기본 WebGL에서 작은 점의 중심색은 작성된 palette와 일치하고 리프는 중립색을 유지했다. 브라우저 오류와 역사 변경 요청은 없었다.
+
+이름표 예산은 같은 모바일 화면에서 11→14로 늘었다. 표시된 글자 수는 overview 11→10, late-life 8→10, thin-wide-X 10→9로 장면에 따라 달랐다. 새 부모가 보존되며 충돌 후보도 바뀌므로 예산 확대가 모든 장면의 글자 수 증가를 보장하지 않는다. 전체 제목과 화면 경계 표시 규칙은 유지된다.
+
+실제 HUD screenshot에서는 그래프 이름표가 투명한 World 제목 뒤로 지나가 읽기 어려운 장면이 확인됐다. 제목 두 줄에만 옅은 바탕을 추가하고 위치·크기·조작은 유지한다. 이 CSS 후속의 최종 배포 SHA와 CI는 후속 PR의 완료 기록을 따른다. 기존 그래프 검증의 runtime 코드와 Render generation은 동일하다.

@@ -3,7 +3,12 @@
 import { useLayoutEffect, useRef } from "react";
 import type { GeographicPainterProps } from "./geographic-canvas";
 import { geographicMesh } from "./geographic-mesh";
+import { HULL_FEATHER_WIDTH_PX, hullFeatherLayers } from "./hull-feather";
 import { DEFAULT_COMPOSITE_FILL } from "../urdr-port/src/components/graph-shell-composite";
+import {
+  spectralPigmentMaterial,
+  SPECTRAL_PIGMENT_RESOLVE_GLSL
+} from "../lib/spectral-pigment";
 
 const vertex = `#version 300 es
 precision highp float;
@@ -24,6 +29,39 @@ precision mediump float;
 uniform vec4 color;
 out vec4 result;
 void main(){result=vec4(color.rgb*color.a,color.a);}`;
+const pigmentFragment = `#version 300 es
+precision highp float;
+uniform vec3 ks012;
+uniform vec3 ks345;
+uniform float mass;
+uniform float coverage;
+layout(location=0) out vec4 bands012Mass;
+layout(location=1) out vec4 bands345Coverage;
+void main(){
+  bands012Mass=vec4(ks012*mass,mass);
+  bands345Coverage=vec4(ks345*mass,coverage);
+}`;
+const resolveVertex = `#version 300 es
+precision highp float;
+out vec2 uv;
+void main(){
+  vec2 p=vec2(float((gl_VertexID<<1)&2),float(gl_VertexID&2));
+  uv=p;
+  gl_Position=vec4(p*2.-1.,0.,1.);
+}`;
+const resolveFragment = `#version 300 es
+precision highp float;
+in vec2 uv;
+uniform sampler2D bands012;
+uniform sampler2D bands345;
+out vec4 result;
+${SPECTRAL_PIGMENT_RESOLVE_GLSL}
+void main(){
+  vec4 a=texture(bands012,uv);
+  vec4 b=texture(bands345,uv);
+  float alpha=1.-exp(-b.a);
+  result=vec4(spectralPigmentResolve(a,b)*alpha,alpha);
+}`;
 const dotVertex = `#version 300 es
 precision highp float;
 layout(location=0) in vec2 corner;
@@ -63,9 +101,13 @@ function createPainter(canvas: HTMLCanvasElement) {
     antialias: true
   });
   if (!gl) throw Error("webgl2_unavailable");
+  if (!gl.getExtension("EXT_color_buffer_float"))
+    throw Error("webgl_pigment_float_unavailable");
   const programs: WebGLProgram[] = [],
     buffers: WebGLBuffer[] = [];
   const shaders: WebGLShader[] = [];
+  const textures: WebGLTexture[] = [];
+  let framebuffer: WebGLFramebuffer | null = null;
   const program = (vs: string, fs: string) => {
     const result = gl.createProgram();
     if (!result) throw Error("webgl_program_unavailable");
@@ -97,6 +139,8 @@ function createPainter(canvas: HTMLCanvasElement) {
     return result;
   };
   const dispose = () => {
+    if (framebuffer) gl.deleteFramebuffer(framebuffer);
+    for (const value of textures) gl.deleteTexture(value);
     for (const value of buffers) gl.deleteBuffer(value);
     for (const value of shaders) gl.deleteShader(value);
     for (const value of programs) gl.deleteProgram(value);
@@ -111,6 +155,11 @@ function createPainter(canvas: HTMLCanvasElement) {
     fillCount: number;
     strokeCount: number;
     bytes: number;
+    feather?: {
+      source: readonly string[];
+      layers: { fill: WebGLBuffer; count: number }[][];
+      bytes: number;
+    };
   };
   const cache = new Map<string, Mesh>();
   let meshBuilds = 0;
@@ -122,7 +171,60 @@ function createPainter(canvas: HTMLCanvasElement) {
   const palette = new Map<string, number[]>();
   try {
     const hullProgram = program(vertex, fragment),
+      pigmentProgram = program(vertex, pigmentFragment),
+      resolveProgram = program(resolveVertex, resolveFragment),
       pointProgram = program(dotVertex, dotFragment);
+    framebuffer = gl.createFramebuffer();
+    if (!framebuffer) throw Error("webgl_pigment_framebuffer_unavailable");
+    for (let index = 0; index < 2; index++) {
+      const texture = gl.createTexture();
+      if (!texture) throw Error("webgl_pigment_texture_unavailable");
+      textures.push(texture);
+      gl.bindTexture(gl.TEXTURE_2D, texture);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+      gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+    }
+    let accumulationWidth = 0,
+      accumulationHeight = 0;
+    const accumulationSize = (width: number, height: number) => {
+      const scale = Math.min(1, Math.sqrt(1_000_000 / (width * height)));
+      const w = Math.max(1, Math.floor(width * scale));
+      const h = Math.max(1, Math.floor(height * scale));
+      gl.bindFramebuffer(gl.FRAMEBUFFER, framebuffer);
+      if (w !== accumulationWidth || h !== accumulationHeight) {
+        for (const [index, texture] of textures.entries()) {
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+          gl.texImage2D(
+            gl.TEXTURE_2D,
+            0,
+            gl.RGBA16F,
+            w,
+            h,
+            0,
+            gl.RGBA,
+            gl.HALF_FLOAT,
+            null
+          );
+          gl.framebufferTexture2D(
+            gl.FRAMEBUFFER,
+            gl.COLOR_ATTACHMENT0 + index,
+            gl.TEXTURE_2D,
+            texture,
+            0
+          );
+        }
+        gl.drawBuffers([gl.COLOR_ATTACHMENT0, gl.COLOR_ATTACHMENT1]);
+        if (
+          gl.checkFramebufferStatus(gl.FRAMEBUFFER) !== gl.FRAMEBUFFER_COMPLETE
+        )
+          throw Error("webgl_pigment_framebuffer_incomplete");
+        accumulationWidth = w;
+        accumulationHeight = h;
+      }
+      gl.viewport(0, 0, w, h);
+    };
     const corners = buffer(
       new Float32Array([-1, -1, 1, -1, -1, 1, -1, 1, 1, -1, 1, 1])
     );
@@ -153,6 +255,17 @@ function createPainter(canvas: HTMLCanvasElement) {
       border: gl.getUniformLocation(p, "border")
     });
     const hu = uniforms(hullProgram),
+      su = {
+        ...uniforms(pigmentProgram),
+        ks012: gl.getUniformLocation(pigmentProgram, "ks012"),
+        ks345: gl.getUniformLocation(pigmentProgram, "ks345"),
+        mass: gl.getUniformLocation(pigmentProgram, "mass"),
+        coverage: gl.getUniformLocation(pigmentProgram, "coverage")
+      },
+      ru = {
+        bands012: gl.getUniformLocation(resolveProgram, "bands012"),
+        bands345: gl.getUniformLocation(resolveProgram, "bands345")
+      },
       pu = uniforms(pointProgram);
     const style = getComputedStyle(canvas);
     const pointFill = color(
@@ -161,17 +274,47 @@ function createPainter(canvas: HTMLCanvasElement) {
     const border = color(
       style.getPropertyValue("--graph-point-stroke").trim() || "#fff"
     );
-    const remove = (id: string) => {
-      const entry = cache.get(id);
-      if (!entry) return;
-      gl.deleteBuffer(entry.fill);
-      gl.deleteBuffer(entry.stroke);
-      for (const value of [entry.fill, entry.stroke]) {
+    const removeBuffers = (values: readonly WebGLBuffer[]) => {
+      for (const value of values) {
+        gl.deleteBuffer(value);
         const index = buffers.indexOf(value);
         if (index >= 0) buffers.splice(index, 1);
       }
+    };
+    const removeFeather = (entry: Mesh) => {
+      if (!entry.feather) return;
+      removeBuffers(
+        entry.feather.layers.flatMap((layer) => layer.map((part) => part.fill))
+      );
+      delete entry.feather;
+    };
+    const remove = (id: string) => {
+      const entry = cache.get(id);
+      if (!entry) return;
+      removeFeather(entry);
+      removeBuffers([entry.fill, entry.stroke]);
       cache.delete(id);
     };
+    const meshBytes = () =>
+      [...cache.values()].reduce(
+        (sum, entry) => sum + entry.bytes + (entry.feather?.bytes || 0),
+        0
+      );
+    const drawMesh = (value: WebGLBuffer, count: number) => {
+      gl.bindBuffer(gl.ARRAY_BUFFER, value);
+      for (const [location, size, offset] of [
+        [0, 2, 0],
+        [1, 2, 8],
+        [2, 1, 16]
+      ]) {
+        gl.enableVertexAttribArray(location!);
+        gl.vertexAttribDivisor(location!, 0);
+        gl.vertexAttribPointer(location!, size!, gl.FLOAT, false, 20, offset!);
+      }
+      gl.disableVertexAttribArray(3);
+      gl.drawArrays(gl.TRIANGLES, 0, count);
+    };
+    let checkedFloatBlend = false;
     return {
       dispose,
       draw(scene: GeographicPainterProps, now: number) {
@@ -189,15 +332,21 @@ function createPainter(canvas: HTMLCanvasElement) {
           canvas.width = width;
           canvas.height = height;
         }
-        gl.viewport(0, 0, width, height);
         gl.disable(gl.DEPTH_TEST);
         gl.enable(gl.BLEND);
-        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
-        gl.clearColor(0.15, 0.15, 0.15, 0.15);
+        // Two half-float attachments hold six absorption/scattering bands,
+        // pigment mass and optical coverage. All coats accumulate additively;
+        // one resolve pass makes overlap independent of region draw order.
+        accumulationSize(width, height);
+        gl.blendEquation(gl.FUNC_ADD);
+        gl.blendFunc(gl.ONE, gl.ONE);
+        gl.clearColor(0, 0, 0, 0);
         gl.clear(gl.COLOR_BUFFER_BIT);
         const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
         const live = new Set<string>(),
           liveMeshes = new Set<string>();
+        const regionIds = new Set(scene.regions.map((region) => region.id));
+        for (const id of cache.keys()) if (!regionIds.has(id)) remove(id);
         let animating = false;
         const tween = (
           id: string,
@@ -263,8 +412,17 @@ function createPainter(canvas: HTMLCanvasElement) {
             ...ink
           );
         };
-        gl.useProgram(hullProgram);
-        gl.uniform2f(hu.size, scene.size.width, scene.size.height);
+        const strokes: {
+          entry: Mesh;
+          transform: number[];
+          ink: number[];
+          alpha: number;
+        }[] = [];
+        let featherLayers = 0,
+          accumulationDraws = 0;
+        gl.useProgram(pigmentProgram);
+        gl.uniform2f(su.size, scene.size.width, scene.size.height);
+        gl.uniform1f(su.thickness, 0);
         for (const region of scene.regions) {
           const transform = camera(region.paintView, region.paintViewport);
           const c = scene.colors.get(region.id);
@@ -282,15 +440,17 @@ function createPainter(canvas: HTMLCanvasElement) {
             if (!entry || entry.path !== region.path) {
               remove(region.id);
               const mesh = geographicMesh(region.path);
-              if (mesh.fill.byteLength + mesh.stroke.byteLength > 4_000_000)
-                throw Error("webgl_mesh_budget");
+              const bytes = mesh.fill.byteLength + mesh.stroke.byteLength;
+              if (bytes > 4_000_000) throw Error("webgl_mesh_budget");
+              if (cache.size >= 128 || meshBytes() + bytes > 8_000_000)
+                throw Error("webgl_scene_budget");
               entry = {
                 path: region.path,
                 fill: buffer(mesh.fill),
                 stroke: buffer(mesh.stroke),
                 fillCount: mesh.fill.length / 5,
                 strokeCount: mesh.stroke.length / 5,
-                bytes: mesh.fill.byteLength + mesh.stroke.byteLength
+                bytes
               };
               cache.set(region.id, entry);
               meshBuilds++;
@@ -309,67 +469,111 @@ function createPainter(canvas: HTMLCanvasElement) {
               if (!Number.isFinite(tx + ty))
                 throw Error("invalid_webgl_path_transform");
             }
-            gl.uniform4f(
-              hu.camera,
+            const position = [
               transform[0]!,
               transform[1]!,
               transform[2]! + tx * transform[0]!,
               transform[3]! + ty * transform[1]!
+            ];
+            gl.uniform4fv(su.camera, position);
+            const ink = color(c?.fill || DEFAULT_COMPOSITE_FILL);
+            const material = spectralPigmentMaterial([
+              ink[0]! * 255,
+              ink[1]! * 255,
+              ink[2]! * 255
+            ]);
+            gl.uniform3f(
+              su.ks012,
+              material.ks[0],
+              material.ks[1],
+              material.ks[2]
             );
-            const draw = (
+            gl.uniform3f(
+              su.ks345,
+              material.ks[3],
+              material.ks[4],
+              material.ks[5]
+            );
+            const fillAlpha = Math.min(
+              0.9999,
+              Math.max(
+                0,
+                ink[3]! *
+                  alpha *
+                  scene.fillOpacity *
+                  (region.representation?.hullFillOpacity ?? 1)
+              )
+            );
+            const opticalDensity = -Math.log1p(-fillAlpha);
+            const strokeOpacity = region.representation?.hullStrokeOpacity ?? 1;
+            const softness = 1 - Math.min(1, Math.max(0, strokeOpacity));
+            const fill = (
               value: WebGLBuffer,
               count: number,
-              css: string,
-              opacity: number,
-              thickness: number
+              weight: number
             ) => {
-              const ink = color(css);
-              gl.uniform4f(
-                hu.color,
-                ink[0]!,
-                ink[1]!,
-                ink[2]!,
-                ink[3]! * opacity
-              );
-              gl.uniform1f(hu.thickness, thickness);
-              gl.bindBuffer(gl.ARRAY_BUFFER, value);
-              for (const [location, size, offset] of [
-                [0, 2, 0],
-                [1, 2, 8],
-                [2, 1, 16]
-              ]) {
-                gl.enableVertexAttribArray(location!);
-                gl.vertexAttribDivisor(location!, 0);
-                gl.vertexAttribPointer(
-                  location!,
-                  size!,
-                  gl.FLOAT,
-                  false,
-                  20,
-                  offset!
-                );
-              }
-              gl.disableVertexAttribArray(3);
-              gl.drawArrays(gl.TRIANGLES, 0, count);
+              const coverage = opticalDensity * weight;
+              gl.uniform1f(su.mass, coverage * material.luminance);
+              gl.uniform1f(su.coverage, coverage);
+              drawMesh(value, count);
+              accumulationDraws++;
             };
-            draw(
-              entry.stroke,
-              entry.strokeCount,
-              c?.label || "#7a3a29",
-              alpha *
-                scene.strokeOpacity *
-                (region.representation?.hullStrokeOpacity ?? 1),
-              1.15
-            );
-            draw(
-              entry.fill,
-              entry.fillCount,
-              c?.fill || DEFAULT_COMPOSITE_FILL,
-              alpha *
-                scene.fillOpacity *
-                (region.representation?.hullFillOpacity ?? 1),
-              0
-            );
+            if (softness > 0 && fillAlpha > 0) {
+              const layers = hullFeatherLayers(
+                entry.path,
+                softness,
+                HULL_FEATHER_WIDTH_PX /
+                  Math.max(
+                    Math.abs(transform[0]!),
+                    Math.abs(transform[1]!),
+                    0.0001
+                  )
+              );
+              const source = layers[1]?.contours;
+              if (source && entry.feather?.source !== source) {
+                removeFeather(entry);
+                const feather: NonNullable<Mesh["feather"]> = {
+                  source,
+                  layers: [],
+                  bytes: 0
+                };
+                // Assign before allocating so every buffer is owned even if a
+                // malformed or oversized enhancement requests SVG fallback.
+                entry.feather = feather;
+                for (const layer of layers.slice(1)) {
+                  const pieces: { fill: WebGLBuffer; count: number }[] = [];
+                  feather.layers.push(pieces);
+                  for (const path of layer.contours) {
+                    const mesh = geographicMesh(path);
+                    feather.bytes += mesh.fill.byteLength;
+                    if (entry.bytes + feather.bytes > 4_000_000)
+                      throw Error("webgl_mesh_budget");
+                    if (meshBytes() > 8_000_000)
+                      throw Error("webgl_scene_budget");
+                    pieces.push({
+                      fill: buffer(mesh.fill),
+                      count: mesh.fill.length / 5
+                    });
+                  }
+                }
+              }
+              fill(entry.fill, entry.fillCount, layers[0]!.weight);
+              for (let i = 1; i < layers.length; i++) {
+                for (const part of entry.feather?.layers[i - 1] || [])
+                  fill(part.fill, part.count, layers[i]!.weight);
+              }
+              featherLayers += layers.length;
+            } else if (fillAlpha > 0) {
+              fill(entry.fill, entry.fillCount, 1);
+            }
+            const borderAlpha = alpha * scene.strokeOpacity * strokeOpacity;
+            if (borderAlpha > 0)
+              strokes.push({
+                entry,
+                transform: position,
+                ink: color(c?.label || "#7a3a29"),
+                alpha: borderAlpha
+              });
           }
           const point = region.representation?.point ?? region.compactPoint;
           if (point)
@@ -396,9 +600,49 @@ function createPainter(canvas: HTMLCanvasElement) {
           );
         for (const id of tweens.keys()) if (!live.has(id)) tweens.delete(id);
         for (const id of cache.keys()) if (!liveMeshes.has(id)) remove(id);
-        const bytes = [...cache.values()].reduce((sum, e) => sum + e.bytes, 0);
+        const bytes = meshBytes();
         if (cache.size > 128 || bytes > 8_000_000)
           throw Error("webgl_scene_budget");
+        // Test float blending once, after the first real accumulation draw.
+        // No recurring driver query or pixel readback is needed after this.
+        if (!checkedFloatBlend && accumulationDraws > 0) {
+          if (gl.getError() !== gl.NO_ERROR)
+            throw Error("webgl_pigment_blend_unavailable");
+          checkedFloatBlend = true;
+        }
+        gl.bindFramebuffer(gl.FRAMEBUFFER, null);
+        gl.viewport(0, 0, width, height);
+        gl.disable(gl.BLEND);
+        gl.clearColor(0, 0, 0, 0);
+        gl.clear(gl.COLOR_BUFFER_BIT);
+        gl.useProgram(resolveProgram);
+        for (const [index, texture] of textures.entries()) {
+          gl.activeTexture(gl.TEXTURE0 + index);
+          gl.bindTexture(gl.TEXTURE_2D, texture);
+        }
+        gl.uniform1i(ru.bands012, 0);
+        gl.uniform1i(ru.bands345, 1);
+        for (let location = 0; location < 4; location++) {
+          gl.disableVertexAttribArray(location);
+          gl.vertexAttribDivisor(location, 0);
+        }
+        gl.drawArrays(gl.TRIANGLES, 0, 3);
+        gl.enable(gl.BLEND);
+        gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
+        gl.useProgram(hullProgram);
+        gl.uniform2f(hu.size, scene.size.width, scene.size.height);
+        gl.uniform1f(hu.thickness, 1.15);
+        for (const stroke of strokes) {
+          gl.uniform4fv(hu.camera, stroke.transform);
+          gl.uniform4f(
+            hu.color,
+            stroke.ink[0]!,
+            stroke.ink[1]!,
+            stroke.ink[2]!,
+            stroke.ink[3]! * stroke.alpha
+          );
+          drawMesh(stroke.entry.stroke, stroke.entry.strokeCount);
+        }
         gl.useProgram(pointProgram);
         gl.uniform2f(pu.size, scene.size.width, scene.size.height);
         gl.uniform4fv(pu.border, border);
@@ -435,6 +679,15 @@ function createPainter(canvas: HTMLCanvasElement) {
         canvas.dataset.meshReuses = String(meshReuses);
         canvas.dataset.pointCount = String(dots.length / 9);
         canvas.dataset.regionCount = String(scene.regions.length);
+        canvas.dataset.pigmentMode = "spectral-6band";
+        canvas.dataset.pigmentPixels = String(
+          accumulationWidth * accumulationHeight
+        );
+        canvas.dataset.pigmentBytes = String(
+          accumulationWidth * accumulationHeight * 16
+        );
+        canvas.dataset.featherLayers = String(featherLayers);
+        canvas.dataset.pigmentDraws = String(accumulationDraws);
         return animating;
       }
     };
@@ -453,12 +706,16 @@ export function GeographicWebGL(props: GeographicPainterProps) {
     const canvas = canvasRef.current!;
     const lost = (event: Event) => {
       event.preventDefault();
+      canvas.dataset.pigmentMode = "unavailable";
+      canvas.dataset.pigmentFallback = "context-lost";
       scene.current.onUnavailable();
     };
     canvas.addEventListener("webglcontextlost", lost);
     try {
       painter.current = createPainter(canvas);
     } catch {
+      canvas.dataset.pigmentMode = "unavailable";
+      canvas.dataset.pigmentFallback = "unsupported";
       scene.current.onUnavailable();
     }
     return () => {
@@ -482,6 +739,8 @@ export function GeographicWebGL(props: GeographicPainterProps) {
         scene.current.onDraw?.(performance.now() - start);
         if (active) frame.current = requestAnimationFrame(paint);
       } catch {
+        canvasRef.current!.dataset.pigmentMode = "unavailable";
+        canvasRef.current!.dataset.pigmentFallback = "draw-failed";
         scene.current.onUnavailable();
       }
     };

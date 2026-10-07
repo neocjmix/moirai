@@ -27,6 +27,8 @@ import { graphSessionStorage, readWorldGraphState, rememberGraphWorld, workspace
 import { createPanInertiaTracker, panInertiaFrame, type PanVelocity } from "../../../lib/pan-inertia";
 import { GeographicCanvas } from "../../../components/geographic-canvas";
 import { GeographicWebGL } from "../../../components/geographic-webgl";
+import { hullFeatherLayers, hullLayerOpacity, HULL_FEATHER_WIDTH_PX } from "../../../components/hull-feather";
+import { pigmentCssColor } from "../../../lib/spectral-pigment";
 import { reconcileViewport } from "../viewport-cache";
 import { selectSemanticLabels, semanticBoundsIntersectViewport, semanticTextWidth } from "../../../lib/graph-semantic-budget";
 import { GraphContextHud } from "../../../components/graph-context-hud";
@@ -216,7 +218,7 @@ const COMPOSITE_LABEL_GUIDE_LENGTH = 8;
 const EDGE_POINT_BACKOFF = 12;
 const COMPOSITE_FADE_DURATION_MS = 220;
 const COMPOSITE_SURFACE_FILL_OPACITY = 0.32;
-const COMPOSITE_SURFACE_STROKE_OPACITY = 0.2;
+const COMPOSITE_SURFACE_STROKE_OPACITY = 0.15;
 const EVENT_DRAWER_ENTER_DELAY_MS = 16;
 const EVENT_DRAWER_EXIT_DURATION_MS = 420;
 const EVENT_DRAWER_TAP_SLOP_PX = 8;
@@ -233,7 +235,6 @@ const RELATION_CAUSE_STROKE = "rgba(0, 0, 0, 0.78)";
 const RELATION_ORDER_STROKE = "var(--graph-relation-order)";
 const RELATION_SOFT_STROKE = "var(--graph-relation-soft)";
 const RELATION_SURROGATE_STROKE = "var(--graph-relation-surrogate)";
-const GRAPH_BACKDROP_REFERENCE_IMAGE_URL = "/@fs/Users/chanjinpark/dev/urdr/.hermux/uploads/tg_-5186373632_17004_2026-04-24T08-29-46-679Z.jpg";
 
 function getCompositeRegionPadding(level: number) {
   return 6 + level * 5;
@@ -4213,11 +4214,6 @@ export function GraphShell({
 
             <div className={styles.chartPlaneViewport} ref={chartViewportRef}>
               {viewportStatusMessage ? <div className={styles.chartViewportStatus}>{viewportStatusMessage}</div> : null}
-              <div
-                className={styles.chartBackdropImage}
-                data-backdrop-texture="paper-grain"
-                style={{ backgroundImage: `url("${GRAPH_BACKDROP_REFERENCE_IMAGE_URL}")` }}
-              />
               {loader.renderTiles ? (
                 <svg aria-label="Projected chart surface" className={styles.chartSurface}
                   data-render-source="tiles" viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
@@ -4240,7 +4236,7 @@ export function GraphShell({
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/>) : null}
-                <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?"spectral-6band":"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
                   <defs>
                     <marker id="relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_ORDER_STROKE} />
@@ -4263,6 +4259,12 @@ export function GraphShell({
                     const point = region.representation?.point ?? region.compactPoint;
                     const hullOpacity = region.representation?.hullOpacity ?? (region.compactPoint ? 0 : 1);
                     const pointOpacity = region.representation?.pointOpacity ?? (region.compactPoint ? 1 : 0);
+                    const fillOpacity = COMPOSITE_SURFACE_FILL_OPACITY * (region.representation?.hullFillOpacity ?? 1);
+                    const paintScale = Math.max(Math.abs(view.scaleX / (region.paintView?.scaleX ?? view.scaleX)), Math.abs(view.scaleY / (region.paintView?.scaleY ?? view.scaleY)), 0.0001);
+                    const feather = !useGeographicCanvas
+                      ? hullFeatherLayers(region.path, 1 - (region.representation?.hullStrokeOpacity ?? 1), HULL_FEATHER_WIDTH_PX / paintScale)
+                      : [{contours: [region.path], weight: 1}];
+                    const hullColor = !useGeographicCanvas ? pigmentCssColor(compositeStyle?.fill ?? DEFAULT_COMPOSITE_FILL) : compositeStyle?.fill ?? DEFAULT_COMPOSITE_FILL;
                     return <g key={region.id} data-composite-paint-id={region.id}
                       data-composite-span={region.representation?.span}
                       data-composite-children-opacity={region.representation?.childrenOpacity}
@@ -4278,15 +4280,22 @@ export function GraphShell({
                         transform={region.pathTransform}
                         onPointerDown={region.visibilityState !== "exiting" && !region.compactPoint && !discovery?.contextHud ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{
-                          fill: compositeStyle?.fill ?? DEFAULT_COMPOSITE_FILL,
+                          fill: hullColor,
                           pointerEvents: region.compactPoint || region.renderedOpacity * region.surfaceOpacity === 0 || discovery?.contextHud ? "none" : useGeographicCanvas ? "all" : undefined,
-                          mixBlendMode: "darken",
+                          mixBlendMode: "multiply",
                           opacity: region.renderedOpacity * region.surfaceOpacity * hullOpacity,
-                          fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY * (region.representation?.hullFillOpacity ?? 1),
+                          fillOpacity: hullLayerOpacity(fillOpacity, feather[0].weight),
                           stroke: compositeStyle?.label,
                           strokeOpacity: COMPOSITE_SURFACE_STROKE_OPACITY * (region.representation?.hullStrokeOpacity ?? 1),
                         }}
                       />
+                      {feather.length > 1 ? <g aria-hidden="true" pointerEvents="none" data-hull-feather="inset-bands" transform={region.pathTransform}>
+                        {feather.slice(1).flatMap((layer, band) => layer.contours.map((contour, part) => <path
+                          key={`${band}:${part}`} d={contour} fill={hullColor} stroke="none"
+                          fillOpacity={hullLayerOpacity(fillOpacity, layer.weight)}
+                          style={{opacity: region.renderedOpacity * region.surfaceOpacity * hullOpacity, mixBlendMode: "multiply", transition: "opacity 220ms ease"}}
+                        />))}
+                      </g> : null}
                       {point ? <g data-composite-point-id={region.compactPoint ? region.id : undefined}
                         data-point-density={region.compactPoint ? region.pointDisplay.state : undefined}
                         data-representation={region.compactPoint ? (region.showLabel ? "semantic" : "geographic") : undefined}

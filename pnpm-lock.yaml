@@ -93,6 +93,9 @@ importers:
       react-markdown:
         specifier: ^10.1.0
         version: 10.1.0(@types/react@19.2.18)(react@19.2.8)
+      spectral.js:
+        specifier: 3.0.0
+        version: 3.0.0
       zod:
         specifier: ^3.24.4
         version: 3.25.76
@@ -2868,6 +2871,9 @@ packages:
 
   space-separated-tokens@2.0.2:
     resolution: {integrity: sha512-PEGlAwrG8yXGXRjW32fGbg66JAlOAwbObuqVoJpv/mRgoWDQfgH1wDPvtzWyUSNAXBGSk8h755YDbbcEy3SH2Q==}
+
+  spectral.js@3.0.0:
+    resolution: {integrity: sha512-vIvoUfuB0jrj8bdCXvKks5nmp4Zx1DeKhSojJxN8Pk7jIpH2KMwF8cAhDPto0dEwk0/0qa06eL0owRZ2tAJB5w==}
 
   split2@4.2.0:
     resolution: {integrity: sha512-UcjcJOWknrNkF6PLX83qcHM6KHgVKNkV62Y8a5uYDVv9ydGQVwAHMKqHdJje1VTWpljG0WYpCDhrCdAOYH4TWg==}
@@ -5893,6 +5899,8 @@ snapshots:
   source-map-js@1.2.2: {}
 
   space-separated-tokens@2.0.2: {}
+
+  spectral.js@3.0.0: {}
 
   split2@4.2.0: {}
 

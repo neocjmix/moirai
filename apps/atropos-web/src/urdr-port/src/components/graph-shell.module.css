@@ -1257,8 +1257,8 @@
   width: 100%;
   height: 100%;
   overflow: hidden;
-  background: #f7f2ea;
-  --graph-backdrop: color-mix(in srgb, var(--gray-1) 82%, #f1e5d6);
+  background: #fff;
+  --graph-backdrop: #fff;
   --graph-grid-line: rgba(69, 77, 94, 0.12);
   --graph-grid-axis: rgba(49, 58, 74, 0.28);
   --graph-axis-mark-major: rgba(45, 33, 23, 0.3);
@@ -1271,10 +1271,10 @@
   --graph-relation-soft: rgba(63, 100, 88, 0.54);
   --graph-relation-surrogate: rgba(94, 104, 123, 0.32);
   --graph-relation-label: rgba(35, 42, 54, 0.72);
-  --graph-label-halo: rgba(250, 244, 236, 0.96);
+  --graph-label-halo: rgba(255, 255, 255, 0.96);
   --graph-label-path-debug: rgba(164, 78, 57, 0.7);
   --graph-point-fill: #1b2330;
-  --graph-point-stroke: rgba(251, 246, 238, 0.96);
+  --graph-point-stroke: rgba(255, 255, 255, 0.96);
   --graph-point-label: rgba(29, 35, 44, 0.92);
   --graph-font-sans: Inter, "Segoe UI", Arial, sans-serif;
 }
@@ -1388,17 +1388,6 @@
   isolation: isolate;
 }
 
-.chartBackdropImage {
-  position: absolute;
-  inset: 0;
-  z-index: 0;
-  pointer-events: none;
-  opacity: 0.72;
-  background-position: center;
-  background-repeat: repeat;
-  background-size: 720px auto;
-}
-
 .chartViewportStatus {
   position: absolute;
   top: 16px;
@@ -1427,8 +1416,7 @@
 
 .chartBackdrop {
   fill: var(--graph-backdrop);
-  fill: rgb(255, 255, 255);
-  fill-opacity: 0.15;
+  fill-opacity: 1;
 }
 
 /* Keep SVG text and hit geometry at native density; the Canvas owns only ink. */
@@ -1477,7 +1465,7 @@
 
 .chartCompositeRegion {
   fill: rgba(214, 120, 92, 0.12);
-  mix-blend-mode: darken;
+  mix-blend-mode: multiply;
   paint-order: stroke fill;
   stroke-linejoin: round;
   stroke-width: 1.15;

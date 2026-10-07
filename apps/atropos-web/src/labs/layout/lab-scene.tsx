@@ -2,6 +2,11 @@
 
 import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
+  hullFeatherLayers,
+  hullLayerOpacity
+} from "../../components/hull-feather";
+import { pigmentCssColor } from "../../lib/spectral-pigment";
+import {
   createPanInertiaTracker,
   panInertiaFrame
 } from "../../lib/pan-inertia";
@@ -433,7 +438,7 @@ export function LabScene({
             touchAction: "none",
             height: "100%",
             display: "block",
-            background: "#fbfaf5"
+            background: "#fff"
           }}
           onPointerDown={(event) => {
             if (
@@ -596,6 +601,10 @@ export function LabScene({
                 : null;
               const pointOpacity =
                 state.ordinaryPointOpacity + state.smallPointOpacity;
+              const hullPath = item.kind === "region" ? path(item) : null;
+              const featherLayers = hullPath
+                ? hullFeatherLayers(hullPath, 1 - state.hullStrokeOpacity)
+                : [];
               return (
                 <g
                   key={item.id}
@@ -605,22 +614,41 @@ export function LabScene({
                   pointerEvents={state.opacity > 0.01 ? undefined : "none"}
                   aria-hidden={state.opacity <= 0.01 || undefined}
                 >
-                  {item.kind === "region" && (
-                    <path
-                      d={path(item)}
-                      fill={compositeColor?.fill ?? "#1b2330"}
-                      fillOpacity={0.12 * state.hullFillOpacity}
-                      stroke={compositeColor?.label ?? "#1b2330"}
-                      strokeWidth={1.8}
-                      strokeOpacity={state.hullStrokeOpacity}
+                  {hullPath && (
+                    <g
                       opacity={state.hullOpacity}
                       pointerEvents={
                         state.hullOpacity > 0.01 ? "visiblePainted" : "none"
                       }
                       style={{
-                        transition: `opacity ${config.fadeDurationMs}ms, stroke-opacity ${config.fadeDurationMs}ms`
+                        mixBlendMode: "multiply",
+                        transition: `opacity ${config.fadeDurationMs}ms`
                       }}
-                    />
+                    >
+                      <path
+                        d={hullPath}
+                        fill="none"
+                        stroke={compositeColor?.label ?? "#1b2330"}
+                        strokeWidth={1.15}
+                        strokeOpacity={0.15 * state.hullStrokeOpacity}
+                        style={{
+                          transition: `stroke-opacity ${config.fadeDurationMs}ms`
+                        }}
+                      />
+                      {featherLayers.map((layer, index) => (
+                        <path
+                          key={index}
+                          d={layer.contours.join(" ")}
+                          fill={pigmentCssColor(
+                            compositeColor?.fill ?? "#1b2330"
+                          )}
+                          fillOpacity={hullLayerOpacity(
+                            0.12 * state.hullFillOpacity,
+                            layer.weight
+                          )}
+                        />
+                      ))}
+                    </g>
                   )}
                   {item.kind === "segment" && (
                     <line

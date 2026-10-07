@@ -9,7 +9,7 @@
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@modelcontextprotocol/sdk": "1.31.0",
     "@moirai/contracts": "workspace:*",
     "@moirai/domain": "workspace:*",
     "@moirai/persistence": "workspace:*",

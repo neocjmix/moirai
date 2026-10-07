@@ -1,8 +1,23 @@
+import {
+  COMPOSITE_COMPACT_THRESHOLD_PX,
+  COMPOSITE_COMPACT_HYSTERESIS_PX,
+  COMPOSITE_HULL_FADE_PX,
+  COMPOSITE_BORDERLESS_SPAN_PX,
+  COMPOSITE_BORDER_FADE_PX,
+  COMPOSITE_BORDERLESS_FILL_SCALE,
+  COMPOSITE_SMALL_POINT_SPAN_PX,
+  COMPOSITE_ORDINARY_POINT_SPAN_PX,
+  COMPOSITE_HIDDEN_SPAN_PX,
+  COMPOSITE_VISIBLE_POINT_SPAN_PX,
+  COMPOSITE_CHILD_FADE_START_PX,
+  COMPOSITE_CHILD_REVEAL_SPAN_PX
+} from "../../urdr-port/src/components/composite-point-display";
+
 /** Research-only screen representation policy. No canonical facts or geometry
  * are produced here. A caller supplies a complete immutable authored closure,
  * projects it with its camera, and keeps this policy's small history in presets.
  */
-export const REPRESENTATION_CONFIG_VERSION = "lab-representation/3";
+export const REPRESENTATION_CONFIG_VERSION = "lab-representation/4";
 
 export interface RepresentationConfig {
   hullOpacityScale: number;
@@ -21,6 +36,14 @@ export interface RepresentationConfig {
   hullFadePx: number;
   hullBorderFadeStartPx: number;
   hullBorderFadePx: number;
+  hullBorderlessOpacityScale: number;
+  compositePointSizeStages: boolean;
+  smallCompositeSpanPx: number;
+  ordinaryCompositeSpanPx: number;
+  hiddenCompositeSpanPx: number;
+  visibleCompositeSpanPx: number;
+  childRevealBySpan: boolean;
+  sequentialChildPoints: boolean;
   compactHysteresisPx: number;
   childRevealHeightPx: number;
   childFadeStartRatio: number;
@@ -99,7 +122,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     type: "boolean",
     default: true,
     description:
-      "Apply height-based reveal; switching off suppresses authored descendants."
+      "Reveal descendants as their parent opens; switching off suppresses authored descendants."
   },
   {
     key: "showRelations",
@@ -112,7 +135,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "compactThresholdPx",
     label: "Hull → point (px)",
     type: "number",
-    default: 20,
+    default: COMPOSITE_COMPACT_THRESHOLD_PX,
     min: 0,
     max: 200,
     step: 1,
@@ -123,7 +146,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "hullFadePx",
     label: "Hull fade interval (px)",
     type: "number",
-    default: 8,
+    default: COMPOSITE_HULL_FADE_PX,
     min: 0,
     max: 160,
     step: 1,
@@ -134,7 +157,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "hullBorderFadeStartPx",
     label: "Borderless hull span (px)",
     type: "number",
-    default: 36,
+    default: COMPOSITE_BORDERLESS_SPAN_PX,
     min: 0,
     max: 400,
     step: 1,
@@ -145,7 +168,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "hullBorderFadePx",
     label: "Hull border fade interval (px)",
     type: "number",
-    default: 12,
+    default: COMPOSITE_BORDER_FADE_PX,
     min: 0,
     max: 160,
     step: 1,
@@ -153,10 +176,63 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
       "Border fade above the borderless span. Zero disables the separate border fade for legacy presets."
   },
   {
+    key: "hullBorderlessOpacityScale",
+    label: "Borderless hull fill",
+    type: "number",
+    default: COMPOSITE_BORDERLESS_FILL_SCALE,
+    min: 0,
+    max: 1,
+    step: 0.01,
+    description:
+      "Fill multiplier while the border is hidden; labels keep their own opacity."
+  },
+  {
+    key: "compositePointSizeStages",
+    label: "Composite size stages",
+    type: "boolean",
+    default: true,
+    description:
+      "Use each Composite's screen span for ordinary, small and hidden stages. Legacy presets use density ranks."
+  },
+  ...(
+    [
+      ["smallCompositeSpanPx", COMPOSITE_SMALL_POINT_SPAN_PX],
+      ["ordinaryCompositeSpanPx", COMPOSITE_ORDINARY_POINT_SPAN_PX],
+      ["hiddenCompositeSpanPx", COMPOSITE_HIDDEN_SPAN_PX],
+      ["visibleCompositeSpanPx", COMPOSITE_VISIBLE_POINT_SPAN_PX]
+    ] as const
+  ).map(([key, value]) => ({
+    key,
+    label: key,
+    type: "number" as const,
+    default: value,
+    min: 0,
+    max: 200,
+    step: 1,
+    description:
+      "Composite raw screen span controlling reversible point size and visibility."
+  })),
+  {
+    key: "childRevealBySpan",
+    label: "Reveal by parent span",
+    type: "boolean",
+    default: true,
+    description:
+      "Use the larger raw X/Y span for parent-child reveal; off retains legacy Y-only behavior."
+  },
+  {
+    key: "sequentialChildPoints",
+    label: "Sequential child points",
+    type: "boolean",
+    default: true,
+    description:
+      "Shrink child points and release labels before their parent's collapse hides them."
+  },
+  {
     key: "compactHysteresisPx",
     label: "Compact hysteresis (px)",
     type: "number",
-    default: 8,
+    default: COMPOSITE_COMPACT_HYSTERESIS_PX,
     min: 0,
     max: 160,
     step: 1,
@@ -167,18 +243,18 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "childRevealHeightPx",
     label: "Child reveal height (px)",
     type: "number",
-    default: 100,
+    default: COMPOSITE_CHILD_REVEAL_SPAN_PX,
     min: 0,
     max: 600,
     step: 1,
     description:
-      "Y screen height for fully visible descendants. X width intentionally has no effect."
+      "Raw screen span for fully visible descendants; legacy presets may use only Y height."
   },
   {
     key: "childFadeStartRatio",
     label: "Child fade start ratio",
     type: "number",
-    default: 0.58,
+    default: COMPOSITE_CHILD_FADE_START_PX / COMPOSITE_CHILD_REVEAL_SPAN_PX,
     min: 0,
     max: 1,
     step: 0.01,
@@ -194,7 +270,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     max: 512,
     step: 1,
     description:
-      "Number of normal points before hysteresis. Counts composites and events together."
+      "Number of normal points before hysteresis. Counts label candidates; Composite point paint follows its own size."
   },
   {
     key: "normalHysteresisCount",
@@ -319,6 +395,11 @@ export function validateRepresentationConfig(
     config.hiddenPointCount <= config.smallPointCount
   )
     throw Error("Density ranks must satisfy ordinary ≤ small < hidden");
+  if (
+    config.ordinaryCompositeSpanPx <= config.smallCompositeSpanPx ||
+    config.visibleCompositeSpanPx <= config.hiddenCompositeSpanPx
+  )
+    throw Error("Composite spans must have increasing fade intervals");
   return { ...config };
 }
 
@@ -385,6 +466,7 @@ export interface RepresentationResult {
     "hull" | "borderless-hull" | "ordinary-point" | "small-point" | "hidden";
   hullOpacity: number;
   hullStrokeOpacity: number;
+  hullFillOpacity: number;
   ordinaryPointOpacity: number;
   smallPointOpacity: number;
   hiddenOpacity: number;
@@ -431,8 +513,12 @@ export function evaluateRepresentationScene(
   const descendantOpacity = new Map<string, number>();
   for (const node of input.nodes) {
     if (node.kind !== "composite") continue;
-    const height =
-      node.childScreenHeight ?? node.bounds.maxY - node.bounds.minY;
+    const height = config.childRevealBySpan
+      ? Math.max(
+          node.bounds.maxX - node.bounds.minX,
+          node.bounds.maxY - node.bounds.minY
+        )
+      : (node.childScreenHeight ?? node.bounds.maxY - node.bounds.minY);
     const reveal =
       config.childRevealHeightPx <= 0
         ? 1
@@ -522,23 +608,57 @@ export function evaluateRepresentationScene(
       const hullOpacity = config.showHulls
         ? hullWeight * surfaceOpacity * visibility * config.hullOpacityScale
         : 0;
-      const pointOpacity = (1 - hullWeight) * densityOpacity * visibility;
-      const ordinaryPointOpacity =
-        normal && config.showOrdinaryPoints
-          ? pointOpacity * config.ordinaryPointOpacityScale
-          : 0;
-      const smallPointOpacity =
-        !normal && config.showSmallPoints
-          ? pointOpacity * config.smallPointOpacityScale
-          : 0;
+      const sizeStages =
+        node.kind === "composite" &&
+        config.compositePointSizeStages &&
+        span > 0;
+      const ordinaryWeight = sizeStages
+        ? smooth(
+            (span - config.smallCompositeSpanPx) /
+              (config.ordinaryCompositeSpanPx - config.smallCompositeSpanPx)
+          )
+        : Number(normal);
+      const pointVisibility = sizeStages
+        ? smooth(
+            (span - config.hiddenCompositeSpanPx) /
+              (config.visibleCompositeSpanPx - config.hiddenCompositeSpanPx)
+          )
+        : densityOpacity;
+      const pointOpacity = (1 - hullWeight) * pointVisibility * visibility;
+      const ordinaryPointOpacity = config.showOrdinaryPoints
+        ? pointOpacity * ordinaryWeight * config.ordinaryPointOpacityScale
+        : 0;
+      const smallPointOpacity = config.showSmallPoints
+        ? pointOpacity * (1 - ordinaryWeight) * config.smallPointOpacityScale
+        : 0;
+      const hullFillOpacity =
+        config.hullBorderlessOpacityScale +
+        (1 - config.hullBorderlessOpacityScale) * hullStrokeOpacity;
       const opacity = unit(
         hullOpacity + ordinaryPointOpacity + smallPointOpacity
       );
+      const parentPointScale = config.sequentialChildPoints
+        ? 0.35 + 0.65 * smooth((visibility - 0.2) / 0.6)
+        : 1;
+      const parentLabelWeight = config.sequentialChildPoints
+        ? smooth((visibility - 0.4) / 0.5)
+        : 1;
+      const radiusScale =
+        (sizeStages
+          ? config.smallPointScale +
+            (1 - config.smallPointScale) * ordinaryWeight
+          : normal
+            ? 1
+            : config.hiddenPointScale +
+              (config.smallPointScale - config.hiddenPointScale) *
+                densityOpacity) * parentPointScale;
       const labelOpacity = !config.showLabels
         ? 0
         : hullOpacity * config.hullLabelOpacity +
-          ordinaryPointOpacity * config.ordinaryLabelOpacity +
-          smallPointOpacity * config.smallLabelOpacity;
+          (ordinaryPointOpacity * config.ordinaryLabelOpacity +
+            smallPointOpacity * config.smallLabelOpacity) *
+            (sizeStages ? Number(normal) : 1) *
+            parentLabelWeight;
       state[node.id] = { compact, normal };
       return {
         id: node.id,
@@ -549,24 +669,22 @@ export function evaluateRepresentationScene(
               ? hullStrokeOpacity === 0
                 ? "borderless-hull"
                 : "hull"
-              : ordinaryPointOpacity > 0
+              : radiusScale >= 0.999 && ordinaryPointOpacity > 0
                 ? "ordinary-point"
-                : smallPointOpacity > 0
+                : smallPointOpacity + ordinaryPointOpacity > 0
                   ? "small-point"
                   : hullStrokeOpacity === 0
                     ? "borderless-hull"
                     : "hull",
         hullOpacity,
         hullStrokeOpacity,
+        hullFillOpacity,
         ordinaryPointOpacity,
         smallPointOpacity,
         hiddenOpacity: 1 - opacity,
         labelOpacity,
         childrenOpacity: children.get(node.id) ?? 1,
-        radiusScale: normal
-          ? 1
-          : config.hiddenPointScale +
-            (config.smallPointScale - config.hiddenPointScale) * densityOpacity,
+        radiusScale,
         opacity,
         compact,
         densityRank: rank ?? null
@@ -613,8 +731,12 @@ export const REPRESENTATION_GROUPS: readonly {
   {
     title: "2 · 테두리 없는 영역 단계",
     description:
-      "점으로 줄어들기 전에 테두리만 사라지고 영역의 색과 이름은 남습니다.",
-    keys: ["hullBorderFadeStartPx", "hullBorderFadePx"]
+      "점으로 줄어들기 전에 테두리를 없애고 면을 조금 흐리게 유지합니다. 이름은 그대로 읽을 수 있습니다.",
+    keys: [
+      "hullBorderFadeStartPx",
+      "hullBorderFadePx",
+      "hullBorderlessOpacityScale"
+    ]
   },
   {
     title: "3 · 보통 점 단계",
@@ -625,26 +747,34 @@ export const REPRESENTATION_GROUPS: readonly {
       "ordinaryPointOpacityScale",
       "ordinaryLabelOpacity",
       "normalPointCount",
-      "normalHysteresisCount"
+      "normalHysteresisCount",
+      "compositePointSizeStages",
+      "ordinaryCompositeSpanPx"
     ]
   },
   {
     title: "4 · 작은 점 단계",
     description:
-      "사건이 밀집하면 점을 줄입니다. 이름표는 기본적으로 숨기며, 여기서 켜 보는 실험이 가능합니다.",
+      "일반 사건은 밀집도에 따라, 묶음은 화면 크기에 따라 점을 줄입니다. 이름표는 기본적으로 숨깁니다.",
     keys: [
       "showSmallPoints",
       "smallPointOpacityScale",
       "smallLabelOpacity",
       "smallPointScale",
-      "smallPointCount"
+      "smallPointCount",
+      "smallCompositeSpanPx"
     ]
   },
   {
     title: "5 · 숨김 단계",
     description:
-      "밀집 순위가 기준을 넘으면 점과 이름표가 함께 사라집니다. 실제 사건이나 구성 관계를 삭제하지 않습니다.",
-    keys: ["hiddenPointCount", "hiddenPointScale"]
+      "일반 사건은 밀집 순위, 묶음은 화면 크기에 따라 점과 이름표가 사라집니다. 실제 사건이나 구성 관계는 유지합니다.",
+    keys: [
+      "hiddenPointCount",
+      "hiddenPointScale",
+      "hiddenCompositeSpanPx",
+      "visibleCompositeSpanPx"
+    ]
   },
   {
     title: "구성 사건·연결선·전환",
@@ -655,6 +785,8 @@ export const REPRESENTATION_GROUPS: readonly {
       "showChildren",
       "showRelations",
       "childRevealHeightPx",
+      "childRevealBySpan",
+      "sequentialChildPoints",
       "childFadeStartRatio",
       "fadeDurationMs",
       "labelFadeDurationMs"

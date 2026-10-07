@@ -206,3 +206,70 @@ it("retains an offscreen Composite title before its external hull is resolved", 
     renderDensity: { labelOpacity: 1 }
   });
 });
+it("retains a visible authored hull before individual leaf density ranks on cold restoration", () => {
+  const parent: RenderPrimitive = {
+    ...points[0]!,
+    id: "life-hull",
+    entity: { kind: "composite", id: "life" },
+    visibility: { policy: "render-visibility/1", priority: "zzzz" },
+    composite: {
+      childEventIds: ["e1"],
+      supportComplete: true,
+      worldBounds: box,
+      hullBounds: box
+    },
+    geometry: { kind: "external", key: "geometry/life", sha256: "life" }
+  };
+  const leaves = points.map((p) => ({
+    ...p,
+    entity: { kind: "event" as const, id: p.id }
+  }));
+  const result = selectRenderDensity(
+    [...leaves, parent],
+    box,
+    new Map(),
+    undefined,
+    { scaleX: 4, scaleY: 0.5 }
+  );
+  expect(result).toHaveLength(128);
+  expect(result[0]!.entity.id).toBe("life");
+  expect(result[0]!.renderDensity?.opacity).toBe(1);
+  expect(
+    selectRenderDensity(
+      [parent, ...leaves.toReversed()],
+      box,
+      new Map(),
+      undefined,
+      { scaleX: 4, scaleY: 0.5 }
+    )
+  ).toEqual(result);
+});
+it("retains the same Composite owner across hull, large point and small point density boundaries", () => {
+  const parent: RenderPrimitive = {
+    ...points[0]!,
+    id: "life-hull",
+    entity: { kind: "composite", id: "life" },
+    visibility: { policy: "render-visibility/1", priority: "zzzz" },
+    composite: {
+      childEventIds: ["e1"],
+      supportComplete: true,
+      worldBounds: box,
+      hullBounds: box
+    }
+  };
+  const leaves = points.map((p) => ({
+    ...p,
+    entity: { kind: "event" as const, id: p.id }
+  }));
+  for (const span of [100, 44, 20, 13, 12, 10, 6, 2]) {
+    const result = selectRenderDensity(
+      [...leaves, parent],
+      box,
+      new Map(),
+      undefined,
+      { scaleX: span / 10, scaleY: span / 10 }
+    );
+    expect(result).toHaveLength(128);
+    expect(result[0]!.entity.id).toBe("life");
+  }
+});

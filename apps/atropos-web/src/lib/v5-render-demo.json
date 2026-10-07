@@ -26,7 +26,7 @@
     "tiles": [
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/-1.json",
-        "sha256": "23e21b32c4df653f55fb04fff5d947b3838b6c7a772424bf7f9c7154fb077186",
+        "sha256": "13690a7ce43b0eba1a42ac4c8f324b044599ae7875c48f1fe283490b64ed4a71",
         "bounds": {
           "minX": -1048576,
           "maxX": 0,
@@ -39,7 +39,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/-1.json",
-        "sha256": "2e356303169a2b0c5b7b2194fd83a52a9c9826ac0528e27aacff4b40f62eb3a3",
+        "sha256": "6148c855de92d706a9bf7984a46cfae4aaf3a6bb03f2deb5d211ae7b9179cb31",
         "bounds": {
           "minX": 0,
           "maxX": 1048576,
@@ -52,7 +52,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/0.json",
-        "sha256": "46385ae09a876cfc039675f7750e8ec3a9f2ae23bb99ca2f10b9059a712ec552",
+        "sha256": "9f765270e9382cb20cdebeb65bb918ae69263148a6af46ac3e1618cebcd661b0",
         "bounds": {
           "minX": -1048576,
           "maxX": 0,
@@ -65,7 +65,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/0.json",
-        "sha256": "a68f811c9fed28da714343dd91e7b36efb855320b574e110e4c2360795ebbbb0",
+        "sha256": "a2fb2eb55eba25cd329353d68e15e85660546e60f7d593f4cb9cd794d06b1c99",
         "bounds": {
           "minX": 0,
           "maxX": 1048576,
@@ -78,7 +78,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/-1.json",
-        "sha256": "b27799f9b2495d46cf431c5d7f0e2ea60a81fec8ef82d873dc9c0bdf21a357ad",
+        "sha256": "bb7a1840770bff7700edf1d46856b7ea840b83d01cef37ad7f826a113e9b8bea",
         "bounds": {
           "minX": -524288,
           "maxX": 0,
@@ -91,7 +91,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/-1.json",
-        "sha256": "7b2cb7f3af543ac63cfa6542663f7b1e1f72aa10c11e82110da1d9f182e9b10a",
+        "sha256": "5c2d732296e97042d07b23f1e7fc4eee1ebbd619606bde2d17317f7ffe463dc9",
         "bounds": {
           "minX": 0,
           "maxX": 524288,
@@ -104,7 +104,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/0.json",
-        "sha256": "46f958e8f9e3d1d13a8adfef61e3d6d3136461af446d2aa51d3f8afc7523660a",
+        "sha256": "773c370c9e721e5182e336c5da638b6f1076710d4b5b2ba7cc1535db8dad8c75",
         "bounds": {
           "minX": -524288,
           "maxX": 0,
@@ -117,7 +117,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/0.json",
-        "sha256": "b1b7acb5eb81db140d6e3cff66f70bf8dfb0ea3f4c12e768ee0583cb450bb1a7",
+        "sha256": "948daf6bea29eb8a0cd3f429d619a4aa3a7008801eb78bdb303cf939d333667c",
         "bounds": {
           "minX": 0,
           "maxX": 524288,
@@ -130,7 +130,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/-1.json",
-        "sha256": "23ad5c6dc55a1227be9323288f800662ec58978e78a1373a68ae6efd0c05a659",
+        "sha256": "90294718b5d715ff0fc00ca199ee9b5145760ec09f5755bd754082ac4179c0a4",
         "bounds": {
           "minX": -262144,
           "maxX": 0,
@@ -143,7 +143,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/-1.json",
-        "sha256": "6638cb3fbb5163469bd50a5f251b43070f1ab56b192c7ecc80ff68c2acf17adb",
+        "sha256": "6b2a5d1918cb162bf137d8f664dc7fe5e8a16c5b0c525879280b3fae57515037",
         "bounds": {
           "minX": 0,
           "maxX": 262144,
@@ -156,7 +156,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/0.json",
-        "sha256": "1ade86c3373328c6f2a944bb427a15baafdb620873ebefb5ce98e9b80cc2e1d7",
+        "sha256": "cde1ba33e84e16109bc3b724e0b0a2e9f3d561d9694e37394cf23d74fc99447a",
         "bounds": {
           "minX": -262144,
           "maxX": 0,
@@ -169,7 +169,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/0.json",
-        "sha256": "4fbb9e35c76e275e69bede076f577045ef06e94677cf9187b7f196bc10023237",
+        "sha256": "748606989a2d48f60179f02a6f3075ea4eeebe59ad31a5a64507e2d3c084bb49",
         "bounds": {
           "minX": 0,
           "maxX": 262144,
@@ -182,7 +182,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/-1.json",
-        "sha256": "a821520ebc2a8d4ffaad0a417794d7f50b8f15b94d625afbb1bb6d20a90b188f",
+        "sha256": "5cd7f4ca4b488609eaf1542e15c4ba5c775ed4e3b6293c20654bc51638c70929",
         "bounds": {
           "minX": -131072,
           "maxX": 0,
@@ -195,7 +195,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/-1.json",
-        "sha256": "3bb5d5b92716241708a3a106c4eeef6e4583335038364474ec1572ffd3b550f6",
+        "sha256": "ba6313d3c5524f610932691b2dc18755bbf1676c564715c791014867466e0157",
         "bounds": {
           "minX": 0,
           "maxX": 131072,
@@ -208,7 +208,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/0.json",
-        "sha256": "ff4b8d0fb136a5c409948268646bd3a6d90c23bd109f2a3052b0954ccc089a8d",
+        "sha256": "6a15b189fed021d131513b7c5d2cfe742f2a5e7d0194bd331d6af703064122de",
         "bounds": {
           "minX": -131072,
           "maxX": 0,
@@ -221,7 +221,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/0.json",
-        "sha256": "c6e4a159b8d884ed626ea586fc249a1fabe44a571c51a7e0d6e00b4264b22ad9",
+        "sha256": "8cd64d50777f9605f10a110ef9e641ac8ec88de26df061bfea41fbdd936f891a",
         "bounds": {
           "minX": 0,
           "maxX": 131072,
@@ -234,7 +234,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/-1.json",
-        "sha256": "72cf52f08e01ab24111deadb6f4d8bb774db0c5edb6ad8eb5859a2bb581ed5f1",
+        "sha256": "07029db5cb8854638c42f38f48b0b85f4d2d5f639be86e487290da28fdbe6890",
         "bounds": {
           "minX": -65536,
           "maxX": 0,
@@ -247,7 +247,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/-1.json",
-        "sha256": "6bf7cb053a5adc5c91ff0da822211bdab45a74d823b900cac26d4efd4d5880db",
+        "sha256": "6bf897e3646daec4bb389623350bd52b41df4b43b39ebee43b209fbe15326443",
         "bounds": {
           "minX": 0,
           "maxX": 65536,
@@ -260,7 +260,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/0.json",
-        "sha256": "8d179fa150357203d61c3998a9d908325dccd3e842fc4f8a52c50f4734d60ca7",
+        "sha256": "72d10be47d43845303548bad1334f71d39100960864b5dfacd00d6712a0cee8e",
         "bounds": {
           "minX": -65536,
           "maxX": 0,
@@ -273,7 +273,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/0.json",
-        "sha256": "403ffbbd37b4fea5c2244cd7a1c81f7b90c25100635f1534994c1055e573710b",
+        "sha256": "379dab6a5d22075980e90c1d9096428c978469c04668739f9350ffa572398a2a",
         "bounds": {
           "minX": 0,
           "maxX": 65536,
@@ -286,7 +286,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/-1.json",
-        "sha256": "360e883240aa377d0dcf7dfcb812729122e87c41132d32132751c473066b1395",
+        "sha256": "d0758d40ed819068952cf75dc68dba631f52397472ad86ab5ac5447e6d18153d",
         "bounds": {
           "minX": -32768,
           "maxX": 0,
@@ -299,7 +299,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/-1.json",
-        "sha256": "239264e3fcb54442752a0ab0e51278abcb6c60e5add8f8960fec8323a3961ea2",
+        "sha256": "ab66acf4a0b786fb79fdc477f4a0a3c3ee40777030e35c64a1d52185e616139e",
         "bounds": {
           "minX": 0,
           "maxX": 32768,
@@ -312,7 +312,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/0.json",
-        "sha256": "be3ae9c76c40ce3551b24fe7de8d27d8673ea1e2771f7324ab31240a14d4c2af",
+        "sha256": "9d4d936b8bfbbc285fee47e633d80027335ffb89128d2dadd172ea64df15a632",
         "bounds": {
           "minX": -32768,
           "maxX": 0,
@@ -325,7 +325,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/0.json",
-        "sha256": "acfb73fe6611d0de528ed1b2f0616c7d3123f95c960851b1fc789b970f5b04ad",
+        "sha256": "82075301756dcabacd1d9a1192b56686dc22e16f434e89d5721db06e0bc2a231",
         "bounds": {
           "minX": 0,
           "maxX": 32768,
@@ -338,7 +338,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/-1.json",
-        "sha256": "377b067d76f87ef21da8d190cc03ea25c3f2171854a794c9911c6002d440156f",
+        "sha256": "2bf133974a807dbd8169cbda27aeb460be436bf23f170f0c62fc3142aec5909c",
         "bounds": {
           "minX": -16384,
           "maxX": 0,
@@ -351,7 +351,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/-1.json",
-        "sha256": "c71b96269ffa7d5d58e90404874b2cb06ef6f66bc6ccc65b01441fc5c4ec9b7e",
+        "sha256": "0bedd3f1aa8916d7792196344657263a7cea6e30ae8bcc2aaf4c3ace360bc727",
         "bounds": {
           "minX": 0,
           "maxX": 16384,
@@ -364,7 +364,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/0.json",
-        "sha256": "7b15046e7d52b8884a2c503f61c583ac38cb98bba1fd90e890f079a4d70ea84a",
+        "sha256": "e6932a89b6167b2bca12af6ca4a74ebbf0b62a0863d92a5c3177a3a7fae27ded",
         "bounds": {
           "minX": -16384,
           "maxX": 0,
@@ -377,7 +377,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/0.json",
-        "sha256": "1b3f0cef7183dca4147552d798d339b8b832a8f741fd7c98eb69293913e4976b",
+        "sha256": "19abbd623c51fefff57f589b46bcd486b8e255fd069ef9d918d6e800bd47bdc7",
         "bounds": {
           "minX": 0,
           "maxX": 16384,
@@ -390,7 +390,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/-1.json",
-        "sha256": "0485ae212fa00443a328cc290848784144d6c3843b9e3d06834dcee4231ffa7a",
+        "sha256": "8661373e193e0b0846d9daf4e9ea802feb4a37c80bbfcc82f2eb09f52021f775",
         "bounds": {
           "minX": -8192,
           "maxX": 0,
@@ -403,7 +403,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/-1.json",
-        "sha256": "bf00cdd8d1826cc84e7caff45e2acf26981724b5e656c2fe4dd535e7595cccf3",
+        "sha256": "2397e3dbeb03b8dafda797fb9ce63f6b25eb8af1f754485d978d91d4736fe2db",
         "bounds": {
           "minX": 0,
           "maxX": 8192,
@@ -416,7 +416,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/0.json",
-        "sha256": "173488287f1d4ac779691c5f25d52a08af06f7f0c08df326ec36e13cd63e94a8",
+        "sha256": "6a7d6c5d5134ac72a71aacc1ed056599c8e3fd71d00b02286844229c7bcb1cd9",
         "bounds": {
           "minX": -8192,
           "maxX": 0,
@@ -429,7 +429,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/0.json",
-        "sha256": "1d6500b09bb99a5a98c36e10ef80850b1cf9a054658d721dd92b914979c4db83",
+        "sha256": "c77c1f415ffd703b440b75fa4c2ccaeff4f84827634170036593821eb250343f",
         "bounds": {
           "minX": 0,
           "maxX": 8192,
@@ -442,7 +442,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/-1.json",
-        "sha256": "5fc4d98e44a285ed4dc219f687bd422d28ad7d6ce01d6fcfa3aad4fc4afaac1c",
+        "sha256": "bb4ab828369f371e6279fa7d3d7c57a790f3fea44554758fb1afbdb532a50c15",
         "bounds": {
           "minX": -4096,
           "maxX": 0,
@@ -455,7 +455,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/-1.json",
-        "sha256": "f32785764a2912cc7f36d6966fdbd879cb02ea717f2da1fc5673c3ef76dadf19",
+        "sha256": "14d4d478fbec4e2a15c7d127fdbc5c310a573b6f538d00e667486c7a7eab7acf",
         "bounds": {
           "minX": 0,
           "maxX": 4096,
@@ -468,7 +468,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/0.json",
-        "sha256": "28807df626648afaff816834ed030cbc24faa3d0ddc09d5280fa297340c61c0a",
+        "sha256": "dfc4798853fe3ab1facd21b7c47055eb36ddb1237e171ef93e85acc2a62c2abf",
         "bounds": {
           "minX": -4096,
           "maxX": 0,
@@ -481,7 +481,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/0.json",
-        "sha256": "4523ab546b5f3189f33f86161d02de979392e013f5e27d50cc4c19e180e3cd90",
+        "sha256": "6ced6d7f210d2e7c736f6b1abb27f66436d7a9219c6f79fd41031c86f0f93002",
         "bounds": {
           "minX": 0,
           "maxX": 4096,
@@ -494,7 +494,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/-1.json",
-        "sha256": "61dc7fbd23c21d54d0a288948a082821b23604e89a3b8ff58ebde2ac3e49ce97",
+        "sha256": "63dd68998f47432972cfbb20aa81845435c0777a9b472357407fa624142c9d7c",
         "bounds": {
           "minX": -2048,
           "maxX": 0,
@@ -507,7 +507,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/-1.json",
-        "sha256": "7a68c9d0feed6d164aa41b34daead04f8952dff7f07de717f85daaa2cb8fa5e2",
+        "sha256": "0d1c0fa953bbc8b097a5363e001404e80d539cb1769c185df941c2c95283b178",
         "bounds": {
           "minX": 0,
           "maxX": 2048,
@@ -520,7 +520,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/0.json",
-        "sha256": "8dfb775fbc927d04b02b7e627eb427b7a8e051321b8fc887d2c2c254abfd6beb",
+        "sha256": "df0eba222ce62ee1c8aa5a8fb4e999a0d306701ba0bde116de0dea72956614e4",
         "bounds": {
           "minX": -2048,
           "maxX": 0,
@@ -533,7 +533,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/0.json",
-        "sha256": "7707d99e6f985787f5952924f600cc7a09b870e22957bbb69469c88c8a10cae4",
+        "sha256": "18a4f77a15a0d52b9d80b70139606d96ceeebea1ced689e6de98603450b611c3",
         "bounds": {
           "minX": 0,
           "maxX": 2048,
@@ -546,7 +546,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/-1.json",
-        "sha256": "631e4ea6995f32f4a9fbff94c31effa917a85e1af3190057ba6ea4b753908e2d",
+        "sha256": "a41a271e886bdc79736cc157396370e11a26aecc219e1c99c04f0875d80718af",
         "bounds": {
           "minX": -1024,
           "maxX": 0,
@@ -559,7 +559,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/-1.json",
-        "sha256": "233c24ffaff62a0885d3e3473e3c661ef124ff0bc6192b7b4cdb619b40df18fc",
+        "sha256": "1418923640766ea74096812aeb531c0ed870edd2f1bd85f6a686e1f3ed67cca4",
         "bounds": {
           "minX": 0,
           "maxX": 1024,
@@ -572,7 +572,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/0.json",
-        "sha256": "618f52d7387752a7a108c9af6a149adf488c47f74c07954ef33201c42135e965",
+        "sha256": "40e54f32a82551b1bea9af302538cbe0e5d6597c765c34ee67fec327a35ad3a2",
         "bounds": {
           "minX": -1024,
           "maxX": 0,
@@ -585,7 +585,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/0.json",
-        "sha256": "85d2bef0d005c0a2b620baec20817809be397fcfcf767da8e2d50650bbd31665",
+        "sha256": "24311c45af8f7b0caf776f6fe4e3cc897eed0af3dbd3618bf5b1135c5aeac3c6",
         "bounds": {
           "minX": 0,
           "maxX": 1024,
@@ -598,7 +598,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/-1.json",
-        "sha256": "f75e96b9cfdef6db6a09459bd459308d66e6b3180b5ee28b100ab5d58bf5f595",
+        "sha256": "bc81478610750ac0a14d82f766d79574593e7ad0f96c85b9fa364bce79024475",
         "bounds": {
           "minX": -512,
           "maxX": 0,
@@ -611,7 +611,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/-1.json",
-        "sha256": "12e1ff6eaf62f2e93e90dd0fe8bdd1e553ed0b103b05bec6ba9f1317220f36d7",
+        "sha256": "1ed2bf512f86ca1d35fa5a4fb196a32919afcfb079cd84dea582f0abfded597c",
         "bounds": {
           "minX": 0,
           "maxX": 512,
@@ -624,7 +624,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/0.json",
-        "sha256": "d7103d9645fce323fd6c0b7645b9b343648a4a9680f58e88bdec1c16c5c2ee98",
+        "sha256": "2035f7be426403fc3ca9c611a79b42fcef918d038a015199c31289028f840335",
         "bounds": {
           "minX": -512,
           "maxX": 0,
@@ -637,7 +637,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/0.json",
-        "sha256": "469f2472e41848055efdefc25a052bdb9d19d71e09b48d042630035032a99181",
+        "sha256": "2a36706d814f8f3dfe3b18a92dd8bbcb60693022342e0e77515cc60d084764c2",
         "bounds": {
           "minX": 0,
           "maxX": 512,
@@ -650,7 +650,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/-1.json",
-        "sha256": "74a62c9ed63909edb218c489e2318d0f228cdfc6f1042eb02e0813eb057618d7",
+        "sha256": "870e19f4183303d94e87f65e8f51b37cc71835d0acde6981961bf49107013433",
         "bounds": {
           "minX": -256,
           "maxX": 0,
@@ -663,7 +663,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/-1.json",
-        "sha256": "caf4524857b9a429c48226f798592b2bc9c5c6e62e678ef48c8af083f91ee3bd",
+        "sha256": "10dd3c8e0aef3179a4efd09d7e2bbcd0cd7db97350381bfc9adee428f5943582",
         "bounds": {
           "minX": 0,
           "maxX": 256,
@@ -676,7 +676,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/0.json",
-        "sha256": "267ec4e29eba869da0fe4990032e4f940e2d3a3e4aa9b9809b127e855083b86f",
+        "sha256": "8f5f40eb712cfa39655e6ede0f00946e42b9b038a0918dcb1715213004b2a18e",
         "bounds": {
           "minX": -256,
           "maxX": 0,
@@ -689,7 +689,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/0.json",
-        "sha256": "fc7bc5a15de108f225ff2807350c76af2b01fe90fb70e3f8e908a9e55ff1e522",
+        "sha256": "d0928a56b731519da1e51e9e9a2bee7a0767d6d55afbada5bb4f195156861d0c",
         "bounds": {
           "minX": 0,
           "maxX": 256,
@@ -702,7 +702,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/-1.json",
-        "sha256": "3f64c2891bd6a9ac8a5b1debff4fd5d7e0de9e532a24820c443d7bb2769d8738",
+        "sha256": "b47c866e9d178a37d42a0b8330dd740e37dc5a9db5731e8386a3b1fbccec14cf",
         "bounds": {
           "minX": -128,
           "maxX": 0,
@@ -715,7 +715,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/-1.json",
-        "sha256": "15c28d1f1d38b794e5fe9702ba9ca8a8c96e1d1fd770bc4c45ae14babbb53159",
+        "sha256": "75b6abddf6243ed939442615421f33f3653b85a4701ed646f59dbd4473b8d062",
         "bounds": {
           "minX": 0,
           "maxX": 128,
@@ -728,7 +728,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/0.json",
-        "sha256": "5070d165115426ebeda6919d90de97e461675e8ce4a2a0fa454f0ca1f6a55772",
+        "sha256": "8ede2856c48b57bcedd252bd932a9a19e3a7db8787f74c25b34958bd6f12bee1",
         "bounds": {
           "minX": -128,
           "maxX": 0,
@@ -741,7 +741,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/0.json",
-        "sha256": "ee45b5f2c86b2e15c005e82734c95c711f016639081ec137b6caa0917e0e1363",
+        "sha256": "575c3868223a57c6b1fd2f7fd353de7ce10748c88d0f6828bb3eea62a6975bb0",
         "bounds": {
           "minX": 0,
           "maxX": 128,
@@ -754,7 +754,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/-1.json",
-        "sha256": "e2748bfb6b2ef817a682fa2b37034a7665625d7ca6d47da71cc99a8dfafaa6e3",
+        "sha256": "f9a882acaf4f8f76cf18c7d11da9b4eb75bcc4a16b2f2006e1936a1eb376e4c3",
         "bounds": {
           "minX": -128,
           "maxX": -64,
@@ -767,7 +767,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/-1.json",
-        "sha256": "1dd29b92b015ad8e865bbcdc13e6d14edea5e6c4f79c21cde6a6253634ddfbff",
+        "sha256": "011db26b3aaf674cd9b68620a9edf49addc57c542a301c4d787ed5b8b8dfc48c",
         "bounds": {
           "minX": -64,
           "maxX": 0,
@@ -780,7 +780,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/-1.json",
-        "sha256": "46538030f5d2b12b37865389e9dbdb7c85489204c6591556a4116877f39238b3",
+        "sha256": "e6e885a894e4c5fd38f18a11848c015dcbbda21f8dc0428984b294e28115626d",
         "bounds": {
           "minX": 0,
           "maxX": 64,
@@ -806,7 +806,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/0.json",
-        "sha256": "45dab1fdabb24cb07eb94795e6c55179c602420b27ca687523ca935f768f801e",
+        "sha256": "34a92c4a410684a40f38dea28d924376157602f9e499c027f98e83e7620214b3",
         "bounds": {
           "minX": -128,
           "maxX": -64,
@@ -819,7 +819,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/0.json",
-        "sha256": "86caa86f359cb9b3a1659dbd4818a272201ff034783b3921d7926b5003a903c7",
+        "sha256": "977abd904dcf2696789dd28c2483650405d3055bcbe2fab75a6a33a1efbcd30e",
         "bounds": {
           "minX": -64,
           "maxX": 0,
@@ -832,7 +832,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/0.json",
-        "sha256": "1716aaafd7d1824bb748690718cb0dc58da861f8e90f48687bad36cc63a91ce9",
+        "sha256": "2339aabf4f43708afc9ed323e8795915ddae49b2fbc72bbcb9fcaf971581ddad",
         "bounds": {
           "minX": 0,
           "maxX": 64,
@@ -858,7 +858,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/-1.json",
-        "sha256": "03f23565b284ed592df7b4dcf1e989f3337a4fcb0b5fee54ee0b932c6b7265f0",
+        "sha256": "a4c07a8443f2a4f8ee993ea411d7daa80c6678623440625a41fe5277ffcccad8",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -871,7 +871,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/-1.json",
-        "sha256": "673c839ad726173bc8606aa92571f391a168e0fd794e194277ce36ecbbc12df1",
+        "sha256": "8af21d2433b5562f8e8a80ad17279457d13ba92e057e6784b95beca2b76b2792",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -884,7 +884,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/-1.json",
-        "sha256": "6a3292cc30f417cf510ef7797933fb005861f62ff3324aba71b90f108cd9828e",
+        "sha256": "1563b6d3fed5b6fae65c929f49463e06e85c28c20c2c3fa3cf8610e30f81a59d",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -897,7 +897,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/-1.json",
-        "sha256": "dae1608d13c7cc0993b705ca647a34b641961b89ea2f630f124a6f8c8f1e4444",
+        "sha256": "48d0e8f7968fd897101df2aa8910e494b79a0c0b4cfedf15bad45d3fcf57627e",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -910,7 +910,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/-1.json",
-        "sha256": "d53ea55a035b1f92fa2b8c74b5287898cacbab975b8e82b51eb47870da45c8c0",
+        "sha256": "deae26aa84d77ced971f0df065c7990c6b9195e7b9f7f53ddae170edd29869b1",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -936,7 +936,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/0.json",
-        "sha256": "d22fd3d4f1f85d00a5d1e9595d2a0828c88dff358a49fe1341344a34a1c1d6c2",
+        "sha256": "d21f3a43fef8a5a2fb116800c314a33cb1e3e9347851a514f16fe6df852f2d38",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -949,7 +949,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/0.json",
-        "sha256": "fae8c3ce929f51a6ba0ce531e81d83ed8ef365323db19d1727facd63904014dd",
+        "sha256": "8f83a0ccb7d310698ca00239274cdc73f090699fac0f392862a214ae25e41125",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -962,7 +962,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/0.json",
-        "sha256": "4f7587e7962b3de4a28a1ab4599bdda1ac58a1588590191535e7751fccd3686d",
+        "sha256": "be8792eedce0b3da02837345bd07050c29d5fe56a35af34fb1e0c835f4aca71a",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -975,7 +975,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/0.json",
-        "sha256": "f10ce749e8144e808d265c7fa0a1ce41c234571f03a6ea394bc44c90e549df52",
+        "sha256": "e93958222500368d195abaec3dfa6e63766ff0714d7d3af7299098c816dde0af",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -988,7 +988,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/0.json",
-        "sha256": "8d4ac6d38823d4c3cc8921c5af59bd9df20bbe87d6a18455e92191267c94b437",
+        "sha256": "26298bb4352910c036794b8e5c2f807aa71c19bb475b8375cf39cf0746568fe4",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -1014,7 +1014,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/-1.json",
-        "sha256": "82b81342b818fe6c50f6831a8fc1422d1aaa738653cce1683c334006d2c5f2f8",
+        "sha256": "f7d44782d07b63714977c61aa8455d519567da823aec0a76171e65718e20618e",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -1028,7 +1028,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/-1.json",
-        "sha256": "ea9661d4a38987cac8729487f83f6404f1284917d92811f03e6dfbc50002abef",
+        "sha256": "ac0505f6b5947ffd0647ef2b9798b5fc4cd491508e8c72ba5c1787ef94bd7da3",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -1042,7 +1042,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/-1.json",
-        "sha256": "30786e62196021a05de992bf7ae080a08f65ae95aa3ac0ce7c22daf19a43f069",
+        "sha256": "2f9754e74b66b05141233e761d951e88d86f96b5fde7250f5facc856f5926be9",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -1056,7 +1056,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/-1.json",
-        "sha256": "c432d2067b02f91cb3e1db39fc93fe7ab04b1037f9f37f3352a95d72519b92ae",
+        "sha256": "84ee39426ef3b5ef5ed456db72b0fb8bdaf4b606e92642da892b360928815fb9",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -1070,7 +1070,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/-1.json",
-        "sha256": "5c46d530c6e54820b59894b96432fa5dd103602005356e39f01d70ecf34f9386",
+        "sha256": "e11389ea10909179e65a57db0e582026559de5b75f4bf5ca3b479102a4336f3e",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -1098,7 +1098,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/0.json",
-        "sha256": "41552a40c27f581881bcdac3c198427e19421d6c70a22165efce2e5e6b21a261",
+        "sha256": "f46ed1fed9069dd44f7e17ed80d7b5693dc7b68296ccc83e593cb2f8368e1476",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -1112,7 +1112,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/0.json",
-        "sha256": "c922b42edd7a120becba153e8aa4a3d3dba381054beb6a9427954c35a918c3eb",
+        "sha256": "793ca6929ce3f746faa55e1e7796d75c5f367438fcfcc90abe33a17d16ae499f",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -1126,7 +1126,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/0.json",
-        "sha256": "b9777bc338393d90288a646de939f1c2713d11bc2238d277d2f97059d551f676",
+        "sha256": "e8c9eb52bb554a69925f748131ae54f5e0a6fe9998c2083223e90076a31791f8",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -1140,7 +1140,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/0.json",
-        "sha256": "5e90b095081bb400248d4faf622658e8aad69b30f31ae3877274c081c00b3eb2",
+        "sha256": "78a417f27c2b05ee3b5d4c26aec226d62ce26748f083f4c29952b91456da68ae",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -1154,7 +1154,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/0.json",
-        "sha256": "85672715b689699d186557e703a78a680bc84baeeff0e7f6dd884833f95a3dac",
+        "sha256": "c1b68c7ee11a8544ff1b306476adf704bb424f4688b1430099db3c47da3d3365",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -1466,7 +1466,7 @@
   },
   "assets": {
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/-1.json": {
-      "sha256": "23e21b32c4df653f55fb04fff5d947b3838b6c7a772424bf7f9c7154fb077186",
+      "sha256": "13690a7ce43b0eba1a42ac4c8f324b044599ae7875c48f1fe283490b64ed4a71",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -1606,14 +1606,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -1631,7 +1639,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/-1.json": {
-      "sha256": "2e356303169a2b0c5b7b2194fd83a52a9c9826ac0528e27aacff4b40f62eb3a3",
+      "sha256": "6148c855de92d706a9bf7984a46cfae4aaf3a6bb03f2deb5d211ae7b9179cb31",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -1774,14 +1782,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -1799,7 +1815,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/0.json": {
-      "sha256": "46385ae09a876cfc039675f7750e8ec3a9f2ae23bb99ca2f10b9059a712ec552",
+      "sha256": "9f765270e9382cb20cdebeb65bb918ae69263148a6af46ac3e1618cebcd661b0",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -1939,14 +1955,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -1964,7 +1988,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/0.json": {
-      "sha256": "a68f811c9fed28da714343dd91e7b36efb855320b574e110e4c2360795ebbbb0",
+      "sha256": "a2fb2eb55eba25cd329353d68e15e85660546e60f7d593f4cb9cd794d06b1c99",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2104,14 +2128,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2129,7 +2161,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/-1.json": {
-      "sha256": "b27799f9b2495d46cf431c5d7f0e2ea60a81fec8ef82d873dc9c0bdf21a357ad",
+      "sha256": "bb7a1840770bff7700edf1d46856b7ea840b83d01cef37ad7f826a113e9b8bea",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2269,14 +2301,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2294,7 +2334,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/-1.json": {
-      "sha256": "7b2cb7f3af543ac63cfa6542663f7b1e1f72aa10c11e82110da1d9f182e9b10a",
+      "sha256": "5c2d732296e97042d07b23f1e7fc4eee1ebbd619606bde2d17317f7ffe463dc9",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2437,14 +2477,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2462,7 +2510,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/0.json": {
-      "sha256": "46f958e8f9e3d1d13a8adfef61e3d6d3136461af446d2aa51d3f8afc7523660a",
+      "sha256": "773c370c9e721e5182e336c5da638b6f1076710d4b5b2ba7cc1535db8dad8c75",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2602,14 +2650,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2627,7 +2683,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/0.json": {
-      "sha256": "b1b7acb5eb81db140d6e3cff66f70bf8dfb0ea3f4c12e768ee0583cb450bb1a7",
+      "sha256": "948daf6bea29eb8a0cd3f429d619a4aa3a7008801eb78bdb303cf939d333667c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2767,14 +2823,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2792,7 +2856,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/-1.json": {
-      "sha256": "23ad5c6dc55a1227be9323288f800662ec58978e78a1373a68ae6efd0c05a659",
+      "sha256": "90294718b5d715ff0fc00ca199ee9b5145760ec09f5755bd754082ac4179c0a4",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2932,14 +2996,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2957,7 +3029,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/-1.json": {
-      "sha256": "6638cb3fbb5163469bd50a5f251b43070f1ab56b192c7ecc80ff68c2acf17adb",
+      "sha256": "6b2a5d1918cb162bf137d8f664dc7fe5e8a16c5b0c525879280b3fae57515037",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3100,14 +3172,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3125,7 +3205,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/0.json": {
-      "sha256": "1ade86c3373328c6f2a944bb427a15baafdb620873ebefb5ce98e9b80cc2e1d7",
+      "sha256": "cde1ba33e84e16109bc3b724e0b0a2e9f3d561d9694e37394cf23d74fc99447a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3265,14 +3345,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3290,7 +3378,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/0.json": {
-      "sha256": "4fbb9e35c76e275e69bede076f577045ef06e94677cf9187b7f196bc10023237",
+      "sha256": "748606989a2d48f60179f02a6f3075ea4eeebe59ad31a5a64507e2d3c084bb49",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3430,14 +3518,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3455,7 +3551,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/-1.json": {
-      "sha256": "a821520ebc2a8d4ffaad0a417794d7f50b8f15b94d625afbb1bb6d20a90b188f",
+      "sha256": "5cd7f4ca4b488609eaf1542e15c4ba5c775ed4e3b6293c20654bc51638c70929",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3595,14 +3691,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3620,7 +3724,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/-1.json": {
-      "sha256": "3bb5d5b92716241708a3a106c4eeef6e4583335038364474ec1572ffd3b550f6",
+      "sha256": "ba6313d3c5524f610932691b2dc18755bbf1676c564715c791014867466e0157",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3763,14 +3867,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3788,7 +3900,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/0.json": {
-      "sha256": "ff4b8d0fb136a5c409948268646bd3a6d90c23bd109f2a3052b0954ccc089a8d",
+      "sha256": "6a15b189fed021d131513b7c5d2cfe742f2a5e7d0194bd331d6af703064122de",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3928,14 +4040,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3953,7 +4073,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/0.json": {
-      "sha256": "c6e4a159b8d884ed626ea586fc249a1fabe44a571c51a7e0d6e00b4264b22ad9",
+      "sha256": "8cd64d50777f9605f10a110ef9e641ac8ec88de26df061bfea41fbdd936f891a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4093,14 +4213,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4118,7 +4246,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/-1.json": {
-      "sha256": "72cf52f08e01ab24111deadb6f4d8bb774db0c5edb6ad8eb5859a2bb581ed5f1",
+      "sha256": "07029db5cb8854638c42f38f48b0b85f4d2d5f639be86e487290da28fdbe6890",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4258,14 +4386,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4283,7 +4419,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/-1.json": {
-      "sha256": "6bf7cb053a5adc5c91ff0da822211bdab45a74d823b900cac26d4efd4d5880db",
+      "sha256": "6bf897e3646daec4bb389623350bd52b41df4b43b39ebee43b209fbe15326443",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4426,14 +4562,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4451,7 +4595,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/0.json": {
-      "sha256": "8d179fa150357203d61c3998a9d908325dccd3e842fc4f8a52c50f4734d60ca7",
+      "sha256": "72d10be47d43845303548bad1334f71d39100960864b5dfacd00d6712a0cee8e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4591,14 +4735,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4616,7 +4768,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/0.json": {
-      "sha256": "403ffbbd37b4fea5c2244cd7a1c81f7b90c25100635f1534994c1055e573710b",
+      "sha256": "379dab6a5d22075980e90c1d9096428c978469c04668739f9350ffa572398a2a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4756,14 +4908,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4781,7 +4941,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/-1.json": {
-      "sha256": "360e883240aa377d0dcf7dfcb812729122e87c41132d32132751c473066b1395",
+      "sha256": "d0758d40ed819068952cf75dc68dba631f52397472ad86ab5ac5447e6d18153d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4921,14 +5081,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4946,7 +5114,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/-1.json": {
-      "sha256": "239264e3fcb54442752a0ab0e51278abcb6c60e5add8f8960fec8323a3961ea2",
+      "sha256": "ab66acf4a0b786fb79fdc477f4a0a3c3ee40777030e35c64a1d52185e616139e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5089,14 +5257,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5114,7 +5290,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/0.json": {
-      "sha256": "be3ae9c76c40ce3551b24fe7de8d27d8673ea1e2771f7324ab31240a14d4c2af",
+      "sha256": "9d4d936b8bfbbc285fee47e633d80027335ffb89128d2dadd172ea64df15a632",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5254,14 +5430,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5279,7 +5463,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/0.json": {
-      "sha256": "acfb73fe6611d0de528ed1b2f0616c7d3123f95c960851b1fc789b970f5b04ad",
+      "sha256": "82075301756dcabacd1d9a1192b56686dc22e16f434e89d5721db06e0bc2a231",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5419,14 +5603,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5444,7 +5636,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/-1.json": {
-      "sha256": "377b067d76f87ef21da8d190cc03ea25c3f2171854a794c9911c6002d440156f",
+      "sha256": "2bf133974a807dbd8169cbda27aeb460be436bf23f170f0c62fc3142aec5909c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5584,14 +5776,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5609,7 +5809,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/-1.json": {
-      "sha256": "c71b96269ffa7d5d58e90404874b2cb06ef6f66bc6ccc65b01441fc5c4ec9b7e",
+      "sha256": "0bedd3f1aa8916d7792196344657263a7cea6e30ae8bcc2aaf4c3ace360bc727",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5752,14 +5952,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5777,7 +5985,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/0.json": {
-      "sha256": "7b15046e7d52b8884a2c503f61c583ac38cb98bba1fd90e890f079a4d70ea84a",
+      "sha256": "e6932a89b6167b2bca12af6ca4a74ebbf0b62a0863d92a5c3177a3a7fae27ded",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5917,14 +6125,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5942,7 +6158,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/0.json": {
-      "sha256": "1b3f0cef7183dca4147552d798d339b8b832a8f741fd7c98eb69293913e4976b",
+      "sha256": "19abbd623c51fefff57f589b46bcd486b8e255fd069ef9d918d6e800bd47bdc7",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6082,14 +6298,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6107,7 +6331,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/-1.json": {
-      "sha256": "0485ae212fa00443a328cc290848784144d6c3843b9e3d06834dcee4231ffa7a",
+      "sha256": "8661373e193e0b0846d9daf4e9ea802feb4a37c80bbfcc82f2eb09f52021f775",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6247,14 +6471,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6272,7 +6504,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/-1.json": {
-      "sha256": "bf00cdd8d1826cc84e7caff45e2acf26981724b5e656c2fe4dd535e7595cccf3",
+      "sha256": "2397e3dbeb03b8dafda797fb9ce63f6b25eb8af1f754485d978d91d4736fe2db",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6415,14 +6647,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6440,7 +6680,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/0.json": {
-      "sha256": "173488287f1d4ac779691c5f25d52a08af06f7f0c08df326ec36e13cd63e94a8",
+      "sha256": "6a7d6c5d5134ac72a71aacc1ed056599c8e3fd71d00b02286844229c7bcb1cd9",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6580,14 +6820,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6605,7 +6853,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/0.json": {
-      "sha256": "1d6500b09bb99a5a98c36e10ef80850b1cf9a054658d721dd92b914979c4db83",
+      "sha256": "c77c1f415ffd703b440b75fa4c2ccaeff4f84827634170036593821eb250343f",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6745,14 +6993,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6770,7 +7026,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/-1.json": {
-      "sha256": "5fc4d98e44a285ed4dc219f687bd422d28ad7d6ce01d6fcfa3aad4fc4afaac1c",
+      "sha256": "bb4ab828369f371e6279fa7d3d7c57a790f3fea44554758fb1afbdb532a50c15",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6910,14 +7166,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6935,7 +7199,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/-1.json": {
-      "sha256": "f32785764a2912cc7f36d6966fdbd879cb02ea717f2da1fc5673c3ef76dadf19",
+      "sha256": "14d4d478fbec4e2a15c7d127fdbc5c310a573b6f538d00e667486c7a7eab7acf",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7078,14 +7342,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7103,7 +7375,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/0.json": {
-      "sha256": "28807df626648afaff816834ed030cbc24faa3d0ddc09d5280fa297340c61c0a",
+      "sha256": "dfc4798853fe3ab1facd21b7c47055eb36ddb1237e171ef93e85acc2a62c2abf",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7243,14 +7515,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7268,7 +7548,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/0.json": {
-      "sha256": "4523ab546b5f3189f33f86161d02de979392e013f5e27d50cc4c19e180e3cd90",
+      "sha256": "6ced6d7f210d2e7c736f6b1abb27f66436d7a9219c6f79fd41031c86f0f93002",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7408,14 +7688,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7433,7 +7721,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/-1.json": {
-      "sha256": "61dc7fbd23c21d54d0a288948a082821b23604e89a3b8ff58ebde2ac3e49ce97",
+      "sha256": "63dd68998f47432972cfbb20aa81845435c0777a9b472357407fa624142c9d7c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7573,14 +7861,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7598,7 +7894,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/-1.json": {
-      "sha256": "7a68c9d0feed6d164aa41b34daead04f8952dff7f07de717f85daaa2cb8fa5e2",
+      "sha256": "0d1c0fa953bbc8b097a5363e001404e80d539cb1769c185df941c2c95283b178",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7741,14 +8037,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7766,7 +8070,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/0.json": {
-      "sha256": "8dfb775fbc927d04b02b7e627eb427b7a8e051321b8fc887d2c2c254abfd6beb",
+      "sha256": "df0eba222ce62ee1c8aa5a8fb4e999a0d306701ba0bde116de0dea72956614e4",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7906,14 +8210,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7931,7 +8243,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/0.json": {
-      "sha256": "7707d99e6f985787f5952924f600cc7a09b870e22957bbb69469c88c8a10cae4",
+      "sha256": "18a4f77a15a0d52b9d80b70139606d96ceeebea1ced689e6de98603450b611c3",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8071,14 +8383,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8096,7 +8416,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/-1.json": {
-      "sha256": "631e4ea6995f32f4a9fbff94c31effa917a85e1af3190057ba6ea4b753908e2d",
+      "sha256": "a41a271e886bdc79736cc157396370e11a26aecc219e1c99c04f0875d80718af",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8236,14 +8556,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8261,7 +8589,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/-1.json": {
-      "sha256": "233c24ffaff62a0885d3e3473e3c661ef124ff0bc6192b7b4cdb619b40df18fc",
+      "sha256": "1418923640766ea74096812aeb531c0ed870edd2f1bd85f6a686e1f3ed67cca4",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8404,14 +8732,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8429,7 +8765,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/0.json": {
-      "sha256": "618f52d7387752a7a108c9af6a149adf488c47f74c07954ef33201c42135e965",
+      "sha256": "40e54f32a82551b1bea9af302538cbe0e5d6597c765c34ee67fec327a35ad3a2",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8569,14 +8905,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8594,7 +8938,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/0.json": {
-      "sha256": "85d2bef0d005c0a2b620baec20817809be397fcfcf767da8e2d50650bbd31665",
+      "sha256": "24311c45af8f7b0caf776f6fe4e3cc897eed0af3dbd3618bf5b1135c5aeac3c6",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8734,14 +9078,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8759,7 +9111,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/-1.json": {
-      "sha256": "f75e96b9cfdef6db6a09459bd459308d66e6b3180b5ee28b100ab5d58bf5f595",
+      "sha256": "bc81478610750ac0a14d82f766d79574593e7ad0f96c85b9fa364bce79024475",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8899,14 +9251,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8924,7 +9284,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/-1.json": {
-      "sha256": "12e1ff6eaf62f2e93e90dd0fe8bdd1e553ed0b103b05bec6ba9f1317220f36d7",
+      "sha256": "1ed2bf512f86ca1d35fa5a4fb196a32919afcfb079cd84dea582f0abfded597c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9067,14 +9427,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9092,7 +9460,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/0.json": {
-      "sha256": "d7103d9645fce323fd6c0b7645b9b343648a4a9680f58e88bdec1c16c5c2ee98",
+      "sha256": "2035f7be426403fc3ca9c611a79b42fcef918d038a015199c31289028f840335",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9232,14 +9600,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9257,7 +9633,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/0.json": {
-      "sha256": "469f2472e41848055efdefc25a052bdb9d19d71e09b48d042630035032a99181",
+      "sha256": "2a36706d814f8f3dfe3b18a92dd8bbcb60693022342e0e77515cc60d084764c2",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9397,14 +9773,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9422,7 +9806,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/-1.json": {
-      "sha256": "74a62c9ed63909edb218c489e2318d0f228cdfc6f1042eb02e0813eb057618d7",
+      "sha256": "870e19f4183303d94e87f65e8f51b37cc71835d0acde6981961bf49107013433",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9562,14 +9946,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9587,7 +9979,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/-1.json": {
-      "sha256": "caf4524857b9a429c48226f798592b2bc9c5c6e62e678ef48c8af083f91ee3bd",
+      "sha256": "10dd3c8e0aef3179a4efd09d7e2bbcd0cd7db97350381bfc9adee428f5943582",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9730,14 +10122,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9755,7 +10155,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/0.json": {
-      "sha256": "267ec4e29eba869da0fe4990032e4f940e2d3a3e4aa9b9809b127e855083b86f",
+      "sha256": "8f5f40eb712cfa39655e6ede0f00946e42b9b038a0918dcb1715213004b2a18e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9895,14 +10295,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9920,7 +10328,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/0.json": {
-      "sha256": "fc7bc5a15de108f225ff2807350c76af2b01fe90fb70e3f8e908a9e55ff1e522",
+      "sha256": "d0928a56b731519da1e51e9e9a2bee7a0767d6d55afbada5bb4f195156861d0c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10060,14 +10468,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10085,7 +10501,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/-1.json": {
-      "sha256": "3f64c2891bd6a9ac8a5b1debff4fd5d7e0de9e532a24820c443d7bb2769d8738",
+      "sha256": "b47c866e9d178a37d42a0b8330dd740e37dc5a9db5731e8386a3b1fbccec14cf",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10225,14 +10641,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10250,7 +10674,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/-1.json": {
-      "sha256": "15c28d1f1d38b794e5fe9702ba9ca8a8c96e1d1fd770bc4c45ae14babbb53159",
+      "sha256": "75b6abddf6243ed939442615421f33f3653b85a4701ed646f59dbd4473b8d062",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10393,14 +10817,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10418,7 +10850,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/0.json": {
-      "sha256": "5070d165115426ebeda6919d90de97e461675e8ce4a2a0fa454f0ca1f6a55772",
+      "sha256": "8ede2856c48b57bcedd252bd932a9a19e3a7db8787f74c25b34958bd6f12bee1",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10558,14 +10990,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10583,7 +11023,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/0.json": {
-      "sha256": "ee45b5f2c86b2e15c005e82734c95c711f016639081ec137b6caa0917e0e1363",
+      "sha256": "575c3868223a57c6b1fd2f7fd353de7ce10748c88d0f6828bb3eea62a6975bb0",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10723,14 +11163,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10748,7 +11196,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/-1.json": {
-      "sha256": "e2748bfb6b2ef817a682fa2b37034a7665625d7ca6d47da71cc99a8dfafaa6e3",
+      "sha256": "f9a882acaf4f8f76cf18c7d11da9b4eb75bcc4a16b2f2006e1936a1eb376e4c3",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10888,14 +11336,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10913,7 +11369,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/-1.json": {
-      "sha256": "1dd29b92b015ad8e865bbcdc13e6d14edea5e6c4f79c21cde6a6253634ddfbff",
+      "sha256": "011db26b3aaf674cd9b68620a9edf49addc57c542a301c4d787ed5b8b8dfc48c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11021,14 +11477,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11046,7 +11510,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/-1.json": {
-      "sha256": "46538030f5d2b12b37865389e9dbdb7c85489204c6591556a4116877f39238b3",
+      "sha256": "e6e885a894e4c5fd38f18a11848c015dcbbda21f8dc0428984b294e28115626d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11189,14 +11653,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11283,7 +11755,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/0.json": {
-      "sha256": "45dab1fdabb24cb07eb94795e6c55179c602420b27ca687523ca935f768f801e",
+      "sha256": "34a92c4a410684a40f38dea28d924376157602f9e499c027f98e83e7620214b3",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11391,14 +11863,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11416,7 +11896,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/0.json": {
-      "sha256": "86caa86f359cb9b3a1659dbd4818a272201ff034783b3921d7926b5003a903c7",
+      "sha256": "977abd904dcf2696789dd28c2483650405d3055bcbe2fab75a6a33a1efbcd30e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11556,14 +12036,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11581,7 +12069,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/0.json": {
-      "sha256": "1716aaafd7d1824bb748690718cb0dc58da861f8e90f48687bad36cc63a91ce9",
+      "sha256": "2339aabf4f43708afc9ed323e8795915ddae49b2fbc72bbcb9fcaf971581ddad",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11689,14 +12177,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11815,7 +12311,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/-1.json": {
-      "sha256": "03f23565b284ed592df7b4dcf1e989f3337a4fcb0b5fee54ee0b932c6b7265f0",
+      "sha256": "a4c07a8443f2a4f8ee993ea411d7daa80c6678623440625a41fe5277ffcccad8",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11955,14 +12451,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11980,7 +12484,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/-1.json": {
-      "sha256": "673c839ad726173bc8606aa92571f391a168e0fd794e194277ce36ecbbc12df1",
+      "sha256": "8af21d2433b5562f8e8a80ad17279457d13ba92e057e6784b95beca2b76b2792",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12088,14 +12592,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12113,7 +12625,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/-1.json": {
-      "sha256": "6a3292cc30f417cf510ef7797933fb005861f62ff3324aba71b90f108cd9828e",
+      "sha256": "1563b6d3fed5b6fae65c929f49463e06e85c28c20c2c3fa3cf8610e30f81a59d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12221,14 +12733,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12246,7 +12766,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/-1.json": {
-      "sha256": "dae1608d13c7cc0993b705ca647a34b641961b89ea2f630f124a6f8c8f1e4444",
+      "sha256": "48d0e8f7968fd897101df2aa8910e494b79a0c0b4cfedf15bad45d3fcf57627e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12354,14 +12874,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12379,7 +12907,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/-1.json": {
-      "sha256": "d53ea55a035b1f92fa2b8c74b5287898cacbab975b8e82b51eb47870da45c8c0",
+      "sha256": "deae26aa84d77ced971f0df065c7990c6b9195e7b9f7f53ddae170edd29869b1",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12522,14 +13050,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12616,7 +13152,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/0.json": {
-      "sha256": "d22fd3d4f1f85d00a5d1e9595d2a0828c88dff358a49fe1341344a34a1c1d6c2",
+      "sha256": "d21f3a43fef8a5a2fb116800c314a33cb1e3e9347851a514f16fe6df852f2d38",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12724,14 +13260,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12749,7 +13293,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/0.json": {
-      "sha256": "fae8c3ce929f51a6ba0ce531e81d83ed8ef365323db19d1727facd63904014dd",
+      "sha256": "8f83a0ccb7d310698ca00239274cdc73f090699fac0f392862a214ae25e41125",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12857,14 +13401,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12882,7 +13434,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/0.json": {
-      "sha256": "4f7587e7962b3de4a28a1ab4599bdda1ac58a1588590191535e7751fccd3686d",
+      "sha256": "be8792eedce0b3da02837345bd07050c29d5fe56a35af34fb1e0c835f4aca71a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13022,14 +13574,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13047,7 +13607,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/0.json": {
-      "sha256": "f10ce749e8144e808d265c7fa0a1ce41c234571f03a6ea394bc44c90e549df52",
+      "sha256": "e93958222500368d195abaec3dfa6e63766ff0714d7d3af7299098c816dde0af",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13155,14 +13715,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13180,7 +13748,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/0.json": {
-      "sha256": "8d4ac6d38823d4c3cc8921c5af59bd9df20bbe87d6a18455e92191267c94b437",
+      "sha256": "26298bb4352910c036794b8e5c2f807aa71c19bb475b8375cf39cf0746568fe4",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13288,14 +13856,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13414,7 +13990,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/-1.json": {
-      "sha256": "82b81342b818fe6c50f6831a8fc1422d1aaa738653cce1683c334006d2c5f2f8",
+      "sha256": "f7d44782d07b63714977c61aa8455d519567da823aec0a76171e65718e20618e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13523,14 +14099,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13548,7 +14132,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/-1.json": {
-      "sha256": "ea9661d4a38987cac8729487f83f6404f1284917d92811f03e6dfbc50002abef",
+      "sha256": "ac0505f6b5947ffd0647ef2b9798b5fc4cd491508e8c72ba5c1787ef94bd7da3",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13657,14 +14241,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13682,7 +14274,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/-1.json": {
-      "sha256": "30786e62196021a05de992bf7ae080a08f65ae95aa3ac0ce7c22daf19a43f069",
+      "sha256": "2f9754e74b66b05141233e761d951e88d86f96b5fde7250f5facc856f5926be9",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13791,14 +14383,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13816,7 +14416,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/-1.json": {
-      "sha256": "c432d2067b02f91cb3e1db39fc93fe7ab04b1037f9f37f3352a95d72519b92ae",
+      "sha256": "84ee39426ef3b5ef5ed456db72b0fb8bdaf4b606e92642da892b360928815fb9",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13925,14 +14525,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13950,7 +14558,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/-1.json": {
-      "sha256": "5c46d530c6e54820b59894b96432fa5dd103602005356e39f01d70ecf34f9386",
+      "sha256": "e11389ea10909179e65a57db0e582026559de5b75f4bf5ca3b479102a4336f3e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14059,14 +14667,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14154,7 +14770,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/0.json": {
-      "sha256": "41552a40c27f581881bcdac3c198427e19421d6c70a22165efce2e5e6b21a261",
+      "sha256": "f46ed1fed9069dd44f7e17ed80d7b5693dc7b68296ccc83e593cb2f8368e1476",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14263,14 +14879,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14288,7 +14912,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/0.json": {
-      "sha256": "c922b42edd7a120becba153e8aa4a3d3dba381054beb6a9427954c35a918c3eb",
+      "sha256": "793ca6929ce3f746faa55e1e7796d75c5f367438fcfcc90abe33a17d16ae499f",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14397,14 +15021,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14422,7 +15054,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/0.json": {
-      "sha256": "b9777bc338393d90288a646de939f1c2713d11bc2238d277d2f97059d551f676",
+      "sha256": "e8c9eb52bb554a69925f748131ae54f5e0a6fe9998c2083223e90076a31791f8",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14531,14 +15163,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14556,7 +15196,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/0.json": {
-      "sha256": "5e90b095081bb400248d4faf622658e8aad69b30f31ae3877274c081c00b3eb2",
+      "sha256": "78a417f27c2b05ee3b5d4c26aec226d62ce26748f083f4c29952b91456da68ae",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14665,14 +15305,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14690,7 +15338,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/0.json": {
-      "sha256": "85672715b689699d186557e703a78a680bc84baeeff0e7f6dd884833f95a3dac",
+      "sha256": "c1b68c7ee11a8544ff1b306476adf704bb424f4688b1430099db3c47da3d3365",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14799,14 +15447,22 @@
                 "maxY": 75
               },
               "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
               "anchor": {
                 "x": -17.5,
                 "y": 15
               },
               "transitions": {
-                "pointEnterMaxSizePx": 32,
-                "pointExitMaxSizePx": 48,
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [16, 40],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }

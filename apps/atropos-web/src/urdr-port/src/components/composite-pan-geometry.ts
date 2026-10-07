@@ -1,3 +1,5 @@
+import type { CompositePaddingProfile } from "@moirai/graph-presentation/composite-padding-profile";
+import { expandCompositePolygon } from "./composite-local-padding";
 import {
   buildClosedSplinePath,
   expandPolygon,
@@ -14,6 +16,7 @@ type Request = {
   view: View;
   viewport: Size;
   padding: number;
+  paddingProfile?: CompositePaddingProfile;
   tuning: CompositeSplineTuning;
   labelHeight?: number;
   labelGap?: number;
@@ -23,6 +26,7 @@ type Entry = {
   scaleX: number;
   scaleY: number;
   padding: number;
+  paddingProfile?: CompositePaddingProfile;
   tuning: CompositeSplineTuning;
   origin: ViewportCoordinate;
   expanded: ViewportCoordinate[];
@@ -30,6 +34,11 @@ type Entry = {
   vertices: number;
   labelPaths?: ReturnType<typeof prepareCompositeLabelPaths>;
 };
+
+function sameProfile(left: CompositePaddingProfile | undefined, right: CompositePaddingProfile | undefined) {
+  return left === right || (left !== undefined && right !== undefined && left.length === right.length && left.every((band, index) =>
+    band.minY === right[index]!.minY && band.maxY === right[index]!.maxY && band.depth === right[index]!.depth));
+}
 
 function sameSupport(left: readonly ViewportCoordinate[], right: readonly ViewportCoordinate[]) {
   return left === right || (left.length === right.length && left.every((point, index) =>
@@ -63,7 +72,7 @@ export function createCompositePanGeometryCache({
   };
 
   return {
-    project({id, points, view, viewport, padding, tuning, labelHeight, labelGap}: Request) {
+    project({id, points, view, viewport, padding, paddingProfile, tuning, labelHeight, labelGap}: Request) {
       const origin = {x: viewport.width / 2 + view.x, y: viewport.height / 2 + view.y};
       // Keep point/composite LOD coordinates exact. Only expensive padded hull
       // geometry and its SVG path are reused through a pure translation.
@@ -73,7 +82,7 @@ export function createCompositePanGeometryCache({
       }));
       let entry = entries.get(id);
       if (entry && entry.scaleX === view.scaleX && entry.scaleY === view.scaleY &&
-          entry.padding === padding && entry.tuning.smoothing === tuning.smoothing &&
+          entry.padding === padding && sameProfile(entry.paddingProfile, paddingProfile) && entry.tuning.smoothing === tuning.smoothing &&
           entry.tuning.cornerFloor === tuning.cornerFloor && entry.tuning.balanceFloor === tuning.balanceFloor &&
           sameSupport(entry.support, points)) {
         hits++;
@@ -84,12 +93,17 @@ export function createCompositePanGeometryCache({
       } else {
         builds++;
         remove(id);
-        const expanded = expandPolygon(projectedHullPoints, padding);
+        const expanded = paddingProfile?.length ? expandCompositePolygon(projectedHullPoints, paddingProfile.map((band) => ({
+          minY: origin.y + band.minY * view.scaleY,
+          maxY: origin.y + band.maxY * view.scaleY,
+          depth: band.depth
+        }))) : expandPolygon(projectedHullPoints, padding);
         entry = {
           support: points,
           scaleX: view.scaleX,
           scaleY: view.scaleY,
           padding,
+          ...(paddingProfile ? { paddingProfile } : {}),
           tuning: {...tuning},
           origin,
           expanded,

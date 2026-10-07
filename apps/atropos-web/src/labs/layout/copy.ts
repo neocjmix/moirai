@@ -168,20 +168,59 @@ export const REPRESENTATION_COPY: Record<
     description:
       "위 크기에서 이 폭만큼 확대하면 테두리가 완전히 나타납니다. 0이면 테두리를 따로 숨기는 단계를 사용하지 않습니다."
   },
+  hullBorderlessOpacityScale: {
+    label: "테두리 없는 영역의 면 진하기",
+    description:
+      "중간 단계의 면을 조금 흐리게 합니다. 이름표 진하기는 그대로 유지합니다."
+  },
+  compositePointSizeStages: {
+    label: "묶음 크기에 맞춰 점 단계 전환",
+    description:
+      "묶음 자체의 화면 크기에 따라 보통 점, 작은 점, 숨김을 이어 줍니다. 끄면 이전 설정의 밀집 순위를 사용합니다."
+  },
+  smallCompositeSpanPx: {
+    label: "묶음이 작은 점이 되는 크기 · 픽셀",
+    description:
+      "이 크기까지 줄어들면 작은 점으로 표시합니다. 보통 점 크기 기준 사이에서 부드럽게 이어집니다."
+  },
+  ordinaryCompositeSpanPx: {
+    label: "묶음이 보통 점이 되는 크기 · 픽셀",
+    description:
+      "영역에서 점으로 넘어온 묶음은 이 크기 이상일 때 보통 점으로 보입니다."
+  },
+  hiddenCompositeSpanPx: {
+    label: "묶음 점이 숨겨지는 크기 · 픽셀",
+    description:
+      "작은 점이 이 크기까지 줄어들면 숨겨집니다. 확대하면 같은 순서로 복원됩니다."
+  },
+  visibleCompositeSpanPx: {
+    label: "묶음 점이 완전히 보이는 크기 · 픽셀",
+    description: "숨김 크기부터 여기까지 작은 점이 서서히 나타납니다."
+  },
+  sequentialChildPoints: {
+    label: "상위 묶음 전환에 자식 점 연결",
+    description:
+      "상위 묶음이 접히면 자식 사건의 이름이 먼저 사라지고 작은 점으로 줄어든 뒤 숨겨집니다."
+  },
+  childRevealBySpan: {
+    label: "상위 묶음의 가로·세로 크기로 구성 사건 표시",
+    description:
+      "가로와 세로 중 큰 쪽을 기준으로 묶음이 열릴 때 자식 사건이 이어서 보입니다. 끄면 이전 설정처럼 세로 크기만 사용합니다."
+  },
   compactHysteresisPx: {
     label: "다시 확대할 때 점을 유지하는 여유 · 픽셀",
     description:
       "점이 된 묶음을 다시 확대할 때 이만큼 더 커질 때까지 점 쪽의 이름 표시 판단을 유지합니다. 경계에서 조금 오르내릴 때 표시가 자주 바뀌는 것을 줄입니다."
   },
   childRevealHeightPx: {
-    label: "구성 사건이 모두 보이는 세로 크기 · 픽셀",
+    label: "구성 사건이 모두 보이는 크기 · 픽셀",
     description:
-      "묶음의 세로 길이가 이 값에 도달하면 구성 사건이 완전히 보입니다. 가로 확대만으로는 이 기준을 넘지 않습니다. 0이면 크기 때문에 숨기지 않습니다."
+      "묶음의 화면 크기가 이 값에 도달하면 구성 사건이 완전히 보입니다. 가로·세로 크기 설정이 표시 기준을 정합니다. 0이면 크기 때문에 숨기지 않습니다."
   },
   childFadeStartRatio: {
     label: "구성 사건이 나타나기 시작하는 비율",
     description:
-      "위 세로 크기의 얼마부터 나타날지 정합니다. 예를 들어 100픽셀과 0.58이면 58픽셀에서 나타나기 시작해 100픽셀에서 완전히 보입니다."
+      "위 크기의 얼마부터 나타날지 정합니다. 예를 들어 100픽셀과 0.58이면 58픽셀에서 나타나기 시작해 100픽셀에서 완전히 보입니다."
   },
   normalPointCount: {
     label: "보통 점으로 남길 순위 기준",

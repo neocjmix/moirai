@@ -58,6 +58,17 @@ function savedExperiment(): LabPreset {
   };
 }
 
+const legacyStageFields = {
+  hullBorderlessOpacityScale: 1,
+  compositePointSizeStages: false,
+  smallCompositeSpanPx: 6,
+  ordinaryCompositeSpanPx: 10,
+  hiddenCompositeSpanPx: 1,
+  visibleCompositeSpanPx: 3,
+  childRevealBySpan: false,
+  sequentialChildPoints: false
+};
+
 const encode = (value: unknown) => JSON.stringify(value);
 
 afterEach(() => vi.unstubAllGlobals());
@@ -69,6 +80,7 @@ describe("reproducible offline Layout Lab presets", () => {
       original.representation,
       original.before.representation
     ]) {
+      Object.assign(representation, legacyStageFields);
       representation.hullLabelOpacity = 0.45;
       representation.hullBorderFadeStartPx = 0;
       representation.hullBorderFadePx = 0;
@@ -76,6 +88,7 @@ describe("reproducible offline Layout Lab presets", () => {
     const legacy = JSON.parse(encode(original));
     legacy.representationConfigVersion = "lab-representation/1";
     const added = [
+      ...Object.keys(legacyStageFields),
       "hullOpacityScale",
       "ordinaryPointOpacityScale",
       "smallPointOpacityScale",
@@ -100,6 +113,7 @@ describe("reproducible offline Layout Lab presets", () => {
       original.representation,
       original.before.representation
     ]) {
+      Object.assign(representation, legacyStageFields);
       representation.compactThresholdPx = 32;
       representation.hullFadePx = 16;
       representation.compactHysteresisPx = 16;
@@ -112,6 +126,8 @@ describe("reproducible offline Layout Lab presets", () => {
       legacy.representation,
       legacy.before.representation
     ]) {
+      for (const key of Object.keys(legacyStageFields))
+        delete representation[key];
       delete representation.hullBorderFadeStartPx;
       delete representation.hullBorderFadePx;
     }
@@ -136,6 +152,67 @@ describe("reproducible offline Layout Lab presets", () => {
     await expect(parseLabPreset(encode(legacy))).rejects.toThrow(
       "legacy representation"
     );
+  });
+
+  it("replays v3 borderless hull, height-only child reveal and density point stages exactly", async () => {
+    const original = savedExperiment();
+    for (const config of [
+      original.representation,
+      original.before.representation
+    ]) {
+      Object.assign(config, legacyStageFields, {
+        compactThresholdPx: 20,
+        hullFadePx: 8,
+        compactHysteresisPx: 8,
+        hullBorderFadeStartPx: 36,
+        hullBorderFadePx: 12,
+        childRevealHeightPx: 100,
+        childFadeStartRatio: 0.58
+      });
+    }
+    const legacy = JSON.parse(encode(original));
+    legacy.representationConfigVersion = "lab-representation/3";
+    for (const config of [
+      legacy.representation,
+      legacy.before.representation
+    ]) {
+      for (const key of Object.keys(legacyStageFields)) delete config[key];
+    }
+    const restored = await parseLabPreset(encode(legacy));
+    expect(restored).toEqual(original);
+    const scene = evaluateRepresentationScene(
+      {
+        nodes: [
+          {
+            id: "outer",
+            kind: "composite",
+            childIds: ["leaf"],
+            bounds: { minX: 0, maxX: 300, minY: 0, maxY: 79 }
+          },
+          {
+            id: "leaf",
+            kind: "event",
+            bounds: { minX: 0, maxX: 0, minY: 0, maxY: 0 }
+          },
+          {
+            id: "small",
+            kind: "composite",
+            bounds: { minX: 0, maxX: 6, minY: 0, maxY: 6 }
+          }
+        ]
+      },
+      restored.representation
+    );
+    expect(scene.nodes.find((node) => node.id === "leaf")!.opacity).toBeCloseTo(
+      0.5
+    );
+    expect(scene.nodes.find((node) => node.id === "small")!.state).toBe(
+      "ordinary-point"
+    );
+    expect(
+      scene.nodes.find((node) => node.id === "outer")!.hullFillOpacity
+    ).toBe(1);
+    expect(await parseLabPreset(encode(restored))).toEqual(restored);
   });
 
   it("replays independently adjusted stage and label weights exactly", async () => {

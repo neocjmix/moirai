@@ -13,6 +13,7 @@ coverage/
 *.tsbuildinfo
 
 # Test and browser artifacts
+.artifacts/
 playwright-report/
 test-results/
 blob-report/

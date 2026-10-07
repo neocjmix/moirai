@@ -1350,6 +1350,7 @@ export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntity
   // A known compact Composite may paint its point before lazy hull retrieval.
   preparedCompactBounds: chartPlaneWorldBoundsSchema.optional(),
   preparedDepth: z.number().int().positive().optional(),
+  preparedPaddingProfile: z.array(z.object({ minY: z.number().finite(), maxY: z.number().finite(), depth: z.number().int().positive() })).optional(),
 });
 export type GraphShellChartPlaneRegionEntity = z.infer<typeof graphShellChartPlaneRegionEntitySchema>;
 

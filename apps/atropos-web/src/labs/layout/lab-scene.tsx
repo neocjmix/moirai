@@ -1,6 +1,12 @@
 "use client";
 
-import { useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import {
+  createPanInertiaTracker,
+  panInertiaFrame
+} from "../../lib/pan-inertia";
+import { expandCompositePolygon } from "../../urdr-port/src/components/composite-local-padding";
+import { compositeColorAssignment } from "../../urdr-port/src/components/graph-shell-composite";
 import type { LayoutOutput } from "@moirai/graph-presentation/layout-engine";
 import {
   evaluateRepresentationScene,
@@ -57,6 +63,16 @@ export function LabScene({
   const gesture = useRef(createLabGesture(camera, { width, height }));
   const lastPublishedCamera = useRef(camera);
   const previousSize = useRef({ width, height });
+  const inertiaTracker = useRef(createPanInertiaTracker());
+  const inertiaFrame = useRef<number | null>(null);
+  const onCameraRef = useRef(onCamera);
+  onCameraRef.current = onCamera;
+  const cancelInertia = useCallback(() => {
+    if (inertiaFrame.current !== null)
+      cancelAnimationFrame(inertiaFrame.current);
+    inertiaFrame.current = null;
+    inertiaTracker.current.suppress();
+  }, []);
   const tap = useRef<{
     pointerId: number;
     x: number;
@@ -69,6 +85,7 @@ export function LabScene({
       width !== previousSize.current.width ||
       height !== previousSize.current.height
     ) {
+      cancelInertia();
       gesture.current = resetLabGesture(gesture.current, camera, {
         width,
         height
@@ -77,6 +94,8 @@ export function LabScene({
     lastPublishedCamera.current = camera;
     previousSize.current = { width, height };
     if (!interactive) {
+      cancelInertia();
+      inertiaTracker.current.cancel();
       tap.current = null;
       for (const id of Object.keys(gesture.current.activePointers).map(
         Number
@@ -86,13 +105,44 @@ export function LabScene({
           svg.current.releasePointerCapture(id);
       }
     }
-  }, [camera, width, height, interactive]);
+  }, [camera, width, height, interactive, cancelInertia]);
+  useLayoutEffect(() => {
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const stopForReducedMotion = () => {
+      if (reducedMotion.matches) cancelInertia();
+    };
+    const endContacts = () => {
+      cancelInertia();
+      inertiaTracker.current.cancel();
+      tap.current = null;
+      for (const id of Object.keys(gesture.current.activePointers).map(
+        Number
+      )) {
+        gesture.current = removeLabPointer(gesture.current, id);
+        if (svg.current?.hasPointerCapture(id))
+          svg.current.releasePointerCapture(id);
+      }
+    };
+    const stopForHiddenPage = () => {
+      if (document.hidden) endContacts();
+    };
+    window.addEventListener("pagehide", endContacts);
+    document.addEventListener("visibilitychange", stopForHiddenPage);
+    reducedMotion.addEventListener("change", stopForReducedMotion);
+    return () => {
+      cancelInertia();
+      window.removeEventListener("pagehide", endContacts);
+      document.removeEventListener("visibilitychange", stopForHiddenPage);
+      reducedMotion.removeEventListener("change", stopForReducedMotion);
+    };
+  }, [cancelInertia]);
   useLayoutEffect(() => {
     const element = svg.current;
     if (!element) return;
     // Mobile navigation owns map touches. Keep browser page gestures outside
     // the map; do not expose wheel or button zoom as a second navigation path.
     const ownInput = (event: Event) => {
+      if (event.type === "wheel") cancelInertia();
       if (event.cancelable) event.preventDefault();
       event.stopPropagation();
     };
@@ -102,12 +152,40 @@ export function LabScene({
       element.removeEventListener("wheel", ownInput);
       element.removeEventListener("touchmove", ownInput);
     };
-  }, []);
-  const endPointer = (id: number) => {
+  }, [cancelInertia]);
+  const endPointer = (id: number, released = false) => {
+    if (!inertiaTracker.current.has(id)) return;
+    const velocity = inertiaTracker.current.end(
+      id,
+      performance.now(),
+      released
+    );
     if (tap.current?.pointerId === id) tap.current = null;
     gesture.current = removeLabPointer(gesture.current, id);
     if (svg.current?.hasPointerCapture(id))
       svg.current.releasePointerCapture(id);
+    if (
+      !velocity ||
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+    )
+      return;
+    const startView = gesture.current.view;
+    const started = performance.now();
+    const animate = (now: number) => {
+      const frame = panInertiaFrame(velocity, now - started);
+      const next = viewToCamera(
+        { ...startView, x: startView.x + frame.x, y: startView.y + frame.y },
+        { width, height }
+      );
+      gesture.current = resetLabGesture(gesture.current, next, {
+        width,
+        height
+      });
+      lastPublishedCamera.current = next;
+      onCameraRef.current(next);
+      inertiaFrame.current = frame.done ? null : requestAnimationFrame(animate);
+    };
+    inertiaFrame.current = requestAnimationFrame(animate);
   };
   const pointerPoint = (x: number, y: number) => {
     const inverse = svg.current?.getScreenCTM()?.inverse();
@@ -122,6 +200,15 @@ export function LabScene({
   const geometry = useMemo(
     () => layoutGeometry(snapshot, output),
     [snapshot, output]
+  );
+  const compositeIds = useMemo(
+    () =>
+      new Set(
+        snapshot.events
+          .filter((event) => event.childIds.length > 0)
+          .map((event) => event.id)
+      ),
+    [snapshot]
   );
   const byId = useMemo(
     () => new Map(geometry.map((item) => [item.id, item])),
@@ -264,7 +351,17 @@ export function LabScene({
     });
   }
   const path = (item: LabGeometry) => {
-    const points = item.polygon.length >= 3 ? item.polygon.map(xy) : [];
+    const support = item.polygon.length ? item.polygon.map(xy) : [];
+    const points = support.length
+      ? expandCompositePolygon(
+          support,
+          (item.paddingProfile ?? []).map((band) => ({
+            minY: xy({ x: 0, y: band.minY }).y,
+            maxY: xy({ x: 0, y: band.maxY }).y,
+            depth: band.depth
+          }))
+        )
+      : [];
     if (points.length)
       return (
         points.map((p, i) => `${i ? "L" : "M"}${p.x},${p.y}`).join(" ") + " Z"
@@ -311,8 +408,15 @@ export function LabScene({
             )
               return;
             event.preventDefault();
+            cancelInertia();
             const point = pointerPoint(event.clientX, event.clientY);
             if (!point) return;
+            inertiaTracker.current.start(
+              event.pointerId,
+              point,
+              performance.now(),
+              event.pointerType
+            );
             const old = gesture.current;
             const next = addLabPointer(old, event.pointerId, point);
             if (next === old) {
@@ -350,6 +454,11 @@ export function LabScene({
               tap.current = null;
             const point = pointerPoint(event.clientX, event.clientY);
             if (!point) return;
+            inertiaTracker.current.move(
+              event.pointerId,
+              point,
+              performance.now()
+            );
             // Refs retain each move synchronously, including a burst and final
             // release in one React batch. Removing a finger rebases the survivor.
             gesture.current = moveLabPointer(
@@ -373,7 +482,7 @@ export function LabScene({
               ) <= 8
             )
               onSelect(candidate.eventId);
-            endPointer(event.pointerId);
+            endPointer(event.pointerId, true);
           }}
           onPointerCancel={(event) => endPointer(event.pointerId)}
           onLostPointerCapture={(event) => endPointer(event.pointerId)}
@@ -448,6 +557,9 @@ export function LabScene({
               const state = states.get(item.id);
               if (!state) return null;
               const point = projected.get(item.id)!.center;
+              const compositeColor = compositeIds.has(item.id)
+                ? compositeColorAssignment(item.id, snapshot.worldId)
+                : null;
               const pointOpacity =
                 state.ordinaryPointOpacity + state.smallPointOpacity;
               return (
@@ -462,9 +574,9 @@ export function LabScene({
                   {item.kind === "region" && (
                     <path
                       d={path(item)}
-                      fill="#c59a48"
-                      fillOpacity={0.12}
-                      stroke="#aa8243"
+                      fill={compositeColor?.fill ?? "#1b2330"}
+                      fillOpacity={0.12 * state.hullFillOpacity}
+                      stroke={compositeColor?.label ?? "#1b2330"}
                       strokeWidth={1.8}
                       strokeOpacity={state.hullStrokeOpacity}
                       opacity={state.hullOpacity}
@@ -493,7 +605,7 @@ export function LabScene({
                     cx={point.x}
                     cy={point.y}
                     r={6 * state.radiusScale}
-                    fill={item.kind === "region" ? "#c59a48" : "#324b5c"}
+                    fill={compositeColor?.fill ?? "#1b2330"}
                     opacity={pointOpacity}
                     pointerEvents="none"
                     style={{

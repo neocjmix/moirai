@@ -303,6 +303,9 @@ test("a Composite loses its outline before becoming a point and retains its colo
     );
   });
   const color = await hull.evaluate((node) => getComputedStyle(node).fill);
+  const fullFillOpacity = await hull.evaluate((node) =>
+    Number(getComputedStyle(node).fillOpacity)
+  );
   const originalOwner = await owner.elementHandle();
 
   scene = { compositeSpan: 32 };
@@ -323,10 +326,13 @@ test("a Composite loses its outline before becoming a point and retains its colo
   expect(
     await hull.evaluate((node) => Number(getComputedStyle(node).fillOpacity))
   ).toBeGreaterThan(0);
+  expect(
+    await hull.evaluate((node) => Number(getComputedStyle(node).fillOpacity))
+  ).toBeLessThan(fullFillOpacity);
   await page.screenshot({ path: info.outputPath("borderless-composite.png") });
 
   for (const [index, smallPoint] of [false, true, false].entries()) {
-    scene = { compositeSpan: 12, smallPoint };
+    scene = { compositeSpan: smallPoint ? 6 : 12, smallPoint };
     await page.setViewportSize({ width: 420 + index * 10, height: 844 });
     await expect(compact).toHaveAttribute(
       "data-point-density",
@@ -348,4 +354,62 @@ test("a Composite loses its outline before becoming a point and retains its colo
   await page.screenshot({
     path: info.outputPath("colored-composite-point.png")
   });
+});
+
+test("Canvas paints leaf points neutral and keeps a small Composite's authored color", async ({
+  page
+}) => {
+  await installScene(page, () => ({ points: true, compositeSpan: 6 }));
+  await page.goto(`/graph/v5?world=${world}&tileData=0&gsGraphics=canvas`);
+  const canvas = page.getByTestId("geographic-canvas");
+  await expect(canvas).toBeVisible();
+  const readPixel = (selector: string) =>
+    page.evaluate((selector) => {
+      const canvas = document.querySelector(
+        '[data-testid="geographic-canvas"]'
+      ) as HTMLCanvasElement;
+      const circle = document.querySelector(selector) as SVGCircleElement;
+      if (!canvas || !circle) return null;
+      const center = new DOMPoint(
+        circle.cx.baseVal.value,
+        circle.cy.baseVal.value
+      ).matrixTransform(circle.getScreenCTM()!);
+      const box = canvas.getBoundingClientRect();
+      const pixel = canvas
+        .getContext("2d")!
+        .getImageData(
+          Math.floor(((center.x - box.left) * canvas.width) / box.width),
+          Math.floor(((center.y - box.top) * canvas.height) / box.height),
+          1,
+          1
+        ).data;
+      const probe = document.createElement("canvas");
+      probe.width = probe.height = 1;
+      const context = probe.getContext("2d")!;
+      // Canvas mode suppresses the duplicate SVG ink with fill:none!important.
+      // Its inline palette remains the authored source shared by both painters.
+      context.fillStyle = circle.style.fill || getComputedStyle(circle).fill;
+      context.fillRect(0, 0, 1, 1);
+      return {
+        pixel: [...pixel],
+        expected: [...context.getImageData(0, 0, 1, 1).data]
+      };
+    }, selector);
+  const leafSelector = '[data-event-paint-id="right-edge"] circle';
+  await expect
+    .poll(async () => (await readPixel(leafSelector))?.pixel)
+    .toEqual([27, 35, 48, 255]);
+  const compositeSelector = `[data-composite-point-id="${compositeId}"] circle`;
+  await expect
+    .poll(async () => {
+      const value = await readPixel(compositeSelector);
+      return value
+        ? value.pixel.every(
+            (channel, index) => Math.abs(channel - value.expected[index]!) <= 1
+          )
+        : false;
+    })
+    .toBe(true);
+  const composite = await readPixel(compositeSelector);
+  expect(composite!.pixel).not.toEqual([27, 35, 48, 255]);
 });

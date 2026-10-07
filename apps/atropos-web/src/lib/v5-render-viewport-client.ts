@@ -393,18 +393,13 @@ export function createV5RenderViewportClient(input: {
       );
       // Immutable publications can carry the older, larger compact threshold.
       // Fetch support when the current painter needs an area, without rewriting
-      // that publication or leaving a cold 20–32px Composite stuck as a point.
+      // that publication or leaving a cold small Composite stuck as a point.
       const enter = Math.min(
         p.composite.transitions?.pointEnterMaxSizePx ??
           COMPOSITE_COMPACT_THRESHOLD_PX,
         COMPOSITE_COMPACT_THRESHOLD_PX
       );
-      const density = (p as ResolvedRenderPrimitive).renderDensity;
-      if (
-        (span > enter && (density?.opacity ?? 1) > 0) ||
-        geometry.has(p.geometry.key)
-      )
-        return p;
+      if (span > enter || geometry.has(p.geometry.key)) return p;
       // One scale doubling of lead time before the current hull transition.
       if (span >= enter * 0.5) buffered.set(p.geometry.key, p.geometry);
       // This is the published Composite's point state, never a spatial cluster.

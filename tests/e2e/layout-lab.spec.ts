@@ -136,7 +136,7 @@ test("complete labels reach the map edge and Composite color survives the border
   };
   setup.representation.childRevealHeightPx = 0;
   // Keep the dense synthetic children from consuming this stage/color probe's
-  // point budget; density reduction is exercised explicitly at the end.
+  // point budget; size transitions are exercised explicitly at the end.
   setup.representation.normalPointCount = 200;
   setup.representation.smallPointCount = 220;
   setup.representation.hiddenPointCount = 240;
@@ -169,6 +169,9 @@ test("complete labels reach the map edge and Composite color survives the border
   );
   await expect(hull).toHaveAttribute("opacity", "1");
   await expect(hull).toHaveAttribute("stroke-opacity", "0");
+  expect(Number(await hull.getAttribute("fill-opacity"))).toBeCloseTo(
+    0.12 * 0.62
+  );
   await expect(label).toHaveAttribute("opacity", "0.58");
   await expect(label).toHaveText("안쪽 묶음 · 이틀 동안의 사건");
   const textBounds = await label.evaluate((node) => {
@@ -188,7 +191,8 @@ test("complete labels reach the map edge and Composite color survives the border
   });
   await showSpan(52);
   await expect(hull).toHaveAttribute("stroke-opacity", "1");
-  await showSpan(16);
+  await expect(hull).toHaveAttribute("fill-opacity", "0.12");
+  await showSpan(12);
   await expect(composite).toHaveAttribute(
     "data-representation",
     "ordinary-point"
@@ -197,10 +201,26 @@ test("complete labels reach the map edge and Composite color survives the border
   await expect(point).toHaveAttribute("fill", fill!);
   setup.representation.normalPointCount = 0;
   setup.representation.normalHysteresisCount = 0;
-  await showSpan(16);
+  await showSpan(12);
+  await expect(composite).toHaveAttribute(
+    "data-representation",
+    "ordinary-point"
+  );
+  await expect(point).toHaveAttribute("opacity", "1");
+  await showSpan(6);
   await expect(composite).toHaveAttribute("data-representation", "small-point");
   await expect(point).toHaveAttribute("fill", fill!);
   expect(Number(await point.getAttribute("r"))).toBeCloseTo(2.1);
+  await showSpan(2);
+  expect(Number(await point.getAttribute("opacity"))).toBeCloseTo(0.5);
+  await showSpan(1);
+  await expect(composite).toHaveAttribute("data-representation", "hidden");
+  await showSpan(24);
+  await expect(composite).toHaveAttribute(
+    "data-representation",
+    "borderless-hull"
+  );
+  await expect(hull).toHaveAttribute("opacity", "1");
 });
 
 async function coordinates(page: Page, name: string) {

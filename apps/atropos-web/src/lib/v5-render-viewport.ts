@@ -62,6 +62,9 @@ export function renderTileViewport(input: {
           ...(primitive.composite.depth === undefined
             ? {}
             : { preparedDepth: primitive.composite.depth }),
+          preparedPaddingProfile: primitive.composite.paddingProfile
+            ? [...primitive.composite.paddingProfile]
+            : undefined,
           childrenComplete: primitive.composite.supportComplete,
           preparedCompactBounds: primitive.composite.hullBounds
         });
@@ -78,6 +81,9 @@ export function renderTileViewport(input: {
         ...(primitive.composite.depth === undefined
           ? {}
           : { preparedDepth: primitive.composite.depth }),
+        preparedPaddingProfile: primitive.composite.paddingProfile
+          ? [...primitive.composite.paddingProfile]
+          : undefined,
         childrenComplete: primitive.composite.supportComplete,
         preparedWorldHull: [...geometry.rings[0]]
       });

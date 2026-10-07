@@ -3,7 +3,6 @@ import {
   compositePointDisplay,
   compositeRepresentationDisplay
 } from "../../urdr-port/src/components/composite-point-display";
-import { getCompositeChildrenOpacity } from "../../urdr-port/src/components/graph-shell-composite";
 import {
   DEFAULT_REPRESENTATION_CONFIG as defaults,
   evaluateRepresentationScene as evaluate,
@@ -79,7 +78,8 @@ describe("isolated research representation policy", () => {
     let history = {};
     let wasCompact = false;
     for (const span of [
-      80, 48, 42, 36, 32, 28, 24, 20, 12, 20, 24, 28, 29, 36, 48
+      80, 44, 38, 32, 24, 20, 16, 12, 10, 8, 6, 3, 2, 1, 2, 6, 12, 16, 20, 21,
+      32, 44
     ]) {
       const support = [
         { x: 0, y: 0 },
@@ -91,7 +91,12 @@ describe("isolated research representation policy", () => {
       const compact: boolean =
         compositePointDisplay(support, wasCompact) !== null;
       expect(node.hullOpacity).toBe(expected.hullOpacity);
-      expect(node.ordinaryPointOpacity).toBe(expected.pointOpacity);
+      expect(node.ordinaryPointOpacity + node.smallPointOpacity).toBeCloseTo(
+        expected.pointOpacity * expected.pointVisibility
+      );
+      expect(node.radiusScale).toBeCloseTo(expected.pointScale);
+      expect(node.hullFillOpacity).toBe(expected.hullFillOpacity);
+      expect(node.childrenOpacity).toBeCloseTo(expected.childrenOpacity);
       expect(node.hullStrokeOpacity).toBe(expected.hullStrokeOpacity);
       expect(node.compact).toBe(compact);
       wasCompact = compact;
@@ -103,25 +108,26 @@ describe("isolated research representation policy", () => {
     const borderless = evaluate({ nodes: [composite(32)] }).nodes[0]!;
     expect(borderless.state).toBe("borderless-hull");
     expect(borderless.hullOpacity).toBe(1);
+    expect(borderless.hullFillOpacity).toBe(0.62);
     expect(borderless.hullStrokeOpacity).toBe(0);
     expect(borderless.ordinaryPointOpacity).toBe(0);
     expect(borderless.labelOpacity).toBe(0.58);
-    const borderFading = evaluate({ nodes: [composite(42)] }).nodes[0]!;
+    const borderFading = evaluate({ nodes: [composite(38)] }).nodes[0]!;
     expect(borderFading.hullOpacity).toBe(1);
     expect(borderFading.hullStrokeOpacity).toBe(0.5);
     expect(borderFading.labelOpacity).toBe(borderless.labelOpacity);
-    const point = evaluate({ nodes: [composite(20)] }).nodes[0]!;
+    const point = evaluate({ nodes: [composite(12)] }).nodes[0]!;
     expect(point.state).toBe("ordinary-point");
     expect(point.ordinaryPointOpacity).toBe(1);
   });
 
   it("keeps labels visible while hull paint takes over before compact ownership releases", () => {
-    let history = evaluate({ nodes: [composite(16)] }).state;
-    for (const span of [20, 24, 27.99, 28, 28.01, 32]) {
+    let history = evaluate({ nodes: [composite(12)] }).state;
+    for (const span of [12, 16, 19.99, 20, 20.01, 24]) {
       const scene = evaluate({ nodes: [composite(span)] }, defaults, history);
       const node = scene.nodes[0]!;
       expect(node.labelOpacity).toBeGreaterThanOrEqual(0.58);
-      if (span === 28) {
+      if (span === 20) {
         expect(node.compact).toBe(true);
         expect(node.state).toBe("borderless-hull");
         expect(node.ordinaryPointOpacity).toBe(0);
@@ -131,36 +137,49 @@ describe("isolated research representation policy", () => {
     }
   });
 
-  it("independent X/Y projection controls max-span ownership but only Y reveals children", () => {
-    for (const height of [0, 57, 58, 79, 100, 300]) {
-      const input = composite(300, height);
-      const wide = evaluate({ nodes: [input] }).nodes[0]!;
-      const narrow = evaluate({
-        nodes: [{ ...input, bounds: bounds(1, height) }]
-      }).nodes[0]!;
-      expect(wide.childrenOpacity).toBe(
-        getCompositeChildrenOpacity([
-          { x: 0, y: 0 },
-          { x: 300, y: height }
-        ])
-      );
-      expect(wide.childrenOpacity).toBe(narrow.childrenOpacity);
+  it("uses the raw parent span to reveal wide and shallow authored descendants", () => {
+    for (const span of [0, 12, 16, 28, 40, 100]) {
+      const wide = evaluate({ nodes: [composite(span, 1)] }).nodes[0]!;
+      const tall = evaluate({ nodes: [composite(1, span)] }).nodes[0]!;
+      const expected = compositeRepresentationDisplay([
+        { x: 0, y: 0 },
+        { x: span, y: 1 }
+      ])!;
+      expect(wide.childrenOpacity).toBeCloseTo(expected.childrenOpacity);
+      expect(wide.childrenOpacity).toBe(tall.childrenOpacity);
     }
-    expect(evaluate({ nodes: [composite(10, 100)] }).nodes[0]!.compact).toBe(
-      false
-    );
-    expect(evaluate({ nodes: [composite(100, 10)] }).nodes[0]!.compact).toBe(
-      false
-    );
+    expect(
+      evaluate({ nodes: [composite(300, 1)] }).nodes[0]!.childrenOpacity
+    ).toBe(1);
     expect(evaluate({ nodes: [composite(10)] }).nodes[0]!.compact).toBe(true);
+  });
+
+  it("keeps a density-ranked Composite visible through hull, ordinary, small, and hidden size stages", () => {
+    const leafPoints = points(140);
+    for (const [span, state] of [
+      [24, "borderless-hull"],
+      [12, "ordinary-point"],
+      [8, "small-point"],
+      [6, "small-point"],
+      [2, "small-point"],
+      [1, "hidden"]
+    ] as const) {
+      const node = evaluate({
+        nodes: [composite(span), ...leafPoints]
+      }).nodes.find((node) => node.id === "composite")!;
+      expect(node.state).toBe(state);
+      expect(node.labelOpacity).toBe(span >= 20 ? 0.58 : 0);
+      if (span > 1) expect(node.opacity).toBeGreaterThan(0);
+      if (span === 6) expect(node.radiusScale).toBe(0.35);
+    }
   });
 
   it("propagates authored nested and overlapping suppression even with offscreen children", () => {
     const input = {
       nodes: [
-        { ...composite(100, 79), id: "outer", childIds: ["nested", "shared"] },
-        { ...composite(100, 100), id: "nested", childIds: ["leaf"] },
-        { ...composite(100, 58), id: "overlap", childIds: ["shared"] },
+        { ...composite(28, 20), id: "outer", childIds: ["nested", "shared"] },
+        { ...composite(40, 40), id: "nested", childIds: ["leaf"] },
+        { ...composite(16, 16), id: "overlap", childIds: ["shared"] },
         {
           id: "leaf",
           kind: "event" as const,
@@ -181,6 +200,38 @@ describe("isolated research representation policy", () => {
     );
     expect(result.relations[0]!.opacity).toBe(0);
     expect(JSON.stringify(input)).toBe(before);
+  });
+
+  it("passes child points through a smaller unlabeled stage before the parent closes", () => {
+    const sample = (span: number) =>
+      evaluate({
+        nodes: [
+          { ...composite(span), childIds: ["child"] },
+          { id: "child", kind: "event", bounds: bounds(0, 0) }
+        ]
+      }).nodes.find((node) => node.id === "child")!;
+    const open = sample(40),
+      half = sample(28),
+      closed = sample(16);
+    expect(open.radiusScale).toBe(1);
+    expect(open.labelOpacity).toBe(1);
+    expect(half.state).toBe("small-point");
+    expect(half.radiusScale).toBeGreaterThan(0.35);
+    expect(half.radiusScale).toBeLessThan(1);
+    expect(half.labelOpacity).toBeLessThan(half.opacity);
+    expect(closed.state).toBe("hidden");
+  });
+
+  it("retains zero-extent authored Composites as density-budgeted points on cold restore", () => {
+    expect(evaluate({ nodes: [composite(0)] }).nodes[0]!.state).toBe(
+      "ordinary-point"
+    );
+    const node = evaluate({ nodes: [composite(0), ...points(80)] }).nodes.find(
+      (node) => node.id === "composite"
+    )!;
+    expect(node.state).toBe("small-point");
+    expect(node.opacity).toBe(1);
+    expect(node.radiusScale).toBe(0.35);
   });
 
   it("exposes ordinary/small/fading/hidden density ranks and retention hysteresis", () => {
@@ -208,8 +259,8 @@ describe("isolated research representation policy", () => {
   });
 
   it("round-trips preset history exactly at hysteresis thresholds and is order-independent", () => {
-    const initial = evaluate({ nodes: [composite(20), ...points(80)] });
-    const input = { nodes: [composite(24), ...points(80)] };
+    const initial = evaluate({ nodes: [composite(12), ...points(80)] });
+    const input = { nodes: [composite(16), ...points(80)] };
     const config = validateRepresentationConfig(
       JSON.parse(JSON.stringify(defaults))
     );
@@ -280,10 +331,10 @@ describe("isolated research representation policy", () => {
   it("handles zero-width fades and rejects malformed presets rather than changing their meaning", () => {
     const config = { ...defaults, hullFadePx: 0, childFadeStartRatio: 1 };
     expect(
-      evaluate({ nodes: [composite(20)] }, config).nodes[0]!.hullOpacity
+      evaluate({ nodes: [composite(12)] }, config).nodes[0]!.hullOpacity
     ).toBe(0);
     expect(
-      evaluate({ nodes: [composite(21)] }, config).nodes[0]!.hullOpacity
+      evaluate({ nodes: [composite(13)] }, config).nodes[0]!.hullOpacity
     ).toBe(1);
     expect(
       evaluate({ nodes: [composite(100)] }, config).nodes[0]!.childrenOpacity

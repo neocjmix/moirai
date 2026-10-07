@@ -32,6 +32,7 @@ type Region = {
     point?: { x: number; y: number };
     hullOpacity: number;
     hullStrokeOpacity: number;
+    hullFillOpacity?: number;
     pointOpacity: number;
   };
 };
@@ -99,6 +100,7 @@ function materialKey(scene: Props) {
         alpha(region.renderedOpacity * region.surfaceOpacity),
         region.representation?.hullOpacity,
         region.representation?.hullStrokeOpacity,
+        region.representation?.hullFillOpacity,
         region.representation?.pointOpacity,
         scene.colors.get(region.id)
       ];
@@ -162,7 +164,7 @@ export function GeographicCanvas(props: Props) {
     if (!paletteRef.current) {
       const style = getComputedStyle(canvas);
       paletteRef.current = {
-        fill: style.getPropertyValue("--graph-point-fill").trim() || "#7a1424",
+        fill: style.getPropertyValue("--graph-point-fill").trim() || "#1b2330",
         stroke: style.getPropertyValue("--graph-point-stroke").trim() || "#fff"
       };
     }
@@ -349,7 +351,10 @@ export function GeographicCanvas(props: Props) {
             context.lineWidth = 1.15;
             context.lineJoin = "round";
             context.stroke(shape);
-            context.globalAlpha = alpha * scene.fillOpacity;
+            context.globalAlpha =
+              alpha *
+              scene.fillOpacity *
+              (region.representation?.hullFillOpacity ?? 1);
             context.fillStyle = color?.fill || DEFAULT_COMPOSITE_FILL;
             context.fill(shape);
             context.restore();

@@ -16,6 +16,7 @@ import { graphPresentationFromResult } from "../../lib/graph-query-presentation"
 import V5GraphPage from "../../components/v5-graph-page";
 import { readV5ServedRoot } from "@moirai/publication/v5";
 import { assertPublicId, readPublicationObject } from "../../lib/publication";
+import { GraphSessionGate } from "../../components/graph-session-gate";
 
 export default async function GraphPage({
   searchParams
@@ -73,7 +74,7 @@ export default async function GraphPage({
   const spatial = await graphSpatialBootstrap(initialGraphQuery, catalog);
 
   return (
-    <>
+    <GraphSessionGate title={catalog.worlds[0]?.label.ko ?? "Moirai"}>
       <GraphQueryFallback
         result={result}
         entities={presentation.entities}
@@ -90,6 +91,6 @@ export default async function GraphPage({
         relations={presentation.relations}
         completeness={result.completeness}
       />
-    </>
+    </GraphSessionGate>
   );
 }

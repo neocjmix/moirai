@@ -48,3 +48,14 @@ it("preserves a current region's assigned color even after its transparent SVG l
   const returned = colors(hidden, ["a", "b"], ["a", "b"]);
   expect(returned).toEqual(before);
 });
+it("keeps every Composite color stable across camera order, cold restoration and palette overflow", () => {
+  const ids = Array.from({length:40}, (_, i) => `authored-composite-${i}`);
+  const initial = colors([], ids, ids, "world-a");
+  expect(initial).toHaveLength(40);
+  const initialById = new Map(initial.map(item => [item.id,item]));
+  const subset = ids.filter((_, i) => i % 3 === 0).reverse();
+  const cold = colors([], subset, subset, "world-a");
+  const returned = colors(colors(initial, subset, subset, "world-a"), ids.toReversed(), ids, "world-a");
+  for (const entry of [...cold,...returned]) expect(entry).toEqual(initialById.get(entry.id));
+  expect(new Set(initial.map(item => item.fill)).size).toBeGreaterThan(6);
+});

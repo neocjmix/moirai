@@ -1,4 +1,8 @@
 import {
+  buildCompositePaddingProfile,
+  type CompositePaddingProfile
+} from "@moirai/graph-presentation/composite-padding-profile";
+import {
   buildRenderConcaveHull,
   type LayoutOutput
 } from "@moirai/graph-presentation/layout-engine";
@@ -12,6 +16,7 @@ export type LabGeometry = {
   bounds: Bounds;
   center: Point;
   polygon: Point[];
+  paddingProfile?: CompositePaddingProfile;
   kind: "point" | "segment" | "region";
   ends: Point[];
 };
@@ -69,6 +74,24 @@ export function layoutGeometry(
       bounds,
       center,
       polygon,
+      ...(shape.kind === "region"
+        ? {
+            paddingProfile: buildCompositePaddingProfile(
+              polygon.length
+                ? polygon.reduce(
+                    (range, point) => ({
+                      minY: Math.min(range.minY, point.y),
+                      maxY: Math.max(range.maxY, point.y)
+                    }),
+                    { minY: Infinity, maxY: -Infinity }
+                  )
+                : bounds,
+              children.flatMap((child) =>
+                child.paddingProfile ? [child.paddingProfile] : []
+              )
+            )
+          }
+        : {}),
       kind: shape.kind,
       ends:
         shape.kind === "point"

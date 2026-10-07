@@ -156,7 +156,7 @@ function createPainter(canvas: HTMLCanvasElement) {
       pu = uniforms(pointProgram);
     const style = getComputedStyle(canvas);
     const pointFill = color(
-      style.getPropertyValue("--graph-point-fill").trim() || "#7a1424"
+      style.getPropertyValue("--graph-point-fill").trim() || "#1b2330"
     );
     const border = color(
       style.getPropertyValue("--graph-point-stroke").trim() || "#fff"
@@ -365,7 +365,9 @@ function createPainter(canvas: HTMLCanvasElement) {
               entry.fill,
               entry.fillCount,
               c?.fill || DEFAULT_COMPOSITE_FILL,
-              alpha * scene.fillOpacity,
+              alpha *
+                scene.fillOpacity *
+                (region.representation?.hullFillOpacity ?? 1),
               0
             );
           }

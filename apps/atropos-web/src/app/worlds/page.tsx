@@ -1,6 +1,7 @@
 import { publishedWorldIds } from "../../lib/publication";
 import { v5ShellReader } from "../../lib/v5-shell-reader";
 import { readV5StagedDocument } from "@moirai/publication/v5";
+import styles from "./worlds.module.css";
 export const dynamic = "force-dynamic";
 export default async function WorldsPage() {
   const ids = await publishedWorldIds();
@@ -30,35 +31,36 @@ export default async function WorldsPage() {
     }
   }
   return (
-    <main style={{ padding: "24px", maxWidth: 720, margin: "auto" }}>
-      <h1>월드 선택</h1>
-      <p>탐색할 세계를 선택하세요.</p>
-      {worlds.length === 0 && <p>현재 공개된 월드가 없습니다.</p>}
-      <ul style={{ padding: 0, listStyle: "none" }}>
+    <main className={styles.page}>
+      <p className={styles.brand}>MOIRAI</p>
+      <header className={styles.header}>
+        <h1>월드 선택</h1>
+        <p>탐색할 세계를 선택하세요.</p>
+      </header>
+      {worlds.length === 0 && (
+        <p className={styles.empty}>현재 공개된 월드가 없습니다.</p>
+      )}
+      <ul className={styles.list}>
         {worlds.map((world) => (
-          <li
-            key={world.id}
-            style={{ padding: "16px 0", borderBottom: "1px solid #d6dcd3" }}
-          >
-            <a
-              href={`/graph/v5?world=${world.id}`}
-              style={{
-                display: "block",
-                padding: "12px 0",
-                fontSize: "1.2rem"
-              }}
-            >
-              {world.world.title}
+          <li key={world.id} className={styles.card}>
+            <a href={`/graph/v5?world=${world.id}`} className={styles.entry}>
+              <h2>{world.world.title}</h2>
+              {world.world.description && <p>{world.world.description}</p>}
+              <span className={styles.arrow} aria-hidden="true">
+                ↗
+              </span>
             </a>
-            <p>{world.world.description}</p>
-            <a href={`/worlds/${world.id}/events`}>
-              사건 {world.event_count}개 보기
-            </a>
+            <div className={styles.footer}>
+              <a href={`/worlds/${world.id}/events`}>
+                사건 {world.event_count}개 보기
+              </a>
+              <span className={styles.hint}>세계 탐색</span>
+            </div>
           </li>
         ))}
       </ul>
       {pending.length > 0 && (
-        <section>
+        <section className={styles.pending}>
           <h2>공개본 준비 중</h2>
           <ul>
             {pending.map((id) => (

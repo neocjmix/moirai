@@ -1,3 +1,4 @@
+import { buildCompositePaddingProfile, type CompositePaddingProfile } from "@moirai/graph-presentation/composite-padding-profile";
 import type {
   GraphShellChartPlaneEntity,
   GraphShellChartPlaneRegionEntity
@@ -7,7 +8,7 @@ import {
   type CompositeHullMode
 } from "./graph-shell-region-geometry";
 import type { ViewportCoordinate } from "./graph-shell-composite";
-type CompositeHullGeometry = { points: ViewportCoordinate[] };
+type CompositeHullGeometry = { points: ViewportCoordinate[]; paddingProfile: CompositePaddingProfile };
 type Bounds = GraphShellChartPlaneRegionEntity["worldBounds"];
 
 function worldBoundsIntersect(
@@ -166,6 +167,7 @@ export function prepareCompositeWorldGeometry(
     .map((entity) => {
       const directSupportPoints: ViewportCoordinate[] = [];
       const childRegionPolygons: ViewportCoordinate[][] = [];
+      const childPaddingProfiles: CompositePaddingProfile[] = [];
 
       for (const childId of entity.contains) {
         if (allWorldInstantPointById.has(childId)) {
@@ -179,6 +181,7 @@ export function prepareCompositeWorldGeometry(
         const childRegionGeometry = regionGeometryById.get(childId);
         if (childRegionGeometry) {
           childRegionPolygons.push(childRegionGeometry.points);
+          childPaddingProfiles.push(childRegionGeometry.paddingProfile);
         }
       }
 
@@ -203,7 +206,11 @@ export function prepareCompositeWorldGeometry(
             mode
           );
       const geometry = {
-        points: hullPoints
+        points: hullPoints,
+        paddingProfile: entity.preparedPaddingProfile ?? buildCompositePaddingProfile(
+          hullPoints.reduce((bounds, point) => ({ minY: Math.min(bounds.minY, point.y), maxY: Math.max(bounds.maxY, point.y) }), { minY: Infinity, maxY: -Infinity }),
+          childPaddingProfiles
+        )
       } satisfies CompositeHullGeometry;
       regionGeometryById.set(entity.id, geometry);
       const supportComplete = entity.preparedWorldHull || entity.preparedCompactBounds
@@ -220,6 +227,7 @@ export function prepareCompositeWorldGeometry(
         containedBy: entity.containedBy,
         editorial: entity.editorial,
         points: geometry.points,
+        paddingProfile: geometry.paddingProfile,
         hullPending: Boolean(entity.preparedCompactBounds)
       };
     })

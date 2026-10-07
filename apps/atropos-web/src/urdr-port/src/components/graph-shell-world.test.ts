@@ -110,3 +110,16 @@ it("inverse bounds preserve the existing 16-pixel point seed under independent X
       ).toEqual(expected);
     }
 });
+
+it("derives local depth from legacy child support without globally widening shallow periods", () => {
+  const points = [
+    { id: "born", x: 0, y: 0 }, { id: "died", x: 0, y: 100 },
+    { id: "start", x: 10, y: 40 }, { id: "end", x: 20, y: 60 }
+  ];
+  const prepared = prepareCompositeWorldGeometry([
+    region("life", ["born", "died", "battle"]), region("battle", ["start", "end"])
+  ], points, "concave");
+  expect(prepared.regions.find((item) => item.id === "life")!.paddingProfile).toEqual([
+    { minY: 0, maxY: 40, depth: 1 }, { minY: 40, maxY: 60, depth: 2 }, { minY: 60, maxY: 100, depth: 1 }
+  ]);
+});

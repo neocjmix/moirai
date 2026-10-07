@@ -104,6 +104,7 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
     (raw.formatVersion !== "layout-lab-preset/1" &&
       raw.formatVersion !== "layout-lab-preset/2") ||
     (raw.representationConfigVersion !== REPRESENTATION_CONFIG_VERSION &&
+      raw.representationConfigVersion !== "lab-representation/3" &&
       raw.representationConfigVersion !== "lab-representation/2" &&
       raw.representationConfigVersion !== "lab-representation/1")
   )
@@ -135,8 +136,20 @@ export async function parseLabPreset(text: string): Promise<LabPreset> {
       return representation(value);
     const legacy = object(value);
     const added = {
-      hullBorderFadeStartPx: 0,
-      hullBorderFadePx: 0,
+      hullBorderlessOpacityScale: 1,
+      compositePointSizeStages: false,
+      smallCompositeSpanPx: 6,
+      ordinaryCompositeSpanPx: 10,
+      hiddenCompositeSpanPx: 1,
+      visibleCompositeSpanPx: 3,
+      childRevealBySpan: false,
+      sequentialChildPoints: false,
+      ...(raw.representationConfigVersion !== "lab-representation/3"
+        ? {
+            hullBorderFadeStartPx: 0,
+            hullBorderFadePx: 0
+          }
+        : {}),
       ...(raw.representationConfigVersion === "lab-representation/1"
         ? {
             hullOpacityScale: 1,

@@ -1,5 +1,6 @@
 import type { RenderPrimitive } from "@moirai/graph-presentation/server";
 import { semanticTextWidth } from "./graph-semantic-budget";
+import { COMPOSITE_HIDDEN_SPAN_PX } from "../urdr-port/src/components/composite-point-display";
 export type RenderDensity = {
   pointScale: number;
   opacity: number;
@@ -31,9 +32,22 @@ export function selectRenderDensity(
   const candidates = primitives.filter(
     (p) => p.entity.kind !== "relation" && overlaps(p.bounds, viewport)
   );
+  // Keep the authored owner through its hull, large-point and small-point
+  // handoff before density ranks individual children. Releasing priority at
+  // compact entry would drop the replacement point in the very same frame.
+  const visibleComposite = (p: RenderPrimitive) => {
+    if (!camera || p.entity.kind !== "composite" || !p.composite) return false;
+    const b = p.composite.hullBounds ?? p.bounds;
+    const span = Math.max(
+      (b.maxX - b.minX) * camera.scaleX,
+      (b.maxY - b.minY) * camera.scaleY
+    );
+    return span === 0 || span > COMPOSITE_HIDDEN_SPAN_PX;
+  };
   candidates.sort(
     (a, b) =>
       Number(b.entity.id === selectedId) - Number(a.entity.id === selectedId) ||
+      Number(visibleComposite(b)) - Number(visibleComposite(a)) ||
       (a.visibility?.priority ?? a.id).localeCompare(
         b.visibility?.priority ?? b.id
       ) ||

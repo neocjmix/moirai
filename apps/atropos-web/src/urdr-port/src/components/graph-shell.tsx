@@ -12,16 +12,18 @@ import { composeNavigationBounds, constrainNavigation, restoreNavigation } from 
 import { prepareCompositeWorldGeometry, selectCompositeWorldRegions } from "./graph-shell-world";
 import { shareWorldGeometryEntities } from "./world-geometry-identity";
 import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
-import { compositePointDisplay, compositeRepresentationDisplay } from "./composite-point-display";
+import { compositePointDisplay, compositeRepresentationDisplay, compositePointDensityDisplay } from "./composite-point-display";
 import { createCompositePanGeometryCache } from "./composite-pan-geometry";
 import { COMPOSITE_LABEL_FONT, createCompositeLabelWidthMeasure, extendCompositeLabelTextPath } from "./composite-label-text-path";
-import { pointDensityDisplay } from "./point-density-display";
+import { pointDensityDisplay, withParentPointHandoff } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
 import { reconcileLabelPaint, LABEL_PAINT_EXIT_MS } from "./label-paint-presence";
 import { selectCompositePaintTargets } from "./composite-paint-presence";
 import { needsCompositePaintFrame, reconcileCompositeFramePaint } from "./composite-frame-paint";
 import { createViewportReadScheduler } from "./viewport-read-scheduler";
 import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-disposal";
+import { graphSessionStorage, readWorldGraphState, rememberGraphWorld, workspaceWorldId } from "../../../lib/graph-session-state";
+import { createPanInertiaTracker, panInertiaFrame, type PanVelocity } from "../../../lib/pan-inertia";
 import { GeographicCanvas } from "../../../components/geographic-canvas";
 import { GeographicWebGL } from "../../../components/geographic-webgl";
 import { reconcileViewport } from "../viewport-cache";
@@ -47,11 +49,9 @@ import {
   resetViewportView,
 } from "./image-viewport";
 import {
-  getCompositeChildrenOpacity,
-  reconcileCompositeColorAssignments,
+  compositeColorAssignment,
   DEFAULT_COMPOSITE_FILL,
   retainedCompositePaintTransform,
-  type CompositeColorAssignment,
   type CompositeFadePresence,
   type ViewportCoordinate
 } from "./graph-shell-composite";
@@ -1101,7 +1101,7 @@ function clearPersistedGraphShellState() {
     return;
   }
 
-  window.localStorage.removeItem(GRAPH_SHELL_LOCAL_STATE_KEY);
+  try { graphSessionStorage()?.removeItem(GRAPH_SHELL_LOCAL_STATE_KEY); } catch { /* Optional browser storage. */ }
 }
 
 function createDefaultShellSlice(workspace: GraphShellWorkspaceShell): GraphShellRestorableShellSlice {
@@ -1144,12 +1144,14 @@ function validateShellSliceForWorkspace(
   return slice;
 }
 
-function readPersistedGraphShellLocalState(viewportSize: ViewportSize) {
+function readPersistedGraphShellLocalState(viewportSize: ViewportSize, worldId: string | null) {
   if (typeof window === "undefined") {
     return { hadInvalidState: false, state: null as GraphShellRestorableState | null };
   }
 
-  const raw = window.localStorage.getItem(GRAPH_SHELL_LOCAL_STATE_KEY);
+  if (worldId) return { hadInvalidState: false, state: readWorldGraphState(graphSessionStorage(), worldId, viewportSize) };
+  let raw: string | null = null;
+  try { raw = graphSessionStorage()?.getItem(GRAPH_SHELL_LOCAL_STATE_KEY) ?? null; } catch { /* Optional browser storage. */ }
   if (!raw) {
     return { hadInvalidState: false, state: null as GraphShellRestorableState | null };
   }
@@ -2274,9 +2276,19 @@ export function GraphShell({
 }: GraphShellProps) {
   const copy = GRAPH_SHELL_COPY[locale];
   const workspace = initialWorkspace;
+  const persistenceWorldId = workspaceWorldId(workspace.buildRevision);
   const usesLoadingWorkspace = initialWorkspace.buildRevision === GRAPH_SHELL_LOADING_WORKSPACE_BUILD_REVISION;
   const externalFocusRef = useRef(externalFocus); externalFocusRef.current = externalFocus;
   const navigationAnimationRef = useRef<number | null>(null);
+  const [isNavigationAnimating, setIsNavigationAnimating] = useState(false);
+  const panInertiaTrackerRef = useRef(createPanInertiaTracker());
+  const pendingPanInertiaRef = useRef<PanVelocity | null>(null);
+  const cancelNavigationAnimation = useCallback(() => {
+    if (navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
+    navigationAnimationRef.current = null;
+    pendingPanInertiaRef.current = null;
+    setIsNavigationAnimating(false);
+  }, []);
   const previousNavigationPointerCountRef = useRef(0);
   const previousNavigationReleaseRef = useRef(0);
   const [navigationRelease, setNavigationRelease] = useState(0);
@@ -2288,7 +2300,6 @@ export function GraphShell({
   const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
   const [compositePaintClock, setCompositePaintClock] = useState({frame: 0, prune: 0});
   const compositePaintHistoryRef = useRef({regions: [] as CompositeFadePresence<CompositeRegion>[], frame: 0});
-  const [visibleCompositeColorAssignments, setVisibleCompositeColorAssignments] = useState<CompositeColorAssignment[]>([]);
   const initialEventSelection = externalFocus
     ? { eventId: externalFocus.id, label: externalFocus.label, requestKey: 0 }
     : null;
@@ -2373,16 +2384,20 @@ export function GraphShell({
     // Incoming focus is an input. Notify its owner only from local gestures or
     // history restoration, never by echoing intermediate rendered state.
     if(selectedEventSelection?.eventId===externalFocus.id)return;
+    cancelNavigationAnimation();
+    panInertiaTrackerRef.current.suppress();
     // React may replay a state updater while rebasing concurrent work. Allocate
     // the read identity once per focus action, never inside that updater.
     eventSelectionNonceRef.current+=1;
     pendingRestoredDrawerStageRef.current="peek";
     const selection={eventId:externalFocus.id,label:externalFocus.label,requestKey:eventSelectionNonceRef.current};
     setSelectedEventSelection(current=>current?.eventId===selection.eventId?current:selection);
-  },[externalFocus?.id,hasHydratedRestorableState]);
+  },[externalFocus?.id,hasHydratedRestorableState,cancelNavigationAnimation]);
 
 
   const applyResolvedGraphShellState = useCallback((nextState: ReturnType<typeof resolveGraphShellRestorableState>) => {
+    cancelNavigationAnimation();
+    panInertiaTrackerRef.current.suppress();
     setSelectedTimelineId(nextState.shell.selectedTimelineId);
     setEnabledCanonIds(new Set(nextState.shell.enabledCanonIds));
     setImageViewportState((current) => {
@@ -2409,14 +2424,14 @@ export function GraphShell({
     pendingRestoredDrawerStageRef.current = null;
     setSelectedEventSelection(null);
     onSelectionRef.current?.(null);
-  }, [bootstrapChartPlane, viewportSize, workspace, initialViewportCenter]);
+  }, [bootstrapChartPlane, viewportSize, workspace, initialViewportCenter, cancelNavigationAnimation]);
 
   const hydrateRestorableState = useCallback((restoredDrawer?: GraphShellRestorableState["drawer"]) => {
     if (typeof window === "undefined") {
       return;
     }
 
-    const { hadInvalidState, state: parsedLocalState } = readPersistedGraphShellLocalState(viewportSize);
+    const { hadInvalidState, state: parsedLocalState } = readPersistedGraphShellLocalState(viewportSize, persistenceWorldId);
     if (hadInvalidState) {
       clearPersistedGraphShellState();
     }
@@ -2452,7 +2467,7 @@ export function GraphShell({
       urlState,
     }));
     setHasHydratedRestorableState(true);
-  }, [applyResolvedGraphShellState, defaultShellSlice, viewportSize, workspace, initialViewportCenter, initialDrawerStage]);
+  }, [applyResolvedGraphShellState, defaultShellSlice, viewportSize, workspace, initialViewportCenter, initialDrawerStage, persistenceWorldId]);
 
   useEffect(() => {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) {
@@ -2516,7 +2531,33 @@ export function GraphShell({
     imageViewportState.view.x, imageViewportState.view.y,
     imageViewportState.view.scaleX, imageViewportState.view.scaleY,
   ]);
-  useEffect(() => () => { if(navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current); }, [loader]);
+  useEffect(() => {
+    const stop = () => {
+      cancelNavigationAnimation();
+      panInertiaTrackerRef.current.suppress();
+    };
+    const endContacts = () => {
+      stop();
+      panInertiaTrackerRef.current.cancel();
+      previousNavigationPointerCountRef.current = 0;
+      setImageViewportState(current => Object.keys(current.activePointers).length ? createImageViewportState(current.view) : current);
+    };
+    const stopForHiddenPage = () => { if (document.hidden) endContacts(); };
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
+    const stopForReducedMotion = () => { if (reducedMotion.matches) stop(); };
+    window.addEventListener("pagehide", endContacts);
+    window.addEventListener("wheel", stop, {passive: true});
+    document.addEventListener("visibilitychange", stopForHiddenPage);
+    reducedMotion.addEventListener("change", stopForReducedMotion);
+    return () => {
+      stop();
+      window.removeEventListener("pagehide", endContacts);
+      window.removeEventListener("wheel", stop);
+      document.removeEventListener("visibilitychange", stopForHiddenPage);
+      reducedMotion.removeEventListener("change", stopForReducedMotion);
+    };
+  }, [loader, cancelNavigationAnimation]);
+  useEffect(() => { cancelNavigationAnimation(); }, [selectedEventSelection?.eventId, cancelNavigationAnimation]);
   const navigationPointerCount = Object.keys(activePointers).length;
   // Settle from the committed final pointer state. A pointerup can share a React
   // batch with the last pinch move; reading the handler closure loses that move.
@@ -2525,27 +2566,33 @@ export function GraphShell({
     previousNavigationPointerCountRef.current = navigationPointerCount;
     const released = previousNavigationReleaseRef.current !== navigationRelease;
     previousNavigationReleaseRef.current = navigationRelease;
-    if ((!released && previousPointerCount === 0) || navigationPointerCount > 0 || !navigationBounds) return;
+    if ((!released && previousPointerCount === 0) || navigationPointerCount > 0) return;
     const startView = imageViewportState.view;
     const target = constrainNavigation(startView, viewportSize, navigationBounds);
-    if (Object.keys(target).every(key => target[key] === startView[key])) return;
+    const withinBounds = Object.keys(target).every(key => target[key] === startView[key]);
+    const velocity = pendingPanInertiaRef.current;
+    pendingPanInertiaRef.current = null;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
       setImageViewportState(current => Object.keys(current.activePointers).length || current.view !== startView ? current : resetViewportView(current, target));
       return;
     }
+    if (withinBounds && !velocity) return;
     const started = performance.now();
     const animate = (now) => {
+      const frame = withinBounds && velocity ? panInertiaFrame(velocity, now - started) : null;
       const progress = Math.min(1, (now - started) / 180), t = 1 - Math.pow(1 - progress, 3);
-      const nextView = Object.fromEntries(Object.keys(target).map(key => [key, startView[key] + (target[key] - startView[key]) * t]));
+      const nextView = frame
+        ? constrainNavigation({...startView, x: startView.x + frame.x, y: startView.y + frame.y}, viewportSize, navigationBounds)
+        : Object.fromEntries(Object.keys(target).map(key => [key, startView[key] + (target[key] - startView[key]) * t]));
       setImageViewportState(current => Object.keys(current.activePointers).length ? current : resetViewportView(current, nextView));
-      navigationAnimationRef.current = progress < 1 ? requestAnimationFrame(animate) : null;
+      const done = frame ? frame.done : progress >= 1;
+      navigationAnimationRef.current = done ? null : requestAnimationFrame(animate);
+      if (done) setIsNavigationAnimating(false);
     };
+    setIsNavigationAnimating(true);
     navigationAnimationRef.current = requestAnimationFrame(animate);
-    return () => {
-      if (navigationAnimationRef.current !== null) cancelAnimationFrame(navigationAnimationRef.current);
-      navigationAnimationRef.current = null;
-    };
-  }, [navigationPointerCount, navigationRelease, navigationBounds, viewportSize]);
+    return cancelNavigationAnimation;
+  }, [navigationPointerCount, navigationRelease, navigationBounds, viewportSize, cancelNavigationAnimation]);
 
   const viewportReadSchedulerRef = useRef(null);
   useEffect(() => {
@@ -2723,13 +2770,14 @@ export function GraphShell({
         : {}),
     };
 
-    const gestureActive = Object.keys(activePointers).length > 0;
+    const gestureActive = Object.keys(activePointers).length > 0 || isNavigationAnimating || navigationAnimationRef.current !== null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const writeRestorableState = () => {
-      window.localStorage.setItem(
-        GRAPH_SHELL_LOCAL_STATE_KEY,
-        JSON.stringify(serializeGraphShellLocalState(nextRestorableState)),
-      );
+      const storage = graphSessionStorage();
+      if (persistenceWorldId) rememberGraphWorld(storage, persistenceWorldId, nextRestorableState);
+      try {
+        storage?.setItem(GRAPH_SHELL_LOCAL_STATE_KEY, JSON.stringify(serializeGraphShellLocalState(nextRestorableState)));
+      } catch { /* URL navigation remains available when storage is disabled. */ }
       let nextSearch = buildGraphShellUrlSearch(window.location.search, nextRestorableState);
       if (
         window.location.pathname.startsWith("/graph/events/") &&
@@ -2759,13 +2807,21 @@ export function GraphShell({
       writeRestorableState();
     }
 
+    const flushBeforeLeaving = () => writeRestorableState();
+    const flushWhenHidden = () => { if (document.visibilityState === "hidden") writeRestorableState(); };
+    window.addEventListener("pagehide", flushBeforeLeaving);
+    document.addEventListener("visibilitychange", flushWhenHidden);
     return () => {
       if (timeoutId !== null) {
         clearTimeout(timeoutId);
       }
+      window.removeEventListener("pagehide", flushBeforeLeaving);
+      document.removeEventListener("visibilitychange", flushWhenHidden);
     };
   }, [
     activePointers,
+    isNavigationAnimating,
+    persistenceWorldId,
     effectiveEnabledCanonIds,
     eventDrawerStage,
     hasHydratedRestorableState,
@@ -2990,7 +3046,7 @@ export function GraphShell({
       graphWorkCountsRef.current.regionTransforms += region.points.length;
       const geometry = compositePanGeometryCache.project({
         id: region.id, points: region.points, view, viewport: viewportSize,
-        padding: getCompositeRegionPadding(region.depth), tuning: compositeSplineTuning,
+        padding: getCompositeRegionPadding(region.depth), paddingProfile: region.paddingProfile, tuning: compositeSplineTuning,
         labelHeight: COMPOSITE_LABEL_LINE_HEIGHT, labelGap: COMPOSITE_LABEL_GAP,
       });
       const {projectedHullPoints, projectedPoints} = geometry;
@@ -3031,7 +3087,7 @@ export function GraphShell({
         representation,
         paintView: view,
         paintViewport: viewportSize,
-        pointDisplay: pointDensityDisplay(densityById.get(region.id)),
+        pointDisplay: compositePointDensityDisplay(representation, densityById.get(region.id)),
         // Keep the referenced contour immutable during pan. Translating live
         // native text avoids reshaping glyphs on a rewritten path every frame.
         labelPath: compactPoint ? "" : buildOpenSplinePath(textPlacement.pathFrame?.points ?? textPlacement.pathPoints, DEFAULT_COMPOSITE_LABEL_PATH_SPLINE_TUNING),
@@ -3062,7 +3118,7 @@ export function GraphShell({
     const regionById = new Map(projectedRawRegions.map((region) => [region.id, region]));
     const descendantOpacityById = new Map<string, number>();
     for (const region of projectedRawRegions) {
-      const opacity = getCompositeChildrenOpacity(region.projectedPoints);
+      const opacity = region.representation?.childrenOpacity ?? 1;
       if (opacity >= 0.999) {
         continue;
       }
@@ -3094,10 +3150,12 @@ export function GraphShell({
     const regions = projectedRawRegions
       .map((region) => {
         const policy = labelPolicyById.get(region.id);
+        const pointDisplay = withParentPointHandoff(region.pointDisplay, descendantOpacityById.get(region.id) ?? 1);
         return {
           ...region,
           renderedLabel: policy?.renderedLabel ?? region.renderedLabel,
-          showLabel: region.compactPoint ? region.pointDisplay.showLabel : policy?.showLabel ?? true,
+          pointDisplay,
+          showLabel: region.compactPoint ? pointDisplay.showLabel : policy?.showLabel ?? true,
           opacity: descendantOpacityById.get(region.id) ?? 1,
           surfaceOpacity: region.surfaceOpacity,
         } satisfies CompositeRegion;
@@ -3276,7 +3334,7 @@ export function GraphShell({
       .map((point) => ({
         ...point,
         opacity: chartCompositeRegions.descendantOpacityById.get(point.id) ?? 1,
-        pointDisplay: pointDensityDisplay(densityById.get(point.id)),
+        pointDisplay: withParentPointHandoff(pointDensityDisplay(densityById.get(point.id)), chartCompositeRegions.descendantOpacityById.get(point.id) ?? 1),
       }))
       .sort((left, right) => left.y - right.y || left.x - right.x);
     const labelPolicy = applyEditorialPointLabelPolicy(visiblePoints, getEditorialZoomBucket(view.scaleY));
@@ -3365,7 +3423,7 @@ export function GraphShell({
     ...presentedRegions.filter(region => region.visibilityState !== "exiting" && region.showLabel && region.renderedOpacity > 0 && (region.compactPoint || region.surfaceOpacity > 0)).map(region => ({
       id: `region:${region.id}:${region.compactPoint ? "point" : "hull"}`, entityId: region.id,
       kind: region.compactPoint ? "compact" : "hull", label: region.renderedLabel,
-      opacity: region.compactPoint ? region.pointDisplay.labelOpacity : region.renderedOpacity * region.surfaceOpacity * 0.58,
+      opacity: region.compactPoint ? region.renderedOpacity * region.pointDisplay.labelOpacity : region.renderedOpacity * region.surfaceOpacity * 0.58,
       region,
     })),
   ], [presentedPoints, presentedRegions]);
@@ -3544,18 +3602,6 @@ export function GraphShell({
     // read changes only with Event/loader/locale or an explicit Retry action.
   }, [eventDetailRetryVersion, hasHydratedRestorableState, initialEventDetail, loader, locale, renderedEventSelection?.eventId, usesLoadingWorkspace]);
 
-  useEffect(() => {
-    const next = reconcileCompositeColorAssignments(
-      visibleCompositeColorAssignments,
-      chartCompositeRegions.activeColorRegionIds,
-      // Geometry/color identity survives transparent SVG pruning; a hidden
-      // current region must not steal a new color when it becomes visible.
-      [...new Set([...chartCompositeRegions.regions.map((region) => region.id), ...visibleCompositeRegions.map((region) => region.id)])],
-    );
-    // A no-op dispatch can still enter this large component before React bails
-    // out. Pan changes geometry each frame, but usually keeps the same colors.
-    if (next !== visibleCompositeColorAssignments) setVisibleCompositeColorAssignments(next);
-  }, [chartCompositeRegions.activeColorRegionIds, chartCompositeRegions.regions, visibleCompositeRegions, visibleCompositeColorAssignments]);
 
   const visibleRelationSegments = useMemo<RelationSegment[]>(
     () => {
@@ -3613,8 +3659,8 @@ export function GraphShell({
   );
 
   const compositeStyleById = useMemo(
-    () => new Map(visibleCompositeColorAssignments.map((assignment) => [assignment.id, assignment])),
-    [visibleCompositeColorAssignments],
+    () => new Map(presentedRegions.map((region) => [region.id, compositeColorAssignment(region.id, persistenceWorldId ?? "")])),
+    [presentedRegions, persistenceWorldId],
   );
 
   const activeDiagnosticMessages = useMemo(() => {
@@ -3735,13 +3781,15 @@ export function GraphShell({
       event.currentTarget.setPointerCapture(event.pointerId);
     }
 
-    if(navigationAnimationRef.current !== null) { cancelAnimationFrame(navigationAnimationRef.current); navigationAnimationRef.current = null; }
+    cancelNavigationAnimation();
+    panInertiaTrackerRef.current.start(event.pointerId, {x: event.clientX, y: event.clientY}, performance.now(), event.pointerType);
     flushViewportMoves();
     setImageViewportState((current) => addViewportPointer(current, event.pointerId, point));
-  }, [flushViewportMoves]);
+  }, [flushViewportMoves, cancelNavigationAnimation]);
 
   const handleViewportPointerMove = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
     event.preventDefault();
+    panInertiaTrackerRef.current.move(event.pointerId, {x: event.clientX, y: event.clientY}, performance.now());
 
     if (pendingEventTapRef.current?.pointerId === event.pointerId) {
       const deltaX = event.clientX - pendingEventTapRef.current.startClientX;
@@ -3774,8 +3822,12 @@ export function GraphShell({
   }, []);
 
   const handleViewportPointerEnd = useCallback((event: ReactPointerEvent<HTMLDivElement>) => {
+    // releasePointerCapture also dispatches lostpointercapture; consume each
+    // contact only once so the second event cannot cancel its pending coast.
+    if (!panInertiaTrackerRef.current.has(event.pointerId)) return;
     event.preventDefault();
     flushViewportMoves();
+    pendingPanInertiaRef.current = panInertiaTrackerRef.current.end(event.pointerId, performance.now(), event.type === "pointerup");
 
     const pendingEventTap = pendingEventTapRef.current;
     if (pendingEventTap?.pointerId === event.pointerId) {
@@ -3783,7 +3835,7 @@ export function GraphShell({
       const deltaY = event.clientY - pendingEventTap.startClientY;
       const stayedWithinTapSlop = Math.hypot(deltaX, deltaY) <= EVENT_DRAWER_TAP_SLOP_PX;
       pendingEventTapRef.current = null;
-      if (stayedWithinTapSlop && Object.keys(imageViewportState.activePointers).length === 1) {
+      if (event.type === "pointerup" && stayedWithinTapSlop && Object.keys(imageViewportState.activePointers).length === 1) {
         pushPeekSelectionHistory(pendingEventTap.target.eventId);
         eventSelectionNonceRef.current += 1;
         pendingRestoredDrawerStageRef.current = "peek";
@@ -4178,6 +4230,8 @@ export function GraphShell({
                     const hullOpacity = region.representation?.hullOpacity ?? (region.compactPoint ? 0 : 1);
                     const pointOpacity = region.representation?.pointOpacity ?? (region.compactPoint ? 1 : 0);
                     return <g key={region.id} data-composite-paint-id={region.id}
+                      data-composite-span={region.representation?.span}
+                      data-composite-children-opacity={region.representation?.childrenOpacity}
                       aria-hidden={region.visibilityState === "exiting" || undefined}
                       transform={region.paintView !== view && region.paintView ? retainedCompositePaintTransform(region.paintView, region.paintViewport, view, viewportSize) : undefined}>
                       <path
@@ -4194,7 +4248,7 @@ export function GraphShell({
                           pointerEvents: region.compactPoint || region.renderedOpacity * region.surfaceOpacity === 0 || discovery?.contextHud ? "none" : useGeographicCanvas ? "all" : undefined,
                           mixBlendMode: "darken",
                           opacity: region.renderedOpacity * region.surfaceOpacity * hullOpacity,
-                          fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY,
+                          fillOpacity: COMPOSITE_SURFACE_FILL_OPACITY * (region.representation?.hullFillOpacity ?? 1),
                           stroke: compositeStyle?.label,
                           strokeOpacity: COMPOSITE_SURFACE_STROKE_OPACITY * (region.representation?.hullStrokeOpacity ?? 1),
                         }}

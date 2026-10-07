@@ -31,6 +31,9 @@
       ],
       "@moirai/graph-presentation/layout-engine": [
         "./packages/graph-presentation/src/layout-engine.ts"
+      ],
+      "@moirai/graph-presentation/composite-padding-profile": [
+        "./packages/graph-presentation/src/composite-padding-profile.ts"
       ]
     }
   },

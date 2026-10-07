@@ -3,6 +3,10 @@ import type { CanonicalState } from "@moirai/contracts/v5";
 import type { V5WorldLayout } from "./v5-world-layout.js";
 import { buildRenderConcaveHull } from "./v5-render-hull.js";
 import {
+  buildCompositePaddingProfile,
+  type CompositePaddingProfile
+} from "./composite-padding-profile.js";
+import {
   V5_RENDER_SPATIAL_FRAME,
   renderTileAddresses,
   renderTileBounds,
@@ -45,11 +49,16 @@ export type RenderPrimitive = Readonly<{
     /** World-stable support for viewport-local point/hull/child transitions. */
     hullBounds?: Box;
     depth?: number;
+    /** Local authored nesting by Y; screen padding is applied by the reader. */
+    paddingProfile?: CompositePaddingProfile;
     anchor?: Point;
     transitions?: Readonly<{
       pointEnterMaxSizePx: number;
       pointExitMaxSizePx: number;
+      /** Legacy height-only reader policy; retained for older publications/readers. */
       childFadeHeightPx: readonly [number, number];
+      /** Current children handoff uses the longest projected hull dimension. */
+      childFadeSpanPx?: readonly [number, number];
       paddingBasePx: number;
       paddingPerDepthPx: number;
     }>;
@@ -248,6 +257,7 @@ export function compileV5RenderPublication(
   }
   const support = new Map<string, Point[]>();
   const depths = new Map<string, number>();
+  const paddingProfiles = new Map<string, CompositePaddingProfile>();
   const supportComplete = new Map<string, boolean>();
   const visiting = new Set<string>();
   const resolve = (id: string): Point[] => {
@@ -273,7 +283,22 @@ export function compileV5RenderPublication(
             if (shapes.get(child)?.kind === "region") polygons.push(points);
             else direct.push(...points);
           }
-          support.set(frame.id, buildRenderConcaveHull(direct, polygons));
+          const hull = buildRenderConcaveHull(direct, polygons);
+          support.set(frame.id, hull);
+          paddingProfiles.set(
+            frame.id,
+            buildCompositePaddingProfile(
+              hull.length
+                ? boundsOf(hull)
+                : shape?.kind === "region"
+                  ? shape.bounds
+                  : { minY: 0, maxY: 0 },
+              [...new Set(children.get(frame.id) ?? [])].flatMap((child) => {
+                const profile = paddingProfiles.get(child);
+                return profile ? [profile] : [];
+              })
+            )
+          );
           const childIds = [...new Set(children.get(frame.id) ?? [])];
           supportComplete.set(
             frame.id,
@@ -421,11 +446,15 @@ export function compileV5RenderPublication(
         worldBounds: shape.bounds,
         hullBounds,
         depth: depths.get(id) ?? 1,
+        paddingProfile:
+          paddingProfiles.get(id) ??
+          buildCompositePaddingProfile(hullBounds, []),
         anchor,
         transitions: {
-          pointEnterMaxSizePx: 32,
-          pointExitMaxSizePx: 48,
+          pointEnterMaxSizePx: 12,
+          pointExitMaxSizePx: 20,
           childFadeHeightPx: [58, 100] as const,
+          childFadeSpanPx: [16, 40] as const,
           paddingBasePx: 6,
           paddingPerDepthPx: 5
         }

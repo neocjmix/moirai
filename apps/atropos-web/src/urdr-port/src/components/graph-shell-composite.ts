@@ -36,144 +36,32 @@ const COMPOSITE_COLOR_PALETTE = [
   { fill: "hsl(356 76% 63%)", stroke: "hsl(356 78% 45%)", label: "hsl(360 84% 23%)" },
 ] as const;
 
-const COMPOSITE_COLOR_SLOT_COUNT = COMPOSITE_COLOR_PALETTE.length * 2;
-const HSL_COLOR_PATTERN = /^hsl\((?<hue>-?\d+(?:\.\d+)?)\s+(?<saturation>\d+(?:\.\d+)?)%\s+(?<lightness>\d+(?:\.\d+)?)%\)$/;
-
-type CompositePaletteFill = {
-  hue: number;
-  saturation: number;
-  lightness: number;
-};
-
-const COMPOSITE_COLOR_FILLS = COMPOSITE_COLOR_PALETTE.map(({ fill }) => {
-  const groups = HSL_COLOR_PATTERN.exec(fill)?.groups;
-  return {
-    hue: Number(groups?.hue ?? 0),
-    saturation: Number(groups?.saturation ?? 0),
-    lightness: Number(groups?.lightness ?? 0)
-  } satisfies CompositePaletteFill;
-});
-
-function getCompositePaletteIndex(slotIndex: number) {
-  return ((slotIndex % COMPOSITE_COLOR_PALETTE.length) + COMPOSITE_COLOR_PALETTE.length) % COMPOSITE_COLOR_PALETTE.length;
-}
-
-function getCompositeHueDistance(left: number, right: number) {
-  const directDistance = Math.abs(left - right);
-  return Math.min(directDistance, 360 - directDistance);
-}
-
-function getCompositeColorDistance(leftSlotIndex: number, rightSlotIndex: number) {
-  const left = COMPOSITE_COLOR_FILLS[getCompositePaletteIndex(leftSlotIndex)]!;
-  const right = COMPOSITE_COLOR_FILLS[getCompositePaletteIndex(rightSlotIndex)]!;
-  const hueDistance = getCompositeHueDistance(left.hue, right.hue) / 180;
-  const saturationDistance = Math.abs(left.saturation - right.saturation) / 100;
-  const lightnessDistance = Math.abs(left.lightness - right.lightness) / 100;
-
-  return hueDistance * 4 + saturationDistance + lightnessDistance;
-}
-
-function selectCompositeColorSlot(usedSlots: Set<number>, activeAssignments: CompositeColorAssignment[]) {
-  let bestSlotIndex: number | null = null;
-  let bestMinimumDistance = Number.NEGATIVE_INFINITY;
-  let bestAverageDistance = Number.NEGATIVE_INFINITY;
-  const epsilon = 1e-9;
-
-  for (let slotIndex = 0; slotIndex < COMPOSITE_COLOR_SLOT_COUNT; slotIndex += 1) {
-    if (usedSlots.has(slotIndex)) {
-      continue;
-    }
-
-    if (activeAssignments.length === 0) {
-      bestSlotIndex = bestSlotIndex === null ? slotIndex : Math.min(bestSlotIndex, slotIndex);
-      continue;
-    }
-
-    const distances = activeAssignments.map((assignment) => getCompositeColorDistance(slotIndex, assignment.slotIndex));
-    const minimumDistance = Math.min(...distances);
-    const averageDistance = distances.reduce((sum, distance) => sum + distance, 0) / distances.length;
-
-    if (
-      minimumDistance > bestMinimumDistance + epsilon ||
-      (Math.abs(minimumDistance - bestMinimumDistance) <= epsilon && averageDistance > bestAverageDistance + epsilon) ||
-      (Math.abs(minimumDistance - bestMinimumDistance) <= epsilon &&
-        Math.abs(averageDistance - bestAverageDistance) <= epsilon &&
-        (bestSlotIndex === null || slotIndex < bestSlotIndex))
-    ) {
-      bestSlotIndex = slotIndex;
-      bestMinimumDistance = minimumDistance;
-      bestAverageDistance = averageDistance;
-    }
+/** Palette ownership comes from authored identity, never the current camera or
+ * the order geometry arrived. The same World/Event survives a cold restore,
+ * Publication replacement and all hull/point states with exactly the same ink. */
+export function compositeColorAssignment(id: string, worldId = ""): CompositeColorAssignment {
+  let hash = 2166136261;
+  for (const character of `${worldId}:${id}`) {
+    hash ^= character.codePointAt(0)!;
+    hash = Math.imul(hash, 16777619);
   }
-
-  return bestSlotIndex;
-}
-
-function createCompositeColorAssignment(id: string, slotIndex: number): CompositeColorAssignment {
-  const paletteIndex = getCompositePaletteIndex(slotIndex);
-  const paletteEntry = COMPOSITE_COLOR_PALETTE[paletteIndex]!;
-  return {
-    id,
-    slotIndex,
-    fill: paletteEntry.fill,
-    stroke: paletteEntry.fill,
-    label: paletteEntry.label,
-  };
+  const slotIndex = (hash >>> 0) % COMPOSITE_COLOR_PALETTE.length;
+  const paletteEntry = COMPOSITE_COLOR_PALETTE[slotIndex]!;
+  return { id, slotIndex, ...paletteEntry };
 }
 
 export function reconcileCompositeColorAssignments(
   previous: CompositeColorAssignment[],
   activeIds: string[],
-  renderedIds: string[]
+  renderedIds: string[],
+  worldId = "",
 ) {
   const preservedById = new Map(previous.map((assignment) => [assignment.id, assignment]));
-  const activeIdSet = new Set(activeIds);
-  const renderedIdSet = new Set(renderedIds);
-  const nextAssignments: CompositeColorAssignment[] = [];
-  const activeAssignments: CompositeColorAssignment[] = [];
-  const exitingAssignments: CompositeColorAssignment[] = [];
-  const usedSlots = new Set<number>();
-
-  for (const assignment of previous) {
-    if (!renderedIdSet.has(assignment.id) || activeIdSet.has(assignment.id)) {
-      continue;
-    }
-
-    exitingAssignments.push(assignment);
-    usedSlots.add(assignment.slotIndex);
-  }
-
-  for (const id of activeIds) {
-    const preserved = preservedById.get(id);
-    if (!preserved) {
-      continue;
-    }
-    nextAssignments.push(preserved);
-    activeAssignments.push(preserved);
-    usedSlots.add(preserved.slotIndex);
-  }
-
-  for (const id of activeIds) {
-    if (preservedById.has(id)) {
-      continue;
-    }
-
-    const slotIndex = selectCompositeColorSlot(usedSlots, activeAssignments);
-    if (slotIndex === null) {
-      break;
-    }
-
-    const assignment = createCompositeColorAssignment(id, slotIndex);
-    nextAssignments.push(assignment);
-    activeAssignments.push(assignment);
-    usedSlots.add(slotIndex);
-  }
-
-  nextAssignments.push(...exitingAssignments);
-
-  nextAssignments.sort((left, right) => left.slotIndex - right.slotIndex || left.id.localeCompare(right.id));
-  // React state effects may run again while an asynchronous scene is empty.
-  // Preserve identity for a no-op rather than scheduling another render.
+  const nextAssignments = [...new Set([...activeIds, ...renderedIds])].map(id => {
+    const assignment = compositeColorAssignment(id, worldId);
+    const previous = preservedById.get(id);
+    return previous?.slotIndex === assignment.slotIndex ? previous : assignment;
+  }).sort((left, right) => left.slotIndex - right.slotIndex || left.id.localeCompare(right.id));
   return nextAssignments.length === previous.length && nextAssignments.every((item, index) => item === previous[index])
     ? previous : nextAssignments;
 }

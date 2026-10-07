@@ -49,21 +49,43 @@ function GraphContextHudContent({
   return (
     <>
       <div className={styles.hud} data-testid="graph-context-hud">
-        <a
-          className={styles.world}
-          href="/worlds"
-          aria-label={ko ? "월드 선택" : "Select World"}
-        >
-          {world.label[locale]} ▾
-        </a>
-        <a className={styles.events} href={`/worlds/${world.id}/events`}>
-          {ko ? "사건 목록" : "Events"}
-        </a>
+        <div className={styles.navigation}>
+          <a
+            className={styles.world}
+            href="/worlds"
+            aria-label={ko ? "월드 선택" : "Select World"}
+          >
+            <span>{world.label[locale]}</span>
+            <span aria-hidden="true">⌄</span>
+          </a>
+          <a
+            className={styles.events}
+            href={`/worlds/${world.id}/events`}
+            aria-label={ko ? "사건 목록" : "Events"}
+          >
+            <svg
+              width="15"
+              height="15"
+              viewBox="0 0 20 20"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              aria-hidden="true"
+            >
+              <path
+                d="M7 5h10M7 10h10M7 15h10M3 5h.1M3 10h.1M3 15h.1"
+                strokeLinecap="round"
+              />
+            </svg>
+            {ko ? "목록" : "Events"}
+          </a>
+        </div>
         {topic ? (
           <div
             className={styles.topic}
             data-testid="graph-context-topic"
             data-event-id={topic.id}
+            title={topic.label}
           >
             {topic.label}
           </div>

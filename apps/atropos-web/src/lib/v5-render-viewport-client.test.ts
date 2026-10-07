@@ -266,8 +266,8 @@ it("keeps dormant Composite hulls off the critical path and prefetches near tran
   expect(cold.primitives[0]!.geometry.kind).toBe("point");
   expect(fetcher).toHaveBeenCalledTimes(1);
   const near = await c.load(box(), ["one"], undefined, undefined, {
-    scaleX: 1.5,
-    scaleY: 1.5
+    scaleX: 0.9,
+    scaleY: 0.9
   });
   expect(near.primitives[0]!.geometry.kind).toBe("point");
   expect(fetcher).toHaveBeenCalledTimes(2);
@@ -280,7 +280,7 @@ it("keeps dormant Composite hulls off the critical path and prefetches near tran
   expect(active.primitives[0]!.geometry.kind).toBe("polygon");
   expect(fetcher).toHaveBeenCalledTimes(2);
 });
-it("loads a cold 24px Composite hull despite an older published 32px point threshold", async () => {
+it("loads a cold 16px Composite hull despite an older published 32px point threshold", async () => {
   const p: RenderPrimitive = {
     ...external("h", "one"),
     entity: { kind: "composite", id: "h" },
@@ -308,8 +308,8 @@ it("loads a cold 24px Composite hull despite an older published 32px point thres
   );
   const c = client(fetcher);
   const result = await c.load(box(), ["one"], undefined, undefined, {
-    scaleX: 2.4,
-    scaleY: 2.4
+    scaleX: 1.6,
+    scaleY: 1.6
   });
   expect(result.primitives[0]!.geometry.kind).toBe("polygon");
   expect(
@@ -475,8 +475,8 @@ it("promotes a pending hull buffer read across camera changes without abort or d
       scaleX: scale,
       scaleY: scale
     });
-  expect((await load(1.5)).primitives[0]!.geometry.kind).toBe("point");
-  expect((await load(1.8)).primitives[0]!.geometry.kind).toBe("point");
+  expect((await load(0.9)).primitives[0]!.geometry.kind).toBe("point");
+  expect((await load(1.1)).primitives[0]!.geometry.kind).toBe("point");
   const active = load(2.4);
   expect(bufferSignal?.aborted).toBe(false);
   expect(fetcher).toHaveBeenCalledTimes(2);
@@ -728,7 +728,7 @@ describe.each([250, 750])("delayed %ims render lifecycle", (latency) => {
           scaleX: scale,
           scaleY: scale
         });
-      await load(1.5);
+      await load(0.9);
       expect(c.inspect().pendingGeometry).toBe(true);
       await vi.advanceTimersByTimeAsync(100);
       await load(0.5);
@@ -858,4 +858,55 @@ it("rejects a same-revision metadata generation change without replacing cached 
   expect((await c.load(box(), ["one"])).primitives[0]).toBe(
     first.primitives[0]
   );
+});
+
+it("resolves a hull in the bounded dense scene even when its point density rank is hidden", async () => {
+  const hull: RenderPrimitive = {
+    ...external("h", "one"),
+    entity: { kind: "composite", id: "h" },
+    visibility: { policy: "render-visibility/1", priority: "999" },
+    bounds: box(),
+    composite: {
+      childEventIds: [],
+      supportComplete: true,
+      worldBounds: box(),
+      hullBounds: box()
+    }
+  };
+  const leaves: RenderPrimitive[] = Array.from({ length: 127 }, (_, index) => ({
+    ...point(`e${index}`, "one"),
+    entity: { kind: "composite" as const, id: `e${index}` },
+    composite: {
+      childEventIds: [],
+      supportComplete: true,
+      worldBounds: box(),
+      hullBounds: box()
+    },
+    visibility: {
+      policy: "render-visibility/1" as const,
+      priority: String(index).padStart(3, "0")
+    }
+  }));
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) =>
+    Response.json(
+      JSON.parse(init.body as string).kind === "viewport"
+        ? metadata([...leaves, hull])
+        : { revision: 7, generation: "g", assets: [geom("h")] }
+    )
+  );
+  const result = await client(fetcher).load(
+    box(),
+    ["one"],
+    undefined,
+    undefined,
+    {
+      scaleX: 1.6,
+      scaleY: 1.6,
+      visibleViewport: box()
+    }
+  );
+  const resolved = result.primitives.find((item) => item.entity.id === "h")!;
+  expect(resolved.renderDensity?.opacity).toBe(0);
+  expect(resolved.geometry.kind).toBe("polygon");
+  expect(fetcher).toHaveBeenCalledTimes(2);
 });

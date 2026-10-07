@@ -1,6 +1,7 @@
 import { WorldUnavailable } from "./world-unavailable";
 import { collectionDiscoveryConfig } from "../lib/collection-discovery-config";
-import { notFound, redirect } from "next/navigation";
+import { notFound } from "next/navigation";
+import { GraphSessionGate, ResumeLastGraphWorld } from "./graph-session-gate";
 import { readV5StagedDocument } from "@moirai/publication/v5";
 import { readV5RenderGeneration } from "@moirai/publication/v5";
 import { assertPublicId } from "../lib/publication";
@@ -25,7 +26,7 @@ export default async function V5GraphPage({
     typeof params.readPage === "string" ? Number(params.readPage) : 0;
   if (!Number.isSafeInteger(readPage) || readPage < 0 || readPage > 1000000)
     notFound();
-  if (worldId === undefined) redirect("/worlds");
+  if (worldId === undefined) return <ResumeLastGraphWorld />;
   if (typeof worldId !== "string") notFound();
   try {
     assertPublicId(worldId);
@@ -72,12 +73,14 @@ export default async function V5GraphPage({
       : null;
     if (!timeSystemId)
       return (
-        <main style={{ padding: "24px", maxWidth: 720, margin: "auto" }}>
-          <a href="/worlds">월드 선택</a>
-          <h1>{summary.world.title}</h1>
-          <p>아직 시간축이 없는 월드입니다.</p>
-          <a href={`/worlds/${worldId}/events`}>사건 목록 보기</a>
-        </main>
+        <GraphSessionGate worldId={worldId} title={summary.world.title}>
+          <main style={{ padding: "24px", maxWidth: 720, margin: "auto" }}>
+            <a href="/worlds">월드 선택</a>
+            <h1>{summary.world.title}</h1>
+            <p>아직 시간축이 없는 월드입니다.</p>
+            <a href={`/worlds/${worldId}/events`}>사건 목록 보기</a>
+          </main>
+        </GraphSessionGate>
       );
     // Use the preserved GraphShell painter with revision-pinned tiles when
     // the generation carries authored Composite metadata. Older generations

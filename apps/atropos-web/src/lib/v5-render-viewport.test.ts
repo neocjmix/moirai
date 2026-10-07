@@ -156,3 +156,40 @@ it("keeps authored Composite identity across separately fetched point and hull r
     ])
   );
 });
+
+it("restores published local depth even when nested children are absent from the working set", () => {
+  const paddingProfile = [
+    { minY: 0, maxY: 25, depth: 1 },
+    { minY: 25, maxY: 45, depth: 4 },
+    { minY: 45, maxY: 80, depth: 1 }
+  ];
+  const published = JSON.parse(
+    JSON.stringify({
+      ...hull,
+      composite: {
+        ...hull.composite,
+        depth: 4,
+        paddingProfile,
+        hullBounds: box
+      }
+    })
+  ) as RenderPrimitive;
+  for (const geometry of [
+    published.geometry,
+    { kind: "point" as const, xy: { x: 50, y: 40 } }
+  ]) {
+    const viewport = renderTileViewport({
+      worldId: "world",
+      revision: 7,
+      primitives: [{ ...published, geometry }],
+      relationTypes: []
+    });
+    const restored = prepareCompositeWorldGeometry(
+      viewport.regions,
+      [],
+      "concave"
+    );
+    expect(restored.regions[0]!.paddingProfile).toEqual(paddingProfile);
+    expect(restored.regions[0]!.depth).toBe(4);
+  }
+});

@@ -121,10 +121,15 @@ describe("render publication compiler", () => {
       hullBounds: { minX: 1, maxX: 100, minY: 1, maxY: 100 },
       anchor: { x: 50.5, y: 50.5 },
       depth: 2,
+      paddingProfile: [
+        { minY: 1, maxY: 1, depth: 2 },
+        { minY: 1, maxY: 100, depth: 1 }
+      ],
       transitions: {
-        pointEnterMaxSizePx: 32,
-        pointExitMaxSizePx: 48,
-        childFadeHeightPx: [58, 100]
+        pointEnterMaxSizePx: 12,
+        pointExitMaxSizePx: 20,
+        childFadeHeightPx: [58, 100],
+        childFadeSpanPx: [16, 40]
       }
     });
     expect(primitives.get("event:a:point")?.parentCompositeIds).toEqual([

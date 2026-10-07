@@ -29,3 +29,28 @@ export function pointDensityDisplay(
     state: opacity === 0 || scale === 0 ? "hidden" : scale < 0.999 ? "small-point" : "point",
   } as const;
 }
+
+/** As a parent collapses, its children pass through small points before their
+ * paint fades out. Labels leave first, so a nested title never outlives its
+ * corresponding point. The parent supplies the shared visibility progress. */
+export function withParentPointHandoff(
+  display: ReturnType<typeof pointDensityDisplay>,
+  parentOpacity: number,
+): ReturnType<typeof pointDensityDisplay> {
+  const smooth = (value: number) => {
+    const t = Math.max(0, Math.min(1, value));
+    return t * t * (3 - 2 * t);
+  };
+  const ordinary = smooth((parentOpacity - 0.2) / 0.6);
+  const labelOpacity = display.labelOpacity * smooth((parentOpacity - 0.4) / 0.5);
+  const radius = display.radius * (0.35 + 0.65 * ordinary);
+  return {
+    ...display,
+    radius,
+    strokeWidth: display.strokeWidth * ordinary,
+    labelOpacity,
+    showLabel: labelOpacity > 0,
+    interactive: display.interactive && labelOpacity >= 0.99,
+    state: parentOpacity === 0 || display.state === "hidden" ? "hidden" : radius < 5.99 ? "small-point" : "point",
+  };
+}

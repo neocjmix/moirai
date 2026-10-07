@@ -1,0 +1,123 @@
+.page {
+  width: min(100%, 760px);
+  margin: auto;
+  padding: calc(env(safe-area-inset-top, 0px) + 48px) 24px
+    calc(env(safe-area-inset-bottom, 0px) + 40px);
+  color: #303c35;
+}
+.brand {
+  margin: 0 0 26px;
+  color: #917a68;
+  font-size: 12px;
+  font-weight: 650;
+  letter-spacing: 0.17em;
+}
+.header {
+  margin-bottom: 28px;
+}
+.header h1 {
+  margin: 0 0 10px;
+  font-size: 28px;
+  font-weight: 600;
+  letter-spacing: -0.04em;
+}
+.header p {
+  margin: 0;
+  color: #748074;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.list {
+  display: grid;
+  gap: 14px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.card {
+  overflow: hidden;
+  border: 1px solid #dddcd1;
+  border-radius: 18px;
+  background: rgb(255 253 247 / 80%);
+  box-shadow: 0 3px 12px rgb(75 61 45 / 3%);
+}
+.entry {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 10px 20px;
+  padding: 22px 22px 16px;
+  text-decoration: none;
+}
+.entry h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+}
+.entry p {
+  grid-column: 1;
+  margin: 0;
+  color: #748074;
+  font-size: 13px;
+  line-height: 1.7;
+}
+.arrow {
+  align-self: center;
+  grid-column: 2;
+  grid-row: 1 / span 2;
+  color: #9b8270;
+  font-size: 22px;
+}
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 22px 8px;
+}
+.footer a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #667466;
+  text-decoration: none;
+  font-size: 12px;
+}
+.hint {
+  font-size: 11px;
+  color: #9b9f90;
+}
+.entry:hover {
+  background: rgb(241 242 231 / 55%);
+}
+.page a:focus-visible {
+  outline: 2px solid #71836e;
+  outline-offset: -3px;
+  border-radius: 12px;
+}
+.empty,
+.pending {
+  margin-top: 24px;
+  padding: 20px;
+  color: #748074;
+  border: 1px dashed #d2d7c9;
+  border-radius: 16px;
+  line-height: 1.6;
+}
+.pending h2 {
+  margin: 0 0 10px;
+  font-size: 16px;
+}
+.pending a {
+  overflow-wrap: anywhere;
+}
+@media (max-width: 480px) {
+  .page {
+    padding-inline: 20px;
+  }
+  .entry {
+    padding-inline: 18px;
+  }
+  .footer {
+    padding-inline: 18px;
+  }
+}

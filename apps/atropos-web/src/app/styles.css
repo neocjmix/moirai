@@ -44,6 +44,20 @@ a {
   color: inherit;
 }
 
+.graph-resuming {
+  padding: calc(env(safe-area-inset-top, 0px) + 48px) 28px;
+  color: #56645a;
+  font-size: 14px;
+}
+.graph-resuming p:first-child {
+  font-weight: 600;
+}
+.graph-resuming a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
 .world-canvas {
   position: relative;
   width: 100%;

@@ -1,5 +1,46 @@
 import { expect, test } from "@playwright/test";
 
+for (const interruption of ["pointercancel", "lostpointercapture"]) {
+  test(`${interruption} on an Event contact does not select it`, async ({
+    page
+  }) => {
+    await page.goto("/graph/demo");
+    const point = page.locator('[data-event-point-id="event:founding"]');
+    await expect(point).toBeVisible();
+    await point.evaluate(async (node, type) => {
+      const stage = document.querySelector<HTMLElement>(
+        '[data-testid="graph-stage"]'
+      )!;
+      const capture = stage.setPointerCapture;
+      stage.setPointerCapture = () => {};
+      const bounds = node.getBoundingClientRect();
+      const input = {
+        bubbles: true,
+        pointerId: 4242,
+        pointerType: "touch",
+        clientX: bounds.x + bounds.width / 2,
+        clientY: bounds.y + bounds.height / 2
+      };
+      try {
+        node.dispatchEvent(
+          new PointerEvent("pointerdown", { ...input, buttons: 1 })
+        );
+        await new Promise(requestAnimationFrame);
+        stage.dispatchEvent(new PointerEvent(type, { ...input, buttons: 0 }));
+        await new Promise(requestAnimationFrame);
+        await new Promise(requestAnimationFrame);
+      } finally {
+        stage.setPointerCapture = capture;
+      }
+    }, interruption);
+    await expect(page.getByTestId("event-drawer-sheet")).toHaveCount(0);
+    expect(new URL(page.url()).searchParams.get("gsEvent")).toBeNull();
+    // A canceled contact must also leave the following genuine tap usable.
+    await point.click();
+    await expect(page.getByTestId("event-drawer-sheet")).toBeVisible();
+  });
+}
+
 test("a pointer burst reads stage layout once and preserves the final pan", async ({
   page
 }) => {

@@ -7,6 +7,7 @@ import { createV5RenderTileClient } from "../lib/v5-render-tile-client";
 import { createDeferredEffectDisposal } from "../lib/deferred-effect-disposal";
 import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import { GraphQueryProvider, useGraphQuery } from "./graph-query-context";
+import { GraphSessionGate } from "./graph-session-gate";
 import {
   createDefaultGraphUrlState,
   type GraphSourceCatalog
@@ -81,7 +82,12 @@ export function V5AtroposRoot(props: V5AtroposBootstrap) {
         radius="large"
         scaling="100%"
       >
-        <V5GraphApp {...props} />
+        <GraphSessionGate
+          worldId={props.worldId}
+          title={props.catalog.worlds[0]?.label.ko ?? "Moirai"}
+        >
+          <V5GraphApp {...props} />
+        </GraphSessionGate>
       </Theme>
     </GraphQueryProvider>
   );

@@ -1,50 +1,84 @@
 .hud {
   position: absolute;
   z-index: 20;
-  top: calc(env(safe-area-inset-top, 0px) + 22px);
-  left: max(22px, env(safe-area-inset-left, 0px));
-  right: 130px;
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
+  left: calc(env(safe-area-inset-left, 0px) + 72px);
+  right: max(14px, env(safe-area-inset-right, 0px));
   pointer-events: none;
   color: #303c35;
   font-family: inherit;
-  overflow-wrap: anywhere;
+  min-width: 0;
+}
+.navigation {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 44px;
+  padding-right: 104px;
+  min-width: 0;
 }
 .events {
-  display: block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  flex-shrink: 0;
   pointer-events: auto;
-  width: fit-content;
-  padding: 6px 0;
+  min-height: 44px;
+  padding: 0 2px;
   color: inherit;
+  text-decoration: none;
+  font-size: 12px;
+  white-space: nowrap;
+  opacity: 0.78;
 }
 .world {
-  display: block;
-  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  min-width: 0;
   min-height: 44px;
   pointer-events: auto;
   color: inherit;
   text-decoration: none;
-  font-size: 1.125rem;
+  font-size: 15px;
   font-weight: 600;
   line-height: 1.35;
+  white-space: nowrap;
+}
+.world > span:first-child {
+  overflow-x: auto;
+  scrollbar-width: none;
 }
 .topic {
-  font-size: 1rem;
-  line-height: 1.4;
-  margin-top: 5px;
+  font-size: 13px;
+  line-height: 24px;
+  height: 24px;
   color: #56645a;
+  white-space: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  pointer-events: auto;
+  width: fit-content;
+  max-width: 100%;
+}
+.topic::-webkit-scrollbar,
+.world > span:first-child::-webkit-scrollbar {
+  display: none;
 }
 .trigger {
   position: absolute;
   z-index: 21;
-  top: calc(env(safe-area-inset-top, 0px) + 14px);
+  top: calc(env(safe-area-inset-top, 0px) + 8px);
   right: max(14px, env(safe-area-inset-right, 0px));
   min-height: 44px;
-  padding: 8px 12px;
-  border: 1px solid #d6dcd3;
-  border-radius: 22px;
-  background: #fafbf7;
+  padding: 8px 10px;
+  border: 1px solid rgb(84 101 87 / 16%);
+  border-radius: 12px;
+  background: rgb(250 251 247 / 88%);
   color: #303c35;
   font: inherit;
+  font-size: 12px;
+  white-space: nowrap;
   cursor: pointer;
 }
 .trigger span {
@@ -143,11 +177,26 @@
   outline-offset: 2px;
 }
 @media (max-width: 767px) {
-  .hud {
-    left: 18px;
-    right: 126px;
-  }
   .body {
     padding: 16px;
+  }
+}
+@media (max-width: 360px) {
+  .hud {
+    left: calc(env(safe-area-inset-left, 0px) + 64px);
+  }
+  .navigation {
+    gap: 5px;
+    padding-right: 96px;
+  }
+  .world {
+    font-size: 13px;
+  }
+  .events {
+    font-size: 11px;
+  }
+  .trigger {
+    padding-inline: 8px;
+    font-size: 11px;
   }
 }

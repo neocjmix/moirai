@@ -160,18 +160,39 @@ test("complete labels reach the map edge and Composite color survives the border
   await showSpan(32);
   const map = page.getByRole("img", { name: afterName });
   const composite = map.locator('g[data-event-id="inner-process"]');
-  const hull = composite.locator("path");
+  const hull = composite.locator(":scope > g");
+  const outline = hull.locator("path[stroke]");
+  const coats = hull.locator('path[fill]:not([fill="none"])');
   const point = composite.locator("circle").first();
+  const pointHit = composite.locator("circle").last();
   const label = map.locator('text[data-event-id="inner-process"]');
   await expect(composite).toHaveAttribute(
     "data-representation",
     "borderless-hull"
   );
   await expect(hull).toHaveAttribute("opacity", "1");
-  await expect(hull).toHaveAttribute("stroke-opacity", "0");
-  expect(Number(await hull.getAttribute("fill-opacity"))).toBeCloseTo(
-    0.12 * 0.62
+  await expect(outline).toHaveAttribute("stroke-opacity", "0");
+  await expect(outline).toHaveAttribute("stroke-width", "1.15");
+  const coatCount = await coats.count();
+  expect(coatCount).toBeGreaterThan(1);
+  expect(coatCount).toBeLessThanOrEqual(4);
+  // Feather coats preserve the full body's coverage while the outermost
+  // contour carries less ink; check their aggregate, not any single layer.
+  const bodyOpacity = () =>
+    coats.evaluateAll(
+      (nodes) =>
+        1 -
+        nodes.reduce(
+          (uncovered, node) =>
+            uncovered * (1 - Number(node.getAttribute("fill-opacity"))),
+          1
+        )
+    );
+  expect(await bodyOpacity()).toBeCloseTo(0.12 * 0.62);
+  expect(Number(await coats.first().getAttribute("fill-opacity"))).toBeLessThan(
+    await bodyOpacity()
   );
+  await expect(hull).toHaveCSS("mix-blend-mode", "multiply");
   await expect(label).toHaveAttribute("opacity", "0.58");
   await expect(label).toHaveText("안쪽 묶음 · 이틀 동안의 사건");
   const textBounds = await label.evaluate((node) => {
@@ -183,15 +204,32 @@ test("complete labels reach the map edge and Composite color survives the border
   await expect(map.locator('text[data-event-id="dense-process"]')).toHaveText(
     "밀집 묶음 · 촘촘한 사건 160개와 공유 사건"
   );
-  const fill = await hull.getAttribute("fill");
-  await expect(point).toHaveAttribute("fill", fill!);
+  const fill = await point.getAttribute("fill");
+  const color = await composite.evaluate((node) => {
+    const rgb = (element: Element) =>
+      getComputedStyle(element)
+        .fill.match(/[\d.]+/g)!
+        .map(Number);
+    const point = rgb(node.querySelector("circle")!);
+    const coats = [
+      ...node.querySelectorAll('path[fill]:not([fill="none"])')
+    ].map(rgb);
+    return { point, coats };
+  });
+  // Spectral material fitting may round a channel by one byte. The authored
+  // Composite palette must still read as the same color at every coat/point.
+  for (const coat of color.coats)
+    coat.forEach((channel, index) =>
+      expect(Math.abs(channel - color.point[index]!)).toBeLessThanOrEqual(1)
+    );
   await map.scrollIntoViewIfNeeded();
   await page.screenshot({
     path: info.outputPath("lab-borderless-edge-label.png")
   });
   await showSpan(52);
-  await expect(hull).toHaveAttribute("stroke-opacity", "1");
-  await expect(hull).toHaveAttribute("fill-opacity", "0.12");
+  await expect(outline).toHaveAttribute("stroke-opacity", "0.15");
+  await expect(coats).toHaveCount(1);
+  expect(await bodyOpacity()).toBeCloseTo(0.12);
   await showSpan(12);
   await expect(composite).toHaveAttribute(
     "data-representation",
@@ -199,6 +237,7 @@ test("complete labels reach the map edge and Composite color survives the border
   );
   await expect(point).toHaveAttribute("opacity", "1");
   await expect(point).toHaveAttribute("fill", fill!);
+  await expect(pointHit).toHaveAttribute("pointer-events", "all");
   setup.representation.normalPointCount = 0;
   setup.representation.normalHysteresisCount = 0;
   await showSpan(12);
@@ -215,6 +254,7 @@ test("complete labels reach the map edge and Composite color survives the border
   expect(Number(await point.getAttribute("opacity"))).toBeCloseTo(0.5);
   await showSpan(1);
   await expect(composite).toHaveAttribute("data-representation", "hidden");
+  await expect(composite).toHaveAttribute("pointer-events", "none");
   await showSpan(24);
   await expect(composite).toHaveAttribute(
     "data-representation",

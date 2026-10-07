@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import type { GeographicRenderScene } from "./geographic-renderer/contract";
 import { pigmentCssColor } from "../lib/spectral-pigment";
 import {
   HULL_FEATHER_WIDTH_PX,
@@ -12,45 +13,10 @@ import {
   retainedCompositePaintTransform
 } from "../urdr-port/src/components/graph-shell-composite";
 
-type View = { x: number; y: number; scaleX: number; scaleY: number };
-type Size = { width: number; height: number };
-type Density = { radius: number; strokeWidth: number; opacity: number };
-type Point = {
-  id: string;
-  x: number;
-  y: number;
-  opacity: number;
-  pointDisplay: Density;
-  paintView: View;
-  paintViewport: Size;
-};
-type Region = {
-  id: string;
-  path: string;
-  pathTransform?: string;
-  paintView?: View;
-  paintViewport?: Size;
-  renderedOpacity: number;
-  surfaceOpacity: number;
-  pointDisplay: Density;
-  compactPoint?: { x: number; y: number } | null;
-  representation?: {
-    point?: { x: number; y: number };
-    hullOpacity: number;
-    hullStrokeOpacity: number;
-    hullFillOpacity?: number;
-    pointOpacity: number;
-  };
-};
-type Color = { fill: string; label: string };
-export type GeographicPainterProps = {
-  regions: readonly Region[];
-  points: readonly Point[];
-  colors: ReadonlyMap<string, Color>;
-  view: View;
-  size: Size;
-  fillOpacity: number;
-  strokeOpacity: number;
+type View = GeographicRenderScene["view"];
+type Size = GeographicRenderScene["size"];
+type Density = GeographicRenderScene["points"][number]["pointDisplay"];
+export type GeographicPainterProps = GeographicRenderScene & {
   onUnavailable: () => void;
   onDraw?: (ms: number) => void;
 };

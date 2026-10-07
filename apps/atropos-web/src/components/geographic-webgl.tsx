@@ -2,6 +2,7 @@
 
 import { useLayoutEffect, useRef } from "react";
 import type { GeographicPainterProps } from "./geographic-canvas";
+import type { GeographicRenderScene } from "./geographic-renderer/contract";
 import { geographicMesh } from "./geographic-mesh";
 import {
   geographicMeshFrame,
@@ -109,7 +110,7 @@ void main(){
   result=vec4(ink.rgb*alpha,alpha);
 }`;
 
-function createPainter(canvas: HTMLCanvasElement) {
+export function createWebGLPainter(canvas: HTMLCanvasElement) {
   const gl = canvas.getContext("webgl2", {
     alpha: true,
     premultipliedAlpha: true,
@@ -125,6 +126,7 @@ function createPainter(canvas: HTMLCanvasElement) {
   let framebuffer: WebGLFramebuffer | null = null;
   let resolveFramebuffer: WebGLFramebuffer | null = null;
   const meshArrays = new Map<WebGLBuffer, WebGLVertexArrayObject>();
+  let bufferUploads = 0;
   const program = (vs: string, fs: string) => {
     const result = gl.createProgram();
     if (!result) throw Error("webgl_program_unavailable");
@@ -153,6 +155,7 @@ function createPainter(canvas: HTMLCanvasElement) {
     buffers.push(result);
     gl.bindBuffer(gl.ARRAY_BUFFER, result);
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW);
+    bufferUploads++;
     return result;
   };
   const meshBuffer = (data: Float32Array) => {
@@ -380,7 +383,7 @@ function createPainter(canvas: HTMLCanvasElement) {
     let checkedFloatBlend = false;
     return {
       dispose,
-      draw(scene: GeographicPainterProps, now: number) {
+      draw(scene: GeographicRenderScene, now: number) {
         if (gl.isContextLost()) throw Error("webgl_context_lost");
         const density = Math.min(
           window.devicePixelRatio || 1,
@@ -795,6 +798,7 @@ function createPainter(canvas: HTMLCanvasElement) {
         gl.vertexAttribPointer(0, 2, gl.FLOAT, false, 0, 0);
         gl.bindBuffer(gl.ARRAY_BUFFER, instances);
         gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(dots), gl.DYNAMIC_DRAW);
+        bufferUploads++;
         for (const [location, size, offset] of [
           [1, 2, 0],
           [2, 3, 8],
@@ -839,6 +843,10 @@ function createPainter(canvas: HTMLCanvasElement) {
         canvas.dataset.featherCoats = "2";
         canvas.dataset.featherLayers = String(featherLayers);
         canvas.dataset.pigmentDraws = String(accumulationDraws);
+        canvas.dataset.bufferUploads = String(bufferUploads);
+        canvas.dataset.drawCalls = String(
+          accumulationDraws + strokes.length + 1 + (pigmentActive ? 2 : 0)
+        );
         return animating;
       }
     };
@@ -851,7 +859,7 @@ function createPainter(canvas: HTMLCanvasElement) {
 export function GeographicWebGL(props: GeographicPainterProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const scene = useRef(props);
-  const painter = useRef<ReturnType<typeof createPainter> | null>(null);
+  const painter = useRef<ReturnType<typeof createWebGLPainter> | null>(null);
   const frame = useRef<number | null>(null);
   useLayoutEffect(() => {
     const canvas = canvasRef.current!;
@@ -863,7 +871,7 @@ export function GeographicWebGL(props: GeographicPainterProps) {
     };
     canvas.addEventListener("webglcontextlost", lost);
     try {
-      painter.current = createPainter(canvas);
+      painter.current = createWebGLPainter(canvas);
     } catch {
       canvas.dataset.pigmentMode = "unavailable";
       canvas.dataset.pigmentFallback = "unsupported";

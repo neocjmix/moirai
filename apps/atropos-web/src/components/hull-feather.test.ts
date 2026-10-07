@@ -61,6 +61,46 @@ describe("bounded borderless Hull feather", () => {
     expect(faint).toBeLessThan(0.000001);
   });
 
+  it("reduces to two coats without changing the contour, core coverage or feather width", () => {
+    const detailed = hullFeatherLayers(rectangle, 1);
+    for (const strength of [0.1, 0.5, 1]) {
+      const coarse = hullFeatherLayers(rectangle, strength, 2.4, 2);
+      expect(coarse).toHaveLength(2);
+      expect(coarse[0]!.contours).toEqual([rectangle]);
+      expect(coarse[1]!.contours).toEqual(detailed[3]!.contours);
+      expect(coarse.reduce((sum, layer) => sum + layer.weight, 0)).toBeCloseTo(
+        1
+      );
+      for (const targetAlpha of [0.001, 0.18, 0.32, 0.85]) {
+        const coverage =
+          1 -
+          coarse.reduce(
+            (transmission, layer) =>
+              transmission * (1 - hullLayerOpacity(targetAlpha, layer.weight)),
+            1
+          );
+        expect(coverage).toBeCloseTo(targetAlpha);
+      }
+    }
+    const coarse = hullFeatherLayers(rectangle, 1, 2.4, 2);
+    expect(coarse.map((layer) => layer.weight)).toEqual([0.4, 0.6]);
+    const centroid = (layers: typeof coarse) =>
+      layers.reduce((sum, layer, index) => {
+        const inset = index
+          ? Math.min(
+              ...flattenGeographicPath(layer.contours[0]!).map(
+                (point) => point.x
+              )
+            )
+          : 0;
+        return sum + layer.weight * inset;
+      }, 0);
+    expect(Math.abs(centroid(coarse) - centroid(detailed))).toBeLessThan(0.02);
+    expect(hullFeatherLayers(rectangle, 0, 2.4, 2)).toEqual([
+      { contours: [rectangle], weight: 1 }
+    ]);
+  });
+
   it("preserves concave winding and does not bridge disconnected inset pieces", () => {
     const points = [
       [0, 0],
@@ -81,25 +121,34 @@ describe("bounded borderless Hull feather", () => {
         vertices
           .map(([x, y], index) => `${index ? "L" : "M"}${x} ${y}`)
           .join(" ") + " Z";
-      const layers = hullFeatherLayers(path, 1);
-      expect(layers).toHaveLength(4);
-      expect(layers[3]!.contours).toHaveLength(2);
-      expect(area(layers[3]!.contours)).toBeLessThan(area([path]));
-      for (const contour of layers.flatMap((layer) => layer.contours)) {
-        const mesh = geographicMesh(contour);
-        expect(mesh.fill.length).toBeGreaterThan(0);
-        expect([...mesh.fill].every(Number.isFinite)).toBe(true);
+      for (const coats of [2, 4] as const) {
+        const layers = hullFeatherLayers(path, 1, 2.4, coats);
+        expect(layers).toHaveLength(coats);
+        expect(layers.at(-1)!.contours).toHaveLength(2);
+        expect(area(layers.at(-1)!.contours)).toBeLessThan(area([path]));
+        for (const contour of layers.flatMap((layer) => layer.contours)) {
+          const mesh = geographicMesh(contour);
+          expect(mesh.fill.length).toBeGreaterThan(0);
+          expect([...mesh.fill].every(Number.isFinite)).toBe(true);
+        }
       }
     }
   });
 
   it("retains a thin body's core and never blanks collapsed or unsupported paths", () => {
-    const thin = hullFeatherLayers("M0 0 L1 0 L1 100 L0 100 Z", 1);
-    expect(thin).toHaveLength(4);
-    expect(area(thin[3]!.contours)).toBeGreaterThan(50);
-    for (const path of ["M0 0 L0 20 Z", "M0 0 A20 20 0 0 0 40 40 Z"]) {
-      const layers = hullFeatherLayers(path, 1);
-      expect(layers).toEqual([{ contours: [path], weight: 1 }]);
+    for (const coats of [2, 4] as const) {
+      const thin = hullFeatherLayers(
+        "M0 0 L1 0 L1 100 L0 100 Z",
+        1,
+        2.4,
+        coats
+      );
+      expect(thin).toHaveLength(coats);
+      expect(area(thin.at(-1)!.contours)).toBeGreaterThan(50);
+      for (const path of ["M0 0 L0 20 Z", "M0 0 A20 20 0 0 0 40 40 Z"]) {
+        const layers = hullFeatherLayers(path, 1, 2.4, coats);
+        expect(layers).toEqual([{ contours: [path], weight: 1 }]);
+      }
     }
   });
 
@@ -116,5 +165,21 @@ describe("bounded borderless Hull feather", () => {
     for (let index = 0; index < 129; index++)
       hullFeatherLayers(`M0 0 L${200 + index} 0 L100 80 L0 80 Z`, 1);
     expect(hullFeatherLayers(rectangle, 1)[3]!.contours).not.toBe(original);
+  });
+
+  it("keeps each coat-count geometry reusable without aliasing the other mode", () => {
+    const coarse = hullFeatherLayers(rectangle, 0.5, 2.4, 2);
+    const detailed = hullFeatherLayers(rectangle, 0.5, 2.4, 4);
+    expect(coarse[1]!.contours).not.toBe(detailed[1]!.contours);
+    expect(coarse[1]!.contours).not.toEqual(detailed[1]!.contours);
+    expect(hullFeatherLayers(rectangle, 1, 2.4, 2)[1]!.contours).toBe(
+      coarse[1]!.contours
+    );
+    expect(hullFeatherLayers(rectangle, 1, 2.4, 4)[1]!.contours).toBe(
+      detailed[1]!.contours
+    );
+    expect(hullFeatherLayers(rectangle, 1)[1]!.contours).toBe(
+      detailed[1]!.contours
+    );
   });
 });

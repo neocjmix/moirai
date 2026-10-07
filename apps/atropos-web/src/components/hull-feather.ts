@@ -5,7 +5,10 @@ export const HULL_FEATHER_WIDTH_PX = 2.4;
 const MAX_CACHE_ENTRIES = 128;
 const MAX_CACHE_CHARACTERS = 1_000_000;
 const MAX_CONTOUR_VERTICES = 4096;
-const INWARD_WEIGHTS = [0.12, 0.26, 0.34, 0.28] as const;
+const INWARD_WEIGHTS = {
+  2: [0.4, 0.6],
+  4: [0.12, 0.26, 0.34, 0.28]
+} as const;
 
 export type HullFeatherLayer = Readonly<{
   /** Disconnected pieces of one inset share a weight, not separate coats. */
@@ -48,8 +51,8 @@ function remember(key: string, geometry: Geometry) {
   return geometry;
 }
 
-function geometryFor(path: string, width: number): Geometry {
-  const key = `${width}:${path}`;
+function geometryFor(path: string, width: number, coatCount: 2 | 4): Geometry {
+  const key = `${coatCount}:${width}:${path}`;
   const cached = geometryCache.get(key);
   if (cached) {
     geometryCache.delete(key);
@@ -76,10 +79,10 @@ function geometryFor(path: string, width: number): Geometry {
     // Even a thin authored contour keeps a solid inner body. Local narrow
     // necks may split naturally under erosion; do not join them with a fan.
     const insetWidth = Math.min(width, (maxX - minX) / 5, (maxY - minY) / 5);
-    for (let band = 1; band < INWARD_WEIGHTS.length; band++) {
+    for (let band = 1; band < coatCount; band++) {
       const inset = inflatePathsD(
         [points],
-        (-insetWidth * band) / (INWARD_WEIGHTS.length - 1),
+        (-insetWidth * band) / (coatCount - 1),
         JoinType.Round,
         EndType.Polygon,
         2,
@@ -124,11 +127,14 @@ function geometryFor(path: string, width: number): Geometry {
  * to keep the maximum feather screen-sized. Strength follows border fade.
  * Mix weights as optical density (or alpha = 1 - (1 - alpha)^weight), rather
  * than multiplying alpha directly and making the fully covered body lighter.
+ * The optional two-coat mode retains the full inset width and optical density,
+ * with nearly the same edge coverage centroid but one offset instead of three.
  */
 export function hullFeatherLayers(
   path: string,
   strength: number,
-  widthPx = HULL_FEATHER_WIDTH_PX
+  widthPx = HULL_FEATHER_WIDTH_PX,
+  coatCount: 2 | 4 = 4
 ): readonly HullFeatherLayer[] {
   const amount = Number.isFinite(strength)
     ? Math.min(1, Math.max(0, strength))
@@ -137,16 +143,17 @@ export function hullFeatherLayers(
     ? Math.floor(Math.min(64, Math.max(0, widthPx)) * 20 + 0.000001) / 20
     : 0;
   if (!amount || !width || !path) return [{ contours: [path], weight: 1 }];
-  const geometry = geometryFor(path, width);
+  const weights = INWARD_WEIGHTS[coatCount];
+  const geometry = geometryFor(path, width, coatCount);
   const layers = geometry.contours.map((contours, index) => ({
     contours,
     weight: index === 0 ? 1 - amount : 0
   }));
-  for (let band = 0; band < INWARD_WEIGHTS.length; band++) {
+  for (let band = 0; band < weights.length; band++) {
     // If erosion exhausts a tiny shape, keep its remaining pigment on the
     // last nonempty contour instead of dropping the whole Composite.
     layers[Math.min(band, layers.length - 1)]!.weight +=
-      amount * INWARD_WEIGHTS[band]!;
+      amount * weights[band]!;
   }
   return layers;
 }

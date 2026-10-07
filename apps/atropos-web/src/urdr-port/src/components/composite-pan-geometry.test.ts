@@ -122,6 +122,61 @@ it("reuses label contours while preserving current clipping, density and edge de
   }
 });
 
+it("prepares label contours only when compact geometry becomes a hull label owner", () => {
+  const cache = createCompositePanGeometryCache();
+  const labeled = {...request, labelHeight: 18, labelGap: 4};
+  for (const scale of [0.02, 0.03, 0.04]) {
+    const compact = cache.project({...labeled, view: {...view, scaleX: scale, scaleY: scale}});
+    // The compact branch reads live support, hull path and point coordinates,
+    // but never requests an edge-label frame.
+    expect(compact.path).not.toBe("");
+    expect(compact.projectedHullPoints).toHaveLength(points.length);
+  }
+  expect(cache.inspect()).toMatchObject({builds: 3, labelPathBuilds: 0, labelPathHits: 0, labelPathPoints: 0});
+
+  const hull = cache.project(labeled);
+  expect(cache.inspect().labelPathBuilds).toBe(0);
+  const frame = hull.labelPathFrame!;
+  expect(hull.labelPathFrame).toBe(frame);
+  expect(cache.inspect()).toMatchObject({labelPathBuilds: 1, labelPathHits: 0});
+
+  const panned = cache.project({...labeled, view: {...view, x: 12, y: -7}});
+  expect(cache.inspect()).toMatchObject({labelPathBuilds: 1, labelPathHits: 0});
+  expect(panned.labelPathFrame!.prepared).toBe(frame.prepared);
+  expect(panned.labelPathFrame!.offset).toEqual({x: 12, y: -7});
+  expect(panned.labelPathFrame).toBe(panned.labelPathFrame);
+  expect(cache.inspect()).toMatchObject({labelPathBuilds: 1, labelPathHits: 1});
+});
+
+it("keeps lazy label frames tied to their geometry and label dimensions", () => {
+  const labeled = {...request, labelHeight: 18, labelGap: 4};
+  for (const changed of [
+    {...labeled, points: points.map((point, index) => ({...point, x: point.x + index}))},
+    {...labeled, view: {...view, scaleX: 0.7, scaleY: 1.3}},
+    {...labeled, padding: 20},
+    {...labeled, paddingProfile: [{minY: -120, maxY: 120, depth: 2}]},
+    {...labeled, tuning: {...tuning, smoothing: 0.5}},
+    {...labeled, labelHeight: 20},
+    {...labeled, labelGap: 6}
+  ]) {
+    const cache = createCompositePanGeometryCache();
+    const original = cache.project(labeled);
+    const next = cache.project(changed);
+    expect(cache.inspect().labelPathBuilds).toBe(0);
+    const currentFrame = next.labelPathFrame!;
+    expect(cache.inspect().labelPathBuilds).toBe(1);
+    // Deferred reads must retain the original projection even if another
+    // request has already replaced its geometry or label dimensions.
+    const originalFrame = original.labelPathFrame!;
+    expect(originalFrame.prepared).not.toBe(currentFrame.prepared);
+    expect(originalFrame.prepared.labelHeight).toBe(18);
+    expect(originalFrame.prepared.labelGap).toBe(4);
+    expect(original.labelPathFrame).toBe(originalFrame);
+    expect(next.labelPathFrame).toBe(currentFrame);
+    expect(cache.inspect().labelPathBuilds).toBe(2);
+  }
+});
+
 it("bounds visited regions and drops oversized geometry from the cache", () => {
   const cache = createCompositePanGeometryCache({maxEntries: 2});
   for (const id of ["a", "b", "a", "c", "a"]) cache.project({...request, id});

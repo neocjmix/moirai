@@ -75,7 +75,10 @@ export function flattenGeographicPath(path: string): XY[] {
 const cross = (a: XY, b: XY, c: XY) =>
   (b.x - a.x) * (c.y - a.y) - (b.y - a.y) * (c.x - a.x);
 
-export function geographicMesh(path: string) {
+export function geographicMesh(
+  path: string,
+  options: { stroke?: boolean } = {}
+) {
   const points = flattenGeographicPath(path);
   const indices = points.map((_, i) => i);
   const area = points.reduce((sum, p, i) => {
@@ -128,6 +131,10 @@ export function geographicMesh(path: string) {
       else throw Error("non_simple_geographic_path");
     }
   }
+  // Feather insets only contribute fill. Skip allocating six extrusion
+  // vertices per edge when the caller will never upload or draw the stroke.
+  if (options.stroke === false)
+    return { fill: new Float32Array(fill), stroke: new Float32Array() };
   const stroke: number[] = [];
   for (let i = 0; i < points.length; i++) {
     const a = points[i]!,

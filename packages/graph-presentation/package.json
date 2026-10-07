@@ -19,6 +19,10 @@
     "./composite-padding-profile": {
       "types": "./src/composite-padding-profile.ts",
       "import": "./dist/composite-padding-profile.js"
+    },
+    "./render-primitive-admission": {
+      "types": "./src/render-primitive-admission.ts",
+      "import": "./dist/render-primitive-admission.js"
     }
   },
   "scripts": {

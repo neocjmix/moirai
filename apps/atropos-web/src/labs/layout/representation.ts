@@ -1,4 +1,10 @@
 import {
+  compositeStageSpan,
+  resolveCompositeHierarchySpans,
+  compositeLeafChildrenOpacity,
+  advanceCompositeStageSpan
+} from "../../urdr-port/src/components/composite-visibility-policy";
+import {
   COMPOSITE_COMPACT_THRESHOLD_PX,
   COMPOSITE_COMPACT_HYSTERESIS_PX,
   COMPOSITE_HULL_FADE_PX,
@@ -8,16 +14,14 @@ import {
   COMPOSITE_SMALL_POINT_SPAN_PX,
   COMPOSITE_ORDINARY_POINT_SPAN_PX,
   COMPOSITE_HIDDEN_SPAN_PX,
-  COMPOSITE_VISIBLE_POINT_SPAN_PX,
-  COMPOSITE_CHILD_FADE_START_PX,
-  COMPOSITE_CHILD_REVEAL_SPAN_PX
+  COMPOSITE_VISIBLE_POINT_SPAN_PX
 } from "../../urdr-port/src/components/composite-point-display";
 
 /** Research-only screen representation policy. No canonical facts or geometry
  * are produced here. A caller supplies a complete immutable authored closure,
  * projects it with its camera, and keeps this policy's small history in presets.
  */
-export const REPRESENTATION_CONFIG_VERSION = "lab-representation/4";
+export const REPRESENTATION_CONFIG_VERSION = "lab-representation/5";
 
 export interface RepresentationConfig {
   hullOpacityScale: number;
@@ -44,6 +48,7 @@ export interface RepresentationConfig {
   visibleCompositeSpanPx: number;
   childRevealBySpan: boolean;
   sequentialChildPoints: boolean;
+  stagedHierarchy: boolean;
   compactHysteresisPx: number;
   childRevealHeightPx: number;
   childFadeStartRatio: number;
@@ -213,6 +218,14 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
       "Composite raw screen span controlling reversible point size and visibility."
   })),
   {
+    key: "stagedHierarchy",
+    label: "Time-axis hierarchy stages",
+    type: "boolean",
+    default: true,
+    description:
+      "Weight Y over X, keep parent Composites visible after their children, and traverse each paint stage during camera changes."
+  },
+  {
     key: "childRevealBySpan",
     label: "Reveal by parent span",
     type: "boolean",
@@ -243,7 +256,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "childRevealHeightPx",
     label: "Child reveal height (px)",
     type: "number",
-    default: COMPOSITE_CHILD_REVEAL_SPAN_PX,
+    default: 16,
     min: 0,
     max: 600,
     step: 1,
@@ -254,7 +267,7 @@ export const REPRESENTATION_PARAMETERS: readonly Parameter[] = [
     key: "childFadeStartRatio",
     label: "Child fade start ratio",
     type: "number",
-    default: COMPOSITE_CHILD_FADE_START_PX / COMPOSITE_CHILD_REVEAL_SPAN_PX,
+    default: 0.25,
     min: 0,
     max: 1,
     step: 0.01,
@@ -417,6 +430,8 @@ export interface RepresentationNode {
   readonly childIds?: readonly string[];
   /** Caller may supply padded hull height to match production child reveal. */
   readonly childScreenHeight?: number;
+  /** Transient display clock only; omitted on cold/preset restore. */
+  readonly stageSpan?: number;
   /** Polygon viewport coverage; caller may use a documented bounds approximation. */
   readonly viewportCoverage?: number;
   readonly inViewport?: boolean;
@@ -485,6 +500,63 @@ const smooth = (value: number) => {
 };
 const order = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 
+export function representationStageSpans(
+  nodes: readonly RepresentationNode[],
+  config: Readonly<RepresentationConfig>
+): Map<string, number> {
+  const composites = nodes
+    .filter((node) => node.kind === "composite")
+    .map((node) => {
+      const width = node.bounds.maxX - node.bounds.minX;
+      const height = node.bounds.maxY - node.bounds.minY;
+      return {
+        id: node.id,
+        childIds: node.childIds ?? [],
+        span: config.stagedHierarchy
+          ? (node.stageSpan ?? compositeStageSpan(width, height))
+          : Math.max(width, height)
+      };
+    });
+  return config.stagedHierarchy
+    ? resolveCompositeHierarchySpans(composites)
+    : new Map(composites.map((node) => [node.id, node.span]));
+}
+
+/** A temporary paint clock; immutable geometry and the camera never lag. */
+export function advanceRepresentationStages(
+  nodes: readonly RepresentationNode[],
+  config: Readonly<RepresentationConfig>,
+  previous: ReadonlyMap<string, number>,
+  elapsedMs: number,
+  reducedMotion = false
+) {
+  const targets = representationStageSpans(nodes, config);
+  if (!config.stagedHierarchy) return { nodes, spans: targets, active: false };
+  let active = false;
+  const advancing = nodes.map((node) => {
+    const target = targets.get(node.id);
+    if (target === undefined) return node;
+    const next = advanceCompositeStageSpan(
+      previous.get(node.id),
+      target,
+      elapsedMs,
+      reducedMotion
+    );
+    active ||= next.active;
+    return { ...node, stageSpan: next.span };
+  });
+  const spans = representationStageSpans(advancing, config);
+  for (const [id, span] of spans)
+    if (Math.abs(span - targets.get(id)!) > 0.0001) active = true;
+  return {
+    nodes: advancing.map((node) =>
+      spans.has(node.id) ? { ...node, stageSpan: spans.get(node.id)! } : node
+    ),
+    spans,
+    active
+  };
+}
+
 export function evaluateRepresentationScene(
   input: {
     readonly nodes: readonly RepresentationNode[];
@@ -509,26 +581,33 @@ export function evaluateRepresentationScene(
         order(a.id, b.id)
     );
   const ranks = new Map(candidates.map((node, rank) => [node.id, rank]));
+  const spans = representationStageSpans(input.nodes, config);
   const children = new Map<string, number>();
   const descendantOpacity = new Map<string, number>();
   for (const node of input.nodes) {
     if (node.kind !== "composite") continue;
-    const height = config.childRevealBySpan
-      ? Math.max(
-          node.bounds.maxX - node.bounds.minX,
-          node.bounds.maxY - node.bounds.minY
-        )
-      : (node.childScreenHeight ?? node.bounds.maxY - node.bounds.minY);
+    const height = config.stagedHierarchy
+      ? spans.get(node.id)!
+      : config.childRevealBySpan
+        ? Math.max(
+            node.bounds.maxX - node.bounds.minX,
+            node.bounds.maxY - node.bounds.minY
+          )
+        : (node.childScreenHeight ?? node.bounds.maxY - node.bounds.minY);
     const reveal =
       config.childRevealHeightPx <= 0
         ? 1
-        : config.childFadeStartRatio === 1
-          ? Number(height >= config.childRevealHeightPx)
-          : smooth(
-              (Math.min(height / config.childRevealHeightPx, 1) -
-                config.childFadeStartRatio) /
-                (1 - config.childFadeStartRatio)
-            );
+        : config.stagedHierarchy &&
+            config.childRevealHeightPx === 16 &&
+            config.childFadeStartRatio === 0.25
+          ? compositeLeafChildrenOpacity(height)
+          : config.childFadeStartRatio === 1
+            ? Number(height >= config.childRevealHeightPx)
+            : smooth(
+                (Math.min(height / config.childRevealHeightPx, 1) -
+                  config.childFadeStartRatio) /
+                  (1 - config.childFadeStartRatio)
+              );
     const opacity = config.showChildren ? reveal : 0;
     children.set(node.id, opacity);
     if (node.visible === false) continue;
@@ -538,10 +617,15 @@ export function evaluateRepresentationScene(
       const id = stack.pop()!;
       if (seen.has(id)) continue;
       seen.add(id);
-      descendantOpacity.set(
-        id,
-        Math.min(descendantOpacity.get(id) ?? 1, opacity)
-      );
+      if (
+        !config.stagedHierarchy ||
+        !config.showChildren ||
+        byId.get(id)?.kind !== "composite"
+      )
+        descendantOpacity.set(
+          id,
+          Math.min(descendantOpacity.get(id) ?? 1, opacity)
+        );
       stack.push(...(byId.get(id)?.childIds ?? []));
     }
   }
@@ -551,23 +635,34 @@ export function evaluateRepresentationScene(
   const nodes = [...input.nodes]
     .sort((a, b) => order(a.id, b.id))
     .map((node): RepresentationResult => {
-      const span = Math.max(
-        node.bounds.maxX - node.bounds.minX,
-        node.bounds.maxY - node.bounds.minY
-      );
+      const span =
+        spans.get(node.id) ??
+        Math.max(
+          node.bounds.maxX - node.bounds.minX,
+          node.bounds.maxY - node.bounds.minY
+        );
+      const pointSupport =
+        config.stagedHierarchy &&
+        node.kind === "composite" &&
+        compositeStageSpan(
+          node.bounds.maxX - node.bounds.minX,
+          node.bounds.maxY - node.bounds.minY
+        ) <= Number.EPSILON;
       const compact =
         node.kind === "event" ||
+        pointSupport ||
         span <=
           config.compactThresholdPx +
             (previous[node.id]?.compact ? config.compactHysteresisPx : 0);
       const hullWeight =
-        node.kind === "event"
+        node.kind === "event" || pointSupport
           ? 0
           : config.hullFadePx === 0
             ? Number(span > config.compactThresholdPx)
             : smooth((span - config.compactThresholdPx) / config.hullFadePx);
-      const hullStrokeOpacity =
-        config.hullBorderFadePx === 0
+      const hullStrokeOpacity = pointSupport
+        ? 0
+        : config.hullBorderFadePx === 0
           ? 1
           : smooth(
               (span - config.hullBorderFadeStartPx) / config.hullBorderFadePx
@@ -623,7 +718,9 @@ export function evaluateRepresentationScene(
             (span - config.hiddenCompositeSpanPx) /
               (config.visibleCompositeSpanPx - config.hiddenCompositeSpanPx)
           )
-        : densityOpacity;
+        : config.stagedHierarchy && node.kind === "composite"
+          ? 1
+          : densityOpacity;
       const pointOpacity = (1 - hullWeight) * pointVisibility * visibility;
       const ordinaryPointOpacity = config.showOrdinaryPoints
         ? pointOpacity * ordinaryWeight * config.ordinaryPointOpacityScale
@@ -786,6 +883,7 @@ export const REPRESENTATION_GROUPS: readonly {
       "showRelations",
       "childRevealHeightPx",
       "childRevealBySpan",
+      "stagedHierarchy",
       "sequentialChildPoints",
       "childFadeStartRatio",
       "fadeDurationMs",

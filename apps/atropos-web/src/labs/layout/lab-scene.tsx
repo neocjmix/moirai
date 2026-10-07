@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useLayoutEffect, useMemo, useRef } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import {
   createPanInertiaTracker,
   panInertiaFrame
@@ -10,6 +10,7 @@ import { compositeColorAssignment } from "../../urdr-port/src/components/graph-s
 import type { LayoutOutput } from "@moirai/graph-presentation/layout-engine";
 import {
   evaluateRepresentationScene,
+  advanceRepresentationStages,
   type RepresentationConfig,
   type RepresentationHistory
 } from "./representation";
@@ -249,49 +250,82 @@ export function LabScene({
       ] as const;
     })
   );
-  const scene = evaluateRepresentationScene(
-    {
-      nodes: snapshot.events.flatMap((event) => {
-        const item = byId.get(event.id);
-        if (!item) return [];
-        const bounds = projected.get(item.id)!.bounds;
-        const viewportCoverage =
-          (Math.max(
+  const representationInput = {
+    nodes: snapshot.events.flatMap((event) => {
+      const item = byId.get(event.id);
+      if (!item) return [];
+      const bounds = projected.get(item.id)!.bounds;
+      const viewportCoverage =
+        (Math.max(0, Math.min(width, bounds.maxX) - Math.max(0, bounds.minX)) *
+          Math.max(
             0,
-            Math.min(width, bounds.maxX) - Math.max(0, bounds.minX)
-          ) *
-            Math.max(
-              0,
-              Math.min(height, bounds.maxY) - Math.max(0, bounds.minY)
-            )) /
-          (width * height);
-        return [
-          {
-            id: event.id,
-            kind: event.childIds.length
-              ? ("composite" as const)
-              : ("event" as const),
-            bounds,
-            childIds: event.childIds,
-            viewportCoverage,
-            inViewport:
-              bounds.maxX >= 0 &&
-              bounds.minX <= width &&
-              bounds.maxY >= 0 &&
-              bounds.minY <= height,
-            visible: event.collectionIds.length
-              ? event.collectionIds.some((id) => active.includes(id))
-              : includeUncollected
-          }
-        ];
-      }),
-      relations: snapshot.relations
-        .filter((r) => r.type !== "contains")
-        .map((r) => ({ id: r.id, endpointIds: [r.sourceId, r.targetId] }))
-    },
+            Math.min(height, bounds.maxY) - Math.max(0, bounds.minY)
+          )) /
+        (width * height);
+      return [
+        {
+          id: event.id,
+          kind: event.childIds.length
+            ? ("composite" as const)
+            : ("event" as const),
+          bounds,
+          childIds: event.childIds,
+          viewportCoverage,
+          inViewport:
+            bounds.maxX >= 0 &&
+            bounds.minX <= width &&
+            bounds.maxY >= 0 &&
+            bounds.minY <= height,
+          visible: event.collectionIds.length
+            ? event.collectionIds.some((id) => active.includes(id))
+            : includeUncollected
+        }
+      ];
+    }),
+    relations: snapshot.relations
+      .filter((r) => r.type !== "contains")
+      .map((r) => ({ id: r.id, endpointIds: [r.sourceId, r.targetId] }))
+  };
+  const stageHistory = useRef({
+    output,
+    historyEpoch,
+    spans: new Map<string, number>(),
+    at: 0,
+    stagedHierarchy: config.stagedHierarchy
+  });
+  const [, setStageClock] = useState(0);
+  const stageNow = performance.now();
+  const priorStages =
+    stageHistory.current.output === output &&
+    stageHistory.current.historyEpoch === historyEpoch &&
+    stageHistory.current.stagedHierarchy === config.stagedHierarchy
+      ? stageHistory.current
+      : { spans: new Map<string, number>(), at: stageNow };
+  const stages = advanceRepresentationStages(
+    representationInput.nodes,
+    config,
+    priorStages.spans,
+    stageNow - priorStages.at,
+    typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches
+  );
+  const scene = evaluateRepresentationScene(
+    { ...representationInput, nodes: stages.nodes },
     config,
     history.current
   );
+  useLayoutEffect(() => {
+    stageHistory.current = {
+      output,
+      historyEpoch,
+      spans: stages.spans,
+      at: stageNow,
+      stagedHierarchy: config.stagedHierarchy
+    };
+    if (!stages.active) return;
+    const frame = requestAnimationFrame(() => setStageClock(performance.now()));
+    return () => cancelAnimationFrame(frame);
+  });
   useLayoutEffect(() => {
     history.current = scene.state;
     onHistory(scene.state);

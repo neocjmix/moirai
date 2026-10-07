@@ -94,6 +94,25 @@ it("keeps a left-edge label on a cold bounded Render read", async () => {
   expect(fetcher).toHaveBeenCalledTimes(1);
 });
 describe("viewport-first render reads", () => {
+  it("retains available parents through spatial clipping while respecting Collection-off", async () => {
+    const parent: RenderPrimitive = {
+      ...point("parent", "two", 20),
+      entity: { kind: "composite", id: "parent" }
+    };
+    const child: RenderPrimitive = {
+      ...point("child", "one", 5),
+      parentCompositeIds: ["parent"]
+    };
+    const fetcher = vi.fn(async () => Response.json(metadata([child, parent])));
+    const c = client(fetcher);
+    expect(
+      (await c.load(box(), ["one", "two"])).primitives.map((p) => p.id)
+    ).toEqual(["child", "parent"]);
+    expect((await c.load(box(), ["one"])).primitives.map((p) => p.id)).toEqual([
+      "child"
+    ]);
+    expect(fetcher).toHaveBeenCalledTimes(1);
+  });
   it("has two cold requests and zero warm/toggle metadata requests, selecting geometry locally", async () => {
     const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
       const q = JSON.parse(init.body as string);
@@ -908,5 +927,59 @@ it("resolves a hull in the bounded dense scene even when its point density rank 
   const resolved = result.primitives.find((item) => item.entity.id === "h")!;
   expect(resolved.renderDensity?.opacity).toBe(0);
   expect(resolved.geometry.kind).toBe("polygon");
+  expect(fetcher).toHaveBeenCalledTimes(2);
+});
+it("fetches a thin tall hull at fixed Y scale and an undersized parent required by its child", async () => {
+  const parent: RenderPrimitive = {
+    ...external("parent", "one"),
+    entity: { kind: "composite", id: "parent" },
+    bounds: box(0, 1),
+    composite: {
+      childEventIds: ["child"],
+      supportComplete: true,
+      worldBounds: box(0, 1),
+      hullBounds: { minX: 0, maxX: 1, minY: 0, maxY: 1 }
+    }
+  };
+  const childBounds = { minX: 0, maxX: 0.1, minY: 0, maxY: 100 };
+  const child: RenderPrimitive = {
+    ...external("child", "one"),
+    entity: { kind: "composite", id: "child" },
+    bounds: childBounds,
+    parentCompositeIds: ["parent"],
+    composite: {
+      childEventIds: [],
+      supportComplete: true,
+      worldBounds: childBounds,
+      hullBounds: childBounds
+    }
+  };
+  const fetcher = vi.fn(async (_: unknown, init: RequestInit) => {
+    const request = JSON.parse(init.body as string);
+    return Response.json(
+      request.kind === "viewport"
+        ? metadata([parent, child])
+        : {
+            revision: 7,
+            generation: "g",
+            assets: request.assets.map((asset: { sha256: string }) =>
+              geom(asset.sha256)
+            )
+          }
+    );
+  });
+  const result = await client(fetcher).load(
+    box(),
+    ["one"],
+    undefined,
+    undefined,
+    { scaleX: 0.01, scaleY: 1 }
+  );
+  expect(
+    result.primitives.find((p) => p.entity.id === "parent")?.geometry.kind
+  ).toBe("polygon");
+  expect(
+    result.primitives.find((p) => p.entity.id === "child")?.geometry.kind
+  ).toBe("polygon");
   expect(fetcher).toHaveBeenCalledTimes(2);
 });

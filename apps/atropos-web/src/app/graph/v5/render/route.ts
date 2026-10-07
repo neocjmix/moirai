@@ -11,8 +11,10 @@ import {
 } from "@moirai/publication/v5";
 import {
   renderTileAddresses,
-  renderTileBounds
+  renderTileBounds,
+  type RenderPrimitive
 } from "@moirai/graph-presentation/server";
+import { selectRenderPrimitiveClosure } from "@moirai/graph-presentation/render-primitive-admission";
 import { readPublicationObject } from "../../../../lib/publication";
 import { profilePublicationRoute } from "../../../../lib/publication-profile";
 
@@ -109,11 +111,7 @@ type Manifest = {
   tiles: Ref[];
   geometry: { key: string; sha256: string }[];
 };
-type Primitive = {
-  id: string;
-  bounds: RenderBox;
-  geometry: { kind: string; key?: string; sha256?: string };
-};
+type Primitive = RenderPrimitive;
 const error = (message: string, status: number) =>
   Response.json({ error: message }, { status, headers: noStore });
 
@@ -461,7 +459,6 @@ async function readRender(request: Request): Promise<Response> {
             !isRenderBox(primitive.bounds)
           )
             throw Error("render_primitive_invalid");
-          if (!intersects(primitive.bounds, query.viewport)) continue;
           if (
             primitive.geometry.kind === "external" &&
             (!primitive.geometry.key?.startsWith(`${prefix}geometry/`) ||
@@ -478,6 +475,14 @@ async function readRender(request: Request): Promise<Response> {
         }
       }
     }
+    const available = [...primitives.values()];
+    const visible = selectRenderPrimitiveClosure(
+      available.filter((primitive) =>
+        intersects(primitive.bounds, query.viewport)
+      ),
+      available.length,
+      { available }
+    );
     const result = {
       format: "render-viewport/1",
       world_id: query.world_id,
@@ -506,9 +511,7 @@ async function readRender(request: Request): Promise<Response> {
             spatialFrame: summary.spatialFrame
           }
         : { minLevel: 0, compatibility: "legacy-manifest/1" }),
-      primitives: [...primitives.values()].sort((a, b) =>
-        a.id.localeCompare(b.id)
-      )
+      primitives: visible.sort((a, b) => a.id.localeCompare(b.id))
     };
     if (Buffer.byteLength(JSON.stringify(result)) > 1024 * 1024)
       return error("render_viewport_too_large", 413);

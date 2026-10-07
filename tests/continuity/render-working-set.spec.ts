@@ -5,9 +5,12 @@ const world = "019f3b00-0000-7000-8000-000000000a01";
 const event = "019f3b00-0000-7000-8000-000000000a12";
 const composite = "019f3b00-0000-7000-8000-000000000a11";
 const continuityComposite = "019f3b00-0000-7000-8000-000000000b01";
-const closeCamera = [-289, 222880, 800, 6000];
-// The longer-lived hull now becomes a point at 12px. This camera reaches
-// 11.83px after the World X-bound clamp, preserving a real representation roundtrip.
+// Separate the authored hull title from its now-visible child labels. At a
+// 6000-unit Y span those titles legitimately compete for the same label space,
+// making cold title admission depend on which semantic candidate arrives first.
+const closeCamera = [-289, 222880, 800, 1000];
+// Y dominates the stage metric; the wide camera reaches 7.75px and therefore
+// completes the hull-to-point roundtrip even after the World X-bound clamp.
 const wideCamera = [-289, 222880, 4000, 48000];
 
 test("WebGL paints bounded vector ink and retains native labels through unequal XY zoom", async ({
@@ -817,10 +820,22 @@ test("real compiler-v4 data keeps authored identity through warm pan and Collect
     "공유된 전투"
   );
   await page.getByTestId("event-drawer-close").click();
-  // The one-child Composite is compact at this scale and intentionally owns
-  // its child's paint. Track that visible authored identity, not a hidden leaf.
+  // This zero-extent Composite and its child share a position. The child's
+  // label now remains visible through the parent's large-point stage, so open
+  // the authored parent to establish its semantic label ownership explicitly.
+  // Closing the reader must retain that owner through the warm interactions.
+  await page.goto(
+    `/graph/v5?world=${world}&event=${composite}&gsViewport=-502,222919,800,6000`
+  );
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(
+    "임진왜란 서사"
+  );
+  await page.getByTestId("event-drawer-close").click();
   const point = page.locator(`[data-composite-paint-id="${composite}"]`);
   await expect(point).toHaveCount(1);
+  await expect(
+    point.locator('[data-primary-hit-target="composite"]')
+  ).toBeVisible();
   await expect
     .poll(() => requests.filter((r) => r.kind === "viewport").length)
     .toBeGreaterThan(0);

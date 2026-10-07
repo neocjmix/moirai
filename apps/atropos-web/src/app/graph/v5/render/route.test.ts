@@ -216,7 +216,8 @@ describe("ADR-012 viewport resolver", () => {
   async function fixture(
     withVisibility = false,
     withOverflow = false,
-    geometryBodies?: string[]
+    geometryBodies?: string[],
+    tilePrimitives: readonly unknown[] = [primitive]
   ) {
     const actual = await vi.importActual<typeof Publication>(
       "@moirai/publication/v5"
@@ -232,7 +233,7 @@ describe("ADR-012 viewport resolver", () => {
         x,
         y: 0,
         bounds: { minX: x * 512, maxX: (x + 1) * 512, minY: 0, maxY: 2048 },
-        primitives: [primitive],
+        primitives: tilePrimitives,
         ...(withVisibility
           ? {
               visibility: {
@@ -359,6 +360,28 @@ describe("ADR-012 viewport resolver", () => {
     time_system_id: "t",
     viewport
   };
+  it("keeps an available authored parent when spatial clipping admits its child", async () => {
+    const parent = {
+      ...primitive,
+      id: "event:parent",
+      entity: { kind: "composite", id: "parent" },
+      bounds: { minX: 600, maxX: 700, minY: 1, maxY: 2 }
+    };
+    const child = { ...primitive, parentCompositeIds: ["parent"] };
+    const unrelated = {
+      ...parent,
+      id: "event:unrelated",
+      entity: { kind: "event", id: "unrelated" }
+    };
+    await fixture(false, false, undefined, [child, parent, unrelated]);
+    const response = await post(query);
+    expect(response.status).toBe(200);
+    expect(
+      (await response.json()).primitives.map((p: { id: string }) => p.id)
+    ).toEqual(["event:one", "event:parent"]);
+    // The closure comes from the same fixed buckets, without a graph/detail read.
+    expect(readDocument).not.toHaveBeenCalled();
+  });
   beforeEach(() => {
     vi.clearAllMocks();
   });

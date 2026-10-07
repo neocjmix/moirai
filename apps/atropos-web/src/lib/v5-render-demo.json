@@ -26,7 +26,7 @@
     "tiles": [
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/-1.json",
-        "sha256": "13690a7ce43b0eba1a42ac4c8f324b044599ae7875c48f1fe283490b64ed4a71",
+        "sha256": "a8e92c220425ef5c71dd002f58c465d612f713e9aa60abadf31c13fbede43215",
         "bounds": {
           "minX": -1048576,
           "maxX": 0,
@@ -39,7 +39,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/-1.json",
-        "sha256": "6148c855de92d706a9bf7984a46cfae4aaf3a6bb03f2deb5d211ae7b9179cb31",
+        "sha256": "7ae6f04b81811b933df7c3fdbff7fe663ae73f2284031574346b5d08e11caf02",
         "bounds": {
           "minX": 0,
           "maxX": 1048576,
@@ -52,7 +52,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/0.json",
-        "sha256": "9f765270e9382cb20cdebeb65bb918ae69263148a6af46ac3e1618cebcd661b0",
+        "sha256": "aa2ed7a4e0e854120bf79ac5fc447da892a4e9ac32fdb5f0b41a8d3b610b1516",
         "bounds": {
           "minX": -1048576,
           "maxX": 0,
@@ -65,7 +65,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/0.json",
-        "sha256": "a2fb2eb55eba25cd329353d68e15e85660546e60f7d593f4cb9cd794d06b1c99",
+        "sha256": "83ced4f790dd74a125dca090d63779375414f792e4f83cfc54956bcbf1137e88",
         "bounds": {
           "minX": 0,
           "maxX": 1048576,
@@ -78,7 +78,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/-1.json",
-        "sha256": "bb7a1840770bff7700edf1d46856b7ea840b83d01cef37ad7f826a113e9b8bea",
+        "sha256": "a2532b12b42aba5bf7754d7e54b71d2d65f510980493aa7a8dfc833220cdf33f",
         "bounds": {
           "minX": -524288,
           "maxX": 0,
@@ -91,7 +91,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/-1.json",
-        "sha256": "5c2d732296e97042d07b23f1e7fc4eee1ebbd619606bde2d17317f7ffe463dc9",
+        "sha256": "457b139c06624b5bba2d7e6b30ac56d03f8267424dc63849fa8c806b969bddd7",
         "bounds": {
           "minX": 0,
           "maxX": 524288,
@@ -104,7 +104,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/0.json",
-        "sha256": "773c370c9e721e5182e336c5da638b6f1076710d4b5b2ba7cc1535db8dad8c75",
+        "sha256": "7ba69261b2b321a868078adfe1d72e4e77355240168fab8dfa81089d974ec454",
         "bounds": {
           "minX": -524288,
           "maxX": 0,
@@ -117,7 +117,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/0.json",
-        "sha256": "948daf6bea29eb8a0cd3f429d619a4aa3a7008801eb78bdb303cf939d333667c",
+        "sha256": "871dca8b5848aa9ddb8134698f2d11324243d1a794af16b6c23d3dfe4b561f2d",
         "bounds": {
           "minX": 0,
           "maxX": 524288,
@@ -130,7 +130,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/-1.json",
-        "sha256": "90294718b5d715ff0fc00ca199ee9b5145760ec09f5755bd754082ac4179c0a4",
+        "sha256": "d144d1ed9a8c5b5d4193aebb33823c15c5d07b581d797d6724596f345b33056c",
         "bounds": {
           "minX": -262144,
           "maxX": 0,
@@ -143,7 +143,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/-1.json",
-        "sha256": "6b2a5d1918cb162bf137d8f664dc7fe5e8a16c5b0c525879280b3fae57515037",
+        "sha256": "b937fd5dd4b14a4d8d2243d1de2ddda9a4372f5cfec996da2036d1e7ceaecbf6",
         "bounds": {
           "minX": 0,
           "maxX": 262144,
@@ -156,7 +156,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/0.json",
-        "sha256": "cde1ba33e84e16109bc3b724e0b0a2e9f3d561d9694e37394cf23d74fc99447a",
+        "sha256": "30ec5a923bdc9b07306f035a0a29c84f2a8cadd1f2515bbc8b4d42c2ae937e0d",
         "bounds": {
           "minX": -262144,
           "maxX": 0,
@@ -169,7 +169,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/0.json",
-        "sha256": "748606989a2d48f60179f02a6f3075ea4eeebe59ad31a5a64507e2d3c084bb49",
+        "sha256": "c5b9e91865af556d19a4643684ed045e84d5f0baff2717c84c365436483d3857",
         "bounds": {
           "minX": 0,
           "maxX": 262144,
@@ -182,7 +182,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/-1.json",
-        "sha256": "5cd7f4ca4b488609eaf1542e15c4ba5c775ed4e3b6293c20654bc51638c70929",
+        "sha256": "479e563fc0b24a05b589548ead330855cea9ea620ff600f56ac772bfb9be0bba",
         "bounds": {
           "minX": -131072,
           "maxX": 0,
@@ -195,7 +195,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/-1.json",
-        "sha256": "ba6313d3c5524f610932691b2dc18755bbf1676c564715c791014867466e0157",
+        "sha256": "44df231f0fe196efcfbd9e5f7c96932a518f857d57f89f1ca01737bf7d7b53e7",
         "bounds": {
           "minX": 0,
           "maxX": 131072,
@@ -208,7 +208,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/0.json",
-        "sha256": "6a15b189fed021d131513b7c5d2cfe742f2a5e7d0194bd331d6af703064122de",
+        "sha256": "df3dd75d9a122d4556dda68316639a5237219233720e6387ebc9c33318b140ff",
         "bounds": {
           "minX": -131072,
           "maxX": 0,
@@ -221,7 +221,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/0.json",
-        "sha256": "8cd64d50777f9605f10a110ef9e641ac8ec88de26df061bfea41fbdd936f891a",
+        "sha256": "8b33c3a239df332b870758d7ba4060f6f2c85713b030fab76076a105c91dcf67",
         "bounds": {
           "minX": 0,
           "maxX": 131072,
@@ -234,7 +234,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/-1.json",
-        "sha256": "07029db5cb8854638c42f38f48b0b85f4d2d5f639be86e487290da28fdbe6890",
+        "sha256": "47889a82c81fcf3f7dcf26a52e52b17f827a9d789f59e92cd9749195583d64e9",
         "bounds": {
           "minX": -65536,
           "maxX": 0,
@@ -247,7 +247,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/-1.json",
-        "sha256": "6bf897e3646daec4bb389623350bd52b41df4b43b39ebee43b209fbe15326443",
+        "sha256": "b1d5c9a4f03929a97223402de799d4fe192f1222261aa4b558e34e5dbe22f296",
         "bounds": {
           "minX": 0,
           "maxX": 65536,
@@ -260,7 +260,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/0.json",
-        "sha256": "72d10be47d43845303548bad1334f71d39100960864b5dfacd00d6712a0cee8e",
+        "sha256": "9cf8a794bb0a19c8f03e70a32e1e4ab4f8429d1a6f728c94a90a1dd9eddf7c80",
         "bounds": {
           "minX": -65536,
           "maxX": 0,
@@ -273,7 +273,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/0.json",
-        "sha256": "379dab6a5d22075980e90c1d9096428c978469c04668739f9350ffa572398a2a",
+        "sha256": "2a4cf164fe71603accfc720538388ea2bc87927862042c4131bbc23f89fecce2",
         "bounds": {
           "minX": 0,
           "maxX": 65536,
@@ -286,7 +286,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/-1.json",
-        "sha256": "d0758d40ed819068952cf75dc68dba631f52397472ad86ab5ac5447e6d18153d",
+        "sha256": "361ef668125ecec775ca0f2d203a07df042dbdee802b244f0c3b57b09f42b508",
         "bounds": {
           "minX": -32768,
           "maxX": 0,
@@ -299,7 +299,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/-1.json",
-        "sha256": "ab66acf4a0b786fb79fdc477f4a0a3c3ee40777030e35c64a1d52185e616139e",
+        "sha256": "bac68973c3df611e17ac42407e63ca3e459c01d714482dab06df9375f3f3612c",
         "bounds": {
           "minX": 0,
           "maxX": 32768,
@@ -312,7 +312,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/0.json",
-        "sha256": "9d4d936b8bfbbc285fee47e633d80027335ffb89128d2dadd172ea64df15a632",
+        "sha256": "92e6ac2718af0bfd0ebe2d1afca1e712758c11eab0a63d8b3cff9b17de71dd07",
         "bounds": {
           "minX": -32768,
           "maxX": 0,
@@ -325,7 +325,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/0.json",
-        "sha256": "82075301756dcabacd1d9a1192b56686dc22e16f434e89d5721db06e0bc2a231",
+        "sha256": "c7d8e4914ca3ac5a1acc56ddb72dab79492a1b940690013405b8ee3d0dee11c3",
         "bounds": {
           "minX": 0,
           "maxX": 32768,
@@ -338,7 +338,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/-1.json",
-        "sha256": "2bf133974a807dbd8169cbda27aeb460be436bf23f170f0c62fc3142aec5909c",
+        "sha256": "f9d28cc73ceecdd763f4b142e03354eb6f5709d6239160d48201f88857b36e25",
         "bounds": {
           "minX": -16384,
           "maxX": 0,
@@ -351,7 +351,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/-1.json",
-        "sha256": "0bedd3f1aa8916d7792196344657263a7cea6e30ae8bcc2aaf4c3ace360bc727",
+        "sha256": "d2e5148500553047cc62a3357193a5cd66f70aba71b24525c8303aa5c97d1149",
         "bounds": {
           "minX": 0,
           "maxX": 16384,
@@ -364,7 +364,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/0.json",
-        "sha256": "e6932a89b6167b2bca12af6ca4a74ebbf0b62a0863d92a5c3177a3a7fae27ded",
+        "sha256": "aa503c8c87fffd5366edf2c77a34f2f2b93d72ed2154ced009b321643229bcc8",
         "bounds": {
           "minX": -16384,
           "maxX": 0,
@@ -377,7 +377,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/0.json",
-        "sha256": "19abbd623c51fefff57f589b46bcd486b8e255fd069ef9d918d6e800bd47bdc7",
+        "sha256": "efbca949f21ee9546714f5e441843d74731aed7dba6f7443f9ba750cdb78e0b7",
         "bounds": {
           "minX": 0,
           "maxX": 16384,
@@ -390,7 +390,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/-1.json",
-        "sha256": "8661373e193e0b0846d9daf4e9ea802feb4a37c80bbfcc82f2eb09f52021f775",
+        "sha256": "ad23786a72f05d829ffa5679d1c7ffa8ee5e8a599f0c8916180d2449e5e6c729",
         "bounds": {
           "minX": -8192,
           "maxX": 0,
@@ -403,7 +403,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/-1.json",
-        "sha256": "2397e3dbeb03b8dafda797fb9ce63f6b25eb8af1f754485d978d91d4736fe2db",
+        "sha256": "f8166e258db44c412dfc12149f380f168e711bba0690419e5e5a8d2ac4dd7ff9",
         "bounds": {
           "minX": 0,
           "maxX": 8192,
@@ -416,7 +416,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/0.json",
-        "sha256": "6a7d6c5d5134ac72a71aacc1ed056599c8e3fd71d00b02286844229c7bcb1cd9",
+        "sha256": "eb4e604ccd8ebd5c16fb67a4c0fffab45e7198dc4d17a7210dff175128787ce7",
         "bounds": {
           "minX": -8192,
           "maxX": 0,
@@ -429,7 +429,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/0.json",
-        "sha256": "c77c1f415ffd703b440b75fa4c2ccaeff4f84827634170036593821eb250343f",
+        "sha256": "734680c7584d165a49353953e5a161f8bef0e816df3f7ff8d8312d80e2994a07",
         "bounds": {
           "minX": 0,
           "maxX": 8192,
@@ -442,7 +442,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/-1.json",
-        "sha256": "bb4ab828369f371e6279fa7d3d7c57a790f3fea44554758fb1afbdb532a50c15",
+        "sha256": "8a7bb59e3cc22e694850b700c9797df4fb6e7ed203e5382119ae2df726dbaf40",
         "bounds": {
           "minX": -4096,
           "maxX": 0,
@@ -455,7 +455,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/-1.json",
-        "sha256": "14d4d478fbec4e2a15c7d127fdbc5c310a573b6f538d00e667486c7a7eab7acf",
+        "sha256": "62ee037417fff1b3701b30a3fffe7299ab4bbe5193d4bd58d546c06394c8bdcf",
         "bounds": {
           "minX": 0,
           "maxX": 4096,
@@ -468,7 +468,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/0.json",
-        "sha256": "dfc4798853fe3ab1facd21b7c47055eb36ddb1237e171ef93e85acc2a62c2abf",
+        "sha256": "bc3b5f56b8c4f16fd261eb01905fbcfd1228a78873465aa9ecf429639b6a633a",
         "bounds": {
           "minX": -4096,
           "maxX": 0,
@@ -481,7 +481,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/0.json",
-        "sha256": "6ced6d7f210d2e7c736f6b1abb27f66436d7a9219c6f79fd41031c86f0f93002",
+        "sha256": "668f355a6bc790886ff60e0b5c6e87d179486d586446b51c958e0a7cb124a530",
         "bounds": {
           "minX": 0,
           "maxX": 4096,
@@ -494,7 +494,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/-1.json",
-        "sha256": "63dd68998f47432972cfbb20aa81845435c0777a9b472357407fa624142c9d7c",
+        "sha256": "4b077955653460a409be09c0faffe02e310f7e6e9d9deb9740d7507899bbc7e1",
         "bounds": {
           "minX": -2048,
           "maxX": 0,
@@ -507,7 +507,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/-1.json",
-        "sha256": "0d1c0fa953bbc8b097a5363e001404e80d539cb1769c185df941c2c95283b178",
+        "sha256": "d98d8861e52bade4bd6e93289706a879ec30f98aa16e7da3e1398a4b71e7b639",
         "bounds": {
           "minX": 0,
           "maxX": 2048,
@@ -520,7 +520,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/0.json",
-        "sha256": "df0eba222ce62ee1c8aa5a8fb4e999a0d306701ba0bde116de0dea72956614e4",
+        "sha256": "d9832aa5760f2c90581cd59643d5ff9f222fa336e16c809309676730b14c736a",
         "bounds": {
           "minX": -2048,
           "maxX": 0,
@@ -533,7 +533,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/0.json",
-        "sha256": "18a4f77a15a0d52b9d80b70139606d96ceeebea1ced689e6de98603450b611c3",
+        "sha256": "ea945a89bed65539969b1b5ea3436097020a503a537ff78528c2e76f1de2d2f8",
         "bounds": {
           "minX": 0,
           "maxX": 2048,
@@ -546,7 +546,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/-1.json",
-        "sha256": "a41a271e886bdc79736cc157396370e11a26aecc219e1c99c04f0875d80718af",
+        "sha256": "748007f881ecbf9343528313bbb62ab5633608ca4b29fedea57ab480a127970f",
         "bounds": {
           "minX": -1024,
           "maxX": 0,
@@ -559,7 +559,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/-1.json",
-        "sha256": "1418923640766ea74096812aeb531c0ed870edd2f1bd85f6a686e1f3ed67cca4",
+        "sha256": "d6180d810c047c9b731c57c7947c20d25e61a6b4f2874eefa2c5afbf8a4a6645",
         "bounds": {
           "minX": 0,
           "maxX": 1024,
@@ -572,7 +572,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/0.json",
-        "sha256": "40e54f32a82551b1bea9af302538cbe0e5d6597c765c34ee67fec327a35ad3a2",
+        "sha256": "dee95e8894a94a0e59cac784f434c5a4f0b4ec06b6e6540a70aaa895ff2d5128",
         "bounds": {
           "minX": -1024,
           "maxX": 0,
@@ -585,7 +585,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/0.json",
-        "sha256": "24311c45af8f7b0caf776f6fe4e3cc897eed0af3dbd3618bf5b1135c5aeac3c6",
+        "sha256": "d274059edcde4cb7561c7053b55bfc6897da67904758a9dc195ee34b9aef3d71",
         "bounds": {
           "minX": 0,
           "maxX": 1024,
@@ -598,7 +598,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/-1.json",
-        "sha256": "bc81478610750ac0a14d82f766d79574593e7ad0f96c85b9fa364bce79024475",
+        "sha256": "7ece0acdeebb43931de7c879bf11e75163b8efaacd9979029ba7ed32b9d9367e",
         "bounds": {
           "minX": -512,
           "maxX": 0,
@@ -611,7 +611,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/-1.json",
-        "sha256": "1ed2bf512f86ca1d35fa5a4fb196a32919afcfb079cd84dea582f0abfded597c",
+        "sha256": "25404108b4ab996256824eea263c1db38e0e9884608431186a5e893044cc87de",
         "bounds": {
           "minX": 0,
           "maxX": 512,
@@ -624,7 +624,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/0.json",
-        "sha256": "2035f7be426403fc3ca9c611a79b42fcef918d038a015199c31289028f840335",
+        "sha256": "98e1f6375461f1be843ff126f9de853df017e80f93cde75eab99c7ff3e0c79a8",
         "bounds": {
           "minX": -512,
           "maxX": 0,
@@ -637,7 +637,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/0.json",
-        "sha256": "2a36706d814f8f3dfe3b18a92dd8bbcb60693022342e0e77515cc60d084764c2",
+        "sha256": "84a934c4b85af9b4279581e980c7e585ad7afac280126136eef3b8ca0fc22ecb",
         "bounds": {
           "minX": 0,
           "maxX": 512,
@@ -650,7 +650,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/-1.json",
-        "sha256": "870e19f4183303d94e87f65e8f51b37cc71835d0acde6981961bf49107013433",
+        "sha256": "ef69702a45061f4d370bfc8a2913f375cbde298e68858e93d0416f7185b722a6",
         "bounds": {
           "minX": -256,
           "maxX": 0,
@@ -663,7 +663,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/-1.json",
-        "sha256": "10dd3c8e0aef3179a4efd09d7e2bbcd0cd7db97350381bfc9adee428f5943582",
+        "sha256": "27abe71108b2e386e45d1cee26a1040bb2c227097b8a1c1e173cded323a5adde",
         "bounds": {
           "minX": 0,
           "maxX": 256,
@@ -676,7 +676,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/0.json",
-        "sha256": "8f5f40eb712cfa39655e6ede0f00946e42b9b038a0918dcb1715213004b2a18e",
+        "sha256": "59e115a470d2b29d8f4e36678340738ecfa4c95ecdf41806e8c123d5c48864c3",
         "bounds": {
           "minX": -256,
           "maxX": 0,
@@ -689,7 +689,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/0.json",
-        "sha256": "d0928a56b731519da1e51e9e9a2bee7a0767d6d55afbada5bb4f195156861d0c",
+        "sha256": "917ae2b76fd070f89260ee5bfc889c5f7569a8a90b728fb90405fcc939f37859",
         "bounds": {
           "minX": 0,
           "maxX": 256,
@@ -702,7 +702,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/-1.json",
-        "sha256": "b47c866e9d178a37d42a0b8330dd740e37dc5a9db5731e8386a3b1fbccec14cf",
+        "sha256": "a85d0f310ddfd9b2e3ed17c228a71610e42d6b3673dce80bc13a57ed9458203e",
         "bounds": {
           "minX": -128,
           "maxX": 0,
@@ -715,7 +715,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/-1.json",
-        "sha256": "75b6abddf6243ed939442615421f33f3653b85a4701ed646f59dbd4473b8d062",
+        "sha256": "352c6480dfd194d93f325682d7e36fd0a2c15d28ca720e146e3ec29b5e109dd3",
         "bounds": {
           "minX": 0,
           "maxX": 128,
@@ -728,7 +728,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/0.json",
-        "sha256": "8ede2856c48b57bcedd252bd932a9a19e3a7db8787f74c25b34958bd6f12bee1",
+        "sha256": "8e3791c664f22e5d4d0ab170fc8ebc7648a026b340202ea4fc7cf41d92ac2c23",
         "bounds": {
           "minX": -128,
           "maxX": 0,
@@ -741,7 +741,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/0.json",
-        "sha256": "575c3868223a57c6b1fd2f7fd353de7ce10748c88d0f6828bb3eea62a6975bb0",
+        "sha256": "43bf3d331ef832c143317d9b5e2d7284ff50eafbc15d59e2c32189e4421583e6",
         "bounds": {
           "minX": 0,
           "maxX": 128,
@@ -754,7 +754,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/-1.json",
-        "sha256": "f9a882acaf4f8f76cf18c7d11da9b4eb75bcc4a16b2f2006e1936a1eb376e4c3",
+        "sha256": "3b662445a758dfdb5a2645db4147579fa651430c2f2cf7fe3e62d458931529d2",
         "bounds": {
           "minX": -128,
           "maxX": -64,
@@ -767,7 +767,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/-1.json",
-        "sha256": "011db26b3aaf674cd9b68620a9edf49addc57c542a301c4d787ed5b8b8dfc48c",
+        "sha256": "f6643dda4d30f1a7926c6241f8bfa01354f8acb47382fa303124b13f0fce523a",
         "bounds": {
           "minX": -64,
           "maxX": 0,
@@ -780,7 +780,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/-1.json",
-        "sha256": "e6e885a894e4c5fd38f18a11848c015dcbbda21f8dc0428984b294e28115626d",
+        "sha256": "eb519acc4c72970caf7b1d2734d471d032c2183ab158ac58a52be2d5362d3e26",
         "bounds": {
           "minX": 0,
           "maxX": 64,
@@ -806,7 +806,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/0.json",
-        "sha256": "34a92c4a410684a40f38dea28d924376157602f9e499c027f98e83e7620214b3",
+        "sha256": "d6bdcb1b606df1df7151abfc7064e7d8c3e185bfc06141c9c0759277f63a070d",
         "bounds": {
           "minX": -128,
           "maxX": -64,
@@ -819,7 +819,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/0.json",
-        "sha256": "977abd904dcf2696789dd28c2483650405d3055bcbe2fab75a6a33a1efbcd30e",
+        "sha256": "0a00c072b36a1ce40f04026dfd89de7658ec5256117015b89f6cd6ef72c3fec5",
         "bounds": {
           "minX": -64,
           "maxX": 0,
@@ -832,7 +832,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/0.json",
-        "sha256": "2339aabf4f43708afc9ed323e8795915ddae49b2fbc72bbcb9fcaf971581ddad",
+        "sha256": "a4e21bd97914bdb82bf2bdd9e14fdc1ce6f4bc45a71ef38b0550247536ede912",
         "bounds": {
           "minX": 0,
           "maxX": 64,
@@ -858,7 +858,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/-1.json",
-        "sha256": "a4c07a8443f2a4f8ee993ea411d7daa80c6678623440625a41fe5277ffcccad8",
+        "sha256": "ae10d2bc7b9cb7e506bf9057641988af637b2ffc9af824b10fcbfd3128dc1120",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -871,7 +871,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/-1.json",
-        "sha256": "8af21d2433b5562f8e8a80ad17279457d13ba92e057e6784b95beca2b76b2792",
+        "sha256": "405ddf4d0b6c7b076a01173094562bb8ed5e193923cede480ebd336a451eb20f",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -884,7 +884,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/-1.json",
-        "sha256": "1563b6d3fed5b6fae65c929f49463e06e85c28c20c2c3fa3cf8610e30f81a59d",
+        "sha256": "e5a6601b7e8340edd292aedcfc9015ca74e91b8d64c4aef2910d36297b8c19b7",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -897,7 +897,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/-1.json",
-        "sha256": "48d0e8f7968fd897101df2aa8910e494b79a0c0b4cfedf15bad45d3fcf57627e",
+        "sha256": "9ebdb8714df73cdd2c88af48b75ed41e05988aa17e61a35b12cdd61f4231d6b7",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -910,7 +910,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/-1.json",
-        "sha256": "deae26aa84d77ced971f0df065c7990c6b9195e7b9f7f53ddae170edd29869b1",
+        "sha256": "9349b99e12ea5d263fa6200bdf77bd29fed7760269a2f6c30c712222f9b9c877",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -936,7 +936,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/0.json",
-        "sha256": "d21f3a43fef8a5a2fb116800c314a33cb1e3e9347851a514f16fe6df852f2d38",
+        "sha256": "8bd91d52858190f1235ffa5e7860b74508b6f8a214ef09932f591e0e4d6824e1",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -949,7 +949,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/0.json",
-        "sha256": "8f83a0ccb7d310698ca00239274cdc73f090699fac0f392862a214ae25e41125",
+        "sha256": "aa98da7cca11f7b06b5adb220cde9eeeabb71bd1c47051f9d5fe95180eb79d85",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -962,7 +962,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/0.json",
-        "sha256": "be8792eedce0b3da02837345bd07050c29d5fe56a35af34fb1e0c835f4aca71a",
+        "sha256": "c35ca41ea4eec3f7d1a9bd02f5910eccf19b1e411a87f5b845583e17d2880cd8",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -975,7 +975,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/0.json",
-        "sha256": "e93958222500368d195abaec3dfa6e63766ff0714d7d3af7299098c816dde0af",
+        "sha256": "a76adc796324f81f98c216f1e0729dd51272644cf22717b823667db4abcb52f8",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -988,7 +988,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/0.json",
-        "sha256": "26298bb4352910c036794b8e5c2f807aa71c19bb475b8375cf39cf0746568fe4",
+        "sha256": "a76568518f18d76d7fb314eaef86151e0accc93d0854f7d0b48883b2a73aab37",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -1014,7 +1014,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/-1.json",
-        "sha256": "f7d44782d07b63714977c61aa8455d519567da823aec0a76171e65718e20618e",
+        "sha256": "bdde5d00742baa66e4e3a54a1a61496c35fa1958b3c580b7ad87cc1d189d2e75",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -1028,7 +1028,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/-1.json",
-        "sha256": "ac0505f6b5947ffd0647ef2b9798b5fc4cd491508e8c72ba5c1787ef94bd7da3",
+        "sha256": "819ce5012440bb0214fcd3a281877e87537b9d818863a4efd438985e14147980",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -1042,7 +1042,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/-1.json",
-        "sha256": "2f9754e74b66b05141233e761d951e88d86f96b5fde7250f5facc856f5926be9",
+        "sha256": "9a2d0849a5c77b52ca87ae5335d143fa5921c260c6878b1374cc3c570c5e366e",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -1056,7 +1056,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/-1.json",
-        "sha256": "84ee39426ef3b5ef5ed456db72b0fb8bdaf4b606e92642da892b360928815fb9",
+        "sha256": "9d6a78e429ca5ba0249f53fdc53425332e80ef800d99f8167f86e0a44c47e43a",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -1070,7 +1070,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/-1.json",
-        "sha256": "e11389ea10909179e65a57db0e582026559de5b75f4bf5ca3b479102a4336f3e",
+        "sha256": "1ea2d7a25c33a063803789e74c70bfbc08e452007888a9966e336564bf03bb46",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -1098,7 +1098,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/0.json",
-        "sha256": "f46ed1fed9069dd44f7e17ed80d7b5693dc7b68296ccc83e593cb2f8368e1476",
+        "sha256": "174fdff8ca223c679e6f095cbac54b1dca0932e2a0919b2b0654f994152f577d",
         "bounds": {
           "minX": -96,
           "maxX": -64,
@@ -1112,7 +1112,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/0.json",
-        "sha256": "793ca6929ce3f746faa55e1e7796d75c5f367438fcfcc90abe33a17d16ae499f",
+        "sha256": "c6ed8ad439d9d82c61ca7470b2bd5322836abcecf269f774c95bcb49788122a1",
         "bounds": {
           "minX": -64,
           "maxX": -32,
@@ -1126,7 +1126,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/0.json",
-        "sha256": "e8c9eb52bb554a69925f748131ae54f5e0a6fe9998c2083223e90076a31791f8",
+        "sha256": "dd7735af04e4b20f6d4ef6ad0523b20ba69db8bc54b5153ae109a4328a692d0c",
         "bounds": {
           "minX": -32,
           "maxX": 0,
@@ -1140,7 +1140,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/0.json",
-        "sha256": "78a417f27c2b05ee3b5d4c26aec226d62ce26748f083f4c29952b91456da68ae",
+        "sha256": "5f72365988d0abb1d8d51e111e54219daba5fe48051654a7a2ffad9ab8128892",
         "bounds": {
           "minX": 0,
           "maxX": 32,
@@ -1154,7 +1154,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/0.json",
-        "sha256": "c1b68c7ee11a8544ff1b306476adf704bb424f4688b1430099db3c47da3d3365",
+        "sha256": "b4249783993dc353a7b448f3f7763969c3b31eed76945325f7a1113f1f6b0bf1",
         "bounds": {
           "minX": 32,
           "maxX": 64,
@@ -1182,7 +1182,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/8/-5/-1.json",
-        "sha256": "058e107fbf7a58ea71771164d2ef50541ac0a443e4de37142947658106fbc527",
+        "sha256": "a26ac8260acd706715672d1ee10d768e2097be73ea8ef84d216cc2f662065628",
         "bounds": {
           "minX": -80,
           "maxX": -64,
@@ -1195,7 +1195,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/8/2/-1.json",
-        "sha256": "437295cc69033395807b31ee1c949d13f2da72a9e3c310835d28983156842991",
+        "sha256": "d07003b3a4614890e9cf0daf185ffd47760723a3b9e0fda068ebea1894636e7c",
         "bounds": {
           "minX": 32,
           "maxX": 48,
@@ -1221,7 +1221,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/8/-2/1.json",
-        "sha256": "202b00afe740f7758815d5d20662f9ca7081435690ca80d53fd8105abca22b41",
+        "sha256": "22e0a5ec6cdab46a688ce5f45a4ce8962657651449a1c9e34ba82e7b1c6c426d",
         "bounds": {
           "minX": -32,
           "maxX": -16,
@@ -1234,7 +1234,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/9/-10/-2.json",
-        "sha256": "7b88c1449489a71a7c48093aaff41a243106f8ab5258c78a99d659ed1471fc69",
+        "sha256": "ea77d337849b3168eae58dd32b3c399f173d2c1005804b4220874127071256e2",
         "bounds": {
           "minX": -80,
           "maxX": -72,
@@ -1247,7 +1247,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/9/5/-1.json",
-        "sha256": "ce0a07dae431f075e8c40fe6a145c5d5f1d65763ed6923f7678e77f38d436054",
+        "sha256": "b5b48071af2102f6154f3dd129dcf3d8236007111498149117f9b806220dfa5b",
         "bounds": {
           "minX": 40,
           "maxX": 48,
@@ -1273,7 +1273,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/9/-4/2.json",
-        "sha256": "8373dc33e7fec30ce663a963dc5bb21cbfa81db58c9313e9b486a740a33197d3",
+        "sha256": "8352542acd859827507e56e7c5cd919b4c935abd6d1b89bbd6532214deaa7a20",
         "bounds": {
           "minX": -32,
           "maxX": -24,
@@ -1286,7 +1286,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/10/-20/-3.json",
-        "sha256": "a4c9cdfc296ec0546512bff45b6eef25ad3c49eaa0bf0bf1ea523377d3c0b973",
+        "sha256": "a2721580dbfb446578481c97ab628afe385ca7bb20fcb6050a4122996e64278a",
         "bounds": {
           "minX": -80,
           "maxX": -76,
@@ -1299,7 +1299,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/10/11/-2.json",
-        "sha256": "3b2374904585a2d457588900d0c1597ae1b405b1200683597b214146cb3b4b32",
+        "sha256": "7017f8e6a154c68d38d87e7cd478d3dd608a5bf0fd90c4f51a4918cdb65f1bcb",
         "bounds": {
           "minX": 44,
           "maxX": 48,
@@ -1325,7 +1325,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/10/-7/4.json",
-        "sha256": "a960a3bd1f669d745e26baabed2a5a22b72ccbb6ea125a5c6edb2b3e2cd7795b",
+        "sha256": "5b89d2c75d0ca9be801f4a253f1a26997c23d3507a6d3fe2342415439842accb",
         "bounds": {
           "minX": -28,
           "maxX": -24,
@@ -1338,7 +1338,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/11/-40/-6.json",
-        "sha256": "2801d5c018e7da325537e7aecf352e575ebae5cd4d6e068443dbfa35d62225f5",
+        "sha256": "935a75676ce7610363bcc005758342dd476d18a0e9f7edf88061ba68f9ac3aef",
         "bounds": {
           "minX": -80,
           "maxX": -78,
@@ -1351,7 +1351,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/11/22/-4.json",
-        "sha256": "b03db62fa10ae3d82dc70646072f1f72f87387436422f34ed26d4b4d1abfb155",
+        "sha256": "6d2f99307c738d7e9643a326626ea222c581ecce6994ed80729a4d909f2ad29f",
         "bounds": {
           "minX": 44,
           "maxX": 46,
@@ -1377,7 +1377,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/11/-13/9.json",
-        "sha256": "917a1b62d617dbffdfcb57eab7f729a7fa39958ba6f6983262b45ede389366cd",
+        "sha256": "f2ad1904796882000c7d6bb0efbfcb66d735c50b26445cb931a36911436f809c",
         "bounds": {
           "minX": -26,
           "maxX": -24,
@@ -1390,7 +1390,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/12/-80/-12.json",
-        "sha256": "20020868ee29bd96d601ded3743a6d65edb872a3f1be10734a04ac21f521c2ea",
+        "sha256": "b2e649cfa1eb11f5aec8ca3e264bb5b909da901008f5b3a37a38780e098bd2ca",
         "bounds": {
           "minX": -80,
           "maxX": -79,
@@ -1403,7 +1403,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/12/45/-8.json",
-        "sha256": "2743308df29b39afccae0848835d55d72233800b7c466ace899de08b446b476b",
+        "sha256": "0afd18edbd2ecd65b2012c6dc14136613e355b1695340f05d373db789cc98ef5",
         "bounds": {
           "minX": 45,
           "maxX": 46,
@@ -1429,7 +1429,7 @@
       },
       {
         "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/12/-25/18.json",
-        "sha256": "63b16db7367306f4509356a1239a8d201162a7e940a867e717ad8104c6842a8a",
+        "sha256": "d7801753bc3dc7977ac3f3670e06d0125fdc912a1f227b95ebf6391cd89d1e04",
         "bounds": {
           "minX": -25,
           "maxX": -24,
@@ -1466,7 +1466,7 @@
   },
   "assets": {
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/-1.json": {
-      "sha256": "13690a7ce43b0eba1a42ac4c8f324b044599ae7875c48f1fe283490b64ed4a71",
+      "sha256": "a8e92c220425ef5c71dd002f58c465d612f713e9aa60abadf31c13fbede43215",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -1621,7 +1621,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -1639,7 +1639,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/-1.json": {
-      "sha256": "6148c855de92d706a9bf7984a46cfae4aaf3a6bb03f2deb5d211ae7b9179cb31",
+      "sha256": "7ae6f04b81811b933df7c3fdbff7fe663ae73f2284031574346b5d08e11caf02",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -1797,7 +1797,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -1815,7 +1815,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/-1/0.json": {
-      "sha256": "9f765270e9382cb20cdebeb65bb918ae69263148a6af46ac3e1618cebcd661b0",
+      "sha256": "aa2ed7a4e0e854120bf79ac5fc447da892a4e9ac32fdb5f0b41a8d3b610b1516",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -1970,7 +1970,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -1988,7 +1988,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-8/0/0.json": {
-      "sha256": "a2fb2eb55eba25cd329353d68e15e85660546e60f7d593f4cb9cd794d06b1c99",
+      "sha256": "83ced4f790dd74a125dca090d63779375414f792e4f83cfc54956bcbf1137e88",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2143,7 +2143,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2161,7 +2161,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/-1.json": {
-      "sha256": "bb7a1840770bff7700edf1d46856b7ea840b83d01cef37ad7f826a113e9b8bea",
+      "sha256": "a2532b12b42aba5bf7754d7e54b71d2d65f510980493aa7a8dfc833220cdf33f",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2316,7 +2316,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2334,7 +2334,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/-1.json": {
-      "sha256": "5c2d732296e97042d07b23f1e7fc4eee1ebbd619606bde2d17317f7ffe463dc9",
+      "sha256": "457b139c06624b5bba2d7e6b30ac56d03f8267424dc63849fa8c806b969bddd7",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2492,7 +2492,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2510,7 +2510,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/-1/0.json": {
-      "sha256": "773c370c9e721e5182e336c5da638b6f1076710d4b5b2ba7cc1535db8dad8c75",
+      "sha256": "7ba69261b2b321a868078adfe1d72e4e77355240168fab8dfa81089d974ec454",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2665,7 +2665,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2683,7 +2683,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-7/0/0.json": {
-      "sha256": "948daf6bea29eb8a0cd3f429d619a4aa3a7008801eb78bdb303cf939d333667c",
+      "sha256": "871dca8b5848aa9ddb8134698f2d11324243d1a794af16b6c23d3dfe4b561f2d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -2838,7 +2838,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -2856,7 +2856,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/-1.json": {
-      "sha256": "90294718b5d715ff0fc00ca199ee9b5145760ec09f5755bd754082ac4179c0a4",
+      "sha256": "d144d1ed9a8c5b5d4193aebb33823c15c5d07b581d797d6724596f345b33056c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3011,7 +3011,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3029,7 +3029,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/-1.json": {
-      "sha256": "6b2a5d1918cb162bf137d8f664dc7fe5e8a16c5b0c525879280b3fae57515037",
+      "sha256": "b937fd5dd4b14a4d8d2243d1de2ddda9a4372f5cfec996da2036d1e7ceaecbf6",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3187,7 +3187,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3205,7 +3205,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/-1/0.json": {
-      "sha256": "cde1ba33e84e16109bc3b724e0b0a2e9f3d561d9694e37394cf23d74fc99447a",
+      "sha256": "30ec5a923bdc9b07306f035a0a29c84f2a8cadd1f2515bbc8b4d42c2ae937e0d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3360,7 +3360,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3378,7 +3378,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-6/0/0.json": {
-      "sha256": "748606989a2d48f60179f02a6f3075ea4eeebe59ad31a5a64507e2d3c084bb49",
+      "sha256": "c5b9e91865af556d19a4643684ed045e84d5f0baff2717c84c365436483d3857",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3533,7 +3533,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3551,7 +3551,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/-1.json": {
-      "sha256": "5cd7f4ca4b488609eaf1542e15c4ba5c775ed4e3b6293c20654bc51638c70929",
+      "sha256": "479e563fc0b24a05b589548ead330855cea9ea620ff600f56ac772bfb9be0bba",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3706,7 +3706,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3724,7 +3724,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/-1.json": {
-      "sha256": "ba6313d3c5524f610932691b2dc18755bbf1676c564715c791014867466e0157",
+      "sha256": "44df231f0fe196efcfbd9e5f7c96932a518f857d57f89f1ca01737bf7d7b53e7",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -3882,7 +3882,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -3900,7 +3900,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/-1/0.json": {
-      "sha256": "6a15b189fed021d131513b7c5d2cfe742f2a5e7d0194bd331d6af703064122de",
+      "sha256": "df3dd75d9a122d4556dda68316639a5237219233720e6387ebc9c33318b140ff",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4055,7 +4055,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4073,7 +4073,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-5/0/0.json": {
-      "sha256": "8cd64d50777f9605f10a110ef9e641ac8ec88de26df061bfea41fbdd936f891a",
+      "sha256": "8b33c3a239df332b870758d7ba4060f6f2c85713b030fab76076a105c91dcf67",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4228,7 +4228,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4246,7 +4246,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/-1.json": {
-      "sha256": "07029db5cb8854638c42f38f48b0b85f4d2d5f639be86e487290da28fdbe6890",
+      "sha256": "47889a82c81fcf3f7dcf26a52e52b17f827a9d789f59e92cd9749195583d64e9",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4401,7 +4401,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4419,7 +4419,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/-1.json": {
-      "sha256": "6bf897e3646daec4bb389623350bd52b41df4b43b39ebee43b209fbe15326443",
+      "sha256": "b1d5c9a4f03929a97223402de799d4fe192f1222261aa4b558e34e5dbe22f296",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4577,7 +4577,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4595,7 +4595,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/-1/0.json": {
-      "sha256": "72d10be47d43845303548bad1334f71d39100960864b5dfacd00d6712a0cee8e",
+      "sha256": "9cf8a794bb0a19c8f03e70a32e1e4ab4f8429d1a6f728c94a90a1dd9eddf7c80",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4750,7 +4750,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4768,7 +4768,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-4/0/0.json": {
-      "sha256": "379dab6a5d22075980e90c1d9096428c978469c04668739f9350ffa572398a2a",
+      "sha256": "2a4cf164fe71603accfc720538388ea2bc87927862042c4131bbc23f89fecce2",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -4923,7 +4923,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -4941,7 +4941,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/-1.json": {
-      "sha256": "d0758d40ed819068952cf75dc68dba631f52397472ad86ab5ac5447e6d18153d",
+      "sha256": "361ef668125ecec775ca0f2d203a07df042dbdee802b244f0c3b57b09f42b508",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5096,7 +5096,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5114,7 +5114,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/-1.json": {
-      "sha256": "ab66acf4a0b786fb79fdc477f4a0a3c3ee40777030e35c64a1d52185e616139e",
+      "sha256": "bac68973c3df611e17ac42407e63ca3e459c01d714482dab06df9375f3f3612c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5272,7 +5272,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5290,7 +5290,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/-1/0.json": {
-      "sha256": "9d4d936b8bfbbc285fee47e633d80027335ffb89128d2dadd172ea64df15a632",
+      "sha256": "92e6ac2718af0bfd0ebe2d1afca1e712758c11eab0a63d8b3cff9b17de71dd07",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5445,7 +5445,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5463,7 +5463,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-3/0/0.json": {
-      "sha256": "82075301756dcabacd1d9a1192b56686dc22e16f434e89d5721db06e0bc2a231",
+      "sha256": "c7d8e4914ca3ac5a1acc56ddb72dab79492a1b940690013405b8ee3d0dee11c3",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5618,7 +5618,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5636,7 +5636,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/-1.json": {
-      "sha256": "2bf133974a807dbd8169cbda27aeb460be436bf23f170f0c62fc3142aec5909c",
+      "sha256": "f9d28cc73ceecdd763f4b142e03354eb6f5709d6239160d48201f88857b36e25",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5791,7 +5791,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5809,7 +5809,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/-1.json": {
-      "sha256": "0bedd3f1aa8916d7792196344657263a7cea6e30ae8bcc2aaf4c3ace360bc727",
+      "sha256": "d2e5148500553047cc62a3357193a5cd66f70aba71b24525c8303aa5c97d1149",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -5967,7 +5967,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -5985,7 +5985,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/-1/0.json": {
-      "sha256": "e6932a89b6167b2bca12af6ca4a74ebbf0b62a0863d92a5c3177a3a7fae27ded",
+      "sha256": "aa503c8c87fffd5366edf2c77a34f2f2b93d72ed2154ced009b321643229bcc8",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6140,7 +6140,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6158,7 +6158,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-2/0/0.json": {
-      "sha256": "19abbd623c51fefff57f589b46bcd486b8e255fd069ef9d918d6e800bd47bdc7",
+      "sha256": "efbca949f21ee9546714f5e441843d74731aed7dba6f7443f9ba750cdb78e0b7",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6313,7 +6313,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6331,7 +6331,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/-1.json": {
-      "sha256": "8661373e193e0b0846d9daf4e9ea802feb4a37c80bbfcc82f2eb09f52021f775",
+      "sha256": "ad23786a72f05d829ffa5679d1c7ffa8ee5e8a599f0c8916180d2449e5e6c729",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6486,7 +6486,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6504,7 +6504,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/-1.json": {
-      "sha256": "2397e3dbeb03b8dafda797fb9ce63f6b25eb8af1f754485d978d91d4736fe2db",
+      "sha256": "f8166e258db44c412dfc12149f380f168e711bba0690419e5e5a8d2ac4dd7ff9",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6662,7 +6662,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6680,7 +6680,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/-1/0.json": {
-      "sha256": "6a7d6c5d5134ac72a71aacc1ed056599c8e3fd71d00b02286844229c7bcb1cd9",
+      "sha256": "eb4e604ccd8ebd5c16fb67a4c0fffab45e7198dc4d17a7210dff175128787ce7",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -6835,7 +6835,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -6853,7 +6853,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/-1/0/0.json": {
-      "sha256": "c77c1f415ffd703b440b75fa4c2ccaeff4f84827634170036593821eb250343f",
+      "sha256": "734680c7584d165a49353953e5a161f8bef0e816df3f7ff8d8312d80e2994a07",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7008,7 +7008,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7026,7 +7026,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/-1.json": {
-      "sha256": "bb4ab828369f371e6279fa7d3d7c57a790f3fea44554758fb1afbdb532a50c15",
+      "sha256": "8a7bb59e3cc22e694850b700c9797df4fb6e7ed203e5382119ae2df726dbaf40",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7181,7 +7181,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7199,7 +7199,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/-1.json": {
-      "sha256": "14d4d478fbec4e2a15c7d127fdbc5c310a573b6f538d00e667486c7a7eab7acf",
+      "sha256": "62ee037417fff1b3701b30a3fffe7299ab4bbe5193d4bd58d546c06394c8bdcf",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7357,7 +7357,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7375,7 +7375,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/-1/0.json": {
-      "sha256": "dfc4798853fe3ab1facd21b7c47055eb36ddb1237e171ef93e85acc2a62c2abf",
+      "sha256": "bc3b5f56b8c4f16fd261eb01905fbcfd1228a78873465aa9ecf429639b6a633a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7530,7 +7530,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7548,7 +7548,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/0/0/0.json": {
-      "sha256": "6ced6d7f210d2e7c736f6b1abb27f66436d7a9219c6f79fd41031c86f0f93002",
+      "sha256": "668f355a6bc790886ff60e0b5c6e87d179486d586446b51c958e0a7cb124a530",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7703,7 +7703,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7721,7 +7721,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/-1.json": {
-      "sha256": "63dd68998f47432972cfbb20aa81845435c0777a9b472357407fa624142c9d7c",
+      "sha256": "4b077955653460a409be09c0faffe02e310f7e6e9d9deb9740d7507899bbc7e1",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -7876,7 +7876,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -7894,7 +7894,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/-1.json": {
-      "sha256": "0d1c0fa953bbc8b097a5363e001404e80d539cb1769c185df941c2c95283b178",
+      "sha256": "d98d8861e52bade4bd6e93289706a879ec30f98aa16e7da3e1398a4b71e7b639",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8052,7 +8052,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8070,7 +8070,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/-1/0.json": {
-      "sha256": "df0eba222ce62ee1c8aa5a8fb4e999a0d306701ba0bde116de0dea72956614e4",
+      "sha256": "d9832aa5760f2c90581cd59643d5ff9f222fa336e16c809309676730b14c736a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8225,7 +8225,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8243,7 +8243,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/1/0/0.json": {
-      "sha256": "18a4f77a15a0d52b9d80b70139606d96ceeebea1ced689e6de98603450b611c3",
+      "sha256": "ea945a89bed65539969b1b5ea3436097020a503a537ff78528c2e76f1de2d2f8",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8398,7 +8398,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8416,7 +8416,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/-1.json": {
-      "sha256": "a41a271e886bdc79736cc157396370e11a26aecc219e1c99c04f0875d80718af",
+      "sha256": "748007f881ecbf9343528313bbb62ab5633608ca4b29fedea57ab480a127970f",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8571,7 +8571,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8589,7 +8589,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/-1.json": {
-      "sha256": "1418923640766ea74096812aeb531c0ed870edd2f1bd85f6a686e1f3ed67cca4",
+      "sha256": "d6180d810c047c9b731c57c7947c20d25e61a6b4f2874eefa2c5afbf8a4a6645",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8747,7 +8747,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8765,7 +8765,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/-1/0.json": {
-      "sha256": "40e54f32a82551b1bea9af302538cbe0e5d6597c765c34ee67fec327a35ad3a2",
+      "sha256": "dee95e8894a94a0e59cac784f434c5a4f0b4ec06b6e6540a70aaa895ff2d5128",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -8920,7 +8920,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -8938,7 +8938,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/2/0/0.json": {
-      "sha256": "24311c45af8f7b0caf776f6fe4e3cc897eed0af3dbd3618bf5b1135c5aeac3c6",
+      "sha256": "d274059edcde4cb7561c7053b55bfc6897da67904758a9dc195ee34b9aef3d71",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9093,7 +9093,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9111,7 +9111,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/-1.json": {
-      "sha256": "bc81478610750ac0a14d82f766d79574593e7ad0f96c85b9fa364bce79024475",
+      "sha256": "7ece0acdeebb43931de7c879bf11e75163b8efaacd9979029ba7ed32b9d9367e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9266,7 +9266,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9284,7 +9284,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/-1.json": {
-      "sha256": "1ed2bf512f86ca1d35fa5a4fb196a32919afcfb079cd84dea582f0abfded597c",
+      "sha256": "25404108b4ab996256824eea263c1db38e0e9884608431186a5e893044cc87de",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9442,7 +9442,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9460,7 +9460,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/-1/0.json": {
-      "sha256": "2035f7be426403fc3ca9c611a79b42fcef918d038a015199c31289028f840335",
+      "sha256": "98e1f6375461f1be843ff126f9de853df017e80f93cde75eab99c7ff3e0c79a8",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9615,7 +9615,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9633,7 +9633,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/3/0/0.json": {
-      "sha256": "2a36706d814f8f3dfe3b18a92dd8bbcb60693022342e0e77515cc60d084764c2",
+      "sha256": "84a934c4b85af9b4279581e980c7e585ad7afac280126136eef3b8ca0fc22ecb",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9788,7 +9788,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9806,7 +9806,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/-1.json": {
-      "sha256": "870e19f4183303d94e87f65e8f51b37cc71835d0acde6981961bf49107013433",
+      "sha256": "ef69702a45061f4d370bfc8a2913f375cbde298e68858e93d0416f7185b722a6",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -9961,7 +9961,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -9979,7 +9979,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/-1.json": {
-      "sha256": "10dd3c8e0aef3179a4efd09d7e2bbcd0cd7db97350381bfc9adee428f5943582",
+      "sha256": "27abe71108b2e386e45d1cee26a1040bb2c227097b8a1c1e173cded323a5adde",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10137,7 +10137,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10155,7 +10155,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/-1/0.json": {
-      "sha256": "8f5f40eb712cfa39655e6ede0f00946e42b9b038a0918dcb1715213004b2a18e",
+      "sha256": "59e115a470d2b29d8f4e36678340738ecfa4c95ecdf41806e8c123d5c48864c3",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10310,7 +10310,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10328,7 +10328,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/4/0/0.json": {
-      "sha256": "d0928a56b731519da1e51e9e9a2bee7a0767d6d55afbada5bb4f195156861d0c",
+      "sha256": "917ae2b76fd070f89260ee5bfc889c5f7569a8a90b728fb90405fcc939f37859",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10483,7 +10483,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10501,7 +10501,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/-1.json": {
-      "sha256": "b47c866e9d178a37d42a0b8330dd740e37dc5a9db5731e8386a3b1fbccec14cf",
+      "sha256": "a85d0f310ddfd9b2e3ed17c228a71610e42d6b3673dce80bc13a57ed9458203e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10656,7 +10656,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10674,7 +10674,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/-1.json": {
-      "sha256": "75b6abddf6243ed939442615421f33f3653b85a4701ed646f59dbd4473b8d062",
+      "sha256": "352c6480dfd194d93f325682d7e36fd0a2c15d28ca720e146e3ec29b5e109dd3",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -10832,7 +10832,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -10850,7 +10850,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/-1/0.json": {
-      "sha256": "8ede2856c48b57bcedd252bd932a9a19e3a7db8787f74c25b34958bd6f12bee1",
+      "sha256": "8e3791c664f22e5d4d0ab170fc8ebc7648a026b340202ea4fc7cf41d92ac2c23",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11005,7 +11005,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11023,7 +11023,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/5/0/0.json": {
-      "sha256": "575c3868223a57c6b1fd2f7fd353de7ce10748c88d0f6828bb3eea62a6975bb0",
+      "sha256": "43bf3d331ef832c143317d9b5e2d7284ff50eafbc15d59e2c32189e4421583e6",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11178,7 +11178,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11196,7 +11196,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/-1.json": {
-      "sha256": "f9a882acaf4f8f76cf18c7d11da9b4eb75bcc4a16b2f2006e1936a1eb376e4c3",
+      "sha256": "3b662445a758dfdb5a2645db4147579fa651430c2f2cf7fe3e62d458931529d2",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11351,7 +11351,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11369,7 +11369,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/-1.json": {
-      "sha256": "011db26b3aaf674cd9b68620a9edf49addc57c542a301c4d787ed5b8b8dfc48c",
+      "sha256": "f6643dda4d30f1a7926c6241f8bfa01354f8acb47382fa303124b13f0fce523a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11492,7 +11492,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11510,7 +11510,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/-1.json": {
-      "sha256": "e6e885a894e4c5fd38f18a11848c015dcbbda21f8dc0428984b294e28115626d",
+      "sha256": "eb519acc4c72970caf7b1d2734d471d032c2183ab158ac58a52be2d5362d3e26",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11668,7 +11668,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11755,7 +11755,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-2/0.json": {
-      "sha256": "34a92c4a410684a40f38dea28d924376157602f9e499c027f98e83e7620214b3",
+      "sha256": "d6bdcb1b606df1df7151abfc7064e7d8c3e185bfc06141c9c0759277f63a070d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -11878,7 +11878,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -11896,7 +11896,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/-1/0.json": {
-      "sha256": "977abd904dcf2696789dd28c2483650405d3055bcbe2fab75a6a33a1efbcd30e",
+      "sha256": "0a00c072b36a1ce40f04026dfd89de7658ec5256117015b89f6cd6ef72c3fec5",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12051,7 +12051,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12069,7 +12069,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/6/0/0.json": {
-      "sha256": "2339aabf4f43708afc9ed323e8795915ddae49b2fbc72bbcb9fcaf971581ddad",
+      "sha256": "a4e21bd97914bdb82bf2bdd9e14fdc1ce6f4bc45a71ef38b0550247536ede912",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12192,7 +12192,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12311,7 +12311,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/-1.json": {
-      "sha256": "a4c07a8443f2a4f8ee993ea411d7daa80c6678623440625a41fe5277ffcccad8",
+      "sha256": "ae10d2bc7b9cb7e506bf9057641988af637b2ffc9af824b10fcbfd3128dc1120",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12466,7 +12466,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12484,7 +12484,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/-1.json": {
-      "sha256": "8af21d2433b5562f8e8a80ad17279457d13ba92e057e6784b95beca2b76b2792",
+      "sha256": "405ddf4d0b6c7b076a01173094562bb8ed5e193923cede480ebd336a451eb20f",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12607,7 +12607,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12625,7 +12625,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/-1.json": {
-      "sha256": "1563b6d3fed5b6fae65c929f49463e06e85c28c20c2c3fa3cf8610e30f81a59d",
+      "sha256": "e5a6601b7e8340edd292aedcfc9015ca74e91b8d64c4aef2910d36297b8c19b7",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12748,7 +12748,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12766,7 +12766,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/-1.json": {
-      "sha256": "48d0e8f7968fd897101df2aa8910e494b79a0c0b4cfedf15bad45d3fcf57627e",
+      "sha256": "9ebdb8714df73cdd2c88af48b75ed41e05988aa17e61a35b12cdd61f4231d6b7",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -12889,7 +12889,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -12907,7 +12907,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/-1.json": {
-      "sha256": "deae26aa84d77ced971f0df065c7990c6b9195e7b9f7f53ddae170edd29869b1",
+      "sha256": "9349b99e12ea5d263fa6200bdf77bd29fed7760269a2f6c30c712222f9b9c877",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13065,7 +13065,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13152,7 +13152,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-3/0.json": {
-      "sha256": "d21f3a43fef8a5a2fb116800c314a33cb1e3e9347851a514f16fe6df852f2d38",
+      "sha256": "8bd91d52858190f1235ffa5e7860b74508b6f8a214ef09932f591e0e4d6824e1",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13275,7 +13275,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13293,7 +13293,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-2/0.json": {
-      "sha256": "8f83a0ccb7d310698ca00239274cdc73f090699fac0f392862a214ae25e41125",
+      "sha256": "aa98da7cca11f7b06b5adb220cde9eeeabb71bd1c47051f9d5fe95180eb79d85",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13416,7 +13416,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13434,7 +13434,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/-1/0.json": {
-      "sha256": "be8792eedce0b3da02837345bd07050c29d5fe56a35af34fb1e0c835f4aca71a",
+      "sha256": "c35ca41ea4eec3f7d1a9bd02f5910eccf19b1e411a87f5b845583e17d2880cd8",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13589,7 +13589,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13607,7 +13607,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/0/0.json": {
-      "sha256": "e93958222500368d195abaec3dfa6e63766ff0714d7d3af7299098c816dde0af",
+      "sha256": "a76adc796324f81f98c216f1e0729dd51272644cf22717b823667db4abcb52f8",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13730,7 +13730,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13748,7 +13748,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/7/1/0.json": {
-      "sha256": "26298bb4352910c036794b8e5c2f807aa71c19bb475b8375cf39cf0746568fe4",
+      "sha256": "a76568518f18d76d7fb314eaef86151e0accc93d0854f7d0b48883b2a73aab37",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -13871,7 +13871,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -13990,7 +13990,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/-1.json": {
-      "sha256": "f7d44782d07b63714977c61aa8455d519567da823aec0a76171e65718e20618e",
+      "sha256": "bdde5d00742baa66e4e3a54a1a61496c35fa1958b3c580b7ad87cc1d189d2e75",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14114,7 +14114,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14132,7 +14132,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/-1.json": {
-      "sha256": "ac0505f6b5947ffd0647ef2b9798b5fc4cd491508e8c72ba5c1787ef94bd7da3",
+      "sha256": "819ce5012440bb0214fcd3a281877e87537b9d818863a4efd438985e14147980",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14256,7 +14256,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14274,7 +14274,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/-1.json": {
-      "sha256": "2f9754e74b66b05141233e761d951e88d86f96b5fde7250f5facc856f5926be9",
+      "sha256": "9a2d0849a5c77b52ca87ae5335d143fa5921c260c6878b1374cc3c570c5e366e",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14398,7 +14398,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14416,7 +14416,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/-1.json": {
-      "sha256": "84ee39426ef3b5ef5ed456db72b0fb8bdaf4b606e92642da892b360928815fb9",
+      "sha256": "9d6a78e429ca5ba0249f53fdc53425332e80ef800d99f8167f86e0a44c47e43a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14540,7 +14540,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14558,7 +14558,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/-1.json": {
-      "sha256": "e11389ea10909179e65a57db0e582026559de5b75f4bf5ca3b479102a4336f3e",
+      "sha256": "1ea2d7a25c33a063803789e74c70bfbc08e452007888a9966e336564bf03bb46",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14682,7 +14682,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14770,7 +14770,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-3/0.json": {
-      "sha256": "f46ed1fed9069dd44f7e17ed80d7b5693dc7b68296ccc83e593cb2f8368e1476",
+      "sha256": "174fdff8ca223c679e6f095cbac54b1dca0932e2a0919b2b0654f994152f577d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -14894,7 +14894,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -14912,7 +14912,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-2/0.json": {
-      "sha256": "793ca6929ce3f746faa55e1e7796d75c5f367438fcfcc90abe33a17d16ae499f",
+      "sha256": "c6ed8ad439d9d82c61ca7470b2bd5322836abcecf269f774c95bcb49788122a1",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15036,7 +15036,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -15054,7 +15054,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/-1/0.json": {
-      "sha256": "e8c9eb52bb554a69925f748131ae54f5e0a6fe9998c2083223e90076a31791f8",
+      "sha256": "dd7735af04e4b20f6d4ef6ad0523b20ba69db8bc54b5153ae109a4328a692d0c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15178,7 +15178,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -15196,7 +15196,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/0/0.json": {
-      "sha256": "78a417f27c2b05ee3b5d4c26aec226d62ce26748f083f4c29952b91456da68ae",
+      "sha256": "5f72365988d0abb1d8d51e111e54219daba5fe48051654a7a2ffad9ab8128892",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15320,7 +15320,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -15338,7 +15338,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/overflow/7/1/0.json": {
-      "sha256": "c1b68c7ee11a8544ff1b306476adf704bb424f4688b1430099db3c47da3d3365",
+      "sha256": "b4249783993dc353a7b448f3f7763969c3b31eed76945325f7a1113f1f6b0bf1",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15462,7 +15462,7 @@
                 "pointEnterMaxSizePx": 12,
                 "pointExitMaxSizePx": 20,
                 "childFadeHeightPx": [58, 100],
-                "childFadeSpanPx": [16, 40],
+                "childFadeSpanPx": [4, 16],
                 "paddingBasePx": 6,
                 "paddingPerDepthPx": 5
               }
@@ -15550,7 +15550,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/8/-5/-1.json": {
-      "sha256": "058e107fbf7a58ea71771164d2ef50541ac0a443e4de37142947658106fbc527",
+      "sha256": "a26ac8260acd706715672d1ee10d768e2097be73ea8ef84d216cc2f662065628",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15597,11 +15597,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -15610,7 +15682,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/8/2/-1.json": {
-      "sha256": "437295cc69033395807b31ee1c949d13f2da72a9e3c310835d28983156842991",
+      "sha256": "d07003b3a4614890e9cf0daf185ffd47760723a3b9e0fda068ebea1894636e7c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15660,11 +15732,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -15733,7 +15877,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/8/-2/1.json": {
-      "sha256": "202b00afe740f7758815d5d20662f9ca7081435690ca80d53fd8105abca22b41",
+      "sha256": "22e0a5ec6cdab46a688ce5f45a4ce8962657651449a1c9e34ba82e7b1c6c426d",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15780,11 +15924,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -15793,7 +16009,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/9/-10/-2.json": {
-      "sha256": "7b88c1449489a71a7c48093aaff41a243106f8ab5258c78a99d659ed1471fc69",
+      "sha256": "ea77d337849b3168eae58dd32b3c399f173d2c1005804b4220874127071256e2",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15840,11 +16056,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -15853,7 +16141,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/9/5/-1.json": {
-      "sha256": "ce0a07dae431f075e8c40fe6a145c5d5f1d65763ed6923f7678e77f38d436054",
+      "sha256": "b5b48071af2102f6154f3dd129dcf3d8236007111498149117f9b806220dfa5b",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -15903,11 +16191,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -15976,7 +16336,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/9/-4/2.json": {
-      "sha256": "8373dc33e7fec30ce663a963dc5bb21cbfa81db58c9313e9b486a740a33197d3",
+      "sha256": "8352542acd859827507e56e7c5cd919b4c935abd6d1b89bbd6532214deaa7a20",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16023,11 +16383,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16036,7 +16468,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/10/-20/-3.json": {
-      "sha256": "a4c9cdfc296ec0546512bff45b6eef25ad3c49eaa0bf0bf1ea523377d3c0b973",
+      "sha256": "a2721580dbfb446578481c97ab628afe385ca7bb20fcb6050a4122996e64278a",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16083,11 +16515,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16096,7 +16600,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/10/11/-2.json": {
-      "sha256": "3b2374904585a2d457588900d0c1597ae1b405b1200683597b214146cb3b4b32",
+      "sha256": "7017f8e6a154c68d38d87e7cd478d3dd608a5bf0fd90c4f51a4918cdb65f1bcb",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16146,11 +16650,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16219,7 +16795,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/10/-7/4.json": {
-      "sha256": "a960a3bd1f669d745e26baabed2a5a22b72ccbb6ea125a5c6edb2b3e2cd7795b",
+      "sha256": "5b89d2c75d0ca9be801f4a253f1a26997c23d3507a6d3fe2342415439842accb",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16266,11 +16842,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16279,7 +16927,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/11/-40/-6.json": {
-      "sha256": "2801d5c018e7da325537e7aecf352e575ebae5cd4d6e068443dbfa35d62225f5",
+      "sha256": "935a75676ce7610363bcc005758342dd476d18a0e9f7edf88061ba68f9ac3aef",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16326,11 +16974,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16339,7 +17059,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/11/22/-4.json": {
-      "sha256": "b03db62fa10ae3d82dc70646072f1f72f87387436422f34ed26d4b4d1abfb155",
+      "sha256": "6d2f99307c738d7e9643a326626ea222c581ecce6994ed80729a4d909f2ad29f",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16389,11 +17109,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16462,7 +17254,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/11/-13/9.json": {
-      "sha256": "917a1b62d617dbffdfcb57eab7f729a7fa39958ba6f6983262b45ede389366cd",
+      "sha256": "f2ad1904796882000c7d6bb0efbfcb66d735c50b26445cb931a36911436f809c",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16509,11 +17301,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16522,7 +17386,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/12/-80/-12.json": {
-      "sha256": "20020868ee29bd96d601ded3743a6d65edb872a3f1be10734a04ac21f521c2ea",
+      "sha256": "b2e649cfa1eb11f5aec8ca3e264bb5b909da901008f5b3a37a38780e098bd2ca",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16569,11 +17433,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16582,7 +17518,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/12/45/-8.json": {
-      "sha256": "2743308df29b39afccae0848835d55d72233800b7c466ace899de08b446b476b",
+      "sha256": "0afd18edbd2ecd65b2012c6dc14136613e355b1695340f05d373db789cc98ef5",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16632,11 +17568,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,
@@ -16705,7 +17713,7 @@
       }
     },
     "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/12/-25/18.json": {
-      "sha256": "63b16db7367306f4509356a1239a8d201162a7e940a867e717ad8104c6842a8a",
+      "sha256": "d7801753bc3dc7977ac3f3670e06d0125fdc912a1f227b95ebf6391cd89d1e04",
       "body": {
         "format": "render-tile/2",
         "worldId": "019f3b00-0000-7000-8000-000000000a01",
@@ -16752,11 +17760,83 @@
             },
             "parentCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"],
             "ancestorCompositeIds": ["019f3b00-0000-7000-8000-000000000a11"]
+          },
+          {
+            "id": "event:019f3b00-0000-7000-8000-000000000a11:hull",
+            "entity": {
+              "kind": "composite",
+              "id": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "geometry": {
+              "kind": "external",
+              "key": "worlds/019f3b00-0000-7000-8000-000000000a01/revisions/31/v5/render/019f3b00-0000-7000-8000-000000000a21/geometry/1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11.json",
+              "sha256": "1d15fc131f55155362aa45fe42abb091721d42849e747ac96c34a0ebdb44cf11"
+            },
+            "bounds": {
+              "minX": -80,
+              "maxX": 45,
+              "minY": -45,
+              "maxY": 75
+            },
+            "label": "합성 영역",
+            "lod": {
+              "visible": [0, 8],
+              "groupId": "019f3b00-0000-7000-8000-000000000a11"
+            },
+            "collectionIds": ["019f3b00-0000-7000-8000-000000000a02"],
+            "visibility": {
+              "policy": "render-visibility/1",
+              "priority": "c3b3f53bc95e1cf1"
+            },
+            "parentCompositeIds": [],
+            "ancestorCompositeIds": [],
+            "composite": {
+              "childEventIds": [
+                "019f3b00-0000-7000-8000-000000000a12",
+                "019f3b00-0000-7000-8000-000000000a14",
+                "019f3b00-0000-7000-8000-000000000a15"
+              ],
+              "childEventCount": 3,
+              "childIdsComplete": true,
+              "supportComplete": true,
+              "worldBounds": {
+                "minX": -90,
+                "maxX": 80,
+                "minY": -65,
+                "maxY": 85
+              },
+              "hullBounds": {
+                "minX": -80,
+                "maxX": 45,
+                "minY": -45,
+                "maxY": 75
+              },
+              "depth": 1,
+              "paddingProfile": [
+                {
+                  "minY": -45,
+                  "maxY": 75,
+                  "depth": 1
+                }
+              ],
+              "anchor": {
+                "x": -17.5,
+                "y": 15
+              },
+              "transitions": {
+                "pointEnterMaxSizePx": 12,
+                "pointExitMaxSizePx": 20,
+                "childFadeHeightPx": [58, 100],
+                "childFadeSpanPx": [4, 16],
+                "paddingBasePx": 6,
+                "paddingPerDepthPx": 5
+              }
+            }
           }
         ],
         "visibility": {
           "policy": "render-visibility/1",
-          "candidateCount": 1,
+          "candidateCount": 2,
           "omittedCount": 0,
           "normalBudget": 64,
           "smallBudget": 32,

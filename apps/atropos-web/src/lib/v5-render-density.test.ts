@@ -1,5 +1,8 @@
 import { expect, it } from "vitest";
-import { selectRenderDensity } from "./v5-render-density";
+import {
+  selectRenderDensity,
+  resolveRenderCompositeSpans
+} from "./v5-render-density";
 import type { RenderPrimitive } from "@moirai/graph-presentation/server";
 const box = { minX: 0, maxX: 10, minY: 0, maxY: 10 };
 const points: RenderPrimitive[] = Array.from({ length: 1000 }, (_, i) => ({
@@ -272,4 +275,123 @@ it("retains the same Composite owner across hull, large point and small point de
     expect(result).toHaveLength(128);
     expect(result[0]!.entity.id).toBe("life");
   }
+});
+
+const owner = (
+  id: string,
+  bounds = box,
+  parents: string[] = []
+): RenderPrimitive => ({
+  ...points[0]!,
+  id: `${id}:hull`,
+  entity: { kind: "composite", id },
+  bounds,
+  visibility: { policy: "render-visibility/1", priority: "zzzz" },
+  parentCompositeIds: parents,
+  ancestorCompositeIds: parents,
+  composite: {
+    childEventIds: [],
+    supportComplete: true,
+    worldBounds: bounds,
+    hullBounds: bounds
+  }
+});
+
+it("keeps a selected child and its low-priority ancestors within the same128 budget", () => {
+  const parent = owner("parent");
+  const child = {
+    ...points[1]!,
+    id: "selected",
+    entity: { kind: "event" as const, id: "selected" },
+    parentCompositeIds: ["parent"]
+  };
+  const result = selectRenderDensity(
+    [...points, child, parent],
+    box,
+    new Map(),
+    "selected",
+    { scaleX: 1, scaleY: 1 }
+  );
+  expect(result).toHaveLength(128);
+  expect(result.slice(0, 2).map((p) => p.entity.id)).toEqual([
+    "parent",
+    "selected"
+  ]);
+});
+
+it("retains normal selected paint after a deep ancestor bundle consumes density ranks", () => {
+  const ancestors = Array.from({ length: 110 }, (_, index) =>
+    owner(`ancestor-${index}`, box, index ? [`ancestor-${index - 1}`] : [])
+  );
+  const selected: RenderPrimitive = {
+    ...points[1]!,
+    id: "selected-deep",
+    entity: { kind: "event", id: "selected-deep" },
+    parentCompositeIds: ["ancestor-109"]
+  };
+  const result = selectRenderDensity(
+    [...points, selected, ...ancestors],
+    box,
+    new Map(),
+    selected.entity.id,
+    { scaleX: 1, scaleY: 1 }
+  );
+  expect(result).toHaveLength(128);
+  expect(result.slice(0, 110).map((p) => p.entity.id)).toEqual(
+    ancestors.map((p) => p.entity.id)
+  );
+  expect(
+    result.find((p) => p.entity.id === selected.entity.id)?.renderDensity
+  ).toEqual({ pointScale: 1, opacity: 1, labelOpacity: 1 });
+});
+
+it("orders admission by effective child support even when the parent's own bounds are tiny", () => {
+  const parent = owner("parent", { minX: 0, maxX: 0.1, minY: 0, maxY: 0.1 });
+  const child = owner("child", box, ["parent"]);
+  const camera = { scaleX: 1, scaleY: 1 };
+  const spans = resolveRenderCompositeSpans([child, parent], camera);
+  expect(spans.get("parent")).toBeGreaterThan(spans.get("child")!);
+  const leaves = points.map((p) => ({
+    ...p,
+    entity: { kind: "event" as const, id: p.id }
+  }));
+  const result = selectRenderDensity(
+    [...leaves, child, parent],
+    box,
+    new Map(),
+    undefined,
+    camera
+  );
+  expect(result).toHaveLength(128);
+  expect(result.slice(0, 2).map((p) => p.entity.id)).toEqual([
+    "parent",
+    "child"
+  ]);
+});
+
+it("closes offscreen children over prepared parents without exceeding128+32", () => {
+  const parent = owner("buffer-parent", {
+    minX: -10,
+    maxX: -9,
+    minY: 4,
+    maxY: 5
+  });
+  const children = Array.from({ length: 40 }, (_, i) => ({
+    ...points[1]!,
+    id: `buffer-child-${i}`,
+    entity: { kind: "event" as const, id: `buffer-child-${i}` },
+    bounds: { minX: -0.25, maxX: -0.25, minY: 5, maxY: 5 },
+    parentCompositeIds: ["buffer-parent"]
+  }));
+  const result = selectRenderDensity(
+    [...points, ...children, parent],
+    box,
+    new Map()
+  );
+  expect(result).toHaveLength(160);
+  const buffer = result.slice(128);
+  expect(buffer[0]!.entity.id).toBe("buffer-parent");
+  expect(
+    buffer.filter((p) => p.entity.id.startsWith("buffer-child"))
+  ).toHaveLength(31);
 });

@@ -35,8 +35,8 @@ export function selectSemanticLabels(
   previous: ReadonlySet<string>
 ) {
   const budget = Math.max(
-    8,
-    Math.min(32, Math.floor((viewport.width * viewport.height) / 23000))
+    10,
+    Math.min(40, Math.floor((viewport.width * viewport.height) / 18000))
   );
   // Offscreen glyphs neither remove the visible part of a label nor block
   // another label through collisions outside the screen.
@@ -67,10 +67,10 @@ export function selectSemanticLabels(
     if (
       accepted.some(
         (other) =>
-          candidate.x < other.x + other.width + 4 &&
-          candidate.x + candidate.width + 4 > other.x &&
-          candidate.y < other.y + other.height + 4 &&
-          candidate.y + candidate.height + 4 > other.y
+          candidate.x < other.x + other.width + 2 &&
+          candidate.x + candidate.width + 2 > other.x &&
+          candidate.y < other.y + other.height + 2 &&
+          candidate.y + candidate.height + 2 > other.y
       )
     )
       continue;

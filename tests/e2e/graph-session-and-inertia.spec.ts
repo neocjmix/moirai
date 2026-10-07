@@ -158,39 +158,52 @@ test("last World and final camera restore from an entry URL while explicit camer
     .toBe(camera);
 });
 
-test("compact two-row HUD preserves World, Events and Collection navigation outside the axis", async ({
+test("right-edge HUD stacks World, active topic and badged Collection layers outside the axis", async ({
   page
 }, info) => {
   await open(page);
   const hud = page.getByTestId("graph-context-hud");
   const worldLink = hud.getByRole("link", { name: "월드 선택", exact: true });
-  const eventsLink = hud.getByRole("link", { name: "사건 목록", exact: true });
-  const bounds = await hud.evaluate((node) => {
-    const box = node.getBoundingClientRect();
-    const links = [...node.querySelectorAll("a")].map((link) => ({
-      box: link.getBoundingClientRect().toJSON(),
-      wrap: getComputedStyle(link).whiteSpace
-    }));
-    return {
-      box: box.toJSON(),
-      links,
-      overflow: document.documentElement.scrollWidth > innerWidth
-    };
-  });
-  expect(bounds.box.x).toBeGreaterThanOrEqual(64);
-  expect(bounds.box.height).toBeLessThanOrEqual(68);
-  expect(bounds.links).toHaveLength(2);
-  expect(bounds.links[0]!.box.y).toBe(bounds.links[1]!.box.y);
-  expect(bounds.links.every((link) => link.wrap === "nowrap")).toBe(true);
-  expect(bounds.overflow).toBe(false);
-  await page.getByRole("button", { name: /^컬렉션/ }).click();
+  await expect(
+    hud.getByRole("link", { name: "사건 목록", exact: true })
+  ).toHaveCount(0);
+  const trigger = hud.getByTestId("graph-collection-trigger");
+  await expect(hud.getByTestId("graph-context-topic")).toBeVisible();
+  for (const width of [320, 390, 1440]) {
+    await page.setViewportSize({ width, height: 844 });
+    const bounds = await hud.evaluate((node) => {
+      const link = node.querySelector("a")!;
+      const topic = node.querySelector('[data-testid="graph-context-topic"]')!;
+      const button = node.querySelector("button")!;
+      return {
+        box: node.getBoundingClientRect().toJSON(),
+        world: link.getBoundingClientRect().toJSON(),
+        topic: topic.getBoundingClientRect().toJSON(),
+        button: button.getBoundingClientRect().toJSON(),
+        wrap: getComputedStyle(link).whiteSpace,
+        overflow: document.documentElement.scrollWidth > innerWidth
+      };
+    });
+    expect(bounds.box.x).toBeGreaterThanOrEqual(64);
+    expect(bounds.world.right).toBeCloseTo(width - 12, 0);
+    expect(bounds.topic.right).toBeCloseTo(bounds.world.right, 0);
+    expect(bounds.button.right).toBeCloseTo(bounds.world.right, 0);
+    expect(bounds.topic.top).toBeGreaterThanOrEqual(bounds.world.bottom);
+    expect(bounds.button.top).toBeGreaterThan(bounds.topic.bottom);
+    expect(bounds.button.width).toBeGreaterThanOrEqual(44);
+    expect(bounds.button.height).toBeGreaterThanOrEqual(44);
+    expect(bounds.wrap).toBe("nowrap");
+    expect(bounds.overflow).toBe(false);
+  }
+  await page.setViewportSize({ width: 390, height: 844 });
+  await expect(trigger.locator("svg")).toBeVisible();
+  await expect(trigger).toHaveText(/^\d+$/);
+  await trigger.click();
   await expect(page.getByRole("dialog")).toBeVisible();
   await expect(page.getByRole("checkbox")).not.toHaveCount(0);
   await page.getByRole("button", { name: "닫기", exact: true }).click();
   await expect(page.getByRole("dialog")).not.toBeVisible();
-  await eventsLink.click();
-  await expect(page).toHaveURL(new RegExp(`/worlds/${world}/events`));
-  await page.goBack();
+  await expect(trigger).toBeFocused();
   await worldLink.click();
   await expect(
     page.getByRole("heading", { name: "월드 선택", exact: true })

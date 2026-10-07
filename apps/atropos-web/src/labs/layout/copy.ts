@@ -197,6 +197,11 @@ export const REPRESENTATION_COPY: Record<
     label: "묶음 점이 완전히 보이는 크기 · 픽셀",
     description: "숨김 크기부터 여기까지 작은 점이 서서히 나타납니다."
   },
+  stagedHierarchy: {
+    label: "시간축과 상하위 순서에 맞춘 전환",
+    description:
+      "세로 시간 길이를 우선하고 가로 길이는 20%만 반영합니다. 자식 묶음이 줄어든 뒤 상위 묶음이 같은 단계를 따라갑니다. 끄면 저장된 이전 방식으로 비교합니다."
+  },
   sequentialChildPoints: {
     label: "상위 묶음 전환에 자식 점 연결",
     description:
@@ -205,7 +210,7 @@ export const REPRESENTATION_COPY: Record<
   childRevealBySpan: {
     label: "상위 묶음의 가로·세로 크기로 구성 사건 표시",
     description:
-      "가로와 세로 중 큰 쪽을 기준으로 묶음이 열릴 때 자식 사건이 이어서 보입니다. 끄면 이전 설정처럼 세로 크기만 사용합니다."
+      "시간축·상하위 전환을 끈 경우에만 사용합니다. 켜면 가로·세로 중 큰 쪽, 끄면 세로 길이로 구성 사건을 표시합니다."
   },
   compactHysteresisPx: {
     label: "다시 확대할 때 점을 유지하는 여유 · 픽셀",

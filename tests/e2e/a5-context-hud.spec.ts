@@ -184,10 +184,21 @@ test("full, narrow and incomplete support all receive a ranked representative", 
   await expect(page.getByTestId("graph-context-topic")).toHaveText(
     "고정된 맥락"
   );
-  await expect(page.locator(`[data-region-id="${war}"]`)).toHaveCount(0);
+  const hull = page.locator(`path[data-region-id="${war}"]`);
+  await expect(hull).toBeVisible();
+  // A full-viewport parent remains a quiet wash behind its representative.
+  await expect
+    .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
+    .toBeGreaterThan(0.1);
+  expect(
+    await hull.evaluate((node) => Number(getComputedStyle(node).opacity))
+  ).toBeLessThan(0.3);
   linear = true;
   await page.setViewportSize({ width: 410, height: 844 });
-  await expect(page.locator(`[data-region-id="${war}"]`)).not.toHaveCount(0);
+  await expect(hull).toBeVisible();
+  await expect
+    .poll(() => hull.evaluate((node) => Number(getComputedStyle(node).opacity)))
+    .toBeGreaterThan(0.9);
   await expect(page.getByTestId("graph-context-topic")).toHaveText(
     "고정된 맥락"
   );

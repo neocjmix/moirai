@@ -22,8 +22,8 @@ it("shares one budget across point and Composite labels without modifying geomet
   );
   const original = structuredClone(input);
   const result = selectSemanticLabels(input, viewport, new Set());
-  expect(result.budget).toBe(14);
-  expect(result.ids.size).toBe(14);
+  expect(result.budget).toBe(18);
+  expect(result.ids.size).toBe(18);
   expect(input).toEqual(original);
 });
 it("prioritizes selection over a colliding retained label without hiding screen-edge text", () => {
@@ -93,7 +93,7 @@ it("allows a modestly tighter label density while keeping actual overlaps suppre
     selectSemanticLabels(
       [
         candidate("one", 40, 200),
-        candidate("next", 40, 225),
+        candidate("next", 40, 223),
         candidate("overlap", 40, 202)
       ],
       viewport,

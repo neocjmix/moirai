@@ -368,6 +368,8 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
   const leafPaint = page.locator('[data-event-paint-id="density-leaf"]');
   await captureOpacityExit(page, '[data-event-paint-id="density-leaf"] circle');
   hull = false;
+  // Leaves finish their 4–16px handoff while the parent is still a small dot.
+  compositeSpan = 3.5;
   suppressChild = true;
   await page.setViewportSize({ width: 490, height: 844 });
   const childExit = await opacityExit(page);
@@ -376,6 +378,15 @@ test("leaf and authored Composite points shrink, hide and reverse without losing
   );
   await expect(leafPaint.locator("[data-primary-hit-target]")).toHaveCount(0);
   await expect(leafPaint).toHaveCount(0);
+  await expect(compositePoint).toHaveAttribute(
+    "data-point-density",
+    "small-point"
+  );
+  await expect
+    .poll(() =>
+      compositePoint.evaluate((node) => Number(getComputedStyle(node).opacity))
+    )
+    .toBe(1);
   // Reentry after paint pruning is a new DOM mount, so it needs an explicit
   // entrance fade; an ordinary CSS transition cannot animate its first style.
   await page.evaluate(() => {

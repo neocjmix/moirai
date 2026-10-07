@@ -24,6 +24,12 @@
   max-width: 100%;
   min-width: 0;
 }
+.navigation,
+.topic {
+  background: rgb(248 245 238 / 94%);
+  border-radius: 4px;
+  box-shadow: 0 0 0 3px rgb(248 245 238 / 94%);
+}
 .world {
   display: inline-flex;
   align-items: center;

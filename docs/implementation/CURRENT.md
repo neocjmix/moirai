@@ -10,7 +10,7 @@
 
 ## 새 우선순위와 단계
 
-**2026-10-07 오른쪽 조작부·계층 표시 후속:** 사용자는 World 옆 사건 목록 제거, 오른쪽 World 선택기→활성 Event 제목→숫자 배지의 레이어 아이콘 순서와 더 많은 텍스트를 요청했다. 부모가 자식보다 먼저 사라지지 않도록 발행 후보와 화면 전환을 함께 고치며 Y 길이를 주로 사용하는 흐린 Hull→큰 점→작은 점→숨김을 유지한다. 기준선은 `047bfc92`, 검증 대상은 같은 새 세계사 r51이다. 같은 revision의 Render generation만 재생성하고 정본을 보존한다. [재현·검증 기록](../evidence/ip013/right-hud-hierarchy-2026-10-07.md)과 해당 PR의 최종 배포 기록을 따른다.
+**2026-10-07 오른쪽 조작부·계층 표시 — 구현·배포 완료:** 사용자는 World 옆 사건 목록 제거, 오른쪽 World 선택기→활성 Event 제목→숫자 배지의 레이어 아이콘 순서와 더 많은 텍스트를 요청했다. 부모가 자식보다 먼저 사라지지 않도록 발행 후보와 화면 전환을 함께 고치며 Y 길이를 주로 사용하는 흐린 Hull→큰 점→작은 점→숨김을 유지한다. [PR #333](https://github.com/neocjmix/moirai/pull/333)의 `8c82fcf0`를 3서비스에 배포하고 같은 새 세계사 r51의 실제 화면 검사 70개를 통과했다. 기준선은 `047bfc92`이며 같은 revision의 Render generation만 재생성하고 정본을 보존했다. 실제 화면에서 발견한 제목 뒤 그래프 글자 겹침은 두 제목 줄의 옅은 바탕으로 보강한다. [재현·검증 기록](../evidence/ip013/right-hud-hierarchy-2026-10-07.md)과 해당 PR의 최종 배포 기록을 따른다.
 
 **2026-10-07 사용자 후속 지시 — 구현·배포 완료:** [PR #331](https://github.com/neocjmix/moirai/pull/331)의 `a390e69a`에서 마지막 World·좌표 복원, 두 줄 HUD·World 선택 화면, Y 구간별 깊이 패딩, Composite 색상·축소 단계·부모/자식 연동 및 터치 관성을 배포했다. 작업 전 main/운영 기준선은 `f85c800b`이며 새 **세계사** World `01a107fb-4018-7fcb-8390-836a40fa91cc`의 r51(518 Event·486 Relation·6 Collection)로 운영 검사 37개를 통과했다. 이 World의 동일 source revision Render generation만 재생성했고 원본 Publication·역사 정본 digest는 유지됐다. [기준선·동작·완료 증거](../evidence/ip013/world-layout-continuity-2026-10-07.md)와 PR의 최종 CI·배포 기록을 따른다.
 

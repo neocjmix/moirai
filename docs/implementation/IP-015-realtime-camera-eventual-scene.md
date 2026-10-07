@@ -56,7 +56,8 @@ pointer / pinch / inertia
        display <--------- atomic publish/swap
                                       |
 gesture/inertia end ------------------+
-              immediate final reconcile
+        start latest full reconcile
+        (do not block current display)
 ```
 
 ## 3. Do not drive expensive GraphShell reconciliation at gesture frequency
@@ -70,10 +71,10 @@ Maintain a separate committed/reconciled camera for scene generation.
 A prepared scene must remember the camera/frame in which it was prepared. Rendering a slightly stale scene at the current live camera should use a relative transform equivalent to:
 
 ```text
-liveCamera × inverse(sceneCamera)
+relativeAffine(liveCamera, sceneCamera)
 ```
 
-so stale semantic/LOD state can still remain spatially attached to the current gesture.
+so stale semantic/LOD state can still remain spatially attached to the current gesture. Compute this transform in the same coordinate convention already used by `geographicPaintTransform` (anisotropic `scaleX`/`scaleY` plus translation); the formula above is conceptual, not permission to introduce a mismatched generic matrix convention.
 
 Do not sacrifice exact pointer-to-content spatial motion merely because semantic reconciliation is deferred.
 
@@ -88,8 +89,10 @@ Suggested model, to be tuned from behavior rather than treated as fixed constant
 - camera transform: every animation frame, no throttle;
 - cheap bounds/visibility/support check: roughly 20–50 ms throttle if needed;
 - expensive Composite geometry/representation/label reconciliation: roughly 80–200 ms throttle;
-- gesture end: immediate full reconcile;
-- inertia end: immediate full reconcile;
+- gesture end: immediately **start/schedule the latest full reconcile**;
+- inertia end: immediately **start/schedule the latest full reconcile**;
+
+“Immediate” here does not mean synchronously blocking the main thread until the full scene is rebuilt. Keep displaying the current stable scene under the live camera while the final reconcile runs, then atomically publish its result.
 - data/revision/Collection changes: preserve their required correctness semantics and reconcile promptly.
 
 Intermediate reconciliation is desirable when it can be produced without compromising camera responsiveness. The exact frequencies are implementation choices.
@@ -206,7 +209,7 @@ visible / overscan / required support?
 expensive contour / representation / label work
 ```
 
-Use conservative bounds so culling does not introduce visual holes.
+Cull against the **prepared support/overscan bounds plus explicitly required semantic support**, not merely the visible viewport. Otherwise early culling would defeat the overscan strategy. Use conservative bounds so culling does not introduce visual holes.
 
 LOD remains an information-design mechanism. Do not hide objects earlier solely to make an inefficient pipeline pass.
 
@@ -310,7 +313,15 @@ The end state may expose only the production custom WebGL2 renderer while still 
 
 Do not keep a user-facing renderer selector with one meaningless choice.
 
-## 14. Profiling strategy
+## 14. SVG live-transform constraint
+
+Native SVG text, relations and interaction targets remain valuable and should not be discarded casually. During direct manipulation, a committed SVG overlay may follow the same live relative camera transform while expensive membership/label/path reconciliation is throttled.
+
+However, apply the live transform to geometry/position without accidentally scaling visual properties intentionally defined in CSS pixels. Font size, stroke width, label halo and similar screen-space styling must preserve the existing Atropos convention unless a deliberate visual change is separately approved.
+
+If stale hit targets are unsafe during an active gesture, temporarily suppressing hit activation while the gesture is moving is preferable to forcing a full semantic reconcile every frame, provided normal interaction returns immediately when the gesture settles.
+
+## 15. Profiling strategy
 
 This step needs targeted instrumentation, not another large benchmark campaign.
 
@@ -342,7 +353,7 @@ browser composition
 
 Existing diagnostics should be reused where possible. Add counters around suspected GraphShell phases rather than a large new telemetry framework.
 
-## 15. Success criteria for this slice
+## 16. Success criteria for this slice
 
 The main success condition is architectural and user-observable:
 
@@ -359,7 +370,7 @@ The main success condition is architectural and user-observable:
 
 Do not claim success from synthetic FPS alone. The user's iPhone Safari/PWA interaction is the qualitative acceptance surface.
 
-## 16. Execution order
+## 17. Execution order
 
 Recommended order:
 
@@ -369,14 +380,14 @@ Recommended order:
 4. decouple live camera from expensive reconciliation;
 5. add throttle/overscan/latest-wins/final-reconcile behavior;
 6. establish culling/eviction so retained work shrinks again;
-7. evaluate/move remaining CPU-heavy reconciliation to a worker where justified;
-8. port the Three prototype's bounded separable Gaussian technique into raw WebGL if it remains low-risk and visually superior;
+7. profile remaining main-thread CPU-heavy reconciliation; move only the stages whose measured cost justifies worker transfer/coordination overhead;
+8. opportunistically port the Three prototype's bounded separable Gaussian technique into raw WebGL only if it does not delay the camera/working-set work; otherwise leave it as the next isolated visual/performance change;
 9. remove Pixi/Three implementations/dependencies/UI while retaining the useful backend boundary;
 10. run focused functional/mobile regressions, deploy a checkpoint and let the user assess the real device.
 
 Steps may be reordered when measurements show a clearer dependency, but do not spend the slice micro-optimizing the abandoned candidate engines.
 
-## 17. Stop/report
+## 18. Stop/report
 
 At the next meaningful checkpoint report:
 

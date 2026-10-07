@@ -162,10 +162,14 @@ test("viewport resize does not stretch a previously painted frame before camera 
     .not.toBeNull();
   const before = await canvas.evaluate((node) => {
     const canvas = node as HTMLCanvasElement;
-    const parent = canvas.parentElement!;
-    const svg = parent.querySelector(
-      'svg[aria-label="Projected chart surface"]'
-    ) as SVGSVGElement;
+    const svg = canvas
+      .closest('[data-testid="graph-stage"]')!
+      .querySelector(
+        'svg[aria-label="Projected chart surface"]'
+      ) as SVGSVGElement;
+    // The backend lifecycle owns an inner canvas wrapper. Resize the shared
+    // observed viewport, not that wrapper, and keep the same atomicity checks.
+    const parent = svg.parentElement!;
     const width = canvas.getBoundingClientRect().width;
     const height = canvas.getBoundingClientRect().height;
     parent.style.width = `${parent.getBoundingClientRect().width - 40}px`;
@@ -190,7 +194,10 @@ test("viewport resize does not stretch a previously painted frame before camera 
       canvas.evaluate((node) => {
         const canvas = node as HTMLCanvasElement;
         const bounds = canvas.getBoundingClientRect(),
-          parent = canvas.parentElement!.getBoundingClientRect();
+          parent = canvas
+            .closest('[data-testid="graph-stage"]')!
+            .querySelector('svg[aria-label="Projected chart surface"]')!
+            .parentElement!.getBoundingClientRect();
         return (
           Math.abs(bounds.width - parent.width) +
           Math.abs(bounds.height - parent.height)

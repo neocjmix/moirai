@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-2026-10-07 UTC, IP-013 흰 배경·부드러운 Hull·안료 혼색 후속. 이 파일은 현재 실행·배포 상태를 소유한다. [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md)과 dated evidence는 역사 기록이다.
+2026-10-07 UTC, IP-013 최소 배율 안료 렌더링 비용 개선. 이 파일은 현재 실행·배포 상태를 소유한다. [PR #303까지의 이력](CURRENT-HISTORY-THROUGH-PR303.md)과 dated evidence는 역사 기록이다.
 
 ## 실행 원칙과 종료 결정
 
@@ -9,6 +9,8 @@
 **모바일 성능·연속성 튜닝은 2026-10-04 사용자 체감 수용과 명시적 지시로 종료했다.** 사용자는 운영이 상당히 원활하다고 확인했다. [종료 결정·검증·잔여 backlog](IP-012-mobile-continuity-closeout.md)가 이전 목표 달성까지 자율 튜닝하라는 지시를 대체한다. 기존 p9533.4ms 미달을 통과로 바꾸지 않으며 숫자 미달만으로 자동 재개하지 않는다. 이후 구체적 버그는 정상적인 수정·회귀 검증으로 처리한다.
 
 ## 새 우선순위와 단계
+
+**2026-10-07 최소 배율 성능 회귀 — 개선 구현:** 사용자는 [#335](https://github.com/neocjmix/moirai/pull/335)의 시각 결과를 수용하면서 최소 배율 회귀와 경미한 효과 열화를 허용했다. `e8420f75`/새 세계사 r51 기준으로 혼색 표면을 CSS 1px·30만 pixel, GPU feather를 2겹으로 줄이고 VAO·오차 제한 Hull mesh 재사용과 불필요한 라벨 준비 생략을 구현했다. Cloud WebKit 최소 배율 핀치 중앙값은 329→182ms, mesh rebuild는 74%, upload는 84% 감소했다. 패닝 개선은 작고 기존 frame gate는 미달이다. 정확한 글자·점·선택·계층 단계와 정본/발행은 보존하며 A4 전체나 backend/역사 작업을 재개하지 않는다. [측정·개선 기록](../evidence/ip013/minimum-zoom-pigment-performance-2026-10-07.md)과 해당 PR의 최종 CI·deployed SHA·공개 검증 기록이 closeout을 소유한다.
 
 **2026-10-07 흰 배경·Hull 안료 혼색:** `05cef198`(#334)을 기준으로 배경·이름표 halo를 흰색으로 바꾸고 테두리 opacity를 0.20→0.15로 낮춘다. 테두리 없는 단계는 최대 2.4px의 안쪽 4겹 면으로 부드러운 경계를 만들며 실제 blur는 사용하지 않는다. Spectral.js 3.0.0의 재료를 캐시하고 기본 WebGL에서 6대역 K/S 근사 혼색을 수행한다. SVG/Canvas fallback은 multiply 근사이며 완전한 스펙트럼 혼합과 구분한다. 새 세계사 r51로 읽기 전용 검증하고 기존 Render generation·정본·단계·점 색상은 보존한다. [구현·비용·검증 기록](../evidence/ip013/spectral-hull-paint-2026-10-07.md)과 해당 변경 PR의 최종 CI·deployed SHA·운영 검증 기록이 closeout을 소유한다.
 

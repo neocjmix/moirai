@@ -124,17 +124,33 @@ export function createCompositePanGeometryCache({
       }
       const dx = origin.x - entry.origin.x;
       const dy = origin.y - entry.origin.y;
-      if (labelHeight !== undefined && labelGap !== undefined) {
-        if (!entry.labelPaths || entry.labelPaths.labelHeight !== labelHeight || entry.labelPaths.labelGap !== labelGap) {
-          entry.labelPaths = prepareCompositeLabelPaths(entry.expanded, labelHeight, labelGap);
-          labelPathBuilds++;
-        } else labelPathHits++;
-      }
+      const shapeEntry = entry;
+      const inheritedLabelPaths = entry.labelPaths;
+      let resolvedLabelFrame = false;
+      let labelPathFrame: {prepared: ReturnType<typeof prepareCompositeLabelPaths>; offset: ViewportCoordinate} | undefined;
       return {
         projectedHullPoints,
         projectedPoints: dx === 0 && dy === 0 ? entry.expanded : entry.expanded.map(point => ({x: point.x + dx, y: point.y + dy})),
         path: entry.path,
-        labelPathFrame: entry.labelPaths ? {prepared: entry.labelPaths, offset: {x: dx, y: dy}} : undefined,
+        // Compact owners use a point label and never read this frame. Keep
+        // their exact hull/stage geometry, but build edge contours only when
+        // an actual hull label needs them. One projection counts at most one
+        // label-cache access, even if its caller reads the frame repeatedly.
+        get labelPathFrame() {
+          if (!resolvedLabelFrame) {
+            let prepared = inheritedLabelPaths;
+            if (labelHeight !== undefined && labelGap !== undefined) {
+              if (!shapeEntry.labelPaths || shapeEntry.labelPaths.labelHeight !== labelHeight || shapeEntry.labelPaths.labelGap !== labelGap) {
+                shapeEntry.labelPaths = prepareCompositeLabelPaths(shapeEntry.expanded, labelHeight, labelGap);
+                labelPathBuilds++;
+              } else labelPathHits++;
+              prepared = shapeEntry.labelPaths;
+            }
+            labelPathFrame = prepared ? {prepared, offset: {x: dx, y: dy}} : undefined;
+            resolvedLabelFrame = true;
+          }
+          return labelPathFrame;
+        },
         pathTransform: dx === 0 && dy === 0 ? undefined : `translate(${dx} ${dy})`
       };
     },

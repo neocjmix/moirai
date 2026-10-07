@@ -39,6 +39,23 @@ describe("authored background tessellation", () => {
         .every((side) => Math.abs(side) === 1)
     ).toBe(true);
   });
+  it("keeps fill triangles unchanged when feather insets omit stroke allocation", () => {
+    for (const path of [
+      "M0 0 L10 0 L10 4 L4 4 L4 10 L0 10 Z",
+      "M0 10 L4 10 L4 4 L10 4 L10 0 L0 0 Z",
+      "M0 0 C0 10,10 10,10 0 L0 0 Z",
+      "M0 0 L10 0 Z"
+    ]) {
+      const full = geographicMesh(path);
+      const fillOnly = geographicMesh(path, { stroke: false });
+      expect(fillOnly.fill).toEqual(full.fill);
+      expect(fillOnly.stroke.byteLength).toBe(0);
+      expect(full.stroke.byteLength).toBeGreaterThan(0);
+    }
+    expect(() =>
+      geographicMesh("M0 0 L10 10 L0 10 L10 0 Z", { stroke: false })
+    ).toThrow();
+  });
   it("rejects unsupported or non-simple geometry instead of painting invented meaning", () => {
     expect(() => geographicMesh("M0 0 A10 10 0 0 0 20 20 Z")).toThrow();
     expect(() => geographicMesh("M0 0 L10 10 L0 10 L10 0 Z")).toThrow();

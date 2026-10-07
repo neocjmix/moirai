@@ -10,7 +10,7 @@
 
 ## 새 우선순위와 단계
 
-**2026-10-07 사용자 후속 지시:** 마지막 World·좌표 복원, 두 줄 HUD·World 선택 화면, Y 구간별 깊이 패딩, Composite 색상·축소 단계·부모/자식 연동 및 터치 관성을 구현·검증·배포한다. 작업 전 main/운영 기준선은 `f85c800b`이며 검증 대상은 새 **세계사** World `01a107fb-4018-7fcb-8390-836a40fa91cc`의 r51(518 Event·486 Relation·6 Collection)이다. 새 패딩 metadata를 위해 이 World의 동일 source revision Render generation만 재생성하고 원본 Publication·역사 정본의 불변을 확인한다. [기준선·동작·완료 증거](../evidence/ip013/world-layout-continuity-2026-10-07.md)와 해당 PR의 최종 배포 기록을 따른다.
+**2026-10-07 사용자 후속 지시 — 구현·배포 완료:** [PR #331](https://github.com/neocjmix/moirai/pull/331)의 `a390e69a`에서 마지막 World·좌표 복원, 두 줄 HUD·World 선택 화면, Y 구간별 깊이 패딩, Composite 색상·축소 단계·부모/자식 연동 및 터치 관성을 배포했다. 작업 전 main/운영 기준선은 `f85c800b`이며 새 **세계사** World `01a107fb-4018-7fcb-8390-836a40fa91cc`의 r51(518 Event·486 Relation·6 Collection)로 운영 검사 37개를 통과했다. 이 World의 동일 source revision Render generation만 재생성했고 원본 Publication·역사 정본 digest는 유지됐다. [기준선·동작·완료 증거](../evidence/ip013/world-layout-continuity-2026-10-07.md)와 PR의 최종 CI·배포 기록을 따른다.
 
 [IP-013 실제 역사 기반 병행 계획](IP-013-real-history-development-plan.md)이 기존 A5 전체 완료→A6 순서를 대체한다. **#324의 runtime 구현 commit은 `290cbbe1ed15b4927a6bbeb964fcd37a40d9bf2d`다.** 이 SHA의 3서비스 배포·공개 smoke·Lab 모바일 WebKit 5개 검증을 완료했다. 이전 W/C 검증 중·역사 미착수 표기는 #323과 실제 데이터보다 뒤처져 있었다. R/L 검증에 사용한 공개 역사 World revision26(147 Event·3 Collection)과 read-only export는 고정 evidence로 보존한다. 이것을 별도의 역사 정확성/사용자 pilot 수용으로 확대하지 않는다.
 

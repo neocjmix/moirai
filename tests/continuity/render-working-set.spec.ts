@@ -6,7 +6,9 @@ const event = "019f3b00-0000-7000-8000-000000000a12";
 const composite = "019f3b00-0000-7000-8000-000000000a11";
 const continuityComposite = "019f3b00-0000-7000-8000-000000000b01";
 const closeCamera = [-289, 222880, 800, 6000];
-const wideCamera = [-289, 222880, 2000, 24000];
+// The longer-lived hull now becomes a point at 12px. This camera reaches
+// 11.83px after the World X-bound clamp, preserving a real representation roundtrip.
+const wideCamera = [-289, 222880, 4000, 48000];
 
 test("WebGL paints bounded vector ink and retains native labels through unequal XY zoom", async ({
   page

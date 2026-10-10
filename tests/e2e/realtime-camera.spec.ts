@@ -1,4 +1,10 @@
 import { expect, test, type Page } from "@playwright/test";
+test.afterEach(async ({ page }) => {
+  // Async scene reads can outlive the camera settle assertion. Drain mock routes
+  // before disposing the page/request context, preserving any handler errors.
+  await page.unrouteAll({ behavior: "wait" });
+});
+
 type Inspection = {
   view: { x: number; y: number; scaleX: number; scaleY: number };
   liveView: { x: number; y: number; scaleX: number; scaleY: number };

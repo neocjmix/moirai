@@ -32,7 +32,7 @@ test("Collection refresh retains an admitted Event label against a fading Compos
       contains: []
     };
     // Both labels fit but collide. The selected Event establishes the label;
-    // the Composite alone survives the loader replacement through exit paint.
+    // the committed Event and Composite survive while the next scene prepares.
     const rx = cx;
     const bounds = {
       minX: rx - dx * 0.001,
@@ -90,6 +90,7 @@ test("Collection refresh retains an admitted Event label against a fading Compos
     `[data-primary-hit-target="event"][data-event-point-id="${event}"]`
   );
   await expect(target).toBeVisible();
+  const committedTarget = await target.elementHandle();
   await expect(
     page.locator('[data-composite-point-id="colliding-composite"]')
   ).toHaveCount(1);
@@ -102,7 +103,14 @@ test("Collection refresh retains an admitted Event label against a fading Compos
   blockViewport = true;
   await option.uncheck();
   await expect.poll(() => Boolean(releaseViewport)).toBe(true);
-  await expect(target).toHaveCount(0);
+  // IP-015 keeps the complete committed scene while replacement data waits.
+  await expect(target).toBeVisible();
+  expect(
+    await target.evaluate(
+      (node, previous) => node === previous,
+      committedTarget
+    )
+  ).toBe(true);
   blockViewport = false;
   releaseViewport!();
   await expect(target).toBeVisible();

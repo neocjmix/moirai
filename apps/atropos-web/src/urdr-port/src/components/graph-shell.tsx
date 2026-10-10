@@ -2823,7 +2823,7 @@ export function GraphShell({
       return;
     }
 
-    const nextViewportSlice = createGraphShellViewportSliceFromView(view, viewportSize);
+    const nextViewportSlice = createGraphShellViewportSliceFromView(liveCamera.get(), viewportSize);
     if (!nextViewportSlice) {
       return;
     }
@@ -2855,6 +2855,9 @@ export function GraphShell({
     const gestureActive = Object.keys(activePointers).length > 0 || isNavigationAnimating || navigationAnimationRef.current !== null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const writeRestorableState = () => {
+      // Camera intent is authoritative even while the stable scene is waiting.
+      // Delayed/pagehide writes must sample it at flush time, not capture a scene.
+      nextRestorableState.viewport = createGraphShellViewportSliceFromView(liveCamera.get(), viewportSize) ?? nextViewportSlice;
       const storage = graphSessionStorage();
       if (persistenceWorldId) rememberGraphWorld(storage, persistenceWorldId, nextRestorableState);
       try {
@@ -2902,6 +2905,7 @@ export function GraphShell({
     };
   }, [
     activePointers,
+    navigationRelease,
     isNavigationAnimating,
     persistenceWorldId,
     effectiveEnabledCanonIds,

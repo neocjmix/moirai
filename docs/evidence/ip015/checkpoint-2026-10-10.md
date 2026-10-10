@@ -24,7 +24,7 @@ Code also expanded a selected parent's recursive closure into remote siblings. A
 
 ## Verification and limitations
 
-Focused unit checks cover affine mapping, scheduler cadence/settle/latest-wins, Worker pending replacement/failure, complete hierarchy support, culling and contour reuse. Mobile WebKit covers immediate camera-only pan, independent-axis pinch/native text and point metrics, final convergence, pigment mixing, mesh reuse, point-only recovery and SVG fallback. Build, strict types, format/lint, boundary and secret checks are recorded on the implementation PR.
+Focused unit checks cover affine mapping, scheduler cadence/settle/latest-wins, Worker pending replacement/failure, complete hierarchy support, culling and contour reuse. Mobile WebKit covers immediate camera-only pan, independent-axis pinch/native text and point metrics, final convergence, pigment mixing, mesh reuse, point-only recovery and SVG fallback. 24 focused unit tests and 17 affected mobile checks passed. The extra continuity checks exposed stale scene-camera URL persistence after repeated boundary drags; persistence now samples live camera intent at flush time, and the unchanged boundary regression passes. Build, strict types, format/lint, boundary and secret checks are recorded on the implementation PR.
 
 The broader local unit run had 779 passes, 14 timeout failures and 2 skips under concurrent scale/browser work; it is not all-green evidence. Existing main's Next.js high dependency advisory and authenticated Clotho policy-smoke failure remain separate from this frontend slice. Database/integration CI is retained; no schema/server/canonical changes are made. Physical iPhone Safari/PWA feel, long-duration heap and OS context lifecycle remain user/device validation.
 

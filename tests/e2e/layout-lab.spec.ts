@@ -699,3 +699,34 @@ test.describe("desktop WebKit wheel boundary", () => {
     });
   });
 });
+
+test("promoted incidence candidate exposes every control and replays complete membership", async ({
+  page
+}) => {
+  await ready(page);
+  const before = await readPreset(page);
+  await openSection(page, "layout");
+  await page.getByTestId("lab-algorithm").selectOption("global-incidence");
+  await waitForCompute(page);
+  const selected = await readPreset(page);
+  expect(selected.algorithm).toBe("global-incidence");
+  expect(selected.snapshot.input.incidence?.formatVersion).toBe(
+    "collection-incidence/1"
+  );
+  expect(selected.snapshot).toEqual(before.snapshot);
+  expect(selected.camera).toEqual(before.camera);
+  await expect(page.getByTestId("lab-layout-parameter-spacing")).toBeVisible();
+  await page.getByTestId("lab-layout-parameter-spacing").fill("64");
+  await waitForCompute(page);
+  const tuned = await readPreset(page);
+  expect(tuned.parameters.spacing).toBe(64);
+  await expect(
+    page
+      .getByRole("img", { name: afterName, includeHidden: true })
+      .locator("g[data-event-id]")
+  ).toHaveCount(173);
+  await page.getByTestId("lab-preset-json").fill(JSON.stringify(tuned));
+  await page.getByTestId("lab-preset-restore").click();
+  await waitForCompute(page);
+  expect((await readPreset(page)).parameters).toEqual(tuned.parameters);
+});

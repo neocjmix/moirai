@@ -2,11 +2,14 @@
 
 2026-10-10 UTC. **사용자가 검토한 전역 incidence의 운영 승격·전체 Render 재발행이 현재 실행 범위다.** IP-015 realtime camera / eventual scene은 보존하는 렌더러 기준선이다. 이 파일과 [IP-015](IP-015-realtime-camera-eventual-scene.md)가 실행 상태·요구사항을 소유한다. [이전 CURRENT](../evidence/ip015/current-before-2026-10-10.md)는 역사 기록이다.
 
-## 전역 incidence 운영 승격 — 실행 중
+## 전역 incidence 운영 승격 — 배포·전체 재발행 완료
 
 2026-10-10 사용자는 GitHub Pages의 `전역 incidence · 데이터 기반 중심`을 운영에 배포하고 전체 퍼블리싱하도록 명시적으로 요청했다. 이는 이전 Lab-only/no-backfill 경계를 이 후보에 한해 대체한다. 모든 공개 v5 World의 served Revision과 모든 Time System에서 전체 Render generation을 재생성한다. 역사 정본·Revision·Event identity·시간 Y는 그대로이며 membership은 World-wide X 계산 입력이다. 선택/줌/패닝 중에는 solver를 실행하지 않는다.
 
 [연구 보고서](../evidence/ip013/collection-layout-experiment-v2.md)는 당시 실험 결과이고 [승격·발행 증거](../evidence/ip013/global-incidence-rollout.md)가 현재 배포 상태·결과와 롤백을 소유한다. 고정된 Render grid/compiler v4와 IP-015 GraphShell을 재사용한다. 운영 확인은 아래 역사 Graph URL이다. 이번 변경으로 Collection discovery·canonical 역사 편집·M5·성능 튜닝을 재개하지 않는다.
+
+
+PR #345 / `45c637bce8e7730f562d0a7842ff9d9e1dbac03c`로 후보를 배포했다. 전체 재발행은 World 2개·Time System 2개, 실패 0건으로 완료했다. 역사 r56 / 539 Event·7 Collection·source root를 보존하며 공개 430 point XY·109 Composite bounds가 reviewed 결과와 exact 일치한다. 공개 readiness와 desktop/mobile Chromium 탐색은 통과했다. 이전 generation backup을 보존하고 one-shot 설정을 비웠다. Lab copy 누락 회귀는 PR #346에서 수정하고 기존 Lab 화면 8개·새 전역 후보 replay 1개를 확인했다. 기존 dependency audit / authenticated Clotho smoke 실패와 실제 iPhone17 Safari/PWA 미검증은 남아 있다.
 
 ## IP-015 보존 checkpoint
 

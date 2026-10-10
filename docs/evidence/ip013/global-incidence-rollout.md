@@ -30,4 +30,22 @@ canonical `current.json`·Revision·정본 데이터·기존 immutable spatial t
 
 ## 실행 결과
 
-배포·공개 검증 후 갱신한다.
+PR [#345](https://github.com/neocjmix/moirai/pull/345)는 `45c637bce8e7730f562d0a7842ff9d9e1dbac03c`로 병합·운영 배포됐다. Railway Atropos `25173105-ef89-420b-a2d5-3ae8f4eefabf`, worker `71470f87-5463-4e69-8f8d-4be2391b3e45`, Clotho `8df5a157-b37f-465a-8b17-91df008b1331`는 해당 소스 배포다. 적용 후 public readiness smoke가 정확한 SHA로 통과했다.
+
+`global-incidence-20261010` 전체 재발행은 15:16:42 UTC 완료: **served 2 / failed 0 / skipped 0**, 모든 World의 모든 Time System이다. synthetic World는 r62 / generation `765e6538e6a0bca9c4efe43223c8e6f17b7e4aa28849b33f5329cb26746c2c00`, 역사 World는 r56 / generation `25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af`다. 총 11,278 documents / 114,618,279 bytes이며 worker 시작부터 약 140초다. 각 World의 immutable 이전 pointer backup을 보존했고 완료 후 ALL/RUN_ID/LAYOUT one-shot 변수를 비웠다. 이전 Railway staged inspector 변경 2개는 적용하지 않았다. [operator 기록](global-incidence/rollout.json), [모든 Time System의 공개 manifest 확인](global-incidence/all-time-systems.json).
+
+역사 snapshot의 source root digest·539 Event·7 Collection·관계 metadata는 전후 exact 일치한다. 새 input digest는 incidence membership 필드 추가로 달라진다. 공개 finest tile 493개에서 replicas consistency를 검사했고 **430 일반 Event의 XY와 109 Composite의 worldBounds가 reviewed Pages 결과와 exact 일치**한다. Render bounds는 hull support/paint bounds이므로 layout region envelope와 숫자가 같을 필요는 없다. [공개 좌표 확인](global-incidence/public-coordinates.json).
+
+Chromium desktop와 iPhone14 mobile emulation에서 실제 새 generation을 확인했다. 공유 Event drawer·확대 후 단일 point identity·Composite/Hull·Collection 해제/복원 시 camera 유지·pan·zoom·overflow·page/request error를 확인했다. 두 화면에서 초기 넓은 화면 WebGL painter와 단일 generation을 관측했으며 errors 0이다. 좁은 화면에서 Cloud GPU의 SVG fallback도 관측했다. 실제 Safari/PWA 결과나 FPS 수용으로 해석하지 않는다. 넓은 화면에서 특정 child point가 안 보이는 것을 identity 소실로 판단하지 않고 확대하여 같은 canonical Event를 확인했다. [공개 화면 검사](global-incidence/public-check.json).
+
+![역사 운영 화면 — desktop](global-incidence/history-desktop.png)
+
+![역사 운영 화면 — mobile Chromium](global-incidence/history-mobile.png)
+
+![공유 Event 확대 — mobile Chromium](global-incidence/shared-event-mobile.png)
+
+자동 검증은 unit 805 passed / 2 skipped, PostgreSQL18 integration 49 passed, 명시적 legacy renderer Chromium regression 11 passed, strict typecheck·format·lint·boundaries·production build·commit-range gitleaks 통과다. disposable integration DB는 종료했다. main CI의 typecheck/test/build는 통과했지만 기존 dependency audit에서 실패했다. A5 public mobile checkpoint는 통과했고 post-deploy의 public readiness / mobile WebKit 단계도 통과했다. authenticated Clotho authoring smoke의 기존 실패는 남아 있다.
+
+main 모바일 CI에서는 새 registry 후보에 대한 Lab 한글 copy 누락으로 demo SSR이 실패했다(8 tests). 운영 Graph와 별개지만 승격에 따른 회귀이므로 PR #346에서 전역 후보의 모든 control copy와 registry completeness 회귀를 추가했다. reviewed geometry regression과 함께 focused unit 3개가 통과했고 strict typecheck·lint·format·재빌드·기존 Lab 화면 검사 8개와 새 전역 후보 선택/조절/preset replay 검사 1개가 Chromium mobile emulation에서 통과했다. solver와 generation은 변경하지 않는다. 연구 PR #344의 내용은 #345에 포함됐으며 중복 배포를 피하도록 닫았다.
+
+다음 최소 단계는 [운영 역사 Graph](https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc)를 실제 iPhone17 Safari와 PWA에서 관찰하는 것이다. 전역 중심의 과도한 공유 구간 결집·큰 Composite hull 중첩·작은 정본 추가 후 X displacement는 알려진 후보 한계로 유지한다. 사용자 관찰 없이 국소 후보로 자동 전환하지 않는다.

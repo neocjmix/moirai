@@ -24,17 +24,30 @@ async function captureLabelExit(page: Page, reverse: boolean) {
             samples.push(opacity);
             if (reverse && !reversed && opacity > 0 && opacity < 1) {
               reversed = true;
-              stage.dispatchEvent(
-                new PointerEvent("pointermove", {
-                  bubbles: true,
-                  pointerId: (window as unknown as { labelPointerId: number })
-                    .labelPointerId,
-                  pointerType: "mouse",
-                  buttons: 1,
-                  clientX: 220,
-                  clientY: 500
-                })
-              );
+              const node = stage as HTMLElement;
+              const capture = node.setPointerCapture;
+              node.setPointerCapture = () => {};
+              try {
+                // Semantic admission follows a settled scene; reverse with a
+                // complete new gesture while the committed CSS fade is active.
+                for (const [type, x] of [
+                  ["pointerdown", 232],
+                  ["pointermove", 220],
+                  ["pointerup", 220]
+                ] as const)
+                  stage.dispatchEvent(
+                    new PointerEvent(type, {
+                      bubbles: true,
+                      pointerId: 4243,
+                      pointerType: "mouse",
+                      buttons: type === "pointerup" ? 0 : 1,
+                      clientX: x,
+                      clientY: 500
+                    })
+                  );
+              } finally {
+                node.setPointerCapture = capture;
+              }
             }
             if (performance.now() - start < 420) requestAnimationFrame(sample);
             else
@@ -154,6 +167,7 @@ test("semantic label admission fades and reverses at the viewport boundary witho
   await page.mouse.move(220, 500);
   await page.mouse.down();
   await page.mouse.move(232, 500);
+  await page.mouse.up();
   const reversed = await exitEvidence(page);
   await page.mouse.move(220, 500);
   await page.mouse.up();
@@ -170,6 +184,7 @@ test("semantic label admission fades and reverses at the viewport boundary witho
   await page.mouse.move(220, 500);
   await page.mouse.down();
   await page.mouse.move(232, 500);
+  await page.mouse.up();
   const exit = await exitEvidence(page);
   await page.mouse.up();
   expect(exit.disabledAtExit).toBe(true);
@@ -192,7 +207,7 @@ test("semantic label admission fades and reverses at the viewport boundary witho
         const start = performance.now();
         const sample = () => {
           samples.push(Number(getComputedStyle(label).opacity));
-          if (performance.now() - start < 300) requestAnimationFrame(sample);
+          if (performance.now() - start < 420) requestAnimationFrame(sample);
           else
             resolve({
               samples,
@@ -210,6 +225,7 @@ test("semantic label admission fades and reverses at the viewport boundary witho
   await page.mouse.move(220, 500);
   await page.mouse.down();
   await page.mouse.move(208, 500);
+  await page.mouse.up();
   const entry = await page.evaluate(
     async () =>
       (

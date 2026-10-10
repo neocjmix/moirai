@@ -2438,7 +2438,10 @@ export function GraphShell({
     return () => { window.removeEventListener("pagehide", handlePageHide); release(); };
   }, [loader, retainLoader]);
 
-  useEffect(()=>{setRuntimeViewportResponse(null);setRuntimeViewportLoadState("idle");},[loader]);
+  // A new query owner prepares its replacement asynchronously. Keep the last
+  // committed source scene until that replacement is ready; never publish a
+  // temporary empty scene merely because Collection/loader identity changed.
+  useEffect(()=>{setRuntimeViewportLoadState("idle");},[loader]);
   // Moirai identity is an input/output seam; original selection and gestures stay intact.
   const onSelectionRef=useRef(onSelection);onSelectionRef.current=onSelection;
   useEffect(()=>{
@@ -2744,10 +2747,13 @@ export function GraphShell({
           const prepared = prepareCompositeWorldGeometry(fullResponse.regions, points, compositeHullMode);
           const support = worldBoundsForScreenBounds({minX:-96-compositeLabelReach,minY:-96-compositeLabelReach,maxX:viewportSize.width+96+compositeLabelReach,maxY:viewportSize.height+96+compositeLabelReach},view,viewportSize);
           const regions = selectCompositeWorldRegions(prepared,support,support,true);
-          const result = await geometryWorkerRef.current.prepare({generation:requestGeneration,view,viewport:viewportSize,tuning:compositeSplineTuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
+          let result;
+          // A camera job can supersede this priming job. Keep the still-current
+          // read alive: dropping it could leave a Collection refresh loading forever.
+          do { result = await geometryWorkerRef.current.prepare({generation:requestGeneration,view,viewport:viewportSize,tuning:compositeSplineTuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
             regions: regions.map(region => ({id:region.id,coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile}))});
+          } while (!result && relevant() && geometryWorkerRef.current && !geometryWorkerRef.current.inspect().failed);
           if (!relevant()) return;
-          if (!result && !geometryWorkerRef.current?.inspect().failed) { sceneScheduler.request(true); return; }
           if (result) compositePanGeometryCache.hydrate(result.entries);
         }
         parsedRuntimeViewportRef.current = {loader, received, parsed: fullResponse};
@@ -2798,7 +2804,6 @@ export function GraphShell({
   const runtimeChartPlaneEntities = useMemo(() => [...runtimeLinearEntities, ...runtimeRegionEntities], [runtimeLinearEntities, runtimeRegionEntities]);
 
   const visibleChartPlaneEntities = useMemo(() => {
-    if (runtimeViewportOwnerRef.current?.loader !== loader || runtimeViewportOwnerRef.current?.canons !== [...effectiveEnabledCanonIds].join(",")) return [];
     if (runtimeViewportResponse) {
       return runtimeChartPlaneEntities;
     }

@@ -1,0 +1,287 @@
+:root {
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+  color: #172b45;
+  background: #f4f6f9;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.table-wrap {
+  overflow-x: auto;
+}
+table {
+  border-collapse: collapse;
+  width: 100%;
+  font-size: 12px;
+}
+th,
+td {
+  text-align: left;
+  padding: 9px;
+  border-bottom: 1px solid #e1e7ef;
+}
+th {
+  background: #f0f4f9;
+}
+td:not(:first-child) {
+  white-space: nowrap;
+}
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+header,
+main {
+  max-width: 1440px;
+  margin: auto;
+  padding: 22px;
+}
+header {
+  padding-bottom: 8px;
+}
+h1 {
+  font-size: clamp(26px, 4vw, 40px);
+  line-height: 1.25;
+  letter-spacing: -0.03em;
+  margin: 12px 0;
+}
+header p {
+  max-width: 700px;
+  color: #53647c;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.1em;
+  color: #647d96;
+}
+.notice {
+  font-size: 12px;
+  color: #46694f;
+}
+.controls,
+.reading {
+  background: white;
+  border: 1px solid #dbe2eb;
+  border-radius: 12px;
+  padding: 16px;
+}
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: end;
+  margin: 8px 0;
+}
+.row label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+  color: #53647c;
+}
+.display label,
+#collections label {
+  display: inline-flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+  font-size: 13px;
+}
+input,
+select,
+button {
+  font: inherit;
+  color: inherit;
+  max-width: 100%;
+}
+select,
+input[type="number"],
+input:not([type]) {
+  border: 1px solid #ccd5e1;
+  border-radius: 6px;
+  padding: 8px;
+  background: white;
+  min-height: 38px;
+}
+button,
+.file {
+  background: #edf2f8;
+  border: 1px solid #bdcbdc;
+  border-radius: 6px;
+  padding: 8px 12px;
+  cursor: pointer;
+  min-height: 40px;
+}
+button:hover {
+  background: #dce8f7;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+#run {
+  background: #255d93;
+  color: white;
+  border-color: #255d93;
+}
+.file input {
+  max-width: 180px;
+}
+details {
+  padding: 10px 0;
+}
+summary {
+  cursor: pointer;
+}
+.parameters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 12px;
+}
+.parameters label {
+  display: flex;
+  flex-direction: column;
+  font-size: 12px;
+}
+.parameters input {
+  width: 95px;
+}
+.help {
+  font-size: 12px;
+  color: #617089;
+  margin: 8px 0;
+}
+#status {
+  font-size: 13px;
+  color: #47627c;
+  min-height: 22px;
+}
+.panels {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.panel {
+  background: white;
+  border: 1px solid #dbe2eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+h2 {
+  font-size: 18px;
+}
+.panel h2 {
+  margin: 0;
+  padding: 12px 16px;
+  border-bottom: 1px solid #edf0f5;
+  font-size: 16px;
+}
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+  background: #fff;
+}
+.metrics {
+  padding: 12px 16px;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  border-top: 1px solid #edf0f5;
+  font-size: 12px;
+}
+.metrics strong {
+  display: block;
+  font-size: 16px;
+  color: #243c57;
+}
+.metric-label {
+  color: #67768b;
+}
+#selection {
+  background: #eaf0f7;
+  padding: 12px;
+  border-radius: 8px;
+  overflow-wrap: anywhere;
+}
+.reading {
+  max-width: 900px;
+  margin: 30px auto;
+}
+.reading h2 {
+  margin: 22px 0 8px;
+}
+.reading h2:first-child {
+  margin-top: 0;
+}
+.reading p {
+  color: #53647c;
+  line-height: 1.85;
+}
+footer {
+  border-top: 1px solid #e4e9f0;
+  margin-top: 24px;
+  padding-top: 14px;
+  font-size: 12px;
+}
+a {
+  color: #245c91;
+  text-underline-offset: 3px;
+}
+.swatch {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  display: inline-block;
+}
+.file {
+  font-size: 12px !important;
+}
+#event {
+  max-width: 340px;
+}
+button:focus-visible,
+select:focus-visible,
+input:focus-visible {
+  outline: 3px solid #88b8e6;
+  outline-offset: 2px;
+}
+@media (max-width: 850px) {
+  header,
+  main {
+    padding: 14px;
+  }
+  .panels {
+    grid-template-columns: 1fr;
+  }
+  .row {
+    gap: 8px;
+  }
+  .row > label:not(.file) {
+    max-width: 100%;
+  }
+  #dataset {
+    width: 100%;
+  }
+  .controls {
+    padding: 12px;
+  }
+  .metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    font-size: 11px;
+  }
+  .metrics strong {
+    font-size: 14px;
+  }
+  .reading {
+    padding: 16px;
+  }
+  .file input {
+    max-width: 160px;
+  }
+}

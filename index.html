@@ -2,624 +2,175 @@
 <html lang="ko">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width,initial-scale=1" />
-    <title>Moirai Collection 배치 시각 비교</title>
-    <style>
-      * {
-        box-sizing: border-box;
-      }
-      body {
-        margin: 0;
-        background: #f7f8fa;
-        color: #18243b;
-        font:
-          14px/1.5 system-ui,
-          -apple-system,
-          BlinkMacSystemFont,
-          "Segoe UI",
-          sans-serif;
-      }
-      .wrap {
-        padding: 18px;
-        max-width: 1400px;
-        margin: auto;
-      }
-      .toolbar {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-        align-items: center;
-        justify-content: space-between;
-        margin-bottom: 16px;
-      }
-      .legend {
-        display: flex;
-        flex-wrap: wrap;
-        gap: 12px;
-      }
-      .key {
-        display: flex;
-        gap: 6px;
-        align-items: center;
-      }
-      .dot {
-        width: 10px;
-        height: 10px;
-        border-radius: 50%;
-        display: inline-block;
-      }
-      .scale {
-        border: 1px solid #c9d1df;
-        border-radius: 8px;
-        padding: 7px 10px;
-        cursor: pointer;
-        background: white;
-        font: inherit;
-        color: inherit;
-      }
-      .scale:focus-visible {
-        outline: 3px solid #3b82f6;
-        outline-offset: 2px;
-      }
-      .panels {
-        display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
-        gap: 12px;
-      }
-      .panel {
-        border: 1px solid #dfe4ec;
-        border-radius: 12px;
-        overflow: hidden;
-        background: white;
-      }
-      .head {
-        padding: 14px 16px 0;
-      }
-      .num {
-        color: #7d899c;
-        font-size: 12px;
-      }
-      .name {
-        font-weight: 700;
-        font-size: 16px;
-        margin: 3px 0;
-      }
-      .span {
-        font-size: 12px;
-        color: #59677d;
-      }
-      svg {
-        display: block;
-        width: 100%;
-        height: auto;
-        min-height: 260px;
-      }
-      .axis {
-        font-size: 11px;
-        fill: #69788f;
-      }
-      .grid {
-        stroke: #e9edf3;
-        stroke-width: 1;
-      }
-      .foot {
-        border-top: 1px solid #eef0f5;
-        padding: 12px 16px;
-        color: #42516b;
-        min-height: 70px;
-      }
-      .hint {
-        margin: 14px 0 0;
-        font-size: 12px;
-        color: #5b6980;
-      }
-      .event {
-        cursor: pointer;
-      }
-      .event:hover {
-        stroke: #25334a;
-        stroke-width: 2;
-      }
-      .shared {
-        stroke: white;
-        stroke-width: 2;
-      }
-      .shared-ring {
-        fill: none;
-        stroke: #18243b;
-        stroke-width: 1.5;
-        stroke-dasharray: 3 2;
-        pointer-events: none;
-      }
-      .detail {
-        padding: 10px 12px;
-        margin-top: 12px;
-        background: #eef2f7;
-        border-radius: 8px;
-        min-height: 42px;
-      }
-      .badge {
-        font-size: 11px;
-        color: #166044;
-        background: #e7f4ed;
-        border-radius: 4px;
-        padding: 2px 5px;
-        display: inline-block;
-        margin-bottom: 3px;
-      }
-      @media (max-width: 800px) {
-        .panels {
-          grid-template-columns: 1fr;
-        }
-        .wrap {
-          padding: 12px;
-        }
-        .head {
-          padding-top: 12px;
-        }
-        svg {
-          max-height: 440px;
-        }
-        .foot {
-          min-height: 0;
-        }
-        .toolbar {
-          align-items: flex-start;
-        }
-        .scale {
-          width: 100%;
-        }
-      }
-      .intro {
-        padding: 20px 0 28px;
-        max-width: 820px;
-      }
-      .eyebrow {
-        color: #63748e;
-        font-size: 12px;
-        letter-spacing: 0.05em;
-      }
-      h1 {
-        font-size: clamp(26px, 4vw, 42px);
-        line-height: 1.24;
-        letter-spacing: -0.035em;
-        margin: 12px 0 16px;
-      }
-      .intro p {
-        font-size: 16px;
-        color: #43536c;
-        max-width: 650px;
-        margin: 0 0 14px;
-      }
-      .meta {
-        font-size: 12px;
-        color: #61718a;
-      }
-      .notes {
-        max-width: 820px;
-        margin: 38px auto 10px;
-        padding: 24px;
-        background: white;
-        border: 1px solid #dfe4ec;
-        border-radius: 12px;
-      }
-      .notes h2 {
-        font-size: 18px;
-        margin: 25px 0 10px;
-      }
-      .notes h2:first-child {
-        margin-top: 0;
-      }
-      .notes p {
-        color: #42516b;
-        line-height: 1.85;
-        margin: 10px 0;
-      }
-      footer {
-        margin-top: 25px;
-        padding-top: 18px;
-        border-top: 1px solid #e5eaf0;
-      }
-      a {
-        color: #245fa0;
-        text-underline-offset: 3px;
-      }
-      .revision {
-        font-size: 12px;
-      }
-      @media (max-width: 800px) {
-        .intro {
-          padding: 12px 0 23px;
-        }
-        .notes {
-          padding: 18px;
-          margin-top: 24px;
-        }
-        .intro p {
-          font-size: 15px;
-        }
-      }
-    </style>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Moirai · 시간 국소 레이아웃 실험</title>
+    <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="wrap">
-      <header class="intro">
-        <div class="eyebrow">Moirai · Collection Layout Review</div>
-        <h1>Collection을 구분하고<br />공유 Event를 유지하기</h1>
-        <p>
-          같은 120개 Event를 세 가지 방식으로 배치했습니다. Collection별 색이
-          어떻게 섞이거나 분리되는지 비교해 보세요.
-        </p>
-        <div class="meta">
-          합성 데이터 · Collection 3개 · 세 Collection이 공유하는 Event 1개 ·
-          시간 Y 좌표 유지
-        </div>
-      </header>
-      <div class="toolbar">
-        <div class="legend" aria-label="소속 범례">
-          <span class="key"
-            ><i class="dot" style="background: #d95f02"></i>Collection A</span
-          ><span class="key"
-            ><i class="dot" style="background: #168566"></i>Collection B</span
-          ><span class="key"
-            ><i class="dot" style="background: #6656b8"></i>Collection C</span
-          ><span class="key"
-            ><i class="dot" style="background: #111"></i>공유 Event · 1개</span
-          >
-        </div>
-        <button class="scale" id="scale" aria-pressed="true">
-          가로 축: 동일 축척 ↔ 개별 확대
-        </button>
+    <header>
+      <div class="eyebrow">MOIRAI · LAYOUT RESEARCH V2</div>
+      <h1>독립적인 맥락과<br />국소적인 연결을 함께 보기</h1>
+      <p>
+        미리 정해진 레인 없이 소속·시간·Composite·사건 관계에서 배치를
+        계산합니다. 같은 데이터와 카메라로 결과를 비교해 보세요.
+      </p>
+      <div class="notice">
+        운영과 분리된 실험입니다. Y 좌표는 제품 엔진이 해결한 시간 좌표를
+        유지합니다.
       </div>
+    </header>
+    <main>
+      <section class="controls">
+        <div class="row">
+          <label
+            >데이터<select id="dataset">
+              <option value="changing">
+                합성 · 시간별 관계 변화 / 규모 차이 / 중첩
+              </option>
+              <option value="independent">합성 · 독립 맥락 / 공유 없음</option>
+              <option value="dense-shared">합성 · 공유 사건 100개</option>
+              <option value="history-r56">
+                공개 역사 World · r56 / 539 Events
+              </option>
+            </select></label
+          ><label>왼쪽 배치<select id="left"></select></label
+          ><label>오른쪽 배치<select id="right"></select></label
+          ><button id="run">배치 계산</button>
+        </div>
+        <details>
+          <summary>
+            배치 파라미터 · 전역/국소 incidence 및 관계 전용 후보에 적용
+          </summary>
+          <div class="parameters" id="parameters"></div>
+          <p class="help">
+            시간 창은 관계를 모으는 구간의 길이입니다. 점 간격은 world X
+            단위이며, 응집·관계·연속성은 같은 X 좌표에 작용하는 상대 강성입니다.
+            이전 좌표 강성은 추가 데이터 실험에서만 사용합니다. 아래 보고서의
+            기본값·민감도 비교를 참고하세요.
+          </p>
+        </details>
+        <div class="row display">
+          <label
+            ><input id="hulls" type="checkbox" checked />Composite hull</label
+          ><label
+            ><input id="bands" type="checkbox" checked />맥락 core 영역</label
+          ><label><input id="edges" type="checkbox" />사건 관계</label
+          ><label><input id="shared" type="checkbox" />공유 Event만 강조</label
+          ><button id="fit">전체 보기</button><button id="zoomIn">확대 +</button
+          ><button id="zoomOut">축소 −</button
+          ><button data-period="1380,1420">독립 구간</button
+          ><button data-period="1592,1600">접촉 구간</button
+          ><button data-period="1650,1665">관계 변화 구간</button>
+        </div>
+        <div id="collections" class="row"></div>
+        <div class="row">
+          <label
+            >Event 찾기<input id="search" placeholder="제목 또는 ID" /></label
+          ><select id="event" aria-label="Event 선택">
+            <option value="">Event를 선택하세요</option></select
+          ><button id="save">설정 저장</button
+          ><label class="file"
+            >설정 복원<input
+              id="restore"
+              type="file"
+              accept="application/json" /></label
+          ><button id="increment">사건 1개 추가 · 이전 좌표 사용</button>
+        </div>
+      </section>
+      <p id="status" role="status">실험 데이터를 불러오는 중…</p>
       <div class="panels">
         <section class="panel">
-          <div class="head">
-            <div class="num">01 · 기존 알고리즘</div>
-            <div class="name">X축 힘 기반 배치</div>
-            <div class="span">Event 가로 폭 · 1,182.2 world units</div>
-          </div>
-          <svg
-            role="img"
-            aria-label="기존 X축 힘 기반 배치: 세 Collection 색상이 섞임"
-            viewBox="0 0 400 450"
-            data-panel="0"
-          ></svg>
-          <div class="foot">
-            색이 섞여 있어 Collection별 영역을 구분하기 어렵습니다.
-          </div>
+          <h2 id="title0"></h2>
+          <canvas
+            id="canvas0"
+            width="600"
+            height="560"
+            aria-label="왼쪽 레이아웃 시각 비교"
+          ></canvas>
+          <div id="metrics0" class="metrics"></div>
         </section>
         <section class="panel">
-          <div class="head">
-            <div class="num">02 · 기존 대안</div>
-            <div class="name">결정적 시간 슬롯</div>
-            <div class="span">Event 가로 폭 · 220.0 world units</div>
-          </div>
-          <svg
-            role="img"
-            aria-label="결정적 시간 슬롯: 좁은 열 안에 세 Collection이 섞임"
-            viewBox="0 0 400 450"
-            data-panel="1"
-          ></svg>
-          <div class="foot">
-            폭은 줄지만, Collection을 기준으로 분리되지는 않습니다.
-          </div>
-        </section>
-        <section class="panel">
-          <div class="head">
-            <div class="num">03 · 연구용 비교군</div>
-            <div class="name">고정 중심 + 단일 공유 Event</div>
-            <div class="span">Event 가로 폭 · 880.0 world units</div>
-          </div>
-          <svg
-            role="img"
-            aria-label="고정 중심 비교군: 세 Collection이 세 열로 분리되며 공유 Event는 한 점"
-            viewBox="0 0 400 450"
-            data-panel="2"
-          ></svg>
-          <div class="foot">
-            <span class="badge">중심을 미리 지정한 실험</span><br />전용 Event는
-            분리되고 공유 Event는 한 점으로 유지됩니다.
-          </div>
+          <h2 id="title1"></h2>
+          <canvas
+            id="canvas1"
+            width="600"
+            height="560"
+            aria-label="오른쪽 레이아웃 시각 비교"
+          ></canvas>
+          <div id="metrics1" class="metrics"></div>
         </section>
       </div>
-      <div class="detail" id="detail" aria-live="polite">
-        점을 누르면 소속 Collection을 확인할 수 있습니다. 점선 원은 공유 Event의
-        위치 표시입니다.
-      </div>
-      <p class="hint">
-        시간은 위에서 아래로 흐릅니다. 축척 전환은 화면 확대만 바꾸며 Event의
-        실제 좌표를 재계산하지 않습니다.
+      <p id="selection" aria-live="polite">
+        검은 테두리는 여러 주 맥락이 공유하는 단일 Event입니다. 점을 누르거나
+        Event 찾기를 사용하세요.
       </p>
-      <section class="notes">
-        <h2>비교를 읽는 방법</h2>
+      <p class="help">
+        두 화면의 카메라는 연결됩니다. 드래그·핀치 또는 확대 버튼으로
+        탐색하세요. 필터·줌·패닝은 배치를 재계산하지 않습니다. 회색 시간 눈금은
+        display-year 근사값입니다.
+      </p>
+      <section class="reading">
+        <h2>무엇이 달라졌나</h2>
         <p>
-          색은 Collection 소속입니다. 검은 점은 세 Collection이 공유하는
-          <strong>동일한 하나의 Event</strong>입니다. 각 그림에서 같은 Event
-          ID를 사용하며 소속별로 Event를 복제하지 않습니다. 점을 누르면 소속을
-          확인할 수 있습니다.
+          규칙적인 점 배열 대신 불균등한 시간 분포, 4개 규모가 다른 맥락, 세
+          단계 Composite, 특정 시기의 다중 공유, 부분 중첩 하위 Collection을
+          포함합니다. 실제 공개 World도 같은 엔진 입력과 소속 정보를 사용합니다.
         </p>
         <p>
-          처음에는 가로 축을 같은 축척으로 보여줍니다. 위 버튼으로 개별 확대를
-          선택할 수 있습니다. 축척 전환은 화면 표시만 바꾸고 Event 좌표를
-          재계산하지 않습니다.
+          <strong>전역 incidence</strong>는 데이터에서 하나의 중심을 찾습니다.
+          <strong>시간 국소 incidence</strong>는 인접 시간 구간의 중심을
+          연결하되, 공유·사건 관계의 영향이 해당 구간에서 주로 작용하도록
+          합니다. 중심은 최적화 변수이며 지정된 X 좌표나 국가별 규칙은 없습니다.
         </p>
-        <h2>이 실험이 보여주는 것</h2>
+        <h2>경계와 소속은 다릅니다</h2>
         <p>
-          기존 배치와 결정적 시간 슬롯은 Collection 소속을 입력으로 받지
-          않으므로 이 사례에서 Collection별 영역을 만들지 못합니다. 세 번째
-          비교군은 전용 Event의 중심을 미리 구분했을 때의 효과를 보여줍니다.
-          자동 중심 배치나 계층 배치가 최선임을 증명하는 결과는 아닙니다.
+          Composite hull은 실제 contains 자식으로부터 기존 Lab geometry 함수를
+          사용해 생성합니다. 맥락 core 영역은 주 맥락에 전용으로 속한 Event의
+          시간별 10–90% X 범위이며 소속 전체를 담는 hull이 아닙니다. 공유
+          Event·바깥 Event의 소속은 선택 정보에서 그대로 확인할 수 있습니다.
+          넓은 선택 집합이 부분집합과 중복되는 소속은 좌표를 정하는 영향만
+          억제합니다.
         </p>
-        <h2>연구용 비교군의 한계</h2>
+        <h2>숫자를 어떻게 해석해야 하나</h2>
         <p>
-          세 번째 배치는 중심을 미리 지정했습니다. 자동 중심 탐색, 중첩
-          Collection, 공유 Composite Event, 실제 hull·운영 렌더러는 검증하지
-          않았습니다. 공유 Event는 같은 시점의 Collection B Event와 좌표가
-          겹칩니다. 점선 원은 공유 Event를 찾기 위한 표시이며 Collection hull이
-          아닙니다.
+          core 혼합률은 같은 시간 창의 전용 Event 중 가까운 5개 이웃의 다른 맥락
+          비율입니다. core 범위 중첩은 시간 구간별 진단값이며 실제 hull 겹침
+          면적이 아닙니다. 공유 접근 거리·인과 X 간격은 점 간격으로 나눈
+          값입니다. 지표는 카메라·필터와 무관한 전체 snapshot 기준이며 평가 창은
+          24년, 거리 단위는 32 world X로 고정합니다. 파라미터 변경으로 평가
+          분모를 바꾸지 않습니다. 인과 교차율은 끝점을 공유하지 않는 인과선 쌍의
+          교차 비율입니다. core 가로 조각 수는 시간 구간 안에서 점 간격의 두
+          배보다 큰 X 공백으로 나눈 조각 수입니다. hull 비자손 포함은 Composite
+          hull 내부의 점 중 contains 자손이 아닌 비율이며, 실제 관계가 있는 다른
+          사건도 포함될 수 있습니다. 혼합률만 낮추면 공유 Event가 멀어질 수
+          있으므로 그림과 여러 지표를 함께 판단하세요.
         </p>
         <p>
-          이 그림은 실제 중국사·한국사·일본사 데이터의 재현이 아닌 합성
-          fixture입니다. 각 Collection에 기본 40개 Event를 배정한 뒤 하나에 다른
-          두 Collection 소속을 추가했습니다. Moirai 운영 코드와 canonical
-          데이터에는 적용하지 않았습니다.
+          필터로 숨긴 Event도 원래 배치에 남습니다. 성능값은 해당 기기의 계산
+          시간이며 안정적인 벤치마크는 아래에 따로 기록합니다. 이 실험의 카메라
+          공유·hull 표시는 제품과 동일한 전체 LOD·레이블 정책의 검증을 뜻하지
+          않습니다.
         </p>
+        <h2>규모별 계산 벤치마크</h2>
+        <p class="help">
+          Cloud Node · 20개 맥락 · 10% Composite · 공유 소속·인과 관계 포함 · 각
+          3회 중앙값. 준비된 LayoutInput부터 좌표·Composite bounds까지의
+          시간입니다. canonical projection, hull mesh, Worker 전송, 타일 발행,
+          실제 모바일 렌더 성능은 제외합니다.
+        </p>
+        <div id="benchmark" class="table-wrap"></div>
         <footer>
-          <a href="https://github.com/neocjmix/moirai">GitHub 저장소</a
-          ><span> · </span
-          ><a href="architecture-review.md">전체 조사 보고서 · 영어</a
-          ><span> · </span><a href="results.json">실험 측정값</a>
-          <p class="revision">
-            검토 기준: da75b82 · 시각 비교 발행: 2026-10-10
-          </p>
+          <a href="review.md">재검토·설계·검증 보고서</a> ·
+          <a href="measurements.json">측정 결과</a> ·
+          <a href="legacy/">이전 규칙적 실험</a> ·
+          <a
+            href="https://github.com/neocjmix/moirai/tree/research/collection-layout-v2/scripts/layout-research"
+            >실험 소스</a
+          >
+          <p id="build"></p>
         </footer>
       </section>
     </main>
-    <script>
-      const events = [
-        ["e0178811919d4", [1], 0.8974341, [-591.1209, 0.0, 0.0]],
-        ["e034d41a87266", [2], 1.0, [-538.53743, 0.0, 440.0]],
-        ["e046ffbe50661", [2], 0.1794728, [-458.23959, 0.0, 440.0]],
-        ["e04b184fc7ce9", [0], 0.5897364, [-424.31724, 0.0, -440.0]],
-        ["e089f93e3374f", [1], 0.7435852, [-87.96537, 0.0, 0.0]],
-        ["e0a0d8694f9a8", [0], 0.7435852, [-393.2965, 110.0, -440.0]],
-        ["e0b603a9d5ecd", [1], 0.5640774, [-495.76671, 0.0, 0.0]],
-        ["e0b70443d023c", [1], 0.2563797, [-339.6335, 0.0, 0.0]],
-        ["e0d819f864b7d", [0], 0.7692092, [-316.60939, 0.0, -440.0]],
-        ["e0dddc076a70a", [1], 0.8461511, [-291.00172, 0.0, 0.0]],
-        ["e0e5e3daf4d13", [0], 0.4102285, [-189.99272, 0.0, -440.0]],
-        ["e0fea9105d8e2", [1], 0.2307557, [-272.91322, 0.0, 0.0]],
-        ["e10778c8711ea", [0], 0.5640774, [-251.53998, 110.0, -440.0]],
-        ["e113b1aa7f5cf", [0], 0.7948682, [-242.00175, 0.0, -440.0]],
-        ["e18b65c46e50b", [0], 0.3076626, [-239.06381, 0.0, -440.0]],
-        ["e18d4ec45f5a1", [0], 0.4615115, [-206.83724, 0.0, -440.0]],
-        ["e1d2e4d4118d6", [2], 0.8461511, [-197.58751, 110.0, 440.0]],
-        ["e1e894a2e621c", [2], 0.7435852, [-193.60173, 220.0, 440.0]],
-        ["e1ee68aef8d74", [0], 0.4358875, [-182.78321, 0.0, -440.0]],
-        ["e1f381db23e59", [1], 0.8204921, [-150.55664, 0.0, 0.0]],
-        ["e227d2ba82804", [2], 0.4871705, [364.78791, 0.0, 440.0]],
-        ["e22a9c9679633", [2], 0.5127944, [-145.20172, 0.0, 440.0]],
-        ["e27c06487f5be", [0], 0.6410193, [-96.42614, 0.0, -440.0]],
-        ["e28a1b64fc3ab", [1], 0.0512479, [-145.20172, 0.0, 0.0]],
-        ["e28c83b54f060", [1], 0.2050967, [-132.42403, 0.0, 0.0]],
-        ["e2af2ef757ba4", [2], 0.5640774, [-145.20172, 220.0, 440.0]],
-        ["e2c1013ed6b09", [0], 0.8461511, [-145.20172, 220.0, -440.0]],
-        ["e2c2bd411f6d2", [2], 0.8204921, [-145.20172, 110.0, 440.0]],
-        ["e2c4ba82c1049", [2], 0.2307557, [-145.20172, 110.0, 440.0]],
-        ["e2c5b3a2e88a8", [0], 0.1538138, [-142.09323, 0.0, -440.0]],
-        ["e2f411cc03487", [2], 0.1025308, [-109.86666, 0.0, 440.0]],
-        ["e3088e2bc7787", [0], 0.6666433, [-96.8017, 0.0, -440.0]],
-        ["e35bea77f8a47", [2], 0.0, [-90.38044, 0.0, 440.0]],
-        ["e3970a5831afd", [0], 0.2307557, [-96.8017, 220.0, -440.0]],
-        ["e3dcd5e27d47d", [0], 0.6923023, [-96.8017, 0.0, -440.0]],
-        ["e4336c5d21a5e", [2], 0.6153603, [-96.8017, 0.0, 440.0]],
-        ["e43f38f31fe1b", [1], 0.4615115, [-96.8017, 110.0, 0.0]],
-        ["e46fc7fa157b1", [1], 0.3589456, [2.10754, 0.0, 0.0]],
-        ["e4d2a596514bf", [0], 0.5384534, [-96.8017, 0.0, -440.0]],
-        ["e4dd1e650081c", [1], 0.6666433, [-31.44255, 110.0, 0.0]],
-        ["e4f0aa8350617", [2], 0.5384534, [-74.17356, 110.0, 440.0]],
-        ["e4fb8390d5613", [2], 0.4102285, [-48.40169, 110.0, 440.0]],
-        ["e511413955b66", [0, 1, 2], 0.0, [-48.40169, 110.0, 0.0]],
-        ["e57c4b847447c", [0], 0.2563797, [-48.40169, 110.0, -440.0]],
-        ["e63306aac94ee", [1], 0.1025308, [9.42602, 110.0, 0.0]],
-        ["e64b42fe9cc31", [1], 0.7948682, [-48.40169, 110.0, 0.0]],
-        ["e65503dd879d8", [1], 0.2820387, [-44.3487, 0.0, 0.0]],
-        ["e65abc7bd5c74", [2], 0.1281898, [-48.40169, 0.0, 440.0]],
-        ["e65e133a0c62b", [1], 1.0, [-48.40169, 110.0, 0.0]],
-        ["e689411000686", [2], 0.3589456, [-48.40169, 110.0, 440.0]],
-        ["e6c0400cb3ef3", [2], 0.7692092, [-48.40169, 110.0, 440.0]],
-        ["e6f97e07a025c", [2], 0.2820387, [195.66084, 110.0, 440.0]],
-        ["e6ffdde693af5", [1], 0.1538138, [111.67097, 110.0, 0.0]],
-        ["e792f71dca51f", [1], 0.3076626, [-57.81641, 110.0, 0.0]],
-        ["e7a6d87fb48c5", [2], 0.8717751, [-48.40169, 0.0, 440.0]],
-        ["e7aad878dd246", [1], 0.8717751, [-24.43309, 110.0, 0.0]],
-        ["e7c05c3b8a7de", [0], 0.8717751, [-0.00167, 220.0, -440.0]],
-        ["e808decd98e28", [0], 0.2050967, [-0.00167, 110.0, -440.0]],
-        ["e81a1792c2ae6", [0], 0.3846046, [-0.00167, 0.0, -440.0]],
-        ["e82ebb0b59d75", [0], 0.4871705, [-0.00167, 110.0, -440.0]],
-        ["e83be444ef30e", [1], 0.0256239, [-0.00167, 0.0, 0.0]],
-        ["e89e254f8f5fa", [1], 0.6923023, [-0.00167, 110.0, 0.0]],
-        ["e8d53a32739f6", [0], 0.3333216, [-0.00167, 0.0, -440.0]],
-        ["e8db79b6a128a", [1], 0.1794728, [-0.00167, 110.0, 0.0]],
-        ["e9369483607aa", [0], 0.1281898, [24.42974, 110.0, -440.0]],
-        ["e938b3fae2a35", [2], 0.4615115, [48.39834, 220.0, 440.0]],
-        ["e953c50a0b877", [0], 0.6153603, [57.81307, 110.0, -440.0]],
-        ["e95fdaec3d82d", [2], 0.0512479, [-111.67431, 110.0, 440.0]],
-        ["e97f4341084a2", [2], 0.923058, [-195.66418, 0.0, 440.0]],
-        ["e989739b4f174", [1], 0.7179262, [48.39834, 0.0, 0.0]],
-        ["e99d08fb4d34e", [2], 0.6923023, [48.39834, 220.0, 440.0]],
-        ["e9ba9e2bd1ec5", [0], 0.7179262, [48.39834, 110.0, -440.0]],
-        ["e9dfec694f051", [0], 0.0512479, [48.39834, 220.0, -440.0]],
-        ["e9f8e4bf05d0c", [1], 0.5897364, [44.34535, 110.0, 0.0]],
-        ["ea257450025e9", [1], 0.0769069, [48.39834, 0.0, 0.0]],
-        ["ea43c050baec8", [0], 0.948717, [-9.42937, 0.0, -440.0]],
-        ["ea6dcbe9d2f3f", [0], 0.0256239, [48.39834, 110.0, -440.0]],
-        ["ea71bd7fe8d3a", [2], 0.5897364, [48.39834, 220.0, 440.0]],
-        ["ea73f273e01ad", [0], 1.0, [48.39834, 220.0, -440.0]],
-        ["ea8da2a304919", [2], 0.1538138, [74.17021, 220.0, 440.0]],
-        ["eab76db31b9b8", [0], 0.1025308, [31.43921, 220.0, -440.0]],
-        ["eac53becf53db", [2], 0.6666433, [96.79836, 220.0, 440.0]],
-        ["eaec9846567ba", [1], 0.974341, [-2.11088, 0.0, 0.0]],
-        ["eaf3a54669112", [2], 0.974341, [96.79836, 110.0, 440.0]],
-        ["eb13efb64f3ba", [1], 0.3846046, [96.79836, 110.0, 0.0]],
-        ["eb290bdb737cd", [0], 0.3589456, [96.79836, 220.0, -440.0]],
-        ["eb293c02f7314", [0], 0.0769069, [96.79836, 110.0, -440.0]],
-        ["eb40364dfec67", [2], 0.7179262, [90.3771, 220.0, 440.0]],
-        ["eb4043ed4796b", [0], 0.8974341, [96.79836, 110.0, -440.0]],
-        ["eb64464378e18", [2], 0.3846046, [109.86331, 220.0, 440.0]],
-        ["eb64e84aa482c", [1], 0.6153603, [142.08989, 220.0, 0.0]],
-        ["eb7d585f54d28", [2], 0.8974341, [145.19837, 220.0, 440.0]],
-        ["eb980423f4a97", [0], 0.974341, [145.19837, 220.0, -440.0]],
-        ["eba8388fcbe91", [0], 0.8204921, [145.19837, 220.0, -440.0]],
-        ["ebebd09dffcbb", [2], 0.6410193, [145.19837, 110.0, 440.0]],
-        ["ebec6c0834799", [0], 0.2820387, [132.42069, 220.0, -440.0]],
-        ["ec0b55692f4e9", [2], 0.0256239, [145.19837, 220.0, 440.0]],
-        ["ec3ba39e9b344", [1], 0.1281898, [96.42279, 220.0, 0.0]],
-        ["ed0f918126913", [2], 0.4358875, [145.19837, 110.0, 440.0]],
-        ["ed2e50e918eef", [1], 0.948717, [-364.79125, 110.0, 0.0]],
-        ["ed462d38f905d", [0], 0.5127944, [150.5533, 110.0, -440.0]],
-        ["ed4a98818ee6b", [1], 0.4358875, [182.77987, 220.0, 0.0]],
-        ["ed6f30df758cb", [1], 0.7692092, [193.59839, 220.0, 0.0]],
-        ["ed8cfbd992254", [2], 0.3076626, [197.58417, 220.0, 440.0]],
-        ["eda10ea767828", [1], 0.4871705, [206.8339, 220.0, 0.0]],
-        ["eda9b0f888577", [0], 0.1794728, [239.06047, 220.0, -440.0]],
-        ["edea838a1c72c", [1], 0.0, [241.9984, 220.0, 0.0]],
-        ["ee0194dd93362", [0], 0.923058, [251.53663, 110.0, -440.0]],
-        ["ee41915babf7e", [1], 0.5384534, [272.90988, 220.0, 0.0]],
-        ["ee6d7e01a8ccf", [1], 0.923058, [189.98938, 220.0, 0.0]],
-        ["eeab378e755d1", [2], 0.2050967, [290.99838, 220.0, 440.0]],
-        ["eec054bcc0025", [1], 0.6410193, [316.60605, 220.0, 0.0]],
-        ["eef206a539eee", [2], 0.0769069, [339.63015, 220.0, 440.0]],
-        ["eeff3a7517c99", [2], 0.3333216, [495.76337, 110.0, 440.0]],
-        ["ef21dbe16e3d6", [1], 0.4102285, [393.29315, 220.0, 0.0]],
-        ["ef2b141e50a75", [2], 0.7948682, [87.96203, 220.0, 440.0]],
-        ["ef4025ea7b23a", [2], 0.2563797, [424.3139, 220.0, 440.0]],
-        ["ef7bc1b5ddbb7", [1], 0.3333216, [458.23624, 220.0, 0.0]],
-        ["efc15c98bc27c", [2], 0.948717, [538.53409, 220.0, 440.0]],
-        ["efdac3287e351", [1], 0.5127944, [591.11755, 220.0, 0.0]],
-      ];
-      const colors = ["#d95f02", "#168566", "#6656b8"];
-      const names = ["Collection A", "Collection B", "Collection C"];
-      let common = true;
-      const NS = "http://www.w3.org/2000/svg";
-      function node(tag, attrs, text) {
-        const n = document.createElementNS(NS, tag);
-        for (const [k, v] of Object.entries(attrs)) n.setAttribute(k, v);
-        if (text !== undefined) n.textContent = text;
-        return n;
-      }
-      function render() {
-        document
-          .getElementById("scale")
-          .setAttribute("aria-pressed", String(common));
-        document.getElementById("scale").textContent =
-          "가로 축: " +
-          (common ? "동일 축척" : "개별 확대") +
-          " ↔ " +
-          (common ? "개별 확대" : "동일 축척");
-        for (const svg of document.querySelectorAll("svg[data-panel]")) {
-          const k = Number(svg.dataset.panel);
-          svg.replaceChildren();
-          const xs = events.map((e) => e[3][k]);
-          const lo = common ? -620 : Math.min(...xs) - 35;
-          const hi = common ? 620 : Math.max(...xs) + 35;
-          const px = (x) => 48 + ((x - lo) / (hi - lo)) * 328;
-          const py = (y) => 30 + y * 370;
-          [0, 0.25, 0.5, 0.75, 1].forEach((t) => {
-            svg.append(
-              node("line", {
-                x1: 48,
-                y1: py(t),
-                x2: 376,
-                y2: py(t),
-                class: "grid",
-              }),
-            );
-            svg.append(
-              node(
-                "text",
-                { x: 40, y: py(t) + 4, "text-anchor": "end", class: "axis" },
-                Math.round(1500 + 78 * t),
-              ),
-            );
-          });
-          svg.append(
-            node("text", { x: 48, y: 427, class: "axis" }, Math.round(lo)),
-          );
-          svg.append(
-            node(
-              "text",
-              { x: 376, y: 427, "text-anchor": "end", class: "axis" },
-              Math.round(hi),
-            ),
-          );
-          svg.append(
-            node(
-              "text",
-              { x: 212, y: 444, "text-anchor": "middle", class: "axis" },
-              "가로 위치 · world units",
-            ),
-          );
-          for (const e of [...events].sort(
-            (a, b) => a[1].length - b[1].length,
-          )) {
-            const shared = e[1].length > 1;
-            const cx = px(e[3][k]),
-              cy = py(e[2]);
-            if (shared)
-              svg.append(
-                node("circle", { cx, cy, r: 11, class: "shared-ring" }),
-              );
-            const c = node("circle", {
-              cx,
-              cy,
-              r: shared ? 5.5 : 3.3,
-              fill: shared ? "#111" : colors[e[1][0]],
-              class: "event" + (shared ? " shared" : ""),
-              tabindex: 0,
-              role: "button",
-              "aria-label":
-                (shared ? "공유 Event" : "Event") +
-                " " +
-                e[0] +
-                ": " +
-                e[1].map((i) => names[i]).join(", "),
-              "data-shared": String(shared),
-            });
-            c.append(
-              node(
-                "title",
-                {},
-                e[0] + " · " + e[1].map((i) => names[i]).join(", "),
-              ),
-            );
-            const select = () => {
-              document.getElementById("detail").textContent =
-                (shared ? "공유 Event · 하나의 ID" : "전용 Event") +
-                " | " +
-                e[0] +
-                " | " +
-                e[1].map((i) => names[i]).join(" · ") +
-                (shared && k === 2
-                  ? " | 이 비교군에서는 같은 시점의 Collection B Event와 좌표가 겹칩니다."
-                  : "");
-            };
-            c.addEventListener("click", select);
-            c.addEventListener("keydown", (a) => {
-              if (a.key === "Enter" || a.key === " ") {
-                a.preventDefault();
-                select();
-              }
-            });
-            svg.append(c);
-          }
-        }
-      }
-      document.getElementById("scale").addEventListener("click", () => {
-        common = !common;
-        render();
-      });
-      render();
-    </script>
+    <script type="module" src="app.js"></script>
   </body>
 </html>

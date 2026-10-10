@@ -1,7 +1,9 @@
-# Moirai Collection layout visual comparison
+# Moirai layout research v2
 
-Static research page published from the isolated `gh-pages` branch.
+Public experiment: https://neocjmix.github.io/moirai/
 
-Public URL: https://neocjmix.github.io/moirai/
+Source: https://github.com/neocjmix/moirai/tree/research/collection-layout-v2/scripts/layout-research
 
-This branch does not change the production application or adopt a layout candidate. The comparison uses 120 synthetic Events and one three-way shared Event. The fixed-anchor panel is an experimental control, not a completed production design.
+Built from source commit bc06167ae26fd53050f70355981b105a3079d191
+
+Five comparable candidates, realistic deterministic fixtures, public history r56, coupled cameras, authored Composite hulls, local incidence and reproducible metrics. Production code and canonical history are unchanged. The previous regular-point control remains under `legacy/`.

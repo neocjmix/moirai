@@ -7,6 +7,7 @@ import {
   readV5ServedRoot
 } from "@moirai/publication/v5";
 import { backfillV5RenderGeneration } from "./render-backfill.js";
+import { defaultLayoutSelection } from "@moirai/graph-presentation/layout-engine";
 
 const state: CanonicalState = {
   world: {
@@ -151,9 +152,53 @@ describe("operator Render backfill", () => {
     const ref = generation.manifests[0]!;
     const manifest = JSON.parse(await generation.read(ref.key, ref.sha256));
     expect(manifest.tiles.length).toBeGreaterThan(0);
+    expect(manifest.layoutAlgorithmVersion).toBe("global-incidence/1");
     expect(
       await backfillV5RenderGeneration({ state, revision: 7, store })
     ).toEqual(result);
+    const rollbackKey = "worlds/world-1/render-rollbacks/test-rollout.json";
+    const priorPointer = objects.get(
+      "worlds/world-1/render-current.json"
+    )!.body;
+    const rollbackResult = await backfillV5RenderGeneration({
+      state,
+      revision: 7,
+      store,
+      layoutSelection: defaultLayoutSelection("legacy-force"),
+      rollbackSnapshotKey: rollbackKey
+    });
+    const backup = JSON.parse(objects.get(rollbackKey)!.body);
+    expect(backup.previousPointer).toEqual(JSON.parse(priorPointer));
+    expect(backup.expectedGeneration).toBe(rollbackResult.generation);
+    expect((await readV5ServedRoot(store, "world-1")).pointer).toEqual(
+      original
+    );
+    const rolledBack = await readV5RenderGeneration(store, "world-1");
+    const rolledRef = rolledBack.manifests[0]!;
+    expect(
+      JSON.parse(await rolledBack.read(rolledRef.key, rolledRef.sha256))
+        .layoutAlgorithmVersion
+    ).toMatch(/^v5-world-layout\//);
+    expect(
+      await backfillV5RenderGeneration({
+        state,
+        revision: 7,
+        store,
+        layoutSelection: defaultLayoutSelection("legacy-force"),
+        rollbackSnapshotKey: rollbackKey
+      })
+    ).toEqual(rollbackResult);
+    expect(JSON.parse(objects.get(rollbackKey)!.body).previousPointer).toEqual(
+      backup.previousPointer
+    );
+    await expect(
+      backfillV5RenderGeneration({
+        state,
+        revision: 7,
+        store,
+        rollbackSnapshotKey: rollbackKey
+      })
+    ).rejects.toThrow("render_rollback_backup_conflict");
     await expect(
       backfillV5RenderGeneration({ state, revision: 6, store })
     ).rejects.toThrow("render_backfill_revision_mismatch");

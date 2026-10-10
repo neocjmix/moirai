@@ -2,7 +2,6 @@
  * No canonical queries or publication writers. */
 import {
   buildGraphShellChartPlane,
-  DEFAULT_CHART_PLANE_X_FORCE_LAYOUT,
   type TemporalConstraint
 } from "./urdr-chart-plane.js";
 import type {
@@ -10,6 +9,11 @@ import type {
   GraphShellChartPlane,
   GraphShellChronologyBoard
 } from "./urdr-layout-types.js";
+import {
+  relaxIncidence,
+  defaults as incidenceDefaults,
+  type IncidenceMetadata
+} from "./collection-incidence.js";
 export { buildRenderConcaveHull } from "./v5-render-hull.js";
 
 export type LayoutShape =
@@ -67,6 +71,9 @@ export interface LayoutInput {
   }[];
   readonly temporalConstraints: readonly TemporalConstraint[];
   readonly visibleEventIds: readonly string[];
+  /** World-wide membership and authored graph, independent of viewer selection.
+   * Optional only for historical snapshots and legacy research candidates. */
+  readonly incidence?: IncidenceMetadata;
 }
 export type LayoutParameters = Readonly<Record<string, number | string>>;
 export type ParameterDefinition = Readonly<
@@ -355,7 +362,82 @@ const slots: LayoutAlgorithm = {
     return finish(input, chart, "deterministic-slots/1");
   }
 };
-export const layoutAlgorithms: readonly LayoutAlgorithm[] = [baseline, slots];
+const globalIncidence: LayoutAlgorithm = {
+  id: "global-incidence",
+  version: "1",
+  title: "Global incidence · data-derived centers",
+  description:
+    "World-wide overlapping Collection membership and authored Composite/graph cohesion. Changes X only; no predetermined Collection lanes. Cold deterministic publication solve.",
+  parameters: [
+    numberParameter(
+      "iterations",
+      "Iterations",
+      90,
+      0,
+      256,
+      1,
+      "Bounded relaxation budget."
+    ),
+    numberParameter(
+      "windowYears",
+      "Relation time scale",
+      24,
+      0.001,
+      10000,
+      0.1,
+      "Temporal attenuation of authored links and primitive repulsion; Collection hubs remain global."
+    ),
+    numberParameter(
+      "spacing",
+      "Primitive X scale",
+      32,
+      0.001,
+      10000,
+      0.1,
+      "World X separation scale; hub gaps also depend on mass and overlap."
+    ),
+    numberParameter(
+      "cohesion",
+      "Membership cohesion",
+      0.7,
+      0,
+      10,
+      0.01,
+      "Normalized Event-to-Collection attraction."
+    ),
+    numberParameter(
+      "relation",
+      "Authored graph cohesion",
+      0.35,
+      0,
+      10,
+      0.01,
+      "Contains, causes and precedes attraction."
+    )
+  ],
+  compute(input, parameters) {
+    if (
+      !input.incidence ||
+      input.incidence.formatVersion !== "collection-incidence/1"
+    )
+      throw Error("layout_membership_input_missing");
+    const base = baseline.compute(input, {
+      ...defaultLayoutSelection("legacy-force").parameters,
+      iterations: 0
+    });
+    return relaxIncidence(
+      { ...input.incidence, input },
+      "global-incidence",
+      { ...incidenceDefaults, ...parameters } as typeof incidenceDefaults,
+      base
+    ).output;
+  }
+};
+export const layoutAlgorithms: readonly LayoutAlgorithm[] = [
+  baseline,
+  slots,
+  globalIncidence
+];
 export function getLayoutAlgorithm(id: string): LayoutAlgorithm {
   const algorithm = layoutAlgorithms.find((candidate) => candidate.id === id);
   if (!algorithm) throw Error("layout_algorithm_unknown");
@@ -377,12 +459,9 @@ export function defaultLayoutSelection(id = "legacy-force"): LayoutSelection {
 }
 /** Fixed publication configuration. Lab selections never mutate this object. */
 export const CANONICAL_LAYOUT_SELECTION: LayoutSelection = Object.freeze({
-  ...defaultLayoutSelection(),
+  ...defaultLayoutSelection("global-incidence"),
   parameters: Object.freeze({
-    ...DEFAULT_CHART_PLANE_X_FORCE_LAYOUT,
-    repulsionMode: "auto",
-    neighborsPerSide: 24,
-    windowYears: 10
+    ...defaultLayoutSelection("global-incidence").parameters
   })
 });
 export function validateLayoutSelection(selection: LayoutSelection): void {

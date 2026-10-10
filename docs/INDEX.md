@@ -51,6 +51,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-009 — 최종 검증 결과](evidence/ip009/final-verification.md)
 - [현재 구현 상태](implementation/CURRENT.md)
 - [Collection 레이아웃 실험 v2 재검토·검증](evidence/ip013/collection-layout-experiment-v2.md) — 데이터 기반 시간 국소 incidence 비교; 운영 후보 채택 없음.
+- [전역 incidence 운영 승격·전체 Render 재발행](evidence/ip013/global-incidence-rollout.md) — 2026-10-10 사용자 승인, 현재 실행 상태는 CURRENT.
 - [IP-014 — Pluggable renderer 비교 handoff](implementation/IP-014-pluggable-renderer-handoff.md)
 - [IP-015 — Realtime camera / eventual scene](implementation/IP-015-realtime-camera-eventual-scene.md)
 - [IP-012 — Render Publication 구현 계획](implementation/IP-012-render-publication-plan.md)

@@ -93,7 +93,33 @@ const schema = z
               .strict()
           )
           .max(500_000),
-        visibleEventIds: ids
+        visibleEventIds: ids,
+        incidence: z
+          .object({
+            formatVersion: z.literal("collection-incidence/1"),
+            events: z
+              .array(
+                z.object({ id, childIds: ids, collectionIds: ids }).strict()
+              )
+              .max(100_000),
+            collections: z
+              .array(z.object({ id, eventIds: ids }).strict())
+              .max(100_000),
+            relations: z
+              .array(
+                z
+                  .object({
+                    id,
+                    sourceId: id,
+                    targetId: id,
+                    type: z.string().min(1).max(64)
+                  })
+                  .strict()
+              )
+              .max(500_000)
+          })
+          .strict()
+          .optional()
       })
       .strict(),
     events: z
@@ -142,6 +168,41 @@ export function validateLabSnapshot(value: unknown): LabSnapshot {
   if (!parsed.success) throw Error("lab_snapshot_schema_invalid");
   const snapshot = parsed.data;
   const { input } = snapshot;
+  if (input.incidence) {
+    const meta = input.incidence;
+    const sorted = <T extends { id: string }>(values: readonly T[]) =>
+      [...values].sort((a, b) => a.id.localeCompare(b.id));
+    const eventData = (values: typeof meta.events) =>
+      sorted(values).map(({ id, childIds, collectionIds }) => ({
+        id,
+        childIds: [...childIds].sort(),
+        collectionIds: [...collectionIds].sort()
+      }));
+    const collectionData = (values: typeof meta.collections) =>
+      sorted(values).map(({ id, eventIds }) => ({
+        id,
+        eventIds: [...eventIds].sort()
+      }));
+    const relationData = (values: typeof meta.relations) =>
+      sorted(values).map(({ id, type, sourceId, targetId }) => ({
+        id,
+        type,
+        sourceId,
+        targetId
+      }));
+    requireInvariant(
+      JSON.stringify(eventData(meta.events)) ===
+        JSON.stringify(eventData(snapshot.events))
+    );
+    requireInvariant(
+      JSON.stringify(collectionData(meta.collections)) ===
+        JSON.stringify(collectionData(snapshot.collections))
+    );
+    requireInvariant(
+      JSON.stringify(relationData(meta.relations)) ===
+        JSON.stringify(relationData(snapshot.relations))
+    );
+  }
   requireInvariant(
     snapshot.worldId === input.worldId &&
       snapshot.sourceRevision === input.revision &&

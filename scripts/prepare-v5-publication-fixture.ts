@@ -8,6 +8,7 @@ import type {
   V5PublicationPointer
 } from "@moirai/contracts/v5";
 import { buildV5WorldCompleteArtifacts } from "@moirai/graph-presentation/server";
+import { defaultLayoutSelection } from "@moirai/graph-presentation/layout-engine";
 import { backfillV5RenderGeneration } from "../apps/lachesis-worker/src/render-backfill.js";
 
 export const V5_FIXTURE_WORLD_ID = "019f3b00-0000-7000-8000-000000000a01";
@@ -284,11 +285,15 @@ export async function prepareV5PublicationFixture(
   const fixtureState = options.renderPublication
     ? withContinuityGroup(state)
     : state;
+  // Fixed-camera renderer regressions deliberately retain their historical
+  // geometry. Global incidence has its own exact reviewed-geometry tests and
+  // live publication verification; a renderer test is not an algorithm test.
+  const layoutSelection = defaultLayoutSelection("legacy-force");
   const { artifacts } = await buildV5WorldCompleteArtifacts(
     fixtureState,
     31,
     undefined,
-    options
+    { ...options, layoutSelection }
   );
   const pointer: V5PublicationPointer = {
     format_version: "v5-publication/1",
@@ -322,6 +327,7 @@ export async function prepareV5PublicationFixture(
     await backfillV5RenderGeneration({
       state: fixtureState,
       revision: 31,
+      layoutSelection,
       store: {
         get: async (key) => {
           const body = objects.get(key);

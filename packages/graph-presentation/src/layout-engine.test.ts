@@ -2,7 +2,6 @@ import { describe, expect, it } from "vitest";
 import { readFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import {
-  CANONICAL_LAYOUT_SELECTION,
   computeLayout,
   defaultLayoutSelection,
   layoutAlgorithms,
@@ -11,64 +10,86 @@ import {
 } from "./layout-engine.js";
 import { buildGraphShellChartPlane } from "./urdr-chart-plane.js";
 
-const fixture = (): LayoutInput => ({
-  formatVersion: "layout-input/1",
-  worldId: "fixture",
-  revision: 7,
-  timeSystemId: "scalar",
-  temporalDigest: "fixed-temporal-evidence",
-  board: {
-    axis: {
-      startYear: 0,
-      endYear: 0,
-      timeSystemId: "scalar",
-      compatibilityKey: "scalar"
-    }
-  },
-  dataset: {
-    events: [
-      "a",
-      "b",
-      "c",
-      "d-unplaced",
-      "z-inner",
-      "z-overlap",
-      "zz-outer"
-    ].map((id) => ({
-      id,
-      title: id,
-      canonId: "fixture",
-      type: id.startsWith("z") ? "composite" : "instant"
-    })),
-    canons: [],
-    timeSystems: [],
-    structuralLinks: [],
-    semanticLinks: [
-      ["z-inner", "a"],
-      ["z-inner", "b"],
-      ["z-overlap", "b"],
-      ["z-overlap", "c"],
-      ["zz-outer", "z-inner"],
-      ["zz-outer", "z-overlap"]
-    ]
-      .map(([fromId, toId]) => ({
-        id: `${fromId}:${toId}`,
-        type: "contains",
-        fromId: fromId!,
-        toId: toId!
+const fixture = (): LayoutInput => {
+  const input: LayoutInput = {
+    formatVersion: "layout-input/1",
+    worldId: "fixture",
+    revision: 7,
+    timeSystemId: "scalar",
+    temporalDigest: "fixed-temporal-evidence",
+    board: {
+      axis: {
+        startYear: 0,
+        endYear: 0,
+        timeSystemId: "scalar",
+        compatibilityKey: "scalar"
+      }
+    },
+    dataset: {
+      events: [
+        "a",
+        "b",
+        "c",
+        "d-unplaced",
+        "z-inner",
+        "z-overlap",
+        "zz-outer"
+      ].map((id) => ({
+        id,
+        title: id,
+        canonId: "fixture",
+        type: id.startsWith("z") ? "composite" : "instant"
+      })),
+      canons: [],
+      timeSystems: [],
+      structuralLinks: [],
+      semanticLinks: [
+        ["z-inner", "a"],
+        ["z-inner", "b"],
+        ["z-overlap", "b"],
+        ["z-overlap", "c"],
+        ["zz-outer", "z-inner"],
+        ["zz-outer", "z-overlap"]
+      ]
+        .map(([fromId, toId]) => ({
+          id: `${fromId}:${toId}`,
+          type: "contains",
+          fromId: fromId!,
+          toId: toId!
+        }))
+        .concat([{ id: "cause", type: "causes", fromId: "a", toId: "c" }])
+    },
+    explicitExtents: [
+      { eventId: "a", minYear: 1500, maxYear: 1500 },
+      { eventId: "b", minYear: 1500, maxYear: 1500 },
+      { eventId: "c", minYear: 1900, maxYear: 1900 }
+    ],
+    temporalConstraints: [
+      { beforeId: "a", afterId: "c", source: "order", minGapYears: 0.001 }
+    ],
+    visibleEventIds: ["a", "b", "c", "z-inner", "z-overlap", "zz-outer"]
+  };
+  return {
+    ...input,
+    incidence: {
+      formatVersion: "collection-incidence/1",
+      events: input.dataset.events.map((e) => ({
+        id: e.id,
+        collectionIds: [],
+        childIds: input.dataset.semanticLinks
+          .filter((r) => r.type === "contains" && r.fromId === e.id)
+          .map((r) => r.toId)
+      })),
+      collections: [],
+      relations: input.dataset.semanticLinks.map((r) => ({
+        id: r.id,
+        type: r.type,
+        sourceId: r.fromId,
+        targetId: r.toId
       }))
-      .concat([{ id: "cause", type: "causes", fromId: "a", toId: "c" }])
-  },
-  explicitExtents: [
-    { eventId: "a", minYear: 1500, maxYear: 1500 },
-    { eventId: "b", minYear: 1500, maxYear: 1500 },
-    { eventId: "c", minYear: 1900, maxYear: 1900 }
-  ],
-  temporalConstraints: [
-    { beforeId: "a", afterId: "c", source: "order", minGapYears: 0.001 }
-  ],
-  visibleEventIds: ["a", "b", "c", "z-inner", "z-overlap", "zz-outer"]
-});
+    }
+  };
+};
 function freeze<T>(value: T): T {
   if (value && typeof value === "object") {
     Object.freeze(value);
@@ -110,7 +131,10 @@ describe("shared research/production layout boundary", () => {
           ? { boundedRepulsion: { neighborsPerSide: 24, windowYears: 10 } }
           : {})
       });
-      const output = computeLayout(freeze(input), CANONICAL_LAYOUT_SELECTION);
+      const output = computeLayout(
+        freeze(input),
+        defaultLayoutSelection("legacy-force")
+      );
       expect(output.algorithm_version).toBe(
         size > 500 ? "v5-world-layout/2" : "v5-world-layout/1"
       );
@@ -141,7 +165,10 @@ describe("shared research/production layout boundary", () => {
   });
   it("uses distinct schemas and changes point X before nested/overlap envelope derivation, never Y or identities", () => {
     const input = freeze(fixture());
-    const baseline = computeLayout(input);
+    const baseline = computeLayout(
+      input,
+      defaultLayoutSelection("legacy-force")
+    );
     const selection = defaultLayoutSelection("deterministic-slots");
     const result = computeLayout(input, selection);
     expect(temporalGeometry(result)).toEqual(temporalGeometry(baseline));

@@ -2,6 +2,7 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { projectV5WorldTemporal } from "@moirai/projections";
 import { buildV5WorldLayout } from "@moirai/graph-presentation/server";
+import { defaultLayoutSelection } from "@moirai/graph-presentation/layout-engine";
 import {
   createSyntheticLabState,
   SYNTHETIC_LAB_REVISION,
@@ -48,7 +49,8 @@ describe("IP-013 exact starting-main publication layout parity", () => {
       const output = buildV5WorldLayout(
         input,
         projectV5WorldTemporal(input, SYNTHETIC_LAB_REVISION),
-        SYNTHETIC_LAB_TIME_SYSTEM_ID
+        SYNTHETIC_LAB_TIME_SYSTEM_ID,
+        defaultLayoutSelection("legacy-force")
       );
       expect(output.algorithm_version).toBe(version);
       expect(

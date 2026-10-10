@@ -11,3 +11,12 @@ Status: implementation and focused local verification complete; rollout identity
 - The real WebKit test caught invisible Pixi Hulls despite a successful mount: float transform textures needed explicit highp samplers for World Y coordinates above 65,504. Both alternatives now request highp table/accumulation sampling. This correction is covered by actual canvas pixel checks, not merely a mount assertion.
 - Cloud WebKit 26.5 / iPhone 14 emulation used isolated public synthetic Publication fixtures; missing browser shared libraries were installed in a scratch directory, not the app image. No physical GPU timing, long repeated run or benchmark winner is claimed.
 - Unverified: actual iPhone 17 Safari/PWA performance, long-duration memory, context recovery across OS lifecycle, other GPUs/browsers, color/edge preference. Cloud browser evidence is functional software-GPU evidence, not iPhone timing. Selection of the next profiling target belongs to the user after device comparison.
+
+
+## Initial rollout and final corrections
+
+PR #338 deployed `da2bc71666bc40d61591f829e4c2313f723549cd` to all three existing Railway services. Read-only public WebKit observed the same r51 camera, Collection selection and authored IDs across all backends; each painted 2 visible Hulls and 11 points with real colored canvas pixels. The published manifest digest remained unchanged. Diagnostics and native↔hard edges worked. This is one functional view, not scale/performance acceptance.
+
+That public check caught Three's 3D depth sorter attempting a bounding sphere from intentional XY shader attributes. Screen-space passes now disable object sorting and preserve explicit insertion/painter order, eliminating the console error without inventing 3D bounds. Existing candidate tests now check console errors as well as page exceptions. Separately, CI's unchanged resize assertions initially failed to locate the SVG because the new lifecycle host adds an inner wrapper; the test now resizes the shared observed viewport identified through the SVG. No resize assertion or product behavior was weakened. The follow-up PR owns final SHA/public verification.
+
+The automatic legacy A4/IP-004 scale workflows were canceled in accordance with the handoff's minimal-verification scope. Core CI and mobile functional checks were retained.

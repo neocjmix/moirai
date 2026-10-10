@@ -255,6 +255,9 @@ for (const backend of ["pixi", "three"] as const) {
   }, info) => {
     const errors: string[] = [];
     page.on("pageerror", (error) => errors.push(error.message));
+    page.on("console", (message) => {
+      if (message.type() === "error") errors.push(message.text());
+    });
     const representation = await openScene(page, backend);
     const canvas = page.getByTestId(canvasId(backend));
     const original = await canvas.elementHandle();
@@ -295,6 +298,9 @@ test("renderer switching preserves World, camera and selection and saves the pre
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
   await openScene(page, "custom-webgl2");
   const stage = await page.getByTestId("graph-stage").elementHandle();
   const view = await camera(page);
@@ -358,6 +364,9 @@ test("lost candidate context returns to the baseline and releases the failed can
 }) => {
   const errors: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
+  page.on("console", (message) => {
+    if (message.type() === "error") errors.push(message.text());
+  });
   await openScene(page, "pixi");
   const canvas = await page.getByTestId("geographic-pixi").elementHandle();
   const view = await camera(page);

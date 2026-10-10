@@ -186,6 +186,9 @@ export async function createThreeBackend(
     throw Error("three_shader_compile");
   };
   renderer.autoClear = false;
+  // Screen-space passes already have explicit painter order. Three's depth
+  // sorting assumes xyz positions when deriving bounds; these shaders use xy.
+  renderer.sortObjects = false;
   renderer.info.autoReset = false;
   renderer.setClearColor(0x000000, 0);
   const prepare = createScenePreparer();

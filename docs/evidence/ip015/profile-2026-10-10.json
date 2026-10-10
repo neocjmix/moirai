@@ -1,0 +1,333 @@
+{
+  "scope": "One read-only Cloud WebKit/iPhone 14 emulation CPU sample. llvmpipe is not physical iPhone GPU evidence.",
+  "baselineSha": "1d804beb5d19833a1e252e69922545b329d35546",
+  "world": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+  "initialViewport": [
+    0,
+    210000,
+    4000,
+    600000
+  ],
+  "framesPerPhase": 24,
+  "before": [
+    {
+      "phase": "initial",
+      "revision": 54,
+      "view": {
+        "x": 0,
+        "y": -3724.9071162724463,
+        "scaleX": 0.1861662197212304,
+        "scaleY": 0.017615702983587212
+      },
+      "counts": {
+        "sourceEntities": 23,
+        "sourceRegions": 105,
+        "sourceEdges": 0,
+        "projectedPoints": 23,
+        "fadeRegions": 105,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "regionCandidates": 105,
+      "rendererHullCount": 54,
+      "hullCacheEntries": 105,
+      "hullBuilds": 0,
+      "phaseDelta": {
+        "pointProjection": {
+          "calls": 0,
+          "cpuMs": 0
+        },
+        "worldPreparation": {
+          "calls": 0,
+          "cpuMs": 0
+        },
+        "regionProjectionAndLabels": {
+          "calls": 0,
+          "cpuMs": 0
+        },
+        "semanticAdmission": {
+          "calls": 0,
+          "cpuMs": 0
+        },
+        "shellPreparation": {
+          "calls": 0,
+          "cpuMs": 0
+        },
+        "shellRenderThroughCommit": {
+          "calls": 0,
+          "cpuMs": 0
+        },
+        "geographicCanvas": {
+          "calls": 0,
+          "cpuMs": 0
+        }
+      }
+    },
+    {
+      "phase": "initial-pan",
+      "revision": 54,
+      "view": {
+        "scaleX": 0.1861662197212304,
+        "scaleY": 0.017615702983587212,
+        "x": 0,
+        "y": -3724.9071162724463
+      },
+      "counts": {
+        "sourceEntities": 23,
+        "sourceRegions": 105,
+        "sourceEdges": 0,
+        "projectedPoints": 23,
+        "fadeRegions": 105,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "regionCandidates": 105,
+      "rendererHullCount": 54,
+      "hullCacheEntries": 105,
+      "hullBuilds": 100,
+      "phaseDelta": {
+        "pointProjection": {
+          "calls": 19,
+          "cpuMs": 3
+        },
+        "worldPreparation": {
+          "calls": 4,
+          "cpuMs": 7
+        },
+        "regionProjectionAndLabels": {
+          "calls": 19,
+          "cpuMs": 1248
+        },
+        "semanticAdmission": {
+          "calls": 19,
+          "cpuMs": 6
+        },
+        "shellPreparation": {
+          "calls": 21,
+          "cpuMs": 1426
+        },
+        "shellRenderThroughCommit": {
+          "calls": 20,
+          "cpuMs": 2036
+        },
+        "geographicCanvas": {
+          "calls": 20,
+          "cpuMs": 511
+        }
+      }
+    },
+    {
+      "phase": "zoom-in",
+      "revision": 54,
+      "view": {
+        "scaleX": 0.39448554600840136,
+        "scaleY": 0.03732761088562699,
+        "x": 0,
+        "y": -7893.064702037042
+      },
+      "counts": {
+        "sourceEntities": 36,
+        "sourceRegions": 46,
+        "sourceEdges": 0,
+        "projectedPoints": 36,
+        "fadeRegions": 46,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "regionCandidates": 46,
+      "rendererHullCount": 36,
+      "hullCacheEntries": 106,
+      "hullBuilds": 1764,
+      "phaseDelta": {
+        "pointProjection": {
+          "calls": 24,
+          "cpuMs": 3
+        },
+        "worldPreparation": {
+          "calls": 21,
+          "cpuMs": 30
+        },
+        "regionProjectionAndLabels": {
+          "calls": 24,
+          "cpuMs": 3555
+        },
+        "semanticAdmission": {
+          "calls": 26,
+          "cpuMs": 10
+        },
+        "shellPreparation": {
+          "calls": 29,
+          "cpuMs": 3793
+        },
+        "shellRenderThroughCommit": {
+          "calls": 28,
+          "cpuMs": 7381
+        },
+        "geographicCanvas": {
+          "calls": 54,
+          "cpuMs": 3971
+        }
+      }
+    },
+    {
+      "phase": "zoomed-pan",
+      "revision": 54,
+      "view": {
+        "scaleX": 0.39448554600840136,
+        "scaleY": 0.03732761088562699,
+        "x": 0,
+        "y": -7893.064702037042
+      },
+      "counts": {
+        "sourceEntities": 36,
+        "sourceRegions": 46,
+        "sourceEdges": 0,
+        "projectedPoints": 36,
+        "fadeRegions": 46,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "regionCandidates": 46,
+      "rendererHullCount": 36,
+      "hullCacheEntries": 106,
+      "hullBuilds": 7,
+      "phaseDelta": {
+        "pointProjection": {
+          "calls": 24,
+          "cpuMs": 1
+        },
+        "worldPreparation": {
+          "calls": 8,
+          "cpuMs": 4
+        },
+        "regionProjectionAndLabels": {
+          "calls": 24,
+          "cpuMs": 2141
+        },
+        "semanticAdmission": {
+          "calls": 25,
+          "cpuMs": 7
+        },
+        "shellPreparation": {
+          "calls": 27,
+          "cpuMs": 2295
+        },
+        "shellRenderThroughCommit": {
+          "calls": 26,
+          "cpuMs": 3940
+        },
+        "geographicCanvas": {
+          "calls": 37,
+          "cpuMs": 1537
+        }
+      }
+    },
+    {
+      "phase": "zoom-out",
+      "revision": 54,
+      "view": {
+        "scaleX": 0.1861662197212304,
+        "scaleY": 0.017615702983587212,
+        "x": 0,
+        "y": -3724.9071162724463
+      },
+      "counts": {
+        "sourceEntities": 55,
+        "sourceRegions": 105,
+        "sourceEdges": 0,
+        "projectedPoints": 55,
+        "fadeRegions": 105,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "regionCandidates": 105,
+      "rendererHullCount": 54,
+      "hullCacheEntries": 106,
+      "hullBuilds": 1405,
+      "phaseDelta": {
+        "pointProjection": {
+          "calls": 23,
+          "cpuMs": 3
+        },
+        "worldPreparation": {
+          "calls": 20,
+          "cpuMs": 18
+        },
+        "regionProjectionAndLabels": {
+          "calls": 23,
+          "cpuMs": 2582
+        },
+        "semanticAdmission": {
+          "calls": 25,
+          "cpuMs": 3
+        },
+        "shellPreparation": {
+          "calls": 28,
+          "cpuMs": 2789
+        },
+        "shellRenderThroughCommit": {
+          "calls": 27,
+          "cpuMs": 5581
+        },
+        "geographicCanvas": {
+          "calls": 49,
+          "cpuMs": 3187
+        }
+      }
+    },
+    {
+      "phase": "post-out-pan",
+      "revision": 54,
+      "view": {
+        "scaleX": 0.1861662197212304,
+        "scaleY": 0.017615702983587212,
+        "x": 0,
+        "y": -3724.9071162724463
+      },
+      "counts": {
+        "sourceEntities": 55,
+        "sourceRegions": 105,
+        "sourceEdges": 0,
+        "projectedPoints": 55,
+        "fadeRegions": 105,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "regionCandidates": 105,
+      "rendererHullCount": 54,
+      "hullCacheEntries": 106,
+      "hullBuilds": 0,
+      "phaseDelta": {
+        "pointProjection": {
+          "calls": 24,
+          "cpuMs": 0
+        },
+        "worldPreparation": {
+          "calls": 4,
+          "cpuMs": 6
+        },
+        "regionProjectionAndLabels": {
+          "calls": 24,
+          "cpuMs": 1410
+        },
+        "semanticAdmission": {
+          "calls": 24,
+          "cpuMs": 1
+        },
+        "shellPreparation": {
+          "calls": 26,
+          "cpuMs": 1640
+        },
+        "shellRenderThroughCommit": {
+          "calls": 25,
+          "cpuMs": 3053
+        },
+        "geographicCanvas": {
+          "calls": 25,
+          "cpuMs": 1260
+        }
+      }
+    }
+  ],
+  "errors": []
+}

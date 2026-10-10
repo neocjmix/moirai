@@ -1,7 +1,7 @@
 // @ts-nocheck -- Next.js adapter: URDR was authored under its own TS config.
 "use client";
 
-import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState, startTransition, type CSSProperties, type PointerEvent as ReactPointerEvent, type KeyboardEvent as ReactKeyboardEvent, type ReactNode } from "react";
 
 import { chartPlaneDiagnosticSchema, eventDetailResponseSchema, graphShellChartPlaneEntitySchema, graphShellChartPlaneRegionEntitySchema, graphShellViewportResponseSchema, type EventDetailResponse, type EventRecord, type GraphShellChartPlane, type GraphShellChartPlaneEntity, type GraphShellChartPlaneRegionEntity, type GraphShellWorkspaceShell, type WorldAnchor } from "@urdr/contracts";
 import type { ChartPlaneXForceLayoutOptions } from "@urdr/domain";
@@ -14,6 +14,7 @@ import { shareWorldGeometryEntities } from "./world-geometry-identity";
 import { createWorldPointQuery, segmentIntersectsBounds, worldBoundsForScreenBounds } from "./viewport-candidates";
 import { compositePointDisplay, compositeRepresentationDisplay, compositePointDensityDisplay, compositeScreenBounds } from "./composite-point-display";
 import { compositeStageSpan, resolveCompositeHierarchySpans, advanceCompositeStageSpan } from "./composite-visibility-policy";
+import { createCompositeGeometryWorker } from "./composite-geometry-worker-client";
 import { createCompositePanGeometryCache } from "./composite-pan-geometry";
 import { COMPOSITE_LABEL_FONT, createCompositeLabelWidthMeasure, extendCompositeLabelTextPath } from "./composite-label-text-path";
 import { pointDensityDisplay, withParentPointHandoff } from "./point-density-display";
@@ -26,9 +27,10 @@ import { createDeferredEffectDisposal } from "../../../lib/deferred-effect-dispo
 import { graphSessionStorage, readWorldGraphState, rememberGraphWorld, workspaceWorldId } from "../../../lib/graph-session-state";
 import { createPanInertiaTracker, panInertiaFrame, type PanVelocity } from "../../../lib/pan-inertia";
 import { GeographicCanvas } from "../../../components/geographic-canvas";
+import { inspectRendererDiagnostics } from "../../../components/geographic-renderer/diagnostics";
 import { GeographicRenderer } from "../../../components/geographic-renderer/host";
-import { RendererControls } from "../../../components/geographic-renderer/settings";
-import { useRendererPreferences } from "../../../components/geographic-renderer/preferences";
+import { createLiveCamera, createSceneScheduler } from "../../../components/geographic-renderer/live-camera";
+import { prepareLiveSvg } from "../../../components/geographic-renderer/live-svg";
 import { hullFeatherLayers, hullLayerOpacity, HULL_FEATHER_WIDTH_PX } from "../../../components/hull-feather";
 import { pigmentCssColor } from "../../../lib/spectral-pigment";
 import { reconcileViewport } from "../viewport-cache";
@@ -2299,7 +2301,64 @@ export function GraphShell({
   const [hasHydratedRestorableState, setHasHydratedRestorableState] = useState(false);
   const [selectedTimelineId, setSelectedTimelineId] = useState(defaultShellSlice.selectedTimelineId);
   const [enabledCanonIds, setEnabledCanonIds] = useState<ReadonlySet<string>>(() => new Set(defaultShellSlice.enabledCanonIds));
-  const [imageViewportState, setImageViewportState] = useState(() => createImageViewportState());
+  const [imageViewportState, commitImageViewportState] = useState(() => createImageViewportState());
+  const liveImageViewportRef = useRef(imageViewportState);
+  const liveCamera = useMemo(() => createLiveCamera(imageViewportState.view), []);
+  const sceneCameraRef = useRef(imageViewportState.view);
+  const liveSvgGroupRef = useRef(null);
+  const liveSvgPaintRef = useRef(null);
+  const lastSupportCheckRef = useRef(-Infinity);
+  const geometryWorkerRef = useRef(null);
+  const geometryJobInputRef = useRef(null);
+  const workerStatsRef = useRef(null);
+  useEffect(() => {
+    if (typeof Worker === "undefined") return;
+    try { geometryWorkerRef.current = createCompositeGeometryWorker(); } catch { return; }
+    return () => { geometryWorkerRef.current?.dispose(); geometryWorkerRef.current = null; };
+  }, []);
+  const sceneScheduler = useMemo(() => createSceneScheduler(async token => {
+    const snapshot = liveImageViewportRef.current;
+    const input = geometryJobInputRef.current;
+    if (input && geometryWorkerRef.current) {
+      const bounds = worldBoundsForScreenBounds({minX:-96-input.labelReach,minY:-96-input.labelReach,maxX:input.viewport.width+96+input.labelReach,maxY:input.viewport.height+96+input.labelReach},snapshot.view,input.viewport);
+      const regions = selectCompositeWorldRegions(input.prepared,bounds,bounds,true);
+      const result = await geometryWorkerRef.current.prepare({generation:token,view:snapshot.view,viewport:input.viewport,tuning:input.tuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
+        regions: regions.map(region => ({id:region.id, coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile}))});
+      if (!sceneScheduler.accepts(token) || input !== geometryJobInputRef.current) return;
+      if (result) { input.cache.hydrate(result.entries); workerStatsRef.current = {timingMs:result.timingMs,stats:result.stats}; }
+    }
+    if (!sceneScheduler.accepts(token)) return;
+    startTransition(() => commitImageViewportState(previous =>
+      sceneScheduler.accepts(token) ? {...snapshot, activePointers: liveImageViewportRef.current.activePointers, gestureBaseline: liveImageViewportRef.current.gestureBaseline} : previous));
+  }), []);
+  useEffect(() => { sceneScheduler.resume(); return () => sceneScheduler.dispose(); }, [sceneScheduler]);
+  const setImageViewportState = useCallback(update => {
+    const previous = liveImageViewportRef.current;
+    const next = typeof update === "function" ? update(previous) : update;
+    if (next === previous) return;
+    liveImageViewportRef.current = next;
+    liveCamera.publish(next.view);
+    liveSvgPaintRef.current?.apply(next.view);
+    const pointerChange = Object.keys(previous.activePointers).length !== Object.keys(next.activePointers).length;
+    if (pointerChange) {
+      // Contact/lifecycle state is cheap. Keep the committed scene camera until
+      // the latest scheduled scene is ready, including on the final release.
+      commitImageViewportState(current => ({...next, view: current.view}));
+      if (liveSvgGroupRef.current) liveSvgGroupRef.current.style.pointerEvents = Object.keys(next.activePointers).length ? "none" : "";
+    }
+    const moving = Object.keys(next.activePointers).length > 0 || navigationAnimationRef.current !== null;
+    const now = performance.now();
+    if (!moving) sceneScheduler.request(true);
+    else if (now - lastSupportCheckRef.current >= 32) {
+      lastSupportCheckRef.current = now;
+      const scene = sceneCameraRef.current;
+      // 96px prepared overscan, renew after 64px. Scale changes always request
+      // an intermediate scene; small translations remain camera-only.
+      if (next.view.scaleX !== scene.scaleX || next.view.scaleY !== scene.scaleY ||
+          Math.abs(next.view.x - scene.x) > 64 || Math.abs(next.view.y - scene.y) > 64)
+        sceneScheduler.request(false);
+    }
+  }, [liveCamera, sceneScheduler]);
   const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
   const [compositePaintClock, setCompositePaintClock] = useState({frame: 0, prune: 0});
   const compositePaintHistoryRef = useRef({regions: [] as CompositeFadePresence<CompositeRegion>[], frame: 0});
@@ -2335,12 +2394,9 @@ export function GraphShell({
     timing.totalMs += elapsed;
     graphPhaseTimingsRef.current[phase] = timing;
   }, []);
-  const rendererPreferences = useRendererPreferences();
-  const [activeRenderer,setActiveRenderer] = useState("custom-webgl2");
-  const handleBackendChange = useCallback((renderer)=>setActiveRenderer(renderer),[]);
   const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
   const [useGeographicWebGL,setUseGeographicWebGL] = useState(false);
-  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[rendererPreferences.renderer]);
+  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[]);
   const handleGraphicsUnavailable=useCallback(()=>{setUseGeographicCanvas(false);setUseGeographicWebGL(false);},[]);
   const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
   const measureGraphPhase = useCallback((phase, run) => {
@@ -2573,7 +2629,7 @@ export function GraphShell({
     const released = previousNavigationReleaseRef.current !== navigationRelease;
     previousNavigationReleaseRef.current = navigationRelease;
     if ((!released && previousPointerCount === 0) || navigationPointerCount > 0) return;
-    const startView = imageViewportState.view;
+    const startView = liveImageViewportRef.current.view;
     const target = constrainNavigation(startView, viewportSize, navigationBounds);
     const withinBounds = Object.keys(target).every(key => target[key] === startView[key]);
     const velocity = pendingPanInertiaRef.current;
@@ -2593,7 +2649,7 @@ export function GraphShell({
       setImageViewportState(current => Object.keys(current.activePointers).length ? current : resetViewportView(current, nextView));
       const done = frame ? frame.done : progress >= 1;
       navigationAnimationRef.current = done ? null : requestAnimationFrame(animate);
-      if (done) setIsNavigationAnimating(false);
+      if (done) { setIsNavigationAnimating(false); sceneScheduler.request(true); }
     };
     setIsNavigationAnimating(true);
     navigationAnimationRef.current = requestAnimationFrame(animate);
@@ -2601,6 +2657,7 @@ export function GraphShell({
   }, [navigationPointerCount, navigationRelease, navigationBounds, viewportSize, cancelNavigationAnimation]);
 
   const viewportReadSchedulerRef = useRef(null);
+  const viewportRequestGenerationRef = useRef(0);
   useEffect(() => {
     const scheduler = createViewportReadScheduler();
     viewportReadSchedulerRef.current = scheduler;
@@ -2608,6 +2665,10 @@ export function GraphShell({
   }, [loader, locale, effectiveEnabledCanonIds, selectedEventSelection?.eventId]);
 
   useEffect(() => {
+    // Initial/history restoration publishes a scene asynchronously. Do not
+    // anchor the first support response at the temporary default camera.
+    if (graphWorkCountsRef.current.viewportReadStarts === 0 &&
+        Object.keys(view).some(key => view[key] !== liveCamera.get()[key])) return;
     const viewportReadScheduler = viewportReadSchedulerRef.current;
     if (!viewportReadScheduler?.active) return;
     if (!usesLoadingWorkspace && !hasHydratedRestorableState) {
@@ -2646,12 +2707,14 @@ export function GraphShell({
       params.set("selectedEntityId", selectedEventSelection.eventId);
     }
 
+    const requestGeneration = ++viewportRequestGenerationRef.current;
+    const relevant = () => viewportReadScheduler.active && requestGeneration === viewportRequestGenerationRef.current;
     const loadViewport = async () => {
       graphWorkCountsRef.current.viewportReadStarts++;
       // A cache hit settles within this task. Do not publish a transient loading
       // state and repaint an otherwise identical scene for that completed read.
       const pendingTimer = window.setTimeout(() => {
-        if (!viewportReadScheduler.active) return;
+        if (!relevant()) return;
         setRuntimeViewportLoadState("loading");
         setRuntimeViewportErrorMessage(null);
       }, 0);
@@ -2670,22 +2733,35 @@ export function GraphShell({
           ...baseQuery,
           artifactClasses: [...GRAPH_SHELL_FULL_ARTIFACT_CLASSES],
         });
-        if (!viewportReadScheduler.active) return;
+        if (!relevant()) return;
         const previousParsed = parsedRuntimeViewportRef.current;
         const fullResponse = previousParsed?.loader === loader && previousParsed.received === received
           ? previousParsed.parsed : parseViewportResponse(received);
+        // Prime changed support off-thread before integrating it into React.
+        // Only compact geometry crosses this boundary, never the shell graph.
+        if (geometryWorkerRef.current && !geometryWorkerRef.current.inspect().failed && previousParsed?.received !== received) {
+          const points = fullResponse.entities.filter(entity => entity.geometryKind === "point").map(entity => ({id:entity.id,...entity.position}));
+          const prepared = prepareCompositeWorldGeometry(fullResponse.regions, points, compositeHullMode);
+          const support = worldBoundsForScreenBounds({minX:-96-compositeLabelReach,minY:-96-compositeLabelReach,maxX:viewportSize.width+96+compositeLabelReach,maxY:viewportSize.height+96+compositeLabelReach},view,viewportSize);
+          const regions = selectCompositeWorldRegions(prepared,support,support,true);
+          const result = await geometryWorkerRef.current.prepare({generation:requestGeneration,view,viewport:viewportSize,tuning:compositeSplineTuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
+            regions: regions.map(region => ({id:region.id,coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile}))});
+          if (!relevant()) return;
+          if (!result && !geometryWorkerRef.current?.inspect().failed) { sceneScheduler.request(true); return; }
+          if (result) compositePanGeometryCache.hydrate(result.entries);
+        }
         parsedRuntimeViewportRef.current = {loader, received, parsed: fullResponse};
-        if (viewportReadScheduler.active) {
+        if (relevant()) {
           const sameOwner = runtimeViewportOwnerRef.current?.loader === loader && runtimeViewportOwnerRef.current?.canons === canonIds.join(",");
           runtimeViewportOwnerRef.current = {loader, canons: canonIds.join(",")};
           graphWorkCountsRef.current.viewportReadResults++;
-          setRuntimeViewportResponse(previous => reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode));
+          startTransition(() => setRuntimeViewportResponse(previous => relevant() ? reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode) : previous));
           setRuntimeViewportLoadState("ready");
           setRuntimeViewportErrorMessage(null);
         }
 
       } catch (error) {
-        if (!viewportReadScheduler.active) {
+        if (!relevant()) {
           return;
         }
         setRuntimeViewportLoadState("error");
@@ -2747,7 +2823,7 @@ export function GraphShell({
       return;
     }
 
-    const nextViewportSlice = createGraphShellViewportSliceFromView(view, viewportSize);
+    const nextViewportSlice = createGraphShellViewportSliceFromView(liveCamera.get(), viewportSize);
     if (!nextViewportSlice) {
       return;
     }
@@ -2779,6 +2855,9 @@ export function GraphShell({
     const gestureActive = Object.keys(activePointers).length > 0 || isNavigationAnimating || navigationAnimationRef.current !== null;
     let timeoutId: ReturnType<typeof setTimeout> | null = null;
     const writeRestorableState = () => {
+      // Camera intent is authoritative even while the stable scene is waiting.
+      // Delayed/pagehide writes must sample it at flush time, not capture a scene.
+      nextRestorableState.viewport = createGraphShellViewportSliceFromView(liveCamera.get(), viewportSize) ?? nextViewportSlice;
       const storage = graphSessionStorage();
       if (persistenceWorldId) rememberGraphWorld(storage, persistenceWorldId, nextRestorableState);
       try {
@@ -2826,6 +2905,7 @@ export function GraphShell({
     };
   }, [
     activePointers,
+    navigationRelease,
     isNavigationAnimating,
     persistenceWorldId,
     effectiveEnabledCanonIds,
@@ -2897,7 +2977,7 @@ export function GraphShell({
       return [] as RelationSegment[];
     }
 
-    const bounds = worldBoundsForScreenBounds({minX: -24, minY: -24, maxX: viewportSize.width + 24, maxY: viewportSize.height + 24}, view, viewportSize);
+    const bounds = worldBoundsForScreenBounds({minX: -96, minY: -96, maxX: viewportSize.width + 96, maxY: viewportSize.height + 96}, view, viewportSize);
     return visibleChartPlaneEntities
       .filter((entity) => entity.geometryKind === "segment")
       .filter((entity) => segmentIntersectsBounds(entity.start, entity.end, bounds))
@@ -2934,10 +3014,10 @@ export function GraphShell({
       })
       .filter(
         (segment) =>
-          Math.max(segment.x1, segment.x2) >= -24 &&
-          Math.min(segment.x1, segment.x2) <= viewportSize.width + 24 &&
-          Math.max(segment.y1, segment.y2) >= -24 &&
-          Math.min(segment.y1, segment.y2) <= viewportSize.height + 24
+          Math.max(segment.x1, segment.x2) >= -96 &&
+          Math.min(segment.x1, segment.x2) <= viewportSize.width + 96 &&
+          Math.max(segment.y1, segment.y2) >= -96 &&
+          Math.min(segment.y1, segment.y2) <= viewportSize.height + 96
       );
   }, [visibleChartPlaneEntities, viewportSize.height, viewportSize.width, view.x, view.y, view.scaleX, view.scaleY]);
 
@@ -2993,7 +3073,7 @@ export function GraphShell({
     // An open detail fragment keeps its existing context. Otherwise project
     // only visible point candidates and endpoints needed by crossing edges.
     if (renderedEventSelection || selectedEventSelection) return allWorldInstantPoints.map(pointProjection.project);
-    const bounds = worldBoundsForScreenBounds({minX: -pointLabelReach, minY: -16, maxX: viewportSize.width + 16, maxY: viewportSize.height + 32}, view, viewportSize);
+    const bounds = worldBoundsForScreenBounds({minX: -Math.max(96, pointLabelReach), minY: -96, maxX: viewportSize.width + 96, maxY: viewportSize.height + 96}, view, viewportSize);
     const candidates = new Map(worldPointQuery.query(bounds).map(point => [point.id, point]));
     for (const segment of chartRelationSegments) for (const id of segment.endpointIds) {
       const point = worldPointQuery.byId.get(id);
@@ -3027,9 +3107,12 @@ export function GraphShell({
     return () => document.fonts.removeEventListener("loadingdone", loaded);
   }, [compositeLabelWidths]);
   const compositeLabelReach = useMemo(() => preparedWorldCompositeRegions.regions.reduce((reach, region) => Math.max(reach, compositeLabelWidths.width(region.label) + 32), 16), [preparedWorldCompositeRegions, compositeLabelWidths, compositeLabelFontEpoch]);
+  const geometryJobInput = useMemo(() => ({prepared:preparedWorldCompositeRegions, viewport:viewportSize,tuning:compositeSplineTuning,cache:compositePanGeometryCache,labelReach:compositeLabelReach}),[preparedWorldCompositeRegions,viewportSize,compositeSplineTuning,compositePanGeometryCache,compositeLabelReach]);
+  useLayoutEffect(() => { geometryJobInputRef.current = geometryJobInput; }, [geometryJobInput]);
+  useEffect(() => { sceneScheduler.request(true); }, [geometryJobInput]);
   const worldCompositeRegions = useMemo(() => {
     if (viewportSize.width <= 0 || viewportSize.height <= 0) return [];
-    const bounds = getVisibleWorldBounds(view, viewportSize);
+    const bounds = worldBoundsForScreenBounds({minX: -96, minY: -96, maxX: viewportSize.width + 96, maxY: viewportSize.height + 96}, view, viewportSize);
     return selectCompositeWorldRegions(preparedWorldCompositeRegions, {
       minX: bounds.minX - compositeLabelReach / view.scaleX,
       maxX: bounds.maxX + compositeLabelReach / view.scaleX,
@@ -3040,7 +3123,7 @@ export function GraphShell({
       maxX: bounds.maxX + 16 / view.scaleX,
       minY: bounds.minY - 16 / view.scaleY,
       maxY: bounds.maxY + 16 / view.scaleY,
-    });
+    }, true);
   }, [preparedWorldCompositeRegions, compositeLabelReach, view, viewportSize]);
 
   const compositePlacementHistoryRef = useRef({loader, entries: new Map()});
@@ -3054,7 +3137,7 @@ export function GraphShell({
     const stageNow = performance.now();
     const reducedMotion = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const stageHistory = compositeStageHistoryRef.current.loader === loader ? compositeStageHistoryRef.current : {spans: new Map(), at: stageNow};
-    const stageNodes = worldCompositeRegions.map(region => {
+    const stageNodes = preparedWorldCompositeRegions.regions.map(region => {
       const bounds = compositeScreenBounds(region.points);
       return {id: region.id, childIds: region.contains, span: bounds ? compositeStageSpan(bounds.width * view.scaleX, bounds.height * view.scaleY) : 0};
     });
@@ -3072,20 +3155,20 @@ export function GraphShell({
     for (const [id, span] of stageSpans) if (Math.abs(span - (targetStageSpans.get(id) ?? span)) > 0.0001) stageActive = true;
     const projectedRawRegions = worldCompositeRegions.map((region) => {
       graphWorkCountsRef.current.regionTransforms += region.points.length;
-      const geometry = compositePanGeometryCache.project({
+      const geometry = measureGraphPhase("contourPreparation", () => compositePanGeometryCache.project({
         id: region.id, points: region.points, view, viewport: viewportSize,
         padding: getCompositeRegionPadding(region.depth), paddingProfile: region.paddingProfile, tuning: compositeSplineTuning,
         labelHeight: COMPOSITE_LABEL_LINE_HEIGHT, labelGap: COMPOSITE_LABEL_GAP,
-      });
+      }));
       const {projectedHullPoints, projectedPoints} = geometry;
       const representation = compositeRepresentationDisplay(projectedHullPoints, region.hullPending, stageSpans.get(region.id));
       const compactPoint = region.hullPending
         ? representation?.point
         : compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint), stageSpans.get(region.id));
-      const coverage = getPolygonArea(clipPolygonAgainstViewport(projectedPoints, viewportSize)) / Math.max(viewportSize.width * viewportSize.height, 1);
+      const coverage = measureGraphPhase("clippingCoverage", () => getPolygonArea(clipPolygonAgainstViewport(projectedPoints, viewportSize)) / Math.max(viewportSize.width * viewportSize.height, 1));
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
       const labelWidth = Math.max(semanticTextWidth(renderedLabel), 72);
-      const placement = compactPoint ? {
+      const placement = measureGraphPhase("labelPlacement", () => compactPoint ? {
         pathPoints: [], attachX: compactPoint.x, attachY: compactPoint.y,
         guideX: compactPoint.x, guideY: compactPoint.y, labelX: compactPoint.x + 10,
         labelY: compactPoint.y - 10, labelAnchor: "start", labelAngle: 0,
@@ -3100,7 +3183,7 @@ export function GraphShell({
         queryProjectedLabelPoints,
         history.get(region.id)?.label === renderedLabel ? history.get(region.id).placement : undefined,
         geometry.labelPathFrame,
-      );
+      ));
       placements.set(region.id, {label: renderedLabel, placement, compactPoint});
       const textPlacement = compactPoint ? placement : extendCompositeLabelTextPath(placement, compositeLabelWidths.width(renderedLabel), COMPOSITE_LABEL_LINE_HEIGHT);
       return {
@@ -3199,17 +3282,18 @@ export function GraphShell({
       .map((region) => region.id);
 
     return { regions, activeColorRegionIds, descendantOpacityById, placements, stageSpans, stageAt: stageNow, stageActive } satisfies CompositeRenderState;
-  }), [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, loader, densityById, compositePanGeometryCache, measureGraphPhase, compositeLabelWidths, compositeLabelFontEpoch, compositeStageClock]);
+  }), [queryProjectedLabelPoints, compositeSplineTuning, view, viewportSize, worldCompositeRegions, preparedWorldCompositeRegions, loader, densityById, compositePanGeometryCache, measureGraphPhase, compositeLabelWidths, compositeLabelFontEpoch, compositeStageClock]);
   useEffect(() => {
     compositePlacementHistoryRef.current = {loader, entries: chartCompositeRegions.placements};
+    compositePanGeometryCache.retain(new Set(worldCompositeRegions.map(region => region.id)));
   }, [loader, chartCompositeRegions]);
   useLayoutEffect(() => {
     compositeStageHistoryRef.current = {loader, spans: chartCompositeRegions.stageSpans, at: chartCompositeRegions.stageAt};
   }, [loader, chartCompositeRegions]);
   useEffect(() => {
     if (!chartCompositeRegions.stageActive) return;
-    const frame = requestAnimationFrame(() => setCompositeStageClock(performance.now()));
-    return () => cancelAnimationFrame(frame);
+    const timer = setTimeout(() => startTransition(() => setCompositeStageClock(performance.now())), 120);
+    return () => clearTimeout(timer);
   }, [chartCompositeRegions]);
 
   const compositePaintTargets = useMemo(() => selectCompositePaintTargets(chartCompositeRegions.regions), [chartCompositeRegions.regions]);
@@ -3308,7 +3392,7 @@ export function GraphShell({
     const pointById = new Map(allProjectedInstantPoints.map((point) => [point.id, point]));
     const hiddenPointIds = new Set(
       allProjectedInstantPoints
-        .filter((point) => point.x >= -16 && point.x <= viewportSize.width + 16 && point.y >= -16 && point.y <= viewportSize.height + 16)
+        .filter((point) => point.x >= -96 && point.x <= viewportSize.width + 96 && point.y >= -96 && point.y <= viewportSize.height + 96)
         .filter((point) => point.containedBy && visibleRegionIds.has(point.containedBy))
         .filter((point) =>
           shouldElidePointForFarZoom({
@@ -3369,7 +3453,7 @@ export function GraphShell({
 
   const chartInstantPoints = useMemo(() => {
     const visiblePoints = allProjectedInstantPoints
-      .filter((point) => (point.x >= -16 && point.x <= viewportSize.width + 16 && point.y >= -16 && point.y <= viewportSize.height + 16) ||
+      .filter((point) => (point.x >= -96 && point.x <= viewportSize.width + 96 && point.y >= -96 && point.y <= viewportSize.height + 96) ||
         semanticBoundsIntersectViewport({x: point.x + 10, y: point.y - 24, width: semanticTextWidth(point.label), height: 18}, viewportSize))
       .filter((point) => !farZoomElisionState.hiddenPointIds.has(point.id))
       .map((point) => ({
@@ -3875,7 +3959,7 @@ export function GraphShell({
       const deltaY = event.clientY - pendingEventTap.startClientY;
       const stayedWithinTapSlop = Math.hypot(deltaX, deltaY) <= EVENT_DRAWER_TAP_SLOP_PX;
       pendingEventTapRef.current = null;
-      if (event.type === "pointerup" && stayedWithinTapSlop && Object.keys(imageViewportState.activePointers).length === 1) {
+      if (event.type === "pointerup" && stayedWithinTapSlop && Object.keys(liveImageViewportRef.current.activePointers).length === 1) {
         pushPeekSelectionHistory(pendingEventTap.target.eventId);
         eventSelectionNonceRef.current += 1;
         pendingRestoredDrawerStageRef.current = "peek";
@@ -4138,11 +4222,20 @@ export function GraphShell({
     [allProjectedInstantPoints, chartCompositeRegions.regions, compositeSplineTuning, selectedEventPoint, selectedEventTitle, visibleRelationSegments],
   );
 
+  useLayoutEffect(() => {
+    sceneCameraRef.current = view;
+    if (!liveSvgGroupRef.current) return;
+    liveSvgPaintRef.current = prepareLiveSvg(liveSvgGroupRef.current, view, viewportSize);
+    liveSvgPaintRef.current.apply(liveCamera.get());
+    return () => { liveSvgPaintRef.current?.restore(); liveSvgPaintRef.current = null; };
+  });
+
   // Read-only, on-demand diagnostics. No per-frame serialization or telemetry.
   graphInspectionRef.current = () => ({
+    renderer: inspectRendererDiagnostics(),
     revision: runtimeViewportResponse?.revision ?? null,
     selection: [...effectiveEnabledCanonIds].sort(),
-    view, viewportSize, navigationBounds,
+    view, liveView: liveCamera.get(), sceneJobs: sceneScheduler.inspect(), workerJobs: geometryWorkerRef.current?.inspect() ?? null, worker: workerStatsRef.current, viewportSize, navigationBounds,
     completeness: runtimeViewportResponse?.completeness ?? null,
     loadState: runtimeViewportLoadState,
     activeIds: {
@@ -4153,6 +4246,16 @@ export function GraphShell({
     geometry: worldCompositeRegions.map(region => ({id: region.id, points: region.points})).sort((a, b) => a.id.localeCompare(b.id)),
     counts: {
       sourceEntities: runtimeViewportResponse?.entities.length ?? 0,
+      worldRegions: preparedWorldCompositeRegions.regions.length,
+      regionCandidates: worldCompositeRegions.length,
+      chartRegions: chartCompositeRegions.regions.length,
+      presentedRegions: presentedRegions.length,
+      pointCandidates: allProjectedInstantPoints.length,
+      paintedPoints: paintedPoints.length,
+      stageActive: chartCompositeRegions.stageActive,
+      svgPaths: chartViewportRef.current?.querySelectorAll("svg path").length ?? 0,
+      svgTexts: chartViewportRef.current?.querySelectorAll("svg text").length ?? 0,
+      svgTargets: chartViewportRef.current?.querySelectorAll("[data-primary-hit-target]").length ?? 0,
       sourceRegions: runtimeViewportResponse?.regions.length ?? 0,
       sourceEdges: runtimeViewportResponse?.edges.length ?? 0,
       projectedPoints: pointProjection.size(),
@@ -4185,7 +4288,7 @@ export function GraphShell({
   return (
     <>
       {discovery?.contextHud ? <GraphContextHud locale={locale} topic={contextTopic} /> : <GraphSourceIsland locale={locale} />}
-      {!loader.renderTiles ? <RendererControls locale={locale} /> : null}
+
 
       <div className={styles.canvasFrame}>
           <div
@@ -4237,12 +4340,13 @@ export function GraphShell({
                 </svg>
               ) : chartPlane ? (
                 <>
-                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer key={rendererPreferences.renderer} renderer={rendererPreferences.renderer} edge={rendererPreferences.edge} onBackendChange={handleBackendChange} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
-                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/>) : null}
-                <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?(activeRenderer === "custom-webgl2"?"webgl":activeRenderer):"canvas"):"svg"} data-renderer={useGeographicCanvas?(useGeographicWebGL?activeRenderer:"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?(activeRenderer === "custom-webgl2"?"spectral-6band":"normalized-optical-density"):"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-renderer={useGeographicCanvas?(useGeographicWebGL?"custom-webgl2":"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?"spectral-6band":"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
+                  <g ref={liveSvgGroupRef}>
                   <defs>
                     <marker id="relation-arrow-order" markerHeight="6" markerWidth="6" orient="auto" refX="5" refY="3">
                       <path d="M0,0 L6,3 L0,6 Z" fill={RELATION_ORDER_STROKE} />
@@ -4497,6 +4601,7 @@ export function GraphShell({
                       )
                     ) : null;
                   })}
+                  </g>
                 </svg>
                 </>
               ) : null}

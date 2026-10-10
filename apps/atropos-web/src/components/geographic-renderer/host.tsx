@@ -1,33 +1,24 @@
 "use client";
 
-import { useLayoutEffect, useRef, useState } from "react";
+import { useLayoutEffect, useRef } from "react";
 import type { GeographicPainterProps } from "../geographic-canvas";
 import type {
   GeographicRendererBackend,
   GeographicRenderFrame
 } from "./contract";
 import { createBaselineBackend } from "./baseline-backend";
-import { parseGeographicColor } from "./scene";
 import { publishRendererDiagnostics } from "./diagnostics";
-import type { RendererId } from "./preferences";
+import type { LiveCamera } from "./live-camera";
 
 type Props = GeographicPainterProps & {
-  renderer: RendererId;
-  edge: "native" | "hard";
-  onBackendChange: (renderer: RendererId) => void;
+  liveCamera: LiveCamera;
 };
 
-async function createBackend(renderer: RendererId, canvas: HTMLCanvasElement) {
-  if (renderer === "pixi")
-    return (await import("./pixi-backend")).createPixiBackend(canvas);
-  if (renderer === "three")
-    return (await import("./three-backend")).createThreeBackend(canvas);
+async function createBackend(canvas: HTMLCanvasElement) {
   return createBaselineBackend(canvas);
 }
 
-function BackendCanvas(
-  props: Props & { fallback?: string | undefined; onFailure: () => void }
-) {
+function BackendCanvas(props: Props & { onFailure: () => void }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const propsRef = useRef(props);
@@ -38,11 +29,8 @@ function BackendCanvas(
     // factory can dispose their own context without destroying a newer mount.
     const canvas = document.createElement("canvas");
     canvasRef.current = canvas;
-    canvas.dataset.testid =
-      props.renderer === "custom-webgl2"
-        ? "geographic-webgl"
-        : `geographic-${props.renderer}`;
-    canvas.dataset.renderer = props.renderer;
+    canvas.dataset.testid = "geographic-webgl";
+    canvas.dataset.renderer = "custom-webgl2";
     canvas.setAttribute("aria-hidden", "true");
     canvas.style.width = `${props.size.width}px`;
     canvas.style.height = `${props.size.height}px`;
@@ -57,16 +45,6 @@ function BackendCanvas(
     let averageCpu = 0;
     let averageInterval: number | undefined;
     let samples = 0;
-    const style = getComputedStyle(canvas);
-    const palette = {
-      pointFill: parseGeographicColor(
-        style.getPropertyValue("--graph-point-fill").trim() || "#1b2330"
-      ),
-      pointStroke: parseGeographicColor(
-        style.getPropertyValue("--graph-point-stroke").trim() || "#fff"
-      )
-    };
-    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
     const fail = () => {
       if (disposed || failed) return;
       failed = true;
@@ -79,9 +57,8 @@ function BackendCanvas(
     };
     canvas.addEventListener("webglcontextlost", lost);
     publishRendererDiagnostics({
-      renderer: props.renderer,
-      state: "loading",
-      fallback: props.fallback
+      renderer: "custom-webgl2",
+      state: "loading"
     });
     const paint = (now: number) => {
       raf = null;
@@ -89,14 +66,17 @@ function BackendCanvas(
       const current = propsRef.current;
       const start = performance.now();
       const frame: GeographicRenderFrame = {
-        now,
-        dpr: window.devicePixelRatio || 1,
-        reducedMotion: reducedMotion.matches,
-        ...palette,
-        edgeStrategy: current.edge
+        now
       };
       try {
-        const active = backend.render(current, frame);
+        const active = backend.render(
+          {
+            ...current,
+            sceneCamera: current.view,
+            view: current.liveCamera.get()
+          },
+          frame
+        );
         const cpu = performance.now() - start;
         current.onDraw?.(cpu);
         averageCpu = samples ? averageCpu * 0.85 + cpu * 0.15 : cpu;
@@ -110,7 +90,7 @@ function BackendCanvas(
         previousTime = now;
         samples++;
         const stats = backend.stats();
-        canvas.dataset.renderer = current.renderer;
+        canvas.dataset.renderer = "custom-webgl2";
         canvas.dataset.regionCount = String(
           stats.hullCount ?? current.regions.length
         );
@@ -123,19 +103,12 @@ function BackendCanvas(
           canvas.dataset.bufferUploads = String(stats.bufferUploads);
         if (stats.drawCalls !== undefined)
           canvas.dataset.drawCalls = String(stats.drawCalls);
-        if (current.renderer !== "custom-webgl2") {
-          canvas.dataset.pigmentMode = "normalized-optical-density";
-          canvas.dataset.edgeMode =
-            current.edge === "hard" ? "hard" : "gpu-gaussian";
-          canvas.dataset.paintRevision = String(samples);
-        }
         if (samples === 1 || now - lastReport >= 500) {
           lastReport = now;
           publishRendererDiagnostics({
             ...stats,
-            renderer: current.renderer,
-            state: current.fallback ? "fallback" : "ready",
-            fallback: current.fallback,
+            renderer: "custom-webgl2",
+            state: "ready",
             cpuMs: averageCpu,
             frameIntervalMs: averageInterval
           });
@@ -149,7 +122,7 @@ function BackendCanvas(
       if (raf !== null) cancelAnimationFrame(raf);
       paint(performance.now());
     };
-    void createBackend(props.renderer, canvas)
+    void createBackend(canvas)
       .then((value) => {
         if (disposed) {
           value.dispose();
@@ -160,7 +133,6 @@ function BackendCanvas(
           return;
         }
         backend = value;
-        propsRef.current.onBackendChange(props.renderer);
         paint(performance.now());
       })
       .catch(fail);
@@ -180,6 +152,11 @@ function BackendCanvas(
       if (canvasRef.current === canvas) canvasRef.current = null;
     };
   }, []);
+
+  useLayoutEffect(
+    () => props.liveCamera.subscribe(() => requestPaint.current()),
+    [props.liveCamera]
+  );
 
   useLayoutEffect(() => {
     propsRef.current = props;
@@ -206,26 +183,18 @@ function BackendCanvas(
   );
 }
 
-/** Only this canvas remounts. GraphShell, World, selection and SVG remain live. */
+/** Persistent production canvas, with independent live-camera and scene input. */
 export function GeographicRenderer(props: Props) {
-  const [fallback, setFallback] = useState(false);
-  const renderer = fallback ? "custom-webgl2" : props.renderer;
   return (
     <BackendCanvas
       {...props}
-      key={renderer}
-      renderer={renderer}
-      fallback={fallback ? `${props.renderer}-unavailable` : undefined}
       onFailure={() => {
-        if (renderer !== "custom-webgl2") setFallback(true);
-        else {
-          publishRendererDiagnostics({
-            renderer: "svg",
-            state: "fallback",
-            fallback: "gpu-unavailable"
-          });
-          props.onUnavailable();
-        }
+        publishRendererDiagnostics({
+          renderer: "svg",
+          state: "fallback",
+          fallback: "gpu-unavailable"
+        });
+        props.onUnavailable();
       }}
     />
   );

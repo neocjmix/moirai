@@ -1,6 +1,7 @@
 "use client";
 
 import { useLayoutEffect, useRef } from "react";
+import type { LiveCamera } from "./geographic-renderer/live-camera";
 import type { GeographicRenderScene } from "./geographic-renderer/contract";
 import { pigmentCssColor } from "../lib/spectral-pigment";
 import {
@@ -20,7 +21,7 @@ export type GeographicPainterProps = GeographicRenderScene & {
   onUnavailable: () => void;
   onDraw?: (ms: number) => void;
 };
-type Props = GeographicPainterProps;
+type Props = GeographicPainterProps & { liveCamera?: LiveCamera };
 type Tween = { from: number; target: number; value: number; started: number };
 
 // Geometry tolerates a lower raster density than text. SVG retains full-device
@@ -147,7 +148,10 @@ export function GeographicCanvas(props: Props) {
     ).matches;
     const paint = (now: number) => {
       const started = props.onDraw ? performance.now() : 0;
-      const scene = sceneRef.current;
+      const committed = sceneRef.current;
+      const scene = committed.liveCamera
+        ? { ...committed, view: committed.liveCamera.get() }
+        : committed;
       const live = new Set<string>();
       let animating = false;
       const tween = (
@@ -405,6 +409,11 @@ export function GeographicCanvas(props: Props) {
     frameRef.current = null;
     paint(performance.now());
   }, [props]);
+  useLayoutEffect(
+    () =>
+      props.liveCamera?.subscribe(() => paintRef.current(performance.now())),
+    [props.liveCamera]
+  );
   useLayoutEffect(
     () => () => {
       if (frameRef.current !== null) cancelAnimationFrame(frameRef.current);

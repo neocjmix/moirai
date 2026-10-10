@@ -244,7 +244,8 @@ export function prepareCompositeWorldGeometry(
 export function selectCompositeWorldRegions(
   prepared: ReturnType<typeof prepareCompositeWorldGeometry>,
   visibleBounds: Bounds,
-  pointBounds: Bounds
+  pointBounds: Bounds,
+  cullPreparation = false
 ) {
   const seedVisibleInstantIds = new Set(
     prepared.points
@@ -271,5 +272,6 @@ export function selectCompositeWorldRegions(
     prepared.regionById,
     prepared.parentRegionIdsByChildId
   );
-  return prepared.regions.filter((region) => ids.has(region.id));
+  return prepared.regions.filter((region) => ids.has(region.id) && (!cullPreparation ||
+    seedRegionIds.has(region.id) || worldBoundsIntersect(prepared.regionById.get(region.id)!.worldBounds, visibleBounds)));
 }

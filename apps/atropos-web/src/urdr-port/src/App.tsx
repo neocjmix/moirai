@@ -12,7 +12,6 @@ import {
 } from "../../lib/atropos-screen-registry";
 
 import appShellStyles from "./app-shell.module.css";
-import { RendererSettings } from "../../components/geographic-renderer/settings";
 import { GraphShell } from "./components/graph-shell";
 import { RuntimeErrorBoundary } from "./components/runtime-error-boundary";
 import shellStyles from "./components/graph-shell.module.css";
@@ -279,7 +278,6 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
       return (
         <div className={appShellStyles.shellPage}>
           <div className={appShellStyles.shellPageSurface}>
-            <RendererSettings locale={locale} />
             <div className={appShellStyles.shellSectionTitle}>{copy.settingsTitle}</div>
             <div className={appShellStyles.shellSectionBody}>{copy.settingsBody}</div>
             <div className={appShellStyles.shellLanguagePanel}>

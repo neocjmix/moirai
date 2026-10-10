@@ -97,7 +97,7 @@ export function advanceCompositeStageSpan(previous: number | undefined, target: 
   const from = stagePosition(previous);
   const to = stagePosition(target);
   if (Math.abs(to - from) < 0.0001) return {span: target, active: false};
-  const step = Math.max(0, Math.min(48, elapsedMs)) / 50;
+  const step = Math.max(0, Math.min(200, elapsedMs)) / 50;
   if (Math.abs(to - from) <= step) return {span: target, active: false};
   return {span: stageSpan(from + Math.sign(to - from) * step), active: true};
 }

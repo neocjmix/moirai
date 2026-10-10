@@ -10,7 +10,7 @@
 
 넓은 화면의 zoom-out은 Composite 후보를 확대하며 이후 pan에서도 clipping/label/representation 작업을 반복했다. parent closure가 화면 밖 sibling preparation까지 포함하는 경로를 support bounds로 cull한다. 필요한 ancestry span과 완전한 원본 support는 보존하며 retained contour/mesh/paint는 bounded lifecycle로 줄인다. LOD threshold는 바꾸지 않는다.
 
-padded contour/spline·label-path 준비는 전용 Worker와 worker-owned cache로 이동한다. typed-array transfer, 실행 중 1개+최신 대기 1개, generation/loader/revision/Collection guard를 사용한다. renderer는 main thread에 유지한다. Gaussian은 [raw WebGL 후속](../evidence/ip014/gaussian-technique-followup.md)으로 남기며 Three dependency를 유지하지 않는다.
+padded contour/spline·label-path 준비는 전용 Worker와 worker-owned cache로 이동한다. typed-array transfer, 실행 중 1개+최신 대기 1개, generation/loader/revision/Collection guard를 사용한다. renderer는 main thread에 유지한다. Collection/query 전환도 준비된 replacement가 올 때까지 committed source를 유지하며, camera job에 대체된 유효한 query priming은 재시도한다. Gaussian은 [raw WebGL 후속](../evidence/ip014/gaussian-technique-followup.md)으로 남기며 Three dependency를 유지하지 않는다.
 
 [원인·계측·검증 evidence](../evidence/ip015/checkpoint-2026-10-10.md)와 implementation PR이 checkpoint를 소유한다. 최종 merge/deployed SHA와 공개 smoke는 PR 및 [`/__status`](https://moirai-production-8ed1.up.railway.app/__status)에서 관측한다. **다음은 iPhone 17 Safari/PWA에서 사용자 체감 검증이며 그 결과를 기다린다.** Cloud software GPU 수치를 실제 iPhone 성능으로 해석하지 않는다.
 

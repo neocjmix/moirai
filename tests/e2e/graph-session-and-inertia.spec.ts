@@ -9,7 +9,7 @@ type View = { x: number; y: number; scaleX: number; scaleY: number };
 
 async function view(page: Page): Promise<View> {
   return page.evaluate(() => {
-    let state: { view: View } | undefined;
+    let state: { liveView: View } | undefined;
     addEventListener(
       "moirai:graph-inspection",
       ((event: CustomEvent) => {
@@ -19,7 +19,7 @@ async function view(page: Page): Promise<View> {
     );
     dispatchEvent(new Event("moirai:inspect-graph"));
     if (!state) throw Error("Graph inspection unavailable");
-    return state.view;
+    return state.liveView;
   });
 }
 

@@ -1,7 +1,7 @@
 import { expect, test } from "@playwright/test";
 
 for (const graphics of ["canvas", "webgl"]) {
-  test(`steady pan (${graphics}) uses current Composite label coordinates without a second paint-state commit`, async ({
+  test(`steady pan (${graphics}) transforms the stable Composite scene without repeated preparation`, async ({
     page
   }) => {
     await page.goto(`/graph/demo?gsGraphics=${graphics}`);
@@ -10,6 +10,34 @@ for (const graphics of ["canvas", "webgl"]) {
     // Native title paths refresh their measured width after web fonts load.
     // Measure idle work only after this required initial font settlement.
     await page.evaluate(() => document.fonts.ready.then(() => undefined));
+    await expect
+      .poll(() =>
+        page.evaluate(() => {
+          let state:
+            | {
+                sceneJobs: { pending: number };
+                workerJobs: { running: number; pending: number };
+                counts: { stageActive: boolean };
+              }
+            | undefined;
+          addEventListener(
+            "moirai:graph-inspection",
+            (e) => {
+              state = (e as CustomEvent).detail;
+            },
+            { once: true }
+          );
+          dispatchEvent(new Event("moirai:inspect-graph"));
+          return Boolean(
+            state &&
+            !state.sceneJobs.pending &&
+            !state.workerJobs.running &&
+            !state.workerJobs.pending &&
+            !state.counts.stageActive
+          );
+        })
+      )
+      .toBe(true);
     await page.waitForTimeout(300);
     const meshBefore =
       graphics === "webgl"
@@ -94,8 +122,10 @@ for (const graphics of ["canvas", "webgl"]) {
     });
     const delta = (key: string) => result.after[key]! - result.before[key]!;
     expect(delta("viewportBatches")).toBe(50);
-    // No-op publication must not achieve fewer commits by starving reads.
-    expect(delta("viewportReadResults")).toBeGreaterThan(0);
+    // Prepared overscan intentionally avoids reads and preparation for this 2px pan.
+    expect(delta("viewportReadResults")).toBe(0);
+    expect(delta("regionTransforms")).toBe(0);
+    expect(delta("hullBuilds")).toBe(0);
     expect(delta("staleSemanticRegionPasses")).toBe(0);
     expect(delta("compositeFrameTicks")).toBe(0);
     // Allow independent viewport response/label lifecycle commits. A copied

@@ -409,6 +409,7 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
         const regionIds = new Set(scene.regions.map((region) => region.id));
         for (const id of cache.keys()) if (!regionIds.has(id)) remove(id);
         let animating = false;
+        let activeTweens = 0;
         const tween = (
           id: string,
           target: number,
@@ -428,7 +429,10 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
             old = { from: at(old), target, start: now };
           tweens.set(id, old);
           const value = at(old);
-          if (Math.abs(value - target) > 0.0001) animating = true;
+          if (Math.abs(value - target) > 0.0001) {
+            animating = true;
+            activeTweens++;
+          }
           return value;
         };
         const camera = (view = scene.view, size = scene.size) => {
@@ -647,11 +651,17 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
                 // A reused mesh stays within 20% of its original camera.
                 // Keep its inset too: at this scale the 2.4px feather varies
                 // only from 1.92 to 2.88px instead of rebuilding every pinch.
+                // Feather is scene preparation, not a live-camera operation.
+                const edgeTransform = geographicPaintTransform(
+                  entry.frame,
+                  scene.sceneCamera ?? scene.view,
+                  scene.size
+                )!;
                 const anchoredFeather =
-                  drawTransform[0] >= 0.8 &&
-                  drawTransform[0] <= 1.2 &&
-                  drawTransform[1] >= 0.8 &&
-                  drawTransform[1] <= 1.2;
+                  edgeTransform[0] >= 0.8 &&
+                  edgeTransform[0] <= 1.2 &&
+                  edgeTransform[1] >= 0.8 &&
+                  edgeTransform[1] <= 1.2;
                 const layers = hullFeatherLayers(
                   entry.path,
                   softness,
@@ -659,8 +669,8 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
                     (anchoredFeather
                       ? 1
                       : Math.max(
-                          Math.abs(drawTransform[0]),
-                          Math.abs(drawTransform[1]),
+                          Math.abs(edgeTransform[0]),
+                          Math.abs(edgeTransform[1]),
                           0.0001
                         )),
                   2
@@ -843,6 +853,8 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
         canvas.dataset.featherCoats = "2";
         canvas.dataset.featherLayers = String(featherLayers);
         canvas.dataset.pigmentDraws = String(accumulationDraws);
+        canvas.dataset.tweenCount = String(tweens.size);
+        canvas.dataset.activeTweens = String(activeTweens);
         canvas.dataset.bufferUploads = String(bufferUploads);
         canvas.dataset.drawCalls = String(
           accumulationDraws + strokes.length + 1 + (pigmentActive ? 2 : 0)

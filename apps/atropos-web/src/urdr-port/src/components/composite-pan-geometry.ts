@@ -21,7 +21,7 @@ type Request = {
   labelHeight?: number;
   labelGap?: number;
 };
-type Entry = {
+export type CompositeGeometryEntry = {
   support: readonly ViewportCoordinate[];
   scaleX: number;
   scaleY: number;
@@ -55,7 +55,7 @@ export function createCompositePanGeometryCache({
   maxVertices = 20_000,
   maxPathCharacters = 1_000_000
 } = {}) {
-  const entries = new Map<string, Entry>();
+  const entries = new Map<string, CompositeGeometryEntry>();
   let vertices = 0;
   let pathCharacters = 0;
   let builds = 0;
@@ -153,6 +153,19 @@ export function createCompositePanGeometryCache({
         },
         pathTransform: dx === 0 && dy === 0 ? undefined : `translate(${dx} ${dy})`
       };
+    },
+    snapshot(): [string, CompositeGeometryEntry][] { return [...entries]; },
+    hydrate(snapshot: [string, CompositeGeometryEntry][]) {
+      for (const id of entries.keys()) if (!snapshot.some(([key]) => key === id)) remove(id);
+      for (const [id, entry] of snapshot) {
+        remove(id);
+        entries.set(id, entry);
+        vertices += entry.vertices;
+        pathCharacters += entry.path.length;
+      }
+    },
+    retain(ids: ReadonlySet<string>) {
+      for (const id of entries.keys()) if (!ids.has(id)) { remove(id); evictions++; }
     },
     clear() {
       entries.clear();

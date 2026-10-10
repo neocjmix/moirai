@@ -1,0 +1,31 @@
+# IP-015 checkpoint — 2026-10-10
+
+Main/public baseline `1d804beb5d19833a1e252e69922545b329d35546` (#340). PR #339 is open at `a4107e2013732d874daedeca8b25b0a954dcf08f`; its latest handoff is adopted. CURRENT's renderer-comparison status was stale. Public World `01a107fb-4018-7fcb-8390-836a40fa91cc` was r54, not the old r51 evidence. No authoring or Publication writes were performed for this slice.
+
+## Cause and measurement
+
+One read-only five-phase Cloud WebKit sample, 24 synthetic pointer RAFs per phase, with a wide World view (`gsViewport=0,210000,4000,600000`). Invalid initial capture samples were discarded. [Reduced measurements](profile-2026-10-10.json) retain working-set and CPU deltas, without World object graphs. Cloud software-GPU frame time is not physical iPhone evidence.
+
+Zoom-in rebuilt padded contours 1,764 times; zoom-out 1,405 times. Scale invalidates upstream screen-space contours even when raw WebGL's downstream mesh reuse succeeds. Projection/clipping/coverage/label preparation ran at camera RAF cadence.
+
+After zoom-out Composite candidates increased from 46 to 105. Subsequent 24-frame pan rebuilt zero contours but still ran 24 region/label passes, consuming 1,410ms in that phase. That establishes continued pan CPU work independently from zoom contour cost. Renderer had 54 meshes and the bounded contour cache 106 entries: this sample rules out unbounded cache accumulation as its explanation. It does not claim to reproduce every detail of physical-device timing.
+
+Code also expanded a selected parent's recursive closure into remote siblings. A 100-child regression fixture passed 101 objects to preparation before culling; prepared-support culling now passes the intersecting child and complete parent, 2 objects, while preserving all parent source support. World-bound stage hierarchy calculations still consider required ancestry; expensive contours and labels do not prepare remote siblings merely for closure.
+
+## Implementation
+
+- Imperative live-camera channel directly drives the persistent raw WebGL canvas and committed SVG. Scene camera is separate. Affine transforms use the existing geographicPaintTransform scaleX/scaleY/translation/viewport convention.
+- Support check 32ms; intermediate reconciliation starts at 120ms cadence, with at most one scheduled replacement. Current intermediate work remains useful until a newer job starts; settle invalidates it immediately and starts the newest final job asynchronously. React publishes only ready/relevant scene snapshots through a transition, keeping the stable scene visible.
+- Prepared overscan 96px; ordinary same-scale pan renews after 64px displacement. Point preparation includes bounded overscan. Query/support remains the existing four-viewport request/cache and does not equal the prepared set. Contour cache drops objects outside the new preparation set; raw WebGL evicts absent meshes/tweens; existing finite paint/label exit lifetimes remain.
+- CPU-heavy contour expansion, spline serialization and native label-path preparation run in one dedicated Worker. Compact Float64Array coordinates transfer into a worker-owned bounded cache. One running job and one newest queued job; stale jobs are discarded by generation/context. New support is primed before React integration. Worker failure retains the main-thread fallback. Camera and renderer stay on main thread.
+- Native SVG glyphs, halo/stroke and point metrics stay in CSS pixels while their committed anchors move with the live camera. Stale hit activation is disabled while contacts move, then restored at release. No whole-scene bitmap/text cache.
+- Raw WebGL feather preparation uses the scene camera, so live zoom cannot rebuild inset geometry between scene publications. Gaussian remains the isolated [next raw WebGL technique](../ip014/gaussian-technique-followup.md).
+- Pixi/Three engines, dependencies/types, preferences, selectors, candidate-only preparer and tests are removed. Moirai scene contract, persistent host/lifecycle, raw backend, actual mesh reuse and lightweight diagnostics remain.
+
+## Verification and limitations
+
+Focused unit checks cover affine mapping, scheduler cadence/settle/latest-wins, Worker pending replacement/failure, complete hierarchy support, culling and contour reuse. Mobile WebKit covers immediate camera-only pan, independent-axis pinch/native text and point metrics, final convergence, pigment mixing, mesh reuse, point-only recovery and SVG fallback. Build, strict types, format/lint, boundary and secret checks are recorded on the implementation PR.
+
+The broader local unit run had 779 passes, 14 timeout failures and 2 skips under concurrent scale/browser work; it is not all-green evidence. Existing main's Next.js high dependency advisory and authenticated Clotho policy-smoke failure remain separate from this frontend slice. Database/integration CI is retained; no schema/server/canonical changes are made. Physical iPhone Safari/PWA feel, long-duration heap and OS context lifecycle remain user/device validation.
+
+Rollout's exact SHA, public readiness/synthetic smoke and the single post-change wide-view sample are recorded on the implementation PR and public status after observation. Stop at this checkpoint and await iPhone feedback.

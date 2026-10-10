@@ -123,3 +123,12 @@ it("derives local depth from legacy child support without globally widening shal
     { minY: 0, maxY: 40, depth: 1 }, { minY: 40, maxY: 60, depth: 2 }, { minY: 60, maxY: 100, depth: 1 }
   ]);
 });
+
+it('preparation culls remote siblings without changing complete parent support', () => {
+  const children = Array.from({length:100},(_,i)=>region(`child-${i}`,[],i*100));
+  const parent = {...region('parent', children.map(child=>child.id)), worldBounds:bounds(0,10_000)};
+  const prepared=prepareCompositeWorldGeometry([parent,...children],[], 'concave');
+  expect(selectCompositeWorldRegions(prepared,bounds(0,20),bounds(0,20))).toHaveLength(101);
+  expect(selectCompositeWorldRegions(prepared,bounds(0,20),bounds(0,20),true).map(r=>r.id)).toEqual(['child-0','parent']);
+  expect(Math.max(...prepared.regions.find(r=>r.id==='parent')!.points.map(point=>point.x))).toBe(9910);
+});

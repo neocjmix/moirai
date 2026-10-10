@@ -1420,9 +1420,9 @@
 }
 
 /* Keep SVG text and hit geometry at native density; the Canvas owns only ink. */
-.chartSurface:is([data-graphics-painter="canvas"], [data-graphics-painter="webgl"], [data-graphics-painter="pixi"], [data-graphics-painter="three"]) .chartBackdrop,
-.chartSurface:is([data-graphics-painter="canvas"], [data-graphics-painter="webgl"], [data-graphics-painter="pixi"], [data-graphics-painter="three"]) .chartInstantPoint,
-.chartSurface:is([data-graphics-painter="canvas"], [data-graphics-painter="webgl"], [data-graphics-painter="pixi"], [data-graphics-painter="three"]) .chartCompositeRegion {
+.chartSurface:is([data-graphics-painter="canvas"], [data-graphics-painter="webgl"]) .chartBackdrop,
+.chartSurface:is([data-graphics-painter="canvas"], [data-graphics-painter="webgl"]) .chartInstantPoint,
+.chartSurface:is([data-graphics-painter="canvas"], [data-graphics-painter="webgl"]) .chartCompositeRegion {
   fill: none !important;
   stroke: none !important;
   mix-blend-mode: normal !important;

@@ -3,7 +3,7 @@ import { collectionDiscoveryConfig } from "../lib/collection-discovery-config";
 import { notFound } from "next/navigation";
 import { GraphSessionGate, ResumeLastGraphWorld } from "./graph-session-gate";
 import { readV5StagedDocument } from "@moirai/publication/v5";
-import { readV5RenderGeneration } from "@moirai/publication/v5";
+import { readV5RenderGeneration, type RenderBox } from "@moirai/publication/v5";
 import { assertPublicId } from "../lib/publication";
 import { publicTimeSystemIdentity } from "@moirai/graph-query";
 import type { PublicTimeSystem } from "@moirai/contracts";
@@ -86,6 +86,7 @@ export default async function V5GraphPage({
     // the generation carries authored Composite metadata. Older generations
     // and absent sidecars stay on the semantic reader; tileData=0 is a
     // per-request rollback without changing the served publication.
+    const renderScope: { bounds: RenderBox | null } = { bounds: null };
     const renderAvailable =
       params.tileData !== "0" &&
       (await readV5RenderGeneration(store, worldId)
@@ -95,6 +96,9 @@ export default async function V5GraphPage({
             (item) => item.timeSystemId === timeSystemId
           );
           if (!manifest) return false;
+          // A same-revision Render rebuild can change X independently of the
+          // canonical spatial rollback tree. Camera bounds follow served ink.
+          renderScope.bounds = manifest.summary?.bounds ?? null;
           // v4 publishes a bounded summary on the generation root. Do not
           // download the global operational manifest to select the reader.
           const version =
@@ -138,7 +142,7 @@ export default async function V5GraphPage({
       ? await shell.reader.viewport(timeSystemId, spatial.bounds, 1, null)
       : null;
     const first = initial?.shapes[0];
-    const center =
+    const semanticCenter =
       first?.kind === "point"
         ? first.position
         : first?.kind === "segment"
@@ -149,6 +153,13 @@ export default async function V5GraphPage({
                 y: (first.bounds.minY + first.bounds.maxY) / 2
               }
             : null;
+    const center =
+      semanticCenter && renderScope.bounds
+        ? {
+            ...semanticCenter,
+            x: (renderScope.bounds.minX + renderScope.bounds.maxX) / 2
+          }
+        : semanticCenter;
     return (
       <V5AtroposRoot
         key={worldId}
@@ -236,7 +247,9 @@ export default async function V5GraphPage({
               canonId: worldId,
               planeId: worldId,
               widthHint: 1800,
-              bounds: spatial?.bounds ?? null,
+              bounds: renderAvailable
+                ? (renderScope.bounds ?? spatial?.bounds ?? null)
+                : (spatial?.bounds ?? null),
               ready: true
             }
           ],

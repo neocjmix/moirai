@@ -324,7 +324,12 @@ export async function loadLayoutLabSnapshot(
       world: summary.world,
       events: byId(events),
       relations: byId(relations),
-      timeSystems: byId(systems)
+      timeSystems: byId(systems),
+      collections: byId(collections),
+      eventCollectionMemberships: [...memberships].flatMap(
+        ([collection_id, ids]) =>
+          ids.map((event_id) => ({ event_id, collection_id }))
+      )
     },
     {
       world_id: worldId,

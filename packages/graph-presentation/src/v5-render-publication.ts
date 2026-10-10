@@ -97,6 +97,8 @@ export type RenderPublication = Readonly<{
   revision: number;
   timeSystemId: string;
   algorithmVersion: "render-compiler/3" | "render-compiler/4";
+  /** Layout provenance changes independently of the fixed-grid compiler. */
+  layoutAlgorithmVersion?: string;
   /** Only /2 publications use the fixed frame; /1 retains its original grid. */
   spatialFrame?: RenderSpatialFrame;
   minLevel?: number;
@@ -523,6 +525,7 @@ export function compileV5RenderPublication(
       revision: layout.revision,
       timeSystemId: layout.time_system_id,
       algorithmVersion: "render-compiler/4",
+      layoutAlgorithmVersion: layout.algorithm_version,
       spatialFrame: V5_RENDER_SPATIAL_FRAME,
       minLevel: V5_RENDER_SPATIAL_FRAME.minLevel,
       overflowLevels: [],
@@ -820,6 +823,7 @@ export function compileV5RenderPublication(
     revision: layout.revision,
     timeSystemId: layout.time_system_id,
     algorithmVersion: "render-compiler/4",
+    layoutAlgorithmVersion: layout.algorithm_version,
     spatialFrame: frame,
     minLevel: frame.minLevel,
     overflowLevels: [...overflowLevels].sort((a, b) => a - b),

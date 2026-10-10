@@ -9,6 +9,7 @@ export type RenderBox = Readonly<{
 export type RenderReadSummary = Readonly<{
   format: "render-publication/2";
   algorithmVersion: "render-compiler/4";
+  layoutAlgorithmVersion?: string;
   bounds: RenderBox | null;
   maxLevel: number;
   overflowLevels: readonly number[];
@@ -49,6 +50,11 @@ export function renderReadSummary(value: unknown): RenderReadSummary {
   if (
     summary?.format !== "render-publication/2" ||
     summary.algorithmVersion !== "render-compiler/4" ||
+    (summary.layoutAlgorithmVersion !== undefined &&
+      (typeof summary.layoutAlgorithmVersion !== "string" ||
+        !/^[a-zA-Z0-9._-]+\/[a-zA-Z0-9._-]+$/.test(
+          summary.layoutAlgorithmVersion
+        ))) ||
     (summary.bounds !== null && !isRenderBox(summary.bounds)) ||
     frame?.format !== "render-spatial-frame/1" ||
     ![frame.originX, frame.originY, frame.baseSpanX, frame.baseSpanY].every(
@@ -80,6 +86,9 @@ export function renderReadSummary(value: unknown): RenderReadSummary {
   return {
     format: summary.format,
     algorithmVersion: summary.algorithmVersion,
+    ...(summary.layoutAlgorithmVersion === undefined
+      ? {}
+      : { layoutAlgorithmVersion: summary.layoutAlgorithmVersion }),
     bounds:
       summary.bounds === null
         ? null

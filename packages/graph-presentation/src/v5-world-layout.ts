@@ -12,14 +12,16 @@ import {
   computeLayout,
   CANONICAL_LAYOUT_SELECTION,
   type LayoutInput,
-  type LayoutOutput
+  type LayoutOutput,
+  type LayoutSelection
 } from "./layout-engine.js";
 import type { Dataset } from "./urdr-layout-types.js";
 
 export type V5LayoutCanonicalInput = Pick<
   CanonicalState,
   "world" | "events" | "relations" | "timeSystems"
->;
+> &
+  Partial<Pick<CanonicalState, "collections" | "eventCollectionMemberships">>;
 export interface V5LayoutTemporalInput {
   readonly world_id: string;
   readonly source_revision: number;
@@ -185,6 +187,18 @@ export function prepareV5LayoutInput(
         changed = true;
       }
   }
+  const collectionIds = [...(state.collections ?? [])].map((c) => c.id).sort();
+  const eventIds = new Set(events.map((e) => e.id));
+  const selectedBy = new Map<string, Set<string>>();
+  const members = new Map(collectionIds.map((id) => [id, new Set<string>()]));
+  for (const m of state.eventCollectionMemberships ?? []) {
+    if (!eventIds.has(m.event_id) || !members.has(m.collection_id))
+      throw Error("v5_layout_membership_invalid");
+    members.get(m.collection_id)!.add(m.event_id);
+    const selected = selectedBy.get(m.event_id) ?? new Set<string>();
+    selected.add(m.collection_id);
+    selectedBy.set(m.event_id, selected);
+  }
   return {
     formatVersion: "layout-input/1",
     worldId: state.world.id,
@@ -205,7 +219,31 @@ export function prepareV5LayoutInput(
       ...extent
     })),
     temporalConstraints: constraints,
-    visibleEventIds: [...visible]
+    visibleEventIds: [...visible],
+    incidence: {
+      formatVersion: "collection-incidence/1",
+      events: events.map((e) => ({
+        id: e.id,
+        childIds: [...(children.get(e.id) ?? [])].sort(),
+        collectionIds: [...(selectedBy.get(e.id) ?? [])].sort()
+      })),
+      collections: collectionIds.map((id) => ({
+        id,
+        eventIds: [...members.get(id)!].sort()
+      })),
+      relations: relations.flatMap((r) =>
+        r.source_ref.kind === "event" && r.target_ref.kind === "event"
+          ? [
+              {
+                id: r.id,
+                type: r.type,
+                sourceId: r.source_ref.event_id,
+                targetId: r.target_ref.event_id
+              }
+            ]
+          : []
+      )
+    }
   };
 }
 
@@ -214,10 +252,11 @@ export function prepareV5LayoutInput(
 export function buildV5WorldLayout(
   state: CanonicalState,
   temporal: ReturnType<typeof projectV5WorldTemporal>,
-  timeSystemId: string
+  timeSystemId: string,
+  selection: LayoutSelection = CANONICAL_LAYOUT_SELECTION
 ): V5WorldLayout {
   return computeLayout(
     prepareV5LayoutInput(state, temporal, timeSystemId),
-    CANONICAL_LAYOUT_SELECTION
+    selection
   );
 }

@@ -98,7 +98,7 @@ describe("read-only published Layout Lab snapshot", () => {
     computeLayout(snapshot.input, CANONICAL_LAYOUT_SELECTION);
     computeLayout(snapshot.input, {
       ...CANONICAL_LAYOUT_SELECTION,
-      parameters: { ...CANONICAL_LAYOUT_SELECTION.parameters, repulsion: 0.2 }
+      parameters: { ...CANONICAL_LAYOUT_SELECTION.parameters, cohesion: 0.2 }
     });
     expect(store.reads).toHaveLength(readsAfterLoad);
     expect(

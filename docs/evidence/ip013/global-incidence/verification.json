@@ -1,0 +1,33 @@
+{
+  "date": "2026-10-10",
+  "algorithm": "global-incidence/1",
+  "reviewedHistory": {
+    "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "shapes": 539,
+    "shapesSha256": "6032f46d8b340c9e5d610e4388e12e35940f92d57432e77dfb992f7bca33d545",
+    "matchesReviewedPagesRelease": true
+  },
+  "checks": {
+    "unit": {
+      "passed": 805,
+      "skipped": 2
+    },
+    "postgres18Integration": {
+      "passed": 49
+    },
+    "chromiumMobileLegacyRendererRegression": {
+      "passed": 11
+    },
+    "strictTypecheck": "passed",
+    "productionBuild": "passed",
+    "format": "passed",
+    "lint": "passed",
+    "dependencyAudit": "failed: existing 1 high, 13 moderate, 1 low advisories"
+  },
+  "limits": [
+    "Actual iPhone 17 Safari/PWA is unverified",
+    "Legacy renderer gesture fixtures do not prove global-incidence readability",
+    "Full public rollout results are recorded in global-incidence-rollout.md"
+  ]
+}

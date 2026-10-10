@@ -1,0 +1,35 @@
+{
+  "checkedAt": "2026-10-10T14:31:07.752Z",
+  "evidence": [
+    {
+      "profile": "desktop",
+      "url": "https://neocjmix.github.io/moirai/?v=2",
+      "http": 200,
+      "initialEvents": 522,
+      "realPlaced": 539,
+      "navigationRecompute": false,
+      "temporalYStable": true,
+      "pan": true,
+      "pinch": true,
+      "presetRoundTrip": true,
+      "incrementRoundTrip": true,
+      "renderErrors": [],
+      "limitations": "Chromium viewport/touch emulation; not physical iPhone Safari or PWA"
+    },
+    {
+      "profile": "mobile-chromium",
+      "url": "https://neocjmix.github.io/moirai/?v=2",
+      "http": 200,
+      "initialEvents": 522,
+      "realPlaced": 539,
+      "navigationRecompute": false,
+      "temporalYStable": true,
+      "pan": true,
+      "pinch": true,
+      "presetRoundTrip": true,
+      "incrementRoundTrip": true,
+      "renderErrors": [],
+      "limitations": "Chromium viewport/touch emulation; not physical iPhone Safari or PWA"
+    }
+  ]
+}

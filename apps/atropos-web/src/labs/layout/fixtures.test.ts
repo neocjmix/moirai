@@ -108,7 +108,7 @@ describe("immutable Layout Lab pathological fixture", () => {
     );
   });
 
-  it("Collection membership cannot redefine World layout, including a shared Event", () => {
+  it("membership affects the incidence candidate, never temporal facts or legacy candidates", () => {
     const state = createSyntheticLabState();
     const withoutCollections: CanonicalState = {
       ...state,
@@ -125,11 +125,20 @@ describe("immutable Layout Lab pathological fixture", () => {
       projectV5WorldTemporal(withoutCollections, SYNTHETIC_LAB_REVISION),
       SYNTHETIC_LAB_TIME_SYSTEM_ID
     );
-    expect(input).toEqual(snapshot.input);
+    expect({ ...input, incidence: undefined }).toEqual({
+      ...snapshot.input,
+      incidence: undefined
+    });
     for (const algorithm of layoutAlgorithms) {
       const selection = defaultLayoutSelection(algorithm.id);
       const output = computeLayout(input, selection);
-      expect(output).toEqual(computeLayout(snapshot.input, selection));
+      const withMembership = computeLayout(snapshot.input, selection);
+      if (algorithm.id === "global-incidence")
+        expect(output.shapes).not.toEqual(withMembership.shapes);
+      else expect(output).toEqual(withMembership);
+      expect(temporalCoordinates(output)).toEqual(
+        temporalCoordinates(withMembership)
+      );
       expect(
         output.shapes.filter((shape) => shape.event_id === "shared")
       ).toHaveLength(1);

@@ -20,8 +20,13 @@ import {
 import { buildV5WorldCompleteArtifacts } from "@moirai/graph-presentation/server";
 import {
   publishV5CompleteArtifacts,
-  readV5ServedRoot
+  readV5ServedRoot,
+  readV5RenderGeneration
 } from "@moirai/publication/v5";
+import {
+  defaultLayoutSelection,
+  CANONICAL_LAYOUT_SELECTION
+} from "@moirai/graph-presentation/layout-engine";
 import { createServer } from "node:http";
 import { spawn } from "node:child_process";
 import { fileURLToPath } from "node:url";
@@ -321,6 +326,127 @@ async function processNextJob(): Promise<boolean> {
 async function workerLoop(): Promise<void> {
   if (publicationMode === "v5" || publicationMode === "v5-hold")
     await assertV5SchemaReady(database);
+  // Explicit, one-shot operator rollout. Rebuild every served v5 World at its
+  // pinned revision, all Time Systems, without mutating canonical history.
+  if (process.env.IP013_RENDER_BACKFILL_ALL === "1") {
+    if (publicationMode !== "v5")
+      throw Error("render_backfill_all_requires_v5");
+    const requested = process.env.IP013_RENDER_BACKFILL_LAYOUT;
+    if (requested && !["global-incidence", "legacy-force"].includes(requested))
+      throw Error("render_backfill_layout_invalid");
+    const layoutSelection =
+      requested === "legacy-force"
+        ? defaultLayoutSelection("legacy-force")
+        : CANONICAL_LAYOUT_SELECTION;
+    const runId = process.env.IP013_RENDER_BACKFILL_RUN_ID;
+    if (!runId || !/^[a-zA-Z0-9-]{1,80}$/.test(runId))
+      throw Error("render_backfill_run_id_invalid");
+    await database.connection().execute(async (connection) => {
+      const locked = (
+        await sql<{
+          locked: boolean;
+        }>`select pg_try_advisory_lock(12012) as locked`.execute(connection)
+      ).rows[0]?.locked;
+      if (!locked) throw Error("render_backfill_busy");
+      try {
+        const worlds = (
+          await sql<{
+            id: string;
+          }>`select id from worlds where current_revision > 0 and withdrawn_revision is null order by id`.execute(
+            database
+          )
+        ).rows;
+        let served = 0,
+          failed = 0,
+          skipped = 0;
+        for (const { id: worldId } of worlds) {
+          try {
+            const raw = await publicationStore.get(
+              `worlds/${worldId}/current.json`
+            );
+            if (
+              raw.status === 404 ||
+              (raw.status === 200 &&
+                JSON.parse(raw.body!).format_version !== "v5-publication/1")
+            ) {
+              skipped++;
+              continue;
+            }
+            const { pointer } = await readV5ServedRoot(
+              publicationStore,
+              worldId
+            );
+            let previousGeneration: string | null = null;
+            try {
+              previousGeneration = (
+                await readV5RenderGeneration(publicationStore, worldId)
+              ).generation;
+            } catch (cause) {
+              if (
+                !(cause instanceof Error) ||
+                cause.message !== "render_generation_unavailable"
+              )
+                throw cause;
+            }
+            const result = await backfillV5RenderGeneration({
+              state: await readV5WorldAtRevision(
+                database,
+                worldId,
+                pointer.served_revision
+              ),
+              revision: pointer.served_revision,
+              store: publicationStore,
+              layoutSelection,
+              rollbackSnapshotKey: `worlds/${worldId}/render-rollbacks/${runId}.json`
+            });
+            served++;
+            process.stdout.write(
+              JSON.stringify({
+                level: "info",
+                service: "lachesis-worker",
+                operation: "render_backfill_all_world",
+                world_id: worldId,
+                revision: pointer.served_revision,
+                previous_generation: previousGeneration,
+                layout_algorithm: `${layoutSelection.algorithm}/${layoutSelection.algorithmVersion}`,
+                rollback_snapshot: `worlds/${worldId}/render-rollbacks/${runId}.json`,
+                ...result,
+                result_code: "served"
+              }) + "\n"
+            );
+          } catch (cause) {
+            failed++;
+            process.stderr.write(
+              JSON.stringify({
+                level: "error",
+                service: "lachesis-worker",
+                operation: "render_backfill_all_world",
+                world_id: worldId,
+                result_code:
+                  cause instanceof Error
+                    ? cause.message.slice(0, 128)
+                    : "failed"
+              }) + "\n"
+            );
+          }
+        }
+        process.stdout.write(
+          JSON.stringify({
+            level: failed ? "error" : "info",
+            service: "lachesis-worker",
+            operation: "render_backfill_all",
+            run_id: runId,
+            served,
+            failed,
+            skipped,
+            result_code: failed ? "partial" : "complete"
+          }) + "\n"
+        );
+      } finally {
+        await sql`select pg_advisory_unlock(12012)`.execute(connection);
+      }
+    });
+  }
   const backfillWorldId = process.env.IP012_RENDER_BACKFILL_WORLD_ID;
   if (backfillWorldId) {
     const revision = Number(process.env.IP012_RENDER_BACKFILL_REVISION);

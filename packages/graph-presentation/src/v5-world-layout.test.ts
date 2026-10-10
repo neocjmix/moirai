@@ -1,7 +1,8 @@
 import { describe, expect, it } from "vitest";
 import type { CanonicalState } from "@moirai/contracts/v5";
 import { projectV5WorldTemporal } from "@moirai/projections";
-import { buildV5WorldLayout } from "./v5-world-layout.js";
+import { computeLayout, defaultLayoutSelection } from "./layout-engine.js";
+import { buildV5WorldLayout, prepareV5LayoutInput } from "./v5-world-layout.js";
 import { buildV5SpatialIndex } from "./v5-spatial-index.js";
 
 const worldId = "world-1";
@@ -185,7 +186,7 @@ describe("offline v5 World-owned geometry", () => {
     expect(layout.unplaced_event_ids).toContain("before");
     expect(() => buildV5SpatialIndex(layout)).not.toThrow();
   });
-  it("preserves shared Event coordinates when Collections toggle", () => {
+  it("keeps one World geometry for viewer selections; canonical membership may change X", () => {
     const temporal = projectV5WorldTemporal(state, 31);
     const layout = buildV5WorldLayout(state, temporal, systemId);
     const noCollection: CanonicalState = {
@@ -195,13 +196,31 @@ describe("offline v5 World-owned geometry", () => {
       eventCollectionMemberships: [],
       narratives: state.narratives.filter((item) => item.scope_type === "event")
     };
-    expect(
-      buildV5WorldLayout(
-        noCollection,
-        projectV5WorldTemporal(noCollection, 31),
-        systemId
-      )
-    ).toEqual(layout);
+    const without = buildV5WorldLayout(
+      noCollection,
+      projectV5WorldTemporal(noCollection, 31),
+      systemId
+    );
+    expect(without.shapes).not.toEqual(layout.shapes);
+    const timeGeometry = (output: typeof layout) =>
+      output.shapes.map((s) =>
+        s.kind === "point"
+          ? [s.event_id, s.position.y]
+          : s.kind === "region"
+            ? [s.event_id, s.bounds.minY, s.bounds.maxY]
+            : [s.event_id, s.start.y, s.end.y]
+      );
+    expect(timeGeometry(without)).toEqual(timeGeometry(layout));
+    // Viewer filtering consumes the same published array, never a restricted solver input.
+    const selected = (collectionId: string) =>
+      layout.shapes.filter((s) =>
+        state.eventCollectionMemberships.some(
+          (m) => m.collection_id === collectionId && m.event_id === s.event_id
+        )
+      );
+    expect(selected("joseon").find((s) => s.event_id === "coup")).toBe(
+      selected("japan").find((s) => s.event_id === "coup")
+    );
     const reversed = {
       ...state,
       events: [...state.events].reverse(),
@@ -272,19 +291,23 @@ describe("offline v5 World-owned geometry", () => {
     };
     const a = grown(600);
     const b = grown(1200);
-    const smaller = buildV5WorldLayout(
-      a,
-      projectV5WorldTemporal(a, 31),
-      systemId
+    const smaller = computeLayout(
+      prepareV5LayoutInput(a, projectV5WorldTemporal(a, 31), systemId),
+      defaultLayoutSelection("legacy-force")
     );
-    const larger = buildV5WorldLayout(
-      b,
-      projectV5WorldTemporal(b, 31),
-      systemId
+    const larger = computeLayout(
+      prepareV5LayoutInput(b, projectV5WorldTemporal(b, 31), systemId),
+      defaultLayoutSelection("legacy-force")
     );
     expect(
-      buildV5WorldLayout(state, projectV5WorldTemporal(state, 31), systemId)
-        .algorithm_version
+      computeLayout(
+        prepareV5LayoutInput(
+          state,
+          projectV5WorldTemporal(state, 31),
+          systemId
+        ),
+        defaultLayoutSelection("legacy-force")
+      ).algorithm_version
     ).toBe("v5-world-layout/1");
     expect(smaller.algorithm_version).toBe("v5-world-layout/2");
     expect(larger.algorithm_version).toBe("v5-world-layout/2");

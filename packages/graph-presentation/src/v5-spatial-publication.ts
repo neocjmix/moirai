@@ -11,6 +11,7 @@ import {
 } from "@moirai/publication/v5";
 import type { V5StagedArtifacts } from "@moirai/publication/v5";
 import { buildV5WorldLayout } from "./v5-world-layout.js";
+import type { LayoutSelection } from "./layout-engine.js";
 import {
   compileV5RenderPublication,
   verifyRenderVisibilityCoverage
@@ -30,12 +31,13 @@ export function buildV5WorldSpatialStagedArtifacts(
 
 function buildV5WorldSpatialStagedArtifactsWithLayouts(
   state: CanonicalState,
-  revision: number
+  revision: number,
+  selection?: LayoutSelection
 ) {
   const temporal = projectV5WorldTemporal(state, revision);
   const layouts = [...state.timeSystems]
     .sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0))
-    .map((system) => buildV5WorldLayout(state, temporal, system.id));
+    .map((system) => buildV5WorldLayout(state, temporal, system.id, selection));
   const titles = new Map(state.events.map((event) => [event.id, event.title]));
   const memberships = new Map<string, string[]>();
   for (const member of state.eventCollectionMemberships) {
@@ -76,7 +78,7 @@ export async function buildV5WorldCompleteArtifacts(
   state: CanonicalState,
   revision: number,
   observePhase?: (phase: string) => void,
-  options?: { renderPublication?: boolean }
+  options?: { renderPublication?: boolean; layoutSelection?: LayoutSelection }
 ): Promise<{
   artifacts: V5StagedArtifacts;
   proof: {
@@ -88,7 +90,8 @@ export async function buildV5WorldCompleteArtifacts(
 }> {
   const { staged, layouts } = buildV5WorldSpatialStagedArtifactsWithLayouts(
     state,
-    revision
+    revision,
+    options?.layoutSelection
   );
   observePhase?.("staged");
   verifyV5StagedIndex(staged);

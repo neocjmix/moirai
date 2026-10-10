@@ -1,0 +1,1749 @@
+{
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "scenarios": [
+    {
+      "scenario": "A-independent",
+      "inputHash": "feccacc1a547e85a629a3f823d65a0b543bdb1722d42c04421c0433311addf53",
+      "shapesHash": "13cf850fbc4fcb8a6f56733b5ab56f3da64d908b8d34962c61aea0c442694b2a",
+      "sameShapesAsA": true,
+      "baselineMs": 16.74183500000001,
+      "baseline": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 40,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.456796586239317
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.2916655158618062
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.4658567306358177
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "medianX": 0,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "medianX": 48.4,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "slots": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.7948717948717948
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.7948717948717948
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.0256410256410255
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "fixedAnchorControl": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 0,
+        "exclusiveCoreBoxOverlapMean": 0,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 40,
+            "minX": -450,
+            "maxX": -430,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": 430,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": -440,
+            "minX": -450,
+            "maxX": -430,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "medianX": 0,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "medianX": 440,
+            "minX": 430,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "controlYEqual": true
+    },
+    {
+      "scenario": "B-one-two-way",
+      "inputHash": "feccacc1a547e85a629a3f823d65a0b543bdb1722d42c04421c0433311addf53",
+      "shapesHash": "13cf850fbc4fcb8a6f56733b5ab56f3da64d908b8d34962c61aea0c442694b2a",
+      "sameShapesAsA": true,
+      "baselineMs": 3.9025210000000357,
+      "baseline": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.4719754437719303
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.2916655158618062
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.4658567306358177
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "medianX": 48.4,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "slots": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.8157894736842105
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.7948717948717948
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.0256410256410255
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "fixedAnchorControl": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 0.027777777777777776,
+        "exclusiveCoreBoxOverlapMean": 0,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -450,
+            "maxX": -430,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": 430,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": -440,
+            "minX": -450,
+            "maxX": -210,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -230,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "medianX": 440,
+            "minX": 430,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "controlYEqual": true
+    },
+    {
+      "scenario": "B-one-three-way",
+      "inputHash": "feccacc1a547e85a629a3f823d65a0b543bdb1722d42c04421c0433311addf53",
+      "shapesHash": "13cf850fbc4fcb8a6f56733b5ab56f3da64d908b8d34962c61aea0c442694b2a",
+      "sameShapesAsA": true,
+      "baselineMs": 21.166787999999997,
+      "baseline": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.4719754437719303
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.2916655158618062
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.4658567306358177
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 48.4,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "slots": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.8157894736842105
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.7948717948717948
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.0256410256410255
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "fixedAnchorControl": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 0.6811594202898551,
+        "exclusiveCoreBoxOverlapMean": 0,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -450,
+            "maxX": -430,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": 430,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": -440,
+            "minX": -450,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 440,
+            "minX": -10,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "controlYEqual": true
+    },
+    {
+      "scenario": "C-many-shared",
+      "inputHash": "feccacc1a547e85a629a3f823d65a0b543bdb1722d42c04421c0433311addf53",
+      "shapesHash": "13cf850fbc4fcb8a6f56733b5ab56f3da64d908b8d34962c61aea0c442694b2a",
+      "sameShapesAsA": true,
+      "baselineMs": 2.8154759999999897,
+      "baseline": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 10,
+            "minX": -326.60761883718754,
+            "maxX": 261.5382271594323,
+            "minY": 218389.88500790572,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.678120663601158
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.2916655158618062
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.4658567306358177
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 70,
+            "medianX": 0,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 70,
+            "medianX": 0,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "slots": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 10,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 218389.88500790572,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.6666666666666666
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.7948717948717948
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.0256410256410255
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 70,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 70,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "fixedAnchorControl": {
+        "placed": 120,
+        "coincidentPointPairs": 30,
+        "diagnosticBoxOverlapMean": 0.6811594202898551,
+        "exclusiveCoreBoxOverlapMean": 0,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 10,
+            "minX": -450,
+            "maxX": -430,
+            "minY": 218389.88500790572,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": 430,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -450,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 70,
+            "medianX": 0,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 70,
+            "medianX": 440,
+            "minX": -10,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "controlYEqual": true
+    },
+    {
+      "scenario": "D-three-way-with-causes",
+      "inputHash": "99463ab84b86fda522ee49ffc1450fbbe0da7003ed102044eb527be1b22ba1bc",
+      "shapesHash": "dc1ed4c915835c698a70b92ae94e2039b44858d4be165c8fde0047be789fdce2",
+      "sameShapesAsA": false,
+      "baselineMs": 23.366404999999986,
+      "baseline": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -434.32093617907185,
+            "maxX": 261.53340870121684,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.4719643770666604
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -601.12089661861,
+            "maxX": 601.1175544807568,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.290474216680601
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -548.5381081355558,
+            "maxX": 548.5336229136396,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.4649407813881377
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -434.32093617907185,
+            "maxX": 261.53340870121684,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -601.12089661861,
+            "maxX": 601.1175544807568,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 48.4,
+            "minX": -548.5381081355558,
+            "maxX": 548.5336229136396,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "slots": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.8157894736842105
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0.7948717948717948
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.0256410256410255
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "fixedAnchorControl": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 0.6811594202898551,
+        "exclusiveCoreBoxOverlapMean": 0,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -450,
+            "maxX": -430,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": 430,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 0
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": -440,
+            "minX": -450,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 440,
+            "minX": -10,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "controlYEqual": true
+    },
+    {
+      "scenario": "E-umbrella",
+      "inputHash": "feccacc1a547e85a629a3f823d65a0b543bdb1722d42c04421c0433311addf53",
+      "shapesHash": "13cf850fbc4fcb8a6f56733b5ab56f3da64d908b8d34962c61aea0c442694b2a",
+      "sameShapesAsA": true,
+      "baselineMs": 12.658658000000003,
+      "baseline": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": null,
+        "exclusiveCores": [],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 48,
+            "medianX": 9.427691904545904,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 48,
+            "medianX": 48.4,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "umbrella",
+            "n": 120,
+            "medianX": 0,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "slots": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": null,
+        "exclusiveCores": [],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 48,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 48,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "umbrella",
+            "n": 120,
+            "medianX": 110,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "fixedAnchorControl": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": null,
+        "exclusiveCores": [],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -10,
+            "maxX": 10,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 48,
+            "medianX": 220,
+            "minX": -10,
+            "maxX": 230,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 48,
+            "medianX": 440,
+            "minX": -10,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "umbrella",
+            "n": 120,
+            "medianX": 220,
+            "minX": -10,
+            "maxX": 450,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      },
+      "controlYEqual": true
+    }
+  ],
+  "updates": [
+    {
+      "scenario": "F-Collection-only-addition",
+      "displacement": {
+        "common": 120,
+        "mean": 0,
+        "p95": 0,
+        "max": 0,
+        "changed": 0
+      }
+    },
+    {
+      "scenario": "F-one-dated-addition",
+      "displacement": {
+        "common": 120,
+        "mean": 48.68792497341848,
+        "p95": 320.15447805184294,
+        "max": 509.98946733539935,
+        "changed": 86
+      }
+    },
+    {
+      "scenario": "F-500-to-501-total-with-one-unplaced",
+      "beforeAlgorithm": "v5-world-layout/1",
+      "afterAlgorithm": "v5-world-layout/2",
+      "displacement": {
+        "common": 120,
+        "mean": 126.9174669323786,
+        "p95": 352.65234661468867,
+        "max": 633.6150375335591,
+        "changed": 119
+      }
+    }
+  ],
+  "scale": [
+    {
+      "n": 1000,
+      "algorithm": "legacy-force",
+      "timesMs": [
+        17.915257999999994,
+        16.55935599999998,
+        42.35676000000001
+      ],
+      "medianMs": 17.915257999999994,
+      "placed": 1000
+    },
+    {
+      "n": 1000,
+      "algorithm": "deterministic-slots",
+      "timesMs": [
+        4.643124999999941,
+        5.39214000000004,
+        4.639709000000039
+      ],
+      "medianMs": 4.643124999999941,
+      "placed": 1000
+    },
+    {
+      "n": 10000,
+      "algorithm": "legacy-force",
+      "timesMs": [
+        544.0926139999999,
+        311.07652400000006,
+        429.1282899999999
+      ],
+      "medianMs": 429.1282899999999,
+      "placed": 10000
+    },
+    {
+      "n": 10000,
+      "algorithm": "deterministic-slots",
+      "timesMs": [
+        63.38674900000001,
+        58.8420329999999,
+        58.703739999999925
+      ],
+      "medianMs": 58.8420329999999,
+      "placed": 10000
+    },
+    {
+      "n": 100000,
+      "algorithm": "legacy-force",
+      "timesMs": [
+        3542.187424,
+        3855.7877709999993,
+        3424.3122859999985
+      ],
+      "medianMs": 3542.187424,
+      "placed": 100000
+    },
+    {
+      "n": 100000,
+      "algorithm": "deterministic-slots",
+      "timesMs": [
+        1022.3406620000005,
+        949.4994230000011,
+        981.0475139999999
+      ],
+      "medianMs": 981.0475139999999,
+      "placed": 100000
+    }
+  ],
+  "forceAblations": [
+    {
+      "change": {
+        "repulsion": 0.3
+      },
+      "summary": {
+        "placed": 120,
+        "coincidentPointPairs": 12,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -600.8400777663765,
+            "maxX": 252.00000000000003,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.5558196696992754
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -763.1149245226534,
+            "maxX": 763.1149245226533,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.8680049458518244
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -701.7119718029965,
+            "maxX": 701.7119718029963,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.7541245777406522
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -600.8400777663765,
+            "maxX": 252.00000000000003,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -763.1149245226534,
+            "maxX": 763.1149245226533,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 0,
+            "minX": -701.7119718029965,
+            "maxX": 701.7119718029963,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      }
+    },
+    {
+      "change": {
+        "iterations": 128
+      },
+      "summary": {
+        "placed": 120,
+        "coincidentPointPairs": 0,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -1076.2584010431533,
+            "maxX": 631.6204484865077,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 3.8173445406995357
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -1346.1384115987548,
+            "maxX": 1346.1765097779448,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 5.7534032112304825
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -1259.4365595333825,
+            "maxX": 1259.4895665220363,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 5.956738044444766
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": -117.79556692286127,
+            "minX": -1076.2584010431533,
+            "maxX": 631.6204484865077,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 103.59326701385746,
+            "minX": -1346.1384115987548,
+            "maxX": 1346.1765097779448,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": -47.354776039979484,
+            "minX": -1259.4365595333825,
+            "maxX": 1259.4895665220363,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      }
+    },
+    {
+      "change": {
+        "temporalAttraction": 0
+      },
+      "summary": {
+        "placed": 120,
+        "coincidentPointPairs": 1,
+        "diagnosticBoxOverlapMean": 1,
+        "exclusiveCoreBoxOverlapMean": 1,
+        "exclusiveCores": [
+          {
+            "id": "c0",
+            "n": 39,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 210269.90992285946,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 1.4719754437719303
+          },
+          {
+            "id": "c1",
+            "n": 40,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.2916655158618062
+          },
+          {
+            "id": "c2",
+            "n": 40,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386,
+            "lateralVariationMeanLanes": 2.4658567306358177
+          }
+        ],
+        "boxes": [
+          {
+            "id": "c0",
+            "n": 40,
+            "medianX": 0,
+            "minX": -434.3154375769727,
+            "maxX": 261.5382271594323,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c1",
+            "n": 41,
+            "medianX": 0,
+            "minX": -601.1190406076545,
+            "maxX": 601.1190406076486,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          },
+          {
+            "id": "c2",
+            "n": 41,
+            "medianX": 48.4,
+            "minX": -548.5355921528114,
+            "maxX": 548.5355921528017,
+            "minY": 209990.0958267452,
+            "maxY": 220930.1284078386
+          }
+        ]
+      }
+    }
+  ],
+  "publicSnapshot": {
+    "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+    "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+    "events": 539,
+    "regions": 109,
+    "unplaced": 0,
+    "collections": [
+      {
+        "id": "01a107ff-8b3c-703e-a63f-1014ee734d8a",
+        "title": "한국사",
+        "n": 389
+      },
+      {
+        "id": "01a107ff-8b3c-7a2a-b07d-497a9f8679a8",
+        "title": "일본사",
+        "n": 237
+      },
+      {
+        "id": "01a1080d-fb98-7f5a-9d06-d0cda415d043",
+        "title": "임진왜란, 명의 참전과 교섭",
+        "n": 142
+      },
+      {
+        "id": "01a10b69-ce5e-7103-81bb-e459789bd481",
+        "title": "후금·청",
+        "n": 116
+      },
+      {
+        "id": "01a10c09-f770-74ed-a76a-cdf0fc3f1326",
+        "title": "네덜란드 공화국",
+        "n": 7
+      },
+      {
+        "id": "01a10c09-f770-7e89-8e0c-7f81b2b58f9f",
+        "title": "포르투갈",
+        "n": 10
+      },
+      {
+        "id": "01a1240c-0000-7137-997c-08b87321c6d0",
+        "title": "중국사",
+        "n": 211
+      }
+    ],
+    "summary": {
+      "placed": 430,
+      "coincidentPointPairs": 0,
+      "diagnosticBoxOverlapMean": 0.953177048318438,
+      "exclusiveCoreBoxOverlapMean": 0.7583135461915785,
+      "exclusiveCores": [
+        {
+          "id": "01a107ff-8b3c-703e-a63f-1014ee734d8a",
+          "n": 117,
+          "minX": -517.2213923327905,
+          "maxX": 523.10953064713,
+          "minY": 211445.3207800297,
+          "maxY": 227519.94202481912,
+          "lateralVariationMeanLanes": 2.377089396684444
+        },
+        {
+          "id": "01a107ff-8b3c-7a2a-b07d-497a9f8679a8",
+          "n": 55,
+          "minX": -369.2650746217942,
+          "maxX": 515.3913498193913,
+          "minY": 221539.7101240956,
+          "maxY": 229425.93598773418,
+          "lateralVariationMeanLanes": 1.6723642627461384
+        }
+      ],
+      "boxes": [
+        {
+          "id": "01a107ff-8b3c-703e-a63f-1014ee734d8a",
+          "n": 307,
+          "medianX": -36.86911179691749,
+          "minX": -528.8790694424521,
+          "maxX": 523.10953064713,
+          "minY": 211443.7875521058,
+          "maxY": 230310.6084998323
+        },
+        {
+          "id": "01a107ff-8b3c-7a2a-b07d-497a9f8679a8",
+          "n": 182,
+          "medianX": 48.54649928345721,
+          "minX": -528.8790694424521,
+          "maxX": 515.3913498193913,
+          "minY": 211443.7875521058,
+          "maxY": 230158.93392745915
+        },
+        {
+          "id": "01a1080d-fb98-7f5a-9d06-d0cda415d043",
+          "n": 109,
+          "medianX": -49.88579292930631,
+          "minX": -498.26680403799116,
+          "maxX": 538.5719680873291,
+          "minY": 217841.09673709932,
+          "maxY": 230235.48033156054
+        },
+        {
+          "id": "01a10b69-ce5e-7103-81bb-e459789bd481",
+          "n": 92,
+          "medianX": -67.36950135064312,
+          "minX": -504.20372856699316,
+          "maxX": 444.7957747412823,
+          "minY": 226591.50447990035,
+          "maxY": 230310.6084998323
+        },
+        {
+          "id": "01a10c09-f770-74ed-a76a-cdf0fc3f1326",
+          "n": 6,
+          "medianX": 225.25390418636496,
+          "minX": -106.75190831536665,
+          "maxX": 429.1867646313698,
+          "minY": 229334.83254276268,
+          "maxY": 229879.11983134493
+        },
+        {
+          "id": "01a10c09-f770-7e89-8e0c-7f81b2b58f9f",
+          "n": 8,
+          "medianX": 197.85911750721718,
+          "minX": 89.44990153557947,
+          "maxX": 538.5719680873291,
+          "minY": 228834.8085860764,
+          "maxY": 229739.18211872937
+        },
+        {
+          "id": "01a1240c-0000-7137-997c-08b87321c6d0",
+          "n": 164,
+          "medianX": -48.400000000000006,
+          "minX": -504.20372856699316,
+          "maxX": 538.5719680873291,
+          "minY": 217841.09673709932,
+          "maxY": 230310.6084998323
+        }
+      ]
+    },
+    "pairwiseMembership": [
+      {
+        "a": "한국사",
+        "b": "일본사",
+        "shared": 145,
+        "jaccard": 0.30145530145530147,
+        "containmentFraction": 0.6118143459915611
+      },
+      {
+        "a": "한국사",
+        "b": "임진왜란, 명의 참전과 교섭",
+        "shared": 83,
+        "jaccard": 0.18526785714285715,
+        "containmentFraction": 0.5845070422535211
+      },
+      {
+        "a": "한국사",
+        "b": "후금·청",
+        "shared": 93,
+        "jaccard": 0.22572815533980584,
+        "containmentFraction": 0.8017241379310345
+      },
+      {
+        "a": "한국사",
+        "b": "네덜란드 공화국",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "한국사",
+        "b": "포르투갈",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "한국사",
+        "b": "중국사",
+        "shared": 146,
+        "jaccard": 0.32158590308370044,
+        "containmentFraction": 0.6919431279620853
+      },
+      {
+        "a": "일본사",
+        "b": "임진왜란, 명의 참전과 교섭",
+        "shared": 46,
+        "jaccard": 0.13813813813813813,
+        "containmentFraction": 0.323943661971831
+      },
+      {
+        "a": "일본사",
+        "b": "후금·청",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "일본사",
+        "b": "네덜란드 공화국",
+        "shared": 7,
+        "jaccard": 0.029535864978902954,
+        "containmentFraction": 1
+      },
+      {
+        "a": "일본사",
+        "b": "포르투갈",
+        "shared": 9,
+        "jaccard": 0.037815126050420166,
+        "containmentFraction": 0.9
+      },
+      {
+        "a": "일본사",
+        "b": "중국사",
+        "shared": 48,
+        "jaccard": 0.12,
+        "containmentFraction": 0.22748815165876776
+      },
+      {
+        "a": "임진왜란, 명의 참전과 교섭",
+        "b": "후금·청",
+        "shared": 50,
+        "jaccard": 0.2403846153846154,
+        "containmentFraction": 0.43103448275862066
+      },
+      {
+        "a": "임진왜란, 명의 참전과 교섭",
+        "b": "네덜란드 공화국",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "임진왜란, 명의 참전과 교섭",
+        "b": "포르투갈",
+        "shared": 1,
+        "jaccard": 0.006622516556291391,
+        "containmentFraction": 0.1
+      },
+      {
+        "a": "임진왜란, 명의 참전과 교섭",
+        "b": "중국사",
+        "shared": 142,
+        "jaccard": 0.6729857819905213,
+        "containmentFraction": 1
+      },
+      {
+        "a": "후금·청",
+        "b": "네덜란드 공화국",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "후금·청",
+        "b": "포르투갈",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "후금·청",
+        "b": "중국사",
+        "shared": 116,
+        "jaccard": 0.5497630331753555,
+        "containmentFraction": 1
+      },
+      {
+        "a": "네덜란드 공화국",
+        "b": "포르투갈",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "네덜란드 공화국",
+        "b": "중국사",
+        "shared": 0,
+        "jaccard": 0,
+        "containmentFraction": 0
+      },
+      {
+        "a": "포르투갈",
+        "b": "중국사",
+        "shared": 1,
+        "jaccard": 0.004545454545454545,
+        "containmentFraction": 0.1
+      }
+    ]
+  }
+}

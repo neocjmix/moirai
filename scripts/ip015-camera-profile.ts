@@ -3,6 +3,10 @@ import { webkit, devices } from "@playwright/test";
 import { writeFile } from "node:fs/promises";
 type Inspection = {
   view: Record<string, number>;
+  liveView?: Record<string, number>;
+  sceneJobs?: { pending: number };
+  workerJobs?: { running: number; pending: number };
+  loadState?: string;
   counts: Record<string, number>;
   hullCache: Record<string, number>;
   work: Record<string, number>;
@@ -42,6 +46,37 @@ await page.goto(
 );
 await page.waitForSelector("[data-testid=geographic-webgl]");
 await page.waitForTimeout(2500);
+// Eventual scenes must settle before the next independent gesture phase.
+// The baseline inspector lacks liveView and retains the original fixed wait.
+const waitStable = () =>
+  page.waitForFunction(
+    () => {
+      let state: Inspection | undefined;
+      addEventListener(
+        "moirai:graph-inspection",
+        (event: Event) => {
+          state = (event as CustomEvent<Inspection>).detail;
+        },
+        { once: true }
+      );
+      dispatchEvent(new Event("moirai:inspect-graph"));
+      if (!state) return false;
+      if (!state.liveView) return true;
+      return (
+        Object.keys(state.view).every(
+          (key) => state!.view[key] === state!.liveView![key]
+        ) &&
+        !state.sceneJobs?.pending &&
+        !state.workerJobs?.running &&
+        !state.workerJobs?.pending &&
+        !state.counts.stageActive &&
+        state.loadState === "ready"
+      );
+    },
+    undefined,
+    { timeout: 20000 }
+  );
+await waitStable();
 const inspect = () =>
   page.evaluate(() => {
     let data: Inspection | undefined;
@@ -128,6 +163,7 @@ for (const phase of [
   }, phase);
   const immediate = await inspect();
   await page.waitForTimeout(1200);
+  await waitStable();
   samples.push({ phase, start, immediate, settled: await inspect(), frames });
 }
 await writeFile(

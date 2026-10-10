@@ -1,0 +1,55 @@
+{
+  "url": "https://neocjmix.github.io/moirai/?v=2",
+  "sourceCommit": "bc06167ae26fd53050f70355981b105a3079d191",
+  "pagesCommit": "4c3723c8dd19509c880eda98e9ac50e5e73293ed",
+  "pagesBuildStatus": "built",
+  "draftPr": "https://github.com/neocjmix/moirai/pull/344",
+  "assetVerification": {
+    "build.json": {
+      "http": 200,
+      "sha256": "d6b1b1f0f2aad7e2537d70dad887301c6e3b6d8ce807b3b69c25998a953ac3d7",
+      "matchesLocalRelease": true
+    },
+    "index.html": {
+      "http": 200,
+      "sha256": "39a94b975200ff36578b4f691fbb2df55db5abb58662864fc2b5df02109a1fd5",
+      "matchesLocalRelease": true
+    },
+    "app.js": {
+      "http": 200,
+      "sha256": "f4f9cba8cacc01fb30ba579212bdcbc477497ad941c2625dcf5d1600f034d652",
+      "matchesLocalRelease": true
+    },
+    "worker.js": {
+      "http": 200,
+      "sha256": "6ae3ee1732f5f0ea9b0e3d6e01d7c323a794638e47cb0bf8835f673f4856e235",
+      "matchesLocalRelease": true
+    },
+    "review.md": {
+      "http": 200,
+      "sha256": "b8e86d3fb10f85ae77ef9540c73c8d319af17b83a4594bc6da5c0289df1d3a79",
+      "matchesLocalRelease": true
+    },
+    "measurements.json": {
+      "http": 200,
+      "sha256": "1c1155d43541cb271da8fcbd2625830f42688118c7733ed3aca55f6a6db92fc7",
+      "matchesLocalRelease": true
+    },
+    "data/history-r56.json": {
+      "http": 200,
+      "sha256": "f833a956d161e20b37dce6a9447371bb2435dc831db46a1532c5c0fad95dd059",
+      "matchesLocalRelease": true
+    },
+    "collection-layout-v2/contact.png": {
+      "http": 200,
+      "sha256": "7bf7cc7b9b4e01c30ba70482bbafbdaa15d3a76ae93f63ec2de1dc9b63136cf5",
+      "matchesLocalRelease": true
+    },
+    "legacy/index.html": {
+      "http": 200,
+      "sha256": "57340adc027007d78162bba43646da5c141ae7b7af193ba4a83ad7cb009f75e9",
+      "matchesLocalRelease": true
+    }
+  },
+  "scope": "Post-deployment evidence only. These documentation files do not change the deployed algorithm or production."
+}

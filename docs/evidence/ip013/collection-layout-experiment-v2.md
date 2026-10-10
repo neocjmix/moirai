@@ -169,3 +169,9 @@ Cloud Linux, Node v24.19.0, AMD EPYC 9V74. 준비된 입력부터 기존 tempora
 4. **발행 통합 전 검증**: membership을 명시적으로 versioned input과 digest에 포함하고 World-wide geometry authority를 유지한다. 이전 Publication의 좌표·고정 spatial grid를 prior로 사용한다. 완전한 snapshot에서 offline 계산·hull 준비·타일 compile·immutable generation 검사를 끝낸 뒤 별도 승인을 거쳐 canonical 후보를 채택한다. viewport나 부분 타일 로딩으로 solver를 실행하지 않는다. rollback은 이전 immutable generation pointer이며 canonical 사실을 되돌리지 않는다.
 
 가장 작은 반증 실험은 **원본 World에 특정 시기의 shared membership만 추가/제거하고 같은 두 후보의 먼 시기 geometry 이동을 비교하는 것**이다. 이번 구현은 이미 그 실험을 포함하며 전역 방식의 국소성 실패를 관측했다. 이어서 동일 구간에 소수의 새 Collection과 multi-parent Composite를 추가했을 때 국소 후보의 중심 순서가 뒤집히거나 prior가 관계 가독성을 망가뜨리면 추천을 철회해야 한다. 이것이 점 사이 평균 거리보다 의미 있는 falsification이다.
+
+## 공개 배포 확인
+
+GitHub Pages `gh-pages` 배포 커밋 `4c3723c8dd19509c880eda98e9ac50e5e73293ed`의 build 완료를 확인했다. 배포된 구현 소스는 `bc06167ae26fd53050f70355981b105a3079d191`이며, 이후 증거 문서 변경은 운영 알고리즘이나 정적 실행 파일을 바꾸지 않는다. [Draft PR #344](https://github.com/neocjmix/moirai/pull/344)에 연구 소스와 검증을 함께 제출했다.
+
+[공개 URL smoke](collection-layout-v2/public-smoke.json)는 데스크톱·모바일 Chromium 모두 HTTP 200, 시간 좌표 보존, navigation 무재계산, pan·다중 터치 pinch·일반/증분 설정 복원, 실제 자료 전환, script 오류 0을 확인했다. [배포 증거](collection-layout-v2/deployment.json)에 공개 주요 자산 9개의 HTTP 200과 로컬 release 대비 SHA-256 일치 결과를 남겼다. 위 세 시각 비교도 공개 배포에서 다시 캡처했다. [모바일 실제 자료 캡처](collection-layout-v2/mobile-history.png)를 함께 보존한다. GitHub의 전체 제품 CI 결과와 이 독립 정적 실험의 검증은 별개다.

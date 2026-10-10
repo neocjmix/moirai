@@ -1,0 +1,43 @@
+[
+  {
+    "timestamp": "2026-10-10T15:15:43.451326244Z",
+    "level": "info",
+    "service": "lachesis-worker",
+    "operation": "render_backfill_all_world",
+    "world_id": "01995c2a-7b00-7000-8000-000000000101",
+    "revision": 62,
+    "previous_generation": "7b3c2fd8da688b17a6a5bd41ac90b97849fadbb4d8654220e4f39b340f4243e3",
+    "layout_algorithm": "global-incidence/1",
+    "rollback_snapshot": "worlds/01995c2a-7b00-7000-8000-000000000101/render-rollbacks/global-incidence-20261010.json",
+    "generation": "765e6538e6a0bca9c4efe43223c8e6f17b7e4aa28849b33f5329cb26746c2c00",
+    "documentCount": 6417,
+    "bytes": 39870412,
+    "result_code": "served"
+  },
+  {
+    "timestamp": "2026-10-10T15:16:42.980070997Z",
+    "level": "info",
+    "service": "lachesis-worker",
+    "operation": "render_backfill_all_world",
+    "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "previous_generation": "b9c1eee826eea41121fe87cb532902250687381e6daac63dbdb15e23eb102857",
+    "layout_algorithm": "global-incidence/1",
+    "rollback_snapshot": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/render-rollbacks/global-incidence-20261010.json",
+    "generation": "25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af",
+    "documentCount": 4861,
+    "bytes": 74747867,
+    "result_code": "served"
+  },
+  {
+    "timestamp": "2026-10-10T15:16:42.980079207Z",
+    "level": "info",
+    "service": "lachesis-worker",
+    "operation": "render_backfill_all",
+    "run_id": "global-incidence-20261010",
+    "served": 2,
+    "failed": 0,
+    "skipped": 0,
+    "result_code": "complete"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "algorithm": "global-incidence/1",
+  "generation": "25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af",
+  "finestTilesRead": 493,
+  "uniquePointEvents": 430,
+  "uniqueCompositeEvents": 109,
+  "exactReviewedPointXY": true,
+  "exactReviewedCompositeBounds": true,
+  "replicasConsistent": true
+}

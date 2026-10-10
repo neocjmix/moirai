@@ -1,0 +1,43 @@
+{
+  "expectedSha": "45c637bce8e7730f562d0a7842ff9d9e1dbac03c",
+  "historyRevision": 56,
+  "events": 539,
+  "collections": 7,
+  "canonicalRootUnchanged": true,
+  "canonicalEntitiesUnchanged": true,
+  "visual": [
+    {
+      "name": "desktop",
+      "widePainter": "webgl",
+      "points": 51,
+      "composites": 23,
+      "hulls": 23,
+      "overflow": false,
+      "errors": [],
+      "badRequests": [],
+      "generations": [
+        "25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af"
+      ],
+      "collectionCameraPreserved": true,
+      "panCameraChanged": true,
+      "singleSharedEvent": true
+    },
+    {
+      "name": "mobile",
+      "widePainter": "webgl",
+      "points": 48,
+      "composites": 24,
+      "hulls": 24,
+      "overflow": false,
+      "errors": [],
+      "badRequests": [],
+      "generations": [
+        "25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af"
+      ],
+      "collectionCameraPreserved": true,
+      "panCameraChanged": true,
+      "singleSharedEvent": true
+    }
+  ],
+  "actualIphone17SafariPwaVerified": false
+}

@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-10-13 KST · **TSTL 제품 실험실 구현이 활성화됐다.** 사용자가 프로덕션 설정에서 새 레이아웃을 선택해 면과 기존 축별 확대·순차적 비가시화를 함께 시험하도록 승인했다. [IP-016](IP-016-tstl-product-lab.md)이 이전 preview-only 제한을 이 선택형 실험에 한해 대체하며 구현·검토·병합·배포·공개 검증을 소유한다. 전체 고정 r56을 한 번 읽고 기존 GraphShell에서 B0/A를 비교한다. A 면은 실험 시각화로 표시하고 기존 의미 검증 인증을 변경하지 않는다. 기본값·역사·served pointer·backfill·B/C는 유지한다. 시작 main/운영 SHA는 `d721b0e`; 아직 이 제품 기능은 배포되지 않았다.
+
 2026-10-13 KST · **TSTL B0/A 독립 프리뷰를 별도로 배포했다.** [프리뷰](https://neocjmix.github.io/moirai/tstl-candidate-a/)는 실제 history-r56의 단일 539 Event·시간 Y를 보존하며 국가 history·임진왜란·이순신 공유 관계를 비교한다. 런타임 소스 `4ffb47c`, Pages 배포 `939e16d`; [증거와 한계](../evidence/tstl-candidate-a-preview-2026-10-13.md)가 검증 결과를 소유한다. r56은 legacy-scalar-only이므로 B0/A 모두 의미 면 0, 선·포트·목록 fallback이다. 제한된 A 구현이며 B/C·운영 기본값·served pointer·역사는 변경하지 않았다. [draft PR #351](https://github.com/neocjmix/moirai/pull/351)은 미병합이며 아래 운영 기준선을 보존한다.
 
 2026-10-12 UTC. **Clotho 인증·CI 복구를 완료했다.** [인증·CI 복구 증거](../evidence/clotho-oauth-2026-10-12.md)가 결과와 검증 한계를 소유한다. PR #347 / `f52b8d9`로 v5 OAuth metadata·World 인가 회귀와 Next high advisory를 수정했고, PR #348 / `8eea159`로 CI smoke를 지정 GitHub Actions workflow·main·기존 World에 한정된 5분 OIDC 인증으로 복구했다. 운영 3개 서비스와 main CI·인증된 smoke는 문서 후속 커밋 `ab4b1d5`까지 검증됐다. Auth0 관리 조회로 실제 code 교환·수 시간 간격 refresh 성공과 정확한 audience·scope를 확인했다. 사용자는 05:17 UTC 새 대화의 Moirai Live 조회 성공을 확인했고 운영 API에도 HTTP 200이 기록됐다. 남은 오류는 기존 대화가 유지하던 연결 상태에 한정됐다. Auth0 설정·토큰 수명·rotation을 바꾸지 않았으며 사용자 인증은 Auth0를 유지한다. 도구 metadata 변경 후 Refresh와 새 대화 검증이 운영 절차다.

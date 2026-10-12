@@ -47,7 +47,13 @@ describe("inactive v5 MCP transport", () => {
         method: "GET",
         url: "/.well-known/oauth-protected-resource/mcp"
       });
-      expect(metadata.json().resource).toBe(oidc.resource);
+      expect(metadata.json()).toEqual({
+        resource: oidc.resource,
+        authorization_servers: [oidc.issuer],
+        scopes_supported: ["world:read", "world:write", "offline_access"],
+        bearer_methods_supported: ["header"]
+      });
+      expect(metadata.headers["cache-control"]).toBe("no-store");
       const discovered = await app.inject({
         method: "POST",
         url: "/mcp",
@@ -63,6 +69,26 @@ describe("inactive v5 MCP transport", () => {
           .json()
           .result.tools.map((tool: { name: string }) => tool.name)
       ).toContain("change_commit");
+      const writeTools = new Set([
+        "world_create",
+        "world_delete",
+        "world_restore",
+        "change_validate",
+        "change_commit"
+      ]);
+      for (const tool of discovered.json().result.tools) {
+        const schemes = [
+          {
+            type: "oauth2",
+            scopes: [
+              writeTools.has(tool.name) ? "world:write" : "world:read",
+              "offline_access"
+            ]
+          }
+        ];
+        expect(tool.securitySchemes).toEqual(schemes);
+        expect(tool._meta.securitySchemes).toEqual(schemes);
+      }
       const denied = await app.inject({
         method: "POST",
         url: "/mcp",
@@ -76,6 +102,25 @@ describe("inactive v5 MCP transport", () => {
       });
       expect(denied.statusCode).toBe(401);
       expect(denied.headers["www-authenticate"]).toContain("resource_metadata");
+      expect(denied.headers["www-authenticate"]).toContain("offline_access");
+      const invalid = await app.inject({
+        method: "POST",
+        url: "/mcp",
+        headers: {
+          authorization: "Bearer invalidSyntheticToken",
+          accept: "application/json, text/event-stream"
+        },
+        payload: {
+          jsonrpc: "2.0",
+          id: 3,
+          method: "tools/call",
+          params: { name: "world_list", arguments: { contract_version: 5 } }
+        }
+      });
+      expect(invalid.statusCode).toBe(401);
+      expect(invalid.headers["www-authenticate"]).toContain(
+        'error="invalid_token"'
+      );
     } finally {
       await app.close();
     }
@@ -116,12 +161,13 @@ describe("inactive v5 MCP transport", () => {
       [],
       createV5Clotho(createV5Lachesis({ commit, search, detail })),
       oidc,
-      oidcAuthenticator(oidc, async () => keys.publicKey)
+      oidcAuthenticator(oidc, async () => keys.publicKey),
+      "/mcp"
     );
     const send = (name: string, args: unknown) =>
       app.inject({
         method: "POST",
-        url: "/mcp-v5",
+        url: "/mcp",
         headers: {
           authorization: `Bearer ${accessToken}`,
           accept: "application/json, text/event-stream"
@@ -141,14 +187,26 @@ describe("inactive v5 MCP transport", () => {
       expect(policy.json().result.structuredContent.result).toEqual(
         V5_AUTHORING_POLICY
       );
-      expect(
-        (
-          await send("change_commit", {
-            contract_version: 5,
-            world_id: CLOTHO_CONNECTION_WORLD
-          })
-        ).json().result.isError
-      ).toBe(true);
+      for (const name of [
+        "change_commit",
+        "change_validate",
+        "world_create",
+        "world_delete",
+        "world_restore"
+      ]) {
+        const denied = await send(name, {
+          contract_version: 5,
+          world_id: CLOTHO_CONNECTION_WORLD
+        });
+        expect(denied.statusCode).toBe(200);
+        expect(denied.json().result.isError).toBe(true);
+        expect(
+          JSON.parse(denied.json().result.content[0].text).error.code
+        ).toBe("forbidden");
+        expect(denied.json().result._meta["mcp/www_authenticate"]).toEqual([
+          expect.stringContaining('error="insufficient_scope"')
+        ]);
+      }
       expect(commit).not.toHaveBeenCalled();
       const candidates = await send("event_search", {
         contract_version: 5,
@@ -172,6 +230,67 @@ describe("inactive v5 MCP transport", () => {
       ).toBe(31);
       expect(detail).toHaveBeenCalledTimes(1);
       expect(policy.body).not.toContain(accessToken);
+    } finally {
+      await app.close();
+    }
+  });
+  it("authorizes a valid credential's own World without relinking for another World", async () => {
+    const oidc: OidcConfig = {
+      issuer: "https://identity.example.test/",
+      jwks_uri: "https://identity.example.test/keys",
+      resource: "https://api.example.test/mcp",
+      operator_subject: "synthetic-operator",
+      actor_id: "019f5000-1100-7000-8000-000000000002"
+    };
+    const app = Fastify();
+    registerV5McpRoutes(
+      app,
+      [
+        {
+          token_sha256: createHash("sha256").update(token).digest("hex"),
+          actor_id: oidc.actor_id,
+          world_ids: [worldId],
+          scopes: ["world:read"],
+          expires_at: "2099-01-01T00:00:00Z"
+        }
+      ],
+      createV5Clotho(createV5Lachesis({ commit: vi.fn() })),
+      oidc,
+      undefined,
+      "/mcp"
+    );
+    const send = (requestedWorld: string) =>
+      app.inject({
+        method: "POST",
+        url: "/mcp",
+        headers: {
+          authorization: `Bearer ${token}`,
+          accept: "application/json, text/event-stream"
+        },
+        payload: {
+          jsonrpc: "2.0",
+          id: 1,
+          method: "tools/call",
+          params: {
+            name: "authoring_policy_get",
+            arguments: { world_id: requestedWorld, contract_version: 5 }
+          }
+        }
+      });
+    try {
+      const allowed = await send(worldId);
+      expect(allowed.statusCode).toBe(200);
+      expect(allowed.json().result.structuredContent.result).toEqual(
+        V5_AUTHORING_POLICY
+      );
+      const denied = await send(CLOTHO_CONNECTION_WORLD);
+      expect(denied.statusCode).toBe(200);
+      expect(denied.json().result.isError).toBe(true);
+      expect(JSON.parse(denied.json().result.content[0].text).error.code).toBe(
+        "forbidden"
+      );
+      expect(denied.headers["www-authenticate"]).toBeUndefined();
+      expect(denied.json().result._meta).toBeUndefined();
     } finally {
       await app.close();
     }

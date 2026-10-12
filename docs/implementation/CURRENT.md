@@ -1,6 +1,6 @@
 # 현재 구현 상태
 
-2026-10-12 UTC. **사용자가 Clotho 반복 재인증·실패 CI 복구와 플러그인 우선 처리를 요청했다.** [인증·CI 복구 증거](../evidence/clotho-oauth-2026-10-12.md)가 해당 실행 상태를 소유한다. PR #347 / `f52b8d9`로 v5 OAuth metadata·World 인가 회귀와 Next high advisory를 수정·배포했고 main CI·A5 모바일·공개 smoke가 통과했다. 인증된 CI smoke는 기존 bearer HTTP 401로 실패한다. 이를 지정 GitHub Actions workflow·main·기존 World에 한정된 5분 OIDC 인증으로 바꿔 GitHub secret 쓰기·Railway secret 읽기 관리자 로그인을 없애는 후속 수정을 진행한다. Refresh Check는 3시간 뒤에도 조회가 성공하고 기존 Moirai Live만 재인증을 요구해 해당 연결의 1회 갱신을 요청했다. Auth0 관리자 인증은 갱신 후에도 문제가 남을 때 검토한다.
+2026-10-12 UTC. **사용자가 Clotho 반복 재인증·실패 CI 복구와 플러그인 우선 처리를 요청했다.** [인증·CI 복구 증거](../evidence/clotho-oauth-2026-10-12.md)가 해당 실행 상태를 소유한다. PR #347 / `f52b8d9`로 v5 OAuth metadata·World 인가 회귀와 Next high advisory를 수정했다. PR #348 / `8eea159`로 인증된 CI smoke를 지정 GitHub Actions workflow·main·기존 World에 한정된 5분 OIDC 인증으로 복구했다. GitHub·Railway 플러그인으로 설정·병합·운영 3개 서비스 배포를 완료했고 main CI와 실제 서명 JWT를 사용하는 인증된 운영 smoke가 통과했다. 사람의 Auth0 인증은 유지한다. Refresh Check 조회는 성공하지만 기존 Moirai Live는 API 호출 전 재인증을 요구해 해당 연결의 1회 갱신을 요청한 상태다. 해당 Live 연결의 refresh 성공은 아직 미검증이며, 갱신 후에도 문제가 남을 때만 Auth0 관리자 인증을 검토한다.
 
 전역 incidence의 운영 승격·전체 Render 재발행은 아래 완료 상태로 보존한다. IP-015 realtime camera / eventual scene은 보존하는 렌더러 기준선이다. 이 파일과 [IP-015](IP-015-realtime-camera-eventual-scene.md)가 실행 상태·요구사항을 소유한다. [이전 CURRENT](../evidence/ip015/current-before-2026-10-10.md)는 역사 기록이다. 이번 인증·CI 작업은 deferred 모바일 성능 튜닝·canonical 역사 편집을 재개하지 않는다.
 

@@ -1,0 +1,354 @@
+{
+  "checkedAt": "2026-10-12T17:12:45.081Z",
+  "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/",
+  "evidence": [
+    {
+      "profile": "desktop-chromium",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "mobileEmulation": false,
+      "realIPhone": false,
+      "errors": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "coldReadyMs": 1145.977336,
+      "loadTimingScope": "Navigation through networkidle (500 ms quiet period) and two animation frames; not isolated server latency",
+      "verifiedAssets": [
+        "index.html",
+        "style.css",
+        "app.js",
+        "preview.json",
+        "data/history-r56.json",
+        "b0-validation.json",
+        "measurements.json"
+      ],
+      "sourceCommit": "4ffb47c56715e119e97f5ee0c47bad6f142e06ac",
+      "browserVersion": "151.0.7922.34",
+      "browserEnvironment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+        "hardwareConcurrency": 5,
+        "devicePixelRatio": 1,
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        }
+      },
+      "initialDom": {
+        "glyphs": 539,
+        "diagnosticContours": 274,
+        "semanticFills": 0,
+        "omitted": 0
+      },
+      "alternatePathCollapse": {
+        "parentId": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+        "childId": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+        "alternateParentId": "01a123a1-0000-77c0-8401-4f9db460625b",
+        "visibleIdsPreserved": true
+      },
+      "sharedIdentity": {
+        "eventId": "01a10817-869d-76e5-aa79-dae0d2b8bb05",
+        "singleGlyph": 1,
+        "switchStable": true,
+        "sourceTimeYStable": true
+      },
+      "pinch": "Chromium CDP multi-touch",
+      "gesture": {
+        "framesMs": {
+          "count": 119,
+          "p50": 16.69999999999891,
+          "p95": 16.80000000000109,
+          "p99": 33.30000000000109,
+          "max": 50
+        },
+        "longTasksMs": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "longTaskSupported": true,
+        "overTargetFrameCount": 48,
+        "over50msFrameCount": 0,
+        "note": "rAF intervals during automated gesture trace; shared cloud CPU, no physical-device or GPU parity claim"
+      },
+      "finalDom": {
+        "glyphs": 539,
+        "diagnosticContours": 274,
+        "semanticFills": 0,
+        "omitted": 0
+      },
+      "dimensions": {
+        "innerWidth": 1280,
+        "scrollWidth": 1280,
+        "bodyWidth": 1280
+      },
+      "warmReadyMs": 627.7362360000006,
+      "resources": [
+        {
+          "path": "/moirai/tstl-candidate-a/style.css",
+          "durationMs": 1.1000000000931323,
+          "transferBytes": 0,
+          "decodedBodyBytes": 8631
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/app.js",
+          "durationMs": 1.5,
+          "transferBytes": 0,
+          "decodedBodyBytes": 37795
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/build.json",
+          "durationMs": 21.09999999962747,
+          "transferBytes": 964,
+          "decodedBodyBytes": 1098
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/preview.json",
+          "durationMs": 6.900000000372529,
+          "transferBytes": 0,
+          "decodedBodyBytes": 5081305
+        }
+      ],
+      "passed": true
+    },
+    {
+      "profile": "mobile-chromium",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mobileEmulation": true,
+      "realIPhone": false,
+      "errors": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "coldReadyMs": 864.4709129999992,
+      "loadTimingScope": "Navigation through networkidle (500 ms quiet period) and two animation frames; not isolated server latency",
+      "verifiedAssets": [
+        "index.html",
+        "style.css",
+        "app.js",
+        "preview.json",
+        "data/history-r56.json",
+        "b0-validation.json",
+        "measurements.json"
+      ],
+      "sourceCommit": "4ffb47c56715e119e97f5ee0c47bad6f142e06ac",
+      "browserVersion": "151.0.7922.34",
+      "browserEnvironment": {
+        "userAgent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) HeadlessChrome/151.0.7922.34 Safari/537.36",
+        "hardwareConcurrency": 5,
+        "devicePixelRatio": 3,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      "initialDom": {
+        "glyphs": 539,
+        "diagnosticContours": 274,
+        "semanticFills": 0,
+        "omitted": 0
+      },
+      "twoCountryListScreenshot": "mobile-chromium-country-shared-list.png",
+      "alternatePathCollapse": {
+        "parentId": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+        "childId": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+        "alternateParentId": "01a123a1-0000-77c0-8401-4f9db460625b",
+        "visibleIdsPreserved": true
+      },
+      "imjinScreenshot": "mobile-chromium-imjin.png",
+      "sharedIdentity": {
+        "eventId": "01a10817-869d-76e5-aa79-dae0d2b8bb05",
+        "singleGlyph": 1,
+        "switchStable": true,
+        "sourceTimeYStable": true
+      },
+      "pinch": "Chromium CDP multi-touch",
+      "gesture": {
+        "framesMs": {
+          "count": 132,
+          "p50": 16.69999999999891,
+          "p95": 16.80000000000109,
+          "p99": 66.59999999999854,
+          "max": 66.59999999999854
+        },
+        "longTasksMs": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "longTaskSupported": true,
+        "overTargetFrameCount": 5,
+        "over50msFrameCount": 2,
+        "note": "rAF intervals during automated gesture trace; shared cloud CPU, no physical-device or GPU parity claim"
+      },
+      "finalDom": {
+        "glyphs": 523,
+        "diagnosticContours": 274,
+        "semanticFills": 0,
+        "omitted": 16
+      },
+      "dimensions": {
+        "innerWidth": 390,
+        "scrollWidth": 390,
+        "bodyWidth": 390
+      },
+      "warmReadyMs": 653.3159940000005,
+      "resources": [
+        {
+          "path": "/moirai/tstl-candidate-a/style.css",
+          "durationMs": 1,
+          "transferBytes": 0,
+          "decodedBodyBytes": 8631
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/app.js",
+          "durationMs": 1.5,
+          "transferBytes": 0,
+          "decodedBodyBytes": 37795
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/build.json",
+          "durationMs": 24.199999999720603,
+          "transferBytes": 964,
+          "decodedBodyBytes": 1098
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/preview.json",
+          "durationMs": 8.5,
+          "transferBytes": 0,
+          "decodedBodyBytes": 5081305
+        }
+      ],
+      "passed": true
+    },
+    {
+      "profile": "mobile-webkit",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "mobileEmulation": true,
+      "realIPhone": false,
+      "errors": [],
+      "consoleErrors": [],
+      "failedRequests": [],
+      "coldReadyMs": 1067.651547999998,
+      "loadTimingScope": "Navigation through networkidle (500 ms quiet period) and two animation frames; not isolated server latency",
+      "verifiedAssets": [
+        "index.html",
+        "style.css",
+        "app.js",
+        "preview.json",
+        "data/history-r56.json",
+        "b0-validation.json",
+        "measurements.json"
+      ],
+      "sourceCommit": "4ffb47c56715e119e97f5ee0c47bad6f142e06ac",
+      "browserVersion": "26.5",
+      "browserEnvironment": {
+        "userAgent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/26.5 Safari/605.1.15",
+        "hardwareConcurrency": 4,
+        "devicePixelRatio": 3,
+        "viewport": {
+          "width": 390,
+          "height": 844
+        }
+      },
+      "initialDom": {
+        "glyphs": 539,
+        "diagnosticContours": 274,
+        "semanticFills": 0,
+        "omitted": 0
+      },
+      "alternatePathCollapse": {
+        "parentId": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+        "childId": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+        "alternateParentId": "01a123a1-0000-77c0-8401-4f9db460625b",
+        "visibleIdsPreserved": true
+      },
+      "baselineSharedScreenshot": "mobile-webkit-shared-b0.png",
+      "sharedIdentity": {
+        "eventId": "01a10817-869d-76e5-aa79-dae0d2b8bb05",
+        "singleGlyph": 1,
+        "switchStable": true,
+        "sourceTimeYStable": true
+      },
+      "sharedScreenshot": "mobile-webkit-shared.png",
+      "pinch": "WebKit synthetic PointerEvent integration (not native multi-touch)",
+      "gesture": {
+        "framesMs": {
+          "count": 57,
+          "p50": 16,
+          "p95": 56,
+          "p99": 62,
+          "max": 62
+        },
+        "longTasksMs": {
+          "count": 0,
+          "p50": null,
+          "p95": null,
+          "p99": null,
+          "max": null
+        },
+        "longTaskSupported": false,
+        "overTargetFrameCount": 6,
+        "over50msFrameCount": 6,
+        "note": "rAF intervals during automated gesture trace; shared cloud CPU, no physical-device or GPU parity claim"
+      },
+      "finalDom": {
+        "glyphs": 523,
+        "diagnosticContours": 274,
+        "semanticFills": 0,
+        "omitted": 16
+      },
+      "dimensions": {
+        "innerWidth": 390,
+        "scrollWidth": 390,
+        "bodyWidth": 390
+      },
+      "warmReadyMs": 671.2742910000015,
+      "resources": [
+        {
+          "path": "/moirai/tstl-candidate-a/style.css",
+          "durationMs": 0,
+          "transferBytes": 0,
+          "decodedBodyBytes": 0
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/app.js",
+          "durationMs": 0,
+          "transferBytes": 0,
+          "decodedBodyBytes": 0
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/build.json",
+          "durationMs": 24,
+          "transferBytes": 964,
+          "decodedBodyBytes": 1098
+        },
+        {
+          "path": "/moirai/tstl-candidate-a/preview.json",
+          "durationMs": 53,
+          "transferBytes": 797400,
+          "decodedBodyBytes": 5081305
+        }
+      ],
+      "passed": true
+    }
+  ],
+  "limitations": [
+    "Browser emulation is not physical iPhone 17 Safari or installed PWA evidence.",
+    "DOM serialized contour/body/stroke equivalence does not certify browser rasterizer or GPU exactness."
+  ],
+  "retainedScreenshotScope": "Four selected public screenshots retained here; 24 originals captured in ignored .artifacts/tstl-evidence/public-smoke."
+}

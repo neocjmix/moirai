@@ -1,0 +1,31 @@
+{
+  "integration": {
+    "command": "vitest run --config vitest.integration.config.ts",
+    "status": "passed",
+    "exitCode": 0,
+    "testFiles": 12,
+    "tests": 49,
+    "durationSeconds": 17.99,
+    "postgresVersion": "17.11",
+    "postgresImage": "postgres:17-alpine",
+    "imageDigest": "sha256:b0f9560a2de083e2cc7382e75f808c7381a32852a7ec49117deedb300e552b24",
+    "isolation": "Disposable local Docker container; loopback-only random port; synthetic trust-auth fixture; container removed after tests",
+    "productionAccess": false,
+    "log": "/tmp/tstl-postgres-integration.log"
+  },
+  "audit": {
+    "command": "npx --yes pnpm@10.17.1 audit --audit-level high",
+    "status": "passed",
+    "exitCode": 0,
+    "dependencies": 563,
+    "vulnerabilities": {
+      "info": 0,
+      "low": 0,
+      "moderate": 9,
+      "high": 0,
+      "critical": 0
+    },
+    "note": "Full dependency audit including development packages. JSON audit mode exits1 for all vulnerabilities regardless requested high threshold; exact non-JSON CI command passed. No dependency manifests or lockfile changed.",
+    "json": "/tmp/tstl-full-audit.json"
+  }
+}

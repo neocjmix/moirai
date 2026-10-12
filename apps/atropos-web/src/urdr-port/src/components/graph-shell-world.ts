@@ -194,7 +194,13 @@ export function prepareCompositeWorldGeometry(
           ? directSupportPoints
           : fallbackBoundsPolygon;
 
-      const hullPoints = entity.preparedCompactBounds
+      const fixedRings = entity.preparedContourMode === "fixed" ? entity.preparedWorldRings ?? [] : undefined;
+      const hullPoints = fixedRings?.length
+        ? fixedRings.flat()
+        : fixedRings
+        ? [entity.preparedAnchor ?? { x: ((entity.preparedCompactBounds ?? entity.worldBounds).minX + (entity.preparedCompactBounds ?? entity.worldBounds).maxX) / 2,
+             y: ((entity.preparedCompactBounds ?? entity.worldBounds).minY + (entity.preparedCompactBounds ?? entity.worldBounds).maxY) / 2 }]
+        : entity.preparedCompactBounds
         ? worldBoundsToPolygon(entity.preparedCompactBounds)
         : entity.preparedWorldHull && mode === "concave"
         ? entity.preparedWorldHull
@@ -213,7 +219,7 @@ export function prepareCompositeWorldGeometry(
         )
       } satisfies CompositeHullGeometry;
       regionGeometryById.set(entity.id, geometry);
-      const supportComplete = entity.preparedWorldHull || entity.preparedCompactBounds
+      const supportComplete = fixedRings || entity.preparedWorldHull || entity.preparedCompactBounds
         ? entity.childrenComplete === true
         : entity.childrenComplete === true && entity.contains.length > 0 && entity.contains.every((id) => allWorldInstantPointById.has(id) || supportCompleteById.get(id) === true);
       supportCompleteById.set(entity.id, supportComplete);
@@ -227,8 +233,9 @@ export function prepareCompositeWorldGeometry(
         containedBy: entity.containedBy,
         editorial: entity.editorial,
         points: geometry.points,
+        ...(fixedRings ? { fixedRings, fixedContour: true, preparedAnchor: entity.preparedAnchor } : {}),
         paddingProfile: geometry.paddingProfile,
-        hullPending: Boolean(entity.preparedCompactBounds)
+        hullPending: fixedRings ? fixedRings.length === 0 : Boolean(entity.preparedCompactBounds)
       };
     })
     .filter((region) => region !== null)

@@ -7,12 +7,14 @@ import {
   type CompositeSplineTuning
 } from "./graph-shell-region-geometry";
 import type { ViewportCoordinate } from "./graph-shell-composite";
+import { fixedCompositePath } from "./fixed-composite-contours";
 
 type View = { x: number; y: number; scaleX: number; scaleY: number };
 type Size = { width: number; height: number };
 type Request = {
   id: string;
   points: readonly ViewportCoordinate[];
+  fixedRings?: readonly (readonly ViewportCoordinate[])[];
   view: View;
   viewport: Size;
   padding: number;
@@ -23,6 +25,8 @@ type Request = {
 };
 export type CompositeGeometryEntry = {
   support: readonly ViewportCoordinate[];
+  fixedRings?: readonly (readonly ViewportCoordinate[])[];
+  projectedRings?: ViewportCoordinate[][];
   scaleX: number;
   scaleY: number;
   padding: number;
@@ -43,6 +47,10 @@ function sameProfile(left: CompositePaddingProfile | undefined, right: Composite
 function sameSupport(left: readonly ViewportCoordinate[], right: readonly ViewportCoordinate[]) {
   return left === right || (left.length === right.length && left.every((point, index) =>
     point.x === right[index]!.x && point.y === right[index]!.y));
+}
+
+function sameRings(left: Request["fixedRings"], right: Request["fixedRings"]) {
+  return left === right || (left !== undefined && right !== undefined && left.length === right.length && left.every((ring, index) => sameSupport(ring, right[index]!)));
 }
 
 /** Screen padding and spline handles depend on scale, but a pan translates
@@ -72,7 +80,7 @@ export function createCompositePanGeometryCache({
   };
 
   return {
-    project({id, points, view, viewport, padding, paddingProfile, tuning, labelHeight, labelGap}: Request) {
+    project({id, points, fixedRings, view, viewport, padding, paddingProfile, tuning, labelHeight, labelGap}: Request) {
       const origin = {x: viewport.width / 2 + view.x, y: viewport.height / 2 + view.y};
       // Keep point/composite LOD coordinates exact. Only expensive padded hull
       // geometry and its SVG path are reused through a pure translation.
@@ -84,7 +92,7 @@ export function createCompositePanGeometryCache({
       if (entry && entry.scaleX === view.scaleX && entry.scaleY === view.scaleY &&
           entry.padding === padding && sameProfile(entry.paddingProfile, paddingProfile) && entry.tuning.smoothing === tuning.smoothing &&
           entry.tuning.cornerFloor === tuning.cornerFloor && entry.tuning.balanceFloor === tuning.balanceFloor &&
-          sameSupport(entry.support, points)) {
+          sameSupport(entry.support, points) && sameRings(entry.fixedRings, fixedRings)) {
         hits++;
         // Fresh response arrays with identical geometry retain the same path.
         entry.support = points;
@@ -93,13 +101,15 @@ export function createCompositePanGeometryCache({
       } else {
         builds++;
         remove(id);
-        const expanded = paddingProfile?.length ? expandCompositePolygon(projectedHullPoints, paddingProfile.map((band) => ({
+        const projectedRings = fixedRings?.map(ring => ring.map(point => ({x: origin.x + point.x * view.scaleX, y: origin.y + point.y * view.scaleY})));
+        const expanded = projectedRings ? projectedRings.length ? projectedRings.flat() : projectedHullPoints : paddingProfile?.length ? expandCompositePolygon(projectedHullPoints, paddingProfile.map((band) => ({
           minY: origin.y + band.minY * view.scaleY,
           maxY: origin.y + band.maxY * view.scaleY,
           depth: band.depth
         }))) : expandPolygon(projectedHullPoints, padding);
         entry = {
           support: points,
+          ...(fixedRings && projectedRings ? {fixedRings, projectedRings} : {}),
           scaleX: view.scaleX,
           scaleY: view.scaleY,
           padding,
@@ -107,7 +117,7 @@ export function createCompositePanGeometryCache({
           tuning: {...tuning},
           origin,
           expanded,
-          path: buildClosedSplinePath(expanded, tuning),
+          path: projectedRings ? fixedCompositePath(projectedRings) : buildClosedSplinePath(expanded, tuning),
           vertices: points.length + expanded.length
         };
         if (maxEntries > 0 && entry.vertices <= maxVertices && entry.path.length <= maxPathCharacters) {
@@ -130,6 +140,7 @@ export function createCompositePanGeometryCache({
       let labelPathFrame: {prepared: ReturnType<typeof prepareCompositeLabelPaths>; offset: ViewportCoordinate} | undefined;
       return {
         projectedHullPoints,
+        projectedRings: entry.projectedRings?.map(ring => dx === 0 && dy === 0 ? ring : ring.map(point => ({x: point.x + dx, y: point.y + dy}))),
         projectedPoints: dx === 0 && dy === 0 ? entry.expanded : entry.expanded.map(point => ({x: point.x + dx, y: point.y + dy})),
         path: entry.path,
         // Compact owners use a point label and never read this frame. Keep
@@ -137,6 +148,7 @@ export function createCompositePanGeometryCache({
         // an actual hull label needs them. One projection counts at most one
         // label-cache access, even if its caller reads the frame repeatedly.
         get labelPathFrame() {
+          if (fixedRings) return undefined;
           if (!resolvedLabelFrame) {
             let prepared = inheritedLabelPaths;
             if (labelHeight !== undefined && labelGap !== undefined) {

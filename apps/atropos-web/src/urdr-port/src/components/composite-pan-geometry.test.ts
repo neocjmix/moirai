@@ -18,6 +18,39 @@ const project = (point: {x: number; y: number}, camera = view, size = viewport) 
   y: size.height / 2 + camera.y + point.y * camera.scaleY
 });
 
+it("preserves fixed fragments exactly across independent scales, pan and worker hydration", () => {
+  const rings = [
+    [{x: 0, y: 0}, {x: 10, y: 0}, {x: 10, y: 5}, {x: 0, y: 5}],
+    [{x: 30, y: 20}, {x: 40, y: 20}, {x: 40, y: 25}, {x: 30, y: 25}],
+  ];
+  const cache = createCompositePanGeometryCache();
+  const camera = {...view, scaleX: 2.3456789, scaleY: 0.54321987};
+  const input = {...request, points: rings.flat(), fixedRings: rings, view: camera, padding: 900,
+    paddingProfile: [{minY: 0, maxY: 25, depth: 8}], labelHeight: 14, labelGap: 6};
+  const first = cache.project(input);
+  const projected = rings.map(ring => ring.map(point => project(point, camera)));
+  expect(first.projectedRings).toEqual(projected);
+  expect(first.projectedPoints).toEqual(projected.flat());
+  expect(first.path.match(/M/g)).toHaveLength(2);
+  expect(first.path).not.toContain("C");
+  expect(first.labelPathFrame).toBeUndefined();
+  const hydrated = createCompositePanGeometryCache();
+  hydrated.hydrate(structuredClone(cache.snapshot()));
+  const moved = hydrated.project({...input, view: {...camera, x: 17.125, y: -29.5}});
+  expect(moved.path).toBe(first.path);
+  expect(moved.pathTransform).toBe("translate(17.125 -29.5)");
+  expect(moved.projectedRings).toEqual(projected.map(ring => ring.map(point => ({x: point.x + 17.125, y: point.y - 29.5}))));
+  const changed = rings.map((ring, index) => ring.map(point => ({...point, x: point.x + index})));
+  expect(hydrated.project({...input, fixedRings: changed}).path).not.toBe(first.path);
+});
+
+it("keeps an empty fixed contour as a point without fabricating a padded area", () => {
+  const result = createCompositePanGeometryCache().project({...request, points: [{x: 42, y: 71}], fixedRings: []});
+  expect(result.path).toBe("");
+  expect(result.projectedRings).toEqual([]);
+  expect(result.projectedPoints).toEqual([project({x: 42, y: 71})]);
+});
+
 it("keeps the same padded hull and spline during repeated camera translation", () => {
   const cache = createCompositePanGeometryCache();
   const initial = cache.project(request);

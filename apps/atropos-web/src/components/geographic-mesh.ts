@@ -79,6 +79,36 @@ export function geographicMesh(
   path: string,
   options: { stroke?: boolean } = {}
 ) {
+  const paths = splitGeographicContours(path);
+  if (paths.length === 1) return geographicContourMesh(paths[0]!, options);
+  // TSTL fragments are disjoint filled pieces, not holes. Triangulate each
+  // independently so no triangle can bridge a gap between authored fragments.
+  const meshes = paths.map((contour) =>
+    geographicContourMesh(contour, options)
+  );
+  const join = (kind: "fill" | "stroke") => {
+    const result = new Float32Array(
+      meshes.reduce((total, mesh) => total + mesh[kind].length, 0)
+    );
+    let offset = 0;
+    for (const mesh of meshes) {
+      result.set(mesh[kind], offset);
+      offset += mesh[kind].length;
+    }
+    return result;
+  };
+  return { fill: join("fill"), stroke: join("stroke") };
+}
+
+export function splitGeographicContours(path: string): string[] {
+  if (path.length > 1_000_000) throw Error("geographic_path_budget");
+  const paths = path.trim().split(/(?=M)/).filter(Boolean);
+  if (!paths.length || paths.length > 2048)
+    throw Error("geographic_contour_budget");
+  return paths;
+}
+
+function geographicContourMesh(path: string, options: { stroke?: boolean }) {
   const points = flattenGeographicPath(path);
   const indices = points.map((_, i) => i);
   const area = points.reduce((sum, p, i) => {

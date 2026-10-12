@@ -1347,6 +1347,11 @@ export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntity
   // Immutable hull prepared by Lachesis; screen padding, label and fades stay
   // in GraphShell. Only the tile-backed adapter supplies this field.
   preparedWorldHull: z.array(chartPlaneWorldPointSchema).optional(),
+  // Experimental immutable disjoint contours share one authored Event owner.
+  // An empty fixed set explicitly requests a point-only fallback.
+  preparedWorldRings: z.array(z.array(chartPlaneWorldPointSchema).min(3)).optional(),
+  preparedContourMode: z.literal("fixed").optional(),
+  preparedAnchor: chartPlaneWorldPointSchema.optional(),
   // A known compact Composite may paint its point before lazy hull retrieval.
   preparedCompactBounds: chartPlaneWorldBoundsSchema.optional(),
   preparedDepth: z.number().int().positive().optional(),

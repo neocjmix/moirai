@@ -29,17 +29,18 @@ export function geographicPathControls(
   const coordinates: number[] = [];
   let topology = "";
   let at = 0;
+  let closed = true;
   while (at < tokens.length) {
     const command = tokens[at++];
     if (command === "Z") {
-      if (!topology || at !== tokens.length) return null;
-      return {
-        topology: topology + "Z",
-        coordinates: new Float64Array(coordinates)
-      };
+      if (closed) return null;
+      topology += "Z";
+      closed = true;
+      continue;
     }
-    if ((!topology && command !== "M") || (topology && command === "M"))
+    if ((closed && command !== "M") || (!closed && command === "M"))
       return null;
+    closed = false;
     const count =
       command === "M" || command === "L" ? 2 : command === "C" ? 6 : 0;
     if (
@@ -55,7 +56,9 @@ export function geographicPathControls(
       coordinates.push(value);
     }
   }
-  return null;
+  return closed && topology
+    ? { topology, coordinates: new Float64Array(coordinates) }
+    : null;
 }
 
 export function geographicMeshFrame(

@@ -15,6 +15,7 @@ export type CompositeGeometryJob = {
   regions: {
     id: string;
     coordinates: Float64Array;
+    fixedRings?: { x: number; y: number }[][];
     padding: number;
     paddingProfile?: CompositePaddingProfile;
   }[];

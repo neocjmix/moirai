@@ -455,8 +455,6 @@ const containsBox = (outer: TstlBox, inner: TstlBox) =>
   inner.maxX <= outer.maxX &&
   inner.minY >= outer.minY &&
   inner.maxY <= outer.maxY;
-const overlaps = (a: TstlBox, b: TstlBox) =>
-  a.minX < b.maxX && a.maxX > b.minX && a.minY < b.maxY && a.maxY > b.minY;
 const edgeBox = (a: TstlPoint, b: TstlPoint): TstlBox => ({
   minX: Math.min(a.x, b.x),
   maxX: Math.max(a.x, b.x),
@@ -674,6 +672,46 @@ export function validateTstlGeometry(
     });
     return result("UNRESOLVED");
   }
+  // These are exact analytic cut ranges, not a spatial sampling grid. Each
+  // support boundary was inserted above, so the indexed cells cover precisely
+  // the padded support interior (boundary-only contacts remain excluded).
+  const xIndex = new Map(xs.map((value, index) => [value, index]));
+  const yIndex = new Map(ys.map((value, index) => [value, index]));
+  const glyphRanges = glyphs.map((glyph) => ({
+    glyph,
+    minX: xIndex.get(glyph.padded.minX)!,
+    maxX: xIndex.get(glyph.padded.maxX)!,
+    minY: yIndex.get(glyph.padded.minY)!,
+    maxY: yIndex.get(glyph.padded.maxY)!
+  }));
+  const incidenceWork = glyphRanges.reduce(
+    (sum, range) => sum + (range.maxX - range.minX) * (range.maxY - range.minY),
+    0
+  );
+  if (incidenceWork > 2_000_000) {
+    diagnostics.push({
+      code: "ARRANGEMENT_INCIDENCE_BUDGET",
+      detail: `${incidenceWork} support-cell incidences > 2000000`
+    });
+    return result("UNRESOLVED");
+  }
+  const touchingGlyphs = new Map<number, typeof glyphs>();
+  const occupiedCells = new Map<string, number[]>();
+  for (const range of glyphRanges) {
+    const indices: number[] = [];
+    for (let y = range.minY; y < range.maxY; y++)
+      for (let x = range.minX; x < range.maxX; x++) {
+        const index = y * width + x;
+        indices.push(index);
+        const touching = touchingGlyphs.get(index) ?? [];
+        touching.push(range.glyph);
+        touchingGlyphs.set(index, touching);
+      }
+    occupiedCells.set(range.glyph.eventId, indices);
+  }
+  const memberSets = new Map(
+    Object.entries(input.members).map(([id, members]) => [id, new Set(members)])
+  );
   interface Cell {
     box: TstlBox;
     signature: string[];
@@ -701,7 +739,7 @@ export function validateTstlGeometry(
         new Set(
           input.placedCarrierIds.map((eventId) =>
             JSON.stringify(
-              mode.filter((id) => input.members[id]?.includes(eventId))
+              mode.filter((id) => memberSets.get(id)?.has(eventId))
             )
           )
         )
@@ -724,10 +762,9 @@ export function validateTstlGeometry(
       cells[y * width + x] = { box, signature, modeKey, patch };
       if (signature.length > 0 && !observedByMode.get(modeKey)!.has(key))
         emit({ code: "FALSE_ATOM", patchId: patch.id, detail: key });
-      for (const glyph of glyphs) {
-        if (!overlaps(box, glyph.padded)) continue;
+      for (const glyph of touchingGlyphs.get(y * width + x) ?? []) {
         for (const id of mode) {
-          const member = input.members[id]!.includes(glyph.eventId);
+          const member = memberSets.get(id)!.has(glyph.eventId);
           if (member && !signature.includes(id))
             emit({
               code: "MEMBER_EXCLUSION",
@@ -782,19 +819,14 @@ export function validateTstlGeometry(
         const signature = JSON.parse(first.modeKey) as string[];
         if (
           JSON.stringify(
-            signature.filter((id) => input.members[id]!.includes(glyph.eventId))
+            signature.filter((id) => memberSets.get(id)!.has(glyph.eventId))
           ) !== key
         )
           return false;
         let touched = false;
-        for (let i = 0; i < cells.length; i++) {
+        for (const i of occupiedCells.get(glyph.eventId)!) {
           const cell = cells[i];
-          if (
-            !cell ||
-            cell.modeKey !== first.modeKey ||
-            !overlaps(cell.box, glyph.padded)
-          )
-            continue;
+          if (!cell || cell.modeKey !== first.modeKey) continue;
           if (!component.has(i)) return false;
           touched = true;
         }

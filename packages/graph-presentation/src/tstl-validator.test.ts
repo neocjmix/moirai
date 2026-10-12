@@ -710,3 +710,116 @@ it("binds conservative reference support to source Y and interval endpoints befo
   ];
   expect(validateTstlTemporal(malformed, malformed).valid).toBe(false);
 });
+
+it("indexed cell support checks agree with a brute rectangle oracle over 80 varied layouts", () => {
+  let seed = 71013;
+  const integer = (max: number) => {
+    seed = (Math.imul(seed, 1664525) + 1013904223) >>> 0;
+    return seed % max;
+  };
+  for (let sample = 0; sample < 80; sample++) {
+    const ids = ["a", "b", "c", "d"];
+    const memberIds = ids.filter(() => integer(2) === 1);
+    const x0 = integer(15) - 10;
+    const y0 = integer(15) - 10;
+    const x1 = x0 + 2 + integer(12);
+    const y1 = y0 + 2 + integer(12);
+    const glyphs = ids.map((eventId) => {
+      const x = integer(30) - 15;
+      const y = integer(30) - 15;
+      return {
+        eventId,
+        support: { minX: x, maxX: x + 2, minY: y, maxY: y + 2 }
+      };
+    });
+    const input: TstlGeometryInput = {
+      complete: true,
+      carrierIds: ids,
+      placedCarrierIds: ids,
+      members: { A: memberIds },
+      glyphs,
+      padding: 1,
+      patches: [
+        {
+          id: "p",
+          minY: -30,
+          maxY: 30,
+          modeCue: true,
+          areaCompositeIds: ["A"],
+          regions: [
+            { id: "A", compositeId: "A", points: rectangle(x0, y0, x1, y1) }
+          ]
+        }
+      ]
+    };
+    const actual = validateTstlGeometry(input);
+    for (const glyph of glyphs) {
+      const box = {
+        minX: glyph.support.minX - 1,
+        maxX: glyph.support.maxX + 1,
+        minY: glyph.support.minY - 1,
+        maxY: glyph.support.maxY + 1
+      };
+      const contained =
+        box.minX >= x0 && box.maxX <= x1 && box.minY >= y0 && box.maxY <= y1;
+      const intrudes =
+        box.minX < x1 && box.maxX > x0 && box.minY < y1 && box.maxY > y0;
+      const has = (code: string) =>
+        actual.diagnostics.some(
+          (d) => d.code === code && d.eventId === glyph.eventId
+        );
+      expect(has("MEMBER_EXCLUSION")).toBe(
+        memberIds.includes(glyph.eventId) && !contained
+      );
+      expect(has("NONMEMBER_INCLUSION")).toBe(
+        !memberIds.includes(glyph.eventId) && intrudes
+      );
+    }
+  }
+});
+
+it("bounds indexed support work before allocation and keeps empty area modes vacuous", () => {
+  const glyphs = Array.from({ length: 200 }, (_, index) => ({
+    eventId: String(index),
+    support: {
+      minX: -100 - index,
+      maxX: 100 + index,
+      minY: -100 - index,
+      maxY: 100 + index
+    }
+  }));
+  const input: TstlGeometryInput = {
+    complete: true,
+    carrierIds: glyphs.map((g) => g.eventId),
+    placedCarrierIds: glyphs.map((g) => g.eventId),
+    members: { A: glyphs.map((g) => g.eventId) },
+    glyphs,
+    padding: 1,
+    patches: [
+      {
+        id: "p",
+        minY: -500,
+        maxY: 500,
+        modeCue: true,
+        areaCompositeIds: ["A"],
+        regions: [
+          { id: "A", compositeId: "A", points: rectangle(-400, -400, 400, 400) }
+        ]
+      }
+    ]
+  };
+  expect(
+    validateTstlGeometry(input).diagnostics.some(
+      (d) => d.code === "ARRANGEMENT_INCIDENCE_BUDGET"
+    )
+  ).toBe(true);
+  input.patches[0]!.areaCompositeIds = [];
+  input.patches[0]!.regions = [];
+  expect(validateTstlGeometry(input)).toMatchObject({
+    geometryValid: true,
+    checkedCells: 0,
+    zones: []
+  });
+  input.glyphs[0]!.support.maxY = 900;
+  expect(codes(input)).toContain("UNCOVERED_GLYPH_SUPPORT");
+});

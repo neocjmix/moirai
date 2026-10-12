@@ -119,6 +119,8 @@ it("preserves single Event identities and every original Event Y and Composite t
     const a = candidate[i]!,
       b = artifact.b0Primitives[i]!;
     if (b.entity.kind === "composite") {
+      expect(a.composite!.anchor.y).toBe(b.composite!.anchor.y);
+      expect(a.composite!.anchor.x).toBe(artifact.a.xByEventId[a.entity.id]);
       expect(a.composite!.worldBounds.minY).toBe(b.composite!.worldBounds.minY);
       expect(a.composite!.worldBounds.maxY).toBe(b.composite!.worldBounds.maxY);
       if (artifact.a.noAreaCompositeIds.includes(a.entity.id)) {
@@ -169,7 +171,7 @@ it("fetches once across B0/A, camera reads and Collection toggles with productio
       preparedWorldRings: artifact.a.contoursByCompositeId[region.id],
       preparedAnchor: {
         x: artifact.a.xByEventId[region.id],
-        y: (original.worldBounds.minY + original.worldBounds.maxY) / 2
+        y: original.anchor.y
       },
       validationState: "warning"
     });

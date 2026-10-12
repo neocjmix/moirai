@@ -43,7 +43,7 @@ export function createTstlGraphReadLoader(input: {
       lifetime.assertActive();
       return {
         ...input.workspace,
-        buildRevision: `tstl:${input.worldId}:56`,
+        buildRevision: `v5:${input.worldId}:56:tstl`,
         navigationScopes: input.workspace.navigationScopes?.map((scope) => ({
           ...scope,
           bounds: artifact.bounds,

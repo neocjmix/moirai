@@ -40,7 +40,7 @@ export function candidateExperimentPrimitives(
       const worldBounds = a.worldBoundsByCompositeId[id]!;
       const anchor = {
         x: a.xByEventId[id]!,
-        y: (worldBounds.minY + worldBounds.maxY) / 2
+        y: primitive.composite.anchor.y
       };
       const hullBounds = rings.length
         ? pointBounds(rings.flat())

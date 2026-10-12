@@ -4,7 +4,7 @@
  */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
-import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
   chromium,
@@ -186,6 +186,17 @@ async function click(page: Page, testId: string) {
   await page.getByTestId(testId).first().click();
   await settled(page);
 }
+async function fetchJson(page: Page, path: string) {
+  const response = await page.evaluate(async (path) => {
+    const response = await fetch(path, { cache: "no-store" });
+    return {
+      status: response.status,
+      data: (await response.json()) as unknown
+    };
+  }, path);
+  assert.equal(response.status, 200, `JSON unavailable: ${path}`);
+  return response.data;
+}
 async function noOverflow(page: Page) {
   const dimensions = await page.evaluate(() => ({
     innerWidth,
@@ -273,6 +284,12 @@ async function verifyDom(page: Page) {
   assert.deepEqual(
     sorted(dom.glyphs.map((glyph) => glyph.eventId!)),
     sorted(state.renderedEventIds)
+  );
+  assert.deepEqual(sorted(state.renderedEventIds), sorted(state.visibleIds));
+  assert.deepEqual(
+    sorted([...state.visibleIds, ...state.omitted.map((item) => item.eventId)]),
+    sorted(snapshot.events.map((event) => event.id)),
+    "every source Event is drawn once or has an explicit omission and reveal route"
   );
   assert.deepEqual(
     sorted(dom.regions.map((region) => region.id!)),
@@ -568,33 +585,52 @@ for (const profile of profiles) {
     report.coldReadyMs = performance.now() - start;
     report.loadTimingScope =
       "Navigation through networkidle (500 ms quiet period) and two animation frames; not isolated server latency";
-    const buildResponse = await page.request.get(
-      new URL("build.json", url).href
-    );
-    assert.equal(buildResponse.status(), 200);
-    const build = (await buildResponse.json()) as {
+    // Use the real browser's network route. The cloud host may have working
+    // browser egress while Node's separate request context resolves unreachable IPv6.
+    const build = (await fetchJson(page, "build.json")) as {
       sourceCommit: string;
       assets: Record<string, { sha256: string; bytes: number }>;
     };
     const verifiedAssets: string[] = [];
     for (const [name, asset] of Object.entries(build.assets)) {
-      const assetResponse = await page.request.get(new URL(name, url).href);
-      assert.equal(assetResponse.status(), 200, `asset unavailable: ${name}`);
-      const body = await assetResponse.body();
-      assert.equal(body.length, asset.bytes, `asset size mismatch: ${name}`);
+      const downloaded: { status: number; bytes: number; sha256: string } =
+        await page.evaluate(async (path) => {
+          const response = await fetch(path, { cache: "no-store" });
+          const body = await response.arrayBuffer();
+          const digest = await crypto.subtle.digest("SHA-256", body);
+          return {
+            status: response.status,
+            bytes: body.byteLength,
+            sha256: [...new Uint8Array(digest)]
+              .map((byte) => byte.toString(16).padStart(2, "0"))
+              .join("")
+          };
+        }, name);
+      assert.equal(downloaded.status, 200, `asset unavailable: ${name}`);
       assert.equal(
-        createHash("sha256").update(body).digest("hex"),
+        downloaded.bytes,
+        asset.bytes,
+        `asset size mismatch: ${name}`
+      );
+      assert.equal(
+        downloaded.sha256,
         asset.sha256,
         `asset digest mismatch: ${name}`
       );
+      if (name === "data/history-r56.json")
+        assert.equal(
+          downloaded.sha256,
+          createHash("sha256")
+            .update(
+              readFileSync("scripts/layout-research/data/history-r56.json")
+            )
+            .digest("hex"),
+          "served fixture must exactly match independent source bytes"
+        );
       verifiedAssets.push(name);
     }
     assert(verifiedAssets.includes("preview.json"));
-    const healthResponse = await page.request.get(
-      new URL("health.json", url).href
-    );
-    assert.equal(healthResponse.status(), 200);
-    const health = (await healthResponse.json()) as {
+    const health = (await fetchJson(page, "health.json")) as {
       sourceCommit: string;
       previewSha256: string;
     };
@@ -803,6 +839,21 @@ for (const profile of profiles) {
     await click(page, "drawer-close");
 
     await click(page, "collections-open");
+    const beforeCollection = await getState(page);
+    const koreaCollection = snapshot.collections.find(
+      (collection) => collection.title === "한국사"
+    )!;
+    await click(page, `collection-${koreaCollection.id}`);
+    const collectionOff = await getState(page);
+    assert(!collectionOff.activeCollectionIds.includes(koreaCollection.id));
+    assert.deepEqual(collectionOff.hashes, beforeCollection.hashes);
+    assert.deepEqual(collectionOff.camera, beforeCollection.camera);
+    assert.equal(
+      collectionOff.selectedEventId,
+      beforeCollection.selectedEventId
+    );
+    await verifyDom(page);
+    await click(page, `collection-${koreaCollection.id}`);
     await click(page, "collections-all-off");
     const allOff = await getState(page);
     assert.equal(allOff.activeCollectionIds.length, 0);
@@ -882,6 +933,9 @@ for (const profile of profiles) {
     assert.deepEqual(consoleErrors, []);
     assert.deepEqual(failedRequests, []);
     report.passed = true;
+    rmSync(resolve(outputDirectory, `${profile.name}-failure.png`), {
+      force: true
+    });
   } catch (error) {
     failure = error;
     report.passed = false;

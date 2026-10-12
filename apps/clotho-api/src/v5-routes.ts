@@ -1,15 +1,18 @@
 /** Production v5 HTTP transport. */
-import type { FastifyInstance } from "fastify";
+import type { FastifyInstance, FastifyRequest } from "fastify";
 import { ChangeSetError } from "@moirai/domain";
 import type { createV5Clotho } from "@moirai/clotho-application/v5";
 import { V5_METHODS } from "@moirai/contracts/v5-wire";
-import { authenticate, type Credential } from "./auth.js";
+import { authenticate, type Credential, type Principal } from "./auth.js";
+import type { OidcAuthenticator } from "./oidc.js";
 
 export function registerV5ClothoRoutes(
   app: FastifyInstance,
   credentials: readonly Credential[],
-  service: ReturnType<typeof createV5Clotho>
+  service: ReturnType<typeof createV5Clotho>,
+  verify: OidcAuthenticator = async () => undefined
 ): void {
+  const principals = new WeakMap<FastifyRequest, Principal>();
   for (const kind of V5_METHODS) {
     const scope =
       kind.startsWith("change.") ||
@@ -25,10 +28,11 @@ export function registerV5ClothoRoutes(
         // into a valid one. The application contract validates the raw body.
         onRequest: async (request, reply) => {
           reply.header("cache-control", "no-store");
-          const actor = authenticate(
-            request.headers.authorization,
-            credentials
-          );
+          const actor =
+            authenticate(request.headers.authorization, credentials) ??
+            (await verify(request.headers.authorization).catch(
+              () => undefined
+            ));
           if (!actor)
             return reply
               .header("www-authenticate", "Bearer")
@@ -36,6 +40,7 @@ export function registerV5ClothoRoutes(
               .send({ error: { code: "unauthorized" } });
           if (!actor.scopes.includes(scope))
             return reply.code(403).send({ error: { code: "forbidden" } });
+          principals.set(request, actor);
         },
         errorHandler: (error, _request, reply) => {
           reply.header("cache-control", "no-store");
@@ -71,7 +76,7 @@ export function registerV5ClothoRoutes(
         }
       },
       async (request, reply) => {
-        const actor = authenticate(request.headers.authorization, credentials);
+        const actor = principals.get(request);
         if (!actor)
           return reply.code(401).send({ error: { code: "unauthorized" } });
         const result = await service.execute(kind, request.body, actor);

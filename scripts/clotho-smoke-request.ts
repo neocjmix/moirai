@@ -1,7 +1,10 @@
+import type { ClothoSmokeAuthMode } from "./clotho-smoke-auth.js";
+
 export function createAuthenticatedSmokeRequest(
   apiUrl: string,
   token: string,
-  request: typeof fetch = fetch
+  request: typeof fetch = fetch,
+  authMode: ClothoSmokeAuthMode = "bearer"
 ) {
   return async function authenticated<T>(
     path: string,
@@ -27,11 +30,15 @@ export function createAuthenticatedSmokeRequest(
     }
     if (response.status === 401)
       throw new Error(
-        "CI CLOTHO_TOKEN bearer credential was rejected (HTTP 401). Check its 30-day expiry and Railway CLOTHO_CREDENTIALS_JSON token hash; rotate both secret stores together. This credential is separate from ChatGPT OAuth."
+        authMode === "github-actions-oidc"
+          ? "GitHub Actions OIDC smoke credential was rejected (HTTP 401). Check the pinned workflow identity, audience and expiry."
+          : "CI CLOTHO_TOKEN bearer credential was rejected (HTTP 401). Check its 30-day expiry and Railway CLOTHO_CREDENTIALS_JSON token hash; rotate both secret stores together. This credential is separate from ChatGPT OAuth."
       );
     if (response.status === 403)
       throw new Error(
-        "CI CLOTHO_TOKEN access was denied (HTTP 403). Check the credential's World grants and world:read/world:write scopes."
+        authMode === "github-actions-oidc"
+          ? "GitHub Actions OIDC smoke access was denied (HTTP 403). Check the synthetic World grant and world:read/world:write scopes."
+          : "CI CLOTHO_TOKEN access was denied (HTTP 403). Check the credential's World grants and world:read/world:write scopes."
       );
     try {
       return { status: response.status, body: (await response.json()) as T };

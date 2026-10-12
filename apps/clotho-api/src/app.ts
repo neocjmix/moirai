@@ -5,6 +5,7 @@ import {
   type MoiraiDatabase
 } from "@moirai/persistence";
 import Fastify, { type FastifyInstance } from "fastify";
+import { decodeJwt } from "jose";
 
 import type { RuntimeConfig } from "./config.js";
 import { registerClotho } from "./clotho.js";
@@ -18,6 +19,8 @@ import { registerV5McpRoutes } from "./v5-mcp.js";
 import { ChangeSetError } from "@moirai/domain";
 import { assertV5SchemaReady, readActiveV5State } from "@moirai/persistence/v5";
 import { parseCredentials } from "./auth.js";
+import { oidcAuthenticator } from "./oidc.js";
+import { ciOidcAuthenticator, GITHUB_ACTIONS_ISSUER } from "./ci-oidc.js";
 
 const worldId = "01995c2a-7b00-7000-8000-000000000101";
 const eventId = "019f5b00-0000-7000-8000-000000000115";
@@ -186,6 +189,20 @@ export function buildApp(
     ajv: { customOptions: { removeAdditional: false, coerceTypes: false } }
   });
   const mode = config.contractMode ?? "v4";
+  const verifyCi = ciOidcAuthenticator(config.ciOidc);
+  const verifyOperator = oidcAuthenticator(config.oidc);
+  const verifyMcp = async (header: string | undefined) => {
+    if (!header || header.length > 8_192 || !header.startsWith("Bearer "))
+      return undefined;
+    try {
+      // Unverified issuer only selects a verifier; it never grants access.
+      if (decodeJwt(header.slice(7)).iss === GITHUB_ACTIONS_ISSUER)
+        return verifyCi(header);
+    } catch {
+      return undefined;
+    }
+    return verifyOperator(header);
+  };
   if (mode === "quiesced")
     app.addHook("onRequest", async (request, reply) => {
       if (/^\/v1\/clotho\/change\./.test(request.url))
@@ -218,13 +235,13 @@ export function buildApp(
             }) as typeof activeService.commit
           }
         : activeService;
-    registerV5ClothoRoutes(app, config.credentials ?? [], service);
+    registerV5ClothoRoutes(app, config.credentials ?? [], service, verifyCi);
     registerV5McpRoutes(
       app,
       config.credentials ?? [],
       service,
       config.oidc,
-      undefined,
+      verifyMcp,
       "/mcp"
     );
   } else {
@@ -246,7 +263,8 @@ export function buildApp(
         oidc: config.oidc,
         version: config.appVersion
       },
-      guardedExecute
+      guardedExecute,
+      verifyMcp
     );
   }
   app.addHook("onResponse", async (request, reply) => {

@@ -5,21 +5,20 @@ import {
 import { spawnSync } from "node:child_process";
 import type { ClothoMethod } from "../packages/contracts/src/index.js";
 import { createAuthenticatedSmokeRequest } from "./clotho-smoke-request.js";
+import { resolveClothoSmokeToken } from "./clotho-smoke-auth.js";
 
 const expectedSha = process.env.EXPECTED_COMMIT_SHA ?? "";
 const apiUrl = process.env.CLOTHO_API_URL ?? "";
 const publicUrl = process.env.PUBLIC_INTEGRATION_URL ?? "";
+const authMode = process.env.CLOTHO_SMOKE_AUTH_MODE ?? "bearer";
 if (
   !/^[a-f0-9]{40}$/.test(expectedSha) ||
   !apiUrl ||
   !publicUrl ||
-  !process.env.CLOTHO_TOKEN
+  (authMode !== "bearer" && authMode !== "github-actions-oidc") ||
+  (authMode === "bearer" && !process.env.CLOTHO_TOKEN)
 )
   throw new Error("Clotho smoke configuration is incomplete");
-const authenticated = createAuthenticatedSmokeRequest(
-  apiUrl,
-  process.env.CLOTHO_TOKEN
-);
 
 function call<T>(method: ClothoMethod, input: unknown): T {
   const result = spawnSync(
@@ -29,7 +28,8 @@ function call<T>(method: ClothoMethod, input: unknown): T {
       input: JSON.stringify(input),
       encoding: "utf8",
       timeout: 35_000,
-      maxBuffer: 4_194_304
+      maxBuffer: 4_194_304,
+      env: { ...process.env, CLOTHO_TOKEN: token }
     }
   );
   if (result.status !== 0) throw new Error(`Clotho ${method} failed`);
@@ -80,7 +80,13 @@ async function waitForReady(): Promise<void> {
   throw new Error("Clotho deployment timed out");
 }
 
-await waitForReady();
+const token = await resolveClothoSmokeToken(authMode, apiUrl, waitForReady);
+const authenticated = createAuthenticatedSmokeRequest(
+  apiUrl,
+  token,
+  fetch,
+  authMode
+);
 const worldId = "01995c2a-7b00-7000-8000-000000000101";
 const sharedEventId = "019f5b00-0000-7000-8000-000000000115";
 const status = await fetch(new URL("/status-public", publicUrl), {

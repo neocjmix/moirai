@@ -34,7 +34,7 @@ export function candidateExperimentPrimitives(
       throw Error("tstl_experiment_unresolved_primitive");
     const id = primitive.entity.id;
     if (primitive.entity.kind === "composite") {
-      if (!primitive.composite)
+      if (!primitive.composite?.anchor)
         throw Error("tstl_experiment_composite_missing");
       const rings = a.contoursByCompositeId[id]!;
       const worldBounds = a.worldBoundsByCompositeId[id]!;

@@ -32,6 +32,22 @@ describe("authenticated Clotho smoke diagnostics", () => {
     );
   });
 
+  it("identifies workload rejection without referring to the legacy secret", async () => {
+    const response = new Response(token, { status: 401 });
+    const request = vi.fn<typeof fetch>(async () => response);
+    await expect(
+      createAuthenticatedSmokeRequest(
+        endpoint,
+        token,
+        request,
+        "github-actions-oidc"
+      )(policyPath, {})
+    ).rejects.toThrow(
+      /^GitHub Actions OIDC smoke credential was rejected \(HTTP 401\). Check the pinned workflow identity, audience and expiry\.$/
+    );
+    expect(response.bodyUsed).toBe(false);
+  });
+
   it("preserves the policy mismatch response for the existing rejection gate", async () => {
     const body = { error: { code: "authoring_policy_mismatch" } };
     const request = vi.fn<typeof fetch>(async () =>

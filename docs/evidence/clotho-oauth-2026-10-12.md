@@ -56,3 +56,32 @@ Restore the existing CI actor, `world:read`/`world:write` and synthetic World gr
 Focused OAuth regression, OIDC, transport parity and legacy MCP checks pass. Clotho lint/typecheck and dependency boundary checks pass. Next 16.3.8 production build and high-threshold audit pass. Full remote CI, credential rotation, deployed descriptor verification and actual ChatGPT refresh are pending at this checkpoint.
 
 Historical A4 failures include stale fixed viewport coordinates after the approved global-incidence layout change. The benchmark repair derives the same bounded viewport from the fixture's published point and retains all budgets/assertions. Historical dense/sustained frame failures remain deferred under IP-012; this task does not relax those gates or resume renderer tuning.
+
+## Plugin-first recovery checkpoint — 2026-10-12 03:24 UTC
+
+PR #347 merged as `f52b8d9f8bfec20fad5e966ed5ce72cf8f3ba032`. [Main CI 38187256932](https://github.com/neocjmix/moirai/actions/runs/38187256932) and [A5 mobile 38187256954](https://github.com/neocjmix/moirai/actions/runs/38187256954) passed. Railway web/API/worker reached SUCCESS at that SHA, public readiness smoke passed and all 17 deployed tools expose both OAuth descriptor locations. [Authenticated smoke 38187579503](https://github.com/neocjmix/moirai/actions/runs/38187579503) passed public readiness/mobile/build, then explicitly reported the existing CI bearer HTTP 401.
+
+The user requested using the installed GitHub, Railway and Auth0 plugins before asking for additional logins. GitHub supports code, CI logs and reruns but has no Actions secret-write operation. Its injected credential also returns HTTP 403 from the Secrets API. Railway supports configuration writes, but its connected OAuth operation deliberately returns variable names only. The installed Auth0 guidance is available; no Auth0 Management MCP operation is callable in this session. Its CLI has no authenticated tenant. Those are capability limits, not evidence that configured credentials are missing.
+
+Moirai Live Refresh Check still successfully read World revision 62 at 03:24 UTC, over three hours after the earlier authenticated reads, while Moirai Live still returned connection-level UNAUTHORIZED. This distinguishes the two connections, but their actual registration/authentication modes and refresh settings have not been compared. The successful read alone does not prove the failed Live client obtained or stored a refresh token, or rule out its Auth0 configuration. The failed Live connection was asked to reconnect once after the descriptor repair. Auth0 administrator access is deferred unless the renewed connection still fails.
+
+### CI workload identity repair
+
+Use GitHub Actions' signed five-minute workload JWT for the exact production smoke job, replacing its dependency on the expired/mismatched static secret. This removes the need to read operator secrets or write a new GitHub secret. Auth0 remains the human MCP provider; this is not a GitHub human-login migration or a new authorization server.
+
+The optional `CLOTHO_CI_OIDC_JSON` contains only public trust settings and a separate internal CI actor. Its parser pins the existing repository/owner IDs and the `/mcp` audience. The actual repository OIDC configuration reports `use_default: true`, `use_immutable_subject: true`, prefix `repo:neocjmix@4980032/moirai@1349494474`. Verification pins:
+
+- GitHub Actions' issuer, fixed JWKS and RS256 signature;
+- exact string audience, immutable subject, repository and immutable repository/owner IDs;
+- `refs/heads/main`, branch ref type, the exact `post-deploy-smoke.yml` workflow ref, and `workflow_run` or `workflow_dispatch`;
+- required issue/expiry/not-before claims, token age and lifetime at most 300 seconds.
+
+The resulting actor has only the existing `01995c2a-7b00-7000-8000-000000000101` World and `world:read`/`world:write`. It receives no all-World/admin grant, and token-supplied grants do not expand access. Auth0/operator credential settings are preserved. v5 REST and MCP use the verified CI principal; Lachesis still checks scope, World and expiry.
+
+Minting occurs after deployment readiness, which can take ten minutes, so the five-minute token is fresh for the authenticated smoke. Token acquisition uses only the HTTPS GitHub runner endpoint, blocks redirects, applies a timeout and emits sanitized errors. JWTs remain in memory and, when needed, the CLI child environment; no token is written to logs, files, public artifacts or persistent secret stores. The existing workflow's exact-main/upstream repository/SHA checks remain intact.
+
+GitHub's `id-token: write` permission is scoped to this job, not the whole workflow. Earlier trusted steps can technically mint too; the final smoke script is the only minting code. This remains the existing trusted-main-job boundary: its build code could already modify the final script before that script receives a static credential. No additional repository, World or write authority is granted.
+
+Provisioning uses Railway's connected write tool to set only `CLOTHO_CI_OIDC_JSON`; no administrator login or operator-secret read is needed. Setting it to an empty string disables the CI trust path. A runtime rollback to v4 requires the corresponding old bearer smoke workflow; v4 REST has not gained a new authentication path.
+
+Focused CI identity/config/OIDC/transport tests and mint/request diagnostics pass; independent review found no blocking issue. Remote CI, live signed GitHub token acceptance and authenticated smoke remain pending until this checkpoint is deployed. Existing static credentials for other manually invoked workflows are not silently renewed or replaced.

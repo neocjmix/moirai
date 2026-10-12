@@ -1,0 +1,59 @@
+{
+  "formatVersion": "tstl-production-preservation/1",
+  "observedAt": "2026-10-12T16:43:03.611660Z",
+  "scope": "Read-only public responses sampled before the isolated preview deployment. No production mutation. Digests cover exact response body bytes; only allowlisted public fields are recorded.",
+  "requests": {
+    "status": {
+      "url": "https://moirai-production-8ed1.up.railway.app/__status",
+      "sampledAt": "2026-10-12T16:43:03.192036Z",
+      "httpStatus": 200,
+      "bodySha256": "b4f66b8c4b1f9c236f7012d1a6d962e1401c6358885ead042ed970142530bc3b",
+      "bodyBytes": 458,
+      "allowlistedBody": {
+        "application": {
+          "service": "atropos-web",
+          "version": "0.0.0-dev",
+          "commit_sha": "d721b0efdcf309ed7ad21c55bc04572e2f14d644",
+          "deployed_at": "2026-10-12T05:21:19.324Z"
+        },
+        "versions": {
+          "contract": "5",
+          "schema": "011_ip011_authoring_search",
+          "publication_format": "v5-publication/1"
+        },
+        "surfaces": {
+          "atropos": "ok",
+          "health": "ok",
+          "status": "ok"
+        }
+      }
+    },
+    "historyServedPointer": {
+      "url": "https://moirai-production-8ed1.up.railway.app/worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/current.json",
+      "sampledAt": "2026-10-12T16:43:03.421360Z",
+      "httpStatus": 200,
+      "bodySha256": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a",
+      "bodyBytes": 418,
+      "allowlistedBody": {
+        "format_version": "v5-publication/1",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "served_revision": 56,
+        "current_revision": 56,
+        "publication_target_revision": 56,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/revisions/56/v5/complete/manifest.json",
+        "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "generated_at": "2026-10-10T04:22:50.900Z"
+      }
+    }
+  },
+  "preserve": {
+    "sourceCommitSha": "d721b0efdcf309ed7ad21c55bc04572e2f14d644",
+    "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "servedRevision": 56,
+    "currentRevision": 56,
+    "publicationTargetRevision": 56,
+    "manifestSha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+    "historyServedPointerBodySha256": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a"
+  }
+}

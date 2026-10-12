@@ -99,3 +99,25 @@ PR #348 merged as `8eea15979fa05ace5514d000af419b7fba02a125`. Railway API, web a
 The user-facing handoff asks only for one Moirai Live reconnection in ChatGPT after the deployed descriptor repair. The session has no operation for renewing that app's saved OAuth state and no callable Auth0 Management API tool. A fresh Live connection, its repeated reads and an actual access-token-expiry/refresh cycle remain unverified. If it still fails after reconnection, obtain Auth0 tenant access for the client/refresh-log comparison above. Do not attribute the remaining issue to Auth0 or ChatGPT registration before that evidence, and do not replace human Auth0 with direct GitHub/Google OAuth merely on the strength of successful CI workload authentication.
 
 This evidence-only follow-up records the verified runtime SHA above; it adds no runtime or provider configuration change. The deferred A4 frame-budget failures remain separate from the recovered CI and authenticated smoke.
+
+## Provider verification and conversation-state closeout — 2026-10-12 05:18 UTC
+
+The user completed the requested app reconnection. The existing conversation still immediately returned connection-level UNAUTHORIZED, with no matching API request. Auth0 Management tools are not available through the installed plugin, so the user completed the CLI's device login. All subsequent tenant operations were read-only; no provider setting, client, grant, access-token lifetime or refresh rotation was changed.
+
+The actual API has offline access enabled, RS256 and 3600-second access-token lifetimes. The reconnected client permits authorization code and refresh grants with the ChatGPT callback and public-client token authentication. Its refresh tokens rotate, expire after 30 days, have a 15-day idle lifetime and zero reuse leeway. These settings were inspected, not inferred from discovery.
+
+Allowlisted provider evidence:
+
+| UTC time | Event | Verified result |
+| --- | --- | --- |
+| 00:09:18 and 03:25:30 | `sertft` | Successful refresh exchanges, more than one access-token lifetime apart. |
+| 05:03:03 | `seacft` | The user's reconnection exchanged its authorization code successfully. |
+| 05:03:08 | `sertft` | Refresh exchange succeeded after reconnection. |
+
+All inspected successful refresh events target the exact Clotho `/mcp` audience and carry `world:read`, `world:write` and `offline_access`. The retained event set contains no exchange/refresh error. Client IDs, subjects, token families, credentials and complete provider log payloads are omitted. Historical refresh events establish that this client's refresh path works; they do not identify the exact saved ChatGPT connection or token family used by every call.
+
+After the [OpenAI connection troubleshooting](https://help.openai.com/en/articles/20001497-troubleshooting-plugins-apps-in-chatgpt) and [metadata refresh procedure](https://developers.openai.com/plugins/deploy/connect-chatgpt#refresh-metadata), the user selected Moirai Live in a new conversation and confirmed the World lookup works. Railway recorded the new ChatGPT requests to `/mcp` at 05:17:17 with HTTP 200. The old conversation continued returning immediate UNAUTHORIZED at 05:17:51 without reaching the API. The remaining observed failure is therefore confined to the old conversation's retained connection state; the evidence does not claim a particular internal ChatGPT cache defect.
+
+Operational disposition: keep Auth0 for human authentication and the deployed GitHub Actions identity for CI. After tool/auth metadata changes, Refresh the app's metadata and verify in a new conversation; repeatedly reconnecting the same stale conversation is not a useful diagnostic. The successful new-conversation result is user-confirmed and corroborated by HTTP logs, rather than a tool result captured in the old conversation. A future expiry cycle of that exact new conversation was not separately observed. Existing provider refresh successes, the user acceptance and healthy deployed checks close this incident without lengthening tokens or migrating the human provider.
+
+The verified runtime remains `ab4b1d5689cc0dc7d46f52bdd528b53b928e5de5`: [main CI 38202258179](https://github.com/neocjmix/moirai/actions/runs/38202258179) and [automatic authenticated smoke 38202533675](https://github.com/neocjmix/moirai/actions/runs/38202533675) passed, including four live mobile checks. This closeout changes documentation only and preserves the deferred A4 performance disposition and canonical history.

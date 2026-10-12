@@ -4,6 +4,7 @@ import {
 } from "../packages/contracts/src/v5-wire.js";
 import { spawnSync } from "node:child_process";
 import type { ClothoMethod } from "../packages/contracts/src/index.js";
+import { createAuthenticatedSmokeRequest } from "./clotho-smoke-request.js";
 
 const expectedSha = process.env.EXPECTED_COMMIT_SHA ?? "";
 const apiUrl = process.env.CLOTHO_API_URL ?? "";
@@ -15,6 +16,10 @@ if (
   !process.env.CLOTHO_TOKEN
 )
   throw new Error("Clotho smoke configuration is incomplete");
+const authenticated = createAuthenticatedSmokeRequest(
+  apiUrl,
+  process.env.CLOTHO_TOKEN
+);
 
 function call<T>(method: ClothoMethod, input: unknown): T {
   const result = spawnSync(
@@ -32,23 +37,17 @@ function call<T>(method: ClothoMethod, input: unknown): T {
 }
 
 async function mcp<T>(method: string, params: unknown): Promise<T> {
-  const response = await fetch(new URL("/mcp", apiUrl), {
-    method: "POST",
-    redirect: "error",
-    headers: {
-      "content-type": "application/json",
-      accept: "application/json, text/event-stream",
-      authorization: `Bearer ${process.env.CLOTHO_TOKEN}`
-    },
-    body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-    signal: AbortSignal.timeout(30_000)
-  });
-  if (!response.ok)
-    throw new Error(`MCP smoke request failed (${response.status})`);
-  const body = (await response.json()) as {
+  const response = await authenticated<{
     error?: unknown;
     result: T & { isError?: boolean };
-  };
+  }>(
+    "/mcp",
+    { jsonrpc: "2.0", id: 1, method, params },
+    "application/json, text/event-stream"
+  );
+  if (response.status < 200 || response.status >= 300)
+    throw new Error(`MCP smoke request failed (${response.status})`);
+  const body = response.body;
   if (body.error || body.result.isError)
     throw new Error("MCP smoke operation failed");
   return body.result;
@@ -92,24 +91,6 @@ const publicStatus = (await status.json()) as {
   versions: { contract: string };
 };
 if (publicStatus.versions.contract === "5") {
-  async function authenticated<T>(
-    path: string,
-    body: unknown
-  ): Promise<{
-    status: number;
-    body: T;
-  }> {
-    const response = await fetch(new URL(path, apiUrl), {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        authorization: `Bearer ${process.env.CLOTHO_TOKEN}`
-      },
-      body: JSON.stringify(body),
-      signal: AbortSignal.timeout(30_000)
-    });
-    return { status: response.status, body: (await response.json()) as T };
-  }
   for (const path of ["/v2/clotho/change.commit", "/mcp"]) {
     const response = await fetch(new URL(path, apiUrl), {
       method: "POST",
@@ -213,8 +194,20 @@ if (publicStatus.versions.contract === "5") {
     clientInfo: { name: "moirai-production-smoke", version: "5" }
   });
   const discovered = await mcp<{
-    tools: { name: string; inputSchema: unknown }[];
+    tools: {
+      name: string;
+      inputSchema: unknown;
+      securitySchemes?: unknown;
+      _meta?: { securitySchemes?: unknown };
+    }[];
   }>("tools/list", {});
+  const writeMethods = new Set([
+    "world.create",
+    "world.delete",
+    "world.restore",
+    "change.validate",
+    "change.commit"
+  ]);
   for (const method of V5_METHODS) {
     const tool = discovered.tools.find(
       (t) => t.name === method.replaceAll(".", "_").replaceAll("-", "_")
@@ -225,6 +218,22 @@ if (publicStatus.versions.contract === "5") {
         JSON.stringify(V5_INPUT_SCHEMAS[method])
     )
       throw Error(`V5 MCP schema mismatch: ${method}`);
+    const securitySchemes = [
+      {
+        type: "oauth2",
+        scopes: [
+          writeMethods.has(method) ? "world:write" : "world:read",
+          "offline_access"
+        ]
+      }
+    ];
+    if (
+      JSON.stringify(tool.securitySchemes) !==
+        JSON.stringify(securitySchemes) ||
+      JSON.stringify(tool._meta?.securitySchemes) !==
+        JSON.stringify(securitySchemes)
+    )
+      throw Error(`V5 MCP OAuth metadata mismatch: ${method}`);
   }
   const world = await mcp<{
     structuredContent: { result: { world: { current_revision: number } } };

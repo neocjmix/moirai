@@ -1,6 +1,8 @@
 # 현재 구현 상태
 
-2026-10-10 UTC. **사용자가 검토한 전역 incidence의 운영 승격·전체 Render 재발행이 현재 실행 범위다.** IP-015 realtime camera / eventual scene은 보존하는 렌더러 기준선이다. 이 파일과 [IP-015](IP-015-realtime-camera-eventual-scene.md)가 실행 상태·요구사항을 소유한다. [이전 CURRENT](../evidence/ip015/current-before-2026-10-10.md)는 역사 기록이다.
+2026-10-12 UTC. **사용자가 Clotho 반복 재인증의 원인 분석·수정과 실패 CI 복구를 요청했다.** [인증·CI 복구 증거](../evidence/clotho-oauth-2026-10-12.md)가 해당 실행 상태를 소유한다. v5 OAuth 도구 metadata 누락·World 인가를 인증 실패로 처리하던 회귀, Next high advisory와 CI credential HTTP 401을 확인했다. 구현 수정과 자동 검증을 진행하며 Auth0 관리자 인증·실제 ChatGPT refresh와 CI credential 회전은 별도 운영 확인이 필요하다.
+
+전역 incidence의 운영 승격·전체 Render 재발행은 아래 완료 상태로 보존한다. IP-015 realtime camera / eventual scene은 보존하는 렌더러 기준선이다. 이 파일과 [IP-015](IP-015-realtime-camera-eventual-scene.md)가 실행 상태·요구사항을 소유한다. [이전 CURRENT](../evidence/ip015/current-before-2026-10-10.md)는 역사 기록이다. 이번 인증·CI 작업은 deferred 모바일 성능 튜닝·canonical 역사 편집을 재개하지 않는다.
 
 ## 전역 incidence 운영 승격 — 배포·전체 재발행 완료
 

@@ -15,7 +15,6 @@ import {
 import type { createV5Clotho } from "@moirai/clotho-application/v5";
 import { authenticate, type Credential, type Principal } from "./auth.js";
 import {
-  CLOTHO_CONNECTION_WORLD,
   oidcAuthenticator,
   type OidcAuthenticator,
   type OidcConfig
@@ -82,6 +81,11 @@ const discovery = new Set([
   "notifications/initialized",
   "tools/list"
 ]);
+const requiredScope = (method: V5Method) =>
+  method.startsWith("change.") ||
+  ["world.create", "world.delete", "world.restore"].includes(method)
+    ? "world:write"
+    : "world:read";
 
 export function registerV5McpRoutes(
   app: FastifyInstance,
@@ -100,6 +104,25 @@ export function registerV5McpRoutes(
   const challenge = metadataUrl
     ? `Bearer resource_metadata="${metadataUrl}", scope="world:read world:write offline_access"`
     : "Bearer";
+  const authErrorResult = (
+    code: "unauthorized" | "forbidden",
+    error: "invalid_token" | "insufficient_scope"
+  ) => ({
+    ...errorResult(code),
+    ...(metadataUrl
+      ? {
+          _meta: {
+            "mcp/www_authenticate": [
+              `${challenge}, error="${error}", error_description="${
+                error === "invalid_token"
+                  ? "A valid access token is required"
+                  : "Required tool scope was not granted"
+              }"`
+            ]
+          }
+        }
+      : {})
+  });
   if (endpoint === "/mcp") {
     for (const url of [
       "/.well-known/oauth-protected-resource/mcp",
@@ -157,11 +180,9 @@ export function registerV5McpRoutes(
         const principal =
           authenticate(request.headers.authorization, credentials) ??
           (await verify(request.headers.authorization).catch(() => undefined));
-        if (
-          principal &&
-          (endpoint !== "/mcp" ||
-            principal.world_ids.includes(CLOTHO_CONNECTION_WORLD))
-        ) {
+        // World grants are enforced by the application/Lachesis boundary.
+        // An authenticated actor's World denial must not trigger OAuth again.
+        if (principal) {
           principals.set(request, principal);
           return;
         }
@@ -175,7 +196,12 @@ export function registerV5McpRoutes(
         )
           return;
         return reply
-          .header("www-authenticate", challenge)
+          .header(
+            "www-authenticate",
+            request.headers.authorization
+              ? `${challenge}, error="invalid_token", error_description="A valid access token is required"`
+              : challenge
+          )
           .code(401)
           .send({ error: "unauthorized" });
       }
@@ -205,11 +231,27 @@ export function registerV5McpRoutes(
             "world.restore"
           ].includes(method)
             ? { destructiveHint: true, idempotentHint: true }
-            : { readOnlyHint: true }
+            : { readOnlyHint: true },
+          // Request offline access on the tool-level linking path too, so
+          // Auth0 can issue a refresh token without expanding World grants.
+          securitySchemes: [
+            {
+              type: "oauth2",
+              scopes: [requiredScope(method), "offline_access"]
+            }
+          ],
+          _meta: {
+            securitySchemes: [
+              {
+                type: "oauth2",
+                scopes: [requiredScope(method), "offline_access"]
+              }
+            ]
+          }
         }))
       }));
       server.setRequestHandler(CallToolRequestSchema, async ({ params }) => {
-        if (!actor) return errorResult("unauthorized");
+        if (!actor) return authErrorResult("unauthorized", "invalid_token");
         const input = params.arguments ?? {};
         try {
           const method = V5_METHODS.find(
@@ -217,6 +259,8 @@ export function registerV5McpRoutes(
               method.replaceAll(".", "_").replaceAll("-", "_") === params.name
           );
           if (!method) return errorResult("unknown_tool");
+          if (!actor.scopes.includes(requiredScope(method)))
+            return authErrorResult("forbidden", "insufficient_scope");
           const result = await service.execute(method, input, actor);
           const envelope = { contract_version: 5, result };
           const text = JSON.stringify(envelope);

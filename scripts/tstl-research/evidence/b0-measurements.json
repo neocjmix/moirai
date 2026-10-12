@@ -1,0 +1,13 @@
+{
+  "inputMs": 0.02435600000001159,
+  "layoutMs": 72.85214099999999,
+  "compileMs": 648.5092649999999,
+  "resolveMs": 462.51218000000006,
+  "totalMs": 1805.456727,
+  "nodeVersion": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "peakRssBytes": 680849408,
+  "coldWarm": "single replay in fresh Node process; OS cache uncontrolled",
+  "measurementScope": "Node offline replay only; no browser, paint or device claim"
+}

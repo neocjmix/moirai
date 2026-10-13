@@ -1,0 +1,34 @@
+{
+  "runtimeSource": "cea4a74b36e3df36c5b90adacd237c9f12898c47",
+  "runtimeMerge": "85a5d11f0cb5d9dcd1eabfc7c0ca51e98aa92fbf",
+  "deployedSha": "3d11d5502934ba59f8118558700d9a41c075085f",
+  "changesAfterRuntimeMerge": "documentation only",
+  "pullRequests": [
+    359,
+    360
+  ],
+  "finalCI": {
+    "run": 38395719449,
+    "conclusion": "success",
+    "attempt": 2,
+    "initialFailure": "WebKit page.reload Page crashed in existing synthetic unsupported float color target test; failed job rerun with no changes"
+  },
+  "evidencePrCI": {
+    "run": 38395648660,
+    "conclusion": "success"
+  },
+  "finalPostDeploySmoke": {
+    "run": 38396550864,
+    "conclusion": "success"
+  },
+  "publicAcceptance": "3/3 full browser profiles on runtime merge, plus final mobile WebKit visual/geometry check on deployed SHA",
+  "railwayApplicationServices": "3/3 SUCCESS",
+  "historicalPointerByteIdentical": true,
+  "physicalDevice": "not tested",
+  "remainingLimits": [
+    "Dense shared region ambiguity",
+    "Local shared-flow/orientation tradeoffs",
+    "Lab bar overlaps open mobile drawer",
+    "A4 100k dense and 1k sustained Collection frame max 110ms exceeds 100ms"
+  ]
+}

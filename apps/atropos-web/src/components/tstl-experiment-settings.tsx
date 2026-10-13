@@ -3,6 +3,7 @@
 import type { useTstlLayout } from "./use-tstl-layout";
 import type { AppLocale } from "../urdr-port/src/locale";
 import type { TstlLayoutChoice } from "../lib/tstl-layout-preference";
+import { TstlMembershipFallback } from "./tstl-membership-fallback";
 import styles from "./tstl-experiment-settings.module.css";
 
 type Props = { locale: AppLocale; layout: ReturnType<typeof useTstlLayout> };
@@ -119,6 +120,14 @@ export function TstlExperimentSettings({ locale, layout }: Props) {
                 ? `적용 중: ${copy[layout.mode].label}`
                 : `Active: ${copy[layout.mode].label}`}
       </p>
+      {layout.artifact && (layout.mode === "B" || layout.mode === "C") ? (
+        <TstlMembershipFallback
+          key={layout.mode}
+          artifact={layout.artifact}
+          mode={layout.mode}
+          locale={locale}
+        />
+      ) : null}
       <details>
         <summary>{ko ? "실험 범위와 한계" : "Scope and limitations"}</summary>
         <p>

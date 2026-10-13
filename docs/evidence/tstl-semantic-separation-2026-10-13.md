@@ -260,3 +260,32 @@ Alignment verification: all 5 invariant tests and full workspace typecheck/lint
 pass. The full suite retains only the same clean-main hash failure (974 pass,
 2 skip). Local Chromium generated 120 controlled comparisons and passed 122
 check records. Public alignment verification is recorded with the final build.
+
+
+Final alignment source: `aa9db45900f18d62419e9567919d9648932606d4` (clean build).
+Pages commit: `4b7cd098c04bf802d1b3ea71fa44c492a7fdfe5a`.
+[Aligned metrics](tstl-separation-2026-10-13/aligned/metrics.json),
+[runtime](tstl-separation-2026-10-13/aligned/runtime.json), and
+[browser records](tstl-separation-2026-10-13/aligned/browser-results.json)
+are saved separately from the initial trial. The final gallery retains all
+36 production baselines and 130 diagnostic captures (166 total).
+
+Representative Aligned captures:
+[overview](tstl-separation-2026-10-13/aligned/desktop-Aligned-overview-fit-regions.png),
+[middle fit](tstl-separation-2026-10-13/aligned/desktop-Aligned-imjin-fit-regions.png),
+[middle fixed](tstl-separation-2026-10-13/aligned/desktop-Aligned-imjin-fixed-regions.png),
+[point-only detail](tstl-separation-2026-10-13/aligned/desktop-Aligned-detail-fit-points.png),
+[mobile middle](tstl-separation-2026-10-13/aligned/mobile-Aligned-imjin-fit-regions.png),
+[all Composites](tstl-separation-2026-10-13/aligned/desktop-Aligned-all-composites.png).
+The all-Composite capture makes overlapping header annotations especially clear;
+its leaf-label omission counter does not count or certify header collisions.
+
+The final measured Aligned placement is 28.7 ms and regenerated geometry 2.50 s.
+Whole offline comparison-build peak RSS is 843 MB, exceeding the earlier 250 MB
+research target; it includes baseline/A and four geometry variants, not one
+placement or browser memory. No runtime or memory acceptance is claimed.
+
+Final public Aligned preview passed **122 Chromium browser check records**,
+including shared identity/parent inspection, matching fixed cameras, point-only
+comparisons and pan. Production r56 pointer remained byte-identical after this
+second publication. All original Pages paths/blob SHAs remain unchanged.

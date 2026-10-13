@@ -1,0 +1,737 @@
+{
+  "physicalDevice": false,
+  "results": [
+    {
+      "name": "desktop-Bubble-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 381 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 381 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-overview-fit-regions",
+      "camera": "{\"x\":-4.575340661497762,\"y\":220900,\"spanX\":907.8775783292208,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 389 colliding/off-edge labels omitted · span X 908 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-overview-fit-points",
+      "camera": "{\"x\":-4.575340661497762,\"y\":220900,\"spanX\":907.8775783292208,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 389 colliding/off-edge labels omitted · span X 908 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 407,
+      "status": "A-Bubble · 407/430 leaves in camera · 354 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 407,
+      "status": "A-Bubble · 407/430 leaves in camera · 354 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-overview-fit-regions",
+      "camera": "{\"x\":274.99999999999994,\"y\":220900,\"spanX\":1476.16,\"spanY\":21000}",
+      "visible": 430,
+      "status": "A-Bubble · 430/430 leaves in camera · 387 colliding/off-edge labels omitted · span X 1476 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-overview-fit-points",
+      "camera": "{\"x\":274.99999999999994,\"y\":220900,\"spanX\":1476.16,\"spanY\":21000}",
+      "visible": 430,
+      "status": "A-Bubble · 430/430 leaves in camera · 387 colliding/off-edge labels omitted · span X 1476 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 207,
+      "status": "Lanes-wide · 207/430 leaves in camera · 167 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 207,
+      "status": "Lanes-wide · 207/430 leaves in camera · 167 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-overview-fit-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":3064.32,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes-wide · 430/430 leaves in camera · 380 colliding/off-edge labels omitted · span X 3064 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-overview-fit-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":3064.32,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes-wide · 430/430 leaves in camera · 380 colliding/off-edge labels omitted · span X 3064 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 244,
+      "status": "Lanes · 244/430 leaves in camera · 208 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 244,
+      "status": "Lanes · 244/430 leaves in camera · 208 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-overview-fit-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes · 430/430 leaves in camera · 373 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-overview-fit-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes · 430/430 leaves in camera · 373 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 349,
+      "status": "Aligned · 349/430 leaves in camera · 308 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 349,
+      "status": "Aligned · 349/430 leaves in camera · 308 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-overview-fit-regions",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Aligned · 430/430 leaves in camera · 389 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-overview-fit-points",
+      "camera": "{\"x\":0,\"y\":220900,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Aligned · 430/430 leaves in camera · 389 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 106 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 105 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-imjin-fit-regions",
+      "camera": "{\"x\":239.85973526817733,\"y\":223420,\"spanX\":352.26339802632435,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 105 colliding/off-edge labels omitted · span X 352 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-imjin-fit-points",
+      "camera": "{\"x\":239.85973526817733,\"y\":223420,\"spanX\":352.26339802632435,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 104 colliding/off-edge labels omitted · span X 352 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 93,
+      "status": "A-Bubble · 93/430 leaves in camera · 60 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 93,
+      "status": "A-Bubble · 93/430 leaves in camera · 60 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-imjin-fit-regions",
+      "camera": "{\"x\":335,\"y\":223420,\"spanX\":1341.7600000000002,\"spanY\":1800}",
+      "visible": 150,
+      "status": "A-Bubble · 150/430 leaves in camera · 105 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-imjin-fit-points",
+      "camera": "{\"x\":335,\"y\":223420,\"spanX\":1341.7600000000002,\"spanY\":1800}",
+      "visible": 150,
+      "status": "A-Bubble · 150/430 leaves in camera · 104 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 72,
+      "status": "Lanes-wide · 72/430 leaves in camera · 44 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 72,
+      "status": "Lanes-wide · 72/430 leaves in camera · 44 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-imjin-fit-regions",
+      "camera": "{\"x\":25.999999999999947,\"y\":223420,\"spanX\":2714.88,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes-wide · 150/430 leaves in camera · 109 colliding/off-edge labels omitted · span X 2715 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-imjin-fit-points",
+      "camera": "{\"x\":25.999999999999947,\"y\":223420,\"spanX\":2714.88,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes-wide · 150/430 leaves in camera · 107 colliding/off-edge labels omitted · span X 2715 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 91,
+      "status": "Lanes · 91/430 leaves in camera · 61 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 91,
+      "status": "Lanes · 91/430 leaves in camera · 61 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-imjin-fit-regions",
+      "camera": "{\"x\":14.000000000000016,\"y\":223420,\"spanX\":1601.6000000000001,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes · 150/430 leaves in camera · 110 colliding/off-edge labels omitted · span X 1602 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-imjin-fit-points",
+      "camera": "{\"x\":14.000000000000016,\"y\":223420,\"spanX\":1601.6000000000001,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes · 150/430 leaves in camera · 109 colliding/off-edge labels omitted · span X 1602 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 114,
+      "status": "Aligned · 114/430 leaves in camera · 76 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420,\"spanX\":650,\"spanY\":1800}",
+      "visible": 114,
+      "status": "Aligned · 114/430 leaves in camera · 76 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-imjin-fit-regions",
+      "camera": "{\"x\":144.19736097565723,\"y\":223420,\"spanX\":888.8379114145279,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Aligned · 150/430 leaves in camera · 101 colliding/off-edge labels omitted · span X 889 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-imjin-fit-points",
+      "camera": "{\"x\":144.19736097565723,\"y\":223420,\"spanX\":888.8379114145279,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Aligned · 150/430 leaves in camera · 101 colliding/off-edge labels omitted · span X 889 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 44 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 44 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-detail-fit-regions",
+      "camera": "{\"x\":248.3058036719901,\"y\":222950,\"spanX\":312.0011716527241,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 45 colliding/off-edge labels omitted · span X 312 · aa9db459"
+    },
+    {
+      "name": "desktop-Bubble-detail-fit-points",
+      "camera": "{\"x\":248.3058036719901,\"y\":222950,\"spanX\":312.0011716527241,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 45 colliding/off-edge labels omitted · span X 312 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 29,
+      "status": "A-Bubble · 29/430 leaves in camera · 17 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 29,
+      "status": "A-Bubble · 29/430 leaves in camera · 17 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-detail-fit-regions",
+      "camera": "{\"x\":335,\"y\":222950,\"spanX\":1341.7600000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "A-Bubble · 82/430 leaves in camera · 44 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "desktop-A-Bubble-detail-fit-points",
+      "camera": "{\"x\":335,\"y\":222950,\"spanX\":1341.7600000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "A-Bubble · 82/430 leaves in camera · 44 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 23,
+      "status": "Lanes-wide · 23/430 leaves in camera · 14 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 23,
+      "status": "Lanes-wide · 23/430 leaves in camera · 14 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-detail-fit-regions",
+      "camera": "{\"x\":-19.99999999999993,\"y\":222950,\"spanX\":2611.84,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes-wide · 82/430 leaves in camera · 45 colliding/off-edge labels omitted · span X 2612 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-wide-detail-fit-points",
+      "camera": "{\"x\":-19.99999999999993,\"y\":222950,\"spanX\":2611.84,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes-wide · 82/430 leaves in camera · 45 colliding/off-edge labels omitted · span X 2612 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 40,
+      "status": "Lanes · 40/430 leaves in camera · 23 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 40,
+      "status": "Lanes · 40/430 leaves in camera · 23 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-detail-fit-regions",
+      "camera": "{\"x\":-5.999999999999954,\"y\":222950,\"spanX\":1556.8000000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes · 82/430 leaves in camera · 46 colliding/off-edge labels omitted · span X 1557 · aa9db459"
+    },
+    {
+      "name": "desktop-Lanes-detail-fit-points",
+      "camera": "{\"x\":-5.999999999999954,\"y\":222950,\"spanX\":1556.8000000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes · 82/430 leaves in camera · 46 colliding/off-edge labels omitted · span X 1557 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 43,
+      "status": "Aligned · 43/430 leaves in camera · 26 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950,\"spanX\":430,\"spanY\":500}",
+      "visible": 43,
+      "status": "Aligned · 43/430 leaves in camera · 26 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-detail-fit-regions",
+      "camera": "{\"x\":175.6821241191816,\"y\":222950,\"spanX\":818.3120419730333,\"spanY\":500}",
+      "visible": 82,
+      "status": "Aligned · 82/430 leaves in camera · 43 colliding/off-edge labels omitted · span X 818 · aa9db459"
+    },
+    {
+      "name": "desktop-Aligned-detail-fit-points",
+      "camera": "{\"x\":175.6821241191816,\"y\":222950,\"spanX\":818.3120419730333,\"spanY\":500}",
+      "visible": 82,
+      "status": "Aligned · 82/430 leaves in camera · 43 colliding/off-edge labels omitted · span X 818 · aa9db459"
+    },
+    {
+      "profile": "desktop",
+      "errors": [],
+      "pan": true,
+      "imjinDirectParents": true
+    },
+    {
+      "name": "mobile-Bubble-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 412 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 412 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-overview-fit-regions",
+      "camera": "{\"x\":-4.575340661497806,\"y\":220899.99999999997,\"spanX\":907.8775783292209,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 415 colliding/off-edge labels omitted · span X 908 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-overview-fit-points",
+      "camera": "{\"x\":-4.575340661497806,\"y\":220899.99999999997,\"spanX\":907.8775783292209,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Bubble · 430/430 leaves in camera · 415 colliding/off-edge labels omitted · span X 908 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 407,
+      "status": "A-Bubble · 407/430 leaves in camera · 379 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 407,
+      "status": "A-Bubble · 407/430 leaves in camera · 379 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-overview-fit-regions",
+      "camera": "{\"x\":275,\"y\":220899.99999999997,\"spanX\":1476.16,\"spanY\":21000}",
+      "visible": 430,
+      "status": "A-Bubble · 430/430 leaves in camera · 405 colliding/off-edge labels omitted · span X 1476 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-overview-fit-points",
+      "camera": "{\"x\":275,\"y\":220899.99999999997,\"spanX\":1476.16,\"spanY\":21000}",
+      "visible": 430,
+      "status": "A-Bubble · 430/430 leaves in camera · 404 colliding/off-edge labels omitted · span X 1476 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 207,
+      "status": "Lanes-wide · 207/430 leaves in camera · 189 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 207,
+      "status": "Lanes-wide · 207/430 leaves in camera · 188 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-overview-fit-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":3064.3199999999997,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes-wide · 430/430 leaves in camera · 399 colliding/off-edge labels omitted · span X 3064 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-overview-fit-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":3064.3199999999997,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes-wide · 430/430 leaves in camera · 399 colliding/off-edge labels omitted · span X 3064 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 244,
+      "status": "Lanes · 244/430 leaves in camera · 224 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 244,
+      "status": "Lanes · 244/430 leaves in camera · 224 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-overview-fit-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes · 430/430 leaves in camera · 400 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-overview-fit-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Lanes · 430/430 leaves in camera · 400 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-overview-fixed-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 349,
+      "status": "Aligned · 349/430 leaves in camera · 327 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-overview-fixed-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1050,\"spanY\":21000}",
+      "visible": 349,
+      "status": "Aligned · 349/430 leaves in camera · 327 colliding/off-edge labels omitted · span X 1050 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-overview-fit-regions",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Aligned · 430/430 leaves in camera · 406 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-overview-fit-points",
+      "camera": "{\"x\":0,\"y\":220899.99999999997,\"spanX\":1825.6000000000001,\"spanY\":21000}",
+      "visible": 430,
+      "status": "Aligned · 430/430 leaves in camera · 406 colliding/off-edge labels omitted · span X 1826 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 124 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 123 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-imjin-fit-regions",
+      "camera": "{\"x\":239.85973526817736,\"y\":223420.00000000003,\"spanX\":352.26339802632435,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 126 colliding/off-edge labels omitted · span X 352 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-imjin-fit-points",
+      "camera": "{\"x\":239.85973526817736,\"y\":223420.00000000003,\"spanX\":352.26339802632435,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Bubble · 150/430 leaves in camera · 124 colliding/off-edge labels omitted · span X 352 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 93,
+      "status": "A-Bubble · 93/430 leaves in camera · 69 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 93,
+      "status": "A-Bubble · 93/430 leaves in camera · 68 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-imjin-fit-regions",
+      "camera": "{\"x\":335,\"y\":223420.00000000003,\"spanX\":1341.7600000000002,\"spanY\":1800}",
+      "visible": 150,
+      "status": "A-Bubble · 150/430 leaves in camera · 123 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-imjin-fit-points",
+      "camera": "{\"x\":335,\"y\":223420.00000000003,\"spanX\":1341.7600000000002,\"spanY\":1800}",
+      "visible": 150,
+      "status": "A-Bubble · 150/430 leaves in camera · 121 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 72,
+      "status": "Lanes-wide · 72/430 leaves in camera · 51 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 72,
+      "status": "Lanes-wide · 72/430 leaves in camera · 50 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-imjin-fit-regions",
+      "camera": "{\"x\":26.000000000000036,\"y\":223420.00000000003,\"spanX\":2714.88,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes-wide · 150/430 leaves in camera · 128 colliding/off-edge labels omitted · span X 2715 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-imjin-fit-points",
+      "camera": "{\"x\":26.000000000000036,\"y\":223420.00000000003,\"spanX\":2714.88,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes-wide · 150/430 leaves in camera · 126 colliding/off-edge labels omitted · span X 2715 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 91,
+      "status": "Lanes · 91/430 leaves in camera · 71 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 91,
+      "status": "Lanes · 91/430 leaves in camera · 71 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-imjin-fit-regions",
+      "camera": "{\"x\":13.999999999999991,\"y\":223420.00000000003,\"spanX\":1601.6000000000001,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes · 150/430 leaves in camera · 128 colliding/off-edge labels omitted · span X 1602 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-imjin-fit-points",
+      "camera": "{\"x\":13.999999999999991,\"y\":223420.00000000003,\"spanX\":1601.6000000000001,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Lanes · 150/430 leaves in camera · 125 colliding/off-edge labels omitted · span X 1602 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-imjin-fixed-regions",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 114,
+      "status": "Aligned · 114/430 leaves in camera · 88 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-imjin-fixed-points",
+      "camera": "{\"x\":260,\"y\":223420.00000000003,\"spanX\":650,\"spanY\":1800}",
+      "visible": 114,
+      "status": "Aligned · 114/430 leaves in camera · 88 colliding/off-edge labels omitted · span X 650 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-imjin-fit-regions",
+      "camera": "{\"x\":144.19736097565726,\"y\":223420.00000000003,\"spanX\":888.8379114145279,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Aligned · 150/430 leaves in camera · 119 colliding/off-edge labels omitted · span X 889 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-imjin-fit-points",
+      "camera": "{\"x\":144.19736097565726,\"y\":223420.00000000003,\"spanX\":888.8379114145279,\"spanY\":1800}",
+      "visible": 150,
+      "status": "Aligned · 150/430 leaves in camera · 117 colliding/off-edge labels omitted · span X 889 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 64 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 64 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-detail-fit-regions",
+      "camera": "{\"x\":248.3058036719901,\"y\":222950.00000000003,\"spanX\":312.0011716527241,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 64 colliding/off-edge labels omitted · span X 312 · aa9db459"
+    },
+    {
+      "name": "mobile-Bubble-detail-fit-points",
+      "camera": "{\"x\":248.3058036719901,\"y\":222950.00000000003,\"spanX\":312.0011716527241,\"spanY\":500}",
+      "visible": 82,
+      "status": "Bubble · 82/430 leaves in camera · 64 colliding/off-edge labels omitted · span X 312 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 29,
+      "status": "A-Bubble · 29/430 leaves in camera · 22 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 29,
+      "status": "A-Bubble · 29/430 leaves in camera · 21 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-detail-fit-regions",
+      "camera": "{\"x\":335,\"y\":222950.00000000003,\"spanX\":1341.7600000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "A-Bubble · 82/430 leaves in camera · 59 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "mobile-A-Bubble-detail-fit-points",
+      "camera": "{\"x\":335,\"y\":222950.00000000003,\"spanX\":1341.7600000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "A-Bubble · 82/430 leaves in camera · 58 colliding/off-edge labels omitted · span X 1342 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 23,
+      "status": "Lanes-wide · 23/430 leaves in camera · 18 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 23,
+      "status": "Lanes-wide · 23/430 leaves in camera · 18 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-detail-fit-regions",
+      "camera": "{\"x\":-20.000000000000025,\"y\":222950.00000000003,\"spanX\":2611.84,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes-wide · 82/430 leaves in camera · 65 colliding/off-edge labels omitted · span X 2612 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-wide-detail-fit-points",
+      "camera": "{\"x\":-20.000000000000025,\"y\":222950.00000000003,\"spanX\":2611.84,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes-wide · 82/430 leaves in camera · 64 colliding/off-edge labels omitted · span X 2612 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 40,
+      "status": "Lanes · 40/430 leaves in camera · 29 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 40,
+      "status": "Lanes · 40/430 leaves in camera · 28 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-detail-fit-regions",
+      "camera": "{\"x\":-5.999999999999968,\"y\":222950.00000000003,\"spanX\":1556.8000000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes · 82/430 leaves in camera · 64 colliding/off-edge labels omitted · span X 1557 · aa9db459"
+    },
+    {
+      "name": "mobile-Lanes-detail-fit-points",
+      "camera": "{\"x\":-5.999999999999968,\"y\":222950.00000000003,\"spanX\":1556.8000000000002,\"spanY\":500}",
+      "visible": 82,
+      "status": "Lanes · 82/430 leaves in camera · 63 colliding/off-edge labels omitted · span X 1557 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-detail-fixed-regions",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 43,
+      "status": "Aligned · 43/430 leaves in camera · 33 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-detail-fixed-points",
+      "camera": "{\"x\":280,\"y\":222950.00000000003,\"spanX\":430,\"spanY\":500}",
+      "visible": 43,
+      "status": "Aligned · 43/430 leaves in camera · 31 colliding/off-edge labels omitted · span X 430 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-detail-fit-regions",
+      "camera": "{\"x\":175.68212411918162,\"y\":222950.00000000003,\"spanX\":818.3120419730333,\"spanY\":500}",
+      "visible": 82,
+      "status": "Aligned · 82/430 leaves in camera · 57 colliding/off-edge labels omitted · span X 818 · aa9db459"
+    },
+    {
+      "name": "mobile-Aligned-detail-fit-points",
+      "camera": "{\"x\":175.68212411918162,\"y\":222950.00000000003,\"spanX\":818.3120419730333,\"spanY\":500}",
+      "visible": 82,
+      "status": "Aligned · 82/430 leaves in camera · 56 colliding/off-edge labels omitted · span X 818 · aa9db459"
+    },
+    {
+      "profile": "mobile",
+      "errors": [],
+      "pan": true,
+      "imjinDirectParents": true
+    }
+  ]
+}

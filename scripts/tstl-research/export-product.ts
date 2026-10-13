@@ -16,8 +16,13 @@ import {
 import type { BaselineArtifact } from "./baseline.js";
 import type {
   TstlExperimentArtifact,
+  TstlExperimentCandidate,
   TstlExperimentBox
 } from "../../apps/atropos-web/src/lib/tstl-experiment-types.js";
+
+import { buildCandidateB } from "./candidate-b.js";
+import { buildCandidateC } from "./candidate-c.js";
+import type { TstlAlternativeGeometry } from "./candidate-bc-types.js";
 
 export function exportProductExperiment(
   baseline: BaselineArtifact,
@@ -65,26 +70,120 @@ export function exportProductExperiment(
       maxX: Math.max(...xs)
     };
   }
-  const all = Object.values(contoursByCompositeId).flat(2);
-  const bounds = {
-    minX: Math.min(
-      baseline.bounds.minX,
-      ...comparison.a.events.map((event) => event.x),
-      ...all.map((point) => point.x)
-    ),
-    maxX: Math.max(
-      baseline.bounds.maxX,
-      ...comparison.a.events.map((event) => event.x),
-      ...all.map((point) => point.x)
-    ),
-    minY: Math.min(baseline.bounds.minY, ...all.map((point) => point.y)),
-    maxY: Math.max(baseline.bounds.maxY, ...all.map((point) => point.y))
+  const a: TstlExperimentCandidate = {
+    algorithmVersion: "tstl-a-restricted-full-world/1",
+    xByEventId,
+    contoursByCompositeId,
+    worldBoundsByCompositeId,
+    noAreaCompositeIds: comparison.projection.compositeIds.filter(
+      (id) => !contoursByCompositeId[id]!.length
+    )
   };
+  const alternatives = [
+    buildCandidateB(comparison),
+    buildCandidateC(comparison)
+  ];
+  const convert = (value: TstlAlternativeGeometry): TstlExperimentCandidate => {
+    const sourcePoint = (point: { x: number; y: number }) => ({
+      x: point.x,
+      y: point.y / frame.scale + frame.sourceYOrigin
+    });
+    for (const id of comparison.projection.compositeIds)
+      if (!value.contoursByCompositeId[id] || !value.tracesByCompositeId[id])
+        throw Error("tstl_alternative_owner_missing");
+    const seen = new Set<string>();
+    for (const membership of value.memberships) {
+      const key = `${membership.compositeId}:${membership.eventId}`;
+      if (
+        seen.has(key) ||
+        !comparison.projection.ancestors[membership.eventId]?.includes(
+          membership.compositeId
+        ) ||
+        (membership.status === "list" && !membership.reason)
+      )
+        throw Error("tstl_alternative_membership_invalid");
+      seen.add(key);
+    }
+    for (const id of comparison.projection.leafIds)
+      for (const owner of comparison.projection.ancestors[id]!)
+        if (!seen.has(`${owner}:${id}`))
+          throw Error("tstl_alternative_membership_missing");
+    const contours = Object.fromEntries(
+      Object.entries(value.contoursByCompositeId).map(([id, rings]) => [
+        id,
+        rings.map((ring) => ring.map(sourcePoint))
+      ])
+    );
+    const traces = Object.fromEntries(
+      Object.entries(value.tracesByCompositeId).map(([id, paths]) => [
+        id,
+        paths.map((trace) => ({
+          ...trace,
+          points: trace.points.map(sourcePoint)
+        }))
+      ])
+    );
+    return {
+      algorithmVersion: value.algorithmVersion,
+      xByEventId,
+      contoursByCompositeId: contours,
+      worldBoundsByCompositeId,
+      noAreaCompositeIds: comparison.projection.compositeIds.filter(
+        (id) => !contours[id]!.length
+      ),
+      tracesByCompositeId: traces,
+      memberships: value.memberships,
+      diagnostics: {
+        ...value.diagnostics,
+        leafMemberships: value.memberships.filter((m) =>
+          comparison.projection.leafIds.includes(m.eventId)
+        ).length,
+        leafRoutedMemberships: value.memberships.filter(
+          (m) =>
+            m.status === "route" &&
+            comparison.projection.leafIds.includes(m.eventId)
+        ).length,
+        leafListMemberships: value.memberships.filter(
+          (m) =>
+            m.status === "list" &&
+            comparison.projection.leafIds.includes(m.eventId)
+        ).length
+      },
+      limitations: value.limitations
+    };
+  };
+  const b = convert(alternatives[0]!);
+  const c = convert(alternatives[1]!);
+  const all = [a, b, c].flatMap((candidate) => [
+    ...Object.values(candidate.contoursByCompositeId).flat(2),
+    ...Object.values(candidate.tracesByCompositeId ?? {}).flatMap((traces) =>
+      traces.flatMap((trace) => trace.points)
+    )
+  ]);
+  const bounds = all.reduce<TstlExperimentBox>(
+    (box, point) => ({
+      minX: Math.min(box.minX, point.x),
+      maxX: Math.max(box.maxX, point.x),
+      minY: Math.min(box.minY, point.y),
+      maxY: Math.max(box.maxY, point.y)
+    }),
+    {
+      ...baseline.bounds,
+      minX: Math.min(
+        baseline.bounds.minX,
+        ...comparison.a.events.map((event) => event.x)
+      ),
+      maxX: Math.max(
+        baseline.bounds.maxX,
+        ...comparison.a.events.map((event) => event.x)
+      )
+    }
+  );
   const noAreaCompositeIds = comparison.projection.compositeIds.filter(
     (id) => !contoursByCompositeId[id]!.length
   );
   return {
-    formatVersion: "tstl-product-experiment/1",
+    formatVersion: "tstl-product-experiment/2",
     source: {
       ...comparison.source,
       fixtureSha256: OBSERVED_FIXTURE_SHA256,
@@ -96,13 +195,9 @@ export function exportProductExperiment(
       eventIds: [...collection.eventIds]
     })),
     b0Primitives: baseline.primitives,
-    a: {
-      algorithmVersion: "tstl-a-restricted-full-world/1",
-      xByEventId,
-      contoursByCompositeId,
-      worldBoundsByCompositeId,
-      noAreaCompositeIds
-    },
+    a,
+    b,
+    c,
     stats: {
       events: comparison.projection.eventIds.length,
       composites: comparison.projection.compositeIds.length,
@@ -117,7 +212,8 @@ export function exportProductExperiment(
     limitations: [
       "Experimental fills are visible for evaluation; they are not certified membership areas.",
       "The restricted A model optimizes X only; its single-run contours leave multi-run bands empty.",
-      "Every Composite uses the same candidate construction; Composites without an area use a point.",
+      "B/C use exactly A Event coordinates; only geometry changes. Routing is bounded and failed links retain exact membership lists.",
+      "B is a restricted terminal forest, without a split/rejoin-cycle or global Steiner-optimality claim. C uses open spines and membership traces.",
       "Original Event Y and Composite temporal bounds are preserved. The scalar fixture does not establish the original temporal semantics.",
       "History revision 56 is frozen. Detail reads require the served revision to remain 56."
     ]
@@ -150,7 +246,9 @@ if (
       target,
       sha256: hash,
       bytes: Buffer.byteLength(body),
-      stats: artifact.stats
+      stats: artifact.stats,
+      b: artifact.b.diagnostics,
+      c: artifact.c.diagnostics
     })
   );
 }

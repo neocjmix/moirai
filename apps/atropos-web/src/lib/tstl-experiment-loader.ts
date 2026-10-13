@@ -4,6 +4,7 @@ import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import { renderTileViewport } from "./v5-render-viewport";
 import type { TstlExperimentClient } from "./tstl-experiment-client";
 import {
+  tstlCandidate,
   TSTL_EXPERIMENT_WORLD_ID,
   TSTL_EXPERIMENT_REVISION,
   TSTL_EXPERIMENT_TIME_SYSTEM_ID,
@@ -89,15 +90,18 @@ export function createTstlGraphReadLoader(input: {
               : []
           )
         );
-        if (input.mode === "A")
+        if (input.mode !== "B0") {
+          const candidate = tstlCandidate(artifact, input.mode);
           value.regions = value.regions.map((region) =>
             region.geometryKind !== "region"
               ? region
               : {
                   ...region,
                   preparedWorldRings:
-                    artifact.a.contoursByCompositeId[region.id]!,
+                    candidate.contoursByCompositeId[region.id]!,
                   preparedContourMode: "fixed" as const,
+                  preparedWorldTraces:
+                    candidate.tracesByCompositeId?.[region.id] ?? [],
                   ...(anchors.has(region.id)
                     ? { preparedAnchor: anchors.get(region.id)! }
                     : {}),
@@ -109,6 +113,7 @@ export function createTstlGraphReadLoader(input: {
                   diagnostics: []
                 }
           );
+        }
         return value;
       }),
     loadEventDetail: (locale, eventId, signal) =>

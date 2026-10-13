@@ -2,22 +2,27 @@
   "node": "v22.22.0",
   "platform": "darwin",
   "architecture": "arm64",
-  "peakRssBytes": 844349440,
-  "scope": "Offline r56 baseline + A + three regenerated Bubble variants; no browser/device performance claim",
+  "peakRssBytes": 843137024,
+  "scope": "Offline r56 baseline + A + four regenerated Bubble variants; no browser/device performance claim",
   "runs": {
     "originalA": {},
     "Lanes-wide": {
-      "placementMs": 4.661833999999999,
-      "regionMs": 3093.2367090000002,
+      "placementMs": 5.2178329999997,
+      "regionMs": 3077.4720829999997,
       "width": 2750
     },
     "Lanes": {
-      "placementMs": 2.3744580000002316,
-      "regionMs": 2331.347667000001,
+      "placementMs": 2.342583999999988,
+      "regionMs": 2287.188958999999,
+      "width": 1640
+    },
+    "Aligned": {
+      "placementMs": 28.690040999999837,
+      "regionMs": 2499.47775,
       "width": 1640
     },
     "A-Bubble": {
-      "regionMs": 2794.3089999999993
+      "regionMs": 2734.015875000001
     }
   }
 }

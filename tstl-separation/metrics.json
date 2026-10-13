@@ -217,6 +217,37 @@
       "semanticCertifiedAreas": 0
     }
   },
+  "Aligned": {
+    "binSize": 100,
+    "peerPairs": 1043,
+    "activePeerWindows": 166,
+    "overlappingPeerWindows": 24,
+    "totalOverlapWidth": 960.4135000245627,
+    "meanCenterTravel": 58.3831736772878,
+    "transitions": 261,
+    "leafWidth": 1630,
+    "nominalCollisions": 0,
+    "definition": "Peers share a direct contains parent or are roots, excluding ancestry. Per 100-source-unit window, compare their exclusive leaf envelopes with nominal half-width 2.5. Travel is mean center change across at most three bins. These proxies do not measure human comprehension, true region overlap, labels, or all independent-axis zooms.",
+    "geometry": {
+      "totalComposites": 109,
+      "leafMemberships": 1390,
+      "leafAreaMemberships": 1390,
+      "leafListMemberships": 0,
+      "skeletonEdges": 1281,
+      "routedSkeletonEdges": 1281,
+      "failedSkeletonEdges": 0,
+      "components": 109,
+      "holes": 424,
+      "connectedComposites": 109,
+      "multiComponentComposites": 0,
+      "nonmemberIntersections": 0,
+      "selfIntersections": 0,
+      "vertices": 31768,
+      "segmentChecks": 518195,
+      "budgetExhausted": 0,
+      "semanticCertifiedAreas": 0
+    }
+  },
   "A-Bubble": {
     "binSize": 100,
     "peerPairs": 1043,

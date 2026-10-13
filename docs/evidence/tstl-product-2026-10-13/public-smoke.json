@@ -1,0 +1,502 @@
+{
+  "format": "tstl-product-public-smoke/1",
+  "verifiedAt": "2026-10-13T00:17:57.432441+00:00",
+  "baseUrl": "https://moirai-production-8ed1.up.railway.app",
+  "graphPath": "/graph/v5",
+  "deployedSha": "131611f63327e029bd14f46d31707946cd40568e",
+  "source": {
+    "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+    "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+    "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+    "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+    "temporalProvenance": "legacy-scalar-only"
+  },
+  "artifactSha256": "be1265468d3f0a32c939cf0f335df6b1050059241c4893f0a52806563045a65b",
+  "checks": [
+    "Fresh browser keeps current layout without fetching the experimental artifact",
+    "Candidate A renders fixed disjoint areas through actual WebGL meshes",
+    "Every presented A path vertex matches its frozen source contour under the paint camera",
+    "B0/A switching preserves camera and selected Event identity with its drawer open",
+    "Independent X-only and Y-only production pinch handlers preserve the other axis",
+    "Collection selection changes 7 to 6 and restores 7",
+    "A/B0, camera and Collection changes reuse one frozen artifact request during the visit",
+    "Wide zoom changes production density and representation",
+    "Settings selection persists across navigation and a fresh page load",
+    "Returning to current removes all fixed candidate contours",
+    "Capture waits for idle scene/worker queues, completed stages and committed/live camera equality"
+  ],
+  "profiles": [
+    {
+      "name": "desktop-chromium",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "passed": true,
+      "observedDeploymentSha": "131611f63327e029bd14f46d31707946cd40568e",
+      "candidateReadyMilliseconds": 1489.85,
+      "painter": {
+        "backend": "webgl",
+        "regions": 50,
+        "meshCount": 50,
+        "paints": 19
+      },
+      "imjinCandidateCounts": {
+        "sourceEntities": 84,
+        "worldRegions": 53,
+        "regionCandidates": 53,
+        "chartRegions": 53,
+        "presentedRegions": 53,
+        "fixedContourRegions": 50,
+        "fixedContourRings": 968,
+        "pointCandidates": 84,
+        "paintedPoints": 84,
+        "stageActive": false,
+        "svgPaths": 68,
+        "svgTexts": 24,
+        "svgTargets": 21,
+        "sourceRegions": 53,
+        "sourceEdges": 16,
+        "projectedPoints": 84,
+        "fadeRegions": 53,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "wideCandidateCounts": {
+        "sourceEntities": 102,
+        "worldRegions": 109,
+        "regionCandidates": 109,
+        "chartRegions": 109,
+        "presentedRegions": 109,
+        "fixedContourRegions": 105,
+        "fixedContourRings": 1207,
+        "pointCandidates": 102,
+        "paintedPoints": 99,
+        "stageActive": false,
+        "svgPaths": 130,
+        "svgTexts": 21,
+        "svgTargets": 18,
+        "sourceRegions": 109,
+        "sourceEdges": 0,
+        "projectedPoints": 102,
+        "fadeRegions": 109,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "selectedEvent": {
+        "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+        "kind": "composite",
+        "x": 464.3736572265625,
+        "y": 144.63780212402344
+      },
+      "collectionCounts": {
+        "initial": 7,
+        "off": 6,
+        "restored": 7
+      },
+      "settledScene": {
+        "sceneJobs": {
+          "generation": 32,
+          "pending": 0,
+          "discarded": 3
+        },
+        "workerJobs": {
+          "running": 0,
+          "pending": 0,
+          "failed": false
+        },
+        "view": {
+          "x": -256,
+          "y": -8415.238095238095,
+          "scaleX": 0.8533333333333334,
+          "scaleY": 0.0380952380952381
+        },
+        "liveView": {
+          "x": -256,
+          "y": -8415.238095238095,
+          "scaleX": 0.8533333333333334,
+          "scaleY": 0.0380952380952381
+        }
+      },
+      "xOnlyPinch": {
+        "before": {
+          "x": -274.2857142857143,
+          "y": -99297.77777777777,
+          "scaleX": 0.9142857142857143,
+          "scaleY": 0.4444444444444444
+        },
+        "after": {
+          "scaleX": 1.0709344583522207,
+          "scaleY": 0.4444444444444444,
+          "x": -321.2803375056662,
+          "y": -99297.77777777777
+        }
+      },
+      "yOnlyPinch": {
+        "before": {
+          "scaleX": 1.0709344583522207,
+          "scaleY": 0.4444444444444444,
+          "x": -321.2803375056662,
+          "y": -99297.77777777777
+        },
+        "after": {
+          "scaleX": 1.0709344583522207,
+          "scaleY": 0.5234821449460314,
+          "x": -321.2803375056662,
+          "y": -116953.53546662428
+        }
+      },
+      "errors": [],
+      "failedResponses": [],
+      "screenshots": [
+        {
+          "file": "desktop-chromium-A-imjin.png",
+          "sha256": "a465f93c180244d57910f98f35e5c83d8418d0998035878d2f55483379c3a913",
+          "bytes": 143189
+        },
+        {
+          "file": "desktop-chromium-A-world.png",
+          "sha256": "a4aeb88dddb2adbab4558c6dd7c61bf5b04665b2d2d7c7556b516fbfa45499be",
+          "bytes": 139502
+        },
+        {
+          "file": "desktop-chromium-B0-imjin.png",
+          "sha256": "32866b7a1d31f3bd029c2c88b1e79d935878452d0e753d1300eb16c5558b5edb",
+          "bytes": 157014
+        },
+        {
+          "file": "desktop-chromium-B0-world.png",
+          "sha256": "ad58dd936d942c9bcef52bd14248de3de187446545b4660edd4817fa5521dfc1",
+          "bytes": 146286
+        },
+        {
+          "file": "desktop-chromium-selected-event.png",
+          "sha256": "d9b1b2c7e41649f989d8231e72b72f49d5989f6e4a6b6c6d79c20ab9ff9814bc",
+          "bytes": 149511
+        },
+        {
+          "file": "desktop-chromium-settings.png",
+          "sha256": "041f473c1e31496bf5c2d023f678d16e3a3dc976ec0ed9168be29de4dc3d6197",
+          "bytes": 71275
+        }
+      ]
+    },
+    {
+      "name": "mobile-chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "passed": true,
+      "observedDeploymentSha": "131611f63327e029bd14f46d31707946cd40568e",
+      "candidateReadyMilliseconds": 1356.83,
+      "painter": {
+        "backend": "webgl",
+        "regions": 49,
+        "meshCount": 49,
+        "paints": 22
+      },
+      "imjinCandidateCounts": {
+        "sourceEntities": 84,
+        "worldRegions": 53,
+        "regionCandidates": 53,
+        "chartRegions": 53,
+        "presentedRegions": 53,
+        "fixedContourRegions": 50,
+        "fixedContourRings": 968,
+        "pointCandidates": 84,
+        "paintedPoints": 84,
+        "stageActive": false,
+        "svgPaths": 63,
+        "svgTexts": 15,
+        "svgTargets": 14,
+        "sourceRegions": 53,
+        "sourceEdges": 16,
+        "projectedPoints": 84,
+        "fadeRegions": 53,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "wideCandidateCounts": {
+        "sourceEntities": 106,
+        "worldRegions": 105,
+        "regionCandidates": 105,
+        "chartRegions": 105,
+        "presentedRegions": 105,
+        "fixedContourRegions": 101,
+        "fixedContourRings": 1200,
+        "pointCandidates": 106,
+        "paintedPoints": 91,
+        "stageActive": false,
+        "svgPaths": 115,
+        "svgTexts": 10,
+        "svgTargets": 8,
+        "sourceRegions": 105,
+        "sourceEdges": 0,
+        "projectedPoints": 106,
+        "fadeRegions": 105,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "selectedEvent": {
+        "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+        "kind": "composite",
+        "x": 151.9185447692871,
+        "y": 174.7478790283203
+      },
+      "collectionCounts": {
+        "initial": 7,
+        "off": 6,
+        "restored": 7
+      },
+      "settledScene": {
+        "sceneJobs": {
+          "generation": 33,
+          "pending": 0,
+          "discarded": 3
+        },
+        "workerJobs": {
+          "running": 0,
+          "pending": 0,
+          "failed": false
+        },
+        "view": {
+          "x": -78,
+          "y": -8878.076190476191,
+          "scaleX": 0.26,
+          "scaleY": 0.04019047619047619
+        },
+        "liveView": {
+          "x": -78,
+          "y": -8878.076190476191,
+          "scaleX": 0.26,
+          "scaleY": 0.04019047619047619
+        }
+      },
+      "xOnlyPinch": {
+        "before": {
+          "x": -83.57142857142857,
+          "y": -104759.15555555555,
+          "scaleX": 0.2785714285714286,
+          "scaleY": 0.4688888888888889
+        },
+        "after": {
+          "scaleX": 0.3263003427791923,
+          "scaleY": 0.4688888888888889,
+          "x": -97.89010283375768,
+          "y": -104759.15555555555
+        }
+      },
+      "yOnlyPinch": {
+        "before": {
+          "scaleX": 0.3263003427791923,
+          "scaleY": 0.4688888888888889,
+          "x": -97.89010283375768,
+          "y": -104759.15555555555
+        },
+        "after": {
+          "scaleX": 0.3263003427791923,
+          "scaleY": 0.5522736629180631,
+          "x": -97.89010283375768,
+          "y": -123385.9799172886
+        }
+      },
+      "errors": [],
+      "failedResponses": [],
+      "screenshots": [
+        {
+          "file": "mobile-chromium-A-imjin.png",
+          "sha256": "f80007299fb7b779f6c00c949e793edff4b49267f7ee9565b6c80b8ec00674b4",
+          "bytes": 90375
+        },
+        {
+          "file": "mobile-chromium-A-world.png",
+          "sha256": "ece4f18577e1c6edd8ce364d6c1de76c3b947021082d5147cb7f80581bb114af",
+          "bytes": 80109
+        },
+        {
+          "file": "mobile-chromium-B0-imjin.png",
+          "sha256": "8d2c6398a51037d4e939c7b9e4db46bb8685a97f7b1d8823299b8ed6d61f531a",
+          "bytes": 97871
+        },
+        {
+          "file": "mobile-chromium-B0-world.png",
+          "sha256": "e0d094651aa2b79e41d52ff2f7f85e7383c2c7f34f0c05dd2694d180ece904d6",
+          "bytes": 94352
+        },
+        {
+          "file": "mobile-chromium-selected-event.png",
+          "sha256": "425113646e8893b94b7ded744dfa7b9bed56d69b09a55f369ed198ed51184984",
+          "bytes": 91987
+        },
+        {
+          "file": "mobile-chromium-settings.png",
+          "sha256": "a6a20830bad5f5c729a1711778ee3666abd29ddcc163f362aa502ef6816b33db",
+          "bytes": 53487
+        }
+      ]
+    },
+    {
+      "name": "mobile-webkit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "passed": true,
+      "observedDeploymentSha": "131611f63327e029bd14f46d31707946cd40568e",
+      "candidateReadyMilliseconds": 1105.67,
+      "painter": {
+        "backend": "webgl",
+        "regions": 49,
+        "meshCount": 49,
+        "paints": 25
+      },
+      "imjinCandidateCounts": {
+        "sourceEntities": 84,
+        "worldRegions": 53,
+        "regionCandidates": 53,
+        "chartRegions": 53,
+        "presentedRegions": 53,
+        "fixedContourRegions": 50,
+        "fixedContourRings": 968,
+        "pointCandidates": 84,
+        "paintedPoints": 84,
+        "stageActive": false,
+        "svgPaths": 63,
+        "svgTexts": 15,
+        "svgTargets": 14,
+        "sourceRegions": 53,
+        "sourceEdges": 16,
+        "projectedPoints": 84,
+        "fadeRegions": 53,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "wideCandidateCounts": {
+        "sourceEntities": 106,
+        "worldRegions": 105,
+        "regionCandidates": 105,
+        "chartRegions": 105,
+        "presentedRegions": 105,
+        "fixedContourRegions": 101,
+        "fixedContourRings": 1200,
+        "pointCandidates": 106,
+        "paintedPoints": 91,
+        "stageActive": false,
+        "svgPaths": 115,
+        "svgTexts": 10,
+        "svgTargets": 8,
+        "sourceRegions": 105,
+        "sourceEdges": 0,
+        "projectedPoints": 106,
+        "fadeRegions": 105,
+        "exitingRegions": 0,
+        "exitOverdueMs": 0
+      },
+      "selectedEvent": {
+        "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+        "kind": "composite",
+        "x": 151.9185447692871,
+        "y": 174.74330139160156
+      },
+      "collectionCounts": {
+        "initial": 7,
+        "off": 6,
+        "restored": 7
+      },
+      "settledScene": {
+        "sceneJobs": {
+          "generation": 32,
+          "pending": 0,
+          "discarded": 2
+        },
+        "workerJobs": {
+          "running": 0,
+          "pending": 0,
+          "failed": false
+        },
+        "view": {
+          "x": -78,
+          "y": -8877.911830357143,
+          "scaleX": 0.26,
+          "scaleY": 0.04018973214285714
+        },
+        "liveView": {
+          "x": -78,
+          "y": -8877.911830357143,
+          "scaleX": 0.26,
+          "scaleY": 0.04018973214285714
+        }
+      },
+      "xOnlyPinch": {
+        "before": {
+          "x": -83.57142857142857,
+          "y": -104757.21614583333,
+          "scaleX": 0.2785714285714286,
+          "scaleY": 0.4688802083333333
+        },
+        "after": {
+          "scaleX": 0.3263003427791923,
+          "scaleY": 0.4688802083333333,
+          "x": -97.89010283375768,
+          "y": -104757.21614583333
+        }
+      },
+      "yOnlyPinch": {
+        "before": {
+          "scaleX": 0.3263003427791923,
+          "scaleY": 0.4688802083333333,
+          "x": -97.89010283375768,
+          "y": -104757.21614583333
+        },
+        "after": {
+          "scaleX": 0.3263003427791923,
+          "scaleY": 0.5522634386574197,
+          "x": -97.89010283375768,
+          "y": -123383.69700231023
+        }
+      },
+      "errors": [],
+      "failedResponses": [],
+      "screenshots": [
+        {
+          "file": "mobile-webkit-A-imjin.png",
+          "sha256": "bddbb3f0b065ae7f16db04cef49aa14e0f839b19ac034f73b9a2bf62ac8bf3d0",
+          "bytes": 108447
+        },
+        {
+          "file": "mobile-webkit-A-world.png",
+          "sha256": "c3a9a8c1aa6c2e52600f8ccc2ac8164fa7289293714d0df9f73dc23f58011fed",
+          "bytes": 94020
+        },
+        {
+          "file": "mobile-webkit-B0-imjin.png",
+          "sha256": "5580922b3c1519b7db580bb6376ea99f303c7a19b8095acddb2e87b1119a1f4b",
+          "bytes": 115897
+        },
+        {
+          "file": "mobile-webkit-B0-world.png",
+          "sha256": "54e36d1d3447eb0c36c946a72c0c4756c386ee8faa6f7e85601637692d48b126",
+          "bytes": 109639
+        },
+        {
+          "file": "mobile-webkit-selected-event.png",
+          "sha256": "0d1a4ebc4616431ad7c5596197d33ead7e2a4f94610a16dfd822f6791d6c6ae2",
+          "bytes": 112781
+        },
+        {
+          "file": "mobile-webkit-settings.png",
+          "sha256": "1691030e00436abbe73055ad5b27815704a4eebcdb015e1300dd735fdcfc1cc8",
+          "bytes": 56627
+        }
+      ]
+    }
+  ],
+  "limitations": [
+    "Browser emulation and synthetic active-pointer gestures; physical iPhone 17 Safari and installed PWA not tested",
+    "No frame-rate or physical-device performance claim",
+    "Experimental area overlap semantics remain unverified; smoke checks rendering fidelity and interaction, not historical or temporal certification"
+  ]
+}

@@ -63,7 +63,15 @@ type Inspection = {
   selection: string[];
   view: View;
   liveView: View;
-  counts: Record<string, number>;
+  counts: {
+    [key: string]: number | boolean | undefined;
+    stageActive?: boolean;
+    exitingRegions?: number;
+    fixedContourRegions?: number;
+    fixedContourRings?: number;
+  };
+  sceneJobs?: { pending: number };
+  workerJobs?: { running: number; pending: number } | null;
   representation: Record<string, number>;
   cache: Record<string, number> | null;
   activeIds: { points: string[]; regions: string[]; edges: string[] };
@@ -93,6 +101,20 @@ async function inspect(page: Page): Promise<Inspection | null> {
     return value;
   });
 }
+function isCommittedScene(state: Inspection | null): state is Inspection {
+  return Boolean(
+    state?.loadState === "ready" &&
+    !state.cache?.pending &&
+    !state.counts.exitingRegions &&
+    !state.counts.stageActive &&
+    !state.sceneJobs?.pending &&
+    !state.workerJobs?.running &&
+    !state.workerJobs?.pending &&
+    (["x", "y", "scaleX", "scaleY"] as const).every(
+      (key) => state.view[key] === state.liveView[key]
+    )
+  );
+}
 async function settle(page: Page, mode?: string) {
   if (mode)
     await page.waitForFunction(
@@ -106,23 +128,19 @@ async function settle(page: Page, mode?: string) {
   while (performance.now() < deadline) {
     const state = await inspect(page);
     assert.notEqual(state?.loadState, "error", "graph loader failed");
-    if (
-      state?.loadState === "ready" &&
-      !state.cache?.pending &&
-      !state.counts.exitingRegions
-    ) {
+    if (isCommittedScene(state)) {
+      // A ready data response may still be waiting for the eventual scene,
+      // worker geometry or representation animation to finish committing.
       await page.waitForTimeout(260);
       const confirmed = await inspect(page);
-      if (
-        confirmed?.loadState === "ready" &&
-        !confirmed.cache?.pending &&
-        !confirmed.counts.exitingRegions
-      )
-        return confirmed;
+      if (isCommittedScene(confirmed)) return confirmed;
     }
     await page.waitForTimeout(100);
   }
-  throw Error(`graph did not settle: ${JSON.stringify(await inspect(page))}`);
+  const last = await inspect(page);
+  throw Error(
+    `graph did not settle: ${JSON.stringify(last ? summary(last) : null)}`
+  );
 }
 function closeNumber(
   actual: number,
@@ -159,6 +177,8 @@ function summary(state: Inspection) {
     counts: state.counts,
     representation: state.representation,
     cache: state.cache,
+    sceneJobs: state.sceneJobs,
+    workerJobs: state.workerJobs,
     activeIds: state.activeIds,
     fixedPaint: state.fixedContourPaint?.map((paint) => ({
       id: paint.id,

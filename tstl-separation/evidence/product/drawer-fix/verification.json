@@ -1,0 +1,47 @@
+{
+  "sourceBranch": "fix/tstl-drawer-layout-selector-20261013",
+  "sourceSha": "0200d5a704b46046508f7c059d979525d11b53db",
+  "deployedSha": "6b89fe55404228658c785329ff8433ebfc3e24c2",
+  "pullRequests": [
+    361,
+    362
+  ],
+  "targetedPublicProfiles": {
+    "mobile-chromium": "passed",
+    "mobile-webkit": "passed",
+    "desktop-chromium": "passed"
+  },
+  "fullPublicProfiles": {
+    "mobile-chromium": "passed",
+    "mobile-webkit": "passed"
+  },
+  "mainCI": {
+    "run": 38400277967,
+    "conclusion": "success"
+  },
+  "sourceCI": {
+    "run": 38400227057,
+    "conclusion": "success"
+  },
+  "postDeploySmoke": {
+    "run": 38401179662,
+    "conclusion": "success"
+  },
+  "scaleReaderEvidence": {
+    "run": 38400227277,
+    "conclusion": "success"
+  },
+  "A4Scale": {
+    "run": 38400227256,
+    "conclusion": "failure",
+    "note": "Separate synthetic frame-budget debt; no gates or tests weakened"
+  },
+  "historicalPointerByteIdentical": true,
+  "railwayApplicationServices": "3/3 SUCCESS",
+  "physicalDevice": "not tested",
+  "initialAttempts": {
+    "3d11d55": "Both mobile engines reproduce comparison bar obstruction",
+    "63ed88f": "Bar hidden, but bottom Settings blocked by drawer; corrected by reserved header selector"
+  },
+  "resolved": "Mobile lab controls no longer overlap drawer reading content; 44px selector occupies reserved header space. Selection/camera persist through modes and return to Current; closing drawer restores floating controls."
+}

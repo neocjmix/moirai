@@ -63,7 +63,7 @@ selection across modes, both zoom axes, all historical drawers, Collections,
 reload, one asset fetch and return to Current on desktop/mobile Chromium and
 mobile WebKit. Physical iPhone 17 Safari and installed PWA remain untested.
 
-Deployment SHA, exact CI and public smoke results will be appended after readback.
+Deployment readback and public verification are recorded below.
 
 ## Reviewed source checkpoint
 
@@ -82,3 +82,58 @@ versus the previous source `09e7ecd` run's same failing check at p95 17 / max
 and [baseline scale run](https://github.com/neocjmix/moirai/actions/runs/38378638639)
 remain visible; no workflow or gate is weakened. These synthetic worlds cannot
 activate the r56-only experiment, and the ordinary renderer is unmodified.
+
+## Production deployment and public verification
+
+PR [#359](https://github.com/neocjmix/moirai/pull/359) merged reviewed source
+`cea4a74b36e3df36c5b90adacd237c9f12898c47` as
+`85a5d11f0cb5d9dcd1eabfc7c0ca51e98aa92fbf`. All three Railway application
+services reached SUCCESS; public `/status-public` reported that exact SHA.
+[Main CI](https://github.com/neocjmix/moirai/actions/runs/38394199797) and
+[post-deploy smoke](https://github.com/neocjmix/moirai/actions/runs/38394818955)
+completed successfully. Local final production build also passed after removing
+the temporary local diagnostic mount and proxy configuration.
+
+[Open production Anchored](https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&layoutLab=anchored&gsViewport=260,223420,650,1800),
+or select 분리 / 흐름 / 절충 in Settings → Labs. The normal 운영 option restores
+the ordinary renderer. The publication current.json remained byte-identical:
+SHA256 `ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a`,
+r56, source manifest `d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54`.
+
+Final reviewed-source [A4 scale run](https://github.com/neocjmix/moirai/actions/runs/38393493083)
+finished with 13 passing jobs and two failing Collection-toggle frame gates:
+100k dense and 1k sustained each p95 17 ms / max 110 ms against max 100 ms.
+This is existing synthetic performance debt, not an all-green acceptance claim.
+No frame gate or test assertion was weakened.
+
+### Visual disposition
+
+Matched public cameras confirm wider separation of many exclusive histories,
+but do not establish lower cognitive load. Lanes adds lateral travel; Aligned
+reduces average travel while weakening overview orientation and retaining local
+Yi regressions. Anchored preserves the exclusive-country ±20 corridor at a
+higher travel cost. In the dense Imjin/detail views, coincident fills and small
+holes remain hard to distinguish. Label density is the existing product policy;
+there is still crowding and clipping at fixed narrow mobile cameras. Five
+matched cameras, including a wider overview, expose this rather than concealing
+it through per-mode camera fitting. No candidate is promoted to the default.
+
+The earlier point-only controlled comparisons remain supporting evidence at
+[the diagnostic gallery](https://neocjmix.github.io/moirai/tstl-separation/evidence/).
+Actual production captures and read-only browser reports are published separately
+[here](https://neocjmix.github.io/moirai/tstl-separation/evidence/product/).
+Physical iPhone 17 Safari and installed PWA remain untested. The next useful
+iteration is dense-region ambiguity and local shared-flow continuity, not
+another numerical-objective-only promotion. The existing floating lab comparison
+bar also overlaps part of an open mobile drawer; selection and drawer assertions
+pass, but the screenshot makes this presentation limitation explicit.
+
+Public acceptance passed **3/3**: desktop Chromium, mobile Chromium and mobile
+WebKit, with zero browser/HTTP errors. Each uses the actual public `/graph/v5`
+(no local proxy/mount), verifies exact deployed SHA, five matched cameras × four
+modes, shared leaf identity, six historical drawers, selection across modes,
+actual geometry/holes, both zoom axes, Collection off/on, membership lists,
+reload persistence and return to Current. Each produces 25 screenshots;
+[compact acceptance record](tstl-positioned-product-2026-10-13/acceptance.json)
+links the full read-only reports. This is emulation evidence, not physical-device
+or human-perception certification.

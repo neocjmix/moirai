@@ -1,7 +1,7 @@
 .section {
   display: grid;
   gap: 10px;
-  border-top: 1px solid var(--gray-6);
+  border-top: 1px solid var(--gray-6, #d9d9e0);
   padding-top: 16px;
 }
 .section h2 {
@@ -10,7 +10,7 @@
 }
 .section p {
   margin: 0;
-  color: var(--gray-11);
+  color: var(--gray-11, #60646c);
   font-size: 13px;
   line-height: 1.5;
 }
@@ -26,19 +26,19 @@
 .choices button,
 .compare button {
   min-height: 44px;
-  border: 1px solid var(--gray-6);
+  border: 1px solid var(--gray-6, #d9d9e0);
   border-radius: 12px;
   padding: 8px 14px;
-  background: var(--gray-2);
-  color: var(--gray-12);
+  background: var(--gray-2, #f9f9fb);
+  color: var(--gray-12, #1c2024);
   font: inherit;
   font-size: 13px;
   cursor: pointer;
 }
 .choices button[aria-pressed="true"],
 .compare button[aria-pressed="true"] {
-  background: var(--gray-12);
-  color: var(--gray-1);
+  background: var(--gray-12, #1c2024);
+  color: var(--gray-1, #fcfcfd);
 }
 .choices button:disabled {
   opacity: 0.5;
@@ -66,8 +66,8 @@
   pointer-events: auto;
   margin: 0 12px 8px;
   padding: 4px 6px;
-  background: var(--gray-1);
-  border: 1px solid var(--gray-6);
+  background: var(--gray-1, #fcfcfd);
+  border: 1px solid var(--gray-6, #d9d9e0);
   border-radius: 16px;
   box-shadow: 0 4px 16px #0002;
 }
@@ -78,7 +78,7 @@
 }
 .compare span {
   font-size: 11px;
-  color: var(--gray-11);
+  color: var(--gray-11, #60646c);
   white-space: nowrap;
   margin-right: 4px;
 }

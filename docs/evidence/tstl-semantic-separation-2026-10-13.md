@@ -3,7 +3,8 @@
 2026-10-13 UTC. **Reviewable experiment, not a recommended production replacement.**
 The lane candidate makes exclusive peer histories easier to distinguish in the
 overview captures, but widens the drawing and increases lateral movement where
-histories share Events. Dense mobile labels and all-Composite fill overlap remain
+histories share Events. The subsequent **Aligned** iteration below cuts that travel
+while retaining most separation, but is still experimental. Dense mobile labels and all-Composite fill overlap remain
 unresolved. No user perception result or global optimum is claimed.
 
 ## Baseline and authority
@@ -133,12 +134,68 @@ not a canonical winner. A next iteration should align the same Composite's
 exclusive/shared episodes before compaction and compare the flow cost against
 the gutters. Do not merely tighten all gaps or change alpha to hide the problem.
 
+## Targeted alignment iteration
+
+After the first review checkpoint, `Aligned` translates complete temporal
+signature episodes while retaining the order and minimum gutters of all 643
+overlapping episode pairs. Empty-time root-band reservations can move. A bounded
+coordinate descent minimizes squared adjacent 100-source-unit Composite-window
+center changes, plus a weak centered-position penalty (0.005). Every Composite
+has equal weight; there are no historical importance scores. It stops at a
+movement tolerance or 500 sweeps; this run converged in 466 sweeps. This is a
+fixed-order local alignment, not a global ordering optimum or StoryFlow's solver.
+Bubble geometry is regenerated again with the unchanged generator.
+
+| Diagnostic | A | Lanes | Aligned |
+| --- | ---: | ---: | ---: |
+| Overlapping exclusive-peer windows / 166 | 46 | 23 | 24 |
+| Sum overlap width | 3,416 | 863 | 960.4 |
+| Mean short-gap center travel | 76.6 | 122.5 | 58.4 |
+| Leaf extent | 1,318 | 1,630 | 1,630 |
+| Nominal support collisions | 0 | 0 | 0 |
+
+Localized **total** travel / directional reversals (same source windows):
+
+| Composite | A | Lanes | Aligned |
+| --- | ---: | ---: | ---: |
+| 한국사 | 4,816 / 27 | 10,616 / 25 | 4,156 / 21 |
+| 일본사 | 4,769 / 24 | 8,578 / 25 | 4,198 / 20 |
+| 중국사 | 2,461 / 14 | 4,455 / 13 | 2,665 / 11 |
+| 호종헌의 절강 진압과 해상 세력 교섭 | 495 / 2 | 2,120 / 2 | 332 / 2 |
+| 이순신의 생애 | 856 / 7 | 1,395 / 6 | 1,056 / 8 |
+| 정유재란: 재침략과 마지막 공방 | 161 / 1 | 419 / 1 | 254 / 1 |
+
+[Exact IDs, centers, leaf witnesses and transition windows](https://neocjmix.github.io/moirai/tstl-separation/continuity.json)
+are reproducible with `separation-continuity.mjs`. China, Yi and Jeongyu still
+regress against A in total travel. The objective is not a stopping criterion:
+actual desktop/mobile overview, middle and point-only detail captures were
+reviewed alongside A and both retained lane trials.
+
+- The fitted middle camera shrinks from 1,602 (Lanes) / 1,342 (A) to 889 units.
+  Desktop omitted labels fall from 110 / 105 to 101. Yi's exclusive vertical
+  stretch and the two shared wartime episodes remain distinguishable, although
+  the wide horizontal war clusters and overlap of Yi/Imjin fills remain.
+- Overview country centers take fewer lateral reversals. Temporally disjoint
+  exclusive episodes can now share X, so this is not a globally straight country
+  column design. Peak width remains 1,630 because simultaneous groups bind.
+- Point-only detail confirms actual placement changes. The desktop fit omits
+  43 labels versus A's 44: essentially no label-capacity gain at that scale.
+- The fixed middle camera clips leaves (114/430 in Aligned); the fitted view
+  retains the same 150 leaves as A/Lanes. Fit and fixed captures are both exposed.
+- Mobile remains crowded; its fitted middle view omits 119 labels. Nested
+  all-Composite fill remains unsuitable as an unqualified membership map.
+
+**Disposition:** a defensible alignment improvement over the first lane trial,
+with mostly retained peer separation and lower aggregate travel than A. Retain
+all candidates for review. Do not promote it: local flow regressions, screen
+labels, region semantics and production LOD integration remain open.
+
 ## Verification and isolation
 
-- New invariant tests: 4 passed, including r56 identity/time/source immutability,
+- New invariant tests: 5 passed, including r56 identity/time/source immutability,
   all-pair nominal support clearance, input-order determinism, AB/AC/BC,
   equal-membership peers, and invalid input rejection.
-- Whole suite: 973 passed, 2 skipped, 1 failed. The untouched
+- Whole suite after alignment: 974 passed, 2 skipped, 1 failed. The untouched
   `composite-label-density-order.test.ts` hash mismatch reproduces on a clean
   main checkout: [baseline reproduction](tstl-separation-2026-10-13/existing-failure.txt).
   No assertion or timeout was weakened. An earlier sandbox-only run also hit
@@ -157,7 +214,7 @@ the gutters. Do not merely tighten all gaps or change alpha to hide the problem.
 All implementation files are isolated under `scripts/tstl-research/`; the
 production selector, asset pins, rendering code, history, Publication manifests,
 served pointer and database are unchanged. No merge is authorized in this task.
-Deployment, when verified, is a new `tstl-separation/` subtree on the existing
+Deployment is verified at the [isolated Pages preview](https://neocjmix.github.io/moirai/tstl-separation/). It is a new `tstl-separation/` subtree on the existing
 Pages branch, preserving all pre-existing paths and blobs. The preview's
 `build.json` owns its source SHA and artifact digest; draft-PR HEAD may include
 later evidence-only updates.
@@ -179,3 +236,27 @@ node scripts/tstl-research/separation-product-capture.mjs
 The last command is a read-only capture of the deployed baseline. The static
 preview verifies its comparison artifact digest before drawing, never fetches
 canonical history, and never runs a layout solver on camera changes.
+
+
+## Published review access
+
+- [Draft PR #359](https://github.com/neocjmix/moirai/pull/359)
+- [Interactive comparison](https://neocjmix.github.io/moirai/tstl-separation/?mode=Aligned&view=imjin&fit=1)
+- [Full capture gallery](https://neocjmix.github.io/moirai/tstl-separation/evidence/)
+- [Build provenance](https://neocjmix.github.io/moirai/tstl-separation/build.json)
+
+Initial source `ab3c6defc9176a69b8a95999acb29280387b65c8` was deployed with
+Pages commit `36b56271df817a24615d25698e5fa34a1d0a5b58` and passed 98 public
+browser check records. Pre-existing Pages paths and blob SHAs were unchanged.
+Production history pointer was byte-identical before/after publication (r56).
+The final alignment build's source is recorded in `build.json`.
+
+CI on the initial source caught undefined browser globals in the `.mjs` capture
+helper; these were corrected to `globalThis` with an explicit Node console
+import. The earlier local lint run had not covered that untracked file. This
+was a new helper defect, separate from the reproduced baseline unit hash failure.
+
+Alignment verification: all 5 invariant tests and full workspace typecheck/lint
+pass. The full suite retains only the same clean-main hash failure (974 pass,
+2 skip). Local Chromium generated 120 controlled comparisons and passed 122
+check records. Public alignment verification is recorded with the final build.

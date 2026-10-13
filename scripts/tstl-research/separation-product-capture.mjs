@@ -1,3 +1,4 @@
+import console from "node:console";
 import { chromium } from "@playwright/test";
 import { mkdirSync, writeFileSync } from "node:fs";
 const out = ".artifacts/tstl-separation/current";
@@ -34,9 +35,13 @@ for (const [profile, width, height] of [
         (mode) => {
           let s;
           const f = (e) => (s = e.detail);
-          addEventListener("moirai:graph-inspection", f, { once: true });
-          dispatchEvent(new Event("moirai:inspect-graph"));
-          removeEventListener("moirai:graph-inspection", f);
+          globalThis.addEventListener("moirai:graph-inspection", f, {
+            once: true
+          });
+          globalThis.dispatchEvent(
+            new globalThis.Event("moirai:inspect-graph")
+          );
+          globalThis.removeEventListener("moirai:graph-inspection", f);
           return (
             s?.loadState === "ready" &&
             s.paintSourceKey === "tstl:" + mode &&
@@ -53,8 +58,10 @@ for (const [profile, width, height] of [
       const state = await page.evaluate(() => {
         let s;
         const f = (e) => (s = e.detail);
-        addEventListener("moirai:graph-inspection", f, { once: true });
-        dispatchEvent(new Event("moirai:inspect-graph"));
+        globalThis.addEventListener("moirai:graph-inspection", f, {
+          once: true
+        });
+        globalThis.dispatchEvent(new globalThis.Event("moirai:inspect-graph"));
         return s;
       });
       await page.screenshot({ path: `${out}/${profile}-${mode}-${view}.png` });

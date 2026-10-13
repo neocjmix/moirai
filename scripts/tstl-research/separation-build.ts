@@ -10,6 +10,7 @@ import {
   SEMANTIC_LANE_PARAMETERS
 } from "./semantic-lanes.js";
 import { baselineCandidateCoordinates } from "./smooth-regions.js";
+import { alignSemanticLanes } from "./align-semantic-lanes.js";
 import { separationMetrics } from "./separation-metrics.js";
 import {
   TSTL_EXPERIMENT_ASSET_URL,
@@ -135,6 +136,16 @@ for (const [name, parameters] of [
     regionMs: performance.now() - geometryStart
   };
 }
+const alignedStart = performance.now();
+const aligned = alignSemanticLanes(comparison.projection, comparison.b0.events);
+const alignedPlacementMs = performance.now() - alignedStart;
+const alignedGeometryStart = performance.now();
+modes["Aligned"] = candidate(aligned.positions);
+runs["Aligned"] = {
+  ...aligned,
+  placementMs: alignedPlacementMs,
+  regionMs: performance.now() - alignedGeometryStart
+};
 const aStart = performance.now();
 modes["A-Bubble"] = candidate(product.a.xByEventId);
 runs["A-Bubble"] = { regionMs: performance.now() - aStart };
@@ -192,7 +203,7 @@ writeFileSync(
       architecture: process.arch,
       peakRssBytes: process.resourceUsage().maxRSS * 1024,
       scope:
-        "Offline r56 baseline + A + three regenerated Bubble variants; no browser/device performance claim",
+        "Offline r56 baseline + A + four regenerated Bubble variants; no browser/device performance claim",
       runs: Object.fromEntries(
         Object.entries(runs).map(([name, run]) => [
           name,

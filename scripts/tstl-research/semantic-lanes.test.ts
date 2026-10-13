@@ -1,3 +1,4 @@
+import { alignSemanticLanes } from "./align-semantic-lanes.js";
 import { describe, it, expect } from "vitest";
 import { readFileSync } from "node:fs";
 import { projectTstlSemantics } from "../../packages/graph-presentation/src/tstl-validator.js";
@@ -106,5 +107,35 @@ describe("offline semantic lanes", () => {
         rootGutter: NaN
       })
     ).toThrow("lanes_invalid_gutter");
+  });
+});
+
+describe("episode alignment", () => {
+  it("preserves source semantics, one identity, and all overlapping support clearances", () => {
+    const before = JSON.stringify(artifact);
+    const aligned = alignSemanticLanes(artifact.projection, artifact.b0.events);
+    expect(JSON.stringify(artifact)).toBe(before);
+    expect(Object.keys(aligned.positions).sort()).toEqual(
+      [...artifact.projection.eventIds].sort()
+    );
+    expect(aligned.lanes.flatMap((l) => l.eventIds).sort()).toEqual(
+      [...artifact.projection.leafIds].sort()
+    );
+    for (let i = 0; i < aligned.lanes.length; i++)
+      for (let j = i + 1; j < aligned.lanes.length; j++) {
+        const a = aligned.lanes[i]!,
+          b = aligned.lanes[j]!;
+        if (a.minY >= b.maxY || b.minY >= a.maxY) continue;
+        expect(
+          Math.max(b.minX - a.maxX, a.minX - b.maxX)
+        ).toBeGreaterThanOrEqual(SEMANTIC_LANE_PARAMETERS.peerGutter - 1e-7);
+      }
+    expect(aligned.diagnostics.finalEnergy).toBeLessThan(
+      aligned.diagnostics.initialEnergy
+    );
+    expect(
+      alignSemanticLanes(artifact.projection, [...artifact.b0.events].reverse())
+        .positions
+    ).toEqual(aligned.positions);
   });
 });

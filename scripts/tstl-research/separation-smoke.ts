@@ -21,7 +21,13 @@ try {
     const errors: string[] = [];
     page.on("pageerror", (e) => errors.push(String(e)));
     for (const view of ["overview", "imjin", "detail"])
-      for (const mode of ["Bubble", "A-Bubble", "Lanes-wide", "Lanes"])
+      for (const mode of [
+        "Bubble",
+        "A-Bubble",
+        "Lanes-wide",
+        "Lanes",
+        "Aligned"
+      ])
         for (const fit of [0, 1])
           for (const points of [0, 1]) {
             const scope = view === "overview" ? "roots" : "middle";
@@ -70,7 +76,7 @@ try {
             });
           }
     // Dense all-Composite captures expose nested alpha overlap, not just roots.
-    for (const mode of ["Bubble", "A-Bubble", "Lanes"]) {
+    for (const mode of ["Bubble", "A-Bubble", "Lanes", "Aligned"]) {
       await page.goto(`${base}/?mode=${mode}&view=imjin&scope=all&fit=1`);
       await page.locator("#graph[data-ready=true]").waitFor();
       await page.screenshot({
@@ -79,7 +85,7 @@ try {
     }
     // One known shared leaf exposes all actual ancestor memberships, while the
     // Imjin header exposes just its authored direct parents (Korea/Japan).
-    await page.goto(`${base}/?mode=Lanes&view=imjin&scope=middle&fit=1`);
+    await page.goto(`${base}/?mode=Aligned&view=imjin&scope=middle&fit=1`);
     await page.locator("#graph[data-ready=true]").waitFor();
     await page
       .locator('[data-header-id="01a10a3f-05d2-7981-94f4-08f3ea6433ec"]')
@@ -115,7 +121,7 @@ try {
       sharedId,
       "selection survives mode switch"
     );
-    await page.locator("#mode").selectOption("Lanes");
+    await page.locator("#mode").selectOption("Aligned");
     await page.screenshot({
       path: `${output}/${profile}-shared-event-memberships.png`
     });

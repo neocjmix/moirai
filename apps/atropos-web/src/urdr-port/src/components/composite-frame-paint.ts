@@ -20,6 +20,7 @@ export function reconcileCompositeFramePaint<T extends CompositeFadeCarrier>(
   advance = false,
   exitDuration = 220,
   paintedPointIds?: ReadonlySet<string>,
+  retainExits = true,
 ): CompositeFadePresence<T>[] {
   const oldById = new Map(previous.map(item => [item.id, item]));
   const incomingById = new Map(incoming.map(item => [item.id, item]));
@@ -56,6 +57,10 @@ export function reconcileCompositeFramePaint<T extends CompositeFadeCarrier>(
     // rather than restarting its enter at zero. Dropping old exit metadata
     // also cancels the pending deadline for this identity.
   }
+  // Different immutable layout sources may not carry their old geometry
+  // into a fresh renderer. Common identities still use incoming geometry
+  // and preserve opacity above; ordinary camera/LOD exits remain unchanged.
+  if (!retainExits) return next;
   for (const old of previous) {
     if (wanted.has(old.id)) continue;
     if (old.visibilityState !== "exiting") {

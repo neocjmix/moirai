@@ -2381,7 +2381,7 @@ export function GraphShell({
   }, [liveCamera, sceneScheduler]);
   const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
   const [compositePaintClock, setCompositePaintClock] = useState({frame: 0, prune: 0});
-  const compositePaintHistoryRef = useRef({regions: [] as CompositeFadePresence<CompositeRegion>[], frame: 0});
+  const compositePaintHistoryRef = useRef({regions: [] as CompositeFadePresence<CompositeRegion>[], frame: 0, paintSourceKey: undefined as string | undefined});
   const initialEventSelection = externalFocus
     ? { eventId: externalFocus.id, label: externalFocus.label, requestKey: 0 }
     : null;
@@ -2395,6 +2395,7 @@ export function GraphShell({
   const [selectedEventLoadState, setSelectedEventLoadState] = useState<"idle" | "loading" | "ready" | "error">(initialEventDetail ? "ready" : "idle");
   const [eventDetailRetryVersion, setEventDetailRetryVersion] = useState(0);
   const [runtimeViewportResponse, setRuntimeViewportResponse] = useState<ReturnType<typeof graphShellViewportResponseSchema.parse> | null>(null);
+  const [runtimePaintSource, setRuntimePaintSource] = useState<string | undefined>();
   const [runtimeViewportLoadState, setRuntimeViewportLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
 
@@ -2416,7 +2417,10 @@ export function GraphShell({
   }, []);
   const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
   const [useGeographicWebGL,setUseGeographicWebGL] = useState(false);
-  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[]);
+  // A malformed legacy hull may require SVG, but that failure does not apply
+  // to a different immutable layout. Retry only after its response commits;
+  // camera reads, selection and repeated frames keep the same stable key.
+  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[runtimePaintSource]);
   const handleGraphicsUnavailable=useCallback(()=>{setUseGeographicCanvas(false);setUseGeographicWebGL(false);},[]);
   const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
   const measureGraphPhase = useCallback((phase, run) => {
@@ -2702,6 +2706,7 @@ export function GraphShell({
     // Never also query the semantic viewport for point/region/edge drawing.
     if (loader.renderTiles) {
       setRuntimeViewportResponse(null);
+      setRuntimePaintSource(loader.paintSourceKey);
       setRuntimeViewportLoadState("ready");
       setRuntimeViewportErrorMessage(null);
       return;
@@ -2781,7 +2786,10 @@ export function GraphShell({
           const sameOwner = runtimeViewportOwnerRef.current?.loader === loader && runtimeViewportOwnerRef.current?.canons === canonIds.join(",");
           runtimeViewportOwnerRef.current = {loader, canons: canonIds.join(",")};
           graphWorkCountsRef.current.viewportReadResults++;
-          startTransition(() => setRuntimeViewportResponse(previous => relevant() ? reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode) : previous));
+          startTransition(() => {
+            setRuntimeViewportResponse(previous => relevant() ? reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode) : previous);
+            setRuntimePaintSource(previous => relevant() ? loader.paintSourceKey : previous);
+          });
           setRuntimeViewportLoadState("ready");
           setRuntimeViewportErrorMessage(null);
         }
@@ -3348,14 +3356,15 @@ export function GraphShell({
       compositePaintHistoryRef.current.regions, compositePaintTargets, now,
       compositePaintClock.frame !== compositePaintHistoryRef.current.frame, COMPOSITE_FADE_DURATION_MS,
       new Set(pointPaintHistoryRef.current.workspace === workspace ? pointPaintHistoryRef.current.points.filter(point => hasVisiblePaintLifetime(point.opacity * point.pointDisplay.opacity, point.exitStartedAt, now, POINT_PAINT_FADE_MS)).map(point => point.id) : []),
+      compositePaintHistoryRef.current.paintSourceKey === runtimePaintSource,
     );
-  }, [compositePaintTargets, compositePaintClock]);
+  }, [compositePaintTargets, compositePaintClock, runtimePaintSource]);
   // Store only committed lifecycle history. Current geometry already supplies
   // this render, so pan does not enqueue another state-copy render and semantic
   // point/region label boxes are evaluated in the same camera coordinates.
   useLayoutEffect(() => {
-    compositePaintHistoryRef.current = {regions: visibleCompositeRegions, frame: compositePaintClock.frame};
-  }, [visibleCompositeRegions, compositePaintClock.frame]);
+    compositePaintHistoryRef.current = {regions: visibleCompositeRegions, frame: compositePaintClock.frame, paintSourceKey: runtimePaintSource};
+  }, [visibleCompositeRegions, compositePaintClock.frame, runtimePaintSource]);
   const compositeFadeFrameRef = useRef(null);
   useEffect(() => {
     if (!needsCompositePaintFrame(visibleCompositeRegions)) {
@@ -4282,6 +4291,7 @@ export function GraphShell({
   // Read-only, on-demand diagnostics. No per-frame serialization or telemetry.
   graphInspectionRef.current = () => ({
     renderer: inspectRendererDiagnostics(),
+    paintSourceKey: runtimePaintSource,
     revision: runtimeViewportResponse?.revision ?? null,
     selection: [...effectiveEnabledCanonIds].sort(),
     selectedEventId: selectedEventSelection?.eventId ?? null,
@@ -4397,9 +4407,9 @@ export function GraphShell({
                 </svg>
               ) : chartPlane ? (
                 <>
-                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer key={runtimePaintSource} paintSourceKey={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
-                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas key={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/>) : null}
                 <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-renderer={useGeographicCanvas?(useGeographicWebGL?"custom-webgl2":"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?"spectral-6band":"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>

@@ -32,6 +32,7 @@ export function createTstlGraphReadLoader(input: {
   const reader = input.client.viewport(input.mode);
   return {
     viewportMode: "snapshot",
+    paintSourceKey: `tstl:${input.mode}`,
     dispose: () => lifetime.dispose(),
     inspectViewport: () => ({
       ...input.client.inspect(),

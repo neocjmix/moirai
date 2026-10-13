@@ -11,7 +11,13 @@ export const TSTL_LAYOUT_QUERY = "layoutLab";
 export function parseTstlLayoutChoice(
   value: string | null
 ): TstlLayoutChoice | null {
-  return value === "current" || value === "B0" || value === "A" ? value : null;
+  return value === "current" ||
+    value === "B0" ||
+    value === "A" ||
+    value === "B" ||
+    value === "C"
+    ? value
+    : null;
 }
 
 export function tstlLayoutAvailable(scope: {

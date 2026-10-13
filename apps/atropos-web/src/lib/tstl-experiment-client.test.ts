@@ -11,9 +11,10 @@ import {
   TSTL_EXPERIMENT_ASSET_URL,
   TSTL_EXPERIMENT_SHA256
 } from "./tstl-experiment-pin";
-import type {
-  TstlExperimentArtifact,
-  TstlExperimentMode
+import {
+  tstlCandidate,
+  type TstlExperimentArtifact,
+  type TstlExperimentMode
 } from "./tstl-experiment-types";
 import type { GraphReadLoader } from "../urdr-port/src/graph-read-loader";
 import type { GraphShellViewportQuery } from "../urdr-port/shared/contracts";
@@ -106,45 +107,53 @@ it("pins the immutable asset and keeps actual B0 primitives byte-for-byte in the
   });
 });
 
-it("preserves single Event identities and every original Event Y and Composite time boundary", () => {
-  const candidate = candidateExperimentPrimitives(artifact);
-  expect(candidate.map((p) => p.id)).toEqual(
-    artifact.b0Primitives.map((p) => p.id)
-  );
-  const eventIds = candidate
-    .filter((p) => p.entity.kind !== "relation")
-    .map((p) => p.entity.id);
-  expect(eventIds).toHaveLength(539);
-  expect(new Set(eventIds).size).toBe(539);
-  for (let i = 0; i < candidate.length; i++) {
-    const a = candidate[i]!,
-      b = artifact.b0Primitives[i]!;
-    if (b.entity.kind === "composite") {
-      expect(a.composite!.anchor!.y).toBe(b.composite!.anchor!.y);
-      expect(a.composite!.anchor!.x).toBe(artifact.a.xByEventId[a.entity.id]);
-      expect(a.composite!.worldBounds.minY).toBe(b.composite!.worldBounds.minY);
-      expect(a.composite!.worldBounds.maxY).toBe(b.composite!.worldBounds.maxY);
-      if (artifact.a.noAreaCompositeIds.includes(a.entity.id)) {
-        expect(a.geometry.kind).toBe("point");
-        expect(artifact.a.contoursByCompositeId[a.entity.id]).toEqual([]);
-      } else {
-        expect(a.geometry).toEqual({
-          kind: "polygon",
-          rings: artifact.a.contoursByCompositeId[a.entity.id]
-        });
-      }
-    } else if (b.geometry.kind === "point" && a.geometry.kind === "point") {
-      expect(a.geometry.xy.y).toBe(b.geometry.xy.y);
-      expect(a.geometry.xy.x).toBe(artifact.a.xByEventId[a.entity.id]);
-    } else if (b.geometry.kind === "line" && a.geometry.kind === "line") {
-      expect(a.geometry.paths.map((p) => p.map((v) => v.y))).toEqual(
-        b.geometry.paths.map((p) => p.map((v) => v.y))
-      );
-    } else throw Error("unexpected fixture geometry");
+it.each(["A", "B", "C"] as const)(
+  "%s preserves single Event identities and every original Event Y and Composite time boundary",
+  (mode) => {
+    const shape = tstlCandidate(artifact, mode);
+    const candidate = candidateExperimentPrimitives(artifact, mode);
+    expect(candidate.map((p) => p.id)).toEqual(
+      artifact.b0Primitives.map((p) => p.id)
+    );
+    const eventIds = candidate
+      .filter((p) => p.entity.kind !== "relation")
+      .map((p) => p.entity.id);
+    expect(eventIds).toHaveLength(539);
+    expect(new Set(eventIds).size).toBe(539);
+    for (let i = 0; i < candidate.length; i++) {
+      const a = candidate[i]!,
+        b = artifact.b0Primitives[i]!;
+      if (b.entity.kind === "composite") {
+        expect(a.composite!.anchor!.y).toBe(b.composite!.anchor!.y);
+        expect(a.composite!.anchor!.x).toBe(shape.xByEventId[a.entity.id]);
+        expect(a.composite!.worldBounds.minY).toBe(
+          b.composite!.worldBounds.minY
+        );
+        expect(a.composite!.worldBounds.maxY).toBe(
+          b.composite!.worldBounds.maxY
+        );
+        if (shape.noAreaCompositeIds.includes(a.entity.id)) {
+          expect(a.geometry.kind).toBe("point");
+          expect(shape.contoursByCompositeId[a.entity.id]).toEqual([]);
+        } else {
+          expect(a.geometry).toEqual({
+            kind: "polygon",
+            rings: shape.contoursByCompositeId[a.entity.id]
+          });
+        }
+      } else if (b.geometry.kind === "point" && a.geometry.kind === "point") {
+        expect(a.geometry.xy.y).toBe(b.geometry.xy.y);
+        expect(a.geometry.xy.x).toBe(shape.xByEventId[a.entity.id]);
+      } else if (b.geometry.kind === "line" && a.geometry.kind === "line") {
+        expect(a.geometry.paths.map((p) => p.map((v) => v.y))).toEqual(
+          b.geometry.paths.map((p) => p.map((v) => v.y))
+        );
+      } else throw Error("unexpected fixture geometry");
+    }
   }
-});
+);
 
-it("fetches once across B0/A, camera reads and Collection toggles with production admission", async () => {
+it("fetches once across B0/A/B/C, camera reads and Collection toggles with production admission", async () => {
   const { client, fetcher, loader } = setup();
   const selected = artifact.b0Primitives.find((p) => p.entity.kind === "event")!
     .entity.id;
@@ -181,6 +190,22 @@ it("fetches once across B0/A, camera reads and Collection toggles with productio
       },
       validationState: "warning"
     });
+  }
+  for (const mode of ["B", "C"] as const) {
+    const alternative = await loader(mode).loadViewport("ko", query(selected));
+    const candidate = tstlCandidate(artifact, mode);
+    expect(
+      alternative.entities.some((event) => event.id === selected) ||
+        alternative.regions.some((event) => event.id === selected)
+    ).toBe(true);
+    for (const region of alternative.regions)
+      expect(region).toMatchObject({
+        preparedContourMode: "fixed",
+        preparedWorldRings: candidate.contoursByCompositeId[region.id],
+        preparedWorldTraces: candidate.tracesByCompositeId![region.id]
+      });
+    const off = await loader(mode, []).loadViewport("ko", query());
+    expect([...off.entities, ...off.regions, ...off.edges]).toEqual([]);
   }
   const empty = await loader("A", []).loadViewport("ko", query());
   expect([...empty.entities, ...empty.regions, ...empty.edges]).toEqual([]);
@@ -248,5 +273,77 @@ it("refuses a mixed World/revision adapter before starting an asset request", ()
     })
   ).toThrow("tstl_experiment_scope_mismatch");
   expect(fetcher).not.toHaveBeenCalled();
+  client.dispose();
+});
+
+it("keeps old A geometry and B0 exactly while B/C share A coordinates and complete real leaf membership", () => {
+  const old = JSON.parse(
+    readFileSync(
+      "apps/atropos-web/public/labs/tstl/r56-be1265468d3f0a32.json",
+      "utf8"
+    )
+  ) as TstlExperimentArtifact;
+  expect(artifact.a).toEqual(old.a);
+  expect(artifact.b0Primitives).toEqual(old.b0Primitives);
+  for (const mode of ["B", "C"] as const) {
+    const candidate = tstlCandidate(artifact, mode);
+    expect(candidate.xByEventId).toEqual(artifact.a.xByEventId);
+    const memberships = candidate.memberships!;
+    const actual = new Set(
+      memberships.map((m) => `${m.compositeId}:${m.eventId}`)
+    );
+    expect(actual.size).toBe(memberships.length);
+    for (const leaf of artifact.b0Primitives.filter(
+      (p) => p.entity.kind === "event"
+    ))
+      for (const owner of leaf.ancestorCompositeIds!)
+        expect(actual.has(`${owner}:${leaf.entity.id}`)).toBe(true);
+    expect(
+      memberships
+        .filter((m) => m.status === "list")
+        .every((m) => Boolean(m.reason))
+    ).toBe(true);
+    expect(candidate.limitations!.length).toBeGreaterThan(0);
+    expect(
+      Object.values(candidate.contoursByCompositeId).flat().length
+    ).toBeGreaterThan(0);
+    expect(Object.values(candidate.contoursByCompositeId).flat()).not.toEqual(
+      Object.values(artifact.a.contoursByCompositeId).flat()
+    );
+  }
+});
+
+it.each([
+  "coordinates",
+  "membership",
+  "missing-membership",
+  "trace-owner",
+  "trace"
+])("rejects rehashed alternative %s corruption", async (kind) => {
+  const corrupt = structuredClone(artifact);
+  if (kind === "coordinates") {
+    const id = Object.keys(corrupt.b.xByEventId)[0]!;
+    corrupt.b.xByEventId[id]! += 1;
+  } else if (kind === "membership") {
+    corrupt.c.memberships![0]!.compositeId = corrupt.c.memberships![0]!.eventId;
+  } else if (kind === "missing-membership") {
+    corrupt.b.memberships!.shift();
+  } else if (kind === "trace-owner") {
+    const owner = Object.keys(corrupt.c.tracesByCompositeId!).find(
+      (id) => corrupt.c.tracesByCompositeId![id]!.length > 0
+    )!;
+    corrupt.c.tracesByCompositeId![owner]![0]!.eventId = owner;
+  } else {
+    const owner = Object.keys(corrupt.c.tracesByCompositeId!).find(
+      (id) => corrupt.c.tracesByCompositeId![id]!.length > 0
+    )!;
+    corrupt.c.tracesByCompositeId![owner]![0]!.points[0]!.x = NaN;
+  }
+  const payload = JSON.stringify(corrupt);
+  const client = createTstlExperimentClient({
+    fetcher: async () => new Response(payload),
+    expectedSha256: hash(payload)
+  });
+  await expect(client.load()).rejects.toThrow(/tstl_experiment_/);
   client.dispose();
 });

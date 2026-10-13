@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import type { createTstlExperimentClient } from "../lib/tstl-experiment-client";
+import type { TstlExperimentArtifact } from "../lib/tstl-experiment-types";
 import {
   parseTstlLayoutChoice,
   TSTL_LAYOUT_QUERY,
@@ -19,6 +20,7 @@ export function useTstlLayout(
   const [mode, setMode] = useState<TstlLayoutChoice>("current");
   const [pending, setPending] = useState<TstlLayoutChoice | null>(null);
   const [failed, setFailed] = useState(false);
+  const [artifact, setArtifact] = useState<TstlExperimentArtifact | null>(null);
   const ticket = useRef(0);
 
   const choose = useCallback(
@@ -28,8 +30,9 @@ export function useTstlLayout(
       setFailed(false);
       setPending(next === "current" ? null : next);
       try {
-        if (next !== "current") await client.load();
+        const loaded = next === "current" ? null : await client.load();
         if (ticket.current !== request) return;
+        if (loaded) setArtifact(loaded);
         setMode(next);
         setPending(null);
         if (persist) {
@@ -55,6 +58,7 @@ export function useTstlLayout(
     setMode("current");
     setPending(null);
     setFailed(false);
+    setArtifact(null);
     const restore = () => {
       let stored: string | null = null;
       try {
@@ -83,6 +87,7 @@ export function useTstlLayout(
     pending,
     failed,
     available,
+    artifact: available ? artifact : null,
     choose
   };
 }

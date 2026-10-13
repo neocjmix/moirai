@@ -11,6 +11,8 @@ import {
   TSTL_EXPERIMENT_WORLD_ID,
   TSTL_EXPERIMENT_REVISION,
   TSTL_EXPERIMENT_TIME_SYSTEM_ID,
+  tstlCandidate,
+  type TstlCandidateMode,
   type TstlExperimentArtifact,
   type TstlExperimentMode,
   type TstlExperimentPoint
@@ -25,9 +27,10 @@ const pointBounds = (points: readonly TstlExperimentPoint[]) => ({
 
 /** Replaces X and supplied outlines only; all Event and span Y values stay exact. */
 export function candidateExperimentPrimitives(
-  artifact: TstlExperimentArtifact
+  artifact: TstlExperimentArtifact,
+  mode: TstlCandidateMode = "A"
 ): ResolvedRenderPrimitive[] {
-  const { a } = artifact;
+  const a = tstlCandidate(artifact, mode);
   return artifact.b0Primitives.map((primitive): ResolvedRenderPrimitive => {
     const geometry = primitive.geometry;
     if (geometry.kind === "external" || primitive.entity.kind === "cluster")
@@ -42,9 +45,11 @@ export function candidateExperimentPrimitives(
         x: a.xByEventId[id]!,
         y: primitive.composite.anchor.y
       };
-      const hullBounds = rings.length
-        ? pointBounds(rings.flat())
-        : pointBounds([anchor]);
+      const support = [
+        ...rings.flat(),
+        ...(a.tracesByCompositeId?.[id] ?? []).flatMap((trace) => trace.points)
+      ];
+      const hullBounds = pointBounds(support.length ? support : [anchor]);
       return {
         ...primitive,
         geometry: rings.length
@@ -96,7 +101,7 @@ export function candidateExperimentPrimitives(
 
 function validateArtifact(value: TstlExperimentArtifact) {
   if (
-    value.formatVersion !== "tstl-product-experiment/1" ||
+    value.formatVersion !== "tstl-product-experiment/2" ||
     value.source?.worldId !== TSTL_EXPERIMENT_WORLD_ID ||
     value.source.revision !== TSTL_EXPERIMENT_REVISION ||
     value.source.timeSystemId !== TSTL_EXPERIMENT_TIME_SYSTEM_ID ||
@@ -107,37 +112,90 @@ function validateArtifact(value: TstlExperimentArtifact) {
   const ids = value.b0Primitives
     .filter((p) => p.entity.kind !== "relation")
     .map((p) => p.entity.id);
-  if (
-    ids.length !== 539 ||
-    new Set(ids).size !== ids.length ||
-    Object.keys(value.a.xByEventId).length !== ids.length ||
-    ids.some((id) => !Number.isFinite(value.a.xByEventId[id]))
-  )
-    throw Error("tstl_experiment_identity_mismatch");
   const composites = value.b0Primitives.filter(
     (p) => p.entity.kind === "composite"
   );
   if (
-    composites.length !== 109 ||
-    composites.some(
-      (p) =>
-        !Array.isArray(value.a.contoursByCompositeId[p.entity.id]) ||
-        !value.a.worldBoundsByCompositeId[p.entity.id]
-    )
+    ids.length !== 539 ||
+    new Set(ids).size !== ids.length ||
+    composites.length !== 109
   )
-    throw Error("tstl_experiment_composite_mismatch");
-  for (const rings of Object.values(value.a.contoursByCompositeId))
-    for (const ring of rings)
-      if (
-        ring.length < 3 ||
-        ring.some(
-          (point) => !Number.isFinite(point.x) || !Number.isFinite(point.y)
-        )
+    throw Error("tstl_experiment_identity_mismatch");
+  const eventIds = new Set(ids);
+  const primitiveByEvent = new Map(
+    value.b0Primitives
+      .filter((p) => p.entity.kind !== "relation")
+      .map((p) => [p.entity.id, p])
+  );
+  const compositeIds = new Set(composites.map((p) => p.entity.id));
+  const validPoint = (point: TstlExperimentPoint) =>
+    Number.isFinite(point.x) && Number.isFinite(point.y);
+  for (const mode of ["A", "B", "C"] as const) {
+    const candidate = tstlCandidate(value, mode);
+    if (
+      !candidate ||
+      Object.keys(candidate.xByEventId).length !== ids.length ||
+      ids.some(
+        (id) =>
+          !Number.isFinite(candidate.xByEventId[id]) ||
+          candidate.xByEventId[id] !== value.a.xByEventId[id]
       )
-        throw Error("tstl_experiment_contour_invalid");
+    )
+      throw Error("tstl_experiment_identity_mismatch");
+    if (
+      composites.some(
+        (p) =>
+          !Array.isArray(candidate.contoursByCompositeId[p.entity.id]) ||
+          !candidate.worldBoundsByCompositeId[p.entity.id]
+      )
+    )
+      throw Error("tstl_experiment_composite_mismatch");
+    for (const rings of Object.values(candidate.contoursByCompositeId))
+      for (const ring of rings)
+        if (ring.length < 3 || ring.some((point) => !validPoint(point)))
+          throw Error("tstl_experiment_contour_invalid");
+    for (const [owner, traces] of Object.entries(
+      candidate.tracesByCompositeId ?? {}
+    )) {
+      if (!compositeIds.has(owner)) throw Error("tstl_experiment_trace_owner");
+      for (const trace of traces)
+        if (
+          !["spine", "membership", "route"].includes(trace.kind) ||
+          trace.points.length < 2 ||
+          trace.points.some((point) => !validPoint(point)) ||
+          (trace.eventId !== undefined &&
+            !primitiveByEvent
+              .get(trace.eventId)
+              ?.ancestorCompositeIds?.includes(owner))
+        )
+          throw Error("tstl_experiment_trace_invalid");
+    }
+    const pairs = new Set<string>();
+    for (const membership of candidate.memberships ?? []) {
+      const key = `${membership.compositeId}:${membership.eventId}`;
+      const primitive = primitiveByEvent.get(membership.eventId);
+      if (
+        !compositeIds.has(membership.compositeId) ||
+        !eventIds.has(membership.eventId) ||
+        !primitive?.ancestorCompositeIds?.includes(membership.compositeId) ||
+        !["route", "list"].includes(membership.status) ||
+        pairs.has(key) ||
+        (membership.status === "list" && !membership.reason)
+      )
+        throw Error("tstl_experiment_membership_invalid");
+      pairs.add(key);
+    }
+    if (mode !== "A")
+      for (const primitive of primitiveByEvent.values()) {
+        if (primitive.entity.kind !== "event") continue;
+        for (const owner of primitive.ancestorCompositeIds ?? [])
+          if (!pairs.has(`${owner}:${primitive.entity.id}`))
+            throw Error("tstl_experiment_membership_missing");
+      }
+  }
 }
 
-/** One immutable asset fetch, retained across B0/A and Collection switches. */
+/** One immutable asset fetch, retained across B0/A/B/C and Collection switches. */
 export function createTstlExperimentClient(
   input: { fetcher?: typeof fetch; url?: string; expectedSha256?: string } = {}
 ) {
@@ -145,7 +203,7 @@ export function createTstlExperimentClient(
   const controller = new AbortController();
   let disposed = false;
   let pending: Promise<TstlExperimentArtifact> | undefined;
-  let candidate: ResolvedRenderPrimitive[] | undefined;
+  const candidates = new Map<TstlCandidateMode, ResolvedRenderPrimitive[]>();
   let bytes = 0;
   let requests = 0;
   const readers = new Map<
@@ -189,7 +247,11 @@ export function createTstlExperimentClient(
   const primitives = async (mode: TstlExperimentMode) => {
     const artifact = await load();
     if (mode === "B0") return artifact.b0Primitives;
-    candidate ??= candidateExperimentPrimitives(artifact);
+    let candidate = candidates.get(mode);
+    if (!candidate) {
+      candidate = candidateExperimentPrimitives(artifact, mode);
+      candidates.set(mode, candidate);
+    }
     return candidate;
   };
   const viewport = (mode: TstlExperimentMode) => {
@@ -252,7 +314,7 @@ export function createTstlExperimentClient(
       controller.abort();
       for (const reader of readers.values()) reader.dispose();
       readers.clear();
-      candidate = undefined;
+      candidates.clear();
       pending = undefined;
     }
   };

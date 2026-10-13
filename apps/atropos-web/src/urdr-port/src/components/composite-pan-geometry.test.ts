@@ -235,3 +235,62 @@ it("bounds visited regions and drops oversized geometry from the cache", () => {
     expect(bounded.inspect()).toMatchObject({entries: 1, vertices: size.vertices, pathCharacters: size.pathCharacters, builds: 30, evictions: 29});
   }
 });
+
+
+it("retains independent open traces through anisotropic zoom, pan and worker cache hydration", () => {
+  const traces = [
+    {kind: "spine" as const, points: [{x: 3.123456789, y: 0}, {x: 3.123456789, y: 100}]},
+    {kind: "membership" as const, eventId: "shared", points: [{x: 3.123456789, y: 42}, {x: 70, y: 42}]},
+  ];
+  const camera = {...view, scaleX: 2.314159, scaleY: 0.781234};
+  const input = {...request, points: traces.flatMap(trace => trace.points), fixedRings: [], fixedTraces: traces,
+    view: camera, padding: 900, labelHeight: 18, labelGap: 4};
+  const cache = createCompositePanGeometryCache();
+  const first = cache.project(input);
+  expect(first.path).toBe("");
+  expect(first.projectedRings).toEqual([]);
+  expect(first.labelPathFrame).toBeUndefined();
+  expect(first.projectedTraces).toEqual(traces.map(trace => ({...trace, points: trace.points.map(point => project(point, camera))})));
+  expect(first.tracePaths).toHaveLength(2);
+  expect(first.tracePaths![1]).toMatchObject({kind: "membership", eventId: "shared"});
+  for (const trace of first.tracePaths!) {
+    expect(trace.path.match(/M/g)).toHaveLength(1);
+    expect(trace.path).not.toMatch(/[ZCQ]/);
+  }
+  const hydrated = createCompositePanGeometryCache();
+  hydrated.hydrate(structuredClone(cache.snapshot()));
+  const moved = hydrated.project({...input, view: {...camera, x: 17.125, y: -29.5}});
+  expect(moved.tracePaths).toEqual(first.tracePaths);
+  expect(moved.pathTransform).toBe("translate(17.125 -29.5)");
+  expect(moved.projectedTraces).toEqual(first.projectedTraces!.map(trace => ({...trace, points: trace.points.map(point => ({x: point.x + 17.125, y: point.y - 29.5}))})));
+  expect(hydrated.inspect()).toMatchObject({builds: 0, hits: 1});
+  const changed = traces.map(trace => ({...trace, points: trace.points.map(point => ({...point, x: point.x + 1}))}));
+  expect(hydrated.project({...input, fixedTraces: changed}).tracePaths).not.toEqual(first.tracePaths);
+  expect(hydrated.project({...input, fixedTraces: traces.map(trace => ({...trace, kind: "route" as const}))}).tracePaths![0]!.kind).toBe("route");
+});
+
+it("budgets serialized trace paths in the same bounded worker cache as filled rings", () => {
+  const trace = {kind: "route" as const, points};
+  const input = {...request, fixedRings: [], fixedTraces: [trace]};
+  const small = createCompositePanGeometryCache({maxPathCharacters: 1});
+  small.project(input);
+  expect(small.inspect()).toMatchObject({entries: 0, pathCharacters: 0});
+  const cache = createCompositePanGeometryCache();
+  const actual = cache.project(input);
+  expect(cache.inspect().pathCharacters).toBe(actual.tracePaths![0]!.path.length);
+  cache.retain(new Set());
+  expect(cache.inspect()).toMatchObject({entries: 0, pathCharacters: 0, vertices: 0});
+});
+
+
+it("never lets a remote membership trace enlarge or bridge a filled fragment", () => {
+  const rings = [[{x: 0, y: 0}, {x: 10, y: 0}, {x: 10, y: 10}, {x: 0, y: 10}]];
+  const traces = [{kind: "membership" as const, eventId: "shared", points: [{x: 500, y: 500}, {x: 1000, y: 500}]}];
+  const cache = createCompositePanGeometryCache();
+  const area = cache.project({...request, points: rings.flat(), fixedRings: rings});
+  const mixed = cache.project({...request, points: [...rings.flat(), ...traces[0]!.points], fixedRings: rings, fixedTraces: traces});
+  expect(mixed.path).toBe(area.path);
+  expect(mixed.projectedRings).toEqual(area.projectedRings);
+  expect(mixed.tracePaths![0]!.path).not.toMatch(/[ZCQ]/);
+  expect(mixed.projectedHullPoints).toHaveLength(6);
+});

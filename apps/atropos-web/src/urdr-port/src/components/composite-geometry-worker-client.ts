@@ -1,3 +1,4 @@
+import type { GraphShellPreparedWorldTrace } from "../../shared/contracts";
 import type { CompositePaddingProfile } from "@moirai/graph-presentation/composite-padding-profile";
 import type { CompositeSplineTuning } from "./graph-shell-region-geometry";
 import type { CompositeGeometryEntry } from "./composite-pan-geometry";
@@ -16,6 +17,7 @@ export type CompositeGeometryJob = {
     id: string;
     coordinates: Float64Array;
     fixedRings?: { x: number; y: number }[][];
+    fixedTraces?: GraphShellPreparedWorldTrace[];
     padding: number;
     paddingProfile?: CompositePaddingProfile;
   }[];

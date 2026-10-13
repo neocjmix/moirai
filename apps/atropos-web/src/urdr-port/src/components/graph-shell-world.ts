@@ -195,8 +195,10 @@ export function prepareCompositeWorldGeometry(
           : fallbackBoundsPolygon;
 
       const fixedRings = entity.preparedContourMode === "fixed" ? entity.preparedWorldRings ?? [] : undefined;
-      const hullPoints = fixedRings?.length
-        ? fixedRings.flat()
+      const fixedTraces = fixedRings ? entity.preparedWorldTraces ?? [] : undefined;
+      const fixedSupport = fixedRings ? [...fixedRings.flat(), ...fixedTraces!.flatMap(trace => trace.points)] : [];
+      const hullPoints = fixedSupport.length
+        ? fixedSupport
         : fixedRings
         ? [entity.preparedAnchor ?? { x: ((entity.preparedCompactBounds ?? entity.worldBounds).minX + (entity.preparedCompactBounds ?? entity.worldBounds).maxX) / 2,
              y: ((entity.preparedCompactBounds ?? entity.worldBounds).minY + (entity.preparedCompactBounds ?? entity.worldBounds).maxY) / 2 }]
@@ -233,9 +235,9 @@ export function prepareCompositeWorldGeometry(
         containedBy: entity.containedBy,
         editorial: entity.editorial,
         points: geometry.points,
-        ...(fixedRings ? { fixedRings, fixedContour: true, preparedAnchor: entity.preparedAnchor } : {}),
+        ...(fixedRings ? { fixedRings, fixedTraces, fixedContour: true, preparedAnchor: entity.preparedAnchor } : {}),
         paddingProfile: geometry.paddingProfile,
-        hullPending: fixedRings ? fixedRings.length === 0 : Boolean(entity.preparedCompactBounds)
+        hullPending: fixedRings ? fixedSupport.length === 0 : Boolean(entity.preparedCompactBounds)
       };
     })
     .filter((region) => region !== null)

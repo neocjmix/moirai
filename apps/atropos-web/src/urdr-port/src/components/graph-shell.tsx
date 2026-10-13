@@ -16,7 +16,7 @@ import { compositePointDisplay, compositeRepresentationDisplay, compositePointDe
 import { compositeStageSpan, resolveCompositeHierarchySpans, advanceCompositeStageSpan } from "./composite-visibility-policy";
 import { createCompositeGeometryWorker } from "./composite-geometry-worker-client";
 import { createCompositePanGeometryCache } from "./composite-pan-geometry";
-import { fixedCompositePath, fixedCompositeLabelRing, fixedCompositeContextMetrics } from "./fixed-composite-contours";
+import { fixedCompositePath, fixedCompositeLabelRing, fixedCompositeContextMetrics, fixedCompositeTracePath, fixedCompositeTraceMetrics } from "./fixed-composite-contours";
 import { COMPOSITE_LABEL_FONT, createCompositeLabelWidthMeasure, extendCompositeLabelTextPath } from "./composite-label-text-path";
 import { pointDensityDisplay, withParentPointHandoff } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
@@ -180,6 +180,8 @@ type CompositeRegion = {
   projectedPoints: ViewportCoordinate[];
   projectedRings?: ViewportCoordinate[][];
   fixedContour?: boolean;
+  projectedTraces?: GraphShellChartPlaneRegionEntity["preparedWorldTraces"];
+  tracePaths?: {kind: "spine" | "membership" | "route"; eventId?: string; path: string}[];
   labelAttachX: number;
   labelAttachY: number;
   labelGuideX: number;
@@ -1569,6 +1571,7 @@ function buildEventLinkGraphFragment({
     .map((region) => {
       const transformedPoints = region.projectedPoints.map(transformPoint);
       const transformedRings = region.projectedRings?.map(ring => ring.map(transformPoint));
+      const transformedTraces = region.projectedTraces?.map(trace => ({...trace, points: trace.points.map(transformPoint)}));
       const transformedLabelAttach = transformPoint({ x: region.labelAttachX, y: region.labelAttachY });
       const transformedLabelGuide = transformPoint({ x: region.labelGuideX, y: region.labelGuideY });
       const transformedLabel = transformPoint({ x: region.labelX, y: region.labelY });
@@ -1576,6 +1579,8 @@ function buildEventLinkGraphFragment({
         ...region,
         projectedPoints: transformedPoints,
         projectedRings: transformedRings,
+        projectedTraces: transformedTraces,
+        tracePaths: transformedTraces?.map(({points, ...trace}) => ({...trace, path: fixedCompositeTracePath(points)})),
         path: transformedRings ? fixedCompositePath(transformedRings) : buildClosedSplinePath(transformedPoints, compositeSplineTuning),
         ...(transformedRings ? {pathTransform: undefined} : {}),
         labelAttachX: transformedLabelAttach.x,
@@ -2130,6 +2135,12 @@ function EventDrawerContent({
                         />
                       ))}
 
+                      {eventLinkGraphFragment.regions.flatMap(region => (region.tracePaths ?? []).map((trace, index) => <path
+                        key={`${region.id}:trace:${index}`} d={trace.path} fill="none" pointerEvents="none"
+                        stroke="currentColor" strokeWidth={1} strokeDasharray={trace.kind === "membership" ? "4 3" : undefined}
+                        style={{opacity: 0.5 * region.opacity}}
+                      />))}
+
                       {eventLinkGraphFragment.segments.map((segment) => {
                         const relationStyle = getRelationStyle(segment.typeKey);
                         return segment.typeKey === "causes" ? (
@@ -2329,7 +2340,7 @@ export function GraphShell({
       const bounds = worldBoundsForScreenBounds({minX:-96-input.labelReach,minY:-96-input.labelReach,maxX:input.viewport.width+96+input.labelReach,maxY:input.viewport.height+96+input.labelReach},snapshot.view,input.viewport);
       const regions = selectCompositeWorldRegions(input.prepared,bounds,bounds,true);
       const result = await geometryWorkerRef.current.prepare({generation:token,view:snapshot.view,viewport:input.viewport,tuning:input.tuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
-        regions: regions.map(region => ({id:region.id, coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings}))});
+        regions: regions.map(region => ({id:region.id, coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings,fixedTraces:region.fixedTraces}))});
       if (!sceneScheduler.accepts(token) || input !== geometryJobInputRef.current) return;
       if (result) { input.cache.hydrate(result.entries); workerStatsRef.current = {timingMs:result.timingMs,stats:result.stats}; }
     }
@@ -2757,7 +2768,7 @@ export function GraphShell({
           // A camera job can supersede this priming job. Keep the still-current
           // read alive: dropping it could leave a Collection refresh loading forever.
           do { result = await geometryWorkerRef.current.prepare({generation:requestGeneration,view,viewport:viewportSize,tuning:compositeSplineTuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
-            regions: regions.map(region => ({id:region.id,coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings}))});
+            regions: regions.map(region => ({id:region.id,coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings,fixedTraces:region.fixedTraces}))});
           } while (!result && relevant() && geometryWorkerRef.current && !geometryWorkerRef.current.inspect().failed);
           if (!relevant()) return;
           if (result) compositePanGeometryCache.hydrate(result.entries);
@@ -3168,10 +3179,12 @@ export function GraphShell({
       graphWorkCountsRef.current.regionTransforms += region.points.length;
       const geometry = measureGraphPhase("contourPreparation", () => compositePanGeometryCache.project({
         id: region.id, points: region.points, view, viewport: viewportSize,
-        padding: getCompositeRegionPadding(region.depth), paddingProfile: region.paddingProfile, fixedRings: region.fixedRings, tuning: compositeSplineTuning,
+        padding: getCompositeRegionPadding(region.depth), paddingProfile: region.paddingProfile, fixedRings: region.fixedRings, fixedTraces: region.fixedTraces, tuning: compositeSplineTuning,
         labelHeight: COMPOSITE_LABEL_LINE_HEIGHT, labelGap: COMPOSITE_LABEL_GAP,
       }));
-      const {projectedHullPoints, projectedPoints, projectedRings} = geometry;
+      const {projectedHullPoints, projectedPoints, projectedRings, projectedTraces} = geometry;
+      const traceMetrics = projectedTraces?.length ? fixedCompositeTraceMetrics(projectedTraces, viewportSize) : undefined;
+      const traceOnly = Boolean(projectedTraces?.length && !projectedRings?.length);
       const labelRing = projectedRings ? fixedCompositeLabelRing(projectedRings, viewportSize) : projectedPoints;
       const representation = compositeRepresentationDisplay(projectedHullPoints, region.hullPending, stageSpans.get(region.id));
       const fixedAnchor = region.preparedAnchor ? projectWorldPoint(view, viewportSize, region.preparedAnchor) : null;
@@ -3183,11 +3196,18 @@ export function GraphShell({
       const coverage = measureGraphPhase("clippingCoverage", () => (projectedRings ?? [projectedPoints]).reduce((sum, ring) => sum + getPolygonArea(clipPolygonAgainstViewport(ring, viewportSize)), 0) / Math.max(viewportSize.width * viewportSize.height, 1));
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
       const labelWidth = Math.max(semanticTextWidth(renderedLabel), 72);
+      const traceLabelPoint = traceOnly ? traceMetrics?.labelPoint ?? fixedAnchor : null;
       const placement = measureGraphPhase("labelPlacement", () => compactPoint ? {
         pathPoints: [], attachX: compactPoint.x, attachY: compactPoint.y,
         guideX: compactPoint.x, guideY: compactPoint.y, labelX: compactPoint.x + 10,
         labelY: compactPoint.y - 10, labelAnchor: "start", labelAngle: 0,
         textPathStartOffset: "0%"
+      } : traceLabelPoint ? {
+        pathPoints: [{x: traceLabelPoint.x + 10, y: traceLabelPoint.y - 10}, {x: traceLabelPoint.x + 10 + labelWidth, y: traceLabelPoint.y - 10}],
+        attachX: traceLabelPoint.x, attachY: traceLabelPoint.y,
+        guideX: traceLabelPoint.x, guideY: traceLabelPoint.y,
+        labelX: traceLabelPoint.x + 10, labelY: traceLabelPoint.y - 10,
+        labelAnchor: "start", labelAngle: 0, textPathStartOffset: "0%"
       } : resolveCompositeEdgeLabelPlacement(
         labelRing,
         labelWidth,
@@ -3220,6 +3240,9 @@ export function GraphShell({
         labelPathTransform: placement.pathFrame ? `translate(${placement.pathFrame.offset.x} ${placement.pathFrame.offset.y})` : undefined,
         projectedPoints,
         projectedRings,
+        projectedTraces,
+        tracePaths: geometry.tracePaths,
+        traceMetrics,
         fixedContour: region.fixedContour,
         labelAttachX: placement.attachX,
         labelAttachY: placement.attachY,
@@ -3294,7 +3317,7 @@ export function GraphShell({
       .sort((left, right) => left.labelAttachY - right.labelAttachY || left.labelAttachX - right.labelAttachX || left.id.localeCompare(right.id));
 
     const activeColorRegionIds = projectedRawRegions
-      .filter((region) => (region.projectedRings?.length ? region.projectedRings : [region.projectedPoints]).some(ring => regionIntersectsViewport(ring, viewportSize)))
+      .filter((region) => region.traceMetrics?.visible || (region.projectedRings?.length ? region.projectedRings : region.projectedTraces?.length ? [] : [region.projectedPoints]).some(ring => regionIntersectsViewport(ring, viewportSize)))
       .sort((left, right) => left.depth - right.depth || left.id.localeCompare(right.id))
       .map((region) => region.id);
 
@@ -3377,8 +3400,13 @@ export function GraphShell({
   const contextCandidates = useMemo(() => discovery?.contextHud ? chartCompositeRegions.regions.map(region => ({
     id: region.id, label: region.label, contains: region.contains,
     coverage: region.contextCoverage, centerInside: region.contextCenterInside,
-    visible: (region.projectedRings?.length ? region.projectedRings : [region.projectedPoints]).some(ring => regionIntersectsViewport(ring, viewportSize)),
-    ...(region.projectedRings?.length ? fixedCompositeContextMetrics(region.projectedRings, viewportSize) : contextViewportMetrics(region.projectedPoints, viewportSize)),
+    visible: region.fixedContour
+      ? Boolean(region.projectedRings?.some(ring => regionIntersectsViewport(ring, viewportSize)) || region.traceMetrics?.visible || (!region.projectedRings?.length && !region.projectedTraces?.length && regionIntersectsViewport(region.projectedPoints, viewportSize)))
+      : regionIntersectsViewport(region.projectedPoints, viewportSize),
+    ...(region.fixedContour && region.projectedTraces?.length ? {
+      centerDistance: Math.min(region.traceMetrics.centerDistance, ...(region.projectedRings ?? []).map(ring => contextViewportMetrics(ring, viewportSize).centerDistance)),
+      viewportSpan: Math.max(region.traceMetrics.viewportSpan, ...(region.projectedRings ?? []).map(ring => contextViewportMetrics(ring, viewportSize).viewportSpan)),
+    } : region.projectedRings?.length ? fixedCompositeContextMetrics(region.projectedRings, viewportSize) : contextViewportMetrics(region.projectedPoints, viewportSize)),
     supportComplete: region.supportComplete === true,
   })) : [], [discovery?.contextHud, chartCompositeRegions.regions, viewportSize]);
   const proposedContext = useMemo(() => selectGraphContext(contextCandidates, contextTopicId), [contextCandidates, contextTopicId]);
@@ -4261,9 +4289,12 @@ export function GraphShell({
       regions: worldCompositeRegions.map(region => region.id).sort(),
       edges: chartRelationSegments.map(edge => edge.id).sort(),
     },
-    geometry: worldCompositeRegions.map(region => ({id: region.id, points: region.points, ...(region.fixedContour ? {contourMode: "fixed", rings: region.fixedRings, anchor: region.preparedAnchor} : {})})).sort((a, b) => a.id.localeCompare(b.id)),
+    geometry: worldCompositeRegions.map(region => ({id: region.id, points: region.points, ...(region.fixedContour ? {contourMode: "fixed", rings: region.fixedRings, traces: region.fixedTraces, anchor: region.preparedAnchor} : {})})).sort((a, b) => a.id.localeCompare(b.id)),
     fixedContourPaint: presentedRegions.filter(region => region.fixedContour).map(region => ({id: region.id, path: region.path, pathTransform: region.pathTransform ?? null, ringCount: region.projectedRings?.length ?? 0, paintView: region.paintView, paintViewport: region.paintViewport})),
+    fixedTracePaint: presentedRegions.filter(region => region.tracePaths?.length).map(region => ({id: region.id, traces: region.tracePaths, traceCount: region.tracePaths.length, pathTransform: region.pathTransform ?? null, paintView: region.paintView, paintViewport: region.paintViewport})),
     counts: {
+      fixedTraceRegions: presentedRegions.filter(region => region.tracePaths?.length).length,
+      fixedTraces: presentedRegions.reduce((sum, region) => sum + (region.tracePaths?.length ?? 0), 0),
       sourceEntities: runtimeViewportResponse?.entities.length ?? 0,
       worldRegions: preparedWorldCompositeRegions.regions.length,
       regionCandidates: worldCompositeRegions.length,
@@ -4427,6 +4458,18 @@ export function GraphShell({
                           style={{opacity: region.renderedOpacity * region.surfaceOpacity * hullOpacity, mixBlendMode: "multiply", transition: "opacity 220ms ease"}}
                         />))}
                       </g> : null}
+                      {region.tracePaths?.map((trace, traceIndex) => <path
+                        key={`trace:${traceIndex}`}
+                        data-composite-trace-owner={region.id}
+                        data-composite-trace-kind={trace.kind}
+                        data-composite-trace-event={trace.eventId}
+                        aria-hidden="true" d={trace.path} transform={region.pathTransform}
+                        fill="none" pointerEvents="none" vectorEffect="non-scaling-stroke"
+                        stroke={compositeStyle?.label ?? DEFAULT_COMPOSITE_FILL}
+                        strokeWidth={trace.kind === "spine" ? 2 : 1.25}
+                        strokeDasharray={trace.kind === "membership" ? "4 3" : undefined}
+                        style={{opacity: region.renderedOpacity * hullOpacity * (trace.kind === "spine" ? 0.85 : 0.65), transition: "opacity 220ms ease, stroke 1400ms ease"}}
+                      />)}
                       {point ? <g data-composite-point-id={region.compactPoint ? region.id : undefined}
                         data-point-density={region.compactPoint ? region.pointDisplay.state : undefined}
                         data-representation={region.compactPoint ? (region.showLabel ? "semantic" : "geographic") : undefined}

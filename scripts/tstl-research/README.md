@@ -143,3 +143,35 @@ independent X/Y zoom, B0/A camera and Event selection continuity, drawer,
 Collection toggles, density changes and local preference persistence on desktop
 Chromium and mobile Chromium/WebKit. These are emulation results, not physical
 iPhone 17 Safari/PWA evidence.
+
+## B/C product comparison
+
+The follow-up user authorization in IP-016 extends the product experiment to B/C.
+The earlier independent preview and its measurements remain unchanged. B and C
+reuse the exact A Event X/Y and alter geometry only. The same exporter writes
+format `tstl-product-experiment/2`, preserving old B0 primitives and A contours.
+
+- B builds deterministic rectilinear terminal forests in windows of at most 32
+  leaf terminals, with nonmember clearance, a 65,536 graph vertex cap and a
+  2,000,000 expanded-state budget. It partitions the union of experimental
+  tubes into disjoint rectangles. It has no split/rejoin cycles, reroute,
+  crossing-cost optimization or complete semantic arrangement certificate.
+- C uses stable spines, nonmember gaps, bounded two-bend member links and
+  local leaf atom cells. An axis-bin broadphase reduces exact obstacle tests
+  without dropping obstacles; the 2,000,000 predicate budget remains fixed.
+  Crowded, blocked or occluded contacts have typed list fallback.
+- B reports 1,390 leaf→ancestor pairs. C also includes Composite headers, for
+  1,673 all-Event pairs. Exported `leaf*Memberships` diagnostics put both on
+  the same 1,390-pair denominator. B `route` counts terminals participating in a drawn nondegenerate route;
+  isolated seeds retain their local cell and an explicit `LOCAL_CELL_ONLY` list
+  fallback. It is not a count of links or one connected global area.
+- The browser uses the same density/camera/selection path. Fixed fill contours
+  and open traces pass through worker and cache; traces use a live SVG overlay
+  in every renderer and never acquire relationship hit targets. Settings show
+  exact list fallback with reasons and original Event reveal links.
+
+Run the same `product-smoke.ts` command for B0/A/B/C. It additionally checks
+visible open trace paths through the actual SVG screen matrix, all five real
+country/Imjin/Yi cases, per-mode axis gestures/Collection changes, persistence
+across reloads, and exact fallback list/reveal behavior. `layoutLab=B` or
+`layoutLab=C` opens each candidate directly.

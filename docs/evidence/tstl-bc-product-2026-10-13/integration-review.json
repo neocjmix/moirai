@@ -1,0 +1,58 @@
+{
+  "asset": "apps/atropos-web/public/labs/tstl/r56-cc8a5617fc632dad.json",
+  "sha256": "cc8a5617fc632dadb817ee9a3a4db59709ed6381f6110761b34b06dbd38583ac",
+  "bytes": 2300355,
+  "b0Exact": true,
+  "aExact": true,
+  "eventCount": 539,
+  "leafCount": 430,
+  "candidates": {
+    "b": {
+      "xExactA": true,
+      "membershipCount": 1390,
+      "membershipUnique": 1390,
+      "missingLeafMemberships": 0,
+      "invalidTraceOwnership": 0,
+      "traceCount": 1185,
+      "ringCount": 3159,
+      "areaOwners": 109,
+      "noAreaOwnerCount": 0,
+      "allMembershipStatus": {
+        "route": 1312,
+        "list": 78
+      },
+      "leafMembershipStatus": {
+        "route": 1312,
+        "list": 78
+      },
+      "fallbackReasons": {
+        "LOCAL_CELL_ONLY": 6,
+        "UNKNOWN_BUDGET": 72
+      }
+    },
+    "c": {
+      "xExactA": true,
+      "membershipCount": 1673,
+      "membershipUnique": 1673,
+      "missingLeafMemberships": 0,
+      "invalidTraceOwnership": 0,
+      "traceCount": 691,
+      "ringCount": 1390,
+      "areaOwners": 109,
+      "noAreaOwnerCount": 0,
+      "allMembershipStatus": {
+        "list": 1126,
+        "route": 547
+      },
+      "leafMembershipStatus": {
+        "list": 919,
+        "route": 471
+      },
+      "fallbackReasons": {
+        "SPINE_OCCLUDED": 5,
+        "NO_TWO_BEND_PATH": 955,
+        "DENSE_MEMBERSHIP_PORTS": 166
+      }
+    }
+  }
+}

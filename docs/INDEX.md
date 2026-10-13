@@ -55,6 +55,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-014 — Pluggable renderer 비교 handoff](implementation/IP-014-pluggable-renderer-handoff.md)
 - [IP-015 — Realtime camera / eventual scene](implementation/IP-015-realtime-camera-eventual-scene.md)
 - [IP-016 — TSTL 제품 실험실](implementation/IP-016-tstl-product-lab.md)
+- [TSTL B/C 운영 비교와 검증](evidence/tstl-bc-product-lab-2026-10-13.md)
 - [IP-012 — Render Publication 구현 계획](implementation/IP-012-render-publication-plan.md)
 - [ADR-012 — Render viewport 읽기와 working-set 불변식](architecture/ADR-012-render-read-architecture.md)
 - [IP-012 — 모바일 성능 종료 결정·이관 backlog](implementation/IP-012-mobile-continuity-closeout.md)

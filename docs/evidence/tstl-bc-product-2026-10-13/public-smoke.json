@@ -1,0 +1,1186 @@
+{
+  "baseURL": "https://moirai-production-8ed1.up.railway.app",
+  "route": "/graph/v5",
+  "sourceSHA": "c1754519ce7fc689b6c9a31ecf60b0b5891b21d1",
+  "deployedSHA": "85bf228237647337ca381957cc88d5612176c761",
+  "completedAt": "2026-10-13T04:04:10.941Z",
+  "physicalIPhone17": "not tested",
+  "installedPWA": "not tested",
+  "evidenceType": "Actual public GraphShell in desktop/mobile browser emulation; synthetic two-pointer axis gestures.",
+  "notes": [
+    "The trace-only viewport is positive public coverage. Its live failure was not reproduced on the prior deployment; the corresponding culling bug has separate unit regression coverage.",
+    "Full traces and request logs remain in ignored agent artifacts; this summary includes only public acceptance facts."
+  ],
+  "results": [
+    {
+      "profile": "desktop-chromium",
+      "passed": true,
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "observedSHA": "85bf228237647337ca381957cc88d5612176c761",
+      "artifactSha256": "cc8a5617fc632dadb817ee9a3a4db59709ed6381f6110761b34b06dbd38583ac",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "runtimeErrors": [],
+      "failedHTTPResponses": [],
+      "defaultAndLoadingAssertions": {
+        "freshCurrentExperimentalAssetRequests": 0,
+        "activeSessionArtifactRequestsBeforeDocumentNavigations": 1,
+        "viewportTileRequestsAddedDuringInitialModeGestureAndCollectionComparisons": 0,
+        "currentFixedContours": 0,
+        "currentFixedTraces": 0,
+        "returnedCurrentFixedContours": 0,
+        "returnedCurrentFixedTraces": 0
+      },
+      "initialCandidates": {
+        "A": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 50,
+          "fragments": 968,
+          "traceOwners": 0,
+          "traces": 0,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 53,
+          "fragments": 2444,
+          "traceOwners": 48,
+          "traces": 957,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "C": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 53,
+          "fragments": 1105,
+          "traceOwners": 52,
+          "traces": 517,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        }
+      },
+      "candidatePainters": {
+        "A": {
+          "backend": "webgl",
+          "regions": 50,
+          "meshCount": 50,
+          "paints": 19,
+          "traces": null
+        },
+        "B": {
+          "backend": "webgl",
+          "regions": 53,
+          "meshCount": 53,
+          "paints": 50,
+          "traces": {
+            "regions": 48,
+            "inspectedPaths": 957,
+            "actualPaths": 957
+          }
+        },
+        "C": {
+          "backend": "webgl",
+          "regions": 53,
+          "meshCount": 53,
+          "paints": 60,
+          "traces": {
+            "regions": 52,
+            "inspectedPaths": 517,
+            "actualPaths": 517
+          }
+        }
+      },
+      "wideCandidates": {
+        "A": {
+          "points": 102,
+          "compositeOwners": 109,
+          "filledOwners": 105,
+          "fragments": 1207,
+          "traceOwners": 0,
+          "traces": 0,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B": {
+          "points": 102,
+          "compositeOwners": 109,
+          "filledOwners": 109,
+          "fragments": 3159,
+          "traceOwners": 104,
+          "traces": 1185,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "C": {
+          "points": 102,
+          "compositeOwners": 109,
+          "filledOwners": 109,
+          "fragments": 1390,
+          "traceOwners": 107,
+          "traces": 691,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        }
+      },
+      "selectedEvent": {
+        "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+        "kind": "composite",
+        "x": 464.3736572265625,
+        "y": 144.63780212402344,
+        "preservedModes": [
+          "A",
+          "B0",
+          "B",
+          "C"
+        ]
+      },
+      "activeControls": [
+        {
+          "testId": "tstl-compare-current",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-B0",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-A",
+          "pressed": "true",
+          "background": "rgb(26, 33, 30)",
+          "color": "rgb(251, 253, 252)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-B",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-C",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        }
+      ],
+      "independentAxisPinches": {
+        "A": {
+          "x": {
+            "before": {
+              "scaleX": 0.9142857142857143,
+              "scaleY": 0.4444444444444444
+            },
+            "after": {
+              "scaleX": 1.0709344583522207,
+              "scaleY": 0.4444444444444444
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 1.0709344583522207,
+              "scaleY": 0.4444444444444444
+            },
+            "after": {
+              "scaleX": 1.0709344583522207,
+              "scaleY": 0.5234821449460314
+            }
+          }
+        },
+        "B": {
+          "x": {
+            "before": {
+              "scaleX": 0.8533333333333334,
+              "scaleY": 0.0380952380952381
+            },
+            "after": {
+              "scaleX": 0.999538827795406,
+              "scaleY": 0.0380952380952381
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.999538827795406,
+              "scaleY": 0.0380952380952381
+            },
+            "after": {
+              "scaleX": 0.999538827795406,
+              "scaleY": 0.044869898138231265
+            }
+          }
+        },
+        "C": {
+          "x": {
+            "before": {
+              "scaleX": 0.8533333333333334,
+              "scaleY": 0.0380952380952381
+            },
+            "after": {
+              "scaleX": 0.999538827795406,
+              "scaleY": 0.0380952380952381
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.999538827795406,
+              "scaleY": 0.0380952380952381
+            },
+            "after": {
+              "scaleX": 0.999538827795406,
+              "scaleY": 0.044869898138231265
+            }
+          }
+        }
+      },
+      "collectionToggles": {
+        "A": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        },
+        "B": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        },
+        "C": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        }
+      },
+      "historicalCases": [
+        {
+          "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "title": "한국사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "A": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "B": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "C": "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          }
+        },
+        {
+          "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+          "title": "일본사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "A": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "B": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "C": "01a123a1-0000-77c0-8401-4f9db460625b"
+          }
+        },
+        {
+          "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+          "title": "중국사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "A": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "B": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "C": "01a1240c-0000-73dd-bea1-64db15136c48"
+          }
+        },
+        {
+          "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+          "title": "임진왜란: 두 차례 침략과 강화 교섭",
+          "parentCompositeIds": [
+            "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "01a123a1-0000-77c0-8401-4f9db460625b"
+          ],
+          "selectedIDsByMode": {
+            "B0": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "A": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "B": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "C": "01a10a3f-05d2-7981-94f4-08f3ea6433ec"
+          }
+        },
+        {
+          "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "title": "이순신의 생애",
+          "parentCompositeIds": [
+            "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          ],
+          "selectedIDsByMode": {
+            "B0": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "A": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "B": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "C": "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+          }
+        }
+      ],
+      "traceOnlyViewport": {
+        "owner": "01a1240c-0000-73dd-bea1-64db15136c48",
+        "camera": "-283.7798165137615,218200,100,400",
+        "semanticBounds": {
+          "minX": -384,
+          "minY": 218551.36792678837,
+          "maxX": 352,
+          "maxY": 230300.6084998323
+        },
+        "visibleMaxY": 218400,
+        "painter": {
+          "regions": 6,
+          "inspectedPaths": 282,
+          "actualPaths": 282
+        },
+        "counts": {
+          "points": 0,
+          "compositeOwners": 6,
+          "filledOwners": 6,
+          "fragments": 495,
+          "traceOwners": 6,
+          "traces": 282,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B0ToCReturnPreserved": true
+      },
+      "membershipLists": {
+        "B": {
+          "totalListMemberships": 78,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 29,
+          "firstPageCount": 29,
+          "paginationExercised": false,
+          "revealedEventId": "01a10811-2588-746b-836d-599a8b25b752"
+        },
+        "C": {
+          "totalListMemberships": 1126,
+          "owner": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "ownerMemberships": 240,
+          "firstPageCount": 30,
+          "paginationExercised": true,
+          "revealedEventId": "01a107ff-8b3c-75eb-bc17-7166e9061e76"
+        }
+      },
+      "persistedModeReloads": [
+        "A",
+        "B",
+        "C"
+      ],
+      "overflow": {
+        "width": 1280,
+        "document": 1280,
+        "body": 1280
+      }
+    },
+    {
+      "profile": "mobile-chromium",
+      "passed": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "observedSHA": "85bf228237647337ca381957cc88d5612176c761",
+      "artifactSha256": "cc8a5617fc632dadb817ee9a3a4db59709ed6381f6110761b34b06dbd38583ac",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "runtimeErrors": [],
+      "failedHTTPResponses": [],
+      "defaultAndLoadingAssertions": {
+        "freshCurrentExperimentalAssetRequests": 0,
+        "activeSessionArtifactRequestsBeforeDocumentNavigations": 1,
+        "viewportTileRequestsAddedDuringInitialModeGestureAndCollectionComparisons": 0,
+        "currentFixedContours": 0,
+        "currentFixedTraces": 0,
+        "returnedCurrentFixedContours": 0,
+        "returnedCurrentFixedTraces": 0
+      },
+      "initialCandidates": {
+        "A": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 50,
+          "fragments": 968,
+          "traceOwners": 0,
+          "traces": 0,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 53,
+          "fragments": 2444,
+          "traceOwners": 48,
+          "traces": 957,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "C": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 53,
+          "fragments": 1105,
+          "traceOwners": 52,
+          "traces": 517,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        }
+      },
+      "candidatePainters": {
+        "A": {
+          "backend": "webgl",
+          "regions": 49,
+          "meshCount": 49,
+          "paints": 19,
+          "traces": null
+        },
+        "B": {
+          "backend": "webgl",
+          "regions": 53,
+          "meshCount": 53,
+          "paints": 58,
+          "traces": {
+            "regions": 48,
+            "inspectedPaths": 957,
+            "actualPaths": 957
+          }
+        },
+        "C": {
+          "backend": "webgl",
+          "regions": 53,
+          "meshCount": 53,
+          "paints": 68,
+          "traces": {
+            "regions": 52,
+            "inspectedPaths": 517,
+            "actualPaths": 517
+          }
+        }
+      },
+      "wideCandidates": {
+        "A": {
+          "points": 106,
+          "compositeOwners": 105,
+          "filledOwners": 101,
+          "fragments": 1200,
+          "traceOwners": 0,
+          "traces": 0,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B": {
+          "points": 102,
+          "compositeOwners": 109,
+          "filledOwners": 109,
+          "fragments": 3159,
+          "traceOwners": 104,
+          "traces": 1185,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "C": {
+          "points": 102,
+          "compositeOwners": 109,
+          "filledOwners": 109,
+          "fragments": 1390,
+          "traceOwners": 107,
+          "traces": 691,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        }
+      },
+      "selectedEvent": {
+        "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+        "kind": "composite",
+        "x": 151.9185447692871,
+        "y": 174.7478790283203,
+        "preservedModes": [
+          "A",
+          "B0",
+          "B",
+          "C"
+        ]
+      },
+      "activeControls": [
+        {
+          "testId": "tstl-compare-current",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-B0",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-A",
+          "pressed": "true",
+          "background": "rgb(26, 33, 30)",
+          "color": "rgb(251, 253, 252)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-B",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-C",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        }
+      ],
+      "independentAxisPinches": {
+        "A": {
+          "x": {
+            "before": {
+              "scaleX": 0.2785714285714286,
+              "scaleY": 0.4688888888888889
+            },
+            "after": {
+              "scaleX": 0.3263003427791923,
+              "scaleY": 0.4688888888888889
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.3263003427791923,
+              "scaleY": 0.4688888888888889
+            },
+            "after": {
+              "scaleX": 0.3263003427791923,
+              "scaleY": 0.5522736629180631
+            }
+          }
+        },
+        "B": {
+          "x": {
+            "before": {
+              "scaleX": 0.26,
+              "scaleY": 0.04019047619047619
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04019047619047619
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04019047619047619
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04733774253583399
+            }
+          }
+        },
+        "C": {
+          "x": {
+            "before": {
+              "scaleX": 0.26,
+              "scaleY": 0.04019047619047619
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04019047619047619
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04019047619047619
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04733774253583399
+            }
+          }
+        }
+      },
+      "collectionToggles": {
+        "A": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        },
+        "B": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        },
+        "C": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        }
+      },
+      "historicalCases": [
+        {
+          "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "title": "한국사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "A": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "B": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "C": "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          }
+        },
+        {
+          "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+          "title": "일본사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "A": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "B": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "C": "01a123a1-0000-77c0-8401-4f9db460625b"
+          }
+        },
+        {
+          "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+          "title": "중국사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "A": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "B": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "C": "01a1240c-0000-73dd-bea1-64db15136c48"
+          }
+        },
+        {
+          "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+          "title": "임진왜란: 두 차례 침략과 강화 교섭",
+          "parentCompositeIds": [
+            "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "01a123a1-0000-77c0-8401-4f9db460625b"
+          ],
+          "selectedIDsByMode": {
+            "B0": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "A": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "B": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "C": "01a10a3f-05d2-7981-94f4-08f3ea6433ec"
+          }
+        },
+        {
+          "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "title": "이순신의 생애",
+          "parentCompositeIds": [
+            "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          ],
+          "selectedIDsByMode": {
+            "B0": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "A": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "B": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "C": "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+          }
+        }
+      ],
+      "traceOnlyViewport": {
+        "owner": "01a1240c-0000-73dd-bea1-64db15136c48",
+        "camera": "-283.7798165137615,218200,100,400",
+        "semanticBounds": {
+          "minX": -384,
+          "minY": 218551.36792678837,
+          "maxX": 352,
+          "maxY": 230300.6084998323
+        },
+        "visibleMaxY": 218400,
+        "painter": {
+          "regions": 5,
+          "inspectedPaths": 280,
+          "actualPaths": 280
+        },
+        "counts": {
+          "points": 2,
+          "compositeOwners": 5,
+          "filledOwners": 5,
+          "fragments": 489,
+          "traceOwners": 5,
+          "traces": 280,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B0ToCReturnPreserved": true
+      },
+      "membershipLists": {
+        "B": {
+          "totalListMemberships": 78,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 29,
+          "firstPageCount": 29,
+          "paginationExercised": false,
+          "revealedEventId": "01a10811-2588-746b-836d-599a8b25b752"
+        },
+        "C": {
+          "totalListMemberships": 1126,
+          "owner": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "ownerMemberships": 240,
+          "firstPageCount": 30,
+          "paginationExercised": true,
+          "revealedEventId": "01a107ff-8b3c-75eb-bc17-7166e9061e76"
+        }
+      },
+      "persistedModeReloads": [
+        "A",
+        "B",
+        "C"
+      ],
+      "overflow": {
+        "width": 390,
+        "document": 390,
+        "body": 390
+      }
+    },
+    {
+      "profile": "mobile-webkit",
+      "passed": true,
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "observedSHA": "85bf228237647337ca381957cc88d5612176c761",
+      "artifactSha256": "cc8a5617fc632dadb817ee9a3a4db59709ed6381f6110761b34b06dbd38583ac",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "runtimeErrors": [],
+      "failedHTTPResponses": [],
+      "defaultAndLoadingAssertions": {
+        "freshCurrentExperimentalAssetRequests": 0,
+        "activeSessionArtifactRequestsBeforeDocumentNavigations": 1,
+        "viewportTileRequestsAddedDuringInitialModeGestureAndCollectionComparisons": 0,
+        "currentFixedContours": 0,
+        "currentFixedTraces": 0,
+        "returnedCurrentFixedContours": 0,
+        "returnedCurrentFixedTraces": 0
+      },
+      "initialCandidates": {
+        "A": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 50,
+          "fragments": 968,
+          "traceOwners": 0,
+          "traces": 0,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 53,
+          "fragments": 2444,
+          "traceOwners": 48,
+          "traces": 957,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "C": {
+          "points": 84,
+          "compositeOwners": 53,
+          "filledOwners": 53,
+          "fragments": 1105,
+          "traceOwners": 52,
+          "traces": 517,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        }
+      },
+      "candidatePainters": {
+        "A": {
+          "backend": "webgl",
+          "regions": 49,
+          "meshCount": 49,
+          "paints": 18,
+          "traces": null
+        },
+        "B": {
+          "backend": "webgl",
+          "regions": 53,
+          "meshCount": 53,
+          "paints": 53,
+          "traces": {
+            "regions": 48,
+            "inspectedPaths": 957,
+            "actualPaths": 957
+          }
+        },
+        "C": {
+          "backend": "webgl",
+          "regions": 53,
+          "meshCount": 53,
+          "paints": 63,
+          "traces": {
+            "regions": 52,
+            "inspectedPaths": 517,
+            "actualPaths": 517
+          }
+        }
+      },
+      "wideCandidates": {
+        "A": {
+          "points": 106,
+          "compositeOwners": 105,
+          "filledOwners": 101,
+          "fragments": 1200,
+          "traceOwners": 0,
+          "traces": 0,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B": {
+          "points": 102,
+          "compositeOwners": 109,
+          "filledOwners": 109,
+          "fragments": 3159,
+          "traceOwners": 104,
+          "traces": 1185,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "C": {
+          "points": 102,
+          "compositeOwners": 109,
+          "filledOwners": 109,
+          "fragments": 1390,
+          "traceOwners": 107,
+          "traces": 691,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        }
+      },
+      "selectedEvent": {
+        "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+        "kind": "composite",
+        "x": 151.9185447692871,
+        "y": 174.74330139160156,
+        "preservedModes": [
+          "A",
+          "B0",
+          "B",
+          "C"
+        ]
+      },
+      "activeControls": [
+        {
+          "testId": "tstl-compare-current",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-B0",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-A",
+          "pressed": "true",
+          "background": "rgb(26, 33, 30)",
+          "color": "rgb(251, 253, 252)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-B",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        },
+        {
+          "testId": "tstl-compare-C",
+          "pressed": "false",
+          "background": "rgb(247, 249, 248)",
+          "color": "rgb(26, 33, 30)",
+          "reachable": true
+        }
+      ],
+      "independentAxisPinches": {
+        "A": {
+          "x": {
+            "before": {
+              "scaleX": 0.2785714285714286,
+              "scaleY": 0.4688802083333333
+            },
+            "after": {
+              "scaleX": 0.3263003427791923,
+              "scaleY": 0.4688802083333333
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.3263003427791923,
+              "scaleY": 0.4688802083333333
+            },
+            "after": {
+              "scaleX": 0.3263003427791923,
+              "scaleY": 0.5522634386574197
+            }
+          }
+        },
+        "B": {
+          "x": {
+            "before": {
+              "scaleX": 0.26,
+              "scaleY": 0.04018973214285714
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04018973214285714
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04018973214285714
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04733686617063597
+            }
+          }
+        },
+        "C": {
+          "x": {
+            "before": {
+              "scaleX": 0.26,
+              "scaleY": 0.04018973214285714
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04018973214285714
+            }
+          },
+          "y": {
+            "before": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04018973214285714
+            },
+            "after": {
+              "scaleX": 0.30454698659391277,
+              "scaleY": 0.04733686617063597
+            }
+          }
+        }
+      },
+      "collectionToggles": {
+        "A": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        },
+        "B": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        },
+        "C": {
+          "before": 7,
+          "afterOff": 6,
+          "restored": 7
+        }
+      },
+      "historicalCases": [
+        {
+          "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "title": "한국사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "A": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "B": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "C": "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          }
+        },
+        {
+          "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+          "title": "일본사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "A": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "B": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "C": "01a123a1-0000-77c0-8401-4f9db460625b"
+          }
+        },
+        {
+          "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+          "title": "중국사",
+          "parentCompositeIds": [],
+          "selectedIDsByMode": {
+            "B0": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "A": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "B": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "C": "01a1240c-0000-73dd-bea1-64db15136c48"
+          }
+        },
+        {
+          "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+          "title": "임진왜란: 두 차례 침략과 강화 교섭",
+          "parentCompositeIds": [
+            "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "01a123a1-0000-77c0-8401-4f9db460625b"
+          ],
+          "selectedIDsByMode": {
+            "B0": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "A": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "B": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "C": "01a10a3f-05d2-7981-94f4-08f3ea6433ec"
+          }
+        },
+        {
+          "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "title": "이순신의 생애",
+          "parentCompositeIds": [
+            "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          ],
+          "selectedIDsByMode": {
+            "B0": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "A": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "B": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "C": "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+          }
+        }
+      ],
+      "traceOnlyViewport": {
+        "owner": "01a1240c-0000-73dd-bea1-64db15136c48",
+        "camera": "-283.7798165137615,218200,100,400",
+        "semanticBounds": {
+          "minX": -384,
+          "minY": 218551.36792678837,
+          "maxX": 352,
+          "maxY": 230300.6084998323
+        },
+        "visibleMaxY": 218400,
+        "painter": {
+          "regions": 5,
+          "inspectedPaths": 280,
+          "actualPaths": 280
+        },
+        "counts": {
+          "points": 2,
+          "compositeOwners": 5,
+          "filledOwners": 5,
+          "fragments": 489,
+          "traceOwners": 5,
+          "traces": 280,
+          "stageActive": false,
+          "scenePending": 0,
+          "workerRunning": 0,
+          "workerPending": 0
+        },
+        "B0ToCReturnPreserved": true
+      },
+      "membershipLists": {
+        "B": {
+          "totalListMemberships": 78,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 29,
+          "firstPageCount": 29,
+          "paginationExercised": false,
+          "revealedEventId": "01a10811-2588-746b-836d-599a8b25b752"
+        },
+        "C": {
+          "totalListMemberships": 1126,
+          "owner": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "ownerMemberships": 240,
+          "firstPageCount": 30,
+          "paginationExercised": true,
+          "revealedEventId": "01a107ff-8b3c-75eb-bc17-7166e9061e76"
+        }
+      },
+      "persistedModeReloads": [
+        "A",
+        "B",
+        "C"
+      ],
+      "overflow": {
+        "width": 390,
+        "document": 390,
+        "body": 390
+      }
+    }
+  ]
+}

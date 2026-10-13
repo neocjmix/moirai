@@ -55,7 +55,9 @@ export function candidateExperimentPrimitives(
         geometry: rings.length
           ? { kind: "polygon", rings }
           : { kind: "point", xy: anchor },
-        bounds: hullBounds,
+        // The point stage uses the original anchor, which can lie outside
+        // experimental ink. Admission must retain both; hull sizing uses ink.
+        bounds: pointBounds([...support, anchor]),
         composite: { ...primitive.composite, worldBounds, hullBounds, anchor }
       };
     }

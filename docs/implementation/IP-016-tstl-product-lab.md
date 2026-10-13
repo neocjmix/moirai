@@ -30,3 +30,7 @@ A 운영 검증 뒤 사용자가 “다른후보들도 이어서 구현하자”
 - 배포 전후 fixture·pointer·기존 Render manifest digest와 공개 SHA를 비교한다. 실제 iPhone17 Safari/PWA 관찰과 에뮬레이션은 구분한다.
 
 관련 의미 계약은 CON-003, CORE-MODEL, TS-002/005/006/010이며 관측 URL은 `/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&layoutLab=B` 및 `layoutLab=C`다. 화면 영역별 발행과 광범위 성능 튜닝은 추가하지 않는다.
+
+## B/C 구현·배포 결과
+
+PR #353/#354로 구현·검토·병합하고 runtime `85bf228`의 기존 Railway 자동 배포를 확인했다. [날짜별 증거](../evidence/tstl-bc-product-lab-2026-10-13.md)가 동일 좌표 비교, 고정 도형 가시성 회귀, 공개 desktop/mobile 검증, CI와 남은 제한을 소유한다. 이는 B/C를 실험실에서 평가할 수 있게 한 결과이며 기본값 채택·의미 인증·역사 재발행 승인이 아니다. 다음 최소 단계는 실제 iPhone17 Safari/PWA에서 B0/A/B/C의 가독성과 탐색 비교다.

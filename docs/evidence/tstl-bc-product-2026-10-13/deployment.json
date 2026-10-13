@@ -1,0 +1,135 @@
+{
+  "schema": "tstl-bc-postdeploy-v1",
+  "sampledAt": "2026-10-13T03:59:40.591721+00:00",
+  "reviewedSourceSha": "c1754519ce7fc689b6c9a31ecf60b0b5891b21d1",
+  "mergeDeploymentSha": "85bf228237647337ca381957cc88d5612176c761",
+  "requests": {
+    "status": {
+      "url": "https://moirai-production-8ed1.up.railway.app/__status",
+      "sampledAt": "2026-10-13T03:59:40.355315+00:00",
+      "httpStatus": 200,
+      "bodySha256": "f03eaaf37f4e078744c41e16a65c95b554dc30e4c032cb36d2f839ba36c86d93",
+      "bodyBytes": 458,
+      "sameBytesAsBeforeOrPinned": false,
+      "allowlistedBody": {
+        "application": {
+          "service": "atropos-web",
+          "version": "0.0.0-dev",
+          "commit_sha": "85bf228237647337ca381957cc88d5612176c761",
+          "deployed_at": "2026-10-13T03:58:52.911Z"
+        },
+        "versions": {
+          "contract": "5",
+          "schema": "011_ip011_authoring_search",
+          "publication_format": "v5-publication/1"
+        },
+        "surfaces": {
+          "atropos": "ok",
+          "health": "ok",
+          "status": "ok"
+        }
+      }
+    },
+    "health": {
+      "url": "https://moirai-production-8ed1.up.railway.app/health",
+      "sampledAt": "2026-10-13T03:59:40.352325+00:00",
+      "httpStatus": 200,
+      "bodySha256": "67556ad079dc8268c09363359d33e2aae6db28ee84c02c0aeaf66539886c2643",
+      "bodyBytes": 117,
+      "sameBytesAsBeforeOrPinned": false,
+      "allowlistedBody": {
+        "status": "ok",
+        "service": "atropos-web",
+        "version": "0.0.0-dev",
+        "commit_sha": "85bf228237647337ca381957cc88d5612176c761"
+      }
+    },
+    "historyServedPointer": {
+      "url": "https://moirai-production-8ed1.up.railway.app/worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/current.json",
+      "sampledAt": "2026-10-13T03:59:40.352729+00:00",
+      "httpStatus": 200,
+      "bodySha256": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a",
+      "bodyBytes": 418,
+      "sameBytesAsBeforeOrPinned": true,
+      "allowlistedBody": {
+        "format_version": "v5-publication/1",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "served_revision": 56,
+        "current_revision": 56,
+        "publication_target_revision": 56,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/revisions/56/v5/complete/manifest.json",
+        "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "generated_at": "2026-10-10T04:22:50.900Z"
+      }
+    },
+    "historyRenderManifest": {
+      "url": "https://moirai-production-8ed1.up.railway.app/graph/v5/render",
+      "sampledAt": "2026-10-13T03:59:40.452698+00:00",
+      "httpStatus": 200,
+      "bodySha256": "14b3d11cb059175b634029145a8fe381049c489ce276a1bd101a0782c5bdcb36",
+      "bodyBytes": 1740190,
+      "sameBytesAsBeforeOrPinned": true,
+      "allowlistedBody": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "algorithmVersion": "render-compiler/4",
+        "layoutAlgorithmVersion": "global-incidence/1"
+      },
+      "method": "POST (read-only manifest resolver)",
+      "request": {
+        "kind": "manifest",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "time_system_id": "01a107fc-3994-7889-969f-7a210c19fa24"
+      }
+    },
+    "frozenTstlAsset": {
+      "url": "https://moirai-production-8ed1.up.railway.app/labs/tstl/r56-be1265468d3f0a32.json",
+      "sampledAt": "2026-10-13T03:59:40.413104+00:00",
+      "httpStatus": 200,
+      "bodySha256": "be1265468d3f0a32c939cf0f335df6b1050059241c4893f0a52806563045a65b",
+      "bodyBytes": 880345,
+      "sameBytesAsBeforeOrPinned": true
+    },
+    "newFrozenTstlAsset": {
+      "url": "https://moirai-production-8ed1.up.railway.app/labs/tstl/r56-cc8a5617fc632dad.json",
+      "sampledAt": "2026-10-13T03:59:40.586069+00:00",
+      "httpStatus": 200,
+      "bodySha256": "cc8a5617fc632dadb817ee9a3a4db59709ed6381f6110761b34b06dbd38583ac",
+      "bodyBytes": 2300355,
+      "sameBytesAsBeforeOrPinned": true
+    }
+  },
+  "repository": {
+    "historyFixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+    "unchanged": true
+  },
+  "railway": {
+    "configMutationsByReviewer": 0,
+    "newResourcesCreated": 0,
+    "stagedPatchUnchangedFromBefore": true,
+    "allThreeSuccessAtTargetSha": true,
+    "deployments": [
+      {
+        "status": "SUCCESS",
+        "commitSha": "85bf228237647337ca381957cc88d5612176c761",
+        "createdAt": "2026-10-13T03:57:08.359Z",
+        "updatedAt": "2026-10-13T03:58:56.002Z"
+      },
+      {
+        "status": "SUCCESS",
+        "commitSha": "85bf228237647337ca381957cc88d5612176c761",
+        "createdAt": "2026-10-13T03:57:08.358Z",
+        "updatedAt": "2026-10-13T03:58:35.944Z"
+      },
+      {
+        "status": "SUCCESS",
+        "commitSha": "85bf228237647337ca381957cc88d5612176c761",
+        "createdAt": "2026-10-13T03:57:08.358Z",
+        "updatedAt": "2026-10-13T03:58:55.557Z"
+      }
+    ]
+  }
+}

@@ -20,6 +20,9 @@ import type {
   TstlExperimentBox
 } from "../../apps/atropos-web/src/lib/tstl-experiment-types.js";
 
+import { placeSemanticLanes } from "./semantic-lanes.js";
+import { alignSemanticLanes } from "./align-semantic-lanes.js";
+import { buildPositionedBubbleCandidate } from "./candidate-positioned-bubble.js";
 import { buildCandidateB } from "./candidate-b.js";
 import { buildCandidateC } from "./candidate-c.js";
 import { buildBubbleCandidate } from "./candidate-bubble.js";
@@ -158,12 +161,30 @@ export function exportProductExperiment(
   const c = convert(alternatives[1]!);
   const bubble = buildBubbleCandidate(baseline, comparison);
   const ribbon = buildRibbonCandidate(baseline, comparison);
-  const all = [a, b, c, bubble, ribbon].flatMap((candidate) => [
-    ...Object.values(candidate.contoursByCompositeId).flat(2),
-    ...Object.values(candidate.tracesByCompositeId ?? {}).flatMap((traces) =>
-      traces.flatMap((trace) => trace.points)
-    )
-  ]);
+  const lanes = buildPositionedBubbleCandidate(
+    baseline,
+    comparison,
+    placeSemanticLanes(comparison.projection, comparison.b0.events).positions
+  );
+  const aligned = buildPositionedBubbleCandidate(
+    baseline,
+    comparison,
+    alignSemanticLanes(comparison.projection, comparison.b0.events).positions
+  );
+  const anchored = buildPositionedBubbleCandidate(
+    baseline,
+    comparison,
+    alignSemanticLanes(comparison.projection, comparison.b0.events, true)
+      .positions
+  );
+  const all = [a, b, c, bubble, ribbon, lanes, aligned, anchored].flatMap(
+    (candidate) => [
+      ...Object.values(candidate.contoursByCompositeId).flat(2),
+      ...Object.values(candidate.tracesByCompositeId ?? {}).flatMap((traces) =>
+        traces.flatMap((trace) => trace.points)
+      )
+    ]
+  );
   const bounds = all.reduce<TstlExperimentBox>(
     (box, point) => ({
       minX: Math.min(box.minX, point.x),
@@ -187,7 +208,7 @@ export function exportProductExperiment(
     (id) => !contoursByCompositeId[id]!.length
   );
   return {
-    formatVersion: "tstl-product-experiment/3",
+    formatVersion: "tstl-product-experiment/4",
     source: {
       ...comparison.source,
       fixtureSha256: OBSERVED_FIXTURE_SHA256,
@@ -204,6 +225,9 @@ export function exportProductExperiment(
     c,
     bubble,
     ribbon,
+    lanes,
+    aligned,
+    anchored,
     stats: {
       events: comparison.projection.eventIds.length,
       composites: comparison.projection.compositeIds.length,

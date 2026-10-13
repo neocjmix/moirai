@@ -1,0 +1,32 @@
+
+ RUN  v3.2.7 <clean-main-checkout>
+
+ ❯ apps/atropos-web/src/urdr-port/src/components/composite-label-density-order.test.ts (3 tests | 1 failed) 376ms
+   × preserves exhaustive placement on generated pan and zoom sequences 373ms
+     → expected '0659a9699b277f4f98dd6897db028c4f8486b…' to be '619d6f9ff1549a6821ec060bf7fb1cd9ac078…' // Object.is equality
+   ✓ queries only the best geometric candidate when its neighborhood is empty 1ms
+   ✓ preserves the six-pixel visibility grid for long and viewport-edge paths 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  apps/atropos-web/src/urdr-port/src/components/composite-label-density-order.test.ts > preserves exhaustive placement on generated pan and zoom sequences
+AssertionError: expected '0659a9699b277f4f98dd6897db028c4f8486b…' to be '619d6f9ff1549a6821ec060bf7fb1cd9ac078…' // Object.is equality
+
+Expected: "619d6f9ff1549a6821ec060bf7fb1cd9ac07837fc07d02a944bfbd79ad1dbbbe"
+Received: "0659a9699b277f4f98dd6897db028c4f8486b00cd64b250124a465cefd6c17f8"
+
+ ❯ apps/atropos-web/src/urdr-port/src/components/composite-label-density-order.test.ts:71:6
+     69|   expect(outputs).toHaveLength(1008);
+     70|   expect(createHash("sha256").update(JSON.stringify(outputs)).digest("…
+     71|     .toBe("619d6f9ff1549a6821ec060bf7fb1cd9ac07837fc07d02a944bfbd79ad1…
+       |      ^
+     72| });
+     73|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  1 failed | 2 passed (3)
+   Start at  19:50:27
+   Duration  682ms (transform 48ms, setup 0ms, collect 53ms, tests 376ms, environment 0ms, prepare 40ms)

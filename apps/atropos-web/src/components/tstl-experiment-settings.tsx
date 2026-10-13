@@ -12,7 +12,10 @@ const primaryChoices: TstlLayoutChoice[] = [
   "current",
   "B0",
   "bubble",
-  "ribbon"
+  "ribbon",
+  "lanes",
+  "aligned",
+  "anchored"
 ];
 const researchChoices: TstlLayoutChoice[] = ["A", "B", "C"];
 
@@ -35,6 +38,21 @@ const modeCopy = {
       label: "리본 · 시간 리본",
       description:
         "B0와 같은 사건 위치에서 시간 방향으로 이어지는 리본 모양의 면을 비교합니다. 리본이 이어져 보여도 사건 사이의 연속성을 증명하지는 않습니다."
+    },
+    lanes: {
+      label: "분리 · 소속별 레인",
+      description:
+        "서로 다른 소속의 사건 묶음을 나눕니다. 국가별 방향이 일정하지만 공유 사건을 따라갈 때 가로 이동이 커질 수 있습니다."
+    },
+    aligned: {
+      label: "흐름 · 구간 정렬",
+      description:
+        "공유 사건으로 이어지는 구간의 가로 이동을 줄입니다. 일부 국가 흐름이 좌우로 움직일 수 있습니다."
+    },
+    anchored: {
+      label: "절충 · 국가 방향 유지",
+      description:
+        "국가별 단독 사건의 위치를 좁은 범위에 유지하며 공유 구간을 정렬합니다. 분리와 흐름의 절충을 비교합니다."
     },
     A: {
       label: "후보 A · 분리된 면",
@@ -70,6 +88,21 @@ const modeCopy = {
       label: "Ribbon · time ribbons",
       description:
         "Compare ribbon-shaped areas along time at the same event positions as B0. A continuous-looking ribbon does not prove continuity between events."
+    },
+    lanes: {
+      label: "Lanes · separate memberships",
+      description:
+        "Separate groups with different memberships. Country orientation stays stable, but shared events can require longer sideways travel."
+    },
+    aligned: {
+      label: "Aligned · shorter flow",
+      description:
+        "Reduce sideways travel between shared episodes. Some country flows can drift horizontally."
+    },
+    anchored: {
+      label: "Anchored · stable country orientation",
+      description:
+        "Keep exclusive country episodes in narrow corridors while aligning shared episodes. Compare the separation and continuity tradeoff."
     },
     A: {
       label: "Candidate A · separate areas",
@@ -212,6 +245,9 @@ export function TstlExperimentCompare({ locale, layout }: Props) {
     B0: "B0",
     bubble: ko ? "버블" : "Bubble",
     ribbon: ko ? "리본" : "Ribbon",
+    lanes: ko ? "분리" : "Lanes",
+    aligned: ko ? "흐름" : "Aligned",
+    anchored: ko ? "절충" : "Anchored",
     A: "A",
     B: "B",
     C: "C"

@@ -1,5 +1,10 @@
 # TSTL B0 / A independent preview
 
+For the later isolated X-placement study, see
+[exact-signature temporal lanes](../../docs/evidence/tstl-semantic-separation-2026-10-13.md).
+It retains every existing candidate and compares regenerated Bubble geometry
+and point-only views at fixed and fit cameras. It is not a production promotion.
+
 This experiment starts at documentation commit
 `0ead253b4cb71742d7c1ef78c480e66dff708a82`, whose runtime is identical to
 `d721b0efdcf309ed7ad21c55bc04572e2f14d644` (`main` at the start).

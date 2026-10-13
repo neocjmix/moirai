@@ -115,6 +115,7 @@ pre-existing path and blob before pushing. Do not replace the Pages root,
 `legacy/`, Railway services or any served pointer. Verify Pages' actual
 deployment commit, the public `build.json` source commit, asset digests,
 mobile interactions and the recorded production pointer after deployment.
+
 # Product Labs follow-up
 
 The user-authorized [IP-016](../../docs/implementation/IP-016-tstl-product-lab.md)

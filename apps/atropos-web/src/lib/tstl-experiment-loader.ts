@@ -102,15 +102,11 @@ export function createTstlGraphReadLoader(input: {
                     ? { preparedAnchor: anchors.get(region.id)! }
                     : {}),
                   validationState: "warning" as const,
-                  diagnostics: [
-                    {
-                      code: "tstl_experimental_area",
-                      severity: "warning" as const,
-                      message: artifact.a.noAreaCompositeIds.includes(region.id)
-                        ? "후보 A에서 면을 구성하지 못한 사건: 점으로 표시"
-                        : "후보 A의 검증 미완료 실험 면"
-                    }
-                  ]
+                  // The persistent Labs control and settings disclose this
+                  // scope-wide limitation. Per-region diagnostics are logged
+                  // on each viewport update by GraphShell, so do not emit the
+                  // same experimental warning hundreds of times while panning.
+                  diagnostics: []
                 }
           );
         return value;

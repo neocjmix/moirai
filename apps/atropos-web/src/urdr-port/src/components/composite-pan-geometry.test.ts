@@ -294,3 +294,24 @@ it("never lets a remote membership trace enlarge or bridge a filled fragment", (
   expect(mixed.tracePaths![0]!.path).not.toMatch(/[ZCQ]/);
   expect(mixed.projectedHullPoints).toHaveLength(6);
 });
+
+
+it("retains compound fill rule through worker hydration and invalidates equal-path cache entries when it changes", () => {
+  const rings = [points, points.map(point => ({x: point.x / 2, y: point.y / 2}))];
+  const input = {...request, points: rings.flat(), fixedRings: rings};
+  const cache = createCompositePanGeometryCache();
+  const legacy = cache.project(input);
+  expect(legacy.fillRule).toBeUndefined();
+  const compound = cache.project({...input, fillRule: "evenodd"});
+  expect(compound.path).toBe(legacy.path);
+  expect(compound.fillRule).toBe("evenodd");
+  expect(cache.inspect().builds).toBe(2);
+  const worker = createCompositePanGeometryCache();
+  worker.hydrate(structuredClone(cache.snapshot()));
+  const moved = worker.project({...input, fillRule: "evenodd", view: {...view, x: 9, y: -7}});
+  expect(moved.fillRule).toBe("evenodd");
+  expect(moved.pathTransform).toBe("translate(9 -7)");
+  expect(worker.inspect()).toMatchObject({builds: 0, hits: 1});
+  expect(worker.project(input).fillRule).toBeUndefined();
+  expect(worker.inspect().builds).toBe(1);
+});

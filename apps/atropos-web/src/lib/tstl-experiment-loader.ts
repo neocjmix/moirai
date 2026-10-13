@@ -100,6 +100,9 @@ export function createTstlGraphReadLoader(input: {
                   preparedWorldRings:
                     candidate.contoursByCompositeId[region.id]!,
                   preparedContourMode: "fixed" as const,
+                  ...(candidate.fillRule
+                    ? { preparedContourFillRule: candidate.fillRule }
+                    : {}),
                   preparedWorldTraces:
                     candidate.tracesByCompositeId?.[region.id] ?? [],
                   ...(anchors.has(region.id)

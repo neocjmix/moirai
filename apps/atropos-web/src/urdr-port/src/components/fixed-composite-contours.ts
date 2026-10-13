@@ -1,4 +1,5 @@
 import { contextViewportMetrics } from "../../../lib/graph-context-policy";
+import { compoundContourContainsPoint, compoundContourNesting } from "../../../components/compound-contours";
 import type { GraphShellPreparedWorldTrace } from "../../shared/contracts";
 
 type Point = { x: number; y: number };
@@ -20,13 +21,23 @@ export function contourArea(points: readonly Point[]) {
 }
 
 /** One label remains attached to one actual fragment, never an invented bridge. */
-export function fixedCompositeLabelRing(rings: readonly Point[][], size: Size): Point[] {
-  const visible = rings.filter((ring) => ring.length && Math.max(...ring.map(point => point.x)) >= 0 && Math.min(...ring.map(point => point.x)) <= size.width && Math.max(...ring.map(point => point.y)) >= 0 && Math.min(...ring.map(point => point.y)) <= size.height);
-  return [...(visible.length ? visible : rings)].sort((a, b) => contourArea(b) - contourArea(a))[0] ?? [];
+export function fixedCompositeLabelRing(rings: readonly Point[][], size: Size, fillRule?: "evenodd", ringDepths?: readonly number[]): Point[] {
+  const depths = fillRule === "evenodd" ? ringDepths ?? compoundContourNesting(rings).depths : undefined;
+  const exteriors = depths ? rings.filter((_, index) => depths[index]! % 2 === 0) : rings;
+  const visible = exteriors.filter((ring) => ring.length && Math.max(...ring.map(point => point.x)) >= 0 && Math.min(...ring.map(point => point.x)) <= size.width && Math.max(...ring.map(point => point.y)) >= 0 && Math.min(...ring.map(point => point.y)) <= size.height);
+  return [...(visible.length ? visible : exteriors)].sort((a, b) => contourArea(b) - contourArea(a))[0] ?? [];
 }
 
-export function fixedCompositeContextMetrics(rings: readonly (readonly Point[])[], size: Size) {
+export function fixedCompositeContextMetrics(rings: readonly (readonly Point[])[], size: Size, fillRule?: "evenodd") {
   const measured = rings.map((ring) => contextViewportMetrics(ring, size));
+  if (fillRule === "evenodd") {
+    const center = {x: size.width / 2, y: size.height / 2};
+    const inside = compoundContourContainsPoint(rings, center);
+    return {
+      centerDistance: inside ? 0 : Math.min(2, ...rings.flatMap(ring => ring.map((point, index) => contextViewportMetrics([point, ring[(index + 1) % ring.length]!], size).centerDistance))),
+      viewportSpan: Math.max(0, ...measured.map(value => value.viewportSpan)),
+    };
+  }
   return {
     centerDistance: Math.min(2, ...measured.map((value) => value.centerDistance)),
     viewportSpan: Math.max(0, ...measured.map((value) => value.viewportSpan))
@@ -79,4 +90,11 @@ export function fixedCompositeTraceMetrics(traces: readonly GraphShellPreparedWo
     }
   }
   return {centerDistance, viewportSpan, visible, labelPoint};
+}
+
+
+/** A viewport entirely inside a hole has no fill or boundary visible. */
+export function fixedCompoundVisible(rings: readonly (readonly Point[])[], size: Size) {
+  return compoundContourContainsPoint(rings, {x: size.width / 2, y: size.height / 2}) ||
+    rings.some(ring => ring.some((point, index) => traceSegmentVisible(point, ring[(index + 1) % ring.length]!, size)));
 }

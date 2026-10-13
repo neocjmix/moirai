@@ -16,7 +16,6 @@ import {
 import { waitForGraphReadTarget } from "../ip011-a4-browser-contract.js";
 import {
   tstlCandidate,
-  type TstlCandidateMode,
   type TstlExperimentArtifact,
   type TstlExperimentMode,
   type TstlExperimentPoint,
@@ -237,7 +236,7 @@ async function assertPaint(
   page: Page,
   state: Inspection,
   artifact: TstlExperimentArtifact,
-  mode: TstlCandidateMode = "A"
+  mode: "A" | "B" | "C" = "A"
 ) {
   const candidate = tstlCandidate(artifact, mode);
   if (mode === "A") {
@@ -799,7 +798,19 @@ async function openGraphTab(page: Page) {
   await button.click({ position: { x: box.width - 12, y: box.height / 2 } });
 }
 async function switchMode(page: Page, mode: TstlExperimentMode) {
-  await page.getByTestId(`tstl-compare-${mode}`).click();
+  const quickChoice = page.getByTestId(`tstl-compare-${mode}`);
+  if (await quickChoice.count()) await quickChoice.click();
+  else {
+    await page.getByRole("button", { name: "설정", exact: true }).click();
+    const previous = page.getByTestId("tstl-previous-candidates");
+    if (
+      (await previous.count()) &&
+      (await previous.getAttribute("open")) === null
+    )
+      await previous.locator("summary").click();
+    await page.getByTestId(`tstl-layout-${mode}`).click();
+    await openGraphTab(page);
+  }
   const state = await settle(page, mode);
   assert.equal(
     await page.getByTestId(`tstl-compare-${mode}`).getAttribute("aria-pressed"),

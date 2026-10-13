@@ -18,6 +18,22 @@ type Props = {
 };
 const PAGE_SIZE = 30;
 const reasons: Record<string, { ko: string; en: string }> = {
+  FIXED_SUPPORT_CONFLICT: {
+    ko: "고정된 사건 표시 영역이 겹쳐 면으로 완전히 포함하지 못함",
+    en: "Overlapping fixed event markers prevent full area coverage"
+  },
+  REGION_BUDGET_OR_SUPPORT_CONFLICT: {
+    ko: "탐색 한도 또는 사건 표시 영역 충돌로 면이 사건을 완전히 포함하지 못함",
+    en: "A routing limit or marker overlap prevents full area coverage"
+  },
+  FINAL_GLYPH_NOT_COVERED: {
+    ko: "최종 면이 사건 표시 영역을 완전히 포함하지 못함",
+    en: "The final area does not fully cover the event marker"
+  },
+  FINAL_GEOMETRY_REJECTED: {
+    ko: "최종 면이 도형 검사를 통과하지 못해 목록으로 표시함",
+    en: "The final area failed geometry checks; membership is shown in this list"
+  },
   LOCAL_CELL_ONLY: {
     ko: "사건 주변 면만 표시하고 다른 사건까지 연결하지 못함",
     en: "Only the local event area is drawn; no link to another event"

@@ -758,6 +758,27 @@ async function compareControls(page: Page) {
     });
   });
 }
+function assertActiveControl(
+  controls: Awaited<ReturnType<typeof compareControls>>,
+  mode: TstlExperimentMode
+) {
+  const active = controls.filter((control) => control.pressed === "true");
+  assert.equal(active.length, 1, "exactly one compare mode is active");
+  assert.equal(active[0]!.testId, `tstl-compare-${mode}`);
+  assert.notEqual(
+    active[0]!.background,
+    "rgba(0, 0, 0, 0)",
+    "active mode has a visible background outside the settings theme"
+  );
+  for (const control of controls.filter(
+    (control) => control.pressed !== "true"
+  ))
+    assert.notEqual(
+      active[0]!.background,
+      control.background,
+      "active mode is visually distinguishable from every other option"
+    );
+}
 async function openGraphTab(page: Page) {
   const button = page.getByRole("button", { name: "공개 그래프", exact: true });
   const box = await button.boundingBox();
@@ -774,6 +795,7 @@ async function switchMode(page: Page, mode: TstlExperimentMode) {
     await page.getByTestId(`tstl-compare-${mode}`).getAttribute("aria-pressed"),
     "true"
   );
+  assertActiveControl(await compareControls(page), mode);
   return state;
 }
 const results: Record<string, unknown>[] = [];
@@ -919,6 +941,10 @@ for (const profile of profiles) {
     result.painter = await assertPaint(page, initial, artifact);
     result.initialA = summary(initial);
     result.compareControls = await compareControls(page);
+    assertActiveControl(
+      result.compareControls as Awaited<ReturnType<typeof compareControls>>,
+      "A"
+    );
     assert(
       (
         result.compareControls as Awaited<ReturnType<typeof compareControls>>

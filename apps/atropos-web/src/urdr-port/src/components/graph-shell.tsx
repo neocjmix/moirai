@@ -810,6 +810,7 @@ function getCompositeSurfaceOpacityScale(coverage: number) {
 }
 
 type GraphShellProps = {
+  eventTools?: ReactNode;
   discovery?: import("../../../lib/collection-discovery-config").CollectionDiscoveryConfig;
   initialWorkspace: GraphShellBootstrapWorkspace;
   initialChartPlane?: GraphShellChartPlane;
@@ -1028,6 +1029,7 @@ const GRAPH_SHELL_COPY: Record<AppLocale, GraphShellCopy> = {
 };
 
 type EventDrawerContentProps = {
+  eventTools?: ReactNode;
   readingLinks?: EventDetailResponse["readingLinks"];
   locale: AppLocale;
   readingContext?: EventDetailResponse["readingContext"];
@@ -1957,7 +1959,8 @@ function EventDrawerContent({
   onClose,
   onStageChange,
   onTabChange,
-  onRetry
+  onRetry,
+  eventTools
 }: EventDrawerContentProps) {
   const statusMessage = loadState === "error"
     ? copy.eventLoadErrorLabel
@@ -1987,6 +1990,7 @@ function EventDrawerContent({
           <span className={styles.eventDrawerHandle} />
         </div>
       </div>
+      <div>
       <div className={styles.eventDrawerHeader}>
         <div className={styles.eventDrawerHeaderCopy}>
           <div className={styles.eventDrawerTitle}>{selectedEventTitle}</div>
@@ -2014,6 +2018,8 @@ function EventDrawerContent({
         </div>
       </div>
 
+      {eventTools}
+      </div>
       <div className={styles.eventDrawerBody}>
         <div aria-label={copy.eventDrawerTabsLabel} className={styles.eventDrawerTabRow} role="tablist">
           <button
@@ -2296,6 +2302,7 @@ export function GraphShell({
   initialEventDetail,
   initialDrawerStage = "peek",
   onSelection,
+  eventTools,
   locale,
   compositeHullMode,
   compositeSplineTuning,
@@ -4720,6 +4727,7 @@ export function GraphShell({
             } as CSSProperties}
           >
             <EventDrawerContent
+              eventTools={eventTools}
               readingLinks={selectedEventRecord?.readingLinks}
               copy={copy}
               eventCauseLabels={selectedEventCauseLabels}

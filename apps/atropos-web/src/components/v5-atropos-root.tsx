@@ -13,6 +13,7 @@ import { createTstlGraphReadLoader } from "../lib/tstl-experiment-loader";
 import { useTstlLayout } from "./use-tstl-layout";
 import {
   TstlExperimentCompare,
+  TstlExperimentDrawerControl,
   TstlExperimentSettings
 } from "./tstl-experiment-settings";
 import {
@@ -203,6 +204,9 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       loader={loader}
       renderSettings={(locale) => (
         <TstlExperimentSettings locale={locale} layout={layout} />
+      )}
+      renderEventTools={(locale) => (
+        <TstlExperimentDrawerControl locale={locale} layout={layout} />
       )}
       renderGraphTools={(locale) => (
         <TstlExperimentCompare

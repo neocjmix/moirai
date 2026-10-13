@@ -282,3 +282,29 @@ export function TstlExperimentCompare({
     </div>
   );
 }
+
+export function TstlExperimentDrawerControl({ locale, layout }: Props) {
+  if (layout.mode === "current") return null;
+  const copy = modeCopy[locale === "ko" ? "ko" : "en"];
+  return (
+    <label
+      className={styles.drawerControl}
+      onPointerDown={(event) => event.stopPropagation()}
+    >
+      <span>{locale === "ko" ? "실험 레이아웃" : "Lab layout"}</span>
+      <select
+        data-testid="tstl-drawer-layout"
+        value={layout.mode}
+        onChange={(event) =>
+          void layout.choose(event.target.value as TstlLayoutChoice)
+        }
+      >
+        {[...primaryChoices, ...researchChoices].map((choice) => (
+          <option key={choice} value={choice}>
+            {copy[choice].label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}

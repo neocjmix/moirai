@@ -1,0 +1,28 @@
+{
+  "source": "apps/atropos-web/public/labs/tstl/r56-5d8e2b32d0b5895c.json",
+  "sha256": "5d8e2b32d0b5895cc02823ab4bfa9794873d7e65e465ba6e62fe43ff898173c1",
+  "results": [
+    {
+      "mode": "bubble",
+      "owners": 109,
+      "meshBytes": 6580860,
+      "maxMeshBytes": 624180,
+      "maxRingVertices": 3287,
+      "vertices": 36337,
+      "holes": 473,
+      "maxRelativeAreaError": 1.354419669405725e-7,
+      "failures": []
+    },
+    {
+      "mode": "ribbon",
+      "owners": 109,
+      "meshBytes": 3687960,
+      "maxMeshBytes": 266640,
+      "maxRingVertices": 1330,
+      "vertices": 20316,
+      "holes": 395,
+      "maxRelativeAreaError": 7.980595629411017e-8,
+      "failures": []
+    }
+  ]
+}

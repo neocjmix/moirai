@@ -1,0 +1,1050 @@
+{
+  "kind": "tstl-smooth-product-public-acceptance",
+  "sourceCommit": "09e7ecdb23de6745692199fbd2cbb38783f4a708",
+  "deploymentCommit": "14895dbc32e667e701e4af1a94cd1940ea923060",
+  "baseURL": "https://moirai-production-8ed1.up.railway.app",
+  "graphPath": "/graph/v5",
+  "comparisonURLs": {
+    "B0": "https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&layoutLab=B0&gsViewport=260%2C223420%2C650%2C1800",
+    "bubble": "https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&layoutLab=bubble&gsViewport=260%2C223420%2C650%2C1800",
+    "ribbon": "https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&layoutLab=ribbon&gsViewport=260%2C223420%2C650%2C1800"
+  },
+  "artifactSha256": "5d8e2b32d0b5895cc02823ab4bfa9794873d7e65e465ba6e62fe43ff898173c1",
+  "artifactURL": "https://moirai-production-8ed1.up.railway.app/labs/tstl/r56-5d8e2b32d0b5895c.json",
+  "source": {
+    "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+    "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+    "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+    "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+    "temporalProvenance": "legacy-scalar-only"
+  },
+  "passedProfiles": [
+    "desktop-chromium",
+    "mobile-chromium",
+    "mobile-webkit"
+  ],
+  "assertions": {
+    "exactB0Coordinates": "539 original Event points and Composite anchors; source semantic bounds unchanged; every inspected runtime coordinate equal",
+    "exactContours": "Source compound rings preserved through prepared geometry, SVG paths and successful WebGL source-key paint; actual SVG even-odd hole interiors checked",
+    "defaultAssetLoads": 0,
+    "inSessionAssetLoads": 1,
+    "extraViewportPublicationReadsDuringInSessionModeCameraCollectionAndDrawerChanges": 0,
+    "independentAxisZoom": true,
+    "productionDensityAndCollectionVisibility": true,
+    "sameCameraAndSelectedEventAcrossLayouts": true,
+    "historicalCaseDrawers": [
+      "한국사",
+      "일본사",
+      "중국사",
+      "임진왜란: 두 차례 침략과 강화 교섭",
+      "이순신의 생애"
+    ],
+    "savedModeReloads": [
+      "bubble",
+      "ribbon"
+    ],
+    "returnToCurrent": true,
+    "fallbackMembershipsPerMode": 180
+  },
+  "profiles": [
+    {
+      "profile": "desktop-chromium",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "passed": true,
+      "observedSHA": "14895dbc32e667e701e4af1a94cd1940ea923060",
+      "pageErrors": [],
+      "failedHTTP": [],
+      "overflow": {
+        "width": 1280,
+        "document": 1280,
+        "body": 1280
+      },
+      "default": {
+        "fixedContours": 0,
+        "revision": 56
+      },
+      "comparisons": [
+        {
+          "view": "reference-imjin",
+          "camera": "300,223420,1400,1800",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 84,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 84,
+              "visibleRegions": 53
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 8,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 293,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 247,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            }
+          }
+        },
+        {
+          "view": "imjin",
+          "camera": "260,223420,650,1800",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 84,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 84,
+              "visibleRegions": 53
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 293,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 247,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            }
+          }
+        },
+        {
+          "view": "world",
+          "camera": "0,220900,1050,21000",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 97,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 97,
+              "visibleRegions": 109
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 109,
+              "compoundMeshCount": 109,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 109,
+              "actualHoleInteriorsChecked": 473,
+              "coordinates": {
+                "events": 96,
+                "anchors": 109
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 96,
+              "visibleRegions": 109
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 104,
+              "compoundMeshCount": 104,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 109,
+              "actualHoleInteriorsChecked": 395,
+              "coordinates": {
+                "events": 19,
+                "anchors": 109
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 19,
+              "visibleRegions": 109
+            }
+          }
+        },
+        {
+          "view": "yi-shared",
+          "camera": "280,222950,430,500",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 103,
+                "anchors": 0
+              },
+              "backend": "svg",
+              "renderer": "svg",
+              "rendererState": "fallback",
+              "fallback": "non_simple_geographic_path",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 31,
+              "compoundMeshCount": 31,
+              "paintRevision": 6,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 31,
+              "actualHoleInteriorsChecked": 229,
+              "coordinates": {
+                "events": 103,
+                "anchors": 31
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 31,
+              "compoundMeshCount": 31,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 31,
+              "actualHoleInteriorsChecked": 198,
+              "coordinates": {
+                "events": 87,
+                "anchors": 31
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            }
+          }
+        }
+      ],
+      "interactions": {
+        "bubble": {
+          "xScaleBefore": 1.9692307692307693,
+          "xScaleAfter": 2.306628064143245,
+          "yRetainedDuringX": true,
+          "yScaleBefore": 0.4444444444444444,
+          "yScaleAfter": 0.5234821449460314,
+          "xRetainedDuringY": true,
+          "clickedEventId": "01a10bbc-a988-7ef2-8fca-f9f10731d919",
+          "collectionCountBefore": 7,
+          "collectionCountAfterOff": 6,
+          "imjinVisiblePoints": 116,
+          "wideVisiblePoints": 101
+        },
+        "ribbon": {
+          "xScaleBefore": 1.9692307692307693,
+          "xScaleAfter": 2.306628064143245,
+          "yRetainedDuringX": true,
+          "yScaleBefore": 0.4444444444444444,
+          "yScaleAfter": 0.5234821449460314,
+          "xRetainedDuringY": true,
+          "clickedEventId": "01a10bbc-a988-7ef2-8fca-f9f10731d919",
+          "collectionCountBefore": 7,
+          "collectionCountAfterOff": 6,
+          "imjinVisiblePoints": 83,
+          "wideVisiblePoints": 123
+        }
+      },
+      "historicalCases": [
+        {
+          "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "title": "한국사",
+          "selectedIDs": {
+            "B0": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "bubble": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "ribbon": "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          }
+        },
+        {
+          "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+          "title": "일본사",
+          "selectedIDs": {
+            "B0": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "bubble": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "ribbon": "01a123a1-0000-77c0-8401-4f9db460625b"
+          }
+        },
+        {
+          "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+          "title": "중국사",
+          "selectedIDs": {
+            "B0": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "bubble": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "ribbon": "01a1240c-0000-73dd-bea1-64db15136c48"
+          }
+        },
+        {
+          "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+          "title": "임진왜란: 두 차례 침략과 강화 교섭",
+          "selectedIDs": {
+            "B0": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "bubble": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "ribbon": "01a10a3f-05d2-7981-94f4-08f3ea6433ec"
+          }
+        },
+        {
+          "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "title": "이순신의 생애",
+          "selectedIDs": {
+            "B0": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "bubble": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "ribbon": "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+          }
+        }
+      ],
+      "fallbackLists": {
+        "bubble": {
+          "totalListMemberships": 180,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 20,
+          "verifiedRows": 20,
+          "revealedEventId": "01a107ff-8b3c-7797-8ac1-584018b96973",
+          "paginationExercised": false
+        },
+        "ribbon": {
+          "totalListMemberships": 180,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 20,
+          "verifiedRows": 20,
+          "revealedEventId": "01a107ff-8b3c-7797-8ac1-584018b96973",
+          "paginationExercised": false
+        }
+      },
+      "persistedModes": [
+        "bubble",
+        "ribbon"
+      ],
+      "returnedCurrentFixedContours": 0,
+      "graphReadRequests": {
+        "/graph/v5/render": 8,
+        "/graph/v5/shell": 30
+      },
+      "artifactRequestsTotalIncludingFullNavigations": 5
+    },
+    {
+      "profile": "mobile-chromium",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "passed": true,
+      "observedSHA": "14895dbc32e667e701e4af1a94cd1940ea923060",
+      "pageErrors": [],
+      "failedHTTP": [],
+      "overflow": {
+        "width": 390,
+        "document": 390,
+        "body": 390
+      },
+      "default": {
+        "fixedContours": 0,
+        "revision": 56
+      },
+      "comparisons": [
+        {
+          "view": "reference-imjin",
+          "camera": "300,223420,1400,1800",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 84,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 84,
+              "visibleRegions": 52
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 9,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 293,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 6,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 247,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            }
+          }
+        },
+        {
+          "view": "imjin",
+          "camera": "260,223420,650,1800",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 84,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 84,
+              "visibleRegions": 52
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 10,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 293,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 247,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            }
+          }
+        },
+        {
+          "view": "world",
+          "camera": "0,220900,1050,21000",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 97,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 97,
+              "visibleRegions": 109
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 109,
+              "compoundMeshCount": 109,
+              "paintRevision": 8,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 109,
+              "actualHoleInteriorsChecked": 473,
+              "coordinates": {
+                "events": 96,
+                "anchors": 109
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 96,
+              "visibleRegions": 109
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 60,
+              "compoundMeshCount": 60,
+              "paintRevision": 6,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 109,
+              "actualHoleInteriorsChecked": 395,
+              "coordinates": {
+                "events": 19,
+                "anchors": 109
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 19,
+              "visibleRegions": 109
+            }
+          }
+        },
+        {
+          "view": "yi-shared",
+          "camera": "280,222950,430,500",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 103,
+                "anchors": 0
+              },
+              "backend": "svg",
+              "renderer": "svg",
+              "rendererState": "fallback",
+              "fallback": "non_simple_geographic_path",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 31,
+              "compoundMeshCount": 31,
+              "paintRevision": 9,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 31,
+              "actualHoleInteriorsChecked": 229,
+              "coordinates": {
+                "events": 103,
+                "anchors": 31
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 31,
+              "compoundMeshCount": 31,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 31,
+              "actualHoleInteriorsChecked": 198,
+              "coordinates": {
+                "events": 87,
+                "anchors": 31
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            }
+          }
+        }
+      ],
+      "interactions": {
+        "bubble": {
+          "xScaleBefore": 0.6,
+          "xScaleAfter": 0.7028007382936449,
+          "yRetainedDuringX": true,
+          "yScaleBefore": 0.4688888888888889,
+          "yScaleAfter": 0.5522736629180631,
+          "xRetainedDuringY": true,
+          "clickedEventId": "01a10bbc-a988-7d5b-b605-ddf847444dfd",
+          "collectionCountBefore": 7,
+          "collectionCountAfterOff": 6,
+          "imjinVisiblePoints": 116,
+          "wideVisiblePoints": 101
+        },
+        "ribbon": {
+          "xScaleBefore": 0.6,
+          "xScaleAfter": 0.7028007382936449,
+          "yRetainedDuringX": true,
+          "yScaleBefore": 0.4688888888888889,
+          "yScaleAfter": 0.5522736629180631,
+          "xRetainedDuringY": true,
+          "clickedEventId": "01a10bbc-a988-7d5b-b605-ddf847444dfd",
+          "collectionCountBefore": 7,
+          "collectionCountAfterOff": 6,
+          "imjinVisiblePoints": 83,
+          "wideVisiblePoints": 101
+        }
+      },
+      "historicalCases": [
+        {
+          "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "title": "한국사",
+          "selectedIDs": {
+            "B0": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "bubble": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "ribbon": "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          }
+        },
+        {
+          "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+          "title": "일본사",
+          "selectedIDs": {
+            "B0": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "bubble": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "ribbon": "01a123a1-0000-77c0-8401-4f9db460625b"
+          }
+        },
+        {
+          "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+          "title": "중국사",
+          "selectedIDs": {
+            "B0": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "bubble": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "ribbon": "01a1240c-0000-73dd-bea1-64db15136c48"
+          }
+        },
+        {
+          "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+          "title": "임진왜란: 두 차례 침략과 강화 교섭",
+          "selectedIDs": {
+            "B0": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "bubble": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "ribbon": "01a10a3f-05d2-7981-94f4-08f3ea6433ec"
+          }
+        },
+        {
+          "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "title": "이순신의 생애",
+          "selectedIDs": {
+            "B0": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "bubble": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "ribbon": "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+          }
+        }
+      ],
+      "fallbackLists": {
+        "bubble": {
+          "totalListMemberships": 180,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 20,
+          "verifiedRows": 20,
+          "revealedEventId": "01a107ff-8b3c-7797-8ac1-584018b96973",
+          "paginationExercised": false
+        },
+        "ribbon": {
+          "totalListMemberships": 180,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 20,
+          "verifiedRows": 20,
+          "revealedEventId": "01a107ff-8b3c-7797-8ac1-584018b96973",
+          "paginationExercised": false
+        }
+      },
+      "persistedModes": [
+        "bubble",
+        "ribbon"
+      ],
+      "returnedCurrentFixedContours": 0,
+      "graphReadRequests": {
+        "/graph/v5/render": 10,
+        "/graph/v5/shell": 31
+      },
+      "artifactRequestsTotalIncludingFullNavigations": 5
+    },
+    {
+      "profile": "mobile-webkit",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "passed": true,
+      "observedSHA": "14895dbc32e667e701e4af1a94cd1940ea923060",
+      "pageErrors": [],
+      "failedHTTP": [],
+      "overflow": {
+        "width": 390,
+        "document": 390,
+        "body": 390
+      },
+      "default": {
+        "fixedContours": 0,
+        "revision": 56
+      },
+      "comparisons": [
+        {
+          "view": "reference-imjin",
+          "camera": "300,223420,1400,1800",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 84,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 84,
+              "visibleRegions": 52
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 9,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 293,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 6,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 247,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            }
+          }
+        },
+        {
+          "view": "imjin",
+          "camera": "260,223420,650,1800",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 84,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 84,
+              "visibleRegions": 52
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 11,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 293,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 53,
+              "compoundMeshCount": 53,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 53,
+              "actualHoleInteriorsChecked": 247,
+              "coordinates": {
+                "events": 83,
+                "anchors": 53
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 83,
+              "visibleRegions": 53
+            }
+          }
+        },
+        {
+          "view": "world",
+          "camera": "0,220900,1050,21000",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 97,
+                "anchors": 0
+              },
+              "backend": "webgl",
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 97,
+              "visibleRegions": 109
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 109,
+              "compoundMeshCount": 109,
+              "paintRevision": 9,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 109,
+              "actualHoleInteriorsChecked": 473,
+              "coordinates": {
+                "events": 96,
+                "anchors": 109
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 96,
+              "visibleRegions": 109
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 60,
+              "compoundMeshCount": 60,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 109,
+              "actualHoleInteriorsChecked": 395,
+              "coordinates": {
+                "events": 19,
+                "anchors": 109
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 19,
+              "visibleRegions": 109
+            }
+          }
+        },
+        {
+          "view": "yi-shared",
+          "camera": "280,222950,430,500",
+          "modes": {
+            "B0": {
+              "coordinates": {
+                "events": 103,
+                "anchors": 0
+              },
+              "backend": "svg",
+              "renderer": "svg",
+              "rendererState": "fallback",
+              "fallback": "non_simple_geographic_path",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            },
+            "bubble": {
+              "backend": "webgl",
+              "meshCount": 31,
+              "compoundMeshCount": 31,
+              "paintRevision": 9,
+              "paintSourceKey": "tstl:bubble",
+              "svgCompoundPaths": 31,
+              "actualHoleInteriorsChecked": 229,
+              "coordinates": {
+                "events": 103,
+                "anchors": 31
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            },
+            "ribbon": {
+              "backend": "webgl",
+              "meshCount": 31,
+              "compoundMeshCount": 31,
+              "paintRevision": 5,
+              "paintSourceKey": "tstl:ribbon",
+              "svgCompoundPaths": 31,
+              "actualHoleInteriorsChecked": 198,
+              "coordinates": {
+                "events": 87,
+                "anchors": 31
+              },
+              "renderer": "custom-webgl2",
+              "rendererState": "ready",
+              "visiblePoints": 87,
+              "visibleRegions": 31
+            }
+          }
+        }
+      ],
+      "interactions": {
+        "bubble": {
+          "xScaleBefore": 0.6,
+          "xScaleAfter": 0.7028007382936449,
+          "yRetainedDuringX": true,
+          "yScaleBefore": 0.4688802083333333,
+          "yScaleAfter": 0.5522634386574197,
+          "xRetainedDuringY": true,
+          "clickedEventId": "01a10bbc-a988-7d5b-b605-ddf847444dfd",
+          "collectionCountBefore": 7,
+          "collectionCountAfterOff": 6,
+          "imjinVisiblePoints": 116,
+          "wideVisiblePoints": 101
+        },
+        "ribbon": {
+          "xScaleBefore": 0.6,
+          "xScaleAfter": 0.7028007382936449,
+          "yRetainedDuringX": true,
+          "yScaleBefore": 0.4688802083333333,
+          "yScaleAfter": 0.5522634386574197,
+          "xRetainedDuringY": true,
+          "clickedEventId": "01a10bbc-a988-7d5b-b605-ddf847444dfd",
+          "collectionCountBefore": 7,
+          "collectionCountAfterOff": 6,
+          "imjinVisiblePoints": 83,
+          "wideVisiblePoints": 101
+        }
+      },
+      "historicalCases": [
+        {
+          "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "title": "한국사",
+          "selectedIDs": {
+            "B0": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "bubble": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "ribbon": "01a123a1-0000-751e-9e64-e7c7b6b89fbc"
+          }
+        },
+        {
+          "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+          "title": "일본사",
+          "selectedIDs": {
+            "B0": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "bubble": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "ribbon": "01a123a1-0000-77c0-8401-4f9db460625b"
+          }
+        },
+        {
+          "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+          "title": "중국사",
+          "selectedIDs": {
+            "B0": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "bubble": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "ribbon": "01a1240c-0000-73dd-bea1-64db15136c48"
+          }
+        },
+        {
+          "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+          "title": "임진왜란: 두 차례 침략과 강화 교섭",
+          "selectedIDs": {
+            "B0": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "bubble": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "ribbon": "01a10a3f-05d2-7981-94f4-08f3ea6433ec"
+          }
+        },
+        {
+          "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "title": "이순신의 생애",
+          "selectedIDs": {
+            "B0": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "bubble": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "ribbon": "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+          }
+        }
+      ],
+      "fallbackLists": {
+        "bubble": {
+          "totalListMemberships": 180,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 20,
+          "verifiedRows": 20,
+          "revealedEventId": "01a107ff-8b3c-7797-8ac1-584018b96973",
+          "paginationExercised": false
+        },
+        "ribbon": {
+          "totalListMemberships": 180,
+          "owner": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "ownerMemberships": 20,
+          "verifiedRows": 20,
+          "revealedEventId": "01a107ff-8b3c-7797-8ac1-584018b96973",
+          "paginationExercised": false
+        }
+      },
+      "persistedModes": [
+        "bubble",
+        "ribbon"
+      ],
+      "returnedCurrentFixedContours": 0,
+      "graphReadRequests": {
+        "/graph/v5/render": 10,
+        "/graph/v5/shell": 32
+      },
+      "artifactRequestsTotalIncludingFullNavigations": 5
+    }
+  ],
+  "limitations": [
+    "Browser emulation and synthetic gestures; physical iPhone/PWA not tested.",
+    "The unchanged B0 Korea hull at tight Yi camera has real self-intersections and may use SVG fallback. Bubble/Ribbon must recover and successfully render with WebGL in the same GraphShell.",
+    "1210/1390 memberships have nominal glyph-support area coverage; 180 remain exact list fallbacks. Dense overlaps, narrow holes, separate components and stepped Ribbon obstacle cuts remain visible.",
+    "Real new-mode fallback owners have at most20 rows, so this run does not exercise pagination. Earlier synthetic UI/legacy candidate tests cover pagination.",
+    "Images were separately reviewed; numerical geometry checks alone do not establish visual quality."
+  ]
+}

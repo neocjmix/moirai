@@ -1,0 +1,164 @@
+{
+  "schema": "tstl-smooth-ci-summary-v1",
+  "observedAt": "2026-10-13T09:58:10.875030+00:00",
+  "runtimeSourceSha": "09e7ecdb23de6745692199fbd2cbb38783f4a708",
+  "runtimeMergeSha": "14895dbc32e667e701e4af1a94cd1940ea923060",
+  "runs": [
+    {
+      "databaseId": 38378638807,
+      "name": "CI",
+      "headSha": "09e7ecdb23de6745692199fbd2cbb38783f4a708",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38378638807"
+    },
+    {
+      "databaseId": 38378638915,
+      "name": "IP-004 scale reader evidence",
+      "headSha": "09e7ecdb23de6745692199fbd2cbb38783f4a708",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38378638915"
+    },
+    {
+      "databaseId": 38378638639,
+      "name": "IP-011 A4 actual worker and mobile scale acceptance",
+      "headSha": "09e7ecdb23de6745692199fbd2cbb38783f4a708",
+      "status": "completed",
+      "conclusion": "failure",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38378638639"
+    },
+    {
+      "databaseId": 38378673786,
+      "name": "CI",
+      "headSha": "14895dbc32e667e701e4af1a94cd1940ea923060",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38378673786"
+    },
+    {
+      "databaseId": 38378673644,
+      "name": "A5 public mobile checkpoint",
+      "headSha": "14895dbc32e667e701e4af1a94cd1940ea923060",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38378673644"
+    },
+    {
+      "databaseId": 38379484634,
+      "name": "Post-deploy smoke",
+      "headSha": "14895dbc32e667e701e4af1a94cd1940ea923060",
+      "status": "completed",
+      "conclusion": "success",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38379484634"
+    }
+  ],
+  "mainCiChecks": {
+    "unit": {
+      "passed": 970,
+      "skipped": 2
+    },
+    "postgres": {
+      "passed": 49
+    },
+    "mobileAtropos": {
+      "passed": 75
+    },
+    "compilerMobileContinuity": {
+      "passed": 11
+    },
+    "publicA5": {
+      "passed": 4
+    },
+    "dependencyAudit": {
+      "moderate": 9,
+      "high": 0,
+      "critical": 0
+    },
+    "secretScan": "success"
+  },
+  "syntheticScale": {
+    "runId": 38378638639,
+    "headSha": "09e7ecdb23de6745692199fbd2cbb38783f4a708",
+    "conclusion": "failure",
+    "successJobs": 13,
+    "failedJobs": [
+      {
+        "job": "mobile (1000, dense)",
+        "jobId": 115233229976,
+        "summaries": [
+          {
+            "kind": "server-reads",
+            "failures": []
+          },
+          {
+            "device": "iPhone 14 WebKit emulation, no throttling",
+            "scale": "1000",
+            "shape": "dense",
+            "failures": [
+              "collection_toggle_frames"
+            ],
+            "gestures": {
+              "pan": {
+                "samples": 600,
+                "p95_ms": 17,
+                "max_ms": 63
+              },
+              "zoom": {
+                "samples": 600,
+                "p95_ms": 17,
+                "max_ms": 64
+              },
+              "collection_toggle": {
+                "samples": 600,
+                "p95_ms": 17,
+                "max_ms": 130
+              }
+            },
+            "navigationErrors": 0
+          }
+        ]
+      },
+      {
+        "job": "mobile (1000, sustained)",
+        "jobId": 115233230255,
+        "summaries": [
+          {
+            "kind": "server-reads",
+            "failures": []
+          },
+          {
+            "device": "iPhone 14 WebKit emulation, no throttling",
+            "scale": "1000",
+            "shape": "sustained",
+            "failures": [
+              "collection_toggle_frames"
+            ],
+            "gestures": {
+              "pan": {
+                "samples": 600,
+                "p95_ms": 17,
+                "max_ms": 68
+              },
+              "zoom": {
+                "samples": 600,
+                "p95_ms": 17,
+                "max_ms": 80
+              },
+              "collection_toggle": {
+                "samples": 600,
+                "p95_ms": 17,
+                "max_ms": 112
+              }
+            },
+            "navigationErrors": 0
+          }
+        ]
+      }
+    ]
+  },
+  "limitations": [
+    "Synthetic scale tests use the current default renderer and synthetic World, not actual-r56 Bubble/Ribbon mode.",
+    "Cloud iPhone14 WebKit emulation is not physical iPhone17 Safari or installed-PWA evidence."
+  ]
+}

@@ -1,0 +1,23 @@
+{
+  "node": "v22.22.0",
+  "platform": "darwin",
+  "architecture": "arm64",
+  "peakRssBytes": 844349440,
+  "scope": "Offline r56 baseline + A + three regenerated Bubble variants; no browser/device performance claim",
+  "runs": {
+    "originalA": {},
+    "Lanes-wide": {
+      "placementMs": 4.661833999999999,
+      "regionMs": 3093.2367090000002,
+      "width": 2750
+    },
+    "Lanes": {
+      "placementMs": 2.3744580000002316,
+      "regionMs": 2331.347667000001,
+      "width": 1640
+    },
+    "A-Bubble": {
+      "regionMs": 2794.3089999999993
+    }
+  }
+}

@@ -388,9 +388,7 @@ async function screenshot(page: Page, name: string) {
 }
 async function switchMode(page: Page, mode: Mode) {
   if (!(await page.getByTestId("tstl-compare-" + mode).isVisible())) {
-    await page.getByRole("button", { name: "설정", exact: true }).click();
-    await page.getByTestId("tstl-layout-" + mode).click();
-    await openGraphTab(page);
+    await page.getByTestId("tstl-drawer-layout").selectOption(mode);
     await settle(page, mode);
     const state = await settleGraphics(page, mode);
     assert(await page.getByTestId("event-drawer-sheet").isVisible());
@@ -441,6 +439,19 @@ async function assertDrawerReadingSurface(page: Page) {
     !(await page.getByTestId("tstl-layout-status").isVisible()),
     "mobile comparison bar must yield the open drawer reading surface"
   );
+  const selector = page.getByTestId("tstl-drawer-layout");
+  assert(await selector.isVisible());
+  const selectorBox = await selector.boundingBox();
+  const contentBox = await page
+    .getByTestId("event-drawer-viewport")
+    .boundingBox();
+  assert(
+    selectorBox &&
+      selectorBox.height >= 44 &&
+      contentBox &&
+      selectorBox.y + selectorBox.height <= contentBox.y,
+    "drawer reserves header space for its layout selector above reading content"
+  );
   const hits = await drawer.evaluate((node) => {
     const box = node.getBoundingClientRect();
     // These rows were covered by the expanded Labs bar on both mobile engines.
@@ -472,6 +483,19 @@ async function checkDrawerRegression(page: Page, profile: string) {
     sameCamera(state.liveView, before.liveView);
     checks[mode] = await assertDrawerReadingSurface(page);
     await screenshot(page, profile + "-" + mode + "-drawer-unobstructed");
+  }
+  if (page.viewportSize()!.width <= 700) {
+    await page.getByTestId("tstl-drawer-layout").selectOption("current");
+    const current = await settle(page);
+    assert.equal(current.selectedEventId, before.selectedEventId);
+    assert(await page.getByTestId("event-drawer-sheet").isVisible());
+    assert.equal(current.counts.fixedContourRegions, 0);
+    await page.getByTestId("event-drawer-close").click();
+    await page.getByRole("button", { name: "설정", exact: true }).click();
+    await page.getByTestId("tstl-layout-anchored").click();
+    await openGraphTab(page);
+    await settle(page, "anchored");
+    await openHistoricalCase(page, "1f10a329-835d-79b1-a9c3-ae1835934b8b");
   }
   await page.getByTestId("event-drawer-close").click();
   await page.getByTestId("tstl-layout-status").waitFor({ state: "visible" });

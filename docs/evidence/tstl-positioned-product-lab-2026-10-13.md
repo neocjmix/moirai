@@ -155,3 +155,13 @@ Notes/Links tabs, selection/camera across B0/Lanes/Aligned/Anchored via Settings
 bar restoration on close, and return to Current. The full acceptance suite also
 checks drawer access during each historical selection. Post-deploy results and
 exact SHA belong to the follow-up PR and public production evidence gallery.
+
+The first follow-up (#361 / `63ed88f`) removes the obstruction but public testing
+found Settings itself is covered by the drawer. It therefore does not complete
+the selected-mode-switching acceptance. The corrective follow-up reserves a
+44px native layout selector inside the drawer header on mobile. It switches
+B0/Lanes/Aligned/Anchored or returns to Current without closing the selected
+Event. The floating bar remains hidden; closing the drawer restores it. Tests
+use actual clicks/selects (no forced clicks) and assert the selector rectangle
+is above the reading viewport, as well as pointer hits through the formerly
+covered content. Local preview scaffolding/proxies are not committed.

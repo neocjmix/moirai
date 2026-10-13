@@ -82,6 +82,7 @@ type Inspection = {
   selection: string[];
   view: View;
   liveView: View;
+  viewportSize: { width: number; height: number };
   counts: {
     [key: string]: number | boolean | undefined;
     stageActive?: boolean;
@@ -383,7 +384,8 @@ async function assertTraces(
   page: Page,
   state: Inspection,
   artifact: TstlExperimentArtifact,
-  mode: "B" | "C"
+  mode: "B" | "C",
+  requiredOwner?: string
 ) {
   const candidate = tstlCandidate(artifact, mode);
   assert(
@@ -468,6 +470,14 @@ async function assertTraces(
     visible.some((trace) => trace.opacity > 0 && trace.onScreen),
     "some identity strokes must be visible inside the actual viewport"
   );
+  if (requiredOwner)
+    assert(
+      visible.some(
+        (trace) =>
+          trace.owner === requiredOwner && trace.opacity > 0 && trace.onScreen
+      ),
+      "the trace-only viewport must preserve its actual visible owner"
+    );
   const inspectedPaths = new Set(
     state.fixedTracePaint.flatMap((paint) =>
       paint.traces.map((trace) =>
@@ -1111,6 +1121,49 @@ for (const profile of profiles) {
     }
     result.wideCandidates = wideCandidates;
     result.candidateGestures = candidateGestures;
+    const chinaId = historicalCases[2]!.id;
+    const traceOnlyCamera = "-283.7798165137615,218200,100,400";
+    const traceOnly = await restoreCamera(page, traceOnlyCamera);
+    const semanticBounds = artifact.c.worldBoundsByCompositeId[chinaId]!;
+    const visibleMaxY =
+      (traceOnly.viewportSize.height / 2 - traceOnly.liveView.y) /
+      traceOnly.liveView.scaleY;
+    assert(
+      visibleMaxY < semanticBounds.minY,
+      "regression viewport excludes China's semantic body bounds"
+    );
+    assert(
+      traceOnly.activeIds.regions.includes(chinaId),
+      "China's actual spine support must survive viewport culling"
+    );
+    const chinaGeometry = traceOnly.geometry.find(
+      (geometry) => geometry.id === chinaId
+    );
+    assert.deepEqual(
+      chinaGeometry?.traces,
+      artifact.c.tracesByCompositeId?.[chinaId]
+    );
+    const traceOnlyPaint = await assertTraces(
+      page,
+      traceOnly,
+      artifact,
+      "C",
+      chinaId
+    );
+    await screenshot(page, `${profile.name}-C-trace-only`);
+    await switchMode(page, "B0");
+    const restoredTraceOnly = await switchMode(page, "C");
+    sameCamera(restoredTraceOnly.liveView, traceOnly.liveView);
+    await assertTraces(page, restoredTraceOnly, artifact, "C", chinaId);
+    result.traceOnlyViewport = {
+      owner: chinaId,
+      camera: traceOnlyCamera,
+      semanticBounds,
+      visibleMaxY,
+      painter: traceOnlyPaint,
+      state: summary(traceOnly)
+    };
+    await restoreCamera(page, wideCamera);
     const caseComparisons: Record<string, unknown>[] = [];
     for (const historicalCase of historicalCases) {
       const source: TstlExperimentArtifact["b0Primitives"][number] | undefined =

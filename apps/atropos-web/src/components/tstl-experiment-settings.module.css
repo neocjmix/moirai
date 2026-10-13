@@ -44,18 +44,37 @@
   opacity: 0.5;
   cursor: default;
 }
+.choices button {
+  display: grid;
+  gap: 4px;
+  text-align: left;
+}
+.choiceLabel {
+  font-weight: 600;
+}
+.choiceDescription {
+  font-size: 12px;
+  line-height: 1.5;
+}
 .compare {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
+  box-sizing: border-box;
   max-width: calc(100vw - 24px);
   pointer-events: auto;
   margin: 0 12px 8px;
-  padding: 4px 6px 4px 12px;
+  padding: 4px 6px;
   background: var(--gray-1);
   border: 1px solid var(--gray-6);
   border-radius: 16px;
   box-shadow: 0 4px 16px #0002;
+}
+.compare button {
+  flex: 0 0 auto;
+  min-width: 44px;
+  padding: 8px;
 }
 .compare span {
   font-size: 11px;

@@ -115,3 +115,30 @@ pre-existing path and blob before pushing. Do not replace the Pages root,
 `legacy/`, Railway services or any served pointer. Verify Pages' actual
 deployment commit, the public `build.json` source commit, asset digests,
 mobile interactions and the recorded production pointer after deployment.
+# Product Labs follow-up
+
+The user-authorized [IP-016](../../docs/implementation/IP-016-tstl-product-lab.md)
+adds opt-in B0/A comparison to the production GraphShell. The standalone preview
+and its certificate policy remain historical evidence. Product A fills are
+explicitly experimental, not newly certified semantic areas.
+
+`pnpm exec tsx scripts/tstl-research/export-product.ts` deterministically exports
+the entire frozen r56 into the hash-pinned `apps/atropos-web/public/labs/tstl/`
+asset and updates `tstl-experiment-pin.ts`. The product loads it once and reuses
+the normal density, camera and scene pipeline. No viewport publishing or
+canonical/served-pointer write is performed. The 105 area owners have 1,207
+independent fragments; the remaining four Composites use explicit points.
+
+Run the read-only browser check against a deployed build with:
+
+```sh
+pnpm exec tsx scripts/tstl-research/product-smoke.ts \
+  https://moirai-production-8ed1.up.railway.app \
+  .artifacts/tstl-product/public-smoke EXPECTED_DEPLOYED_SHA
+```
+
+It checks default isolation, filled contours and exact path coordinates,
+independent X/Y zoom, B0/A camera and Event selection continuity, drawer,
+Collection toggles, density changes and local preference persistence on desktop
+Chromium and mobile Chromium/WebKit. These are emulation results, not physical
+iPhone 17 Safari/PWA evidence.

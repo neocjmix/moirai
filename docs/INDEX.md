@@ -12,7 +12,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 [IP-013 실제 역사 기반 병행 개발](implementation/IP-013-real-history-development-plan.md)이 남은 우선순위를 소유한다. **World 관리→Clotho·발행 검증 후 dot의 제한 역사 pilot과 Codex의 Composite 표현·전환 개발을 병행**한다. 다음은 production main UX와 격리된 X 배치 실험실, 그 뒤 Collection 자동 ON/OFF·discovery다. 전체 A5 완료→A6 입력 순서는 대체됐다. 사용자 pilot 검토 전 자율 광역/인물 확장은 보류한다. 합성 규모 사례는 회귀용이고 실제 역사가 주 탐색·수용 자료다.
 
-[CURRENT](implementation/CURRENT.md)는 현재 문서·draft PR 전용 범위와 후속 실행 gate를 소유한다. 이번 작업은 입력·구현·merge·배포를 시작하지 않는다. [IP-011](implementation/IP-011-architecture-realignment.md)과 [A5 disposition](implementation/IP-011-A5-collection-discovery-plan.md)은 새 순서로 연결하며 기존 구현·증거를 보존한다.
+[CURRENT](implementation/CURRENT.md)는 현재 활성 실행 범위와 배포 상태를 소유한다. 초기 문서·draft PR 전용 제한 뒤의 사용자 승인은 날짜별 계획을 따른다. 2026-10-13의 [IP-016](implementation/IP-016-tstl-product-lab.md)은 프로덕션의 선택형 TSTL 실험실 구현·검증·배포를 승인하며 역사·기본값·served pointer를 유지한다. [IP-011](implementation/IP-011-architecture-realignment.md)과 [A5 disposition](implementation/IP-011-A5-collection-discovery-plan.md)은 새 순서로 연결하며 기존 구현·증거를 보존한다.
 
 #321의 [모바일 성능 종료](implementation/IP-012-mobile-continuity-closeout.md)는 유지한다. 사용자는 iPhone 17 운영 체감을 수용했으며 수치 frame/heap 미달은 deferred이고 자동 재개 이유가 아니다. [IP-012](implementation/IP-012-render-publication-plan.md)는 Render 기술 경계와 승격/backfill을 소유한다. 실제 쓰기의 무결성·발행·복구는 선행 검증하되 모든 증분 최적화를 history gate로 삼지 않는다. 기본 GraphShell/Render와 [ADR-012](architecture/ADR-012-render-read-architecture.md)의 배포 기준선은 CURRENT를 따른다.
 
@@ -54,6 +54,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [전역 incidence 운영 승격·전체 Render 재발행](evidence/ip013/global-incidence-rollout.md) — 2026-10-10 사용자 승인, 현재 실행 상태는 CURRENT.
 - [IP-014 — Pluggable renderer 비교 handoff](implementation/IP-014-pluggable-renderer-handoff.md)
 - [IP-015 — Realtime camera / eventual scene](implementation/IP-015-realtime-camera-eventual-scene.md)
+- [IP-016 — TSTL 제품 실험실](implementation/IP-016-tstl-product-lab.md)
 - [IP-012 — Render Publication 구현 계획](implementation/IP-012-render-publication-plan.md)
 - [ADR-012 — Render viewport 읽기와 working-set 불변식](architecture/ADR-012-render-read-architecture.md)
 - [IP-012 — 모바일 성능 종료 결정·이관 backlog](implementation/IP-012-mobile-continuity-closeout.md)

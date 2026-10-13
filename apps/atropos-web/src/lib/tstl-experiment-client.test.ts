@@ -126,6 +126,10 @@ it.each(["A", "B", "C"] as const)(
       if (b.entity.kind === "composite") {
         expect(a.composite!.anchor!.y).toBe(b.composite!.anchor!.y);
         expect(a.composite!.anchor!.x).toBe(shape.xByEventId[a.entity.id]);
+        expect(a.bounds.minX).toBeLessThanOrEqual(a.composite!.anchor!.x);
+        expect(a.bounds.maxX).toBeGreaterThanOrEqual(a.composite!.anchor!.x);
+        expect(a.bounds.minY).toBeLessThanOrEqual(a.composite!.anchor!.y);
+        expect(a.bounds.maxY).toBeGreaterThanOrEqual(a.composite!.anchor!.y);
         expect(a.composite!.worldBounds.minY).toBe(
           b.composite!.worldBounds.minY
         );

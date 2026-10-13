@@ -170,3 +170,32 @@ it("preserves authored ownership, trace metadata and source anchor without fabri
   expect(prepared.regionById.size).toBe(1);
   expect(graphShellChartPlaneRegionEntitySchema.safeParse({...source, preparedWorldTraces: [{kind: "spine", points: [{x: 0, y: 0}]}]}).success).toBe(false);
 });
+
+
+it("seeds and retains a fixed owner from its remote trace without changing semantic bounds or anchor Y", () => {
+  const source: Region = {...region("trace-owner", []), preparedContourMode: "fixed", preparedWorldRings: [],
+    preparedWorldTraces: [{kind: "spine", points: [{x: 100, y: 20}, {x: 100, y: 80}]}],
+    preparedAnchor: {x: 5, y: 7}};
+  const prepared = prepareCompositeWorldGeometry([source], [], "concave");
+  const viewport = {minX: 95, maxX: 105, minY: 40, maxY: 60};
+  for (const cull of [false, true]) {
+    expect(selectCompositeWorldRegions(prepared, viewport, viewport, cull).map(item => item.id)).toEqual(["trace-owner"]);
+    const distant = {minX: 200, maxX: 210, minY: 40, maxY: 60};
+    expect(selectCompositeWorldRegions(prepared, distant, distant, cull)).toEqual([]);
+  }
+  expect(prepared.fixedSupportBoundsById.get(source.id)).toEqual({minX: 5, maxX: 100, minY: 7, maxY: 80});
+  expect(prepared.regionById.get(source.id)!.worldBounds).toEqual(bounds(0));
+  expect(prepared.regions[0]!.preparedAnchor).toEqual({x: 5, y: 7});
+});
+
+it("selects remote fixed rings and empty-contour fallback anchors without changing ordinary hull selection", () => {
+  const ring = [{x: 100, y: 20}, {x: 110, y: 20}, {x: 110, y: 80}, {x: 100, y: 80}];
+  const fixed: Region = {...region("fixed", []), preparedContourMode: "fixed", preparedWorldRings: [ring]};
+  const fallback: Region = {...region("fallback", []), preparedContourMode: "fixed", preparedWorldRings: [], preparedAnchor: {x: 105, y: 50}};
+  const ordinary: Region = {...region("ordinary", []), preparedWorldHull: ring};
+  const prepared = prepareCompositeWorldGeometry([fixed, fallback, ordinary], [], "concave");
+  const viewport = {minX: 95, maxX: 115, minY: 40, maxY: 60};
+  expect(selectCompositeWorldRegions(prepared, viewport, viewport, true).map(item => item.id)).toEqual(["fallback", "fixed"]);
+  expect(prepared.fixedSupportBoundsById.has("ordinary")).toBe(false);
+  expect(selectCompositeWorldRegions(prepared, bounds(0), bounds(0), true).map(item => item.id)).toEqual(["ordinary"]);
+});

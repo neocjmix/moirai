@@ -16,6 +16,10 @@ type Props = {
 };
 const PAGE_SIZE = 30;
 const reasons: Record<string, { ko: string; en: string }> = {
+  LOCAL_CELL_ONLY: {
+    ko: "사건 주변 면만 표시하고 다른 사건까지 연결하지 못함",
+    en: "Only the local event area is drawn; no link to another event"
+  },
   UNKNOWN_BUDGET: {
     ko: "경로 탐색 한도에 도달함",
     en: "Routing limit reached"

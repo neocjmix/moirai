@@ -162,9 +162,9 @@ format `tstl-product-experiment/2`, preserving old B0 primitives and A contours.
   Crowded, blocked or occluded contacts have typed list fallback.
 - B reports 1,390 leaf→ancestor pairs. C also includes Composite headers, for
   1,673 all-Event pairs. Exported `leaf*Memberships` diagnostics put both on
-  the same 1,390-pair denominator. B `route` counts forest-admitted terminals,
-  including each root seed; it is not a count of drawn links or one connected
-  global area.
+  the same 1,390-pair denominator. B `route` counts terminals participating in a drawn nondegenerate route;
+  isolated seeds retain their local cell and an explicit `LOCAL_CELL_ONLY` list
+  fallback. It is not a count of links or one connected global area.
 - The browser uses the same density/camera/selection path. Fixed fill contours
   and open traces pass through worker and cache; traces use a live SVG overlay
   in every renderer and never acquire relationship hit targets. Settings show

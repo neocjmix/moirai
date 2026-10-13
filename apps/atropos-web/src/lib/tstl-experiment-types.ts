@@ -4,7 +4,7 @@ export const TSTL_EXPERIMENT_WORLD_ID = "01a107fb-4018-7fcb-8390-836a40fa91cc";
 export const TSTL_EXPERIMENT_REVISION = 56;
 export const TSTL_EXPERIMENT_TIME_SYSTEM_ID =
   "01a107fc-3994-7889-969f-7a210c19fa24";
-export type TstlExperimentMode = "B0" | "A" | "B" | "C";
+export type TstlExperimentMode = "B0" | "A" | "B" | "C" | "bubble" | "ribbon";
 export type TstlCandidateMode = Exclude<TstlExperimentMode, "B0">;
 export type TstlExperimentPoint = { x: number; y: number };
 export type TstlExperimentBox = {
@@ -22,6 +22,8 @@ export interface TstlExperimentTrace {
 
 export interface TstlExperimentCandidate {
   algorithmVersion: string;
+  /** Final exterior and hole boundaries; the renderer must preserve the holes. */
+  fillRule?: "evenodd";
   xByEventId: Record<string, number>;
   contoursByCompositeId: Record<string, TstlExperimentPoint[][]>;
   worldBoundsByCompositeId: Record<string, TstlExperimentBox>;
@@ -30,7 +32,7 @@ export interface TstlExperimentCandidate {
   memberships?: {
     compositeId: string;
     eventId: string;
-    status: "route" | "list";
+    status: "area" | "route" | "list";
     reason?: string;
   }[];
   diagnostics?: Record<string, number>;
@@ -39,7 +41,7 @@ export interface TstlExperimentCandidate {
 
 /** A public, frozen comparison input. This is not a served Publication. */
 export interface TstlExperimentArtifact {
-  formatVersion: "tstl-product-experiment/2";
+  formatVersion: "tstl-product-experiment/3";
   source: {
     worldId: string;
     revision: number;
@@ -55,6 +57,8 @@ export interface TstlExperimentArtifact {
   a: TstlExperimentCandidate;
   b: TstlExperimentCandidate;
   c: TstlExperimentCandidate;
+  bubble: TstlExperimentCandidate;
+  ribbon: TstlExperimentCandidate;
   stats: {
     events: number;
     composites: number;
@@ -69,5 +73,16 @@ export function tstlCandidate(
   artifact: TstlExperimentArtifact,
   mode: TstlCandidateMode
 ): TstlExperimentCandidate {
-  return mode === "A" ? artifact.a : mode === "B" ? artifact.b : artifact.c;
+  switch (mode) {
+    case "A":
+      return artifact.a;
+    case "B":
+      return artifact.b;
+    case "C":
+      return artifact.c;
+    case "bubble":
+      return artifact.bubble;
+    case "ribbon":
+      return artifact.ribbon;
+  }
 }

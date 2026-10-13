@@ -1,9 +1,11 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import type {
-  TstlExperimentArtifact,
-  TstlExperimentCandidate
+import {
+  tstlCandidate,
+  type TstlCandidateMode,
+  type TstlExperimentArtifact,
+  type TstlExperimentCandidate
 } from "../lib/tstl-experiment-types";
 import type { AppLocale } from "../urdr-port/src/locale";
 import styles from "./tstl-membership-fallback.module.css";
@@ -11,7 +13,7 @@ import styles from "./tstl-membership-fallback.module.css";
 type Membership = NonNullable<TstlExperimentCandidate["memberships"]>[number];
 type Props = {
   artifact: TstlExperimentArtifact;
-  mode: "B" | "C";
+  mode: TstlCandidateMode;
   locale: AppLocale;
 };
 const PAGE_SIZE = 30;
@@ -52,8 +54,7 @@ const reasons: Record<string, { ko: string; en: string }> = {
 
 export function TstlMembershipFallback({ artifact, mode, locale }: Props) {
   const [expanded, setExpanded] = useState(false);
-  const memberships =
-    mode === "B" ? artifact.b.memberships : artifact.c.memberships;
+  const memberships = tstlCandidate(artifact, mode).memberships;
   const omitted = useMemo(
     () => memberships?.filter((entry) => entry.status === "list") ?? [],
     [memberships]

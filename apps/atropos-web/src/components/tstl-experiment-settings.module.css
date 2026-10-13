@@ -17,7 +17,12 @@
 .section summary {
   cursor: pointer;
   font-size: 13px;
+  min-height: 44px;
+  box-sizing: border-box;
   padding: 8px 0;
+}
+.section .previousDescription {
+  margin-bottom: 8px;
 }
 .choices {
   display: grid;

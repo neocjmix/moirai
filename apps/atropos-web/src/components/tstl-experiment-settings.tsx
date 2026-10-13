@@ -3,11 +3,18 @@
 import type { useTstlLayout } from "./use-tstl-layout";
 import type { AppLocale } from "../urdr-port/src/locale";
 import type { TstlLayoutChoice } from "../lib/tstl-layout-preference";
+import { tstlCandidate } from "../lib/tstl-experiment-types";
 import { TstlMembershipFallback } from "./tstl-membership-fallback";
 import styles from "./tstl-experiment-settings.module.css";
 
 type Props = { locale: AppLocale; layout: ReturnType<typeof useTstlLayout> };
-const choices: TstlLayoutChoice[] = ["current", "B0", "A", "B", "C"];
+const primaryChoices: TstlLayoutChoice[] = [
+  "current",
+  "B0",
+  "bubble",
+  "ribbon"
+];
+const researchChoices: TstlLayoutChoice[] = ["A", "B", "C"];
 
 const modeCopy = {
   ko: {
@@ -18,6 +25,16 @@ const modeCopy = {
     B0: {
       label: "B0 · r56 기준선",
       description: "같은 r56에 발행된 기존 면을 비교 기준으로 사용합니다."
+    },
+    bubble: {
+      label: "버블 · 부드러운 집합면",
+      description:
+        "B0와 같은 사건 위치에서 소속 사건을 감싸는 부드러운 면을 비교합니다. 겹치는 면의 의미는 아직 모두 검증되지 않았습니다."
+    },
+    ribbon: {
+      label: "리본 · 시간 리본",
+      description:
+        "B0와 같은 사건 위치에서 시간 방향으로 이어지는 리본 모양의 면을 비교합니다. 리본이 이어져 보여도 사건 사이의 연속성을 증명하지는 않습니다."
     },
     A: {
       label: "후보 A · 분리된 면",
@@ -43,6 +60,16 @@ const modeCopy = {
     B0: {
       label: "B0 · r56 baseline",
       description: "Compare the existing areas published for the same r56."
+    },
+    bubble: {
+      label: "Bubble · smooth set areas",
+      description:
+        "Compare smooth areas around member events at the same positions as B0. The meaning of overlapping areas is not fully verified."
+    },
+    ribbon: {
+      label: "Ribbon · time ribbons",
+      description:
+        "Compare ribbon-shaped areas along time at the same event positions as B0. A continuous-looking ribbon does not prove continuity between events."
     },
     A: {
       label: "Candidate A · separate areas",
@@ -82,27 +109,25 @@ export function TstlExperimentSettings({ locale, layout }: Props) {
           ? "같은 역사 데이터에서 면과 연결 방식을 비교합니다. 확대·이동·선택은 그대로 사용하며 이 브라우저에만 적용됩니다."
           : "Compare areas and connections on the same history data using the usual zoom, pan and selection. This preference applies only to this browser."}
       </p>
-      <div
-        className={styles.choices}
-        role="group"
-        aria-label={ko ? "레이아웃 방식" : "Layout mode"}
+      <TstlChoices locale={locale} layout={layout} choices={primaryChoices} />
+      <details
+        data-testid="tstl-previous-candidates"
+        open={researchChoices.includes(layout.mode) || undefined}
       >
-        {choices.map((choice) => (
-          <button
-            key={choice}
-            type="button"
-            data-testid={`tstl-layout-${choice}`}
-            aria-pressed={layout.mode === choice}
-            disabled={choice !== "current" && !layout.available}
-            onClick={() => void layout.choose(choice)}
-          >
-            <span className={styles.choiceLabel}>{copy[choice].label}</span>
-            <span className={styles.choiceDescription}>
-              {copy[choice].description}
-            </span>
-          </button>
-        ))}
-      </div>
+        <summary>
+          {ko ? "이전 연구 후보 · A/B/C" : "Previous research · A/B/C"}
+        </summary>
+        <p className={styles.previousDescription}>
+          {ko
+            ? "A·B·C는 서로 같은 사건 배치를 사용합니다. 버블·리본의 B0 기준 배치와는 다릅니다."
+            : "A, B and C share their own event positions, which differ from the B0 positions used by Bubble and Ribbon."}
+        </p>
+        <TstlChoices
+          locale={locale}
+          layout={layout}
+          choices={researchChoices}
+        />
+      </details>
       <p role="status" aria-live="polite">
         {!layout.available
           ? ko
@@ -120,7 +145,10 @@ export function TstlExperimentSettings({ locale, layout }: Props) {
                 ? `적용 중: ${copy[layout.mode].label}`
                 : `Active: ${copy[layout.mode].label}`}
       </p>
-      {layout.artifact && (layout.mode === "B" || layout.mode === "C") ? (
+      {layout.artifact &&
+      layout.mode !== "current" &&
+      layout.mode !== "B0" &&
+      tstlCandidate(layout.artifact, layout.mode).memberships ? (
         <TstlMembershipFallback
           key={layout.mode}
           artifact={layout.artifact}
@@ -132,11 +160,43 @@ export function TstlExperimentSettings({ locale, layout }: Props) {
         <summary>{ko ? "실험 범위와 한계" : "Scope and limitations"}</summary>
         <p>
           {ko
-            ? "B0·A·B·C는 동일한 r56의 539개 사건을 비교합니다. A·B·C는 사건의 가로 위치도 공유하므로 표현 방식을 직접 비교할 수 있습니다. 실험 면의 모든 교차 영역과 연결 의미가 검증된 것은 아닙니다. 분리된 면이나 연결선이 하나의 연결된 면을 보장하지 않습니다. 사건 ID와 시간 좌표는 보존하지만 이 스냅샷에는 원본 시간 정보 일부가 빠져 있습니다."
-            : "B0, A, B and C compare the same 539 events at r56. A, B and C also share event X positions so their geometry can be compared directly. Not all filled overlaps or connections are semantically verified. Separate areas and connecting lines do not guarantee one connected area. Event IDs and time coordinates are preserved, but some original temporal information is absent from this snapshot."}
+            ? "모든 후보는 동일한 r56의 539개 사건을 비교합니다. 버블·리본은 B0의 사건 가로·세로 위치를 보존합니다. 실험 면의 모든 교차 영역과 연결 의미가 검증된 것은 아닙니다. 분리된 면이나 연결선이 하나의 연결된 면을 보장하지 않습니다. 모든 후보에서 사건 ID와 시간 좌표는 보존하지만 이 스냅샷에는 원본 시간 정보 일부가 빠져 있습니다."
+            : "All candidates compare the same 539 events at r56. Bubble and Ribbon preserve B0’s event X and Y positions. Not all filled overlaps or connections are semantically verified. Separate areas and connecting lines do not guarantee one connected area. Every candidate preserves event IDs and time coordinates, but some original temporal information is absent from this snapshot."}
         </p>
       </details>
     </section>
+  );
+}
+
+function TstlChoices({
+  locale,
+  layout,
+  choices
+}: Props & { choices: TstlLayoutChoice[] }) {
+  const ko = locale === "ko";
+  const copy = modeCopy[ko ? "ko" : "en"];
+  return (
+    <div
+      className={styles.choices}
+      role="group"
+      aria-label={ko ? "레이아웃 방식" : "Layout mode"}
+    >
+      {choices.map((choice) => (
+        <button
+          key={choice}
+          type="button"
+          data-testid={`tstl-layout-${choice}`}
+          aria-pressed={layout.mode === choice}
+          disabled={choice !== "current" && !layout.available}
+          onClick={() => void layout.choose(choice)}
+        >
+          <span className={styles.choiceLabel}>{copy[choice].label}</span>
+          <span className={styles.choiceDescription}>
+            {copy[choice].description}
+          </span>
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -144,6 +204,18 @@ export function TstlExperimentCompare({ locale, layout }: Props) {
   if (layout.mode === "current") return null;
   const ko = locale === "ko";
   const copy = modeCopy[ko ? "ko" : "en"];
+  const choices = researchChoices.includes(layout.mode)
+    ? [...primaryChoices, layout.mode]
+    : primaryChoices;
+  const shortLabels: Record<TstlLayoutChoice, string> = {
+    current: ko ? "운영" : "Current",
+    B0: "B0",
+    bubble: ko ? "버블" : "Bubble",
+    ribbon: ko ? "리본" : "Ribbon",
+    A: "A",
+    B: "B",
+    C: "C"
+  };
   return (
     <div
       className={styles.compare}
@@ -163,7 +235,7 @@ export function TstlExperimentCompare({ locale, layout }: Props) {
           title={copy[choice].label}
           onClick={() => void layout.choose(choice)}
         >
-          {choice === "current" ? (ko ? "운영" : "Current") : choice}
+          {shortLabels[choice]}
         </button>
       ))}
     </div>

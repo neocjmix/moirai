@@ -10,12 +10,30 @@ import {
   TSTL_EXPERIMENT_WORLD_ID
 } from "./tstl-experiment-types";
 
-it("restores B/C from URL or storage without converting unknown values to an experiment", () => {
-  for (const mode of ["current", "B0", "A", "B", "C"] as const) {
+it("restores named and previous candidates without converting unknown values to an experiment", () => {
+  for (const mode of [
+    "current",
+    "B0",
+    "A",
+    "B",
+    "C",
+    "bubble",
+    "ribbon"
+  ] as const) {
     const url = new URL(`https://example.test/graph/v5?layoutLab=${mode}`);
     expect(parseTstlLayoutChoice(url.searchParams.get("layoutLab"))).toBe(mode);
   }
-  for (const value of [null, "", "b", "c", "D", "B0,A", "A "]) {
+  for (const value of [
+    null,
+    "",
+    "b",
+    "c",
+    "D",
+    "B0,A",
+    "A ",
+    "Bubble",
+    "Ribbon"
+  ]) {
     expect(parseTstlLayoutChoice(value) ?? "current").toBe("current");
   }
 });

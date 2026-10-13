@@ -29,7 +29,10 @@ export function flattenGeographicPath(
       Math.hypot(p.x - old.x, p.y - old.y) > (options.exact ? 0 : 0.001)
     )
       result.push(p);
-    if (result.length > 2048) throw Error("geographic_vertex_budget");
+    // Frozen smooth boundaries are denser than legacy adaptive splines. Keep
+    // their exact vertices under a separate cap; global path/mesh budgets stay.
+    if (result.length > (options.exact ? 8192 : 2048))
+      throw Error("geographic_vertex_budget");
   };
   const flat = (a: XY, b: XY, c: XY, d: XY, depth: number) => {
     const dx = d.x - a.x,

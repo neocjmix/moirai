@@ -177,3 +177,18 @@ it("does not simplify precise final compound boundary vertices during tessellati
     geographicMesh("M0 0 C0 10 10 10 10 0 Z", { fillRule: "evenodd" })
   ).toThrow();
 });
+
+it("bounds denser exact compound rings separately while retaining the legacy vertex cap", () => {
+  const path = (count: number) =>
+    Array.from({ length: count }, (_, index) => {
+      const angle = (2 * Math.PI * index) / count;
+      return `${index ? "L" : "M"}${Math.cos(angle) * 10000} ${Math.sin(angle) * 10000}`;
+    }).join(" ") + " Z";
+  expect(flattenGeographicPath(path(5229), { exact: true })).toHaveLength(5229);
+  expect(() => flattenGeographicPath(path(5229))).toThrow(
+    "geographic_vertex_budget"
+  );
+  expect(() => flattenGeographicPath(path(8193), { exact: true })).toThrow(
+    "geographic_vertex_budget"
+  );
+});

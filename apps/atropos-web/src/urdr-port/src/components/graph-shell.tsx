@@ -31,6 +31,7 @@ import { createPanInertiaTracker, panInertiaFrame, type PanVelocity } from "../.
 import { GeographicCanvas } from "../../../components/geographic-canvas";
 import { inspectRendererDiagnostics } from "../../../components/geographic-renderer/diagnostics";
 import { GeographicRenderer } from "../../../components/geographic-renderer/host";
+import { acceptGeographicSource, failGeographicSource, type GeographicSourceState } from "../../../components/geographic-renderer/source-state";
 import { createLiveCamera, createSceneScheduler } from "../../../components/geographic-renderer/live-camera";
 import { prepareLiveSvg } from "../../../components/geographic-renderer/live-svg";
 import { hullFeatherLayers, hullLayerOpacity, HULL_FEATHER_WIDTH_PX } from "../../../components/hull-feather";
@@ -2395,7 +2396,8 @@ export function GraphShell({
   const [selectedEventLoadState, setSelectedEventLoadState] = useState<"idle" | "loading" | "ready" | "error">(initialEventDetail ? "ready" : "idle");
   const [eventDetailRetryVersion, setEventDetailRetryVersion] = useState(0);
   const [runtimeViewportResponse, setRuntimeViewportResponse] = useState<ReturnType<typeof graphShellViewportResponseSchema.parse> | null>(null);
-  const [runtimePaintSource, setRuntimePaintSource] = useState<string | undefined>();
+  const [graphicsSource, setGraphicsSource] = useState<GeographicSourceState>({key: undefined, generation: 0, failed: false});
+  const runtimePaintSource = graphicsSource.key;
   const [runtimeViewportLoadState, setRuntimeViewportLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
 
@@ -2415,13 +2417,13 @@ export function GraphShell({
     timing.totalMs += elapsed;
     graphPhaseTimingsRef.current[phase] = timing;
   }, []);
-  const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
-  const [useGeographicWebGL,setUseGeographicWebGL] = useState(false);
-  // A malformed legacy hull may require SVG, but that failure does not apply
-  // to a different immutable layout. Retry only after its response commits;
-  // camera reads, selection and repeated frames keep the same stable key.
-  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[runtimePaintSource]);
-  const handleGraphicsUnavailable=useCallback(()=>{setUseGeographicCanvas(false);setUseGeographicWebGL(false);},[]);
+  const [graphicsPreference,setGraphicsPreference] = useState<"webgl" | "canvas" | "svg">("svg");
+  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setGraphicsPreference(graphics === "svg" ? "svg" : graphics === "canvas" ? "canvas" : "webgl");},[]);
+  // Failure belongs to this accepted source generation. No later passive
+  // reset may overwrite an immediately failing newly mounted backend.
+  const useGeographicCanvas = graphicsPreference !== "svg" && !graphicsSource.failed;
+  const useGeographicWebGL = useGeographicCanvas && graphicsPreference === "webgl";
+  const handleGraphicsUnavailable=useCallback(()=>{setGraphicsSource(previous=>failGeographicSource(previous,graphicsSource.generation));},[graphicsSource.generation]);
   const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
   const measureGraphPhase = useCallback((phase, run) => {
     if (!graphPhaseProfiling) return run();
@@ -2706,7 +2708,7 @@ export function GraphShell({
     // Never also query the semantic viewport for point/region/edge drawing.
     if (loader.renderTiles) {
       setRuntimeViewportResponse(null);
-      setRuntimePaintSource(loader.paintSourceKey);
+      setGraphicsSource(previous => acceptGeographicSource(previous, loader.paintSourceKey));
       setRuntimeViewportLoadState("ready");
       setRuntimeViewportErrorMessage(null);
       return;
@@ -2788,7 +2790,7 @@ export function GraphShell({
           graphWorkCountsRef.current.viewportReadResults++;
           startTransition(() => {
             setRuntimeViewportResponse(previous => relevant() ? reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode) : previous);
-            setRuntimePaintSource(previous => relevant() ? loader.paintSourceKey : previous);
+            setGraphicsSource(previous => relevant() ? acceptGeographicSource(previous, loader.paintSourceKey) : previous);
           });
           setRuntimeViewportLoadState("ready");
           setRuntimeViewportErrorMessage(null);
@@ -4407,9 +4409,9 @@ export function GraphShell({
                 </svg>
               ) : chartPlane ? (
                 <>
-                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer key={runtimePaintSource} paintSourceKey={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer key={graphicsSource.generation} paintSourceKey={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
-                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas key={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas key={graphicsSource.generation} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/>) : null}
                 <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-renderer={useGeographicCanvas?(useGeographicWebGL?"custom-webgl2":"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?"spectral-6band":"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>

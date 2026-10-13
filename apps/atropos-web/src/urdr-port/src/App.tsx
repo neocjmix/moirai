@@ -348,8 +348,8 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
         {activePage !== "graph" ? renderPage() : null}
       </div>
 
+      {activePage === "graph" && renderGraphTools ? <div className={appShellStyles.graphToolsDock}>{renderGraphTools(locale)}</div> : null}
       <div className={appShellStyles.bottomTabDock} data-collapsed={tabBarCollapsed ? "true" : "false"}>
-        {activePage === "graph" ? renderGraphTools?.(locale) : null}
         <div className={appShellStyles.bottomTabRail}>
           <button
             aria-label={tabBarCollapsed ? copy.expandTabBarLabel : copy.collapseTabBarLabel}

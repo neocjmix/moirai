@@ -178,6 +178,62 @@ describe("Candidate B bounded terminal forests", () => {
       ).toBe(false);
   });
 
+  it("counts an isolated seed as a local-cell list fallback when its search budget ends", () => {
+    const input = fixture(
+      [
+        ["a", -30, 0],
+        ["b", 30, 0]
+      ],
+      [
+        ["P", "a"],
+        ["P", "b"]
+      ]
+    );
+    const result = buildCandidateB(input, { expandedStateBudget: 1 });
+    expect(result.tracesByCompositeId.P).toEqual([]);
+    expect(result.contoursByCompositeId.P).toHaveLength(2);
+    expect(result.memberships).toEqual([
+      {
+        compositeId: "P",
+        eventId: "a",
+        status: "list",
+        reason: "LOCAL_CELL_ONLY"
+      },
+      {
+        compositeId: "P",
+        eventId: "b",
+        status: "list",
+        reason: "UNKNOWN_BUDGET"
+      }
+    ]);
+    expect(result.diagnostics).toMatchObject({
+      routedMemberships: 0,
+      listMemberships: 2,
+      localCellOnlyMemberships: 1,
+      expandedStates: 1
+    });
+  });
+
+  it("preserves a singleton terminal cell without claiming a nonexistent route", () => {
+    const result = buildCandidateB(fixture([["a", 0, 0]], [["P", "a"]]));
+    expect(result.tracesByCompositeId.P).toEqual([]);
+    expect(result.contoursByCompositeId.P).toHaveLength(1);
+    expect(result.memberships).toEqual([
+      {
+        compositeId: "P",
+        eventId: "a",
+        status: "list",
+        reason: "LOCAL_CELL_ONLY"
+      }
+    ]);
+    expect(result.diagnostics).toMatchObject({
+      routedMemberships: 0,
+      listMemberships: 1,
+      localCellOnlyMemberships: 1,
+      budgetWindows: 0
+    });
+  });
+
   it("records bounded forest partitioning and deterministic source-order independence", () => {
     const input = fixture(
       [

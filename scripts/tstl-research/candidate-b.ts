@@ -376,6 +376,7 @@ export function buildCandidateB(
     routeLength: 0,
     bendCount: 0,
     terminalCells: 0,
+    localCellOnlyMemberships: 0,
     rejectedTerminalCells: 0,
     tubeSegments: 0,
     rejectedTubeSegments: 0,
@@ -416,12 +417,14 @@ export function buildCandidateB(
       .filter((event) => !memberSet.has(event.eventId))
       .map((event) => event.support);
     const boxes: TstlBox[] = [];
+    const localCellIds = new Set<string>();
     for (const event of members) {
       const cell = inflate(event.support, B_PARAMETERS.terminalPadding);
       if (obstacles.some((box) => boxesTouch(box, cell))) {
         diagnostics.rejectedTerminalCells++;
       } else {
         boxes.push(cell);
+        localCellIds.add(event.eventId);
         diagnostics.terminalCells++;
       }
     }
@@ -462,14 +465,28 @@ export function buildCandidateB(
       if (result.budgetExhausted) diagnostics.budgetWindows++;
       if (result.connectedIds.length < window.length)
         diagnostics.disconnectedWindows++;
-      for (const id of result.connectedIds) connected.add(id);
+      // A graph seed is only an internal search starting point. Until a
+      // nondegenerate path is retained, its visible cell is not a route.
+      const hasRetainedRoute = result.traces.some((trace) =>
+        trace.points.some(
+          (point, index) =>
+            index > 0 &&
+            (point.x !== trace.points[index - 1]!.x ||
+              point.y !== trace.points[index - 1]!.y)
+        )
+      );
+      if (hasRetainedRoute)
+        for (const id of result.connectedIds) connected.add(id);
       for (const event of window)
         if (!connected.has(event.eventId))
           reasons.set(
             event.eventId,
-            result.budgetExhausted
-              ? "UNKNOWN_BUDGET"
-              : "mesh-disconnected-or-nonmember-clearance"
+            result.connectedIds.includes(event.eventId) &&
+              localCellIds.has(event.eventId)
+              ? "LOCAL_CELL_ONLY"
+              : result.budgetExhausted
+                ? "UNKNOWN_BUDGET"
+                : "mesh-disconnected-or-nonmember-clearance"
           );
       traces.push(...result.traces);
       for (const trace of result.traces) {
@@ -498,6 +515,8 @@ export function buildCandidateB(
       });
       if (connected.has(eventId)) diagnostics.routedMemberships++;
       else diagnostics.listMemberships++;
+      if (reasons.get(eventId) === "LOCAL_CELL_ONLY")
+        diagnostics.localCellOnlyMemberships++;
     }
     contoursByCompositeId[compositeId] = partitionBRectangles(boxes);
     tracesByCompositeId[compositeId] = traces;

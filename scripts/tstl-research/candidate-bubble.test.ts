@@ -144,6 +144,11 @@ describe("Bubble inspired fixed B0 regions", () => {
     expect(
       result.contoursByCompositeId.P!.some((ring) => ring.length > 8)
     ).toBe(true);
+    expect(
+      result.contoursByCompositeId.P!.some(
+        (ring) => ringArea(ring) < 0 && ring.length > 4
+      )
+    ).toBe(true);
   });
 });
 

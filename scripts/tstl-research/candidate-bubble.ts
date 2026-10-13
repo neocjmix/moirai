@@ -5,10 +5,11 @@ import type { TstlComparisonArtifact } from "./candidate.js";
 import type { TstlExperimentCandidate } from "../../apps/atropos-web/src/lib/tstl-experiment-types.js";
 import {
   baselineCandidateCoordinates,
+  boxRing,
   bufferOpenPaths,
   diskRing,
   roundRegionPaths,
-  subtractRegionObstacles,
+  subtractRegionPaths,
   unionRegionPaths,
   validateRegionGeometry,
   type Box,
@@ -19,8 +20,8 @@ export const BUBBLE_PARAMETERS = {
   yScale: 0.2,
   supportHalfSize: 2.5,
   nonmemberClearance: 1.5,
-  lobeRadius: 18,
-  corridorRadius: 12,
+  lobeRadius: 32,
+  corridorRadius: 22,
   smoothingRadius: 5,
   maxDetourChannels: 96,
   segmentCheckBudget: 20_000_000
@@ -266,9 +267,15 @@ export function buildBubbleCandidate(
     ]);
     const rounded = roundRegionPaths(raw, BUBBLE_PARAMETERS.smoothingRadius);
     // Necessary observed terminal lobes are restored before final obstacle cut.
-    const finalMetric = subtractRegionObstacles(
+    // Opening the padded obstacle union keeps every original support inside
+    // while replacing square notches with a clearance-preserving round offset.
+    const roundedObstacles = roundRegionPaths(
+      obstacles.map(boxRing),
+      BUBBLE_PARAMETERS.nonmemberClearance
+    );
+    const finalMetric = subtractRegionPaths(
       unionRegionPaths([...rounded, ...lobes]),
-      obstacles
+      roundedObstacles
     );
     const finalWorld = finalMetric.map((ring) => ring.map(toWorld));
     const validation = validateRegionGeometry(

@@ -59,7 +59,7 @@
 
 초기 제품 checkpoint `033d127`의 CI mobile/secret 검사는 성공, scale matrix는 14/15 성공이었다. 한 실패는 기존 합성 dense 1k Collection 전환 max 111ms > 100ms이며 p95 17ms, page error 0이었다. 당시 quality는 생성 JSON format에서 중단됐고 hash로 고정한 생성물의 formatter 제외 및 README format을 수정했다. 이를 최신 HEAD의 전체 품질 검사 성공으로 대신 주장하지 않는다.
 
-**최신 배포 main `131611f`의 [CI #38326175407](https://github.com/neocjmix/moirai/actions/runs/38326175407)는 quality·mobile-playwright·secret-scan 모두 SUCCESS다.** Format, lint, boundaries, strict typecheck, 전체 unit, PostgreSQL migration integration, production build와 high-level dependency audit를 통과했다. 이 실제 결과가 앞선 formatter 실패 및 로컬의 한 clock-sensitive 실패와 구분되는 최종 품질 결과다.
+**최신 배포 main `131611f`의 [CI #38326175407](https://github.com/neocjmix/moirai/actions/runs/38326175407)는 quality·mobile-playwright·secret-scan 모두 SUCCESS다.** Unit 893 pass / 2 skip, PostgreSQL integration 49 pass, Mobile Atropos flow 75 pass, compiler-v4 mobile continuity 11 pass, 별도 공개 iPhone-WebKit checkpoint 4 pass다. Format, lint, boundaries, strict typecheck, production build와 high-level dependency audit도 통과했다. 이 실제 결과가 앞선 formatter 실패 및 로컬의 한 clock-sensitive 실패와 구분되는 최종 품질 결과다.
 
 ## 남은 한계
 

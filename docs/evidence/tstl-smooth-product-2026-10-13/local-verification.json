@@ -1,0 +1,255 @@
+{
+  "phase": "local diagnostic only; public deployment verification follows separately",
+  "artifactSha256": "5d8e2b32d0b5895cc02823ab4bfa9794873d7e65e465ba6e62fe43ff898173c1",
+  "unitBeforeFinalRecovery": {
+    "passed": 965,
+    "skipped": 2
+  },
+  "finalRecoveryFocusedTests": {
+    "passed": 28
+  },
+  "checks": {
+    "typecheck": "passed",
+    "lint": "passed",
+    "boundaries": "passed",
+    "format": "passed",
+    "productionBuild": "passed",
+    "commitSecretScan": "passed",
+    "dependencyAudit": {
+      "high": 0,
+      "critical": 0,
+      "moderate": 6
+    }
+  },
+  "localMobileWebKit": {
+    "viewport": {
+      "width": 390,
+      "height": 844
+    },
+    "passed": true,
+    "errors": 0,
+    "httpFailures": 0,
+    "views": [
+      {
+        "name": "reference-imjin",
+        "camera": "300,223420,1400,1800",
+        "renderers": {
+          "B0": {
+            "drawCalls": 58,
+            "meshBuilds": 27,
+            "bufferUploads": 74,
+            "hullCount": 27,
+            "pointCount": 98,
+            "resourceBytes": 6620400,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 16.826273789182324,
+            "frameIntervalMs": 53.96766716599413
+          },
+          "bubble": {
+            "drawCalls": 109,
+            "meshBuilds": 53,
+            "bufferUploads": 118,
+            "hullCount": 53,
+            "pointCount": 82,
+            "resourceBytes": 10521600,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 43.40060129016014,
+            "frameIntervalMs": 71.02546454687499
+          },
+          "ribbon": {
+            "drawCalls": 109,
+            "meshBuilds": 53,
+            "bufferUploads": 109,
+            "hullCount": 53,
+            "pointCount": 0,
+            "resourceBytes": 8476140,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 68
+          }
+        }
+      },
+      {
+        "name": "imjin",
+        "camera": "260,223420,650,1800",
+        "renderers": {
+          "B0": {
+            "drawCalls": 74,
+            "meshBuilds": 36,
+            "bufferUploads": 98,
+            "hullCount": 35,
+            "pointCount": 110,
+            "resourceBytes": 6857640,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 32.51753938410155,
+            "frameIntervalMs": 64.1164552984375
+          },
+          "bubble": {
+            "drawCalls": 109,
+            "meshBuilds": 53,
+            "bufferUploads": 116,
+            "hullCount": 53,
+            "pointCount": 82,
+            "resourceBytes": 10521600,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 76.98373813359372,
+            "frameIntervalMs": 141.1696125
+          },
+          "ribbon": {
+            "drawCalls": 109,
+            "meshBuilds": 53,
+            "bufferUploads": 109,
+            "hullCount": 53,
+            "pointCount": 0,
+            "resourceBytes": 8476140,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 109
+          }
+        }
+      },
+      {
+        "name": "world",
+        "camera": "0,220900,1050,21000",
+        "renderers": {
+          "B0": {
+            "drawCalls": 57,
+            "meshBuilds": 25,
+            "bufferUploads": 72,
+            "hullCount": 25,
+            "pointCount": 94,
+            "resourceBytes": 6542580,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 39
+          },
+          "bubble": {
+            "drawCalls": 127,
+            "meshBuilds": 109,
+            "bufferUploads": 228,
+            "hullCount": 109,
+            "pointCount": 89,
+            "resourceBytes": 12570060,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 77.09265671171873,
+            "frameIntervalMs": 133.26432499999999
+          },
+          "ribbon": {
+            "drawCalls": 75,
+            "meshBuilds": 60,
+            "bufferUploads": 123,
+            "hullCount": 60,
+            "pointCount": 85,
+            "resourceBytes": 8413440,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 93
+          }
+        }
+      },
+      {
+        "name": "yi-shared",
+        "camera": "280,222950,430,500",
+        "renderers": {
+          "B0": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "non_simple_geographic_path"
+          },
+          "bubble": {
+            "drawCalls": 65,
+            "meshBuilds": 31,
+            "bufferUploads": 70,
+            "hullCount": 31,
+            "pointCount": 88,
+            "resourceBytes": 9769200,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 51.340732812499986,
+            "frameIntervalMs": 90.46280624999999
+          },
+          "ribbon": {
+            "drawCalls": 65,
+            "meshBuilds": 31,
+            "bufferUploads": 65,
+            "hullCount": 31,
+            "pointCount": 0,
+            "resourceBytes": 8069520,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 59
+          }
+        }
+      }
+    ],
+    "allFourViewsBeforeFinalSourceExitGuard": true
+  },
+  "independentReviews": [
+    "Bubble and shared geometry",
+    "Ribbon and shared geometry",
+    "product/export integration",
+    "UI and smoke selectors",
+    "renderer lifecycle and source-qualified fade history"
+  ],
+  "limitations": [
+    "Local Next diagnostic route, not public deployment evidence.",
+    "Final source-boundary fade guard separately passed the focused Yi WebKit replay.",
+    "Cloud browser emulation is not actual iPhone17 Safari or installed PWA evidence."
+  ],
+  "implementationSourceCommit": "1d45672e27894793c5f759cb67952b67507785b7",
+  "finalSourceExitGuardMobileWebKit": {
+    "passed": true,
+    "errors": 0,
+    "httpFailures": 0,
+    "views": [
+      {
+        "name": "yi-shared",
+        "renderers": {
+          "B0": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "non_simple_geographic_path"
+          },
+          "bubble": {
+            "drawCalls": 65,
+            "meshBuilds": 31,
+            "bufferUploads": 69,
+            "hullCount": 31,
+            "pointCount": 88,
+            "resourceBytes": 9769200,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 64.67068125,
+            "frameIntervalMs": 80.32000000000001
+          },
+          "ribbon": {
+            "drawCalls": 65,
+            "meshBuilds": 31,
+            "bufferUploads": 65,
+            "hullCount": 31,
+            "pointCount": 0,
+            "resourceBytes": 8069520,
+            "renderer": "custom-webgl2",
+            "state": "ready",
+            "cpuMs": 73
+          }
+        }
+      }
+    ]
+  },
+  "followupSourceGenerationFix": {
+    "sourceCommit": "09e7ecdb23de6745692199fbd2cbb38783f4a708",
+    "focusedTestsPassed": 14,
+    "independentReview": "passed",
+    "typecheck": "passed",
+    "scopedLintAndFormat": "passed",
+    "productionBuild": "passed",
+    "commitSecretScan": "passed",
+    "geometryUnchanged": true
+  }
+}

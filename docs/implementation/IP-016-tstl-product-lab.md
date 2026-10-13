@@ -46,3 +46,9 @@ PR #353/#354로 구현·검토·병합하고 runtime `85bf228`의 기존 Railway
 - 함수 테스트에 더해 같은 카메라의 B0/버블/리본 모바일 화면을 직접 비교한다. 집합의 연속된 실루엣, 내부 격자선 부재, 부드러운 전이와 기존 상호작용을 배포 전후 확인한다. 실제 iPhone17/PWA 증거는 별도다.
 
 기존 Railway 서비스의 선택형 실험실에 작은 커밋·PR·검토·배포·공개 검증으로 전달한다. 역사 수정·기본값 승격·served pointer/backfill·새 인프라·영역별 발행·광범위 성능 튜닝은 추가하지 않는다.
+
+## 부드러운 집합 면·시간 리본 구현·배포 결과
+
+PR #356/#357로 버블·리본과 source-generation별 renderer 복구를 구현·검토·병합했다. 최종 소스 `09e7ecd`, 공개 runtime `14895db`에서 desktop Chromium·mobile Chromium·mobile WebKit 3/3 전체 검증을 통과했고, main CI unit970·PostgreSQL49·mobile75·continuity11이 통과했다. [날짜별 증거](../evidence/tstl-smooth-product-lab-2026-10-13.md)가 같은 B0 위치의 비교, 실제 외곽·hole, 배포·pointer 불변, 합성 성능 미달과 남은 시각·의미 한계를 소유한다.
+
+이 결과는 새 표현을 기존 생산용 상호작용으로 비교할 수 있게 한 checkpoint다. 기본값 채택·역사 재발행·완전한 의미 인증이나 실제 iPhone17 Safari/PWA 검증을 뜻하지 않는다. 다음 최소 단계는 실제 기기의 B0/버블/리본 가독성 비교이며, 이전 A/B/C와 날짜별 검증은 이전 연구 후보로 보존한다.

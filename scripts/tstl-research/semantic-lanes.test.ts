@@ -139,3 +139,22 @@ describe("episode alignment", () => {
     ).toEqual(aligned.positions);
   });
 });
+
+it("bounds exclusive root episode drift without changing shared identities", () => {
+  const base = placeSemanticLanes(artifact.projection, artifact.b0.events);
+  const anchored = alignSemanticLanes(
+    artifact.projection,
+    artifact.b0.events,
+    true
+  );
+  for (const lane of base.lanes.filter(
+    (lane) => lane.rootSignature.length === 1
+  ))
+    for (const id of lane.eventIds)
+      expect(
+        Math.abs(anchored.positions[id]! - base.positions[id]!)
+      ).toBeLessThanOrEqual(20 + 1e-7);
+  expect(anchored.diagnostics.finalEnergy).toBeLessThan(
+    anchored.diagnostics.initialEnergy
+  );
+});

@@ -10,7 +10,8 @@ import { placeSemanticLanes } from "./semantic-lanes.js";
 
 export function alignSemanticLanes(
   projection: TstlProjection,
-  events: readonly TstlComparisonEvent[]
+  events: readonly TstlComparisonEvent[],
+  preserveExclusiveAnchors = false
 ) {
   const initial = placeSemanticLanes(projection, events);
   const lanes = initial.lanes.map((lane) => ({ ...lane }));
@@ -89,8 +90,10 @@ export function alignSemanticLanes(
     for (const i of lanes
       .map((_, i) => i)
       .sort((a, b) => (sweeps % 2 ? b - a : a - b))) {
-      let lower = -Infinity,
-        upper = Infinity;
+      const anchored =
+        preserveExclusiveAnchors && lanes[i]!.rootSignature.length === 1;
+      let lower = anchored ? -20 : -Infinity,
+        upper = anchored ? 20 : Infinity;
       for (const c of constraints[i]!) {
         const bound = shifts[c.other]! + c.bound;
         if (c.lower) lower = Math.max(lower, bound);
@@ -130,7 +133,9 @@ export function alignSemanticLanes(
       2;
   }
   return {
-    algorithmVersion: "ordered-episode-coordinate-alignment/1",
+    algorithmVersion: preserveExclusiveAnchors
+      ? "exclusive-root-anchored-alignment/1"
+      : "ordered-episode-coordinate-alignment/1",
     positions,
     lanes,
     width:
@@ -143,6 +148,7 @@ export function alignSemanticLanes(
       maxMovement,
       converged: maxMovement <= 1e-5,
       regularization,
+      preserveExclusiveAnchors,
       constraintPairs: constraints.flat().length / 2
     }
   };

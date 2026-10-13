@@ -4,7 +4,7 @@ import { execFileSync } from "node:child_process";
 import { resolve } from "node:path";
 import { loadHistorySnapshot, replayBaseline, sha256 } from "./baseline.js";
 import { buildTstlComparison } from "./candidate.js";
-import { buildBubbleCandidate } from "./candidate-bubble.js";
+import { buildPositionedBubbleCandidate } from "./candidate-positioned-bubble.js";
 import {
   placeSemanticLanes,
   SEMANTIC_LANE_PARAMETERS
@@ -33,56 +33,8 @@ if (sha256(bytes) !== TSTL_EXPERIMENT_SHA256)
   throw Error("separation_baseline_pin");
 const product = JSON.parse(bytes.toString()) as TstlExperimentArtifact;
 const coords = baselineCandidateCoordinates(baseline);
-const candidate = (positions: Record<string, number>) => {
-  // Bubble reads anchors, never the old polygon. Rebuild every contour with
-  // exactly the unchanged Bubble algorithm and parameters after moving X.
-  const relocated = {
-    ...baseline,
-    primitives: baseline.primitives.map((p) => {
-      const id = p.entity.id;
-      if (positions[id] === undefined || p.entity.kind === "relation") return p;
-      const x = positions[id]!;
-      return {
-        ...p,
-        ...(p.geometry.kind === "point"
-          ? { geometry: { ...p.geometry, xy: { ...p.geometry.xy, x } } }
-          : {}),
-        ...(p.composite
-          ? {
-              composite: {
-                ...p.composite,
-                anchor: { x, y: coords.positionsByEventId[id]!.y },
-                worldBounds: {
-                  ...p.composite.worldBounds,
-                  minX: Math.min(
-                    x,
-                    ...comparison.projection.descendants[id]!.map(
-                      (id) => positions[id]!
-                    )
-                  ),
-                  maxX: Math.max(
-                    x,
-                    ...comparison.projection.descendants[id]!.map(
-                      (id) => positions[id]!
-                    )
-                  )
-                }
-              }
-            }
-          : {})
-      };
-    })
-  };
-  const generated = buildBubbleCandidate(relocated, comparison);
-  return {
-    ...generated,
-    algorithmVersion: "bubble-capsule-union-on-supplied-x/1",
-    limitations: [
-      "Original Bubble capsule-union algorithm and parameters, regenerated on supplied X rather than compiled B0 X.",
-      ...generated.limitations!.slice(1)
-    ]
-  };
-};
+const candidate = (positions: Record<string, number>) =>
+  buildPositionedBubbleCandidate(baseline, comparison, positions);
 const modes: Record<string, TstlExperimentCandidate> = {
   B0: {
     ...product.bubble,
@@ -145,6 +97,20 @@ runs["Aligned"] = {
   ...aligned,
   placementMs: alignedPlacementMs,
   regionMs: performance.now() - alignedGeometryStart
+};
+const anchoredStart = performance.now();
+const anchored = alignSemanticLanes(
+  comparison.projection,
+  comparison.b0.events,
+  true
+);
+const anchoredPlacementMs = performance.now() - anchoredStart;
+const anchoredGeometryStart = performance.now();
+modes["Anchored"] = candidate(anchored.positions);
+runs["Anchored"] = {
+  ...anchored,
+  placementMs: anchoredPlacementMs,
+  regionMs: performance.now() - anchoredGeometryStart
 };
 const aStart = performance.now();
 modes["A-Bubble"] = candidate(product.a.xByEventId);

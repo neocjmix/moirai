@@ -28,7 +28,11 @@ const readProxy = process.env.TSTL_SMOKE_READ_PROXY;
 const world = "01a107fb-4018-7fcb-8390-836a40fa91cc";
 const initialCamera = "300,223420,1400,1800";
 const graph = graphPath + "?world=" + world + "&gsViewport=" + initialCamera;
-const modes = ["B0", "bubble", "ribbon"] as const;
+const placement = process.env.TSTL_PLACEMENT_SMOKE === "1";
+const smoothModes = placement
+  ? (["lanes", "aligned", "anchored"] as const)
+  : (["bubble", "ribbon"] as const);
+const modes = ["B0", ...smoothModes] as const;
 type Mode = (typeof modes)[number];
 type SmoothMode = Exclude<Mode, "B0">;
 const cases = [
@@ -417,10 +421,11 @@ async function checkMembershipList(
     tstlCandidate(artifact, mode).memberships?.filter(
       (entry) => entry.status === "list"
     ) ?? [];
-  assert(
-    expected.length,
-    `Candidate ${mode} discloses memberships not represented by area`
-  );
+  if (!placement)
+    assert(
+      expected.length,
+      `Candidate ${mode} discloses memberships not represented by area`
+    );
   const panel = page.getByTestId("tstl-membership-fallback");
   assert.equal(await panel.getAttribute("data-mode"), mode);
   assert.equal(
@@ -428,6 +433,14 @@ async function checkMembershipList(
     expected.length,
     "list count is exact, not a synthetic Event count"
   );
+  if (!expected.length) {
+    await openGraphTab(page);
+    await settle(page, mode);
+    return {
+      count: 0,
+      sourceMemberships: tstlCandidate(artifact, mode).memberships!.length
+    };
+  }
   await page.getByTestId("tstl-membership-summary").click();
   const owners = [...new Set(expected.map((entry) => entry.compositeId))].sort(
     (a, b) =>
@@ -519,9 +532,16 @@ function b0Coordinates(artifact: TstlExperimentArtifact) {
 }
 function assertCoordinates(
   state: Inspection,
-  artifact: TstlExperimentArtifact
+  artifact: TstlExperimentArtifact,
+  mode: Mode = "B0"
 ) {
   const expected = b0Coordinates(artifact);
+  if (mode !== "B0")
+    for (const [id, point] of expected)
+      expected.set(id, {
+        ...point,
+        x: tstlCandidate(artifact, mode).xByEventId[id]!
+      });
   assert(
     state.eventCoordinates?.length,
     "source Event coordinates must be inspectable"
@@ -529,14 +549,14 @@ function assertCoordinates(
   for (const p of state.eventCoordinates) {
     const xy = expected.get(p.id);
     assert(xy, "unknown Event coordinate");
-    assert.equal(p.x, xy.x, "Event X remains exactly B0");
+    assert.equal(p.x, xy.x, "Event X matches the selected offline candidate");
     assert.equal(p.y, xy.y, "Event Y remains exactly B0");
   }
   for (const geometry of state.geometry.filter((g) => g.anchor)) {
     assert.deepEqual(
       geometry.anchor,
       expected.get(geometry.id),
-      "Composite anchor remains exactly B0"
+      "Composite anchor matches candidate X and original Y"
     );
   }
   return {
@@ -653,19 +673,37 @@ function assertArtifact(artifact: TstlExperimentArtifact) {
   );
   const expected = b0Coordinates(artifact);
   const metrics: Record<string, unknown> = {};
-  for (const mode of ["bubble", "ribbon"] as const) {
+  for (const mode of smoothModes) {
     const candidate = tstlCandidate(artifact, mode);
     assert.equal(candidate.fillRule, "evenodd");
-    for (const [id, xy] of expected)
-      assert.equal(candidate.xByEventId[id], xy.x, mode + " exact B0 X");
+    for (const [id, xy] of expected) {
+      if (!placement)
+        assert.equal(candidate.xByEventId[id], xy.x, mode + " exact B0 X");
+      else
+        assert(
+          Number.isFinite(candidate.xByEventId[id]),
+          mode + " finite X for every original ID"
+        );
+    }
     for (const p of artifact.b0Primitives.filter(
       (p) => p.entity.kind === "composite"
     ))
-      assert.deepEqual(
-        candidate.worldBoundsByCompositeId[p.entity.id],
-        p.composite?.worldBounds,
-        "unchanged semantic bounds"
-      );
+      if (!placement)
+        assert.deepEqual(
+          candidate.worldBoundsByCompositeId[p.entity.id],
+          p.composite?.worldBounds,
+          "unchanged semantic bounds"
+        );
+      else {
+        assert.equal(
+          candidate.worldBoundsByCompositeId[p.entity.id]!.minY,
+          p.composite!.worldBounds.minY
+        );
+        assert.equal(
+          candidate.worldBoundsByCompositeId[p.entity.id]!.maxY,
+          p.composite!.worldBounds.maxY
+        );
+      }
     const owners = cases.map((c) => {
       const rings = candidate.contoursByCompositeId[c.id];
       assert(rings?.length, mode + " must show a filled historical case");
@@ -859,13 +897,15 @@ async function assertCompoundPaint(
     svgCompoundPaths: actual.paths.filter((p) => p.fillRule === "evenodd")
       .length,
     actualHoleInteriorsChecked: holeChecks.length,
-    coordinates: assertCoordinates(state, artifact)
+    coordinates: assertCoordinates(state, artifact, mode)
   };
 }
 const results: Record<string, unknown>[] = [];
 let failures = 0;
 for (const profile of profiles) {
-  const browser = await profile.engine.launch();
+  const browser = await profile.engine.launch(
+    profile.engine === chromium ? { channel: "chromium" } : {}
+  );
   const proxy = process.env.HTTPS_PROXY ?? process.env.HTTP_PROXY;
   const context = await browser.newContext({
     baseURL,
@@ -1018,7 +1058,7 @@ for (const profile of profiles) {
     }
     if (process.env.TSTL_SMOOTH_VISUAL_ONLY !== "1") {
       const interactions: Record<string, unknown> = {};
-      for (const mode of ["bubble", "ribbon"] as const) {
+      for (const mode of smoothModes) {
         console.info(
           JSON.stringify({ profile: profile.name, phase: "interaction", mode })
         );
@@ -1126,19 +1166,19 @@ for (const profile of profiles) {
         renderRequests,
         "experiments do not request viewport publications"
       );
-      result.membershipLists = {
-        bubble: await checkMembershipList(page, artifact, "bubble"),
-        ribbon: await checkMembershipList(page, artifact, "ribbon")
-      };
+      const membershipLists: Record<string, unknown> = {};
+      for (const mode of smoothModes)
+        membershipLists[mode] = await checkMembershipList(page, artifact, mode);
+      result.membershipLists = membershipLists;
       const reloads: Record<string, unknown> = {};
-      for (const mode of ["bubble", "ribbon"] as const) {
+      for (const mode of smoothModes) {
         console.info(
           JSON.stringify({ profile: profile.name, phase: "reload", mode })
         );
         await page.getByRole("button", { name: "설정", exact: true }).click();
         await page.getByTestId("tstl-layout-" + mode).click();
         await settle(page);
-        if (mode === "ribbon")
+        if (mode === smoothModes.at(-1))
           await screenshot(page, profile.name + "-settings");
         await openGraphTab(page);
         await settle(page, mode);

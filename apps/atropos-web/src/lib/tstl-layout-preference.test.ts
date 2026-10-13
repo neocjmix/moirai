@@ -18,7 +18,10 @@ it("restores named and previous candidates without converting unknown values to 
     "B",
     "C",
     "bubble",
-    "ribbon"
+    "ribbon",
+    "lanes",
+    "aligned",
+    "anchored"
   ] as const) {
     const url = new URL(`https://example.test/graph/v5?layoutLab=${mode}`);
     expect(parseTstlLayoutChoice(url.searchParams.get("layoutLab"))).toBe(mode);

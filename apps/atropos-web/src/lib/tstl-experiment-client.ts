@@ -108,7 +108,7 @@ export function candidateExperimentPrimitives(
 
 function validateArtifact(value: TstlExperimentArtifact) {
   if (
-    value.formatVersion !== "tstl-product-experiment/3" ||
+    value.formatVersion !== "tstl-product-experiment/4" ||
     value.source?.worldId !== TSTL_EXPERIMENT_WORLD_ID ||
     value.source.revision !== TSTL_EXPERIMENT_REVISION ||
     value.source.timeSystemId !== TSTL_EXPERIMENT_TIME_SYSTEM_ID ||
@@ -146,21 +146,33 @@ function validateArtifact(value: TstlExperimentArtifact) {
         : (primitive.bounds.minX + primitive.bounds.maxX) / 2)
     );
   };
-  for (const mode of ["A", "B", "C", "bubble", "ribbon"] as const) {
+  for (const mode of [
+    "A",
+    "B",
+    "C",
+    "bubble",
+    "ribbon",
+    "lanes",
+    "aligned",
+    "anchored"
+  ] as const) {
     const candidate = tstlCandidate(value, mode);
     const preservesB0 = mode === "bubble" || mode === "ribbon";
+    const positionedBubble =
+      mode === "lanes" || mode === "aligned" || mode === "anchored";
     if (
       !candidate ||
       Object.keys(candidate.xByEventId).length !== ids.length ||
       ids.some(
         (id) =>
           !Number.isFinite(candidate.xByEventId[id]) ||
-          candidate.xByEventId[id] !==
-            (preservesB0 ? b0X(id) : value.a.xByEventId[id])
+          (!positionedBubble &&
+            candidate.xByEventId[id] !==
+              (preservesB0 ? b0X(id) : value.a.xByEventId[id]))
       )
     )
       throw Error("tstl_experiment_identity_mismatch");
-    if (preservesB0 && candidate.fillRule !== "evenodd")
+    if ((preservesB0 || positionedBubble) && candidate.fillRule !== "evenodd")
       throw Error("tstl_experiment_compound_fill_rule");
     if (
       composites.some(
@@ -177,6 +189,21 @@ function validateArtifact(value: TstlExperimentArtifact) {
         const actual = candidate.worldBoundsByCompositeId[primitive.entity.id]!;
         return (["minX", "maxX", "minY", "maxY"] as const).some(
           (key) => actual[key] !== expected[key]
+        );
+      })
+    )
+      throw Error("tstl_experiment_temporal_bounds_mismatch");
+    if (
+      positionedBubble &&
+      composites.some((primitive) => {
+        const actual = candidate.worldBoundsByCompositeId[primitive.entity.id]!;
+        const original = primitive.composite!.worldBounds;
+        return (
+          actual.minY !== original.minY ||
+          actual.maxY !== original.maxY ||
+          !Number.isFinite(actual.minX) ||
+          !Number.isFinite(actual.maxX) ||
+          actual.minX > actual.maxX
         );
       })
     )
@@ -209,9 +236,11 @@ function validateArtifact(value: TstlExperimentArtifact) {
         !compositeIds.has(membership.compositeId) ||
         !eventIds.has(membership.eventId) ||
         !primitive?.ancestorCompositeIds?.includes(membership.compositeId) ||
-        !(preservesB0 ? ["area", "route", "list"] : ["route", "list"]).includes(
-          membership.status
-        ) ||
+        !(
+          preservesB0 || positionedBubble
+            ? ["area", "route", "list"]
+            : ["route", "list"]
+        ).includes(membership.status) ||
         pairs.has(key) ||
         (membership.status === "list" && !membership.reason)
       )

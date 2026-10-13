@@ -4,7 +4,16 @@ export const TSTL_EXPERIMENT_WORLD_ID = "01a107fb-4018-7fcb-8390-836a40fa91cc";
 export const TSTL_EXPERIMENT_REVISION = 56;
 export const TSTL_EXPERIMENT_TIME_SYSTEM_ID =
   "01a107fc-3994-7889-969f-7a210c19fa24";
-export type TstlExperimentMode = "B0" | "A" | "B" | "C" | "bubble" | "ribbon";
+export type TstlExperimentMode =
+  | "B0"
+  | "A"
+  | "B"
+  | "C"
+  | "bubble"
+  | "ribbon"
+  | "lanes"
+  | "aligned"
+  | "anchored";
 export type TstlCandidateMode = Exclude<TstlExperimentMode, "B0">;
 export type TstlExperimentPoint = { x: number; y: number };
 export type TstlExperimentBox = {
@@ -41,7 +50,7 @@ export interface TstlExperimentCandidate {
 
 /** A public, frozen comparison input. This is not a served Publication. */
 export interface TstlExperimentArtifact {
-  formatVersion: "tstl-product-experiment/3";
+  formatVersion: "tstl-product-experiment/4";
   source: {
     worldId: string;
     revision: number;
@@ -59,6 +68,9 @@ export interface TstlExperimentArtifact {
   c: TstlExperimentCandidate;
   bubble: TstlExperimentCandidate;
   ribbon: TstlExperimentCandidate;
+  lanes: TstlExperimentCandidate;
+  aligned: TstlExperimentCandidate;
+  anchored: TstlExperimentCandidate;
   stats: {
     events: number;
     composites: number;
@@ -84,5 +96,11 @@ export function tstlCandidate(
       return artifact.bubble;
     case "ribbon":
       return artifact.ribbon;
+    case "lanes":
+      return artifact.lanes;
+    case "aligned":
+      return artifact.aligned;
+    case "anchored":
+      return artifact.anchored;
   }
 }

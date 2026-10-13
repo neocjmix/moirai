@@ -107,7 +107,16 @@ it("pins the immutable asset and keeps actual B0 primitives byte-for-byte in the
   });
 });
 
-it.each(["A", "B", "C", "bubble", "ribbon"] as const)(
+it.each([
+  "A",
+  "B",
+  "C",
+  "bubble",
+  "ribbon",
+  "lanes",
+  "aligned",
+  "anchored"
+] as const)(
   "%s preserves single Event identities and every original Event Y and Composite time boundary",
   (mode) => {
     const shape = tstlCandidate(artifact, mode);
@@ -195,7 +204,15 @@ it("fetches once across every experiment, camera reads and Collection toggles wi
       validationState: "warning"
     });
   }
-  for (const mode of ["B", "C", "bubble", "ribbon"] as const) {
+  for (const mode of [
+    "B",
+    "C",
+    "bubble",
+    "ribbon",
+    "lanes",
+    "aligned",
+    "anchored"
+  ] as const) {
     const alternative = await loader(mode).loadViewport("ko", query(selected));
     const candidate = tstlCandidate(artifact, mode);
     expect(
@@ -405,5 +422,59 @@ it.each([
     expectedSha256: hash(payload)
   });
   await expect(client.load()).rejects.toThrow(/tstl_experiment_/);
+  client.dispose();
+});
+
+it("retains every previous candidate byte-for-byte while new X modes regenerate geometry", () => {
+  const previous = JSON.parse(
+    readFileSync(
+      "apps/atropos-web/public/labs/tstl/r56-5d8e2b32d0b5895c.json",
+      "utf8"
+    )
+  );
+  for (const key of [
+    "a",
+    "b",
+    "c",
+    "bubble",
+    "ribbon",
+    "b0Primitives",
+    "source",
+    "collections"
+  ] as const)
+    expect(artifact[key]).toEqual(previous[key]);
+  for (const mode of ["lanes", "aligned", "anchored"] as const) {
+    expect(artifact[mode].xByEventId).not.toEqual(artifact.a.xByEventId);
+    expect(artifact[mode].contoursByCompositeId).not.toEqual(
+      artifact.bubble.contoursByCompositeId
+    );
+    expect(artifact[mode].fillRule).toBe("evenodd");
+    expect(artifact[mode].memberships).toHaveLength(1390);
+  }
+});
+
+it.each([
+  "missing-x",
+  "nonfinite-x",
+  "temporal-bound",
+  "membership",
+  "fill-rule"
+])("rejects rehashed positioned candidate %s corruption", async (kind) => {
+  const corrupt = structuredClone(artifact);
+  const id = Object.keys(corrupt.anchored.xByEventId)[0]!;
+  if (kind === "missing-x") delete corrupt.anchored.xByEventId[id];
+  if (kind === "nonfinite-x") corrupt.anchored.xByEventId[id] = NaN;
+  if (kind === "temporal-bound")
+    corrupt.anchored.worldBoundsByCompositeId[
+      Object.keys(corrupt.anchored.worldBoundsByCompositeId)[0]!
+    ]!.minY++;
+  if (kind === "membership") corrupt.anchored.memberships!.shift();
+  if (kind === "fill-rule") delete corrupt.anchored.fillRule;
+  const body = JSON.stringify(corrupt);
+  const client = createTstlExperimentClient({
+    fetcher: vi.fn(async () => new Response(body)),
+    expectedSha256: hash(body)
+  });
+  await expect(client.load()).rejects.toThrow();
   client.dispose();
 });

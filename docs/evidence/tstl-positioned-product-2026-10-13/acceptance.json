@@ -1,0 +1,27 @@
+{
+  "deployedSha": "85a5d11f0cb5d9dcd1eabfc7c0ca51e98aa92fbf",
+  "physicalDevice": "not tested",
+  "publicProfiles": [
+    {
+      "profile": "desktop-chromium",
+      "passed": true,
+      "report": "https://neocjmix.github.io/moirai/tstl-separation/evidence/product/desktop-chromium-report.json",
+      "screenshots": 25
+    },
+    {
+      "profile": "mobile-chromium",
+      "passed": true,
+      "report": "https://neocjmix.github.io/moirai/tstl-separation/evidence/product/mobile-chromium-report.json",
+      "screenshots": 25
+    },
+    {
+      "profile": "mobile-webkit",
+      "passed": true,
+      "report": "https://neocjmix.github.io/moirai/tstl-separation/evidence/product/mobile-webkit-report.json",
+      "screenshots": 25
+    }
+  ],
+  "pointerByteIdentical": true,
+  "mainCi": 38394199797,
+  "postDeploySmoke": 38394818955
+}

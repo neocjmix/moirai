@@ -1,0 +1,20 @@
+# IP-016 · TSTL 제품 실험실
+
+2026-10-13 KST. 사용자는 독립 프리뷰의 선·포트만으로는 면 레이아웃을 평가할 수 없다고 지적하고, 프로덕션 설정의 실험실 옵션에서 기존 가로·세로 확대와 순차적 비가시화를 사용해 후보 A를 시험하도록 명시적으로 승인했다. 이 요청은 이 실험에 한해 이전 preview-only/GraphShell 격리 조건을 대체한다. 선택형 기능의 구현·PR 검토·병합·기존 Railway 서비스 배포·공개 검증까지 수행한다.
+
+## 관찰할 결과
+
+- 기본값은 현재 운영이다. 설정에서 동일한 고정 history-r56의 B0와 후보 A를 선택하고 그래프에서 왕복 비교한다. 선택은 해당 브라우저·World의 로컬 상태다.
+- 전체 r56 artifact를 한 번 읽는다. 오프라인에서 후보 A를 계산하며 viewport별 발행, 새 tile/compiler generation, 런타임 solver는 만들지 않는다.
+- 기존 GraphShell의 축별 확대·패닝·밀도/표현 단계·Collection 선택·Event 선택·drawer를 재사용한다. 단일 Event ID와 원래 시간 Y를 유지한다.
+- A의 분리된 윤곽을 렌더러까지 보존해 채운다. 분리된 ring을 연결하는 면, spline/padding/feather에 의한 윤곽 변형은 만들지 않는다. 면을 만들지 못한 Composite는 명시적인 점·관계·목록 표현을 유지한다.
+- 이 면은 실험 시각화다. 기존 검증기의 semantic-fill 인증을 바꾸거나 통과했다고 표시하지 않는다. scalar-only는 snapshot의 시간 지식 손실을 뜻하며, 면을 그릴 수 없다는 뜻이 아니다.
+
+## 구현·검증 순서
+
+1. 기존 baseline/검증기/후보 A 커밋을 보존한다. compact r56 artifact, digest/scope 검사와 기존 density adapter를 연결하고 identity/Y/선택 회귀를 검사한다.
+2. 고정 multi-ring 렌더링을 추가한다. worker/cache/mesh/hit/label 경로와 원래 B0 동작을 검사한다.
+3. 설정과 그래프 비교 UI를 붙인다. Chromium 및 WebKit 모바일에서 면, 축별 확대, 단계 변화, 카메라/선택 유지, drawer, Collection, 새로고침을 검증한다.
+4. 작은 커밋·PR diff 검토, 관련 unit/contract/type/lint/build/secret 및 CI 검사를 수행한다. 기존 main 자동 배포 후 공개 SHA·health·실제 모바일 흐름·r56 pointer 불변을 확인한다. 실제 iPhone 17 Safari/PWA 검증과 에뮬레이션을 구분한다.
+
+CON-003, CORE-MODEL, TS-002/005/006/010의 identity·시간·관계 계약과 IP-015의 화면 구조를 보존한다. B/C, 역사 정본 수정, 운영 기본값 변경, served pointer/backfill, 새 유료 서비스와 광범위 성능 튜닝은 범위 밖이다. 독립 프리뷰와 그 날짜별 증거는 그대로 보존한다.

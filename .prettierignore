@@ -6,6 +6,8 @@ playwright-report
 test-results
 pnpm-lock.yaml
 docs
+# Generated immutable compact artifacts; their exact bytes are SHA-256 pinned.
+apps/atropos-web/public/labs/tstl/r56-*.json
 apps/atropos-web/src/urdr-port/package.json
 apps/atropos-web/src/urdr-port/shared/contracts
 apps/atropos-web/src/urdr-port/shared/domain

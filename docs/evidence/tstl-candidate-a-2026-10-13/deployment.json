@@ -1,0 +1,347 @@
+{
+  "formatVersion": "tstl-postdeploy-preservation/1",
+  "observedAt": "2026-10-12T17:10:13.234368Z",
+  "passed": true,
+  "sourceCommit": "4ffb47c56715e119e97f5ee0c47bad6f142e06ac",
+  "pagesDeploymentCommit": "939e16d7ace567b516bf7676016d7c2d39b29dad",
+  "pagesBuild": {
+    "status": "built",
+    "commit": "939e16d7ace567b516bf7676016d7c2d39b29dad",
+    "created_at": "2026-10-12T17:09:40Z",
+    "updated_at": "2026-10-12T17:09:57Z"
+  },
+  "previewUrl": "https://neocjmix.github.io/moirai/tstl-candidate-a/",
+  "metadata": {
+    "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/build.json",
+    "sampledAt": "2026-10-12T17:10:10.752729Z",
+    "httpStatus": 200,
+    "bytes": 1098,
+    "sha256": "9bb6abaeddc4b4e183b4e37394f8ad3d33cc654ced2ff247a5b2f95bdf2c1e2d"
+  },
+  "health": {
+    "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/health.json",
+    "sampledAt": "2026-10-12T17:10:12.657102Z",
+    "httpStatus": 200,
+    "bytes": 214,
+    "sha256": "4afefa9c34a03df61dde7284084e8f1ec3413b52f8d654557468c5fa8db53d1b"
+  },
+  "treePreservation": {
+    "beforeCommit": "4c3723c8dd19509c880eda98e9ac50e5e73293ed",
+    "preexistingBlobCount": 22,
+    "allPreexistingEntriesIdentical": true,
+    "onlyAddedSubtree": "tstl-candidate-a/",
+    "addedPaths": [
+      "tstl-candidate-a/.nojekyll",
+      "tstl-candidate-a/app.js",
+      "tstl-candidate-a/b0-validation.json",
+      "tstl-candidate-a/build.json",
+      "tstl-candidate-a/data/history-r56.json",
+      "tstl-candidate-a/health.json",
+      "tstl-candidate-a/index.html",
+      "tstl-candidate-a/measurements.json",
+      "tstl-candidate-a/preview.json",
+      "tstl-candidate-a/style.css"
+    ]
+  },
+  "assets": [
+    {
+      "path": "index.html",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/index.html",
+      "sampledAt": "2026-10-12T17:10:10.973648Z",
+      "httpStatus": 200,
+      "bytes": 5375,
+      "sha256": "2eeda47ec2769ebe542e676ff07c2bf9c8524db17ebe155cf32481ab34fd835a",
+      "matchesBuildManifest": true,
+      "matchesDeployGitBlob": true
+    },
+    {
+      "path": "style.css",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/style.css",
+      "sampledAt": "2026-10-12T17:10:10.974057Z",
+      "httpStatus": 200,
+      "bytes": 8631,
+      "sha256": "25fc7d0322d754e01d5c194e1a5b5614570a407a55f2e61df61ea5e30a4b5ac9",
+      "matchesBuildManifest": true,
+      "matchesDeployGitBlob": true
+    },
+    {
+      "path": "app.js",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/app.js",
+      "sampledAt": "2026-10-12T17:10:10.974388Z",
+      "httpStatus": 200,
+      "bytes": 37795,
+      "sha256": "e2dde62e90940adf48454156d23b8f7b289963899f2c9441f7d59145dc31e15d",
+      "matchesBuildManifest": true,
+      "matchesDeployGitBlob": true
+    },
+    {
+      "path": "preview.json",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/preview.json",
+      "sampledAt": "2026-10-12T17:10:10.974840Z",
+      "httpStatus": 200,
+      "bytes": 5081305,
+      "sha256": "5ed5f2c56f8fbccf820bacd654c3a5d191767b6dbf363043eb7511ee8bd45c24",
+      "matchesBuildManifest": true,
+      "matchesDeployGitBlob": true
+    },
+    {
+      "path": "data/history-r56.json",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/data/history-r56.json",
+      "sampledAt": "2026-10-12T17:10:10.975126Z",
+      "httpStatus": 200,
+      "bytes": 782274,
+      "sha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+      "matchesBuildManifest": true,
+      "matchesDeployGitBlob": true
+    },
+    {
+      "path": "b0-validation.json",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/b0-validation.json",
+      "sampledAt": "2026-10-12T17:10:10.975404Z",
+      "httpStatus": 200,
+      "bytes": 48230,
+      "sha256": "e8715ce13ff7b919b794291bb29c0c3dcff91df7884caecc106f5990b1ded7c1",
+      "matchesBuildManifest": true,
+      "matchesDeployGitBlob": true
+    },
+    {
+      "path": "measurements.json",
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/measurements.json",
+      "sampledAt": "2026-10-12T17:10:11.135677Z",
+      "httpStatus": 200,
+      "bytes": 980,
+      "sha256": "1f857672d9012643a4c9d05456de32e1940cac56f7f0bdb4d72eaeec89f8c3ed",
+      "matchesBuildManifest": true,
+      "matchesDeployGitBlob": true
+    }
+  ],
+  "preservedPublicAssets": [
+    {
+      "path": "README.md",
+      "url": "https://neocjmix.github.io/moirai/README.md",
+      "sampledAt": "2026-10-12T17:10:12.045412Z",
+      "httpStatus": 200,
+      "bytes": 534,
+      "sha256": "ab9dd46cc47f971bb34f4dbbac43cb4fe172031a11c3d5eb2e4503d3e5ae75c1",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "app.js",
+      "url": "https://neocjmix.github.io/moirai/app.js",
+      "sampledAt": "2026-10-12T17:10:12.045735Z",
+      "httpStatus": 200,
+      "bytes": 47304,
+      "sha256": "f4f9cba8cacc01fb30ba579212bdcbc477497ad941c2625dcf5d1600f034d652",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "architecture-review.md",
+      "url": "https://neocjmix.github.io/moirai/architecture-review.md",
+      "sampledAt": "2026-10-12T17:10:12.046065Z",
+      "httpStatus": 200,
+      "bytes": 79530,
+      "sha256": "1ab85bef0985641099cfabb39b8b77fa5878ed327245594c5e081a90362b0836",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "build.json",
+      "url": "https://neocjmix.github.io/moirai/build.json",
+      "sampledAt": "2026-10-12T17:10:12.046653Z",
+      "httpStatus": 200,
+      "bytes": 156,
+      "sha256": "d6b1b1f0f2aad7e2537d70dad887301c6e3b6d8ce807b3b69c25998a953ac3d7",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "collection-layout-v2/contact.png",
+      "url": "https://neocjmix.github.io/moirai/collection-layout-v2/contact.png",
+      "sampledAt": "2026-10-12T17:10:12.047050Z",
+      "httpStatus": 200,
+      "bytes": 482091,
+      "sha256": "7bf7cc7b9b4e01c30ba70482bbafbdaa15d3a76ae93f63ec2de1dc9b63136cf5",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "collection-layout-v2/history.png",
+      "url": "https://neocjmix.github.io/moirai/collection-layout-v2/history.png",
+      "sampledAt": "2026-10-12T17:10:12.047470Z",
+      "httpStatus": 200,
+      "bytes": 538665,
+      "sha256": "9cf57d99c24b5b116955a9ffefca9726e6f2370584b70ff7ffacde9652ecb99c",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "collection-layout-v2/overview.png",
+      "url": "https://neocjmix.github.io/moirai/collection-layout-v2/overview.png",
+      "sampledAt": "2026-10-12T17:10:12.135337Z",
+      "httpStatus": 200,
+      "bytes": 566434,
+      "sha256": "85c04b689c565ec99187bec33e1314ff84364a697b08b7f02ac41c770fa17841",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "data/changing-updated.json",
+      "url": "https://neocjmix.github.io/moirai/data/changing-updated.json",
+      "sampledAt": "2026-10-12T17:10:12.186595Z",
+      "httpStatus": 200,
+      "bytes": 402918,
+      "sha256": "130294a85a08344e1bcb1a5c54b1eebb69166901a7c8daaa40c922cec7d531f2",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "data/changing.json",
+      "url": "https://neocjmix.github.io/moirai/data/changing.json",
+      "sampledAt": "2026-10-12T17:10:12.205772Z",
+      "httpStatus": 200,
+      "bytes": 402249,
+      "sha256": "60ff6fc2a30d42ba05b386293b53948ef845544a24ae504b58262a3018afdfcb",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "data/dense-shared.json",
+      "url": "https://neocjmix.github.io/moirai/data/dense-shared.json",
+      "sampledAt": "2026-10-12T17:10:12.245145Z",
+      "httpStatus": 200,
+      "bytes": 494389,
+      "sha256": "8b9444c8de6e693ec3d324c878d6a1adc4700d8aa3fc0297891d9c2092d99ec1",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "data/history-r56.json",
+      "url": "https://neocjmix.github.io/moirai/data/history-r56.json",
+      "sampledAt": "2026-10-12T17:10:12.274339Z",
+      "httpStatus": 200,
+      "bytes": 600238,
+      "sha256": "f833a956d161e20b37dce6a9447371bb2435dc831db46a1532c5c0fad95dd059",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "data/independent.json",
+      "url": "https://neocjmix.github.io/moirai/data/independent.json",
+      "sampledAt": "2026-10-12T17:10:12.323167Z",
+      "httpStatus": 200,
+      "bytes": 366112,
+      "sha256": "ac3f6791f1005549819ec2623a455e48747298246b8f44c2e06ab559f3840868",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "index.html",
+      "url": "https://neocjmix.github.io/moirai/index.html",
+      "sampledAt": "2026-10-12T17:10:12.368406Z",
+      "httpStatus": 200,
+      "bytes": 8841,
+      "sha256": "39a94b975200ff36578b4f691fbb2df55db5abb58662864fc2b5df02109a1fd5",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "legacy/architecture-review.md",
+      "url": "https://neocjmix.github.io/moirai/legacy/architecture-review.md",
+      "sampledAt": "2026-10-12T17:10:12.397675Z",
+      "httpStatus": 200,
+      "bytes": 79530,
+      "sha256": "1ab85bef0985641099cfabb39b8b77fa5878ed327245594c5e081a90362b0836",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "legacy/index.html",
+      "url": "https://neocjmix.github.io/moirai/legacy/index.html",
+      "sampledAt": "2026-10-12T17:10:12.450803Z",
+      "httpStatus": 200,
+      "bytes": 23833,
+      "sha256": "57340adc027007d78162bba43646da5c141ae7b7af193ba4a83ad7cb009f75e9",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "legacy/results.json",
+      "url": "https://neocjmix.github.io/moirai/legacy/results.json",
+      "sampledAt": "2026-10-12T17:10:12.451207Z",
+      "httpStatus": 200,
+      "bytes": 47411,
+      "sha256": "293115ff37499cd3f436cbc6874d4378c0105268b8bbce7022d30dcd1b9a61f6",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "measurements.json",
+      "url": "https://neocjmix.github.io/moirai/measurements.json",
+      "sampledAt": "2026-10-12T17:10:12.453550Z",
+      "httpStatus": 200,
+      "bytes": 44832,
+      "sha256": "1c1155d43541cb271da8fcbd2625830f42688118c7733ed3aca55f6a6db92fc7",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "results.json",
+      "url": "https://neocjmix.github.io/moirai/results.json",
+      "sampledAt": "2026-10-12T17:10:12.471588Z",
+      "httpStatus": 200,
+      "bytes": 47411,
+      "sha256": "293115ff37499cd3f436cbc6874d4378c0105268b8bbce7022d30dcd1b9a61f6",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "review.md",
+      "url": "https://neocjmix.github.io/moirai/review.md",
+      "sampledAt": "2026-10-12T17:10:12.515257Z",
+      "httpStatus": 200,
+      "bytes": 26551,
+      "sha256": "b8e86d3fb10f85ae77ef9540c73c8d319af17b83a4594bc6da5c0289df1d3a79",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "style.css",
+      "url": "https://neocjmix.github.io/moirai/style.css",
+      "sampledAt": "2026-10-12T17:10:12.546791Z",
+      "httpStatus": 200,
+      "bytes": 4237,
+      "sha256": "8b8b68ae9d4d3ed7f94d77cbb6ebd389c2bef7efe54f4a06a64be082abb9d267",
+      "matchesBeforeGitBlob": true
+    },
+    {
+      "path": "worker.js",
+      "url": "https://neocjmix.github.io/moirai/worker.js",
+      "sampledAt": "2026-10-12T17:10:12.567479Z",
+      "httpStatus": 200,
+      "bytes": 106429,
+      "sha256": "6ae3ee1732f5f0ea9b0e3d6e01d7c323a794638e47cb0bf8835f673f4856e235",
+      "matchesBeforeGitBlob": true
+    }
+  ],
+  "productionStatus": {
+    "url": "https://moirai-production-8ed1.up.railway.app/__status",
+    "sampledAt": "2026-10-12T17:10:12.760270Z",
+    "httpStatus": 200,
+    "bytes": 458,
+    "sha256": "b4f66b8c4b1f9c236f7012d1a6d962e1401c6358885ead042ed970142530bc3b",
+    "allowlistedBody": {
+      "application": {
+        "service": "atropos-web",
+        "version": "0.0.0-dev",
+        "commit_sha": "d721b0efdcf309ed7ad21c55bc04572e2f14d644",
+        "deployed_at": "2026-10-12T05:21:19.324Z"
+      },
+      "surfaces": {
+        "atropos": "ok",
+        "health": "ok",
+        "status": "ok"
+      }
+    }
+  },
+  "historyServedPointer": {
+    "url": "https://moirai-production-8ed1.up.railway.app/worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/current.json",
+    "sampledAt": "2026-10-12T17:10:12.982824Z",
+    "httpStatus": 200,
+    "bytes": 418,
+    "sha256": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a",
+    "allowlistedBody": {
+      "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+      "served_revision": 56,
+      "current_revision": 56,
+      "publication_target_revision": 56,
+      "projection_status": "ready",
+      "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54"
+    }
+  },
+  "limitations": [
+    "HTTP asset and tree preservation checks do not substitute for browser interaction smoke or physical iPhone Safari/PWA verification."
+  ]
+}

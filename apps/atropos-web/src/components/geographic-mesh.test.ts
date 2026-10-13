@@ -14,6 +14,18 @@ function filledArea(data: Float32Array) {
 }
 
 describe("authored background tessellation", () => {
+  it("triangulates disconnected fixed fragments without filling their gap", () => {
+    const result = geographicMesh(
+      "M0 0 L10 0 L10 10 L0 10 Z M30 0 L40 0 L40 10 L30 10 Z"
+    );
+    expect(filledArea(result.fill)).toBe(200);
+    for (let i = 0; i < result.fill.length; i += 15) {
+      const xs = [result.fill[i]!, result.fill[i + 5]!, result.fill[i + 10]!];
+      expect(Math.max(...xs) <= 10 || Math.min(...xs) >= 30).toBe(true);
+    }
+    expect(result.stroke.length).toBe(8 * 6 * 5);
+    expect(() => geographicMesh("M0 0 L10 0 M30 0 L40 0 Z")).toThrow();
+  });
   it("fills a concave polygon without the fan's false area, in both winding directions", () => {
     for (const path of [
       "M0 0 L10 0 L10 4 L4 4 L4 10 L0 10 Z",

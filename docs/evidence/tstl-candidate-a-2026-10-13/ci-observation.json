@@ -1,0 +1,381 @@
+{
+  "schema": "tstl-ci-observation-v1",
+  "observedAt": "2026-10-12T17:20:00Z",
+  "sourceSha": "4ffb47c56715e119e97f5ee0c47bad6f142e06ac",
+  "mainSha": "d721b0efdcf309ed7ad21c55bc04572e2f14d644",
+  "workflow": ".github/workflows/ip011-a4-scale-exit.yml",
+  "readOnly": true,
+  "reruns": 0,
+  "current": {
+    "runId": 38282272927,
+    "url": "https://github.com/neocjmix/moirai/actions/runs/38282272927",
+    "checkoutMergeSha": "1e67215ff8ffdfaa67a2fcda43e1b7fef2f4c101",
+    "status": "completed",
+    "conclusion": "failure",
+    "jobsTotal": 15,
+    "jobsSucceeded": 12,
+    "jobsFailed": 3,
+    "jobsPending": 0,
+    "lateCompletions": [
+      {
+        "jobId": 114922148691,
+        "name": "worker (100000)",
+        "conclusion": "success"
+      },
+      {
+        "jobId": 114922148972,
+        "name": "mobile (100000, large)",
+        "conclusion": "success"
+      }
+    ],
+    "failed": [
+      {
+        "jobId": 114922148909,
+        "name": "mobile (10000, dense)",
+        "url": "https://github.com/neocjmix/moirai/actions/runs/38282272927/job/114922148909",
+        "shellFailures": [],
+        "mobile": {
+          "failures": [
+            "collection_toggle_frames"
+          ],
+          "navigationSamples": 20,
+          "pageErrorCount": 0,
+          "graphReadyP95Ms": 935.11,
+          "drawerP95Ms": 265.87,
+          "gestures": {
+            "pan": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 67
+            },
+            "zoom": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 65
+            },
+            "collection_toggle": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 110
+            }
+          }
+        }
+      },
+      {
+        "jobId": 114922148958,
+        "name": "mobile (100000, dense)",
+        "url": "https://github.com/neocjmix/moirai/actions/runs/38282272927/job/114922148958",
+        "shellFailures": [],
+        "mobile": {
+          "failures": [
+            "collection_toggle_frames"
+          ],
+          "navigationSamples": 20,
+          "pageErrorCount": 0,
+          "graphReadyP95Ms": 845.34,
+          "drawerP95Ms": 230.67,
+          "gestures": {
+            "pan": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 61
+            },
+            "zoom": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 66
+            },
+            "collection_toggle": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 124
+            }
+          }
+        }
+      },
+      {
+        "jobId": 114922148983,
+        "name": "mobile (1000, sustained)",
+        "url": "https://github.com/neocjmix/moirai/actions/runs/38282272927/job/114922148983",
+        "shellFailures": [],
+        "mobile": {
+          "failures": [
+            "collection_toggle_frames"
+          ],
+          "navigationSamples": 20,
+          "pageErrorCount": 0,
+          "graphReadyP95Ms": 1168.85,
+          "drawerP95Ms": 223.42,
+          "gestures": {
+            "pan": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 72
+            },
+            "zoom": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 79
+            },
+            "collection_toggle": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 111
+            }
+          }
+        },
+        "sustained": {
+          "failures": [
+            "start:frames",
+            "start:whole_frames",
+            "middle:frames",
+            "middle:whole_frames",
+            "return:frames",
+            "return:whole_frames"
+          ],
+          "checkpoints": [
+            {
+              "name": "start",
+              "samples": 602,
+              "p95Ms": 36,
+              "maxMs": 56,
+              "wholeP95Ms": 37,
+              "wholeMaxMs": 71
+            },
+            {
+              "name": "middle",
+              "samples": 602,
+              "p95Ms": 36,
+              "maxMs": 50,
+              "wholeP95Ms": 37,
+              "wholeMaxMs": 62
+            },
+            {
+              "name": "return",
+              "samples": 602,
+              "p95Ms": 36,
+              "maxMs": 53,
+              "wholeP95Ms": 36,
+              "wholeMaxMs": 80
+            }
+          ]
+        }
+      }
+    ]
+  },
+  "previous": {
+    "runId": 38186889932,
+    "url": "https://github.com/neocjmix/moirai/actions/runs/38186889932",
+    "createdAt": "2026-10-12T00:08:43Z",
+    "headSha": "c4e2015a858a45c07646de57f9e74e72f2343e56",
+    "checkoutMergeSha": "9d96c2b4eb4b9d1c8bdab0dd6974938e468f9b47",
+    "status": "completed",
+    "conclusion": "failure",
+    "comparison": [
+      {
+        "jobId": 114611031888,
+        "name": "mobile (1000, dense)",
+        "url": "https://github.com/neocjmix/moirai/actions/runs/38186889932/job/114611031888",
+        "shellFailures": [],
+        "mobile": {
+          "failures": [
+            "collection_toggle_frames"
+          ],
+          "navigationSamples": 20,
+          "pageErrorCount": 0,
+          "graphReadyP95Ms": 1118.63,
+          "drawerP95Ms": 221.31,
+          "gestures": {
+            "pan": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 57
+            },
+            "zoom": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 64
+            },
+            "collection_toggle": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 121
+            }
+          }
+        }
+      },
+      {
+        "jobId": 114611032013,
+        "name": "mobile (100000, dense)",
+        "url": "https://github.com/neocjmix/moirai/actions/runs/38186889932/job/114611032013",
+        "shellFailures": [],
+        "mobile": {
+          "failures": [
+            "collection_toggle_frames"
+          ],
+          "navigationSamples": 20,
+          "pageErrorCount": 0,
+          "graphReadyP95Ms": 960.66,
+          "drawerP95Ms": 266.5,
+          "gestures": {
+            "pan": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 54
+            },
+            "zoom": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 71
+            },
+            "collection_toggle": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 127
+            }
+          }
+        }
+      },
+      {
+        "jobId": 114611032151,
+        "name": "mobile (1000, sustained)",
+        "url": "https://github.com/neocjmix/moirai/actions/runs/38186889932/job/114611032151",
+        "shellFailures": [],
+        "mobile": {
+          "failures": [
+            "collection_toggle_frames"
+          ],
+          "navigationSamples": 20,
+          "pageErrorCount": 0,
+          "graphReadyP95Ms": 1341.66,
+          "drawerP95Ms": 208.55,
+          "gestures": {
+            "pan": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 68
+            },
+            "zoom": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 75
+            },
+            "collection_toggle": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 115
+            }
+          }
+        },
+        "sustained": {
+          "failures": [
+            "start:frames",
+            "start:whole_frames",
+            "middle:frames",
+            "middle:whole_frames",
+            "return:frames",
+            "return:whole_frames"
+          ],
+          "checkpoints": [
+            {
+              "name": "start",
+              "samples": 602,
+              "p95Ms": 37,
+              "maxMs": 49,
+              "wholeP95Ms": 37,
+              "wholeMaxMs": 72
+            },
+            {
+              "name": "middle",
+              "samples": 602,
+              "p95Ms": 36,
+              "maxMs": 41,
+              "wholeP95Ms": 36,
+              "wholeMaxMs": 86
+            },
+            {
+              "name": "return",
+              "samples": 602,
+              "p95Ms": 36,
+              "maxMs": 49,
+              "wholeP95Ms": 37,
+              "wholeMaxMs": 68
+            }
+          ]
+        }
+      },
+      {
+        "jobId": 114611032019,
+        "name": "mobile (10000, dense)",
+        "url": "https://github.com/neocjmix/moirai/actions/runs/38186889932/job/114611032019",
+        "shellFailures": [],
+        "mobile": {
+          "failures": [],
+          "navigationSamples": 20,
+          "pageErrorCount": 0,
+          "graphReadyP95Ms": 722.54,
+          "drawerP95Ms": 173.25,
+          "gestures": {
+            "pan": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 53
+            },
+            "zoom": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 53
+            },
+            "collection_toggle": {
+              "samples": 600,
+              "p95Ms": 17,
+              "maxMs": 99
+            }
+          }
+        }
+      }
+    ]
+  },
+  "thresholds": {
+    "mobile": {
+      "samples": 600,
+      "p95MaxMs": 33.4,
+      "maxFrameMs": 100
+    },
+    "sustained": {
+      "samplesMin": 600,
+      "p95MaxMs": 33.4,
+      "maxFrameMs": 100
+    }
+  },
+  "codeComparison": {
+    "method": "Compare exact Git tree blob SHAs via GitHub git/trees?recursive=1 at both checkout merge SHAs; compare current runtime source to latest main locally.",
+    "betweenRunCheckouts": {
+      "atroposWebChangedFiles": [],
+      "a4ScriptsChangedFiles": [],
+      "scaleWorkflowChanged": false,
+      "lockfileChanged": false,
+      "existingGraphPresentationFilesChanged": [],
+      "graphPresentationAdditions": [
+        "packages/graph-presentation/src/tstl-validator.ts",
+        "packages/graph-presentation/src/tstl-validator.test.ts"
+      ]
+    },
+    "productionTstlImportSearch": {
+      "command": "rg -n 'tstl-validator|tstl-research' apps packages --glob '!tstl-validator.ts' --glob '!tstl-validator.test.ts'",
+      "matches": 0
+    }
+  },
+  "interpretation": [
+    "The three current failures are measured frame-budget violations in the existing synthetic Atropos Next/WebKit benchmark. They do not test the isolated static history-r56 preview.",
+    "Shell request benchmark failures are empty, and mobile/sustained reports record no non-frame functional or page failures for these three jobs.",
+    "The earlier run already failed 100000 dense and sustained with the same failure keys and comparable frame timings. Its 10000 dense case passed at max 99 ms; the current run is 110 ms. This establishes prior observation of the issue, not a blanket prior failure of every current matrix case.",
+    "Atropos files, A4 scripts, workflow, lockfile and existing graph presentation files are byte-identical between the two checked-out merge trees. New TSTL files are not imported by production apps/packages.",
+    "These observations support an existing production performance limitation; run-to-run causes are not proven. The benchmark gate remains failed and is not waived or rerun. This does not establish universal mobile performance for candidate A."
+  ],
+  "retrieval": {
+    "jobLogs": "GitHub connector github_fetch_workflow_job_logs, parsed JSON report lines",
+    "jobMetadata": "GitHub REST actions/runs/38282272927/jobs",
+    "treeComparison": "GitHub REST git/trees for both checkout merge SHAs"
+  }
+}

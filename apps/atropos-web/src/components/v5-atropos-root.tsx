@@ -8,6 +8,13 @@ import { createDeferredEffectDisposal } from "../lib/deferred-effect-disposal";
 import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import { GraphQueryProvider, useGraphQuery } from "./graph-query-context";
 import { GraphSessionGate } from "./graph-session-gate";
+import { createTstlExperimentClient } from "../lib/tstl-experiment-client";
+import { createTstlGraphReadLoader } from "../lib/tstl-experiment-loader";
+import { useTstlLayout } from "./use-tstl-layout";
+import {
+  TstlExperimentCompare,
+  TstlExperimentSettings
+} from "./tstl-experiment-settings";
 import {
   createDefaultGraphUrlState,
   type GraphSourceCatalog
@@ -95,6 +102,16 @@ export function V5AtroposRoot(props: V5AtroposBootstrap) {
 
 function V5GraphApp(props: V5AtroposBootstrap) {
   const { state, setState } = useGraphQuery();
+  const experimentClient = useMemo(
+    () => createTstlExperimentClient(),
+    [props.worldId, props.revision, props.timeSystemId]
+  );
+  const retainExperimentClient = useMemo(
+    () => createDeferredEffectDisposal(() => experimentClient.dispose()),
+    [experimentClient]
+  );
+  useEffect(retainExperimentClient, [retainExperimentClient]);
+  const layout = useTstlLayout(props, experimentClient);
   // Selection changes recreate the viewport adapter, not its immutable tile
   // working set. One revision-scoped client retains decoded tiles across toggles.
   const tileClient = useMemo(
@@ -119,39 +136,60 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       .sort(),
     relationTypes: state.query.relation_filter.types
   });
-  const loader = useMemo(
-    () =>
-      createV5GraphReadLoader({
-        worldId: props.worldId,
-        revision: props.revision,
-        timeSystemId: props.timeSystemId,
-        workspace: props.workspace,
-        readPage: props.readPage,
-        collectionIds: JSON.parse(selection).collections,
-        relationTypes: JSON.parse(selection).relationTypes,
-        ...(tileClient ? { tileViewport: tileClient } : {}),
-        ...(props.renderEnabled
-          ? {
-              renderTiles: {
-                worldId: props.worldId,
-                revision: props.revision,
-                timeSystemId: props.timeSystemId,
-                collectionIds: JSON.parse(selection).collections
-              }
+  const loader = useMemo(() => {
+    const scope = {
+      worldId: props.worldId,
+      revision: props.revision,
+      timeSystemId: props.timeSystemId,
+      workspace: props.workspace,
+      readPage: props.readPage,
+      collectionIds: JSON.parse(selection).collections,
+      relationTypes: JSON.parse(selection).relationTypes
+    };
+    if (layout.mode !== "current") {
+      // This reader serves only revision-pinned details. Its lifetime must
+      // not be shared with a GraphShell loader disposed during mode changes.
+      const detailLoader = createV5GraphReadLoader(scope);
+      const experiment = createTstlGraphReadLoader({
+        ...scope,
+        client: experimentClient,
+        mode: layout.mode,
+        detailLoader
+      });
+      return {
+        ...experiment,
+        dispose: () => {
+          experiment.dispose?.();
+          detailLoader.dispose?.();
+        }
+      };
+    }
+    return createV5GraphReadLoader({
+      ...scope,
+      ...(tileClient ? { tileViewport: tileClient } : {}),
+      ...(props.renderEnabled
+        ? {
+            renderTiles: {
+              worldId: props.worldId,
+              revision: props.revision,
+              timeSystemId: props.timeSystemId,
+              collectionIds: JSON.parse(selection).collections
             }
-          : {})
-      }),
-    [
-      props.worldId,
-      props.revision,
-      props.timeSystemId,
-      props.workspace,
-      props.readPage,
-      props.renderEnabled,
-      tileClient,
-      selection
-    ]
-  );
+          }
+        : {})
+    });
+  }, [
+    props.worldId,
+    props.revision,
+    props.timeSystemId,
+    props.workspace,
+    props.readPage,
+    props.renderEnabled,
+    layout.mode,
+    experimentClient,
+    tileClient,
+    selection
+  ]);
   const focus =
     state.focus?.kind === "event" && state.focus.event_ref.kind === "event"
       ? state.focus.event_ref.event_id
@@ -163,6 +201,12 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       initialScreen={props.screen ?? "graph"}
       initialDrawerStage={props.fullEvent ? "full" : "peek"}
       loader={loader}
+      renderSettings={(locale) => (
+        <TstlExperimentSettings locale={locale} layout={layout} />
+      )}
+      renderGraphTools={(locale) => (
+        <TstlExperimentCompare locale={locale} layout={layout} />
+      )}
       initialViewportCenter={props.center}
       externalFocus={focus ? { id: focus, label: focus } : null}
       onSelection={(id) =>

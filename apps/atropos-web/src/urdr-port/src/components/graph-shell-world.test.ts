@@ -25,6 +25,27 @@ const region = (id: string, contains: string[], x = 0): Region => ({
   worldBounds: bounds(x)
 });
 
+it("keeps fixed disjoint rings and an independent source annotation anchor", () => {
+  const rings = [
+    [{x: 0, y: 100}, {x: 10, y: 100}, {x: 10, y: 110}, {x: 0, y: 110}],
+    [{x: 30, y: 170}, {x: 40, y: 170}, {x: 40, y: 200}, {x: 30, y: 200}],
+  ];
+  const input: Region = {...region("one-event", ["child"]), preparedContourMode: "fixed", preparedWorldRings: rings,
+    preparedAnchor: {x: 17, y: 141}, childrenComplete: true};
+  const prepared = prepareCompositeWorldGeometry([input], [], "convex");
+  expect(prepared.regions).toHaveLength(1);
+  expect(prepared.regions[0]).toMatchObject({id: "one-event", points: rings.flat(), fixedRings: rings, fixedContour: true,
+    preparedAnchor: {x: 17, y: 141}, hullPending: false});
+  // The source midpoint is141; the asymmetric visible fragments span100..200.
+  expect(prepared.regions[0]!.preparedAnchor!.y).not.toBe(150);
+});
+
+it("an empty fixed ring set stays an explicit point-only owner", () => {
+  const prepared = prepareCompositeWorldGeometry([{...region("fallback", []), preparedContourMode: "fixed",
+    preparedWorldRings: [], preparedAnchor: {x: 5, y: 27}}], [], "concave");
+  expect(prepared.regions[0]).toMatchObject({points: [{x: 5, y: 27}], fixedRings: [], hullPending: true});
+});
+
 it.each(["convex", "concave"] as const)(
   "%s preserves offscreen child support and reuses original hulls across 600 views",
   (mode) => {

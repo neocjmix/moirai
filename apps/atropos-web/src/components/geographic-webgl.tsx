@@ -565,14 +565,18 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
                 scene.view,
                 scene.size
               );
-              const reusableTransform = reusableGeographicPaintTransform(
-                entry.path,
-                region.path,
-                entry.controls,
-                entry.requestedControls,
-                anchorTransform,
-                currentTransform
-              );
+              const reusableTransform = region.fixedContour
+                ? entry.path === region.path
+                  ? currentTransform
+                  : null
+                : reusableGeographicPaintTransform(
+                    entry.path,
+                    region.path,
+                    entry.controls,
+                    entry.requestedControls,
+                    anchorTransform,
+                    currentTransform
+                  );
               if (reusableTransform) {
                 reuse = true;
                 drawTransform = reusableTransform;
@@ -635,7 +639,9 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
                 material.ks[5]
               );
               const opticalDensity = -Math.log1p(-fillAlpha);
-              const softness = 1 - Math.min(1, Math.max(0, strokeOpacity));
+              const softness = region.fixedContour
+                ? 0
+                : 1 - Math.min(1, Math.max(0, strokeOpacity));
               const fill = (
                 value: WebGLBuffer,
                 count: number,

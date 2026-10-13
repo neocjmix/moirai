@@ -1,0 +1,65 @@
+.section {
+  display: grid;
+  gap: 10px;
+  border-top: 1px solid var(--gray-6);
+  padding-top: 16px;
+}
+.section h2 {
+  margin: 0;
+  font-size: 15px;
+}
+.section p {
+  margin: 0;
+  color: var(--gray-11);
+  font-size: 13px;
+  line-height: 1.5;
+}
+.section summary {
+  cursor: pointer;
+  font-size: 13px;
+  padding: 8px 0;
+}
+.choices {
+  display: grid;
+  gap: 8px;
+}
+.choices button,
+.compare button {
+  min-height: 44px;
+  border: 1px solid var(--gray-6);
+  border-radius: 12px;
+  padding: 8px 14px;
+  background: var(--gray-2);
+  color: var(--gray-12);
+  font: inherit;
+  font-size: 13px;
+  cursor: pointer;
+}
+.choices button[aria-pressed="true"],
+.compare button[aria-pressed="true"] {
+  background: var(--gray-12);
+  color: var(--gray-1);
+}
+.choices button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+.compare {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  max-width: calc(100vw - 24px);
+  pointer-events: auto;
+  margin: 0 12px 8px;
+  padding: 4px 6px 4px 12px;
+  background: var(--gray-1);
+  border: 1px solid var(--gray-6);
+  border-radius: 16px;
+  box-shadow: 0 4px 16px #0002;
+}
+.compare span {
+  font-size: 11px;
+  color: var(--gray-11);
+  white-space: nowrap;
+  margin-right: 4px;
+}

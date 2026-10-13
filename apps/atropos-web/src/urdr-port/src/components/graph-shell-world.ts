@@ -157,6 +157,7 @@ export function prepareCompositeWorldGeometry(
 
   const supportCompleteById = new Map<string, boolean>();
   const regionGeometryById = new Map<string, CompositeHullGeometry>();
+  const fixedSupportBoundsById = new Map<string, Bounds>();
   const rawRegions = selectedRegionEntities
     .sort(
       (left, right) =>
@@ -213,6 +214,16 @@ export function prepareCompositeWorldGeometry(
             },
             mode
           );
+      if (fixedRings) {
+        // Presentation traces and atoms can extend beyond the authored span or
+        // member bounds. Cache their support once, without changing semantic
+        // worldBounds or the Event's supplied point-stage anchor.
+        const support = entity.preparedAnchor ? [...hullPoints, entity.preparedAnchor] : hullPoints;
+        fixedSupportBoundsById.set(entity.id, support.reduce((bounds, point) => ({
+          minX: Math.min(bounds.minX, point.x), maxX: Math.max(bounds.maxX, point.x),
+          minY: Math.min(bounds.minY, point.y), maxY: Math.max(bounds.maxY, point.y),
+        }), {minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity}));
+      }
       const geometry = {
         points: hullPoints,
         paddingProfile: entity.preparedPaddingProfile ?? buildCompositePaddingProfile(
@@ -246,7 +257,7 @@ export function prepareCompositeWorldGeometry(
         left.depth - right.depth || left.id.localeCompare(right.id)
     );
 
-  return { regions: rawRegions, regionById, parentRegionIdsByChildId, points };
+  return { regions: rawRegions, regionById, parentRegionIdsByChildId, points, fixedSupportBoundsById };
 }
 
 /** Bounds come from inverting the viewport, before projecting any points. */
@@ -272,7 +283,7 @@ export function selectCompositeWorldRegions(
       .filter(
         (region) =>
           region.contains.some((id) => seedVisibleInstantIds.has(id)) ||
-          worldBoundsIntersect(region.worldBounds, visibleBounds)
+          worldBoundsIntersect(prepared.fixedSupportBoundsById.get(region.id) ?? region.worldBounds, visibleBounds)
       )
       .map((region) => region.id)
   );
@@ -282,5 +293,5 @@ export function selectCompositeWorldRegions(
     prepared.parentRegionIdsByChildId
   );
   return prepared.regions.filter((region) => ids.has(region.id) && (!cullPreparation ||
-    seedRegionIds.has(region.id) || worldBoundsIntersect(prepared.regionById.get(region.id)!.worldBounds, visibleBounds)));
+    seedRegionIds.has(region.id) || worldBoundsIntersect(prepared.fixedSupportBoundsById.get(region.id) ?? prepared.regionById.get(region.id)!.worldBounds, visibleBounds)));
 }

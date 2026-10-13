@@ -67,6 +67,7 @@ function materialKey(scene: Props) {
         region.id,
         region.path,
         region.fixedContour,
+        region.fillRule,
         world({ x: offset[0] || 0, y: offset[1] || 0 }, view, size),
         region.pathTransform?.startsWith("matrix(")
           ? region.pathTransform
@@ -352,7 +353,10 @@ export function GeographicCanvas(props: Props) {
             );
             for (const layer of layers) {
               context.globalAlpha = hullLayerOpacity(fillAlpha, layer.weight);
-              context.fill(path(layer.contours.join(" ")));
+              context.fill(
+                path(layer.contours.join(" ")),
+                region.fillRule ?? "nonzero"
+              );
             }
             context.restore();
           }

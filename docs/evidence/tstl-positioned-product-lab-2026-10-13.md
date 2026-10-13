@@ -64,3 +64,21 @@ reload, one asset fetch and return to Current on desktop/mobile Chromium and
 mobile WebKit. Physical iPhone 17 Safari and installed PWA remain untested.
 
 Deployment SHA, exact CI and public smoke results will be appended after readback.
+
+## Reviewed source checkpoint
+
+Source `14519b45e79087a488ea5b52b959d8b76cbc355e` passed
+[core CI](https://github.com/neocjmix/moirai/actions/runs/38392198041): unit 985,
+PostgreSQL 49, mobile WebKit 75, compiler continuity 11, plus format/lint,
+boundaries/typecheck/build/audit/secret checks. Full immutable asset replay
+matched exactly in 15.2 seconds. A contended Mac full-suite run hit the unchanged
+30-second export-test limit alongside the known Mac label-order hash mismatch;
+no timeout or assertion was changed. The same export and full suite pass CI.
+
+The separate A4 scale workflow still reports known synthetic Collection-frame
+debt. Dense 1k: Collection toggle p95 17 ms / max 112 ms (limit max 100 ms),
+versus the previous source `09e7ecd` run's same failing check at p95 17 / max
+130 ms. [Current scale run](https://github.com/neocjmix/moirai/actions/runs/38392198061)
+and [baseline scale run](https://github.com/neocjmix/moirai/actions/runs/38378638639)
+remain visible; no workflow or gate is weakened. These synthetic worlds cannot
+activate the r56-only experiment, and the ordinary renderer is unmodified.

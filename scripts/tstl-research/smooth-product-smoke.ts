@@ -51,6 +51,20 @@ const views = [
   { name: "world", camera: "0,220900,1050,21000" },
   { name: "yi-shared", camera: "280,222950,430,500" }
 ];
+if (placement) {
+  views.push({ name: "world-wide", camera: "0,220900,1900,21000" });
+}
+const historicalCases = [
+  ...cases,
+  ...(placement
+    ? [
+        {
+          id: "01a10817-869d-76e5-aa79-dae0d2b8bb05",
+          title: "순천 왜교성 앞바다의 봉쇄"
+        }
+      ]
+    : [])
+];
 const visualViews = process.env.TSTL_SMOOTH_VIEW
   ? views.filter((view) => view.name === process.env.TSTL_SMOOTH_VIEW)
   : views;
@@ -1130,7 +1144,7 @@ for (const profile of profiles) {
       }
       result.interactions = interactions;
       const historical: Record<string, unknown>[] = [];
-      for (const c of cases) {
+      for (const c of historicalCases) {
         console.info(
           JSON.stringify({
             profile: profile.name,
@@ -1151,6 +1165,8 @@ for (const profile of profiles) {
             .first()
             .waitFor({ state: "visible" });
           selectedIDs[mode] = state.selectedEventId;
+          if (placement && c.title === "이순신의 생애")
+            await screenshot(page, profile.name + "-" + mode + "-selected-yi");
         }
         historical.push({ ...c, selectedIDs });
         await page.getByTestId("event-drawer-close").click();
@@ -1232,6 +1248,7 @@ for (const profile of profiles) {
         requests.filter((x) => x === p).length
       ])
     );
+    if (remote) await context.unrouteAll({ behavior: "wait" });
     await context.close();
     await remote?.dispose();
     await browser.close();

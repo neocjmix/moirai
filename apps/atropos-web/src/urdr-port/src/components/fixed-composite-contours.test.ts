@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { fixedCompositeContextMetrics, fixedCompositeLabelRing, fixedCompositePath, fixedCompositeTracePath, fixedCompositeTraceMetrics } from "./fixed-composite-contours";
+import { fixedCompositeContextMetrics, fixedCompositeLabelRing, fixedCompositePath, fixedCompositeTracePath, fixedCompositeTraceMetrics, fixedCompoundVisible } from "./fixed-composite-contours";
 
 const left = [{x: 0, y: 10}, {x: 10, y: 10}, {x: 10, y: 90}, {x: 0, y: 90}];
 const right = left.map(point => ({x: point.x + 90, y: point.y}));
@@ -41,4 +41,17 @@ it("does not invent closing or inter-trace segments for visibility and HUD ranki
   ];
   expect(fixedCompositeTraceMetrics(separated, size)).toMatchObject({visible: false, centerDistance: 0.6});
   expect(fixedCompositeTraceMetrics([{kind: "route", points: [{x: -10, y: 91}, {x: 90, y: 191}]}], size).visible).toBe(false);
+});
+
+
+it("keeps holes empty for HUD visibility, center distance and outer-boundary labels", () => {
+  const outer = [{x: -100, y: -100}, {x: 200, y: -100}, {x: 200, y: 200}, {x: -100, y: 200}];
+  const hole = [{x: -10, y: -10}, {x: 110, y: -10}, {x: 110, y: 110}, {x: -10, y: 110}];
+  expect(fixedCompositeContextMetrics([hole, outer], size, "evenodd").centerDistance).toBeCloseTo(0.6);
+  expect(fixedCompoundVisible([hole, outer], size)).toBe(false);
+  expect(fixedCompositeLabelRing([hole, outer], size, "evenodd")).toBe(outer);
+  const narrowHole = hole.map(point => ({x: 20 + (point.x + 10) / 2, y: 20 + (point.y + 10) / 2}));
+  expect(fixedCompoundVisible([outer, narrowHole], size)).toBe(true);
+  expect(fixedCompositeContextMetrics([outer, narrowHole], size, "evenodd").centerDistance).toBeCloseTo(0.3);
+  expect(fixedCompositeContextMetrics([hole, outer], size).centerDistance).toBe(0);
 });

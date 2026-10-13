@@ -192,6 +192,7 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
   };
   type Mesh = {
     path: string;
+    fillRule?: "evenodd";
     frame: GeographicMeshFrame;
     controls: GeographicPathControls | null;
     requestedPath: string;
@@ -540,7 +541,7 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
               throw Error("invalid_webgl_paint_frame");
             let drawTransform = currentTransform;
             let reuse = false;
-            if (entry) {
+            if (entry && entry.fillRule === region.fillRule) {
               if (
                 entry.path !== region.path &&
                 entry.requestedPath !== region.path
@@ -594,13 +595,17 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
                 MAX_CONTROL_BYTES
               )
                 controls = null;
-              const mesh = geographicMesh(region.path);
+              const mesh = geographicMesh(
+                region.path,
+                region.fillRule ? { fillRule: region.fillRule } : {}
+              );
               const bytes = mesh.fill.byteLength + mesh.stroke.byteLength;
               if (bytes > 4_000_000) throw Error("webgl_mesh_budget");
               if (cache.size >= 128 || meshBytes() + bytes > 8_000_000)
                 throw Error("webgl_scene_budget");
               entry = {
                 path: region.path,
+                ...(region.fillRule ? { fillRule: region.fillRule } : {}),
                 frame: currentFrame,
                 controls,
                 requestedPath: region.path,
@@ -845,6 +850,10 @@ export function createWebGLPainter(canvas: HTMLCanvasElement) {
         canvas.dataset.meshFeatherBuilds = String(featherBuilds);
         canvas.dataset.pointCount = String(dots.length / 9);
         canvas.dataset.regionCount = String(scene.regions.length);
+        canvas.dataset.compoundMeshCount = String(
+          [...cache.values()].filter((mesh) => mesh.fillRule === "evenodd")
+            .length
+        );
         canvas.dataset.pigmentMode = "spectral-6band";
         canvas.dataset.pigmentPixels = String(
           accumulationWidth * accumulationHeight

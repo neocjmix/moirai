@@ -1,0 +1,78 @@
+{
+  "formatVersion": "tstl-independent-geometry-review/1",
+  "reviewDateUtc": "2026-10-13",
+  "artifact": {
+    "path": "/labs/tstl/r56-5d8e2b32d0b5895c.json",
+    "sha256": "5d8e2b32d0b5895cc02823ab4bfa9794873d7e65e465ba6e62fe43ff898173c1",
+    "bytes": 5049276,
+    "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64"
+  },
+  "method": {
+    "geometryOracle": "Independent Python Sutherland-Hodgman clipping of serialized rings to each nominal glyph rectangle, followed by signed shoelace area. The oracle did not call clipper2-ts or the shared geometry validator.",
+    "sourceOracle": "Compiled B0 primitive anchors, point coordinates, Composite worldBounds, and leaf ancestorCompositeIds.",
+    "areaToleranceWorldUnitsSquared": 0.0001,
+    "ownerLeafChecksPerCandidate": 46870,
+    "memberPairsPerCandidate": 1390,
+    "nonmemberPairsPerCandidate": 45480,
+    "leafEvents": 430,
+    "eventYPolicy": "Candidates provide no Event Y override; existing B0 primitive Event and Composite anchor Y remains authoritative. Region boundary Y is separate."
+  },
+  "nominalGeometryScope": {
+    "metric": "X=x; Y=0.2*(y-baseline.bounds.minY)",
+    "glyphWidthMetricUnits": 5,
+    "glyphHeightMetricUnits": 5,
+    "obstacleOffsetParameterMetricUnits": 1.5,
+    "polygonBooleanDecimalPrecision": 4,
+    "renderFillRule": "evenodd"
+  },
+  "candidates": {
+    "bubble": {
+      "events": 539,
+      "owners": 109,
+      "b0XMismatches": 0,
+      "semanticWorldBoundsMismatches": 0,
+      "leafMemberships": 1390,
+      "areaMemberships": 1210,
+      "listMemberships": 180,
+      "independentMembershipStatusMismatches": 0,
+      "independentNonmemberIntrusions": 0,
+      "maximumNonmemberOverlapAreaWorldUnitsSquared": 0,
+      "components": 138,
+      "holes": 473,
+      "constructionProperSelfCrossings": 0,
+      "segmentChecks": 2562392,
+      "segmentCheckBudget": 20000000,
+      "budgetExhausted": false
+    },
+    "ribbon": {
+      "events": 539,
+      "owners": 109,
+      "b0XMismatches": 0,
+      "semanticWorldBoundsMismatches": 0,
+      "leafMemberships": 1390,
+      "areaMemberships": 1210,
+      "listMemberships": 180,
+      "independentMembershipStatusMismatches": 0,
+      "independentNonmemberIntrusions": 0,
+      "maximumNonmemberOverlapAreaWorldUnitsSquared": 3.552713678800501e-13,
+      "components": 136,
+      "holes": 395,
+      "constructionProperSelfCrossings": 0
+    }
+  },
+  "review": {
+    "materialFindings": [],
+    "conclusion": "No material source-identity, membership-count, or nominal glyph inclusion/exclusion discrepancy was found in the pinned artifact. Both candidates preserve exact B0 X and semantic world bounds and retain every source leaf membership as area or explicit list fallback.",
+    "determinism": "Reviewed sorted identity traversal, deterministic skeleton/channel selection, canonical ring serialization, and passing source-order reversal regressions.",
+    "rendererScope": "This record reviews serialized source geometry. GPU triangulation, painter recovery, and deployed browser behavior require separate evidence."
+  },
+  "limitations": [
+    "The independent oracle uses floating-point serialized coordinates and an area tolerance, not exact-arithmetic topology proof.",
+    "Nominal 5 by 5 glyph supports and obstacle offset settings do not certify changing screen-space glyph or label footprints at every zoom.",
+    "Proper self-crossing counts are construction-validator evidence; they are not an independent proof against every non-adjacent touch, collinear overlap, or inter-ring topology defect.",
+    "A component or hole count does not certify semantic membership-intersection signatures or a single connected region for every Composite.",
+    "Global semantic area certification and recovery of missing temporal sidecar information remain unverified."
+  ]
+}

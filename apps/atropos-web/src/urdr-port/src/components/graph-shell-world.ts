@@ -1,3 +1,4 @@
+import { compoundContourNesting } from "../../../components/compound-contours";
 import { buildCompositePaddingProfile, type CompositePaddingProfile } from "@moirai/graph-presentation/composite-padding-profile";
 import type {
   GraphShellChartPlaneEntity,
@@ -246,7 +247,7 @@ export function prepareCompositeWorldGeometry(
         containedBy: entity.containedBy,
         editorial: entity.editorial,
         points: geometry.points,
-        ...(fixedRings ? { fixedRings, fixedTraces, fixedContour: true, preparedAnchor: entity.preparedAnchor } : {}),
+        ...(fixedRings ? { fixedRings, fixedTraces, fixedContour: true, ...(entity.preparedContourFillRule ? {fillRule: entity.preparedContourFillRule, fixedRingDepths: compoundContourNesting(fixedRings).depths} : {}), preparedAnchor: entity.preparedAnchor } : {}),
         paddingProfile: geometry.paddingProfile,
         hullPending: fixedRings ? fixedSupport.length === 0 : Boolean(entity.preparedCompactBounds)
       };

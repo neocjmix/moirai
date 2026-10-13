@@ -16,6 +16,7 @@ type Request = {
   id: string;
   points: readonly ViewportCoordinate[];
   fixedRings?: readonly (readonly ViewportCoordinate[])[];
+  fillRule?: "evenodd";
   fixedTraces?: readonly GraphShellPreparedWorldTrace[];
   view: View;
   viewport: Size;
@@ -28,6 +29,7 @@ type Request = {
 export type CompositeGeometryEntry = {
   support: readonly ViewportCoordinate[];
   fixedRings?: readonly (readonly ViewportCoordinate[])[];
+  fillRule?: "evenodd";
   fixedTraces?: readonly GraphShellPreparedWorldTrace[];
   projectedRings?: ViewportCoordinate[][];
   projectedTraces?: GraphShellPreparedWorldTrace[];
@@ -94,7 +96,7 @@ export function createCompositePanGeometryCache({
   };
 
   return {
-    project({id, points, fixedRings, fixedTraces, view, viewport, padding, paddingProfile, tuning, labelHeight, labelGap}: Request) {
+    project({id, points, fixedRings, fixedTraces, fillRule, view, viewport, padding, paddingProfile, tuning, labelHeight, labelGap}: Request) {
       const origin = {x: viewport.width / 2 + view.x, y: viewport.height / 2 + view.y};
       // Keep point/composite LOD coordinates exact. Only expensive padded hull
       // geometry and its SVG path are reused through a pure translation.
@@ -106,7 +108,7 @@ export function createCompositePanGeometryCache({
       if (entry && entry.scaleX === view.scaleX && entry.scaleY === view.scaleY &&
           entry.padding === padding && sameProfile(entry.paddingProfile, paddingProfile) && entry.tuning.smoothing === tuning.smoothing &&
           entry.tuning.cornerFloor === tuning.cornerFloor && entry.tuning.balanceFloor === tuning.balanceFloor &&
-          sameSupport(entry.support, points) && sameRings(entry.fixedRings, fixedRings) && sameTraces(entry.fixedTraces, fixedTraces)) {
+          sameSupport(entry.support, points) && entry.fillRule === fillRule && sameRings(entry.fixedRings, fixedRings) && sameTraces(entry.fixedTraces, fixedTraces)) {
         hits++;
         // Fresh response arrays with identical geometry retain the same path.
         entry.support = points;
@@ -125,6 +127,7 @@ export function createCompositePanGeometryCache({
         }))) : expandPolygon(projectedHullPoints, padding);
         entry = {
           support: points,
+          ...(fillRule ? {fillRule} : {}),
           ...(fixedRings && projectedRings ? {fixedRings, projectedRings} : {}),
           ...(fixedTraces && projectedTraces && tracePaths ? {fixedTraces, projectedTraces, tracePaths} : {}),
           scaleX: view.scaleX,
@@ -160,6 +163,7 @@ export function createCompositePanGeometryCache({
         projectedRings: entry.projectedRings?.map(ring => dx === 0 && dy === 0 ? ring : ring.map(point => ({x: point.x + dx, y: point.y + dy}))),
         projectedTraces: entry.projectedTraces?.map(trace => dx === 0 && dy === 0 ? trace : {...trace, points: trace.points.map(point => ({x: point.x + dx, y: point.y + dy}))}),
         tracePaths: entry.tracePaths,
+        fillRule: entry.fillRule,
         projectedPoints: dx === 0 && dy === 0 ? entry.expanded : entry.expanded.map(point => ({x: point.x + dx, y: point.y + dy})),
         path: entry.path,
         // Compact owners use a point label and never read this frame. Keep

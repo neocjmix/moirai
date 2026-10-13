@@ -8,7 +8,7 @@ import {
   TSTL_EXPERIMENT_SHA256
 } from "../../apps/atropos-web/src/lib/tstl-experiment-pin.js";
 
-it("reproduces the shipped B0/A/B/C asset from unchanged history-r56", () => {
+it("reproduces every shipped experiment from unchanged history-r56", () => {
   const snapshot = loadHistorySnapshot();
   const baseline = replayBaseline(snapshot).artifact;
   const comparison = buildTstlComparison(snapshot, baseline).artifact;
@@ -24,5 +24,15 @@ it("reproduces the shipped B0/A/B/C asset from unchanged history-r56", () => {
       candidate.diagnostics!.leafRoutedMemberships! +
         candidate.diagnostics!.leafListMemberships!
     ).toBe(1390);
+  }
+  for (const candidate of [value.bubble, value.ribbon]) {
+    expect(candidate.fillRule).toBe("evenodd");
+    expect(candidate.diagnostics!.leafMemberships).toBe(1390);
+    expect(
+      candidate.diagnostics!.leafAreaMemberships! +
+        candidate.diagnostics!.leafListMemberships!
+    ).toBe(1390);
+    expect(candidate.diagnostics!.nonmemberIntersections).toBe(0);
+    expect(candidate.diagnostics!.selfIntersections).toBe(0);
   }
 }, 30_000);

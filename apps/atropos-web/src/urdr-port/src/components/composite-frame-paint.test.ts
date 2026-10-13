@@ -6,6 +6,7 @@ import {
 } from "./composite-frame-paint";
 import { retainedCompositePaintTransform } from "./graph-shell-composite";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
+import { geographicMesh } from "../../../components/geographic-mesh";
 
 const region = (id: string, pan = 0, opacity = 1) => ({
   id,
@@ -17,6 +18,22 @@ const region = (id: string, pan = 0, opacity = 1) => ({
   pathTransform: `translate(${pan} ${pan})`,
   paintView: {x: pan, y: pan, scaleX: 1, scaleY: 1},
   paintViewport: {width: 390, height: 664}
+});
+
+it("a layout source change cannot carry malformed previous-only geometry into its fresh renderer", () => {
+  const malformed = {...region("previous-only"), path: "M0 0 L10 10 L0 10 L10 0 Z"};
+  const shared = region("shared");
+  let previous = paint([], [malformed, shared], 0);
+  previous = paint(previous, [malformed, shared], 16, true);
+  const incoming = [{...region("shared", 7, 0.6), path: "M0 0 L10 0 L10 10 L0 10 Z"}];
+  const ordinary = paint(previous, incoming, 32);
+  expect(ordinary.find(item => item.id === malformed.id)?.visibilityState).toBe("exiting");
+  expect(() => ordinary.forEach(item => geographicMesh(item.path))).toThrow("non_simple_geographic_path");
+  const changedSource = paint(previous, incoming, 32, false, 220, undefined, false);
+  expect(changedSource).toEqual([{...incoming[0], renderedOpacity: 0.6, visibilityState: "present"}]);
+  expect(() => changedSource.forEach(item => geographicMesh(item.path))).not.toThrow();
+  // Subsequent camera/LOD changes in the same source keep the normal exit.
+  expect(paint(changedSource, [], 48)[0]?.visibilityState).toBe("exiting");
 });
 
 it("uses current coordinates and opacity on all 600 steady camera passes without another frame", () => {

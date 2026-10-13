@@ -199,3 +199,14 @@ it("selects remote fixed rings and empty-contour fallback anchors without changi
   expect(prepared.fixedSupportBoundsById.has("ordinary")).toBe(false);
   expect(selectCompositeWorldRegions(prepared, bounds(0), bounds(0), true).map(item => item.id)).toEqual(["ordinary"]);
 });
+
+
+it("retains explicit even-odd semantics and cached ring nesting without changing the final coordinates", () => {
+  const outer = [{x: 0, y: 0}, {x: 100, y: 0}, {x: 100, y: 100}, {x: 0, y: 100}];
+  const hole = [{x: 20, y: 20}, {x: 80, y: 20}, {x: 80, y: 80}, {x: 20, y: 80}];
+  const source = graphShellChartPlaneRegionEntitySchema.parse({...region("compound", []), preparedContourMode: "fixed",
+    preparedWorldRings: [hole, outer], preparedContourFillRule: "evenodd", preparedAnchor: {x: 50, y: 50}});
+  const prepared = prepareCompositeWorldGeometry([source], [], "convex");
+  expect(prepared.regions[0]).toMatchObject({fillRule: "evenodd", fixedRingDepths: [1, 0], fixedRings: [hole, outer], preparedAnchor: {x: 50, y: 50}});
+  expect(prepared.regions[0]!.fixedRings).toBe(source.preparedWorldRings);
+});

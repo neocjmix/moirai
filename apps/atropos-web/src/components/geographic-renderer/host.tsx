@@ -7,18 +7,24 @@ import type {
   GeographicRenderFrame
 } from "./contract";
 import { createBaselineBackend } from "./baseline-backend";
-import { publishRendererDiagnostics } from "./diagnostics";
+import {
+  publishRendererDiagnostics,
+  rendererFallbackReason
+} from "./diagnostics";
 import type { LiveCamera } from "./live-camera";
 
 type Props = GeographicPainterProps & {
   liveCamera: LiveCamera;
+  paintSourceKey?: string | undefined;
 };
 
 async function createBackend(canvas: HTMLCanvasElement) {
   return createBaselineBackend(canvas);
 }
 
-function BackendCanvas(props: Props & { onFailure: () => void }) {
+function BackendCanvas(
+  props: Props & { onFailure: (reason?: unknown) => void }
+) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const propsRef = useRef(props);
@@ -45,15 +51,15 @@ function BackendCanvas(props: Props & { onFailure: () => void }) {
     let averageCpu = 0;
     let averageInterval: number | undefined;
     let samples = 0;
-    const fail = () => {
+    const fail = (reason?: unknown) => {
       if (disposed || failed) return;
       failed = true;
       if (raf !== null) cancelAnimationFrame(raf);
-      propsRef.current.onFailure();
+      propsRef.current.onFailure(reason);
     };
     const lost = (event: Event) => {
       event.preventDefault();
-      fail();
+      fail(new Error("webgl_context_lost"));
     };
     canvas.addEventListener("webglcontextlost", lost);
     publishRendererDiagnostics({
@@ -90,6 +96,10 @@ function BackendCanvas(props: Props & { onFailure: () => void }) {
         previousTime = now;
         samples++;
         const stats = backend.stats();
+        // Publish only after this source has actually painted successfully.
+        if (current.paintSourceKey)
+          canvas.dataset.paintSourceKey = current.paintSourceKey;
+        else delete canvas.dataset.paintSourceKey;
         canvas.dataset.renderer = "custom-webgl2";
         canvas.dataset.regionCount = String(
           stats.hullCount ?? current.regions.length
@@ -114,8 +124,8 @@ function BackendCanvas(props: Props & { onFailure: () => void }) {
           });
         }
         if (active) raf = requestAnimationFrame(paint);
-      } catch {
-        fail();
+      } catch (error) {
+        fail(error);
       }
     };
     requestPaint.current = () => {
@@ -188,11 +198,11 @@ export function GeographicRenderer(props: Props) {
   return (
     <BackendCanvas
       {...props}
-      onFailure={() => {
+      onFailure={(reason) => {
         publishRendererDiagnostics({
           renderer: "svg",
           state: "fallback",
-          fallback: "gpu-unavailable"
+          fallback: rendererFallbackReason(reason)
         });
         props.onUnavailable();
       }}

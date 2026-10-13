@@ -16,7 +16,8 @@ import { compositePointDisplay, compositeRepresentationDisplay, compositePointDe
 import { compositeStageSpan, resolveCompositeHierarchySpans, advanceCompositeStageSpan } from "./composite-visibility-policy";
 import { createCompositeGeometryWorker } from "./composite-geometry-worker-client";
 import { createCompositePanGeometryCache } from "./composite-pan-geometry";
-import { fixedCompositePath, fixedCompositeLabelRing, fixedCompositeContextMetrics, fixedCompositeTracePath, fixedCompositeTraceMetrics } from "./fixed-composite-contours";
+import { compoundContourContainsPoint } from "../../../components/compound-contours";
+import { fixedCompositePath, fixedCompositeLabelRing, fixedCompositeContextMetrics, fixedCompositeTracePath, fixedCompositeTraceMetrics, fixedCompoundVisible } from "./fixed-composite-contours";
 import { COMPOSITE_LABEL_FONT, createCompositeLabelWidthMeasure, extendCompositeLabelTextPath } from "./composite-label-text-path";
 import { pointDensityDisplay, withParentPointHandoff } from "./point-density-display";
 import { retainPointPaint, POINT_PAINT_FADE_MS } from "./point-paint-presence";
@@ -180,6 +181,7 @@ type CompositeRegion = {
   projectedPoints: ViewportCoordinate[];
   projectedRings?: ViewportCoordinate[][];
   fixedContour?: boolean;
+  fillRule?: "evenodd";
   projectedTraces?: GraphShellChartPlaneRegionEntity["preparedWorldTraces"];
   tracePaths?: {kind: "spine" | "membership" | "route"; eventId?: string; path: string}[];
   labelAttachX: number;
@@ -2125,6 +2127,7 @@ function EventDrawerContent({
                         <path
                           className={`${styles.chartCompositeRegion} ${styles.eventLinksRegionPath} ${region.role === "parent" ? styles.eventLinksRegionParent : styles.eventLinksRegionChild}`}
                           d={region.path}
+                          fillRule={region.fillRule}
                           data-depth={region.depth}
                           data-event-link-region-id={region.id}
                           data-event-link-region-role={region.role}
@@ -2340,7 +2343,7 @@ export function GraphShell({
       const bounds = worldBoundsForScreenBounds({minX:-96-input.labelReach,minY:-96-input.labelReach,maxX:input.viewport.width+96+input.labelReach,maxY:input.viewport.height+96+input.labelReach},snapshot.view,input.viewport);
       const regions = selectCompositeWorldRegions(input.prepared,bounds,bounds,true);
       const result = await geometryWorkerRef.current.prepare({generation:token,view:snapshot.view,viewport:input.viewport,tuning:input.tuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
-        regions: regions.map(region => ({id:region.id, coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings,fixedTraces:region.fixedTraces}))});
+        regions: regions.map(region => ({id:region.id, coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings,fixedTraces:region.fixedTraces,...(region.fillRule?{fillRule:region.fillRule}:{})}))});
       if (!sceneScheduler.accepts(token) || input !== geometryJobInputRef.current) return;
       if (result) { input.cache.hydrate(result.entries); workerStatsRef.current = {timingMs:result.timingMs,stats:result.stats}; }
     }
@@ -2378,7 +2381,7 @@ export function GraphShell({
   }, [liveCamera, sceneScheduler]);
   const [viewportSize, setViewportSize] = useState<ViewportSize>({ width: 0, height: 0 });
   const [compositePaintClock, setCompositePaintClock] = useState({frame: 0, prune: 0});
-  const compositePaintHistoryRef = useRef({regions: [] as CompositeFadePresence<CompositeRegion>[], frame: 0});
+  const compositePaintHistoryRef = useRef({regions: [] as CompositeFadePresence<CompositeRegion>[], frame: 0, paintSourceKey: undefined as string | undefined});
   const initialEventSelection = externalFocus
     ? { eventId: externalFocus.id, label: externalFocus.label, requestKey: 0 }
     : null;
@@ -2392,6 +2395,7 @@ export function GraphShell({
   const [selectedEventLoadState, setSelectedEventLoadState] = useState<"idle" | "loading" | "ready" | "error">(initialEventDetail ? "ready" : "idle");
   const [eventDetailRetryVersion, setEventDetailRetryVersion] = useState(0);
   const [runtimeViewportResponse, setRuntimeViewportResponse] = useState<ReturnType<typeof graphShellViewportResponseSchema.parse> | null>(null);
+  const [runtimePaintSource, setRuntimePaintSource] = useState<string | undefined>();
   const [runtimeViewportLoadState, setRuntimeViewportLoadState] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [runtimeViewportErrorMessage, setRuntimeViewportErrorMessage] = useState<string | null>(null);
 
@@ -2413,7 +2417,10 @@ export function GraphShell({
   }, []);
   const [useGeographicCanvas,setUseGeographicCanvas] = useState(false);
   const [useGeographicWebGL,setUseGeographicWebGL] = useState(false);
-  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[]);
+  // A malformed legacy hull may require SVG, but that failure does not apply
+  // to a different immutable layout. Retry only after its response commits;
+  // camera reads, selection and repeated frames keep the same stable key.
+  useEffect(() => {const graphics=new URLSearchParams(window.location.search).get("gsGraphics");setUseGeographicCanvas(graphics !== "svg");setUseGeographicWebGL(graphics !== "canvas" && graphics !== "svg");},[runtimePaintSource]);
   const handleGraphicsUnavailable=useCallback(()=>{setUseGeographicCanvas(false);setUseGeographicWebGL(false);},[]);
   const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
   const measureGraphPhase = useCallback((phase, run) => {
@@ -2699,6 +2706,7 @@ export function GraphShell({
     // Never also query the semantic viewport for point/region/edge drawing.
     if (loader.renderTiles) {
       setRuntimeViewportResponse(null);
+      setRuntimePaintSource(loader.paintSourceKey);
       setRuntimeViewportLoadState("ready");
       setRuntimeViewportErrorMessage(null);
       return;
@@ -2768,7 +2776,7 @@ export function GraphShell({
           // A camera job can supersede this priming job. Keep the still-current
           // read alive: dropping it could leave a Collection refresh loading forever.
           do { result = await geometryWorkerRef.current.prepare({generation:requestGeneration,view,viewport:viewportSize,tuning:compositeSplineTuning,labelHeight:COMPOSITE_LABEL_LINE_HEIGHT,labelGap:COMPOSITE_LABEL_GAP,
-            regions: regions.map(region => ({id:region.id,coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings,fixedTraces:region.fixedTraces}))});
+            regions: regions.map(region => ({id:region.id,coordinates:Float64Array.from(region.points.flatMap(point=>[point.x,point.y])),padding:getCompositeRegionPadding(region.depth),paddingProfile:region.paddingProfile,fixedRings:region.fixedRings,fixedTraces:region.fixedTraces,...(region.fillRule?{fillRule:region.fillRule}:{})}))});
           } while (!result && relevant() && geometryWorkerRef.current && !geometryWorkerRef.current.inspect().failed);
           if (!relevant()) return;
           if (result) compositePanGeometryCache.hydrate(result.entries);
@@ -2778,7 +2786,10 @@ export function GraphShell({
           const sameOwner = runtimeViewportOwnerRef.current?.loader === loader && runtimeViewportOwnerRef.current?.canons === canonIds.join(",");
           runtimeViewportOwnerRef.current = {loader, canons: canonIds.join(",")};
           graphWorkCountsRef.current.viewportReadResults++;
-          startTransition(() => setRuntimeViewportResponse(previous => relevant() ? reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode) : previous));
+          startTransition(() => {
+            setRuntimeViewportResponse(previous => relevant() ? reconcileViewport(sameOwner ? previous : null, fullResponse, loader.viewportMode) : previous);
+            setRuntimePaintSource(previous => relevant() ? loader.paintSourceKey : previous);
+          });
           setRuntimeViewportLoadState("ready");
           setRuntimeViewportErrorMessage(null);
         }
@@ -3179,13 +3190,13 @@ export function GraphShell({
       graphWorkCountsRef.current.regionTransforms += region.points.length;
       const geometry = measureGraphPhase("contourPreparation", () => compositePanGeometryCache.project({
         id: region.id, points: region.points, view, viewport: viewportSize,
-        padding: getCompositeRegionPadding(region.depth), paddingProfile: region.paddingProfile, fixedRings: region.fixedRings, fixedTraces: region.fixedTraces, tuning: compositeSplineTuning,
+        padding: getCompositeRegionPadding(region.depth), paddingProfile: region.paddingProfile, fixedRings: region.fixedRings, fixedTraces: region.fixedTraces, ...(region.fillRule ? {fillRule: region.fillRule} : {}), tuning: compositeSplineTuning,
         labelHeight: COMPOSITE_LABEL_LINE_HEIGHT, labelGap: COMPOSITE_LABEL_GAP,
       }));
       const {projectedHullPoints, projectedPoints, projectedRings, projectedTraces} = geometry;
       const traceMetrics = projectedTraces?.length ? fixedCompositeTraceMetrics(projectedTraces, viewportSize) : undefined;
       const traceOnly = Boolean(projectedTraces?.length && !projectedRings?.length);
-      const labelRing = projectedRings ? fixedCompositeLabelRing(projectedRings, viewportSize) : projectedPoints;
+      const labelRing = projectedRings ? fixedCompositeLabelRing(projectedRings, viewportSize, region.fillRule, region.fixedRingDepths) : projectedPoints;
       const representation = compositeRepresentationDisplay(projectedHullPoints, region.hullPending, stageSpans.get(region.id));
       const fixedAnchor = region.preparedAnchor ? projectWorldPoint(view, viewportSize, region.preparedAnchor) : null;
       if (representation && fixedAnchor) representation.point = fixedAnchor;
@@ -3193,7 +3204,7 @@ export function GraphShell({
         ? representation?.point
         : compositePointDisplay(projectedHullPoints, Boolean(history.get(region.id)?.compactPoint), stageSpans.get(region.id));
       if (compactPoint && fixedAnchor) compactPoint = fixedAnchor;
-      const coverage = measureGraphPhase("clippingCoverage", () => (projectedRings ?? [projectedPoints]).reduce((sum, ring) => sum + getPolygonArea(clipPolygonAgainstViewport(ring, viewportSize)), 0) / Math.max(viewportSize.width * viewportSize.height, 1));
+      const coverage = measureGraphPhase("clippingCoverage", () => (projectedRings ?? [projectedPoints]).reduce((sum, ring, index) => sum + (region.fillRule === "evenodd" && region.fixedRingDepths[index] % 2 ? -1 : 1) * getPolygonArea(clipPolygonAgainstViewport(ring, viewportSize)), 0) / Math.max(viewportSize.width * viewportSize.height, 1));
       const renderedLabel = formatCompositeDisplayLabel({ label: region.label }, zoomBucket, region.editorial);
       const labelWidth = Math.max(semanticTextWidth(renderedLabel), 72);
       const traceLabelPoint = traceOnly ? traceMetrics?.labelPoint ?? fixedAnchor : null;
@@ -3244,6 +3255,7 @@ export function GraphShell({
         tracePaths: geometry.tracePaths,
         traceMetrics,
         fixedContour: region.fixedContour,
+        fillRule: region.fillRule,
         labelAttachX: placement.attachX,
         labelAttachY: placement.attachY,
         labelGuideX: placement.guideX,
@@ -3261,7 +3273,7 @@ export function GraphShell({
         opacity: 1,
         surfaceOpacity: getCompositeSurfaceOpacityScale(coverage),
         contextCoverage: coverage,
-        contextCenterInside: (projectedRings ?? [projectedHullPoints]).some(ring => polygonContainsCenter(ring, viewportSize)),
+        contextCenterInside: region.fillRule === "evenodd" ? compoundContourContainsPoint(projectedRings, {x: viewportSize.width / 2, y: viewportSize.height / 2}) : (projectedRings ?? [projectedHullPoints]).some(ring => polygonContainsCenter(ring, viewportSize)),
         supportComplete: region.supportComplete,
       } satisfies CompositeRegion;
     });
@@ -3317,7 +3329,7 @@ export function GraphShell({
       .sort((left, right) => left.labelAttachY - right.labelAttachY || left.labelAttachX - right.labelAttachX || left.id.localeCompare(right.id));
 
     const activeColorRegionIds = projectedRawRegions
-      .filter((region) => region.traceMetrics?.visible || (region.projectedRings?.length ? region.projectedRings : region.projectedTraces?.length ? [] : [region.projectedPoints]).some(ring => regionIntersectsViewport(ring, viewportSize)))
+      .filter((region) => region.traceMetrics?.visible || (region.fillRule === "evenodd" && region.projectedRings?.length ? fixedCompoundVisible(region.projectedRings, viewportSize) : (region.projectedRings?.length ? region.projectedRings : region.projectedTraces?.length ? [] : [region.projectedPoints]).some(ring => regionIntersectsViewport(ring, viewportSize))))
       .sort((left, right) => left.depth - right.depth || left.id.localeCompare(right.id))
       .map((region) => region.id);
 
@@ -3344,14 +3356,15 @@ export function GraphShell({
       compositePaintHistoryRef.current.regions, compositePaintTargets, now,
       compositePaintClock.frame !== compositePaintHistoryRef.current.frame, COMPOSITE_FADE_DURATION_MS,
       new Set(pointPaintHistoryRef.current.workspace === workspace ? pointPaintHistoryRef.current.points.filter(point => hasVisiblePaintLifetime(point.opacity * point.pointDisplay.opacity, point.exitStartedAt, now, POINT_PAINT_FADE_MS)).map(point => point.id) : []),
+      compositePaintHistoryRef.current.paintSourceKey === runtimePaintSource,
     );
-  }, [compositePaintTargets, compositePaintClock]);
+  }, [compositePaintTargets, compositePaintClock, runtimePaintSource]);
   // Store only committed lifecycle history. Current geometry already supplies
   // this render, so pan does not enqueue another state-copy render and semantic
   // point/region label boxes are evaluated in the same camera coordinates.
   useLayoutEffect(() => {
-    compositePaintHistoryRef.current = {regions: visibleCompositeRegions, frame: compositePaintClock.frame};
-  }, [visibleCompositeRegions, compositePaintClock.frame]);
+    compositePaintHistoryRef.current = {regions: visibleCompositeRegions, frame: compositePaintClock.frame, paintSourceKey: runtimePaintSource};
+  }, [visibleCompositeRegions, compositePaintClock.frame, runtimePaintSource]);
   const compositeFadeFrameRef = useRef(null);
   useEffect(() => {
     if (!needsCompositePaintFrame(visibleCompositeRegions)) {
@@ -3401,12 +3414,12 @@ export function GraphShell({
     id: region.id, label: region.label, contains: region.contains,
     coverage: region.contextCoverage, centerInside: region.contextCenterInside,
     visible: region.fixedContour
-      ? Boolean(region.projectedRings?.some(ring => regionIntersectsViewport(ring, viewportSize)) || region.traceMetrics?.visible || (!region.projectedRings?.length && !region.projectedTraces?.length && regionIntersectsViewport(region.projectedPoints, viewportSize)))
+      ? Boolean((region.fillRule === "evenodd" ? fixedCompoundVisible(region.projectedRings, viewportSize) : region.projectedRings?.some(ring => regionIntersectsViewport(ring, viewportSize))) || region.traceMetrics?.visible || (!region.projectedRings?.length && !region.projectedTraces?.length && regionIntersectsViewport(region.projectedPoints, viewportSize)))
       : regionIntersectsViewport(region.projectedPoints, viewportSize),
     ...(region.fixedContour && region.projectedTraces?.length ? {
-      centerDistance: Math.min(region.traceMetrics.centerDistance, ...(region.projectedRings ?? []).map(ring => contextViewportMetrics(ring, viewportSize).centerDistance)),
+      centerDistance: Math.min(region.traceMetrics.centerDistance, ...(region.fillRule === "evenodd" ? [fixedCompositeContextMetrics(region.projectedRings ?? [], viewportSize, region.fillRule).centerDistance] : (region.projectedRings ?? []).map(ring => contextViewportMetrics(ring, viewportSize).centerDistance))),
       viewportSpan: Math.max(region.traceMetrics.viewportSpan, ...(region.projectedRings ?? []).map(ring => contextViewportMetrics(ring, viewportSize).viewportSpan)),
-    } : region.projectedRings?.length ? fixedCompositeContextMetrics(region.projectedRings, viewportSize) : contextViewportMetrics(region.projectedPoints, viewportSize)),
+    } : region.projectedRings?.length ? fixedCompositeContextMetrics(region.projectedRings, viewportSize, region.fillRule) : contextViewportMetrics(region.projectedPoints, viewportSize)),
     supportComplete: region.supportComplete === true,
   })) : [], [discovery?.contextHud, chartCompositeRegions.regions, viewportSize]);
   const proposedContext = useMemo(() => selectGraphContext(contextCandidates, contextTopicId), [contextCandidates, contextTopicId]);
@@ -4278,6 +4291,7 @@ export function GraphShell({
   // Read-only, on-demand diagnostics. No per-frame serialization or telemetry.
   graphInspectionRef.current = () => ({
     renderer: inspectRendererDiagnostics(),
+    paintSourceKey: runtimePaintSource,
     revision: runtimeViewportResponse?.revision ?? null,
     selection: [...effectiveEnabledCanonIds].sort(),
     selectedEventId: selectedEventSelection?.eventId ?? null,
@@ -4289,8 +4303,9 @@ export function GraphShell({
       regions: worldCompositeRegions.map(region => region.id).sort(),
       edges: chartRelationSegments.map(edge => edge.id).sort(),
     },
-    geometry: worldCompositeRegions.map(region => ({id: region.id, points: region.points, ...(region.fixedContour ? {contourMode: "fixed", rings: region.fixedRings, traces: region.fixedTraces, anchor: region.preparedAnchor} : {})})).sort((a, b) => a.id.localeCompare(b.id)),
-    fixedContourPaint: presentedRegions.filter(region => region.fixedContour).map(region => ({id: region.id, path: region.path, pathTransform: region.pathTransform ?? null, ringCount: region.projectedRings?.length ?? 0, paintView: region.paintView, paintViewport: region.paintViewport})),
+    geometry: worldCompositeRegions.map(region => ({id: region.id, points: region.points, ...(region.fixedContour ? {contourMode: "fixed", rings: region.fixedRings, ...(region.fillRule ? {fillRule: region.fillRule} : {}), traces: region.fixedTraces, anchor: region.preparedAnchor} : {})})).sort((a, b) => a.id.localeCompare(b.id)),
+    fixedContourPaint: presentedRegions.filter(region => region.fixedContour).map(region => ({id: region.id, path: region.path, ...(region.fillRule ? {fillRule: region.fillRule} : {}), pathTransform: region.pathTransform ?? null, ringCount: region.projectedRings?.length ?? 0, paintView: region.paintView, paintViewport: region.paintViewport})),
+    eventCoordinates: allWorldInstantPoints.map(point => ({id: point.eventId, x: point.x, y: point.y})),
     fixedTracePaint: presentedRegions.filter(region => region.tracePaths?.length).map(region => ({id: region.id, traces: region.tracePaths, traceCount: region.tracePaths.length, pathTransform: region.pathTransform ?? null, paintView: region.paintView, paintViewport: region.paintViewport})),
     counts: {
       fixedTraceRegions: presentedRegions.filter(region => region.tracePaths?.length).length,
@@ -4392,9 +4407,9 @@ export function GraphShell({
                 </svg>
               ) : chartPlane ? (
                 <>
-                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer key={runtimePaintSource} paintSourceKey={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
-                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas key={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
                   onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/>) : null}
                 <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-renderer={useGeographicCanvas?(useGeographicWebGL?"custom-webgl2":"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?"spectral-6band":"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
@@ -4439,6 +4454,7 @@ export function GraphShell({
                         data-representation={!region.compactPoint ? (region.showLabel ? "semantic" : "geographic") : undefined}
                         aria-hidden={Boolean(region.compactPoint) || (discovery?.contextHud && !region.showLabel) ? true : undefined}
                         d={region.path}
+                        fillRule={region.fillRule}
                         transform={region.pathTransform}
                         onPointerDown={region.visibilityState !== "exiting" && !region.compactPoint && !discovery?.contextHud ? (event) => handleCompositeRegionPointerDown(region, event) : undefined}
                         style={{

@@ -107,7 +107,7 @@ it("pins the immutable asset and keeps actual B0 primitives byte-for-byte in the
   });
 });
 
-it.each(["A", "B", "C"] as const)(
+it.each(["A", "B", "C", "bubble", "ribbon"] as const)(
   "%s preserves single Event identities and every original Event Y and Composite time boundary",
   (mode) => {
     const shape = tstlCandidate(artifact, mode);
@@ -157,7 +157,7 @@ it.each(["A", "B", "C"] as const)(
   }
 );
 
-it("fetches once across B0/A/B/C, camera reads and Collection toggles with production admission", async () => {
+it("fetches once across every experiment, camera reads and Collection toggles with production admission", async () => {
   const { client, fetcher, loader } = setup();
   const selected = artifact.b0Primitives.find((p) => p.entity.kind === "event")!
     .entity.id;
@@ -195,7 +195,7 @@ it("fetches once across B0/A/B/C, camera reads and Collection toggles with produ
       validationState: "warning"
     });
   }
-  for (const mode of ["B", "C"] as const) {
+  for (const mode of ["B", "C", "bubble", "ribbon"] as const) {
     const alternative = await loader(mode).loadViewport("ko", query(selected));
     const candidate = tstlCandidate(artifact, mode);
     expect(
@@ -206,8 +206,11 @@ it("fetches once across B0/A/B/C, camera reads and Collection toggles with produ
       expect(region).toMatchObject({
         preparedContourMode: "fixed",
         preparedWorldRings: candidate.contoursByCompositeId[region.id],
-        preparedWorldTraces: candidate.tracesByCompositeId![region.id]
+        preparedWorldTraces: candidate.tracesByCompositeId?.[region.id] ?? []
       });
+    if (mode === "bubble" || mode === "ribbon")
+      for (const region of alternative.regions)
+        expect(region).toMatchObject({ preparedContourFillRule: "evenodd" });
     const off = await loader(mode, []).loadViewport("ko", query());
     expect([...off.entities, ...off.regions, ...off.edges]).toEqual([]);
   }
@@ -222,6 +225,59 @@ it("fetches once across B0/A/B/C, camera reads and Collection toggles with produ
   expect(client.inspect().requests).toBe(1);
   client.dispose();
 });
+
+it.each(["bubble", "ribbon"] as const)(
+  "%s changes only Composite ink at exact B0 coordinates",
+  (mode) => {
+    const candidate = candidateExperimentPrimitives(artifact, mode);
+    const shape = tstlCandidate(artifact, mode);
+    expect(shape.fillRule).toBe("evenodd");
+    expect(shape.diagnostics!.leafMemberships).toBe(1390);
+    for (let index = 0; index < candidate.length; index++) {
+      const actual = candidate[index]!,
+        original = artifact.b0Primitives[index]!;
+      if (original.entity.kind !== "composite")
+        expect(actual).toEqual(original);
+      else {
+        expect(actual.composite!.anchor).toEqual(original.composite!.anchor);
+        expect(actual.composite!.worldBounds).toEqual(
+          original.composite!.worldBounds
+        );
+      }
+    }
+    const older = JSON.parse(
+      readFileSync(
+        "apps/atropos-web/public/labs/tstl/r56-cc8a5617fc632dad.json",
+        "utf8"
+      )
+    );
+    for (const oldMode of ["a", "b", "c"] as const)
+      expect(artifact[oldMode]).toEqual(older[oldMode]);
+  }
+);
+
+it.each(["coordinates", "fill-rule", "time-bounds", "membership"])(
+  "rejects rehashed smooth %s corruption",
+  async (kind) => {
+    const corrupt = structuredClone(artifact);
+    if (kind === "coordinates")
+      corrupt.bubble.xByEventId[Object.keys(corrupt.bubble.xByEventId)[0]!]! +=
+        1;
+    if (kind === "fill-rule") delete corrupt.bubble.fillRule;
+    if (kind === "time-bounds")
+      corrupt.ribbon.worldBoundsByCompositeId[
+        Object.keys(corrupt.ribbon.worldBoundsByCompositeId)[0]!
+      ]!.minY += 1;
+    if (kind === "membership") corrupt.ribbon.memberships!.shift();
+    const payload = JSON.stringify(corrupt);
+    const client = createTstlExperimentClient({
+      fetcher: async () => new Response(payload),
+      expectedSha256: hash(payload)
+    });
+    await expect(client.load()).rejects.toThrow(/tstl_experiment_/);
+    client.dispose();
+  }
+);
 
 it("checks Collection membership before admission and delegates details without changing their identity", async () => {
   const { client, loader } = setup();

@@ -32,6 +32,7 @@ export function createTstlGraphReadLoader(input: {
   const reader = input.client.viewport(input.mode);
   return {
     viewportMode: "snapshot",
+    paintSourceKey: `tstl:${input.mode}`,
     dispose: () => lifetime.dispose(),
     inspectViewport: () => ({
       ...input.client.inspect(),
@@ -100,6 +101,9 @@ export function createTstlGraphReadLoader(input: {
                   preparedWorldRings:
                     candidate.contoursByCompositeId[region.id]!,
                   preparedContourMode: "fixed" as const,
+                  ...(candidate.fillRule
+                    ? { preparedContourFillRule: candidate.fillRule }
+                    : {}),
                   preparedWorldTraces:
                     candidate.tracesByCompositeId?.[region.id] ?? [],
                   ...(anchors.has(region.id)

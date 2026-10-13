@@ -17,6 +17,7 @@ export type CompositeGeometryJob = {
     id: string;
     coordinates: Float64Array;
     fixedRings?: { x: number; y: number }[][];
+    fillRule?: "evenodd";
     fixedTraces?: GraphShellPreparedWorldTrace[];
     padding: number;
     paddingProfile?: CompositePaddingProfile;

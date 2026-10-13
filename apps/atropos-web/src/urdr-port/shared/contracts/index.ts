@@ -1354,12 +1354,14 @@ export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntity
   // Immutable hull prepared by Lachesis; screen padding, label and fades stay
   // in GraphShell. Only the tile-backed adapter supplies this field.
   preparedWorldHull: z.array(chartPlaneWorldPointSchema).optional(),
-  // Experimental immutable disjoint contours share one authored Event owner.
+  // Experimental immutable boundaries share one authored Event owner.
+  // Default rings are disjoint fills; explicit even-odd contours can have holes.
   // Empty rings keep explicit open traces, or a point fallback when both are empty.
   preparedWorldRings: z.array(z.array(chartPlaneWorldPointSchema).min(3)).optional(),
   // Presentation only: crossings do not create Events or contains relationships.
   preparedWorldTraces: z.array(graphShellPreparedWorldTraceSchema).optional(),
   preparedContourMode: z.literal("fixed").optional(),
+  preparedContourFillRule: z.literal("evenodd").optional(),
   preparedAnchor: chartPlaneWorldPointSchema.optional(),
   // A known compact Composite may paint its point before lazy hull retrieval.
   preparedCompactBounds: chartPlaneWorldBoundsSchema.optional(),

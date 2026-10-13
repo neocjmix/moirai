@@ -1,0 +1,477 @@
+{
+  "baseURL": "https://moirai-production-8ed1.up.railway.app",
+  "graphPath": "/graph/v5",
+  "expectedSha": "6b89fe55404228658c785329ff8433ebfc3e24c2",
+  "physicalDevice": "not tested",
+  "results": [
+    {
+      "profile": "desktop-chromium",
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "errors": [],
+      "failedHTTP": [],
+      "visualOnly": false,
+      "visualViews": [
+        "reference-imjin",
+        "imjin",
+        "world",
+        "yi-shared",
+        "world-wide"
+      ],
+      "visualReview": "Screenshots require a separate human or agent visual review; geometric checks alone do not establish visual quality.",
+      "observedSHA": "6b89fe55404228658c785329ff8433ebfc3e24c2",
+      "defaultCurrent": {
+        "revision": 56,
+        "selectedEventId": null,
+        "view": {
+          "x": -274.2857142857143,
+          "y": -99297.77777777777,
+          "scaleX": 0.9142857142857143,
+          "scaleY": 0.4444444444444444
+        },
+        "counts": {
+          "fixedTraceRegions": 0,
+          "fixedTraces": 0,
+          "sourceEntities": 17,
+          "worldRegions": 53,
+          "regionCandidates": 53,
+          "chartRegions": 53,
+          "presentedRegions": 53,
+          "fixedContourRegions": 0,
+          "fixedContourRings": 0,
+          "pointCandidates": 17,
+          "paintedPoints": 17,
+          "stageActive": false,
+          "svgPaths": 62,
+          "svgTexts": 13,
+          "svgTargets": 13,
+          "sourceRegions": 53,
+          "sourceEdges": 0,
+          "projectedPoints": 17,
+          "fadeRegions": 53,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "representation": {
+          "semanticBudget": 40,
+          "semanticPoints": 7,
+          "semanticRegions": 6,
+          "geographicPoints": 17,
+          "geographicRegions": 53,
+          "vertices": 4920,
+          "primaryPointTargets": 7,
+          "primaryRegionTargets": 6
+        },
+        "activeIds": {
+          "points": [
+            "01a107ff-8b3c-783f-ba8c-20e6e2b02015",
+            "01a10813-58bd-7a95-a37c-c8ef00a78dd0",
+            "01a10813-58bd-7b46-bf5f-08ef45d16684",
+            "01a10814-fe1c-7020-a934-ab0d8d4b03af",
+            "01a10814-fe1c-753c-8e4c-97887c7a8395",
+            "01a10816-b084-777b-bc72-966ea0a454b5",
+            "01a10817-869d-7795-9d3b-7f0704b0f07c",
+            "01a10818-8669-747c-b04d-3e0f063550a1",
+            "01a10819-acfd-743d-95c7-4b3a2c7d4d27",
+            "01a10819-acfd-7bce-ac45-a9ea5c0f2610",
+            "01a10823-1c23-7c7b-a626-5910092a8d9d",
+            "01a10823-1c23-7cd1-ac87-c469c7ad3d03",
+            "01a10824-3bf1-7e3b-9746-b2b43d373fef",
+            "01a10826-ec3e-766f-a64d-6a29e8f0f998",
+            "01a1082a-8764-7872-a506-806d812f2716",
+            "01a1082b-c2a2-79cf-ba8a-17bbdd8d18a5",
+            "01a10b60-f68d-78c1-a8b5-e3d6fd4c83ad"
+          ],
+          "regions": [
+            "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+            "01a107ff-8b3c-7f88-bac7-a721ce10410a",
+            "01a10811-2588-73ad-b11e-1e91af50d309",
+            "01a10813-58bd-7a4a-bdb5-2d4939283f0f",
+            "01a10815-f5b1-7697-bd52-0cc378295a55",
+            "01a10816-b084-7744-8c7e-7cd6da80d61f",
+            "01a10816-b084-7829-b3c6-c58d01a342e5",
+            "01a10817-869d-7d0f-ab52-d208b8648248",
+            "01a1081a-ab69-7678-b7ad-e85ebd047ec6",
+            "01a1081a-ab69-7dff-acf0-f51029fe9e21",
+            "01a10826-ec3e-7d8a-bdab-adcace8e1bfa",
+            "01a10826-ec3e-7ec7-a01d-bd59a1d9a6fe",
+            "01a10828-2d95-749a-94da-ba1d115056eb",
+            "01a10828-2d95-7627-a27b-1e6e4e4d18aa",
+            "01a10828-2d95-7e00-b0a9-dc3384e37926",
+            "01a1082b-c2a2-74f8-84bc-2f1897d4cf4a",
+            "01a1082b-c2a2-79bb-b94c-4d57904ce87b",
+            "01a1092d-338b-78e8-a86c-1d23146b5ac4",
+            "01a1092d-338b-797e-9c24-bb682e9a3c7d",
+            "01a1092e-5162-7083-b487-55d763eab905",
+            "01a1092e-5162-72b6-b13a-5b5878a68d8d",
+            "01a10a3f-05d2-703d-ba58-e3a09628a677",
+            "01a10a3f-05d2-7041-a462-f45b25cd5b19",
+            "01a10a3f-05d2-70c0-9630-8e339fcafb4d",
+            "01a10a3f-05d2-73a0-84d4-bba33bbf662c",
+            "01a10a3f-05d2-7418-a9f7-55b588a7c7d3",
+            "01a10a3f-05d2-74e9-aeea-ac5be642c464",
+            "01a10a3f-05d2-7540-be11-ab8eca92e76e",
+            "01a10a3f-05d2-75aa-ac8b-c90bde1b11ce",
+            "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "01a10a3f-05d2-798e-a3b5-2462fa092c3b",
+            "01a10a3f-05d2-79ea-bd9e-ddaed23b750d",
+            "01a10a3f-05d2-7a5c-8c94-278b6468252b",
+            "01a10a3f-05d2-7b10-af84-57bb2f8fb61e",
+            "01a10a3f-05d2-7b2b-a4b0-64ca30604418",
+            "01a10a3f-05d2-7e7b-8721-4aa7eea9332e",
+            "01a10b3b-d0e4-7266-84ce-8d2296c32c47",
+            "01a10b3b-d0e4-74f9-84f4-d8dbc5cbc678",
+            "01a10b3b-d0e4-790e-b847-c48ea49e0cc6",
+            "01a10b3b-d0e4-7a21-beb8-a977c75003b1",
+            "01a10b42-0ca6-7658-9093-d1a5749e613f",
+            "01a10b42-0ca6-76e6-8727-36b755066e2a",
+            "01a10b60-f68d-79b6-97f8-29b997579110",
+            "01a10b60-f68d-7a14-977e-378e0b61b3d4",
+            "01a10bbc-a988-771a-89cd-1367fe68df32",
+            "01a10bbc-a988-7d83-978f-89bc12b80a1a",
+            "01a10bbc-a988-7da7-bf86-9945543803e5",
+            "01a11078-eb03-7fe3-894b-8819b1e3cd86",
+            "01a11078-eb04-75e3-a519-f3337c8244a1",
+            "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "01a123a1-0000-77c0-8401-4f9db460625b",
+            "01a1240c-0000-73dd-bea1-64db15136c48",
+            "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+          ],
+          "edges": []
+        },
+        "sceneJobs": {
+          "generation": 5,
+          "pending": 0,
+          "discarded": 1
+        },
+        "workerJobs": {
+          "running": 0,
+          "pending": 0,
+          "failed": false
+        },
+        "renderer": {
+          "drawCalls": 1,
+          "meshBuilds": 0,
+          "bufferUploads": 9,
+          "hullCount": 0,
+          "pointCount": 0,
+          "resourceBytes": 0,
+          "renderer": "custom-webgl2",
+          "state": "ready",
+          "cpuMs": 0.8461628376802874,
+          "frameIntervalMs": 6.753275014877318
+        },
+        "browserGraphics": {
+          "backend": "webgl",
+          "paintRevision": 25
+        }
+      },
+      "artifactSha256": "3f93ede4ca856c0cdea385d5d992b7dee7691b0132df1db04f941a4793cd5cf6",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "geometryMetrics": {
+        "lanes": {
+          "algorithmVersion": "bubble-capsule-union-on-supplied-x/1",
+          "diagnostics": {
+            "totalComposites": 109,
+            "leafMemberships": 1390,
+            "leafAreaMemberships": 1390,
+            "leafListMemberships": 0,
+            "skeletonEdges": 1281,
+            "routedSkeletonEdges": 1281,
+            "failedSkeletonEdges": 0,
+            "components": 113,
+            "holes": 344,
+            "connectedComposites": 105,
+            "multiComponentComposites": 4,
+            "nonmemberIntersections": 0,
+            "selfIntersections": 0,
+            "vertices": 30989,
+            "segmentChecks": 531290,
+            "budgetExhausted": 0,
+            "semanticCertifiedAreas": 0
+          },
+          "limitations": [
+            "Original Bubble capsule-union algorithm and parameters, regenerated on supplied X rather than compiled B0 X.",
+            "One global member skeleton per Composite; obstacle detours are bounded and final connected-component counts report residual fragmentation rather than hiding it.",
+            "Final serialized contours are checked against nominal 5×5 glyph supports in a fixed x/0.2y metric. Screen-space label and glyph footprints change with zoom and are not certified by that test.",
+            "Obstacle cuts preserve nonmember glyph exclusion and may create explicit holes or support-conflict list fallbacks. Hole rings are rendered with even-odd fill, never as filled islands.",
+            "Member coverage, obstacle exclusion and proper self-crossing checks are geometric evidence at decimal precision4. Global membership-intersection signatures, temporal completeness and semantic area certification remain unverified."
+          ],
+          "owners": [
+            {
+              "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+              "title": "한국사",
+              "rings": 2,
+              "holes": 1,
+              "outerComponents": 1,
+              "vertices": 4529,
+              "diagonalEdges": 4140,
+              "totalEdges": 4529,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+              "title": "일본사",
+              "rings": 2,
+              "holes": 1,
+              "outerComponents": 1,
+              "vertices": 3391,
+              "diagonalEdges": 3131,
+              "totalEdges": 3391,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+              "title": "중국사",
+              "rings": 1,
+              "holes": 0,
+              "outerComponents": 1,
+              "vertices": 2414,
+              "diagonalEdges": 2226,
+              "totalEdges": 2414,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+              "title": "임진왜란: 두 차례 침략과 강화 교섭",
+              "rings": 9,
+              "holes": 8,
+              "outerComponents": 1,
+              "vertices": 1253,
+              "diagonalEdges": 1076,
+              "totalEdges": 1253,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+              "title": "이순신의 생애",
+              "rings": 42,
+              "holes": 41,
+              "outerComponents": 1,
+              "vertices": 1982,
+              "diagonalEdges": 1634,
+              "totalEdges": 1982,
+              "sharedRingEdges": 0
+            }
+          ]
+        },
+        "aligned": {
+          "algorithmVersion": "bubble-capsule-union-on-supplied-x/1",
+          "diagnostics": {
+            "totalComposites": 109,
+            "leafMemberships": 1390,
+            "leafAreaMemberships": 1390,
+            "leafListMemberships": 0,
+            "skeletonEdges": 1281,
+            "routedSkeletonEdges": 1281,
+            "failedSkeletonEdges": 0,
+            "components": 109,
+            "holes": 424,
+            "connectedComposites": 109,
+            "multiComponentComposites": 0,
+            "nonmemberIntersections": 0,
+            "selfIntersections": 0,
+            "vertices": 31768,
+            "segmentChecks": 518195,
+            "budgetExhausted": 0,
+            "semanticCertifiedAreas": 0
+          },
+          "limitations": [
+            "Original Bubble capsule-union algorithm and parameters, regenerated on supplied X rather than compiled B0 X.",
+            "One global member skeleton per Composite; obstacle detours are bounded and final connected-component counts report residual fragmentation rather than hiding it.",
+            "Final serialized contours are checked against nominal 5×5 glyph supports in a fixed x/0.2y metric. Screen-space label and glyph footprints change with zoom and are not certified by that test.",
+            "Obstacle cuts preserve nonmember glyph exclusion and may create explicit holes or support-conflict list fallbacks. Hole rings are rendered with even-odd fill, never as filled islands.",
+            "Member coverage, obstacle exclusion and proper self-crossing checks are geometric evidence at decimal precision4. Global membership-intersection signatures, temporal completeness and semantic area certification remain unverified."
+          ],
+          "owners": [
+            {
+              "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+              "title": "한국사",
+              "rings": 8,
+              "holes": 7,
+              "outerComponents": 1,
+              "vertices": 4300,
+              "diagonalEdges": 3907,
+              "totalEdges": 4300,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+              "title": "일본사",
+              "rings": 17,
+              "holes": 16,
+              "outerComponents": 1,
+              "vertices": 3638,
+              "diagonalEdges": 3318,
+              "totalEdges": 3638,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+              "title": "중국사",
+              "rings": 26,
+              "holes": 25,
+              "outerComponents": 1,
+              "vertices": 2822,
+              "diagonalEdges": 2469,
+              "totalEdges": 2822,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+              "title": "임진왜란: 두 차례 침략과 강화 교섭",
+              "rings": 20,
+              "holes": 19,
+              "outerComponents": 1,
+              "vertices": 1449,
+              "diagonalEdges": 1224,
+              "totalEdges": 1449,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+              "title": "이순신의 생애",
+              "rings": 41,
+              "holes": 40,
+              "outerComponents": 1,
+              "vertices": 1834,
+              "diagonalEdges": 1524,
+              "totalEdges": 1834,
+              "sharedRingEdges": 0
+            }
+          ]
+        },
+        "anchored": {
+          "algorithmVersion": "bubble-capsule-union-on-supplied-x/1",
+          "diagnostics": {
+            "totalComposites": 109,
+            "leafMemberships": 1390,
+            "leafAreaMemberships": 1390,
+            "leafListMemberships": 0,
+            "skeletonEdges": 1281,
+            "routedSkeletonEdges": 1281,
+            "failedSkeletonEdges": 0,
+            "components": 109,
+            "holes": 405,
+            "connectedComposites": 109,
+            "multiComponentComposites": 0,
+            "nonmemberIntersections": 0,
+            "selfIntersections": 0,
+            "vertices": 32008,
+            "segmentChecks": 527346,
+            "budgetExhausted": 0,
+            "semanticCertifiedAreas": 0
+          },
+          "limitations": [
+            "Original Bubble capsule-union algorithm and parameters, regenerated on supplied X rather than compiled B0 X.",
+            "One global member skeleton per Composite; obstacle detours are bounded and final connected-component counts report residual fragmentation rather than hiding it.",
+            "Final serialized contours are checked against nominal 5×5 glyph supports in a fixed x/0.2y metric. Screen-space label and glyph footprints change with zoom and are not certified by that test.",
+            "Obstacle cuts preserve nonmember glyph exclusion and may create explicit holes or support-conflict list fallbacks. Hole rings are rendered with even-odd fill, never as filled islands.",
+            "Member coverage, obstacle exclusion and proper self-crossing checks are geometric evidence at decimal precision4. Global membership-intersection signatures, temporal completeness and semantic area certification remain unverified."
+          ],
+          "owners": [
+            {
+              "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+              "title": "한국사",
+              "rings": 6,
+              "holes": 5,
+              "outerComponents": 1,
+              "vertices": 4547,
+              "diagonalEdges": 4169,
+              "totalEdges": 4547,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+              "title": "일본사",
+              "rings": 17,
+              "holes": 16,
+              "outerComponents": 1,
+              "vertices": 3671,
+              "diagonalEdges": 3351,
+              "totalEdges": 3671,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+              "title": "중국사",
+              "rings": 13,
+              "holes": 12,
+              "outerComponents": 1,
+              "vertices": 2733,
+              "diagonalEdges": 2462,
+              "totalEdges": 2733,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+              "title": "임진왜란: 두 차례 침략과 강화 교섭",
+              "rings": 18,
+              "holes": 17,
+              "outerComponents": 1,
+              "vertices": 1440,
+              "diagonalEdges": 1219,
+              "totalEdges": 1440,
+              "sharedRingEdges": 0
+            },
+            {
+              "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+              "title": "이순신의 생애",
+              "rings": 36,
+              "holes": 35,
+              "outerComponents": 1,
+              "vertices": 1746,
+              "diagonalEdges": 1474,
+              "totalEdges": 1746,
+              "sharedRingEdges": 0
+            }
+          ]
+        }
+      },
+      "drawerRegression": {},
+      "comparisons": [],
+      "overflow": {
+        "width": 1280,
+        "document": 1280,
+        "body": 1280
+      },
+      "passed": true,
+      "requestCounts": {
+        "/graph/v5": 2,
+        "/_next/static/chunks/1mv0dasm5_pug.css": 2,
+        "/_next/static/chunks/1d1blt8tv4gqw.css": 2,
+        "/_next/static/chunks/13tmnr2481thh.css": 2,
+        "/_next/static/chunks/434_yyyo-11i8.css": 2,
+        "/_next/static/chunks/457ddx1on42ud.js": 2,
+        "/_next/static/chunks/25x8zd38hr-vc.js": 2,
+        "/_next/static/chunks/2xdqhqopj_o9p.js": 2,
+        "/_next/static/chunks/0en6vldtwi402.js": 2,
+        "/_next/static/chunks/turbopack-380ol2rc1virj.js": 2,
+        "/_next/static/chunks/380qam244fb4y.js": 2,
+        "/_next/static/chunks/13byo240bhxu_.js": 2,
+        "/_next/static/chunks/3n77jrlpte-im.js": 2,
+        "/_next/static/chunks/3e7044xd2aqd0.js": 2,
+        "/_next/static/chunks/1zpatcy1lexw6.js": 2,
+        "/_next/static/chunks/21-wf-j1cznz6.js": 2,
+        "/_next/static/chunks/170rwammp4wby.js": 4,
+        "/_next/static/chunks/44x5tp6ono7tb.js": 2,
+        "/_next/static/chunks/turbopack-worker-2ru9m5gbh1na6.js": 2,
+        "/_next/static/chunks/turbopack-30mdsovngy76_.js": 2,
+        "/_next/static/chunks/1ql955tua5zza.js": 2,
+        "/graph/v5/render": 8,
+        "/labs/tstl/r56-3f93ede4ca856c0c.json": 1,
+        "/graph/v5/shell": 5
+      }
+    }
+  ]
+}

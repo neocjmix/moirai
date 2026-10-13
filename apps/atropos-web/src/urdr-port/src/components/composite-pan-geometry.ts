@@ -7,7 +7,8 @@ import {
   type CompositeSplineTuning
 } from "./graph-shell-region-geometry";
 import type { ViewportCoordinate } from "./graph-shell-composite";
-import { fixedCompositePath } from "./fixed-composite-contours";
+import type { GraphShellPreparedWorldTrace } from "../../shared/contracts";
+import { fixedCompositePath, fixedCompositeTracePath } from "./fixed-composite-contours";
 
 type View = { x: number; y: number; scaleX: number; scaleY: number };
 type Size = { width: number; height: number };
@@ -15,6 +16,7 @@ type Request = {
   id: string;
   points: readonly ViewportCoordinate[];
   fixedRings?: readonly (readonly ViewportCoordinate[])[];
+  fixedTraces?: readonly GraphShellPreparedWorldTrace[];
   view: View;
   viewport: Size;
   padding: number;
@@ -26,7 +28,10 @@ type Request = {
 export type CompositeGeometryEntry = {
   support: readonly ViewportCoordinate[];
   fixedRings?: readonly (readonly ViewportCoordinate[])[];
+  fixedTraces?: readonly GraphShellPreparedWorldTrace[];
   projectedRings?: ViewportCoordinate[][];
+  projectedTraces?: GraphShellPreparedWorldTrace[];
+  tracePaths?: (Pick<GraphShellPreparedWorldTrace, "kind" | "eventId"> & {path: string})[];
   scaleX: number;
   scaleY: number;
   padding: number;
@@ -53,6 +58,15 @@ function sameRings(left: Request["fixedRings"], right: Request["fixedRings"]) {
   return left === right || (left !== undefined && right !== undefined && left.length === right.length && left.every((ring, index) => sameSupport(ring, right[index]!)));
 }
 
+function sameTraces(left: Request["fixedTraces"], right: Request["fixedTraces"]) {
+  return left === right || (left !== undefined && right !== undefined && left.length === right.length && left.every((trace, index) =>
+    trace.kind === right[index]!.kind && trace.eventId === right[index]!.eventId && sameSupport(trace.points, right[index]!.points)));
+}
+
+function entryPathCharacters(entry: CompositeGeometryEntry) {
+  return entry.path.length + (entry.tracePaths?.reduce((sum, trace) => sum + trace.path.length, 0) ?? 0);
+}
+
 /** Screen padding and spline handles depend on scale, but a pan translates
  * them unchanged. Keep one shape per region at its last scale. The caller owns
  * this cache for one graph/loader lifetime; no semantic or canonical state is
@@ -76,11 +90,11 @@ export function createCompositePanGeometryCache({
     if (!entry) return;
     entries.delete(id);
     vertices -= entry.vertices;
-    pathCharacters -= entry.path.length;
+    pathCharacters -= entryPathCharacters(entry);
   };
 
   return {
-    project({id, points, fixedRings, view, viewport, padding, paddingProfile, tuning, labelHeight, labelGap}: Request) {
+    project({id, points, fixedRings, fixedTraces, view, viewport, padding, paddingProfile, tuning, labelHeight, labelGap}: Request) {
       const origin = {x: viewport.width / 2 + view.x, y: viewport.height / 2 + view.y};
       // Keep point/composite LOD coordinates exact. Only expensive padded hull
       // geometry and its SVG path are reused through a pure translation.
@@ -92,7 +106,7 @@ export function createCompositePanGeometryCache({
       if (entry && entry.scaleX === view.scaleX && entry.scaleY === view.scaleY &&
           entry.padding === padding && sameProfile(entry.paddingProfile, paddingProfile) && entry.tuning.smoothing === tuning.smoothing &&
           entry.tuning.cornerFloor === tuning.cornerFloor && entry.tuning.balanceFloor === tuning.balanceFloor &&
-          sameSupport(entry.support, points) && sameRings(entry.fixedRings, fixedRings)) {
+          sameSupport(entry.support, points) && sameRings(entry.fixedRings, fixedRings) && sameTraces(entry.fixedTraces, fixedTraces)) {
         hits++;
         // Fresh response arrays with identical geometry retain the same path.
         entry.support = points;
@@ -102,7 +116,9 @@ export function createCompositePanGeometryCache({
         builds++;
         remove(id);
         const projectedRings = fixedRings?.map(ring => ring.map(point => ({x: origin.x + point.x * view.scaleX, y: origin.y + point.y * view.scaleY})));
-        const expanded = projectedRings ? projectedRings.length ? projectedRings.flat() : projectedHullPoints : paddingProfile?.length ? expandCompositePolygon(projectedHullPoints, paddingProfile.map((band) => ({
+        const projectedTraces = fixedTraces?.map(trace => ({...trace, points: trace.points.map(point => ({x: origin.x + point.x * view.scaleX, y: origin.y + point.y * view.scaleY}))}));
+        const tracePaths = projectedTraces?.map(({points: tracePoints, ...trace}) => ({...trace, path: fixedCompositeTracePath(tracePoints)}));
+        const expanded = projectedRings ? projectedHullPoints : paddingProfile?.length ? expandCompositePolygon(projectedHullPoints, paddingProfile.map((band) => ({
           minY: origin.y + band.minY * view.scaleY,
           maxY: origin.y + band.maxY * view.scaleY,
           depth: band.depth
@@ -110,6 +126,7 @@ export function createCompositePanGeometryCache({
         entry = {
           support: points,
           ...(fixedRings && projectedRings ? {fixedRings, projectedRings} : {}),
+          ...(fixedTraces && projectedTraces && tracePaths ? {fixedTraces, projectedTraces, tracePaths} : {}),
           scaleX: view.scaleX,
           scaleY: view.scaleY,
           padding,
@@ -118,12 +135,12 @@ export function createCompositePanGeometryCache({
           origin,
           expanded,
           path: projectedRings ? fixedCompositePath(projectedRings) : buildClosedSplinePath(expanded, tuning),
-          vertices: points.length + expanded.length
+          vertices: points.length + expanded.length + (projectedTraces?.reduce((sum, trace) => sum + trace.points.length, 0) ?? 0)
         };
-        if (maxEntries > 0 && entry.vertices <= maxVertices && entry.path.length <= maxPathCharacters) {
+        if (maxEntries > 0 && entry.vertices <= maxVertices && entryPathCharacters(entry) <= maxPathCharacters) {
           entries.set(id, entry);
           vertices += entry.vertices;
-          pathCharacters += entry.path.length;
+          pathCharacters += entryPathCharacters(entry);
           while (entries.size > maxEntries || vertices > maxVertices || pathCharacters > maxPathCharacters) {
             const oldest = entries.keys().next().value;
             if (oldest === undefined) break;
@@ -141,6 +158,8 @@ export function createCompositePanGeometryCache({
       return {
         projectedHullPoints,
         projectedRings: entry.projectedRings?.map(ring => dx === 0 && dy === 0 ? ring : ring.map(point => ({x: point.x + dx, y: point.y + dy}))),
+        projectedTraces: entry.projectedTraces?.map(trace => dx === 0 && dy === 0 ? trace : {...trace, points: trace.points.map(point => ({x: point.x + dx, y: point.y + dy}))}),
+        tracePaths: entry.tracePaths,
         projectedPoints: dx === 0 && dy === 0 ? entry.expanded : entry.expanded.map(point => ({x: point.x + dx, y: point.y + dy})),
         path: entry.path,
         // Compact owners use a point label and never read this frame. Keep
@@ -173,7 +192,7 @@ export function createCompositePanGeometryCache({
         remove(id);
         entries.set(id, entry);
         vertices += entry.vertices;
-        pathCharacters += entry.path.length;
+        pathCharacters += entryPathCharacters(entry);
       }
     },
     retain(ids: ReadonlySet<string>) {

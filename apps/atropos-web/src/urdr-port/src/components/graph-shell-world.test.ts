@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import type { GraphShellChartPlaneRegionEntity as Region } from "../../shared/contracts";
+import { graphShellChartPlaneRegionEntitySchema, type GraphShellChartPlaneRegionEntity as Region } from "../../shared/contracts";
 import {
   prepareCompositeWorldGeometry,
   selectCompositeWorldRegions
@@ -152,4 +152,21 @@ it('preparation culls remote siblings without changing complete parent support',
   expect(selectCompositeWorldRegions(prepared,bounds(0,20),bounds(0,20))).toHaveLength(101);
   expect(selectCompositeWorldRegions(prepared,bounds(0,20),bounds(0,20),true).map(r=>r.id)).toEqual(['child-0','parent']);
   expect(Math.max(...prepared.regions.find(r=>r.id==='parent')!.points.map(point=>point.x))).toBe(9910);
+});
+
+
+it("preserves authored ownership, trace metadata and source anchor without fabricating a hull", () => {
+  const traces = [
+    {kind: "spine" as const, points: [{x: 3, y: 0}, {x: 3, y: 100}]},
+    {kind: "membership" as const, eventId: "child", points: [{x: 3, y: 40}, {x: 10, y: 40}]},
+  ];
+  const source = graphShellChartPlaneRegionEntitySchema.parse({...region("owner", ["child"]),
+    preparedContourMode: "fixed", preparedWorldRings: [], preparedWorldTraces: traces,
+    preparedAnchor: {x: 3, y: 31}, childrenComplete: true});
+  const prepared = prepareCompositeWorldGeometry([source], [], "convex");
+  expect(prepared.regions).toHaveLength(1);
+  expect(prepared.regions[0]).toMatchObject({id: "owner", fixedRings: [], fixedTraces: traces,
+    points: traces.flatMap(trace => trace.points), hullPending: false, preparedAnchor: {x: 3, y: 31}, contains: ["child"]});
+  expect(prepared.regionById.size).toBe(1);
+  expect(graphShellChartPlaneRegionEntitySchema.safeParse({...source, preparedWorldTraces: [{kind: "spine", points: [{x: 0, y: 0}]}]}).success).toBe(false);
 });

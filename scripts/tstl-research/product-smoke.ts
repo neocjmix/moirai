@@ -289,7 +289,7 @@ async function assertPaint(
       paint.path.match(/[MLZ]|[-+]?(?:\d+\.?\d*|\.\d+)(?:[eE][-+]?\d+)?/g) ??
       [];
     let cursor = 0;
-    for (const ring of candidate.contoursByCompositeId[paint.id]!) {
+    for (const ring of candidate.contoursByCompositeId[paint.id] ?? []) {
       for (const [index, vertex] of ring.entries()) {
         assert.equal(tokens[cursor++], index === 0 ? "M" : "L");
         const x = Number(tokens[cursor++]) + translateX;
@@ -329,7 +329,7 @@ async function assertPaint(
       paints: Number(canvas?.dataset.paintRevision ?? 0)
     };
   });
-  if (state.fixedContourPaint.length)
+  if (state.fixedContourPaint.some((paint) => paint.ringCount > 0))
     assert(
       painter.regions > 0 && painter.paints > 0,
       `production background painter must draw areas: ${JSON.stringify(painter)}`
@@ -419,6 +419,20 @@ async function assertTraces(
     .evaluateAll((paths) =>
       paths.map((path) => {
         const style = getComputedStyle(path);
+        let opacity = 1;
+        for (
+          let parent: Element | null = path;
+          parent;
+          parent = parent.parentElement
+        )
+          opacity *= Number(getComputedStyle(parent).opacity);
+        const box = path.getBoundingClientRect();
+        const matrix = (path as SVGPathElement).getScreenCTM();
+        const start = (path as SVGPathElement).getPointAtLength(0);
+        const screenStart = matrix ? start.matrixTransform(matrix) : null;
+        const rootMatrix = (
+          path as SVGPathElement
+        ).ownerSVGElement?.getScreenCTM();
         return {
           owner: path.getAttribute("data-composite-trace-owner"),
           kind: path.getAttribute("data-composite-trace-kind"),
@@ -426,11 +440,34 @@ async function assertTraces(
           fill: style.fill,
           stroke: style.stroke,
           strokeWidth: Number.parseFloat(style.strokeWidth),
-          pointerEvents: style.pointerEvents
+          pointerEvents: style.pointerEvents,
+          opacity,
+          onScreen:
+            box.right > 0 &&
+            box.bottom > 0 &&
+            box.left < innerWidth &&
+            box.top < innerHeight,
+          screenStart: screenStart
+            ? { x: screenStart.x, y: screenStart.y }
+            : null,
+          rootMatrix: rootMatrix
+            ? {
+                a: rootMatrix.a,
+                b: rootMatrix.b,
+                c: rootMatrix.c,
+                d: rootMatrix.d,
+                e: rootMatrix.e,
+                f: rootMatrix.f
+              }
+            : null
         };
       })
     );
   assert(visible.length > 0, "open traces must reach native production SVG");
+  assert(
+    visible.some((trace) => trace.opacity > 0 && trace.onScreen),
+    "some identity strokes must be visible inside the actual viewport"
+  );
   const inspectedPaths = new Set(
     state.fixedTracePaint.flatMap((paint) =>
       paint.traces.map((trace) =>
@@ -464,6 +501,33 @@ async function assertTraces(
     assert(
       inspectedPaths.has(JSON.stringify([trace.owner, trace.kind, trace.path])),
       "actual SVG trace must match the source-checked inspected path"
+    );
+    const paint = state.fixedTracePaint.find(
+      (paint) => paint.id === trace.owner
+    )!;
+    const index = paint.traces.findIndex(
+      (entry) => entry.kind === trace.kind && entry.path === trace.path
+    );
+    const first = sourceTraces[paint.id]![index]!.points[0]!;
+    assert(
+      trace.rootMatrix && trace.screenStart,
+      "actual trace has an SVG screen transform"
+    );
+    const liveX =
+      paint.paintViewport.width / 2 +
+      state.liveView.x +
+      first.x * state.liveView.scaleX;
+    const liveY =
+      paint.paintViewport.height / 2 +
+      state.liveView.y +
+      first.y * state.liveView.scaleY;
+    const matrix = trace.rootMatrix;
+    const expectedX = matrix.a * liveX + matrix.c * liveY + matrix.e;
+    const expectedY = matrix.b * liveX + matrix.d * liveY + matrix.f;
+    assert(
+      Math.abs(trace.screenStart.x - expectedX) < 0.01 &&
+        Math.abs(trace.screenStart.y - expectedY) < 0.01,
+      "actual SVG trace stays attached to its source under the live camera"
     );
   }
   return {

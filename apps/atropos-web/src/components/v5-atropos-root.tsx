@@ -205,7 +205,11 @@ function V5GraphApp(props: V5AtroposBootstrap) {
         <TstlExperimentSettings locale={locale} layout={layout} />
       )}
       renderGraphTools={(locale) => (
-        <TstlExperimentCompare locale={locale} layout={layout} />
+        <TstlExperimentCompare
+          locale={locale}
+          layout={layout}
+          drawerOpen={focus !== null}
+        />
       )}
       initialViewportCenter={props.center}
       externalFocus={focus ? { id: focus, label: focus } : null}

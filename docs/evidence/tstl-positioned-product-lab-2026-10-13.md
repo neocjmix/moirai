@@ -137,3 +137,21 @@ reload persistence and return to Current. Each produces 25 screenshots;
 [compact acceptance record](tstl-positioned-product-2026-10-13/acceptance.json)
 links the full read-only reports. This is emulation evidence, not physical-device
 or human-perception certification.
+
+## Mobile drawer obstruction follow-up
+
+Independent production review identified the expanded floating comparison bar
+as a material regression: its second row covers the open Yi drawer around
+y=649–749 on 390px-wide Chromium and WebKit. The follow-up hides the floating
+bar only while an Event drawer is selected at widths up to 700px. Settings
+retains mode switching and the selected Event/camera; closing the drawer restores
+the bar, including return to Current. Desktop controls remain available.
+
+`TSTL_DRAWER_SMOKE=1 TSTL_PLACEMENT_SMOKE=1` runs the targeted production
+regression in `smooth-product-smoke.ts`. It fails on the pre-fix production SHA
+`3d11d5502934ba59f8118558700d9a41c075085f` in both mobile engines. Assertions
+cover hidden bar, pointer access at y650/690/730 inside the drawer, clickable
+Notes/Links tabs, selection/camera across B0/Lanes/Aligned/Anchored via Settings,
+bar restoration on close, and return to Current. The full acceptance suite also
+checks drawer access during each historical selection. Post-deploy results and
+exact SHA belong to the follow-up PR and public production evidence gallery.

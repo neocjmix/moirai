@@ -87,3 +87,11 @@
   white-space: nowrap;
   margin-right: 4px;
 }
+
+/* Mobile drawers occupy the bottom reading surface. Settings retains every
+   layout choice while the floating comparison controls yield that space. */
+@media (max-width: 700px) {
+  .compare[data-drawer-open="true"] {
+    display: none;
+  }
+}

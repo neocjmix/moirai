@@ -387,6 +387,16 @@ async function screenshot(page: Page, name: string) {
   });
 }
 async function switchMode(page: Page, mode: Mode) {
+  if (!(await page.getByTestId("tstl-compare-" + mode).isVisible())) {
+    await page.getByRole("button", { name: "설정", exact: true }).click();
+    await page.getByTestId("tstl-layout-" + mode).click();
+    await openGraphTab(page);
+    await settle(page, mode);
+    const state = await settleGraphics(page, mode);
+    assert(await page.getByTestId("event-drawer-sheet").isVisible());
+    assert(!(await page.getByTestId("tstl-layout-status").isVisible()));
+    return state;
+  }
   await page.getByTestId("tstl-compare-" + mode).click();
   await settle(page, mode);
   const state = await settleGraphics(page, mode);
@@ -422,6 +432,55 @@ async function switchMode(page: Page, mode: Mode) {
       "active mode is visually distinct"
     );
   return state;
+}
+async function assertDrawerReadingSurface(page: Page) {
+  const drawer = page.getByTestId("event-drawer-sheet");
+  await drawer.waitFor({ state: "visible" });
+  if (page.viewportSize()!.width > 700) return;
+  assert(
+    !(await page.getByTestId("tstl-layout-status").isVisible()),
+    "mobile comparison bar must yield the open drawer reading surface"
+  );
+  const hits = await drawer.evaluate((node) => {
+    const box = node.getBoundingClientRect();
+    // These rows were covered by the expanded Labs bar on both mobile engines.
+    return [650, 690, 730]
+      .filter((y) => y > box.top && y < box.bottom && y < innerHeight)
+      .map((y) => ({
+        y,
+        owned: node.contains(document.elementFromPoint(innerWidth / 2, y))
+      }));
+  });
+  assert(
+    hits.length >= 2 && hits.every((hit) => hit.owned),
+    "visible drawer content must receive pointer hits throughout the former overlap"
+  );
+  for (const name of ["링크", "노트"]) {
+    const tab = drawer.getByRole("tab", { name, exact: true });
+    await tab.click();
+    assert.equal(await tab.getAttribute("aria-selected"), "true");
+  }
+  return hits;
+}
+async function checkDrawerRegression(page: Page, profile: string) {
+  await openHistoricalCase(page, "1f10a329-835d-79b1-a9c3-ae1835934b8b");
+  const before = await settle(page);
+  const checks: Record<string, unknown> = {};
+  for (const mode of modes) {
+    const state = await switchMode(page, mode);
+    assert.equal(state.selectedEventId, before.selectedEventId);
+    sameCamera(state.liveView, before.liveView);
+    checks[mode] = await assertDrawerReadingSurface(page);
+    await screenshot(page, profile + "-" + mode + "-drawer-unobstructed");
+  }
+  await page.getByTestId("event-drawer-close").click();
+  await page.getByTestId("tstl-layout-status").waitFor({ state: "visible" });
+  await switchMode(page, "B0");
+  await page.getByTestId("tstl-compare-current").click();
+  const current = await settle(page);
+  assert.equal(await page.getByTestId("tstl-layout-status").count(), 0);
+  assert.equal(current.counts.fixedContourRegions, 0);
+  return checks;
 }
 async function checkMembershipList(
   page: Page,
@@ -1026,12 +1085,17 @@ for (const profile of profiles) {
     result.artifactSha256 = artifactSha256;
     result.source = artifact.source;
     result.geometryMetrics = assertArtifact(artifact);
+    if (process.env.TSTL_DRAWER_SMOKE === "1") {
+      result.drawerRegression = await checkDrawerRegression(page, profile.name);
+    }
     const renderRequests = requests.filter(
       (p) => p === "/graph/v5/render"
     ).length;
     const comparisons: Record<string, unknown>[] = [];
     result.comparisons = comparisons;
-    for (const view of visualViews) {
+    for (const view of process.env.TSTL_DRAWER_SMOKE === "1"
+      ? []
+      : visualViews) {
       const first = await restoreCamera(page, view.camera);
       const states: Record<string, unknown> = {};
       comparisons.push({ ...view, modes: states });
@@ -1070,11 +1134,18 @@ for (const profile of profiles) {
         );
       }
     }
-    if (process.env.TSTL_SMOOTH_VISUAL_ONLY !== "1") {
+    if (
+      process.env.TSTL_SMOOTH_VISUAL_ONLY !== "1" &&
+      process.env.TSTL_DRAWER_SMOKE !== "1"
+    ) {
       const interactions: Record<string, unknown> = {};
       for (const mode of smoothModes) {
         console.info(
-          JSON.stringify({ profile: profile.name, phase: "interaction", mode })
+          JSON.stringify({
+            profile: profile.name,
+            phase: "interaction",
+            mode
+          })
         );
         await switchMode(page, mode);
         const imjin = await restoreCamera(page, views[1]!.camera);
@@ -1164,6 +1235,7 @@ for (const profile of profiles) {
             .getByText(c.title, { exact: true })
             .first()
             .waitFor({ state: "visible" });
+          await assertDrawerReadingSurface(page);
           selectedIDs[mode] = state.selectedEventId;
           if (placement && c.title === "이순신의 생애")
             await screenshot(page, profile.name + "-" + mode + "-selected-yi");

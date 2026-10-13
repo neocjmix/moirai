@@ -233,7 +233,11 @@ function TstlChoices({
   );
 }
 
-export function TstlExperimentCompare({ locale, layout }: Props) {
+export function TstlExperimentCompare({
+  locale,
+  layout,
+  drawerOpen = false
+}: Props & { drawerOpen?: boolean }) {
   if (layout.mode === "current") return null;
   const ko = locale === "ko";
   const copy = modeCopy[ko ? "ko" : "en"];
@@ -256,6 +260,7 @@ export function TstlExperimentCompare({ locale, layout }: Props) {
     <div
       className={styles.compare}
       data-testid="tstl-layout-status"
+      data-drawer-open={drawerOpen}
       data-mode={layout.mode}
       role="group"
       aria-label={ko ? "실험 레이아웃 비교" : "Compare experimental layouts"}

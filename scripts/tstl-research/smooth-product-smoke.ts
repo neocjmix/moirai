@@ -97,6 +97,11 @@ type Inspection = {
   representation: Record<string, number>;
   renderer?: { renderer: string; state: string; fallback?: string } | null;
   paintSourceKey?: string;
+  browserGraphics?: {
+    backend: string | null;
+    paintSourceKey: string | undefined;
+    paintRevision: number;
+  };
   activeIds: { points: string[]; regions: string[]; edges: string[] };
   eventCoordinates?: { id: string; x: number; y: number }[];
   geometry: {
@@ -125,8 +130,63 @@ async function inspect(page: Page): Promise<Inspection | null> {
     addEventListener("moirai:graph-inspection", receive, { once: true });
     dispatchEvent(new Event("moirai:inspect-graph"));
     removeEventListener("moirai:graph-inspection", receive);
-    return value;
+    const inspected = value as Inspection | null;
+    if (!inspected) return null;
+    const canvas = document.querySelector<HTMLCanvasElement>(
+      '[data-testid="geographic-webgl"]'
+    );
+    return {
+      ...inspected,
+      browserGraphics: {
+        backend:
+          document
+            .querySelector('svg[aria-label="Projected chart surface"]')
+            ?.getAttribute("data-graphics-painter") ?? null,
+        paintSourceKey: canvas?.dataset.paintSourceKey,
+        paintRevision: Number(canvas?.dataset.paintRevision ?? 0)
+      }
+    };
   });
+}
+async function settleGraphics(page: Page, mode: Mode) {
+  const coherent = (state: Inspection | null): state is Inspection => {
+    if (!isCommittedScene(state) || state.paintSourceKey !== "tstl:" + mode)
+      return false;
+    if (state.browserGraphics?.backend === "webgl")
+      return (
+        state.renderer?.state === "ready" &&
+        state.renderer.renderer === "custom-webgl2" &&
+        state.browserGraphics.paintSourceKey === "tstl:" + mode &&
+        state.browserGraphics.paintRevision > 0
+      );
+    return (
+      mode === "B0" &&
+      state.browserGraphics?.backend === "svg" &&
+      state.renderer?.state === "fallback" &&
+      state.renderer.fallback === "non_simple_geographic_path"
+    );
+  };
+  const deadline = performance.now() + 30_000;
+  let last: Inspection | null = null;
+  while (performance.now() < deadline) {
+    last = await inspect(page);
+    assert.notEqual(last?.loadState, "error", "graph loader failed");
+    if (coherent(last)) {
+      await page.waitForTimeout(100);
+      const confirmed = await inspect(page);
+      if (coherent(confirmed)) return confirmed;
+    }
+    await page.waitForTimeout(100);
+  }
+  throw Error(
+    "graphics did not settle: " +
+      JSON.stringify({
+        mode,
+        source: last?.paintSourceKey,
+        renderer: last?.renderer,
+        actual: last?.browserGraphics
+      })
+  );
 }
 function isCommittedScene(state: Inspection | null): state is Inspection {
   return Boolean(
@@ -297,7 +357,9 @@ function summary(state: Inspection) {
     activeIds: state.activeIds,
     sceneJobs: state.sceneJobs,
     workerJobs: state.workerJobs,
-    renderer: state.renderer
+    renderer: state.renderer,
+    browserGraphics: state.browserGraphics,
+    paintSourceKey: state.paintSourceKey
   };
 }
 async function screenshot(page: Page, name: string) {
@@ -308,7 +370,8 @@ async function screenshot(page: Page, name: string) {
 }
 async function switchMode(page: Page, mode: Mode) {
   await page.getByTestId("tstl-compare-" + mode).click();
-  const state = await settle(page, mode);
+  await settle(page, mode);
+  const state = await settleGraphics(page, mode);
   const controls = await page
     .locator('[data-testid^="tstl-compare-"]')
     .evaluateAll((nodes) =>
@@ -424,7 +487,8 @@ async function checkMembershipList(
     target.pathname = graphPath;
     await page.goto(target.toString(), { waitUntil: "domcontentloaded" });
   } else await link.click();
-  const selected = await settle(page, mode);
+  await settle(page, mode);
+  const selected = await settleGraphics(page, mode);
   assert.equal(selected.selectedEventId, firstPage[0]!.eventId);
   sameCamera(selected.liveView, before.liveView);
   await page.getByTestId("event-drawer-sheet").waitFor({ state: "visible" });
@@ -926,9 +990,7 @@ for (const profile of profiles) {
           mode === "B0"
             ? {
                 coordinates: assertCoordinates(state, artifact),
-                backend: await page
-                  .locator('svg[aria-label="Projected chart surface"]')
-                  .getAttribute("data-graphics-painter")
+                backend: state.browserGraphics?.backend
               }
             : await assertCompoundPaint(page, state, artifact, mode);
         if (mode === "B0" && painted.backend === "webgl") {
@@ -957,6 +1019,9 @@ for (const profile of profiles) {
     if (process.env.TSTL_SMOOTH_VISUAL_ONLY !== "1") {
       const interactions: Record<string, unknown> = {};
       for (const mode of ["bubble", "ribbon"] as const) {
+        console.info(
+          JSON.stringify({ profile: profile.name, phase: "interaction", mode })
+        );
         await switchMode(page, mode);
         const imjin = await restoreCamera(page, views[1]!.camera);
         const x = await pinch(page, "x"),
@@ -1026,6 +1091,13 @@ for (const profile of profiles) {
       result.interactions = interactions;
       const historical: Record<string, unknown>[] = [];
       for (const c of cases) {
+        console.info(
+          JSON.stringify({
+            profile: profile.name,
+            phase: "historical-drawer",
+            id: c.id
+          })
+        );
         await openHistoricalCase(page, c.id);
         const camera = (await settle(page)).liveView;
         const selectedIDs: Record<string, string | null> = {};
@@ -1060,18 +1132,23 @@ for (const profile of profiles) {
       };
       const reloads: Record<string, unknown> = {};
       for (const mode of ["bubble", "ribbon"] as const) {
+        console.info(
+          JSON.stringify({ profile: profile.name, phase: "reload", mode })
+        );
         await page.getByRole("button", { name: "설정", exact: true }).click();
         await page.getByTestId("tstl-layout-" + mode).click();
         await settle(page);
         if (mode === "ribbon")
           await screenshot(page, profile.name + "-settings");
         await openGraphTab(page);
-        const before = await settle(page, mode);
+        await settle(page, mode);
+        const before = await settleGraphics(page, mode);
         const url = new URL(page.url());
         if (process.env.TSTL_SMOKE_GRAPH_PATH) url.pathname = graphPath;
         url.searchParams.delete("layoutLab");
         await page.goto(url.toString(), { waitUntil: "domcontentloaded" });
-        const after = await settle(page, mode);
+        await settle(page, mode);
+        const after = await settleGraphics(page, mode);
         sameCamera(after.liveView, before.liveView);
         reloads[mode] = summary(after);
       }

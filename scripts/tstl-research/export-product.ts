@@ -22,6 +22,8 @@ import type {
 
 import { buildCandidateB } from "./candidate-b.js";
 import { buildCandidateC } from "./candidate-c.js";
+import { buildBubbleCandidate } from "./candidate-bubble.js";
+import { buildRibbonCandidate } from "./candidate-ribbon.js";
 import type { TstlAlternativeGeometry } from "./candidate-bc-types.js";
 
 export function exportProductExperiment(
@@ -154,7 +156,9 @@ export function exportProductExperiment(
   };
   const b = convert(alternatives[0]!);
   const c = convert(alternatives[1]!);
-  const all = [a, b, c].flatMap((candidate) => [
+  const bubble = buildBubbleCandidate(baseline, comparison);
+  const ribbon = buildRibbonCandidate(baseline, comparison);
+  const all = [a, b, c, bubble, ribbon].flatMap((candidate) => [
     ...Object.values(candidate.contoursByCompositeId).flat(2),
     ...Object.values(candidate.tracesByCompositeId ?? {}).flatMap((traces) =>
       traces.flatMap((trace) => trace.points)
@@ -183,7 +187,7 @@ export function exportProductExperiment(
     (id) => !contoursByCompositeId[id]!.length
   );
   return {
-    formatVersion: "tstl-product-experiment/2",
+    formatVersion: "tstl-product-experiment/3",
     source: {
       ...comparison.source,
       fixtureSha256: OBSERVED_FIXTURE_SHA256,
@@ -198,6 +202,8 @@ export function exportProductExperiment(
     a,
     b,
     c,
+    bubble,
+    ribbon,
     stats: {
       events: comparison.projection.eventIds.length,
       composites: comparison.projection.compositeIds.length,
@@ -214,6 +220,8 @@ export function exportProductExperiment(
       "The restricted A model optimizes X only; its single-run contours leave multi-run bands empty.",
       "B/C use exactly A Event coordinates; only geometry changes. Routing is bounded and failed links retain exact membership lists.",
       "B is a restricted terminal forest, without a split/rejoin-cycle or global Steiner-optimality claim. C uses open spines and membership traces.",
+      "Bubble and ribbon preserve exact B0 Event XY and change only final Composite outlines; compound holes remain empty in every renderer.",
+      "Smooth regions are inspired by Bubble Sets and TimeSets, not full reproductions. Final geometric checks do not establish complete semantic arrangement certification.",
       "Original Event Y and Composite temporal bounds are preserved. The scalar fixture does not establish the original temporal semantics.",
       "History revision 56 is frozen. Detail reads require the served revision to remain 56."
     ]
@@ -248,7 +256,9 @@ if (
       bytes: Buffer.byteLength(body),
       stats: artifact.stats,
       b: artifact.b.diagnostics,
-      c: artifact.c.diagnostics
+      c: artifact.c.diagnostics,
+      bubble: artifact.bubble.diagnostics,
+      ribbon: artifact.ribbon.diagnostics
     })
   );
 }

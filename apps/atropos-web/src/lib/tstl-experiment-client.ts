@@ -31,11 +31,16 @@ export function candidateExperimentPrimitives(
   mode: TstlCandidateMode = "A"
 ): ResolvedRenderPrimitive[] {
   const a = tstlCandidate(artifact, mode);
+  const preserveB0Coordinates = mode === "bubble" || mode === "ribbon";
   return artifact.b0Primitives.map((primitive): ResolvedRenderPrimitive => {
     const geometry = primitive.geometry;
     if (geometry.kind === "external" || primitive.entity.kind === "cluster")
       throw Error("tstl_experiment_unresolved_primitive");
     const id = primitive.entity.id;
+    // The visual comparison changes only Composite ink. Preserve relation
+    // control points and every original Event coordinate byte-for-byte too.
+    if (preserveB0Coordinates && primitive.entity.kind !== "composite")
+      return primitive;
     if (primitive.entity.kind === "composite") {
       if (!primitive.composite?.anchor)
         throw Error("tstl_experiment_composite_missing");
@@ -103,7 +108,7 @@ export function candidateExperimentPrimitives(
 
 function validateArtifact(value: TstlExperimentArtifact) {
   if (
-    value.formatVersion !== "tstl-product-experiment/2" ||
+    value.formatVersion !== "tstl-product-experiment/3" ||
     value.source?.worldId !== TSTL_EXPERIMENT_WORLD_ID ||
     value.source.revision !== TSTL_EXPERIMENT_REVISION ||
     value.source.timeSystemId !== TSTL_EXPERIMENT_TIME_SYSTEM_ID ||
@@ -132,18 +137,31 @@ function validateArtifact(value: TstlExperimentArtifact) {
   const compositeIds = new Set(composites.map((p) => p.entity.id));
   const validPoint = (point: TstlExperimentPoint) =>
     Number.isFinite(point.x) && Number.isFinite(point.y);
-  for (const mode of ["A", "B", "C"] as const) {
+  const b0X = (id: string) => {
+    const primitive = primitiveByEvent.get(id)!;
+    return (
+      primitive.composite?.anchor?.x ??
+      (primitive.geometry.kind === "point"
+        ? primitive.geometry.xy.x
+        : (primitive.bounds.minX + primitive.bounds.maxX) / 2)
+    );
+  };
+  for (const mode of ["A", "B", "C", "bubble", "ribbon"] as const) {
     const candidate = tstlCandidate(value, mode);
+    const preservesB0 = mode === "bubble" || mode === "ribbon";
     if (
       !candidate ||
       Object.keys(candidate.xByEventId).length !== ids.length ||
       ids.some(
         (id) =>
           !Number.isFinite(candidate.xByEventId[id]) ||
-          candidate.xByEventId[id] !== value.a.xByEventId[id]
+          candidate.xByEventId[id] !==
+            (preservesB0 ? b0X(id) : value.a.xByEventId[id])
       )
     )
       throw Error("tstl_experiment_identity_mismatch");
+    if (preservesB0 && candidate.fillRule !== "evenodd")
+      throw Error("tstl_experiment_compound_fill_rule");
     if (
       composites.some(
         (p) =>
@@ -152,6 +170,17 @@ function validateArtifact(value: TstlExperimentArtifact) {
       )
     )
       throw Error("tstl_experiment_composite_mismatch");
+    if (
+      preservesB0 &&
+      composites.some((primitive) => {
+        const expected = primitive.composite!.worldBounds;
+        const actual = candidate.worldBoundsByCompositeId[primitive.entity.id]!;
+        return (["minX", "maxX", "minY", "maxY"] as const).some(
+          (key) => actual[key] !== expected[key]
+        );
+      })
+    )
+      throw Error("tstl_experiment_temporal_bounds_mismatch");
     for (const rings of Object.values(candidate.contoursByCompositeId))
       for (const ring of rings)
         if (ring.length < 3 || ring.some((point) => !validPoint(point)))
@@ -180,7 +209,9 @@ function validateArtifact(value: TstlExperimentArtifact) {
         !compositeIds.has(membership.compositeId) ||
         !eventIds.has(membership.eventId) ||
         !primitive?.ancestorCompositeIds?.includes(membership.compositeId) ||
-        !["route", "list"].includes(membership.status) ||
+        !(preservesB0 ? ["area", "route", "list"] : ["route", "list"]).includes(
+          membership.status
+        ) ||
         pairs.has(key) ||
         (membership.status === "list" && !membership.reason)
       )

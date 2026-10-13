@@ -17,4 +17,16 @@
 3. 설정과 그래프 비교 UI를 붙인다. Chromium 및 WebKit 모바일에서 면, 축별 확대, 단계 변화, 카메라/선택 유지, drawer, Collection, 새로고침을 검증한다.
 4. 작은 커밋·PR diff 검토, 관련 unit/contract/type/lint/build/secret 및 CI 검사를 수행한다. 기존 main 자동 배포 후 공개 SHA·health·실제 모바일 흐름·r56 pointer 불변을 확인한다. 실제 iPhone 17 Safari/PWA 검증과 에뮬레이션을 구분한다.
 
-CON-003, CORE-MODEL, TS-002/005/006/010의 identity·시간·관계 계약과 IP-015의 화면 구조를 보존한다. B/C, 역사 정본 수정, 운영 기본값 변경, served pointer/backfill, 새 유료 서비스와 광범위 성능 튜닝은 범위 밖이다. 독립 프리뷰와 그 날짜별 증거는 그대로 보존한다.
+CON-003, CORE-MODEL, TS-002/005/006/010의 identity·시간·관계 계약과 IP-015의 화면 구조를 보존한다. 역사 정본 수정, 운영 기본값 변경, served pointer/backfill, 새 유료 서비스와 광범위 성능 튜닝은 범위 밖이다. 독립 프리뷰와 그 날짜별 증거는 그대로 보존한다.
+
+## B/C 후속 승인 · 2026-10-13
+
+A 운영 검증 뒤 사용자가 “다른후보들도 이어서 구현하자”라고 요청했다. 같은 선택형 제품 실험실에 연구 설계 §9의 B/C를 추가하고 검토·병합·기존 Railway 자동 배포·공개 모바일 검증까지 진행한다. 기본값·역사·served pointer 유지 조건은 계속 적용한다. 이 후속 승인은 위 첫 배포의 B/C 제외만 대체한다.
+
+- A의 동일한 539 Event XY에서 geometry-only 비교를 한다. B는 장애물을 피하는 결정적 제한 rectilinear terminal forest와 실험 면, C는 시간 방향 spine·membership 연결·국소 atom 면을 사용한다. 전체 최적 Steiner·진짜 split/rejoin·joint solve를 구현했다고 주장하지 않는다.
+- 계산 cap·비회원 glyph 침범·연결 실패를 기록하고 정확한 membership 목록과 기존 Event 상세 접근을 남긴다. 모든 면은 실험 표현이며 기존 의미 인증기를 완화하지 않는다.
+- fixed contour와 open trace를 worker/cache/render까지 보존한다. 선을 닫아 면을 만들거나 선의 교차에 관계 hit target을 생성하지 않는다. 동일 원래 Event 선택을 유지한다.
+- 오프라인 두 후보를 각각 검증·작은 커밋으로 남기고, 제품 설정/URL/브라우저 로컬 선택을 B0/A/B/C로 확장한다. 축별 확대·Collection·밀도 전환·drawer·복귀를 desktop Chromium 및 mobile Chromium/WebKit으로 검사한다.
+- 배포 전후 fixture·pointer·기존 Render manifest digest와 공개 SHA를 비교한다. 실제 iPhone17 Safari/PWA 관찰과 에뮬레이션은 구분한다.
+
+관련 의미 계약은 CON-003, CORE-MODEL, TS-002/005/006/010이며 관측 URL은 `/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&layoutLab=B` 및 `layoutLab=C`다. 화면 영역별 발행과 광범위 성능 튜닝은 추가하지 않는다.

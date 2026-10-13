@@ -1,5 +1,7 @@
 # 현재 구현 상태
 
+2026-10-13 KST · **활성: TSTL 후보 B/C 제품 실험실 확장.** 사용자가 A 운영 검증 뒤 나머지 후보 구현을 승인했다. [IP-016 후속 승인](IP-016-tstl-product-lab.md#bc-후속-승인--2026-10-13)에 따라 같은 r56/A 좌표에서 B의 분기 면과 C의 spine·membership 선을 비교하도록 구현·검증·배포한다. 기존 운영 기본값·역사·served pointer는 유지한다. 이 단락은 진행 상태이며 아래 A 배포 기록을 B/C 완료 증거로 사용하지 않는다.
+
 2026-10-13 KST · **TSTL 제품 실험실을 운영에 배포하고 공개 검증했다.** [설정](https://moirai-production-8ed1.up.railway.app/graph/settings?world=01a107fb-4018-7fcb-8390-836a40fa91cc)에서 현재 운영 / r56 B0 / 후보 A를 선택하고 기존 GraphShell의 면·축별 확대·순차적 비가시화·Collection·선택·drawer로 비교한다. [IP-016](IP-016-tstl-product-lab.md)이 사용자 승인 범위를, [배포·비교·한계 증거](../evidence/tstl-product-lab-2026-10-13.md)가 결과를 소유한다. 리뷰 소스 `0c55135`, PR #351의 최초 배포·공개 검증 SHA `131611f`. 공개 desktop Chromium 및 mobile Chromium/WebKit 3/3 통과, 오류 0. 539 Event의 ID·원래 Y를 보존하며 A는 105개 면/1,207 fragment와 4개 점 fallback을 표시한다. 실험 면의 의미 검증은 미완료이며 실제 iPhone17 Safari/PWA 검증은 남는다. 기본값·역사·served pointer·Render manifest·B/C는 변경하지 않았다. 이후 문서 전용 배포의 SHA는 공개 `/__status`로 확인한다.
 
 2026-10-13 KST · **TSTL B0/A 독립 프리뷰를 별도로 배포했다.** [프리뷰](https://neocjmix.github.io/moirai/tstl-candidate-a/)는 실제 history-r56의 단일 539 Event·시간 Y를 보존하며 국가 history·임진왜란·이순신 공유 관계를 비교한다. 런타임 소스 `4ffb47c`, Pages 배포 `939e16d`; [증거와 한계](../evidence/tstl-candidate-a-preview-2026-10-13.md)가 검증 결과를 소유한다. 당시 프리뷰의 fail-closed 의미 인증 정책으로 B0/A 모두 의미 면 0, 선·포트·목록 fallback이었다. scalar-only provenance가 면 생성을 막는다는 뜻은 아니며, 후속 IP-016은 검증 미완료 실험 면을 별도로 표시한다. 제한된 A 구현이며 B/C·운영 기본값·served pointer·역사는 변경하지 않았다. 이 프리뷰의 배포·검증 수치는 당시 증거로 보존하며, 후속 제품 통합은 PR #351과 IP-016을 따른다.

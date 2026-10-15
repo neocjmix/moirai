@@ -1,0 +1,121 @@
+{
+  "schema": "organic-product-browser-evidence/1",
+  "reports": [
+    {
+      "profile": "desktop-chromium",
+      "surface": "https://moirai-production-8ed1.up.railway.app/graph/v5",
+      "localDiagnostic": false,
+      "readProxyUsed": false,
+      "readProxyOrigin": null,
+      "selectedViews": [],
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "errors": [],
+      "consoleErrors": [],
+      "incidentalResources": [
+        {
+          "kind": "console",
+          "path": "/favicon.ico",
+          "message": "Failed to load resource: the server responded with a status of 404 ()"
+        }
+      ],
+      "failedHTTP": [],
+      "writes": [],
+      "visualOnly": false,
+      "interactionsOnly": true,
+      "visualAcceptance": "User review pending; browser emulation is not physical iPhone 17 Safari/PWA evidence.",
+      "phase": "selection-1f10a329-835d-79b1-a9c3-ae1835934b8b",
+      "observedSHA": "a5c5a921d5c81bcae64837c6463b02aa0c0a7ee8",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "baselineCoordinates": {
+        "events": 112,
+        "anchors": 48
+      },
+      "views": [],
+      "displays": {
+        "base": {
+          "geometryDigest": "4e1f6cbffe138dff9f03a9770f84d38a47e14e51c666eb9d63ca0cd88abafb2b",
+          "traces": 0,
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "webgl_scene_budget"
+          },
+          "svgPaint": {
+            "expected": 49,
+            "matched": 49,
+            "visible": 49,
+            "painter": "webgl"
+          },
+          "diagnostics": "연결된 영역 · 기본 → 패딩1 → 1구멍 · 기본 → 패딩24 → 32소속 사건 미포함 · 기본 → 패딩0 → 0비소속 표시 영역 교차 · 기본 → 패딩0 → 0패딩 여유 부족 면적2127.300구간별 중첩 깊이1, 2, 3, 4, 5경로를 반영하지 못한 관계0"
+        },
+        "padded": {
+          "geometryDigest": "8c22bcac24411afc78ea4877fa9be9cb4c7de0312a274b07ce4df9adbc8965ad",
+          "traces": 0,
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "geographic_path_budget"
+          },
+          "svgPaint": {
+            "expected": 51,
+            "matched": 51,
+            "visible": 49,
+            "painter": "webgl"
+          },
+          "diagnostics": "연결된 영역 · 기본 → 패딩1 → 1구멍 · 기본 → 패딩24 → 32소속 사건 미포함 · 기본 → 패딩0 → 0비소속 표시 영역 교차 · 기본 → 패딩0 → 0패딩 여유 부족 면적2127.300구간별 중첩 깊이1, 2, 3, 4, 5경로를 반영하지 못한 관계0"
+        },
+        "overlay": {
+          "geometryDigest": "8c22bcac24411afc78ea4877fa9be9cb4c7de0312a274b07ce4df9adbc8965ad",
+          "traces": 415,
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "geographic_path_budget"
+          },
+          "svgPaint": {
+            "expected": 51,
+            "matched": 51,
+            "visible": 51,
+            "painter": "svg"
+          },
+          "diagnostics": "연결된 영역 · 기본 → 패딩1 → 1구멍 · 기본 → 패딩24 → 32소속 사건 미포함 · 기본 → 패딩0 → 0비소속 표시 영역 교차 · 기본 → 패딩0 → 0패딩 여유 부족 면적2127.300구간별 중첩 깊이1, 2, 3, 4, 5경로를 반영하지 못한 관계0"
+        }
+      },
+      "reproduction": {
+        "exportDigest": "8a3f632112ef7b395c9423fbdfb2e1f94393ff24acd81822d9d760a62fb8cd8d",
+        "geometryDigest": "8c22bcac24411afc78ea4877fa9be9cb4c7de0312a274b07ce4df9adbc8965ad",
+        "tunedGeometryDigest": "b5b621134a2c88b644989293aae6d2b7702f8068a7edb31bbe87fdb48677a29d",
+        "replayExact": true
+      },
+      "historicalCases": [
+        {
+          "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+          "title": "한국사",
+          "selectionAndCameraPreserved": true
+        },
+        {
+          "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+          "title": "임진왜란: 두 차례 침략과 강화 교섭",
+          "selectionAndCameraPreserved": true
+        },
+        {
+          "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+          "title": "이순신의 생애",
+          "selectionAndCameraPreserved": true
+        }
+      ],
+      "passed": true
+    }
+  ]
+}

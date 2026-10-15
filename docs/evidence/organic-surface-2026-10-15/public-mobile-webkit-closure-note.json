@@ -1,0 +1,44 @@
+{
+  "schema": "organic-browser-closure-provenance/1",
+  "recordedAt": "2026-10-15T15:26:37.746921+00:00",
+  "report": "report.json",
+  "reportSha256": "36ab260bc3c890fd84d23110c92cf7fb65e477da18bfbee67343127d168334a8",
+  "observedRuntimeSHA": "a5c5a921d5c81bcae64837c6463b02aa0c0a7ee8",
+  "result": {
+    "passed": false,
+    "phase": "import-replay",
+    "phaseStartedAt": "2026-10-15T15:18:43.088Z",
+    "error": "page.evaluate: Target page, context or browser has been closed\n    at settle (/workspace/moirai/scripts/tstl-research/organic-product-smoke.ts:248:8)\n    at async <anonymous> (/workspace/moirai/scripts/tstl-research/organic-product-smoke.ts:904:20)",
+    "navigationContextRetries": 1
+  },
+  "provenance": {
+    "harnessExitCode": 1,
+    "harnessExitReason": "The caught Playwright target-closed error incremented failures; the script set process.exitCode = 1 after writing the failed report.",
+    "nativeBrowserStderrCaptured": false,
+    "nativeBrowserExitCodeCaptured": false,
+    "phaseWatchdogFired": false,
+    "phaseWatchdogEvidence": "No timedOut or watchdog error in raw report. Final process exited before the 240-second phase deadline.",
+    "manualTerminationDuringFinalAttempt": false,
+    "outerExecutionTimeoutDuringFinalAttempt": false,
+    "explicitCleanupOrdering": "context.close() and browser.close() run in finally after the original error was caught and report written; they did not initiate this original error.",
+    "productImportNavigation": "importOrganic uses window.location.assign(url). It does not call page/context/browser close.",
+    "cgroupMemoryEventsObservedAt": "2026-10-15T15:20:58Z",
+    "cgroupMemoryEvents": {
+      "low": 0,
+      "high": 0,
+      "max": 2130,
+      "oom": 0,
+      "oom_kill": 0,
+      "oom_group_kill": 0
+    },
+    "underlyingCause": "Unresolved. The generic target-closed error and missing native stderr/exit code do not establish browser crash, OOM, or which page/context/browser component closed."
+  },
+  "coverage": {
+    "basePaddedOverlayFinalContours": true,
+    "geometryChangingRecompute": true,
+    "jsonExport": true,
+    "exactImportReplay": false,
+    "postReplayHistoricalSelectionDrawerCamera": false,
+    "note": "Three mode surface/inspector screenshots and reproduction JSON are retained. Import replay and the later selection checks did not complete. The separate full-view WebKit session also remains a partial result; this attempt does not resolve its overview-to-Imjin lifetime limitation."
+  }
+}

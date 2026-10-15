@@ -1,0 +1,96 @@
+{
+  "schema": "organic-product-browser-evidence/1",
+  "reports": [
+    {
+      "profile": "mobile-webkit",
+      "surface": "https://moirai-production-8ed1.up.railway.app/graph/v5",
+      "localDiagnostic": false,
+      "readProxyUsed": false,
+      "readProxyOrigin": null,
+      "selectedViews": [],
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "errors": [],
+      "consoleErrors": [],
+      "incidentalResources": [],
+      "failedHTTP": [],
+      "writes": [],
+      "visualOnly": false,
+      "interactionsOnly": true,
+      "visualAcceptance": "User review pending; browser emulation is not physical iPhone 17 Safari/PWA evidence.",
+      "phase": "import-replay",
+      "phaseStartedAt": "2026-10-15T15:12:30.838Z",
+      "phaseDeadlineSeconds": 240,
+      "observedSHA": "a5c5a921d5c81bcae64837c6463b02aa0c0a7ee8",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "baselineCoordinates": {
+        "events": 113,
+        "anchors": 47
+      },
+      "views": [],
+      "displays": {
+        "base": {
+          "geometryDigest": "85ce1f775e1b39ad98cd010b18b1efe2cd867c495b0810c6e1de22e5a7cc3167",
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "webgl_scene_budget"
+          },
+          "svgPaint": {
+            "expected": 48,
+            "matched": 48,
+            "visible": 48,
+            "painter": "svg"
+          },
+          "traces": 0,
+          "diagnostics": "연결된 영역 · 기본 → 패딩1 → 1구멍 · 기본 → 패딩24 → 32소속 사건 미포함 · 기본 → 패딩0 → 0비소속 표시 영역 교차 · 기본 → 패딩0 → 0패딩 여유 부족 면적2127.300구간별 중첩 깊이1, 2, 3, 4, 5경로를 반영하지 못한 관계0"
+        },
+        "padded": {
+          "geometryDigest": "8ac14cf4332d3bd99799d4558c5c8bae0285964f6c4ee832b15f890c76a9940b",
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "webgl_scene_budget"
+          },
+          "svgPaint": {
+            "expected": 49,
+            "matched": 49,
+            "visible": 49,
+            "painter": "svg"
+          },
+          "traces": 0,
+          "diagnostics": "연결된 영역 · 기본 → 패딩1 → 1구멍 · 기본 → 패딩24 → 32소속 사건 미포함 · 기본 → 패딩0 → 0비소속 표시 영역 교차 · 기본 → 패딩0 → 0패딩 여유 부족 면적2127.300구간별 중첩 깊이1, 2, 3, 4, 5경로를 반영하지 못한 관계0"
+        },
+        "overlay": {
+          "geometryDigest": "8ac14cf4332d3bd99799d4558c5c8bae0285964f6c4ee832b15f890c76a9940b",
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "webgl_scene_budget"
+          },
+          "svgPaint": {
+            "expected": 49,
+            "matched": 49,
+            "visible": 49,
+            "painter": "svg"
+          },
+          "traces": 409,
+          "diagnostics": "연결된 영역 · 기본 → 패딩1 → 1구멍 · 기본 → 패딩24 → 32소속 사건 미포함 · 기본 → 패딩0 → 0비소속 표시 영역 교차 · 기본 → 패딩0 → 0패딩 여유 부족 면적2127.300구간별 중첩 깊이1, 2, 3, 4, 5경로를 반영하지 못한 관계0"
+        }
+      },
+      "passed": false,
+      "error": "page.evaluate: Execution context was destroyed, most likely because of a navigation\n    at settle (/workspace/moirai/scripts/tstl-research/organic-product-smoke.ts:246:32)\n    at <anonymous> (/workspace/moirai/scripts/tstl-research/organic-product-smoke.ts:881:26)",
+      "failureInspection": null
+    }
+  ]
+}

@@ -1,0 +1,24 @@
+{
+  "format": "organic-surface-repro/1",
+  "sourceSha256": "3f93ede4ca856c0cdea385d5d992b7dee7691b0132df1db04f941a4793cd5cf6",
+  "algorithmVersion": "organic-anisotropic-field/1",
+  "baseline": "anchored",
+  "parameters": {
+    "radiusX": 55,
+    "radiusY": 95,
+    "levelScale": 0.14,
+    "relationStrength": 1.6,
+    "relationWidth": 22,
+    "threshold": 0.35,
+    "paddingScale": 1,
+    "sampleStep": 1,
+    "smoothing": 2
+  },
+  "display": "padded",
+  "view": {
+    "gsViewport": "260,223420,650,1800",
+    "gsCanons": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "gsTimeline": "01a107fc-3994-7889-969f-7a210c19fa24",
+    "organicComposite": "01a10a3f-05d2-7981-94f4-08f3ea6433ec"
+  }
+}

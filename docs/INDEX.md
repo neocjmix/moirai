@@ -55,6 +55,8 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-014 — Pluggable renderer 비교 handoff](implementation/IP-014-pluggable-renderer-handoff.md)
 - [IP-015 — Realtime camera / eventual scene](implementation/IP-015-realtime-camera-eventual-scene.md)
 - [IP-016 — TSTL 제품 실험실](implementation/IP-016-tstl-product-lab.md)
+- [IP-017 — Organic Surface Lab 첫 구현 슬라이스](implementation/IP-017-organic-surface-lab-slice-1.md)
+- [Organic Surface 구현·시각 검수 증거](evidence/organic-surface-lab-2026-10-15.md) — 고정 좌표, 독립 패딩, 재현 설정; 시각 승인과 운영 승격은 별도.
 - [TSTL B0 좌표의 버블·리본 비교와 검증](evidence/tstl-smooth-product-lab-2026-10-13.md)
 - [TSTL B/C 운영 비교와 검증](evidence/tstl-bc-product-lab-2026-10-13.md)
 - [IP-012 — Render Publication 구현 계획](implementation/IP-012-render-publication-plan.md)

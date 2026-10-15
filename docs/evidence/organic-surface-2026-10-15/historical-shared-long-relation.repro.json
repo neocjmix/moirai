@@ -1,0 +1,21 @@
+{
+  "format": "organic-surface-repro/1",
+  "sourceSha256": "3f93ede4ca856c0cdea385d5d992b7dee7691b0132df1db04f941a4793cd5cf6",
+  "algorithmVersion": "organic-anisotropic-field/1",
+  "baseline": "anchored",
+  "parameters": {
+    "radiusX": 55,
+    "radiusY": 95,
+    "levelScale": 0.14,
+    "relationStrength": 1.6,
+    "relationWidth": 22,
+    "threshold": 0.35,
+    "paddingScale": 1,
+    "sampleStep": 1,
+    "smoothing": 2
+  },
+  "display": "overlay",
+  "view": {
+    "gsViewport": "200,223850,1100,400"
+  }
+}

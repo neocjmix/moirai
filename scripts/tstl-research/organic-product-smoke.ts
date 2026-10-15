@@ -2,6 +2,8 @@
  * Usage: tsx scripts/tstl-research/organic-product-smoke.ts BASE_URL OUTPUT_DIR [SHA]
  * ORGANIC_SMOKE_PROFILE selects one profile; ORGANIC_SMOKE_READ_PROXY supports a
  * local diagnostic build reading the unchanged public history service.
+ * ORGANIC_SMOKE_INTERACTIONS_ONLY checks controls after separately recorded views.
+ * ORGANIC_SMOKE_VISUAL_ONLY and ORGANIC_SMOKE_VIEW isolate a visual diagnostic.
  */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
@@ -24,12 +26,25 @@ const output = resolve(process.argv[3] ?? ".artifacts/organic-surface/smoke");
 const expectedSha = process.argv[4];
 const readProxy = process.env.ORGANIC_SMOKE_READ_PROXY;
 const graphPath = process.env.ORGANIC_SMOKE_GRAPH_PATH ?? "/graph/v5";
+const interactionsOnly = process.env.ORGANIC_SMOKE_INTERACTIONS_ONLY === "1";
+const visualOnly = process.env.ORGANIC_SMOKE_VISUAL_ONLY === "1";
+assert(
+  !(interactionsOnly && visualOnly),
+  "ORGANIC_SMOKE_INTERACTIONS_ONLY and ORGANIC_SMOKE_VISUAL_ONLY are mutually exclusive"
+);
 const world = "01a107fb-4018-7fcb-8390-836a40fa91cc";
 const views = [
   { name: "imjin", camera: "260,223420,650,1800" },
   { name: "yi-shared", camera: "280,222950,430,500" },
   { name: "world", camera: "0,220900,1900,21000" }
-];
+].filter(
+  (view) =>
+    !process.env.ORGANIC_SMOKE_VIEW ||
+    view.name === process.env.ORGANIC_SMOKE_VIEW
+);
+assert(views.length, "unknown ORGANIC_SMOKE_VIEW");
+if (process.env.ORGANIC_SMOKE_VIEW)
+  assert.equal(process.env.ORGANIC_SMOKE_VISUAL_ONLY, "1");
 const historicalCases = [
   { id: "01a123a1-0000-751e-9e64-e7c7b6b89fbc", title: "한국사" },
   {
@@ -75,26 +90,35 @@ type Inspection = {
   view: View;
   liveView: View;
   counts: Record<string, number | boolean | undefined>;
-  sceneJobs?: { pending: number };
-  workerJobs?: { running: number; pending: number } | null;
-  cache?: { pending?: number } | null;
-  paintSourceKey?: string;
-  renderer?: { renderer: string; state: string; fallback?: string } | null;
-  eventCoordinates?: { id: string; x: number; y: number }[];
+  sceneJobs?: { pending: number } | undefined;
+  workerJobs?: { running: number; pending: number } | null | undefined;
+  cache?: { pending?: number | undefined } | null | undefined;
+  paintSourceKey?: string | undefined;
+  renderer?:
+    | { renderer: string; state: string; fallback?: string | undefined }
+    | null
+    | undefined;
+  eventCoordinates?: { id: string; x: number; y: number }[] | undefined;
+  geometryDigest?: string | undefined;
   geometry: {
     id: string;
-    contourMode?: string;
-    fillRule?: string;
+    contourMode?: string | undefined;
+    fillRule?: string | undefined;
     rings?: TstlExperimentPoint[][];
-    anchor?: TstlExperimentPoint;
+    ringCount?: number;
+    vertexCount?: number;
+    anchor?: TstlExperimentPoint | undefined;
   }[];
 };
 const digest = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
 const visible = (page: Page, id: string) =>
   page.locator(`[data-testid="${id}"]:visible`).first();
-async function inspect(page: Page): Promise<Inspection | null> {
-  return page.evaluate(() => {
+async function inspect(
+  page: Page,
+  withDigest = false
+): Promise<Inspection | null> {
+  return page.evaluate(async (withDigest) => {
     let value: Inspection | null = null;
     const receive = (event: Event) => {
       value = (event as CustomEvent<Inspection>).detail;
@@ -102,8 +126,54 @@ async function inspect(page: Page): Promise<Inspection | null> {
     addEventListener("moirai:graph-inspection", receive, { once: true });
     dispatchEvent(new Event("moirai:inspect-graph"));
     removeEventListener("moirai:graph-inspection", receive);
-    return value;
-  });
+    const state = value as Inspection | null;
+    if (!state) return null;
+    let geometryDigest: string | undefined;
+    if (withDigest) {
+      const geometry = state.geometry
+        .filter((shape) => shape.rings?.length)
+        .map((shape) => ({ id: shape.id, rings: shape.rings }))
+        .sort((a, b) => a.id.localeCompare(b.id));
+      const bytes = new TextEncoder().encode(JSON.stringify(geometry));
+      geometryDigest = [
+        ...new Uint8Array(await crypto.subtle.digest("SHA-256", bytes))
+      ]
+        .map((byte) => byte.toString(16).padStart(2, "0"))
+        .join("");
+    }
+    // Never send raw contours, SVG path strings, or the renderer cache through
+    // the browser protocol. Polling those million-vertex structures perturbs
+    // the very runtime being verified and can exhaust the test process.
+    return {
+      loadState: state.loadState,
+      selectedEventId: state.selectedEventId,
+      view: state.view,
+      liveView: state.liveView,
+      counts: state.counts,
+      sceneJobs: state.sceneJobs,
+      workerJobs: state.workerJobs,
+      cache: { pending: state.cache?.pending },
+      paintSourceKey: state.paintSourceKey,
+      renderer: state.renderer
+        ? {
+            renderer: state.renderer.renderer,
+            state: state.renderer.state,
+            fallback: state.renderer.fallback
+          }
+        : null,
+      eventCoordinates: state.eventCoordinates,
+      geometryDigest,
+      geometry: state.geometry.map((shape) => ({
+        id: shape.id,
+        contourMode: shape.contourMode,
+        fillRule: shape.fillRule,
+        anchor: shape.anchor,
+        ringCount: shape.rings?.length ?? 0,
+        vertexCount:
+          shape.rings?.reduce((sum, ring) => sum + ring.length, 0) ?? 0
+      }))
+    };
+  }, withDigest);
 }
 async function settle(
   page: Page,
@@ -130,9 +200,27 @@ async function settle(
       )
     )
       return last;
-    await page.waitForTimeout(150);
+    // Inspection clones the scene in the browser; poll conservatively so the
+    // harness does not dominate a dense final-quality scene.
+    await page.waitForTimeout(1_000);
   }
-  throw Error("graph did not settle: " + JSON.stringify(last));
+  throw Error(
+    "graph did not settle: " +
+      JSON.stringify(
+        last
+          ? {
+              loadState: last.loadState,
+              source: last.paintSourceKey,
+              renderer: last.renderer,
+              counts: last.counts,
+              sceneJobs: last.sceneJobs,
+              workerJobs: last.workerJobs,
+              view: last.view,
+              liveView: last.liveView
+            }
+          : null
+      )
+  );
 }
 function sameCamera(actual: View, expected: View) {
   for (const key of ["x", "y", "scaleX", "scaleY"] as const)
@@ -183,13 +271,43 @@ function coordinates(state: Inspection, artifact: TstlExperimentArtifact) {
     anchors: state.geometry.filter((shape) => shape.anchor).length
   };
 }
-function shapeDigest(state: Inspection) {
-  return digest(
-    state.geometry
-      .filter((shape) => shape.rings?.length)
-      .map((shape) => ({ id: shape.id, rings: shape.rings }))
-      .sort((a, b) => a.id.localeCompare(b.id))
+async function shapeDigest(page: Page) {
+  const inspected = await inspect(page, true);
+  assert(inspected?.geometryDigest, "committed boundary digest is inspectable");
+  assert.equal(inspected.renderer?.state, "ready", "renderer paints the scene");
+  assert(
+    inspected.geometry.some((shape) => shape.ringCount && shape.vertexCount),
+    "boundary digest covers nonempty final contours"
   );
+  assert(
+    Number(inspected.counts.fixedContourRegions) > 0 &&
+      Number(inspected.counts.fixedContourRings) > 0,
+    "final contours reach the painted fixed-region scene"
+  );
+  return inspected.geometryDigest;
+}
+function inspectionSummary(state: Inspection | null) {
+  if (!state) return null;
+  return {
+    loadState: state.loadState,
+    selectedEventId: state.selectedEventId,
+    view: state.view,
+    liveView: state.liveView,
+    counts: state.counts,
+    sceneJobs: state.sceneJobs,
+    workerJobs: state.workerJobs,
+    source: state.paintSourceKey,
+    renderer: state.renderer,
+    eventCoordinates: state.eventCoordinates?.length,
+    geometryDigest: state.geometryDigest,
+    geometry: state.geometry.map((shape) => ({
+      id: shape.id,
+      contourMode: shape.contourMode,
+      fillRule: shape.fillRule,
+      rings: shape.ringCount ?? 0,
+      vertices: shape.vertexCount ?? 0
+    }))
+  };
 }
 async function switchMode(page: Page, mode: "anchored" | "organic") {
   const drawer = visible(page, "tstl-drawer-layout");
@@ -200,11 +318,13 @@ async function switchMode(page: Page, mode: "anchored" | "organic") {
 async function controls(page: Page) {
   const control = visible(page, "organic-controls");
   if (!(await control.evaluate((node) => (node as HTMLDetailsElement).open)))
-    await control.locator("summary").click();
+    await control.getByTestId("organic-controls-summary").click();
   return control;
 }
 async function revealDetails(page: Page, testId: string) {
-  const target = page.getByTestId(testId).first();
+  // Settings and the graph dock share these controls. Resolve nested details
+  // inside the visible outer panel, even while the nested content is closed.
+  const target = visible(page, "organic-controls").getByTestId(testId);
   const details = target.locator("xpath=ancestor::details[1]");
   if (!(await details.evaluate((node) => (node as HTMLDetailsElement).open)))
     await details.locator(":scope > summary").click();
@@ -230,7 +350,7 @@ async function closeControls(page: Page) {
     (await control.isVisible()) &&
     (await control.evaluate((node) => (node as HTMLDetailsElement).open))
   )
-    await control.locator("summary").click();
+    await control.getByTestId("organic-controls-summary").click();
 }
 const reports: Record<string, unknown>[] = [];
 let failures = 0;
@@ -301,20 +421,36 @@ for (const profile of profiles) {
     const path = new URL(response.url()).pathname;
     if (response.status() >= 400)
       failedHTTP.push({ path, status: response.status() });
-    if (/\/labs\/tstl\/r56.*\.json$/.test(path))
+    // One immutable asset suffices for every comparison. A development HMR
+    // navigation can invalidate later protocol response bodies; never leave
+    // an unobserved promise from a redundant asset fetch.
+    if (
+      !artifact &&
+      assets.length === 0 &&
+      /\/labs\/tstl\/r56.*\.json$/.test(path)
+    )
       assets.push(
         (async () => {
           artifact = (await response.json()) as TstlExperimentArtifact;
-        })()
+        })().catch((error: unknown) => {
+          errors.push(`fixture response unreadable: ${String(error)}`);
+        })
       );
   });
   const report: Record<string, unknown> = {
     profile: profile.name,
+    surface: new URL(graphPath, baseURL).href,
+    localDiagnostic: Boolean(readProxy || graphPath !== "/graph/v5"),
+    readProxyUsed: Boolean(readProxy),
+    readProxyOrigin: readProxy ? new URL(readProxy).origin : null,
+    selectedViews: interactionsOnly ? [] : views.map((view) => view.name),
     viewport: { width: profile.width, height: profile.height },
     errors,
     consoleErrors,
     failedHTTP,
     writes,
+    visualOnly,
+    interactionsOnly,
     visualAcceptance:
       "User review pending; browser emulation is not physical iPhone 17 Safari/PWA evidence."
   };
@@ -336,7 +472,7 @@ for (const profile of profiles) {
     report.baselineCoordinates = coordinates(initial, artifact);
     const visual: Record<string, unknown>[] = [];
     report.views = visual;
-    for (const view of views) {
+    for (const view of interactionsOnly ? [] : views) {
       const anchor = await switchMode(page, "anchored");
       coordinates(anchor, artifact);
       const camera = await restoreCamera(page, view.camera);
@@ -345,25 +481,25 @@ for (const profile of profiles) {
       sameCamera(organic.liveView, camera.liveView);
       const coordinateCheck = coordinates(organic, artifact);
       assert(
-        organic.geometry.some((shape) => shape.rings?.length),
+        organic.geometry.some((shape) => shape.ringCount),
         "organic surface reaches the actual renderer"
       );
-      for (const shape of organic.geometry.filter(
-        (shape) => shape.rings?.length
-      ))
+      for (const shape of organic.geometry.filter((shape) => shape.ringCount))
         assert.equal(
           shape.fillRule,
           "evenodd",
           "compound surfaces preserve holes"
         );
-      await screenshot(page, `${profile.name}-organic-${view.name}`);
       visual.push({
         ...view,
         coordinates: coordinateCheck,
-        geometryDigest: shapeDigest(organic),
+        geometryDigest: await shapeDigest(page),
         renderer: organic.renderer,
         view: organic.liveView
       });
+      // Retain the committed scene evidence even if the browser's screenshot
+      // process itself crashes before it can return an image.
+      await screenshot(page, `${profile.name}-organic-${view.name}`);
       console.info(
         JSON.stringify({
           profile: profile.name,
@@ -372,6 +508,15 @@ for (const profile of profiles) {
         })
       );
     }
+    if (visualOnly) {
+      assert.deepEqual(errors, []);
+      assert.deepEqual(consoleErrors, []);
+      assert.deepEqual(failedHTTP, []);
+      assert.deepEqual(writes, []);
+      report.passed = true;
+      continue;
+    }
+    if (interactionsOnly) await switchMode(page, "organic");
     await restoreCamera(page, views[0]!.camera);
     const panel = await controls(page);
     await revealDetails(page, "organic-inspector-composite");
@@ -379,21 +524,39 @@ for (const profile of profiles) {
       .getByTestId("organic-inspector-composite")
       .selectOption(historicalCases[1]!.id);
     const before = await settle(page, "organic");
-    const displays: Record<string, unknown> = {};
+    const displays: Record<
+      string,
+      { geometryDigest: string; traces: number; diagnostics: string | null }
+    > = {};
     for (const mode of ["base", "padded", "overlay"] as const) {
       const previousSource = (await settle(page, "organic")).paintSourceKey;
       await panel.getByTestId(`organic-display-${mode}`).click();
       const state = await settle(page, "organic", previousSource);
       sameCamera(state.liveView, before.liveView);
       coordinates(state, artifact);
+      const traces = Number(state.counts.fixedTraces ?? 0);
+      if (mode === "overlay")
+        assert(traces > 0, "overlay paints base-boundary traces");
+      else assert.equal(traces, 0, `${mode} hides overlay traces`);
       displays[mode] = {
-        geometryDigest: shapeDigest(state),
+        geometryDigest: await shapeDigest(page),
+        traces,
         diagnostics: await panel
           .getByTestId("organic-diagnostics")
           .textContent()
       };
       await screenshot(page, `${profile.name}-${mode}-inspection`);
     }
+    assert.notEqual(
+      displays.base!.geometryDigest,
+      displays.padded!.geometryDigest,
+      "default independent padding changes final contours"
+    );
+    assert.equal(
+      displays.overlay!.geometryDigest,
+      displays.padded!.geometryDigest,
+      "overlay keeps the padded fill and adds the base outline"
+    );
     report.displays = displays;
     const beforePadded = (await settle(page, "organic")).paintSourceKey;
     await panel.getByTestId("organic-display-padded").click();
@@ -407,13 +570,20 @@ for (const profile of profiles) {
       resolve(output, `${profile.name}-reproduction.json`),
       exported + "\n"
     );
-    const originalShape = shapeDigest(await settle(page, "organic"));
+    await settle(page, "organic");
+    const originalShape = await shapeDigest(page);
     const radius = panel.getByTestId("organic-parameter-radiusX");
     const radiusBefore = Number(await radius.inputValue());
     await radius.fill(String(radiusBefore + 2));
     const beforeRecompute = (await settle(page, "organic")).paintSourceKey;
     await panel.getByTestId("organic-recompute").click();
     await settle(page, "organic", beforeRecompute);
+    const tunedShape = await shapeDigest(page);
+    assert.notEqual(
+      tunedShape,
+      originalShape,
+      "radius tuning changes final geometry"
+    );
     await panel.getByTestId("organic-copy").click();
     assert.notEqual(
       await reproduction.inputValue(),
@@ -428,7 +598,7 @@ for (const profile of profiles) {
     const replay = await settle(page, "organic");
     sameCamera(replay.liveView, before.liveView);
     assert.equal(
-      shapeDigest(replay),
+      await shapeDigest(page),
       originalShape,
       "export/import reproduces exact serialized boundaries"
     );
@@ -443,6 +613,7 @@ for (const profile of profiles) {
     report.reproduction = {
       exportDigest: digest(parsed),
       geometryDigest: originalShape,
+      tunedGeometryDigest: tunedShape,
       replayExact: true
     };
     await closeControls(page);
@@ -485,7 +656,9 @@ for (const profile of profiles) {
     failures++;
     report.passed = false;
     report.error = error instanceof Error ? error.stack : String(error);
-    report.failureInspection = await inspect(page).catch(() => null);
+    report.failureInspection = inspectionSummary(
+      await inspect(page).catch(() => null)
+    );
     await screenshot(page, `${profile.name}-failure`).catch(() => {});
   } finally {
     writeFileSync(

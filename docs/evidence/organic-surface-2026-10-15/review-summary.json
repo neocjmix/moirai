@@ -1,0 +1,1945 @@
+{
+  "format": "organic-surface-evidence/1",
+  "source": {
+    "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+    "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+    "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+    "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+    "temporalProvenance": "legacy-scalar-only"
+  },
+  "artifact": {
+    "path": "/labs/tstl/r56-3f93ede4ca856c0c.json",
+    "sha256": "3f93ede4ca856c0cdea385d5d992b7dee7691b0132df1db04f941a4793cd5cf6"
+  },
+  "baseline": "anchored",
+  "algorithmVersion": "organic-anisotropic-field/1",
+  "parameters": {
+    "radiusX": 55,
+    "radiusY": 95,
+    "levelScale": 0.14,
+    "relationStrength": 1.6,
+    "relationWidth": 22,
+    "threshold": 0.35,
+    "paddingScale": 1,
+    "sampleStep": 1,
+    "smoothing": 2
+  },
+  "referenceMetric": {
+    "scaleX": 1,
+    "scaleY": 0.2,
+    "glyphHalfSize": 2.5
+  },
+  "invariantChecks": {
+    "base": {
+      "identities": "exact",
+      "eventXY": "exact",
+      "compositeAnchors": "exact",
+      "semanticBounds": "exact",
+      "relationPrimitives": "exact",
+      "collectionsAndContains": "exact"
+    },
+    "padded": {
+      "identities": "exact",
+      "eventXY": "exact",
+      "compositeAnchors": "exact",
+      "semanticBounds": "exact",
+      "relationPrimitives": "exact",
+      "collectionsAndContains": "exact"
+    },
+    "overlay": {
+      "identities": "exact",
+      "eventXY": "exact",
+      "compositeAnchors": "exact",
+      "semanticBounds": "exact",
+      "relationPrimitives": "exact",
+      "collectionsAndContains": "exact"
+    }
+  },
+  "digests": {
+    "frozenPrimitives": "2c36ca95049b481c69ae8cc94eb0e5cff96d98bbdf25970b3fabeefe6f2b7ebb",
+    "xy": "99e55923879a091d6dcd9c6ef880367fc81b14e32e6839b9e7dc0ed0d7b984a6",
+    "semanticBounds": "542065baa389ae7ba5c87f2fab627fdd5545b6978bdad2c7d1e885f10678a1bc",
+    "baseContours": "ff901b73a1ae9f55c1eb70c1354260f4624be4af8223ea472b8e181fc9fb8bcd",
+    "paddedContours": "0390e2a3cfdaef54c1aa1380eefc51e9ce15486bee5b7efba6783454d25aa29e"
+  },
+  "baseAudit": {
+    "components": 165,
+    "holes": 499,
+    "vertices": 483559,
+    "finite": true
+  },
+  "paddedAudit": {
+    "components": 158,
+    "holes": 772,
+    "vertices": 771819,
+    "finite": true
+  },
+  "diagnostics": {
+    "totalComposites": 109,
+    "baseComponents": 165,
+    "paddedComponents": 158,
+    "baseHoles": 499,
+    "paddedHoles": 772,
+    "memberCoverageFailures": 0,
+    "baseMemberCoverageFailures": 0,
+    "nonmemberIntersections": 0,
+    "baseNonmemberIntersections": 0,
+    "relationPaths": 203,
+    "unsupportedRelations": 0,
+    "paddingClearanceDeficitArea": 55266.81307800331,
+    "baseVertices": 483559,
+    "paddedVertices": 771819,
+    "semanticCertifiedAreas": 0
+  },
+  "composites": [
+    {
+      "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+      "title": "한산도대첩",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 276.02349992946256,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a107ff-8b3c-7f88-bac7-a721ce10410a",
+      "title": "한산도·안골포 작전: 합동훈련에서 두 해전까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 462.32906086121875,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10811-2588-73ad-b11e-1e91af50d309",
+      "title": "전라좌수군의 첫 경상도 출전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 6,
+      "paddedHoles": 10,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 689.6492630864941,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10813-58bd-7a4a-bdb5-2d4939283f0f",
+      "title": "부산포의 일본군 근거지를 공격하다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 3,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 375.34026812609136,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10815-f5b1-7697-bd52-0cc378295a55",
+      "title": "칠천량해전: 조선 수군의 대패",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 266.98692334815496,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10816-b084-7744-8c7e-7cd6da80d61f",
+      "title": "회령포의 함대 수습에서 명량 결전까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 137.93764146525064,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10816-b084-7829-b3c6-c58d01a342e5",
+      "title": "명량해전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 193.56646918040497,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10817-869d-7d0f-ab52-d208b8648248",
+      "title": "노량해전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 8,
+      "paddedHoles": 9,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 592.2373848396983,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1081a-ab69-7678-b7ad-e85ebd047ec6",
+      "title": "도검 몰수령과 해상 통제",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 383.473336707646,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1081a-ab69-7dff-acf0-f51029fe9e21",
+      "title": "규슈 정복과 영지 재편",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 135.5614510868345,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10826-ec3e-7d8a-bdab-adcace8e1bfa",
+      "title": "북관 수복전, 함경도에서 시작된 반격",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 173.0077550568949,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10826-ec3e-7ec7-a01d-bd59a1d9a6fe",
+      "title": "제1차 진주성전투, 호남으로 가는 문을 지키다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 7,
+      "paddedHoles": 8,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 656.8091338938966,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10828-2d95-749a-94da-ba1d115056eb",
+      "title": "제2차 진주성전투, 구원 없는 성의 열흘",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 7,
+      "paddedHoles": 10,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 657.7741396432702,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10828-2d95-7627-a27b-1e6e4e4d18aa",
+      "title": "행주대첩, 한강을 등진 목책에서 버티다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 6,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 603.6224223039399,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10828-2d95-7e00-b0a9-dc3384e37926",
+      "title": "평양성 탈환, 조명 연합군이 전세를 돌리다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 3,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 258.08861547745346,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1082b-c2a2-74f8-84bc-2f1897d4cf4a",
+      "title": "사로병진작전, 육지 세 길과 바다 한 길의 총공세",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 9,
+      "paddingDepths": [
+        2
+      ],
+      "paddingClearanceDeficitArea": 582.2391384131042,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1082b-c2a2-79bb-b94c-4d57904ce87b",
+      "title": "제1차 울산성전투, 겨울의 포위와 철수",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 5,
+      "paddedHoles": 8,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 572.318613817969,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1092d-338b-78e8-a86c-1d23146b5ac4",
+      "title": "부산 상륙에서 평양 함락까지, 초기 방어선의 붕괴",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 7,
+      "paddedHoles": 10,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 654.2819288099927,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1092d-338b-797e-9c24-bb682e9a3c7d",
+      "title": "의주 행재소와 분조, 둘로 나뉜 전시 조정",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 519.8369694458415,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1092e-5162-7083-b487-55d763eab905",
+      "title": "전주사고 실록의 피란과 내장산 수직",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 10,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 777.4535864613463,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1092e-5162-72b6-b13a-5b5878a68d8d",
+      "title": "독산성에서 환도까지, 한양을 되찾는 과정",
+      "baseComponents": 3,
+      "paddedComponents": 3,
+      "baseHoles": 25,
+      "paddedHoles": 32,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 2324.302378639797,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-703d-ba58-e3a09628a677",
+      "title": "명의 원정군 확대와 이여송의 반격",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 409.1233331428848,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7041-a462-f45b25cd5b19",
+      "title": "사천 공략, 읍성에서 선진리성까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 529.253712548245,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-70c0-9630-8e339fcafb4d",
+      "title": "명·일 강화 교섭, 용산에서 오사카까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 9,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 765.5467511662209,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-73a0-84d4-bba33bbf662c",
+      "title": "정유재란: 재침략과 마지막 공방",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 10,
+      "paddedHoles": 12,
+      "paddingDepths": [
+        1,
+        3
+      ],
+      "paddingClearanceDeficitArea": 796.2865959576302,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7418-a9f7-55b588a7c7d3",
+      "title": "노량의 구원 작전과 일본군의 철수",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 8,
+      "paddedHoles": 9,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 629.756579959274,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-74e9-aeea-ac5be642c464",
+      "title": "일본 책봉 사행, 출발과 지연에서 결렬까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 502.83917358832514,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7540-be11-ab8eca92e76e",
+      "title": "조승훈의 첫 원정과 평양 공격",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 196.30445791525926,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-75aa-ac8b-c90bde1b11ce",
+      "title": "호남 진출을 막은 웅치·금산 방어전",
+      "baseComponents": 2,
+      "paddedComponents": 1,
+      "baseHoles": 7,
+      "paddedHoles": 13,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 938.1183620025477,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+      "title": "임진왜란: 두 차례 침략과 강화 교섭",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 24,
+      "paddedHoles": 32,
+      "paddingDepths": [
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "paddingClearanceDeficitArea": 2127.300073310733,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-798e-a3b5-2462fa092c3b",
+      "title": "두 차례 금산전투",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 331.3665433472688,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-79ea-bd9e-ddaed23b750d",
+      "title": "경주성 탈환전, 첫 좌절과 재공격",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 339.2297688312483,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7a5c-8c94-278b6468252b",
+      "title": "첫 침략과 조선·명의 반격",
+      "baseComponents": 2,
+      "paddedComponents": 1,
+      "baseHoles": 18,
+      "paddedHoles": 22,
+      "paddingDepths": [
+        2,
+        3,
+        4
+      ],
+      "paddingClearanceDeficitArea": 1503.7207852615102,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7b10-af84-57bb2f8fb61e",
+      "title": "제2차 출전, 사천에서 율포까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 3,
+      "paddedHoles": 8,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 543.759932431065,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7b2b-a4b0-64ca30604418",
+      "title": "임진년의 네 차례 해상 출전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 17,
+      "paddedHoles": 22,
+      "paddingDepths": [
+        1,
+        2,
+        3
+      ],
+      "paddingClearanceDeficitArea": 1488.470229652754,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10a3f-05d2-7e7b-8721-4aa7eea9332e",
+      "title": "호남 침공과 북상, 남원에서 직산까지",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 2,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 387.13291438531814,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b3b-d0e4-7266-84ce-8d2296c32c47",
+      "title": "공물 부담을 쌀로 바꾸다: 경기선혜법의 제안과 첫 시행",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 371.9037560045872,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b3b-d0e4-74f9-84f4-d8dbc5cbc678",
+      "title": "전란 뒤 토지대장을 다시 만들다: 계묘양전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 235.01456590845373,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b3b-d0e4-790e-b847-c48ea49e0cc6",
+      "title": "전주사고 생존본에서 다섯 사고 체제로: 실록 복간과 분산",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 369.5407421327727,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b3b-d0e4-7a21-beb8-a977c75003b1",
+      "title": "산지 실록 보관처를 마련하다: 태백산·오대산 사고 조성",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 69.05907807103904,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b42-0ca6-7658-9093-d1a5749e613f",
+      "title": "탐적에서 접견과 귀국까지, 유정의 일본 사행",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 67.80110193705696,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b42-0ca6-76e6-8727-36b755066e2a",
+      "title": "국교를 다시 여는 조건과 절차, 조정의 논의에서 기유약조까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 75.47610679728677,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b55-5cd3-7621-bd2a-7bd8913b8685",
+      "title": "강도 사건에서 왕실 숙청으로: 계축옥사와 서궁 유폐",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 0,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b55-5cd3-792f-abe1-b6289bc186d3",
+      "title": "광해군의 즉위에서 명의 국왕 책봉까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 383.37049770241174,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b60-f68d-7090-8ddf-937b617a5270",
+      "title": "오사카 전쟁, 겨울 포위전과 여름의 최후 결전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        2
+      ],
+      "paddingClearanceDeficitArea": 327.87637479350815,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b60-f68d-75a5-8539-2be43838dd4f",
+      "title": "오사카 여름 전투, 고리야마 진출에서 도요토미의 종말까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 5,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 460.15739940911226,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b60-f68d-79b6-97f8-29b997579110",
+      "title": "승전의 권력을 세습 정권으로 바꾸다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 3,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 292.1407782092174,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b60-f68d-7a14-977e-378e0b61b3d4",
+      "title": "동국 원정에서 세키가하라 승전까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 111.34137790546629,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b60-f68d-7d11-a678-b414ddabeb63",
+      "title": "호코지 논쟁에서 겨울 화의까지, 오사카의 포위전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 193.56644510569458,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b69-ce5e-7ab4-978d-a57108b385fc",
+      "title": "사르후 전역, 사로 진격의 붕괴와 조선군의 투항",
+      "baseComponents": 2,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 135.7716066748908,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b69-ce5e-7c44-8318-c6bc5bfbda0e",
+      "title": "명의 원병 요구에서 압록강 도하까지, 조선 원정군을 만드는 과정",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 3,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 258.08858667319873,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b73-0788-78fb-ae79-1afa3596113e",
+      "title": "모문룡의 진강 공격과 가도 거점 형성",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 37.35733956459262,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b77-84c7-7691-9001-245ddf10be88",
+      "title": "이괄의 난: 북방군의 반란과 피란 조정의 귀환",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 5,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        2
+      ],
+      "paddingClearanceDeficitArea": 349.77333842803273,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b77-84c7-7a5d-b1cf-f88ee6eb94b9",
+      "title": "이괄군의 남하: 영변에서 수도 앞까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 5,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 445.32066090798617,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b77-84c7-7a88-845a-f14ce8b360df",
+      "title": "안현전투: 고지 선점과 반란군의 패주",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 193.56647385379438,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b77-84c7-7c5f-8316-f52561d160d7",
+      "title": "인조반정: 병력 집결에서 왕위 교체까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 5,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 385.6920622621492,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b80-b0ea-73d3-8768-1311c3c5a81d",
+      "title": "정주에서 강화도까지 이어진 정묘화약 교섭",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 4,
+      "paddedHoles": 11,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 763.3943372029462,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b80-b0ea-74a8-8989-ea50dc1994f5",
+      "title": "철수의 합의에서 의주 주둔군 철수까지",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 5,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 569.0887849485225,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b80-b0ea-76cd-81ba-a7b4e0a31f2c",
+      "title": "용골산성의 군민 조직과 방어, 대계도 철수",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 246.0735415790914,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b80-b0ea-7a7f-9fbb-28a1851821e3",
+      "title": "후금군의 서북 변경 돌파와 황해도 진출",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 387.132928838113,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b80-b0ea-7edc-9e6a-e7d852c266d6",
+      "title": "분조 설치와 강화 행궁의 피란 조정 정착",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 374.7448246467484,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b80-b0ea-7ffc-9aa7-259e3add21d2",
+      "title": "정묘호란과 후금군의 철수",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        2
+      ],
+      "paddingClearanceDeficitArea": 55.56981928809546,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b86-7ddd-70e7-86bb-5305967fe78d",
+      "title": "남한산성 농성과 출성 교섭",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 6,
+      "paddedHoles": 8,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 525.297243824305,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b86-7ddd-77f7-bb0b-1b753aa1efea",
+      "title": "강화도 피란 거점의 방어와 함락",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 4,
+      "paddedHoles": 10,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 645.2215339370778,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b86-7ddd-785d-990f-d343189d8f7d",
+      "title": "수도 이탈과 남한산성 피란",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 193.56645162688983,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b86-7ddd-7bf2-bb63-a33905bd98ff",
+      "title": "병자호란의 침공과 농성, 삼전도 항복",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 256.84815828702995,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b86-7ddd-7d2b-bec4-6d7b58a27cfc",
+      "title": "각 도 근왕군의 남한산성 구원 작전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 322.61078053737583,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b86-7ddd-7f16-bb1e-86b4780eea86",
+      "title": "출성 조건의 확정과 왕자 인질의 출발",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 5,
+      "paddedHoles": 11,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 771.6946358627392,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b9f-5153-7181-b46f-3465aae7353d",
+      "title": "대명 파병 면제 구상과 이성구 사은사의 왕래",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 5,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 497.89998077585005,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b9f-5153-7bbb-ba29-44762aef34f2",
+      "title": "연호와 책봉 문서로 조청 군신관계를 시행하다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 430.2657455251592,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b9f-5153-7cc6-8326-86d8f246ae16",
+      "title": "소현세자 일행의 북행과 심양 체류 체제의 형성",
+      "baseComponents": 2,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 10,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 698.0524607282387,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10b9f-5153-7fdd-8ec9-347640345be6",
+      "title": "조선 수군의 동원에서 가도 함락과 전사자 수습까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 342.2579746368574,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bab-686d-7040-a9e6-e2b20454be61",
+      "title": "조선군이 청의 송금전에 파병되고 보급·교대 체계를 운영하다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 0,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bab-686d-7146-981d-2bade951e80c",
+      "title": "청군이 산해관을 거쳐 북경을 접수하다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 64.52213741089145,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bab-686d-72ba-b3f8-31805c371654",
+      "title": "청이 북경의 행정조직을 접수하고 황실·조정을 옮기다",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 3,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 439.41806607847684,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bab-686d-7548-a0e9-56295d75b032",
+      "title": "청이 구원군을 차단하고 송금 방어선을 공략하다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 417.3220849722711,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bab-686d-7f74-8d34-585308adecff",
+      "title": "도르곤 원정군의 출정과 오삼계군 합류",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 5,
+      "paddedHoles": 9,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 629.5891449538321,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bbc-a988-72c0-8a89-63343df76962",
+      "title": "을묘왜변: 전라·제주의 왜구 침입",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 129.04432635390913,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bbc-a988-771a-89cd-1367fe68df32",
+      "title": "오다와라 정벌과 간토 재편",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 273.98849143787265,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bbc-a988-7822-af03-361e603ccf78",
+      "title": "노부나가 사후의 권력 승계전",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 0,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bbc-a988-7d83-978f-89bc12b80a1a",
+      "title": "경인통신사의 파견·접견·귀국 보고",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 414.473969748693,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bbc-a988-7da7-bf86-9945543803e5",
+      "title": "조일 전쟁 전 외교 교섭과 침략 정보의 충돌",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 7,
+      "paddedHoles": 11,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 847.9675824675942,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bd9-6071-7024-9802-c44b1f9a7031",
+      "title": "삼포 폐쇄 뒤 통교 재교섭과 임신약조",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 170.80500959410165,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bd9-6071-7976-ab56-3efcd9c08f28",
+      "title": "사량진왜변과 경상 연해 방비 재편",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 297.99311716838565,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bd9-6071-7bee-b6a8-f06c8bcdb395",
+      "title": "삼포왜란 진압과 연해 방어·구호 대응",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 138.27174094424845,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10bd9-6071-7e8c-84d7-284b4d18355e",
+      "title": "사량진왜변 뒤 대마도 통교 중단과 재개 교섭",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 3,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 234.95170225524635,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10be9-0b7b-75a8-b2e2-31dfb4841092",
+      "title": "호종헌의 절강 진압과 해상 세력 교섭",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 0,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        2
+      ],
+      "paddingClearanceDeficitArea": 256.06042655245983,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10be9-0b7b-77e4-a875-cdaf878214c1",
+      "title": "선유 방어·구원과 왕창평·채비령 추격",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 3,
+      "paddedHoles": 4,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 428.1068465216249,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10be9-0b7b-7bd1-b0b5-4da96011bc91",
+      "title": "척계광의 타이저우 방어와 연속 반격",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 7,
+      "paddedHoles": 9,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 580.699392104998,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10be9-0b7b-7bfd-bb2a-5f1814fd5456",
+      "title": "척계광의 첫 복건 원정: 횡서에서 동영오까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 9,
+      "paddedHoles": 13,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 931.6139574163662,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10be9-0b7b-7d26-9eb9-7bb6e978755e",
+      "title": "흥화 함락과 평해위 반격",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 9,
+      "paddedHoles": 11,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 793.1641514287294,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10be9-0b7b-7e5c-9888-5afa9fbfc057",
+      "title": "서해 세력 진압: 동향 포위에서 심장 붕괴까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 129.04430928899637,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10be9-0b7b-7f80-8bc6-7d57db962ef3",
+      "title": "왕직 귀환 교섭과 잠항·가매 포위전",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 3,
+      "paddedHoles": 6,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 480.60386774298604,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10c09-f770-7290-94ce-d35b4bf5c1a0",
+      "title": "무가제법도의 공포와 개정, 1615–1635",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 6,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 510.84357856349015,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10c09-f770-7297-8baf-9a4f531daf32",
+      "title": "1633–1639년 막부의 해상 통제 재편",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 9,
+      "paddedHoles": 13,
+      "paddingDepths": [
+        1,
+        2
+      ],
+      "paddingClearanceDeficitArea": 934.3381849418583,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10c09-f770-732b-a1db-ca62bdd4a1a0",
+      "title": "데지마 조성과 포르투갈 상인 거주 통제",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 6,
+      "paddedHoles": 8,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 556.8087327601024,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10c09-f770-779d-80ed-33e534c27f2a",
+      "title": "시마바라·아마쿠사 봉기와 하라성 공방",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 7,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 616.3791227195179,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a10c09-f770-7bc6-97a3-7c1e93bcb180",
+      "title": "봉기 진압 뒤 시마바라 영주 교체와 복구 착수",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 193.5662063003947,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a11078-eb03-704a-8f2a-c3babb44dad6",
+      "title": "무과를 준비하고 두 차례 시험에 도전하다",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 1,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 64.52215777360107,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a11078-eb03-75d4-b518-5e24a5b9557b",
+      "title": "첫 변경 근무에서 발포·건원보까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 2,
+      "paddedHoles": 2,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 129.04430786370722,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a11078-eb03-7fe3-894b-8819b1e3cd86",
+      "title": "관직 복귀와 녹둔도·시전의 북방 전투",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 0,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a11078-eb04-75e3-a519-f3337c8244a1",
+      "title": "파직·백의종군에서 통제사 복귀까지",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 1,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 173.46466587933173,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a12342-eda0-76f1-a54e-eacf8e8771f9",
+      "title": "1643년 계미통신사의 일본 사행",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 0,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a12342-eda0-79e4-81d9-2efc612f086d",
+      "title": "마카오의 통상 재개 사절 파견과 나가사키 처형",
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 5,
+      "paddedHoles": 8,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 566.3698346249148,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a12342-eda0-7f39-b41e-6518bb27ff3a",
+      "title": "히라도 네덜란드상관의 철거와 데지마 이주",
+      "baseComponents": 1,
+      "paddedComponents": 1,
+      "baseHoles": 4,
+      "paddedHoles": 5,
+      "paddingDepths": [
+        1
+      ],
+      "paddingClearanceDeficitArea": 322.61078313552025,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+      "title": "한국사",
+      "baseComponents": 15,
+      "paddedComponents": 14,
+      "baseHoles": 3,
+      "paddedHoles": 8,
+      "paddingDepths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "paddingClearanceDeficitArea": 522.3529791471083,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+      "title": "일본사",
+      "baseComponents": 12,
+      "paddedComponents": 10,
+      "baseHoles": 23,
+      "paddedHoles": 38,
+      "paddingDepths": [
+        1,
+        2,
+        3,
+        4,
+        5,
+        6
+      ],
+      "paddingClearanceDeficitArea": 2363.881850287202,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+      "title": "중국사",
+      "baseComponents": 11,
+      "paddedComponents": 11,
+      "baseHoles": 16,
+      "paddedHoles": 26,
+      "paddingDepths": [
+        1,
+        2,
+        3
+      ],
+      "paddingClearanceDeficitArea": 1788.7056728313328,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    },
+    {
+      "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+      "title": "이순신의 생애",
+      "baseComponents": 3,
+      "paddedComponents": 3,
+      "baseHoles": 44,
+      "paddedHoles": 61,
+      "paddingDepths": [
+        1,
+        2,
+        3,
+        4
+      ],
+      "paddingClearanceDeficitArea": 4242.697988052183,
+      "missingMembers": 0,
+      "nonmemberIntersections": 0
+    }
+  ],
+  "actualSharedCompositeOverlap": [
+    {
+      "owners": [
+        "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+        "01a123a1-0000-77c0-8401-4f9db460625b"
+      ],
+      "titles": [
+        "한국사",
+        "일본사"
+      ],
+      "baseMetricArea": 336517.0491167585,
+      "paddedMetricArea": 443702.97894128115
+    },
+    {
+      "owners": [
+        "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+        "01a10a3f-05d2-73a0-84d4-bba33bbf662c"
+      ],
+      "titles": [
+        "이순신의 생애",
+        "정유재란: 재침략과 마지막 공방"
+      ],
+      "baseMetricArea": 50369.07133077103,
+      "paddedMetricArea": 74993.60652018852
+    },
+    {
+      "owners": [
+        "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+        "01a1240c-0000-73dd-bea1-64db15136c48"
+      ],
+      "titles": [
+        "임진왜란: 두 차례 침략과 강화 교섭",
+        "중국사"
+      ],
+      "baseMetricArea": 58660.070314126424,
+      "paddedMetricArea": 73769.17389639294
+    }
+  ],
+  "historicalClearanceSamples": [
+    {
+      "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+      "title": "한국사",
+      "samples": 160,
+      "minimum": 6.252467414241718,
+      "median": 15.999965673930722,
+      "maximum": 53.335699999995995,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+      "title": "일본사",
+      "samples": 160,
+      "minimum": 0,
+      "median": 15.999987983669973,
+      "maximum": 49.112549332978986,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+      "title": "임진왜란: 두 차례 침략과 강화 교섭",
+      "samples": 160,
+      "minimum": 0,
+      "median": 10.999997898836785,
+      "maximum": 65.87326172917759,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+      "title": "이순신의 생애",
+      "samples": 160,
+      "minimum": 0,
+      "median": 10.99999218360513,
+      "maximum": 41.883513623592556,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a10a3f-05d2-7a5c-8c94-278b6468252b",
+      "title": "첫 침략과 조선·명의 반격",
+      "samples": 160,
+      "minimum": 0,
+      "median": 10.999991240482363,
+      "maximum": 24.63514047048629,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a10a3f-05d2-7b2b-a4b0-64ca30604418",
+      "title": "임진년의 네 차례 해상 출전",
+      "samples": 157,
+      "minimum": 0,
+      "median": 10.999979570565216,
+      "maximum": 14.805559518718052,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a107ff-8b3c-7f88-bac7-a721ce10410a",
+      "title": "한산도·안골포 작전: 합동훈련에서 두 해전까지",
+      "samples": 160,
+      "minimum": 0,
+      "median": 10.999973801003737,
+      "maximum": 11.000050881018579,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+      "title": "한산도대첩",
+      "samples": 152,
+      "minimum": 0,
+      "median": 10.999980966491874,
+      "maximum": 11.000045896866322,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a10a3f-05d2-73a0-84d4-bba33bbf662c",
+      "title": "정유재란: 재침략과 마지막 공방",
+      "samples": 160,
+      "minimum": 0,
+      "median": 10.999998266446845,
+      "maximum": 16.39149467275726,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    },
+    {
+      "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+      "title": "중국사",
+      "samples": 160,
+      "minimum": 0,
+      "median": 10.999997054868919,
+      "maximum": 24.82617964895137,
+      "meaning": "Nearest final boundary in the fixed reference metric; includes nonmember cuts. Sampling does not certify every boundary point."
+    }
+  ],
+  "measuredClearanceFixture": {
+    "profile": [
+      {
+        "minY": 0,
+        "maxY": 100,
+        "depth": 1
+      },
+      {
+        "minY": 100,
+        "maxY": 200,
+        "depth": 3
+      },
+      {
+        "minY": 200,
+        "maxY": 300,
+        "depth": 1
+      }
+    ],
+    "samples": [
+      {
+        "y": 50,
+        "expected": 11,
+        "left": 11,
+        "right": 11
+      },
+      {
+        "y": 150,
+        "expected": 21,
+        "left": 21,
+        "right": 21
+      },
+      {
+        "y": 250,
+        "expected": 11,
+        "left": 11,
+        "right": 11
+      }
+    ],
+    "zeroPaddingPreservesBase": true
+  },
+  "topologyCounterexample": {
+    "visual": "topology-branch-hole-island.svg",
+    "data": "topology.json",
+    "diagnostics": {
+      "totalComposites": 1,
+      "baseComponents": 2,
+      "paddedComponents": 2,
+      "baseHoles": 1,
+      "paddedHoles": 1,
+      "memberCoverageFailures": 0,
+      "baseMemberCoverageFailures": 0,
+      "nonmemberIntersections": 0,
+      "baseNonmemberIntersections": 0,
+      "relationPaths": 4,
+      "unsupportedRelations": 0,
+      "paddingClearanceDeficitArea": 0,
+      "baseVertices": 6528,
+      "paddedVertices": 9690,
+      "semanticCertifiedAreas": 0
+    },
+    "withoutRelations": {
+      "totalComposites": 1,
+      "baseComponents": 5,
+      "paddedComponents": 5,
+      "baseHoles": 0,
+      "paddedHoles": 0,
+      "memberCoverageFailures": 0,
+      "baseMemberCoverageFailures": 0,
+      "nonmemberIntersections": 0,
+      "baseNonmemberIntersections": 0,
+      "relationPaths": 4,
+      "unsupportedRelations": 0,
+      "paddingClearanceDeficitArea": 0,
+      "baseVertices": 3520,
+      "paddedVertices": 6891,
+      "semanticCertifiedAreas": 0
+    },
+    "deterministicRepeat": true,
+    "baseUnaffectedByPadding": true
+  },
+  "longRelation": {
+    "id": "01a10817-869d-759e-88e5-fa3975c5eebd",
+    "endpoints": [
+      "01a10817-869d-7795-9d3b-7f0704b0f07c",
+      "01a10817-869d-7bea-b597-216728a41d99"
+    ],
+    "geometry": {
+      "kind": "line",
+      "paths": [
+        [
+          {
+            "x": -169,
+            "y": 223807.77154903935
+          },
+          {
+            "x": 572.7525238181651,
+            "y": 223808.92146998228
+          }
+        ]
+      ]
+    }
+  },
+  "visualExports": [
+    {
+      "name": "historical-imjin",
+      "owners": [
+        "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+        "01a123a1-0000-77c0-8401-4f9db460625b",
+        "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+        "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+      ],
+      "box": {
+        "minX": -450,
+        "maxX": 850,
+        "minY": 222520,
+        "maxY": 224320
+      }
+    },
+    {
+      "name": "historical-nested-hansan",
+      "owners": [
+        "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+        "01a10a3f-05d2-7a5c-8c94-278b6468252b",
+        "01a10a3f-05d2-7b2b-a4b0-64ca30604418",
+        "01a107ff-8b3c-7f88-bac7-a721ce10410a",
+        "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+        "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+      ],
+      "box": {
+        "minX": -100,
+        "maxX": 650,
+        "minY": 222750,
+        "maxY": 223150
+      }
+    },
+    {
+      "name": "historical-shared-long-relation",
+      "owners": [
+        "01a10a3f-05d2-73a0-84d4-bba33bbf662c",
+        "01a1240c-0000-73dd-bea1-64db15136c48",
+        "1f10a329-835d-79b1-a9c3-ae1835934b8b"
+      ],
+      "box": {
+        "minX": -350,
+        "maxX": 750,
+        "minY": 223650,
+        "maxY": 224050
+      }
+    }
+  ],
+  "limitations": [
+    "Frozen reference metric is scaleX=1, scaleY=0.2. Padding matches 6+5*local authored depth at this metric, not constant CSS pixels after arbitrary axis zoom.",
+    "Nominal glyph support is the existing 5×5 reference-metric box. Screen labels and zoom-dependent glyph sizes are not certified.",
+    "The local padding rule uses maximum authored descendant depth, not Collection count or subjective importance. Nonmember cuts can defeat requested clearance and are reported by removed metric area.",
+    "Relations contribute along resolved source paths only when both endpoints belong to the Composite. Strong adhesion can be interrupted by nonmember glyphs or high thresholds.",
+    "Dense interpolated contours, requested corner subdivision and round offsets are final serialized geometry. Topology counts describe the result; no semantic area certificate or aesthetic acceptance is claimed."
+  ],
+  "acceptance": "Machine geometry checks and isolated SVG evidence only; actual GraphShell screenshots and user visual approval are separate."
+}

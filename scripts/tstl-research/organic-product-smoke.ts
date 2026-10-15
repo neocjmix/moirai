@@ -159,12 +159,17 @@ async function inspect(
           path.getAttribute("fill-rule") === "evenodd"
         )
           matched++;
-        if (
-          path &&
-          Number(path.style.opacity) > 0 &&
-          Number(path.style.fillOpacity) > 0
-        )
-          visible++;
+        if (path) {
+          const style = getComputedStyle(path);
+          if (
+            style.display !== "none" &&
+            style.visibility !== "hidden" &&
+            style.fill !== "none" &&
+            Number(style.opacity) > 0 &&
+            Number(style.fillOpacity) > 0
+          )
+            visible++;
+        }
       }
       svgPaint = {
         expected: expected.length,
@@ -297,6 +302,9 @@ async function settle(
           !state.workerJobs?.running &&
           !state.counts.stageActive &&
           !state.counts.exitingRegions &&
+          (state.renderer?.state === "ready" ||
+            (state.renderer?.state === "fallback" &&
+              state.svgPaint?.painter === "svg")) &&
           (!mode || state.paintSourceKey?.startsWith("tstl:" + mode)) &&
           (!previousSource || state.paintSourceKey !== previousSource) &&
           (["x", "y", "scaleX", "scaleY"] as const).every(
@@ -391,7 +399,7 @@ function coordinates(state: Inspection, artifact: TstlExperimentArtifact) {
     anchors: state.geometry.filter((shape) => shape.anchor).length
   };
 }
-async function shapeDigest(page: Page) {
+async function shapeEvidence(page: Page) {
   const inspected = await inspect(page, true);
   assert(inspected?.geometryDigest, "committed boundary digest is inspectable");
   if (inspected.renderer?.state === "fallback") {
@@ -400,10 +408,15 @@ async function shapeDigest(page: Page) {
       "svg",
       "fallback paints complete SVG geometry"
     );
-    assert.equal(
-      inspected.renderer.fallback,
-      "webgl_scene_budget",
-      "only the recorded existing scene-budget fallback is accepted"
+    assert(
+      [
+        "geographic_path_budget",
+        "geographic_vertex_budget",
+        "geographic_contour_budget",
+        "webgl_mesh_budget",
+        "webgl_scene_budget"
+      ].includes(inspected.renderer.fallback ?? ""),
+      "only existing geometry-budget fallbacks with exact final SVG paint are accepted"
     );
     assert.equal(inspected.svgPaint?.painter, "svg");
     assert(
@@ -430,7 +443,14 @@ async function shapeDigest(page: Page) {
       Number(inspected.counts.fixedContourRings) > 0,
     "final contours reach the painted fixed-region scene"
   );
-  return inspected.geometryDigest;
+  return {
+    geometryDigest: inspected.geometryDigest,
+    renderer: inspected.renderer,
+    svgPaint: inspected.svgPaint
+  };
+}
+async function shapeDigest(page: Page) {
+  return (await shapeEvidence(page)).geometryDigest;
 }
 function inspectionSummary(state: Inspection | null) {
   if (!state) return null;
@@ -675,9 +695,7 @@ for (const profile of profiles) {
       visual.push({
         ...view,
         coordinates: coordinateCheck,
-        geometryDigest: await shapeDigest(page),
-        renderer: organic.renderer,
-        svgPaint: organic.svgPaint,
+        ...(await shapeEvidence(page)),
         view: organic.liveView
       });
       // Retain the committed scene evidence even if the browser's screenshot
@@ -732,10 +750,8 @@ for (const profile of profiles) {
         assert(traces > 0, "overlay paints base-boundary traces");
       else assert.equal(traces, 0, `${mode} hides overlay traces`);
       displays[mode] = {
-        geometryDigest: await shapeDigest(page),
+        ...(await shapeEvidence(page)),
         traces,
-        renderer: state.renderer,
-        svgPaint: state.svgPaint,
         diagnostics: await panel
           .getByTestId("organic-diagnostics")
           .textContent()

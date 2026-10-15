@@ -1,0 +1,470 @@
+{
+  "schema": "organic-product-browser-evidence/1",
+  "reports": [
+    {
+      "profile": "desktop-chromium",
+      "surface": "https://moirai-production-8ed1.up.railway.app/graph/v5",
+      "localDiagnostic": false,
+      "readProxyUsed": false,
+      "readProxyOrigin": null,
+      "selectedViews": [],
+      "viewport": {
+        "width": 1280,
+        "height": 800
+      },
+      "errors": [],
+      "consoleErrors": [],
+      "incidentalResources": [
+        {
+          "kind": "console",
+          "path": "/favicon.ico",
+          "message": "Failed to load resource: the server responded with a status of 404 ()"
+        }
+      ],
+      "failedHTTP": [],
+      "writes": [],
+      "visualOnly": false,
+      "interactionsOnly": true,
+      "visualAcceptance": "User review pending; browser emulation is not physical iPhone 17 Safari/PWA evidence.",
+      "phase": "display-padded",
+      "observedSHA": "a5c5a921d5c81bcae64837c6463b02aa0c0a7ee8",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "baselineCoordinates": {
+        "events": 112,
+        "anchors": 48
+      },
+      "views": [],
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: only the recorded existing scene-budget fallback is accepted\n+ actual - expected\n\n+ 'geographic_path_budget'\n- 'webgl_scene_budget'\n\n    at shapeDigest (/workspace/moirai/scripts/tstl-research/organic-product-smoke.ts:403:12)\n    at async <anonymous> (/workspace/moirai/scripts/tstl-research/organic-product-smoke.ts:735:25)",
+      "failureInspection": {
+        "loadState": "ready",
+        "selectedEventId": null,
+        "view": {
+          "x": -512,
+          "y": -99297.77777777777,
+          "scaleX": 1.9692307692307693,
+          "scaleY": 0.4444444444444444
+        },
+        "liveView": {
+          "x": -512,
+          "y": -99297.77777777777,
+          "scaleX": 1.9692307692307693,
+          "scaleY": 0.4444444444444444
+        },
+        "counts": {
+          "fixedTraceRegions": 0,
+          "fixedTraces": 0,
+          "sourceEntities": 109,
+          "worldRegions": 51,
+          "regionCandidates": 51,
+          "chartRegions": 51,
+          "presentedRegions": 51,
+          "fixedContourRegions": 51,
+          "fixedContourRings": 580,
+          "pointCandidates": 109,
+          "paintedPoints": 109,
+          "stageActive": false,
+          "svgPaths": 66,
+          "svgTexts": 32,
+          "svgTargets": 26,
+          "sourceRegions": 51,
+          "sourceEdges": 26,
+          "projectedPoints": 109,
+          "fadeRegions": 51,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "sceneJobs": {
+          "generation": 14,
+          "pending": 0,
+          "discarded": 1
+        },
+        "workerJobs": {
+          "running": 0,
+          "pending": 0,
+          "failed": false
+        },
+        "source": "tstl:organic:3",
+        "renderer": {
+          "renderer": "svg",
+          "state": "fallback",
+          "fallback": "geographic_path_budget"
+        },
+        "svgPaint": {
+          "expected": 51,
+          "matched": 51,
+          "visible": 51,
+          "painter": "svg"
+        },
+        "eventCoordinates": 109,
+        "geometry": [
+          {
+            "id": "01a107ff-8b3c-75eb-bc17-7166e9061e76",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 5,
+            "vertices": 3443
+          },
+          {
+            "id": "01a107ff-8b3c-7f88-bac7-a721ce10410a",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 7,
+            "vertices": 4156
+          },
+          {
+            "id": "01a10811-2588-73ad-b11e-1e91af50d309",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 11,
+            "vertices": 3805
+          },
+          {
+            "id": "01a10813-58bd-7a4a-bdb5-2d4939283f0f",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 2788
+          },
+          {
+            "id": "01a10815-f5b1-7697-bd52-0cc378295a55",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 5,
+            "vertices": 3657
+          },
+          {
+            "id": "01a10816-b084-7744-8c7e-7cd6da80d61f",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 3,
+            "vertices": 4047
+          },
+          {
+            "id": "01a10816-b084-7829-b3c6-c58d01a342e5",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 4,
+            "vertices": 3419
+          },
+          {
+            "id": "01a10817-869d-7d0f-ab52-d208b8648248",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 10,
+            "vertices": 3853
+          },
+          {
+            "id": "01a1081a-ab69-7678-b7ad-e85ebd047ec6",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 3167
+          },
+          {
+            "id": "01a10826-ec3e-7d8a-bdab-adcace8e1bfa",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 3,
+            "vertices": 3463
+          },
+          {
+            "id": "01a10826-ec3e-7ec7-a01d-bd59a1d9a6fe",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 9,
+            "vertices": 3024
+          },
+          {
+            "id": "01a10828-2d95-749a-94da-ba1d115056eb",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 11,
+            "vertices": 3587
+          },
+          {
+            "id": "01a10828-2d95-7627-a27b-1e6e4e4d18aa",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 8,
+            "vertices": 2935
+          },
+          {
+            "id": "01a10828-2d95-7e00-b0a9-dc3384e37926",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 5,
+            "vertices": 2766
+          },
+          {
+            "id": "01a1082b-c2a2-74f8-84bc-2f1897d4cf4a",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 10,
+            "vertices": 3540
+          },
+          {
+            "id": "01a1082b-c2a2-79bb-b94c-4d57904ce87b",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 9,
+            "vertices": 2904
+          },
+          {
+            "id": "01a1092d-338b-78e8-a86c-1d23146b5ac4",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 11,
+            "vertices": 4969
+          },
+          {
+            "id": "01a1092d-338b-797e-9c24-bb682e9a3c7d",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 8,
+            "vertices": 3281
+          },
+          {
+            "id": "01a1092e-5162-7083-b487-55d763eab905",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 11,
+            "vertices": 3492
+          },
+          {
+            "id": "01a1092e-5162-72b6-b13a-5b5878a68d8d",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 35,
+            "vertices": 10115
+          },
+          {
+            "id": "01a10a3f-05d2-703d-ba58-e3a09628a677",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 3493
+          },
+          {
+            "id": "01a10a3f-05d2-7041-a462-f45b25cd5b19",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 8,
+            "vertices": 3422
+          },
+          {
+            "id": "01a10a3f-05d2-70c0-9630-8e339fcafb4d",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 10,
+            "vertices": 4752
+          },
+          {
+            "id": "01a10a3f-05d2-73a0-84d4-bba33bbf662c",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 13,
+            "vertices": 14658
+          },
+          {
+            "id": "01a10a3f-05d2-7418-a9f7-55b588a7c7d3",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 10,
+            "vertices": 4082
+          },
+          {
+            "id": "01a10a3f-05d2-74e9-aeea-ac5be642c464",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 7,
+            "vertices": 3585
+          },
+          {
+            "id": "01a10a3f-05d2-75aa-ac8b-c90bde1b11ce",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 14,
+            "vertices": 6064
+          },
+          {
+            "id": "01a10a3f-05d2-7981-94f4-08f3ea6433ec",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 33,
+            "vertices": 23207
+          },
+          {
+            "id": "01a10a3f-05d2-798e-a3b5-2462fa092c3b",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 3298
+          },
+          {
+            "id": "01a10a3f-05d2-79ea-bd9e-ddaed23b750d",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 3260
+          },
+          {
+            "id": "01a10a3f-05d2-7a5c-8c94-278b6468252b",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 23,
+            "vertices": 15427
+          },
+          {
+            "id": "01a10a3f-05d2-7b10-af84-57bb2f8fb61e",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 9,
+            "vertices": 4024
+          },
+          {
+            "id": "01a10a3f-05d2-7b2b-a4b0-64ca30604418",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 23,
+            "vertices": 8861
+          },
+          {
+            "id": "01a10a3f-05d2-7e7b-8721-4aa7eea9332e",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 8,
+            "vertices": 6636
+          },
+          {
+            "id": "01a10b3b-d0e4-7266-84ce-8d2296c32c47",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 3588
+          },
+          {
+            "id": "01a10b3b-d0e4-74f9-84f4-d8dbc5cbc678",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 2,
+            "vertices": 3840
+          },
+          {
+            "id": "01a10b3b-d0e4-790e-b847-c48ea49e0cc6",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 4577
+          },
+          {
+            "id": "01a10b3b-d0e4-7a21-beb8-a977c75003b1",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 2,
+            "vertices": 3466
+          },
+          {
+            "id": "01a10b42-0ca6-7658-9093-d1a5749e613f",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 2,
+            "vertices": 3367
+          },
+          {
+            "id": "01a10b55-5cd3-792f-abe1-b6289bc186d3",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 3947
+          },
+          {
+            "id": "01a10b60-f68d-79b6-97f8-29b997579110",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 5,
+            "vertices": 5643
+          },
+          {
+            "id": "01a10b60-f68d-7a14-977e-378e0b61b3d4",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 2,
+            "vertices": 3670
+          },
+          {
+            "id": "01a10bbc-a988-7d83-978f-89bc12b80a1a",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 6,
+            "vertices": 3560
+          },
+          {
+            "id": "01a10bbc-a988-7da7-bf86-9945543803e5",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 13,
+            "vertices": 7497
+          },
+          {
+            "id": "01a11078-eb03-75d4-b518-5e24a5b9557b",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 3,
+            "vertices": 5232
+          },
+          {
+            "id": "01a11078-eb03-7fe3-894b-8819b1e3cd86",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 1,
+            "vertices": 3863
+          },
+          {
+            "id": "01a11078-eb04-75e3-a519-f3337c8244a1",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 2,
+            "vertices": 3776
+          },
+          {
+            "id": "01a123a1-0000-751e-9e64-e7c7b6b89fbc",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 22,
+            "vertices": 93879
+          },
+          {
+            "id": "01a123a1-0000-77c0-8401-4f9db460625b",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 48,
+            "vertices": 74564
+          },
+          {
+            "id": "01a1240c-0000-73dd-bea1-64db15136c48",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 37,
+            "vertices": 64507
+          },
+          {
+            "id": "1f10a329-835d-79b1-a9c3-ae1835934b8b",
+            "contourMode": "fixed",
+            "fillRule": "evenodd",
+            "rings": 64,
+            "vertices": 38925
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "schema": "organic-product-browser-interruption/1",
+  "profile": "mobile-webkit",
+  "target": "http://127.0.0.1:3001/organic-verification-preview",
+  "runtimeEquivalentTo": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+  "readProxy": "https://moirai-production-8ed1.up.railway.app",
+  "completedViews": [
+    "imjin",
+    "yi-shared",
+    "world"
+  ],
+  "completedScreenshots": 6,
+  "lastLoggedPhase": "visual world",
+  "nextPhase": "restore Imjin camera then open controls (exact stalled awaited operation unknown)",
+  "elapsedSeconds": 533,
+  "nodeRSSBytes": 166436864,
+  "webkitRSSBytes": 4981891072,
+  "webkitCPUPercent": 166,
+  "interruptionReason": "Browser process remained busy after wide-to-narrow transition with no controls screenshot after more than six minutes. Compact protocol reduced Node memory, but did not establish a stable full WebKit interaction lifetime. Fresh public controls run follows.",
+  "passed": false,
+  "userVisualAcceptance": "pending"
+}

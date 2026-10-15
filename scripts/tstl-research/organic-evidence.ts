@@ -571,7 +571,7 @@ const evidence = {
   paddedAudit,
   diagnostics: result.diagnostics,
   composites: result.composites,
-  actualCollectionOverlap: overlapPairs,
+  actualSharedCompositeOverlap: overlapPairs,
   historicalClearanceSamples: [
     ...new Set(views.flatMap((view) => view.owners))
   ].map((id) => ({

@@ -1,0 +1,77 @@
+# Organic Surface Lab — IP-017 slice 1
+
+2026-10-15 UTC. Implementation evidence; **visual acceptance remains with the user**. This adds one selectable `organic` surface candidate to the existing product Layout Lab. It does not adopt a layout or change publication/history/defaults.
+
+## Baseline and source
+
+Started from fetched `origin/main` / public runtime `084eb808aa69ee638ce6c39456c7b749c01eb65c`, the IP-017 design-contract commit. Read AGENTS, INDEX, CURRENT, IS-001, IP-001, IP-016/IP-017, CON-003/004, CORE-MODEL and the applicable TS-002/005/006/010 identity, membership and time contracts.
+
+The product has no server-global selected X candidate: URL → browser/World preference → Current owns the selection. CURRENT's latest explicit comparison is **Anchored / 절충**. Evidence freezes Anchored from the existing immutable asset. In the UI, select an existing pinned candidate first, then Organic; Organic freezes that exact candidate's Event XY, Composite anchors/semantic bounds and Relation paths. Current cannot silently become Anchored. A direct Organic link must include a named baseline or a valid reproduction configuration.
+
+- World `01a107fb-4018-7fcb-8390-836a40fa91cc`, r56, 539 Events, 109 Composites, 7 Collections.
+- Asset `/labs/tstl/r56-3f93ede4ca856c0c.json`, SHA256 `3f93ede4ca856c0cdea385d5d992b7dee7691b0132df1db04f941a4793cd5cf6`.
+- Original history fixture byte SHA256 `5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64`.
+- Anchored X-map JSON SHA256 `99e55923879a091d6dcd9c6ef880367fc81b14e32e6839b9e7dc0ed0d7b984a6`.
+- Source root `d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54`.
+- Before: public current-pointer SHA256 `ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a`; Render manifest SHA256 `14b3d11cb059175b634029145a8fe381049c489ce276a1bd101a0782c5bdcb36`.
+
+B0/Y-sweep, A/B/C, Bubble, Ribbon, Lanes, Aligned and Anchored are retained. The source asset and pin are unchanged. Organic changes Composite ink only; no solver runs and no Event or Relation is rewritten.
+
+## Geometry and padding
+
+`organic-surface.ts` sums compact smooth anisotropic Event kernels and fields along the **actual frozen Relation paths** when both endpoints belong to the Composite. Local structural nesting depth scales node footprint. No proximity MST or invented connection joins remote islands. Interpolated marching squares with an asymptotic saddle decider extracts every ring; explicit contour smoothing, normalized polygon topology and round geometric offsets produce final geometry. Existing fixed-contour/even-odd rendering preserves rings and holes without a renderer rewrite.
+
+The existing Y-sweep rule is `buildCompositePaddingProfile`: each Y interval uses `1 + max(child depth)`, including closed/zero-height bands. Overlapping siblings contribute a maximum, never a sum; independent Collection counts are not padding. `composite-local-padding.ts` maps depth to **6 + 5 × max(1, depth) CSS pixels** after camera projection and expands deeper local slabs. Its largest-polygon-only union cannot be reused for free topology.
+
+Organic preserves that local-depth meaning through a separate round geometric expansion of the **completed base contours**, retaining all components and holes. Kernel radii and threshold are unchanged by padding. The frozen reference metric is `(x, 0.2y)`; the rule is constant distance in that metric, **not constant CSS clearance under arbitrary later axis zoom**. The UI states this difference. Nonmember glyph exclusion is applied after expansion and its lost requested clearance is reported. This priority can interrupt relation adhesion and can increase hole count, even though unrestricted padding alone can close holes or merge islands.
+
+Default editable settings:
+
+```json
+{"radiusX":55,"radiusY":95,"levelScale":0.14,"relationStrength":1.6,"relationWidth":22,"threshold":0.35,"paddingScale":1,"sampleStep":1,"smoothing":2}
+```
+
+Radii, sample spacing and padding are in the declared reference metric. World Y radius is five times the displayed metric radius. Algorithm `organic-anisotropic-field/1`; parameter imports validate source hash, algorithm version, baseline and ranges. Copy/export includes the applied parameters, baseline, display mode and existing camera/Collection/selection URL state. Failed computations retain the last committed geometry/configuration. Import re-enters through the existing shell URL restoration path.
+
+## Review cases and evidence
+
+- **Imjin overview:** `gsViewport=260,223420,650,1800`, same-camera Anchored/base/padded/overlay comparison.
+- **Nested Hansan:** Korea → Imjin → first invasion → four naval campaigns → Hansan/Angolpo → Hansan battle, depth up to 6. Hansan also belongs directly to Yi Sun-sin's life.
+- **Shared event:** Suncheon blockade `01a10817-869d-76e5-aa79-dae0d2b8bb05`, Anchored XY `(-159,223839.20272147955)`, 3 direct parents and 4 Collection memberships.
+- **Distant relation:** `precedes` `01a10817-869d-759e-88e5-fa3975c5eebd`, Jin Lin arrival `(-169,223807.77154903935)` → Jeolido battle `(572.7525238181651,223808.92146998228)`, about 742 X units. Its source path contributes to both Jeongyu and Yi surfaces.
+- Constructed cases exercise bent relation support, branch/rejoin enclosing a hole, a separate island, independently overlapping groups, shared glyphs, obstacle conflicts, variable-depth padding, exact closed endpoints, island joins and hole closure.
+
+`organic-evidence.ts` builds all 109 Composites, checks immutable source/XY/anchors/bounds/Relation/membership, writes final serialized geometry and deterministic reproduction settings, and exports historical/synthetic visual comparisons. `organic-product-smoke.ts` checks the real GraphShell on desktop Chromium, mobile Chromium and mobile WebKit, including parameter replay, camera/selection/drawer preservation and final painted contours. Browser emulation is separate from physical iPhone 17 Safari/PWA evidence.
+
+## Verification and delivery
+
+Runtime implementation `3e6c97f`, [PR #363](https://github.com/neocjmix/moirai/pull/363), merged as `f27ce3cd3e450847c99b4a66a49675c570dd6fcf`. At 14:12 UTC, public `/health`, `/__status` and `/status-public` returned 200 with that exact runtime SHA. The history current pointer, immutable Lab asset and Render manifest remain byte-identical to the before hashes. The exact-commit [post-deploy smoke](https://github.com/neocjmix/moirai/actions/runs/38749402981) passed public readiness, live mobile navigation and authenticated synthetic authoring → public Atropos. Organic-specific browser replay results follow below. Production adoption and aesthetic acceptance are not inferred from passing tests.
+
+- [Open public Organic / Anchored comparison](https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&layoutLab=organic&organicBaseline=anchored&gsViewport=260,223420,650,1800).
+- [Exact-SHA deployment and before/after publication hashes](organic-surface-2026-10-15/public-deployment.json).
+- [Machine-readable review summary](organic-surface-2026-10-15/review-summary.json), [default reproduction JSON](organic-surface-2026-10-15/reproduction.json).
+- [Imjin: same-camera baseline/base/padded/overlay](organic-surface-2026-10-15/historical-imjin.png).
+- [Actual nested Hansan comparison](organic-surface-2026-10-15/historical-nested-hansan.png).
+- [Shared event and distant Relation comparison](organic-surface-2026-10-15/historical-shared-long-relation.png).
+- [Constructed branch/rejoin, hole, island and padding](organic-surface-2026-10-15/topology-branch-hole-island.png).
+
+These four figures render the exact final contours from isolated SVG exports; they are geometry review evidence, not GraphShell or physical-device evidence. Each uses a documented subset of owners, custom colors and 440×620 comparison panels. Their adjacent reproduction JSON restores the same field parameters and world window; `review-summary.json` → `visualExports` records the owner subset and box, and `organic-evidence.ts` reproduces the complete figure. The Imjin figure uses `200,223420,1300,1800`, a wider window than the product smoke case above. Importing that JSON into GraphShell preserves the real Collection/LOD rendering rather than reproducing the isolated figure's panel composition. Production-shell screenshots and smoke are recorded separately: [desktop Imjin](organic-surface-2026-10-15/desktop-chromium-organic-imjin.png), [mobile WebKit Imjin](organic-surface-2026-10-15/mobile-webkit-organic-imjin.png), [mobile WebKit shared Yi](organic-surface-2026-10-15/mobile-webkit-organic-yi-shared.png). These initial captures use the local diagnostic build with an exact public bootstrap and public read-only detail proxy; they do not establish a deployed runtime. The dense default fills and narrow exclusion holes are intentionally visible for critique.
+
+The complete default Anchored run measured 165→158 connected components, 499→772 holes, zero nominal member misses and zero nonmember intrusions. Shared Composite intersections are positive; Collections are not partitioned. The independent local-depth fixture measures 11/21/11 metric-unit expansion exactly. Closed zero-height endpoint/tangent and padding island-join/hole-close cases have explicit regressions. The relation-off synthetic ablation restores five disconnected components, and padding-off leaves base contours byte-identical. The reported 55,266.813 metric-area padding deficit means exact required clearance is not achieved everywhere.
+
+Local checks: workspace strict typecheck, format, lint, production build and architecture boundaries passed; dependency audit found 9 moderate advisories and no high/critical; staged Gitleaks passed. Organic/history/client/preferences focused tests passed (57, plus the URL-precedence regression; its 11-test file passed separately). Initial full-suite contention timed out two unchanged 100k render tests; their isolated 19-test file passed without changing assertions/timeouts. PR [CI 38746241117](https://github.com/neocjmix/moirai/actions/runs/38746241117) passed: 1,010 unit tests (2 skipped), 49 PostgreSQL integration tests, format/lint/typecheck/build/audit, mobile flow, Render continuity and secret scan. The first quality attempt exceeded the unchanged candidate-export test's 30-second timeout by 0.37 seconds; one rerun passed with no changed assertion or timeout. The inherited deferred [A4 workflow](https://github.com/neocjmix/moirai/actions/runs/38746240729) remains 13/15: mobile 1,000-dense and 100,000-dense performance jobs failed. Those numeric performance gates do not reopen tuning under IP-012 or IP-017.
+
+The first main CI attempt had two failures outside Organic execution: an unchanged OIDC lifetime test sampled `now` and token `iat` across a one-second boundary (the resulting 300-second lifetime was correctly accepted), and the synthetic legacy-flag mobile flow recorded a WebKit fetch cancellation during document replacement after its camera/legacy assertions passed. The Organic candidate is unavailable in that synthetic World. Existing viewport tests document the same navigation-cancellation behavior. The unchanged [main CI rerun](https://github.com/neocjmix/moirai/actions/runs/38748659101) passed all three jobs; no test assertions, timeouts, error filters or authentication code were changed.
+
+The first public controls probe exposed two distinctions: the existing renderer may use its `webgl_scene_budget` SVG fallback while retaining the complete final paths, and camera-only `popstate` restoration was unnecessarily regenerating Organic surfaces. The follow-up keeps the applied surface for identical baseline/parameters/display, including while an explicit recompute is pending, and guards asynchronous commits against a later mode change. No field, padding, contour resolution, renderer budget or production default changes accompany this correction.
+
+The browser harness now polls existing DOM paint counters, using sparse full inspections only after painting is quiet. The old inspection event performs a full structured clone inside the browser; returning a compact protocol response alone did not eliminate that allocation. SVG success requires the existing scene-budget reason, every actual painted path matching the final committed path, even-odd fill and visible ink. The public site's existing `/favicon.ico` 404 is retained as an incidental resource; graph/API failures remain failures.
+
+## Known limits
+
+- A local WebKit sequence captured all three paired views with complete final geometry but stalled when returning from the full-history view to controls. Earlier raw-contour polling inflated test memory; compact polling removes that confounder but does not yet establish that the repeated wide→narrow transition is reliable. Fresh public-session control/replay checks are tracked separately.
+- Whole-history calculation is synchronous and can take tens of seconds or longer. This slice introduces no Worker, GPU, caching, tiling, performance target or runtime optimization project.
+- Glyph tests use the existing nominal 5×5 reference-metric support; screen-size glyphs and labels vary with zoom. The source retains its existing scalar-only temporal-provenance limitation.
+- Strong relation support is a tendency, not a connectivity guarantee; nonmember cuts and threshold can separate a path.
+- Dense overlap, local-width changes, junctions and exclusion-hole silhouettes require user critique. Visibility tests and geometric checks do not establish semantic-fill certification or aesthetic approval.
+- Actual iPhone 17 Safari and installed PWA verification remains with the user. No default promotion, history write, served-pointer mutation/backfill, Collection lifecycle work or next slice is authorized by this evidence.

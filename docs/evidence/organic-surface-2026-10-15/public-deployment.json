@@ -1,0 +1,465 @@
+{
+  "format": "organic-public-deployment/1",
+  "expectedCommitSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+  "observedAt": "2026-10-15T14:12:22.074477+00:00",
+  "scope": "Read-only public GETs and Render manifest resolver. No browser, authoring, publication, pointer or infrastructure writes.",
+  "before": {
+    "health": {
+      "url": "https://moirai-production-8ed1.up.railway.app/health",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:11:17.896499+00:00",
+      "httpStatus": 200,
+      "bodySha256": "c3cd797d253446b1c73564c3155c1c17b06ce9517fc22ab846d21b5b08e4130f",
+      "bodyBytes": 117,
+      "body": {
+        "status": "ok",
+        "service": "atropos-web",
+        "version": "0.0.0-dev",
+        "commit_sha": "084eb808aa69ee638ce6c39456c7b749c01eb65c"
+      }
+    },
+    "status": {
+      "url": "https://moirai-production-8ed1.up.railway.app/__status",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:11:17.907437+00:00",
+      "httpStatus": 200,
+      "bodySha256": "15aa6b08ee9415004e94cf8f60d4c0d8d096f92d1edf554c43ed7e3990ddfd23",
+      "bodyBytes": 458,
+      "body": {
+        "application": {
+          "service": "atropos-web",
+          "version": "0.0.0-dev",
+          "commit_sha": "084eb808aa69ee638ce6c39456c7b749c01eb65c",
+          "deployed_at": "2026-10-15T13:28:04.555Z"
+        },
+        "versions": {
+          "contract": "5",
+          "schema": "011_ip011_authoring_search",
+          "publication_format": "v5-publication/1"
+        },
+        "smoke": {
+          "result": "passed",
+          "checked_at": "2026-10-15T13:32:53Z",
+          "run_url": "https://github.com/neocjmix/moirai/actions/runs/38743344286"
+        },
+        "surfaces": {
+          "atropos": "ok",
+          "health": "ok",
+          "status": "ok"
+        }
+      }
+    },
+    "publicStatus": {
+      "url": "https://moirai-production-8ed1.up.railway.app/status-public",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:11:17.910573+00:00",
+      "httpStatus": 200,
+      "bodySha256": "15aa6b08ee9415004e94cf8f60d4c0d8d096f92d1edf554c43ed7e3990ddfd23",
+      "bodyBytes": 458,
+      "body": {
+        "application": {
+          "service": "atropos-web",
+          "version": "0.0.0-dev",
+          "commit_sha": "084eb808aa69ee638ce6c39456c7b749c01eb65c",
+          "deployed_at": "2026-10-15T13:28:04.555Z"
+        },
+        "versions": {
+          "contract": "5",
+          "schema": "011_ip011_authoring_search",
+          "publication_format": "v5-publication/1"
+        },
+        "smoke": {
+          "result": "passed",
+          "checked_at": "2026-10-15T13:32:53Z",
+          "run_url": "https://github.com/neocjmix/moirai/actions/runs/38743344286"
+        },
+        "surfaces": {
+          "atropos": "ok",
+          "health": "ok",
+          "status": "ok"
+        }
+      }
+    },
+    "historyPointer": {
+      "url": "https://moirai-production-8ed1.up.railway.app/worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/current.json",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:11:17.882814+00:00",
+      "httpStatus": 200,
+      "bodySha256": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a",
+      "bodyBytes": 418,
+      "body": {
+        "format_version": "v5-publication/1",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "served_revision": 56,
+        "current_revision": 56,
+        "publication_target_revision": 56,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/revisions/56/v5/complete/manifest.json",
+        "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "generated_at": "2026-10-10T04:22:50.900Z"
+      }
+    },
+    "immutableLabAsset": {
+      "url": "https://moirai-production-8ed1.up.railway.app/labs/tstl/r56-3f93ede4ca856c0c.json",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:11:18.486020+00:00",
+      "httpStatus": 200,
+      "bodySha256": "3f93ede4ca856c0cdea385d5d992b7dee7691b0132df1db04f941a4793cd5cf6",
+      "bodyBytes": 9412301,
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      }
+    },
+    "renderManifest": {
+      "url": "https://moirai-production-8ed1.up.railway.app/graph/v5/render",
+      "method": "POST (read-only resolver)",
+      "sampledAt": "2026-10-15T14:11:18.134509+00:00",
+      "httpStatus": 200,
+      "bodySha256": "14b3d11cb059175b634029145a8fe381049c489ce276a1bd101a0782c5bdcb36",
+      "bodyBytes": 1740190,
+      "request": {
+        "kind": "manifest",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "time_system_id": "01a107fc-3994-7889-969f-7a210c19fa24"
+      },
+      "summary": {
+        "format": "render-publication/2",
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "algorithmVersion": "render-compiler/4"
+      }
+    }
+  },
+  "observations": [
+    {
+      "sampledAt": "2026-10-15T14:11:19.738077+00:00",
+      "commitSha": "084eb808aa69ee638ce6c39456c7b749c01eb65c",
+      "httpStatus": 200
+    },
+    {
+      "sampledAt": "2026-10-15T14:11:49.899754+00:00",
+      "commitSha": "084eb808aa69ee638ce6c39456c7b749c01eb65c",
+      "httpStatus": 200
+    },
+    {
+      "sampledAt": "2026-10-15T14:12:20.090932+00:00",
+      "commitSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+      "httpStatus": 200
+    }
+  ],
+  "githubRuns": [
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-15T14:12:59Z",
+      "databaseId": 38749402981,
+      "headSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38749402981",
+      "workflowName": "Post-deploy smoke"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-15T14:07:53Z",
+      "databaseId": 38748659084,
+      "headSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38748659084",
+      "workflowName": "A5 public mobile checkpoint"
+    },
+    {
+      "conclusion": "",
+      "createdAt": "2026-10-15T14:07:53Z",
+      "databaseId": 38748659101,
+      "headSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+      "status": "in_progress",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38748659101",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-15T13:30:56Z",
+      "databaseId": 38743344286,
+      "headSha": "084eb808aa69ee638ce6c39456c7b749c01eb65c",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38743344286",
+      "workflowName": "Post-deploy smoke"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-15T13:25:24Z",
+      "databaseId": 38742557579,
+      "headSha": "084eb808aa69ee638ce6c39456c7b749c01eb65c",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38742557579",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-13T12:57:29Z",
+      "databaseId": 38401179662,
+      "headSha": "6b89fe55404228658c785329ff8433ebfc3e24c2",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38401179662",
+      "workflowName": "Post-deploy smoke"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-13T12:50:22Z",
+      "databaseId": 38400278009,
+      "headSha": "6b89fe55404228658c785329ff8433ebfc3e24c2",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38400278009",
+      "workflowName": "A5 public mobile checkpoint"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-13T12:50:22Z",
+      "databaseId": 38400277967,
+      "headSha": "6b89fe55404228658c785329ff8433ebfc3e24c2",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38400277967",
+      "workflowName": "CI"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-13T12:41:58Z",
+      "databaseId": 38399219632,
+      "headSha": "63ed88fe4516a2110d48448f9f0eeb2620a961e6",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38399219632",
+      "workflowName": "Post-deploy smoke"
+    },
+    {
+      "conclusion": "success",
+      "createdAt": "2026-10-13T12:36:37Z",
+      "databaseId": 38398555979,
+      "headSha": "63ed88fe4516a2110d48448f9f0eeb2620a961e6",
+      "status": "completed",
+      "url": "https://github.com/neocjmix/moirai/actions/runs/38398555979",
+      "workflowName": "A5 public mobile checkpoint"
+    }
+  ],
+  "deploymentObserved": true,
+  "after": {
+    "health": {
+      "url": "https://moirai-production-8ed1.up.railway.app/health",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:12:20.236745+00:00",
+      "httpStatus": 200,
+      "bodySha256": "dc900f0ad9c7a501e82b8263080aab592eb5e9c11a976b067a0d2154ce4eb3bd",
+      "bodyBytes": 117,
+      "body": {
+        "status": "ok",
+        "service": "atropos-web",
+        "version": "0.0.0-dev",
+        "commit_sha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf"
+      }
+    },
+    "status": {
+      "url": "https://moirai-production-8ed1.up.railway.app/__status",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:12:20.227801+00:00",
+      "httpStatus": 200,
+      "bodySha256": "25946834b2b94b1d60b060c14f935ffd17926a2c920984c967092b87312e83c7",
+      "bodyBytes": 458,
+      "body": {
+        "application": {
+          "service": "atropos-web",
+          "version": "0.0.0-dev",
+          "commit_sha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+          "deployed_at": "2026-10-15T14:11:51.779Z"
+        },
+        "versions": {
+          "contract": "5",
+          "schema": "011_ip011_authoring_search",
+          "publication_format": "v5-publication/1"
+        },
+        "smoke": {
+          "result": "passed",
+          "checked_at": "2026-10-15T13:32:53Z",
+          "run_url": "https://github.com/neocjmix/moirai/actions/runs/38743344286"
+        },
+        "surfaces": {
+          "atropos": "ok",
+          "health": "ok",
+          "status": "ok"
+        }
+      }
+    },
+    "publicStatus": {
+      "url": "https://moirai-production-8ed1.up.railway.app/status-public",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:12:20.363832+00:00",
+      "httpStatus": 200,
+      "bodySha256": "25946834b2b94b1d60b060c14f935ffd17926a2c920984c967092b87312e83c7",
+      "bodyBytes": 458,
+      "body": {
+        "application": {
+          "service": "atropos-web",
+          "version": "0.0.0-dev",
+          "commit_sha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+          "deployed_at": "2026-10-15T14:11:51.779Z"
+        },
+        "versions": {
+          "contract": "5",
+          "schema": "011_ip011_authoring_search",
+          "publication_format": "v5-publication/1"
+        },
+        "smoke": {
+          "result": "passed",
+          "checked_at": "2026-10-15T13:32:53Z",
+          "run_url": "https://github.com/neocjmix/moirai/actions/runs/38743344286"
+        },
+        "surfaces": {
+          "atropos": "ok",
+          "health": "ok",
+          "status": "ok"
+        }
+      }
+    },
+    "historyPointer": {
+      "url": "https://moirai-production-8ed1.up.railway.app/worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/current.json",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:12:20.293908+00:00",
+      "httpStatus": 200,
+      "bodySha256": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a",
+      "bodyBytes": 418,
+      "body": {
+        "format_version": "v5-publication/1",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "served_revision": 56,
+        "current_revision": 56,
+        "publication_target_revision": 56,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/revisions/56/v5/complete/manifest.json",
+        "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "generated_at": "2026-10-10T04:22:50.900Z"
+      }
+    },
+    "immutableLabAsset": {
+      "url": "https://moirai-production-8ed1.up.railway.app/labs/tstl/r56-3f93ede4ca856c0c.json",
+      "method": "GET",
+      "sampledAt": "2026-10-15T14:12:20.882682+00:00",
+      "httpStatus": 200,
+      "bodySha256": "3f93ede4ca856c0cdea385d5d992b7dee7691b0132df1db04f941a4793cd5cf6",
+      "bodyBytes": 9412301,
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      }
+    },
+    "renderManifest": {
+      "url": "https://moirai-production-8ed1.up.railway.app/graph/v5/render",
+      "method": "POST (read-only resolver)",
+      "sampledAt": "2026-10-15T14:12:20.602844+00:00",
+      "httpStatus": 200,
+      "bodySha256": "14b3d11cb059175b634029145a8fe381049c489ce276a1bd101a0782c5bdcb36",
+      "bodyBytes": 1740190,
+      "request": {
+        "kind": "manifest",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "time_system_id": "01a107fc-3994-7889-969f-7a210c19fa24"
+      },
+      "summary": {
+        "format": "render-publication/2",
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "algorithmVersion": "render-compiler/4"
+      }
+    }
+  },
+  "exactPublicRuntimeSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+  "preservation": {
+    "historyPointer": true,
+    "immutableLabAsset": true,
+    "renderManifest": true,
+    "sourceRootDigest": true,
+    "r56": true
+  },
+  "exactHealthSha": true,
+  "exactPublicStatusSha": true,
+  "allReadRequests200": true,
+  "checksObservedAt": "2026-10-15T14:15:20.913970+00:00",
+  "currentCommitCI": {
+    "conclusion": "",
+    "createdAt": "2026-10-15T14:07:53Z",
+    "databaseId": 38748659101,
+    "headSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+    "status": "in_progress",
+    "url": "https://github.com/neocjmix/moirai/actions/runs/38748659101",
+    "workflowName": "CI"
+  },
+  "currentCommitPostDeploySmoke": {
+    "conclusion": "success",
+    "createdAt": "2026-10-15T14:12:59Z",
+    "databaseId": 38749402981,
+    "headSha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+    "status": "completed",
+    "url": "https://github.com/neocjmix/moirai/actions/runs/38749402981",
+    "workflowName": "Post-deploy smoke"
+  },
+  "currentCommitPostDeploySmokePassed": true,
+  "publicStatusSmokeAtDeploymentBelongsToPreviousCommit": true,
+  "mainCiInitialAttempt": {
+    "runId": 38748659101,
+    "conclusion": "failure",
+    "unit": {
+      "passed": 1009,
+      "failed": 1,
+      "skipped": 2,
+      "failure": "apps/clotho-api/src/ci-oidc.test.ts:121 lifetime rejection assertion; exp boundary was accepted"
+    },
+    "mobile": {
+      "passed": 74,
+      "failed": 1,
+      "skipped": 1,
+      "failure": "tests/e2e/a5-context-hud.spec.ts:108 console errors assertion; /graph/v5/shell access-control console message on initial and retry"
+    },
+    "secretScan": "success",
+    "scopeNote": "These test files are unchanged in this Organic Surface patch. Failure cause is not established by this observation."
+  },
+  "latestPublicStatus": {
+    "url": "https://moirai-production-8ed1.up.railway.app/status-public",
+    "sampledAt": "2026-10-15T14:15:32.682468+00:00",
+    "httpStatus": 200,
+    "bodySha256": "da960386f1443b683f1ad96460d8b5331df14a877310719165c854fc8cc4716d",
+    "body": {
+      "application": {
+        "service": "atropos-web",
+        "version": "0.0.0-dev",
+        "commit_sha": "f27ce3cd3e450847c99b4a66a49675c570dd6fcf",
+        "deployed_at": "2026-10-15T14:11:51.779Z"
+      },
+      "versions": {
+        "contract": "5",
+        "schema": "011_ip011_authoring_search",
+        "publication_format": "v5-publication/1"
+      },
+      "smoke": {
+        "result": "running",
+        "checked_at": "2026-10-15T14:13:02Z",
+        "run_url": "https://github.com/neocjmix/moirai/actions/runs/38749402981"
+      },
+      "surfaces": {
+        "atropos": "ok",
+        "health": "ok",
+        "status": "ok"
+      }
+    }
+  }
+}

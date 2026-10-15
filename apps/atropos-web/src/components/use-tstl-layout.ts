@@ -14,6 +14,7 @@ import {
   organicExperimentGeometry,
   organicReproduction,
   parseOrganicReproduction,
+  preservesAppliedOrganicRestoration,
   restoreOrganicReproduction,
   ORGANIC_VIEW_KEYS,
   type FrozenTstlBaseline,
@@ -53,6 +54,7 @@ export function useTstlLayout(
   const storageKey = tstlLayoutStorageKey(scope.worldId);
   const [mode, setMode] = useState<TstlLayoutChoice>("current");
   const modeRef = useRef<TstlLayoutChoice>("current");
+  const requestedModeRef = useRef<TstlLayoutChoice>("current");
   const [pending, setPending] = useState<TstlLayoutChoice | null>(null);
   const [failed, setFailed] = useState(false);
   const [artifact, setArtifact] = useState<TstlExperimentArtifact | null>(null);
@@ -99,6 +101,8 @@ export function useTstlLayout(
       });
       if (ticket.current !== request) return null;
       const geometry = organicExperimentGeometry(frozen, result, next.display);
+      const source = await client.load();
+      if (ticket.current !== request) return null;
       const version = client.setOrganic(
         geometry.candidate,
         geometry.primitives
@@ -112,7 +116,6 @@ export function useTstlLayout(
       };
       updateOrganic(complete);
       setOrganicVersion(version);
-      const source = await client.load();
       setArtifact({ ...source, organic: geometry.candidate });
       return complete;
     },
@@ -121,11 +124,47 @@ export function useTstlLayout(
 
   const choose = useCallback(
     async (next: TstlLayoutChoice, persist = true) => {
-      const request = ++ticket.current;
       if (!available && next !== "current") return;
+      let restoration:
+        { value: OrganicReproduction } | { error: unknown } | undefined;
+      if (next === "organic" && !persist) {
+        try {
+          let stored: string | null = null;
+          try {
+            stored = window.localStorage.getItem(`${storageKey}:organic`);
+          } catch {
+            /* Optional preference. */
+          }
+          const value = restoreOrganicReproduction(
+            window.location.search,
+            stored
+          );
+          const applied = organicRef.current;
+          if (
+            preservesAppliedOrganicRestoration(
+              {
+                ...applied,
+                mode: modeRef.current,
+                requestedMode: requestedModeRef.current,
+                hasResult: applied.result !== null
+              },
+              value
+            )
+          )
+            return;
+          restoration = { value };
+        } catch (error) {
+          restoration = { error };
+        }
+      }
+      // Identical camera/selection restores return above without cancelling a
+      // pending explicit recompute. Changed shape/mode restores own a new ticket.
+      const request = ++ticket.current;
+      requestedModeRef.current = next;
       setFailed(false);
       setPending(next === "current" ? null : next);
       try {
+        if (restoration && "error" in restoration) throw restoration.error;
         if (next === "organic" && persist && modeRef.current === "current")
           throw Error("organic_select_pinned_baseline_first");
         const loaded = next === "current" ? null : await client.load();
@@ -142,16 +181,9 @@ export function useTstlLayout(
                   : previous
             };
           } else {
-            let stored: string | null = null;
-            try {
-              stored = window.localStorage.getItem(`${storageKey}:organic`);
-            } catch {
-              /* Optional preference. */
-            }
-            const repro = restoreOrganicReproduction(
-              window.location.search,
-              stored
-            );
+            const repro =
+              restoration && "value" in restoration ? restoration.value : null;
+            if (!repro) throw Error("organic_reproduction_missing");
             state = {
               ...state,
               baseline: repro.baseline,
@@ -182,6 +214,7 @@ export function useTstlLayout(
         }
       } catch (error) {
         if (ticket.current !== request) return;
+        requestedModeRef.current = modeRef.current;
         setPending(null);
         setFailed(true);
         updateOrganic({
@@ -241,13 +274,15 @@ export function useTstlLayout(
         current.result,
         display
       );
+      const source = await client.load();
+      if (ticket.current !== request) return;
       setOrganicVersion(
         client.setOrganic(geometry.candidate, geometry.primitives)
       );
       const next = { ...current, display };
       updateOrganic(next);
       persistOrganic(next);
-      setArtifact({ ...(await client.load()), organic: geometry.candidate });
+      setArtifact({ ...source, organic: geometry.candidate });
     },
     [client, persistOrganic, updateOrganic]
   );
@@ -277,6 +312,7 @@ export function useTstlLayout(
 
   useEffect(() => {
     modeRef.current = "current";
+    requestedModeRef.current = "current";
     setMode("current");
     setPending(null);
     setFailed(false);

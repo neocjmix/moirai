@@ -5,6 +5,7 @@ import type { AppLocale } from "../urdr-port/src/locale";
 import type { TstlLayoutChoice } from "../lib/tstl-layout-preference";
 import { tstlCandidate } from "../lib/tstl-experiment-types";
 import { TstlMembershipFallback } from "./tstl-membership-fallback";
+import { OrganicSurfaceControls } from "./organic-surface-controls";
 import styles from "./tstl-experiment-settings.module.css";
 
 type Props = { locale: AppLocale; layout: ReturnType<typeof useTstlLayout> };
@@ -15,7 +16,8 @@ const primaryChoices: TstlLayoutChoice[] = [
   "ribbon",
   "lanes",
   "aligned",
-  "anchored"
+  "anchored",
+  "organic"
 ];
 const researchChoices: TstlLayoutChoice[] = ["A", "B", "C"];
 
@@ -53,6 +55,11 @@ const modeCopy = {
       label: "절충 · 국가 방향 유지",
       description:
         "국가별 단독 사건의 위치를 좁은 범위에 유지하며 공유 구간을 정렬합니다. 분리와 흐름의 절충을 비교합니다."
+    },
+    organic: {
+      label: "Organic · 유기적 면",
+      description:
+        "선택한 기준선의 사건 위치를 고정하고 수직 필드와 관계의 영향을 비교합니다. 면의 모양과 중첩 패딩을 따로 조절할 수 있습니다."
     },
     A: {
       label: "후보 A · 분리된 면",
@@ -104,6 +111,11 @@ const modeCopy = {
       description:
         "Keep exclusive country episodes in narrow corridors while aligning shared episodes. Compare the separation and continuity tradeoff."
     },
+    organic: {
+      label: "Organic · implicit surfaces",
+      description:
+        "Keep the selected baseline’s event positions fixed while comparing vertical fields and relation influence. Adjust the field shape and nesting padding separately."
+    },
     A: {
       label: "Candidate A · separate areas",
       description:
@@ -143,6 +155,9 @@ export function TstlExperimentSettings({ locale, layout }: Props) {
           : "Compare areas and connections on the same history data using the usual zoom, pan and selection. This preference applies only to this browser."}
       </p>
       <TstlChoices locale={locale} layout={layout} choices={primaryChoices} />
+      {layout.mode === "organic" ? (
+        <OrganicSurfaceControls locale={locale} layout={layout} />
+      ) : null}
       <details
         data-testid="tstl-previous-candidates"
         open={researchChoices.includes(layout.mode) || undefined}
@@ -167,9 +182,13 @@ export function TstlExperimentSettings({ locale, layout }: Props) {
             ? "이 실험은 역사 World의 r56에서 사용할 수 있습니다."
             : "This experiment is available for the history World at r56."
           : layout.failed
-            ? ko
-              ? "실험 데이터를 불러오지 못했습니다. 선택을 다시 눌러 재시도하세요. 현재 화면은 유지됩니다."
-              : "Could not load the experiment. Select a mode to retry. The current view is preserved."
+            ? layout.organic.error === "organic_select_pinned_baseline_first"
+              ? ko
+                ? "Organic의 기준 좌표가 지정되지 않았습니다. 먼저 B0 또는 다른 실험 기준선을 선택한 뒤 Organic을 선택하세요."
+                : "Organic needs an explicit coordinate baseline. Select B0 or another experimental baseline, then select Organic."
+              : ko
+                ? "실험 데이터를 불러오지 못했습니다. 선택을 다시 눌러 재시도하세요. 현재 화면은 유지됩니다."
+                : "Could not load the experiment. Select a mode to retry. The current view is preserved."
             : layout.pending
               ? ko
                 ? `${copy[layout.pending].label} 불러오는 중…`
@@ -220,12 +239,19 @@ function TstlChoices({
           type="button"
           data-testid={`tstl-layout-${choice}`}
           aria-pressed={layout.mode === choice}
-          disabled={choice !== "current" && !layout.available}
+          disabled={
+            (choice !== "current" && !layout.available) ||
+            (choice === "organic" && layout.mode === "current")
+          }
           onClick={() => void layout.choose(choice)}
         >
           <span className={styles.choiceLabel}>{copy[choice].label}</span>
           <span className={styles.choiceDescription}>
-            {copy[choice].description}
+            {choice === "organic" && layout.mode === "current"
+              ? ko
+                ? "먼저 B0 또는 다른 실험 기준선을 선택하세요. 그 사건 위치를 고정한 뒤 Organic 면을 비교합니다."
+                : "First choose B0 or another experimental baseline. Organic will preserve those event positions for the surface comparison."
+              : copy[choice].description}
           </span>
         </button>
       ))}
@@ -252,6 +278,7 @@ export function TstlExperimentCompare({
     lanes: ko ? "분리" : "Lanes",
     aligned: ko ? "흐름" : "Aligned",
     anchored: ko ? "절충" : "Anchored",
+    organic: "Organic",
     A: "A",
     B: "B",
     C: "C"
@@ -279,6 +306,9 @@ export function TstlExperimentCompare({
           {shortLabels[choice]}
         </button>
       ))}
+      {layout.mode === "organic" ? (
+        <OrganicSurfaceControls locale={locale} layout={layout} />
+      ) : null}
     </div>
   );
 }

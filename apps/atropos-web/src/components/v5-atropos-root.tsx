@@ -155,6 +155,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
         ...scope,
         client: experimentClient,
         mode: layout.mode,
+        organicVersion: layout.organicVersion,
         detailLoader
       });
       return {
@@ -187,6 +188,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
     props.readPage,
     props.renderEnabled,
     layout.mode,
+    layout.organicVersion,
     experimentClient,
     tileClient,
     selection

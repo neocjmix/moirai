@@ -29,7 +29,7 @@
   gap: 8px;
 }
 .choices button,
-.compare button {
+.compare > button {
   min-height: 44px;
   border: 1px solid var(--gray-6, #d9d9e0);
   border-radius: 12px;
@@ -41,7 +41,7 @@
   cursor: pointer;
 }
 .choices button[aria-pressed="true"],
-.compare button[aria-pressed="true"] {
+.compare > button[aria-pressed="true"] {
   background: var(--gray-12, #1c2024);
   color: var(--gray-1, #fcfcfd);
 }
@@ -76,12 +76,15 @@
   border-radius: 16px;
   box-shadow: 0 4px 16px #0002;
 }
-.compare button {
+.compare[data-mode="organic"] {
+  width: min(680px, calc(100vw - 24px));
+}
+.compare > button {
   flex: 0 0 auto;
   min-width: 44px;
   padding: 8px;
 }
-.compare span {
+.compare > span {
   font-size: 11px;
   color: var(--gray-11, #60646c);
   white-space: nowrap;

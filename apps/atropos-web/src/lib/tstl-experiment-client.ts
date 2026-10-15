@@ -15,6 +15,7 @@ import {
   type TstlCandidateMode,
   type TstlExperimentArtifact,
   type TstlExperimentMode,
+  type TstlExperimentCandidate,
   type TstlExperimentPoint
 } from "./tstl-experiment-types";
 
@@ -266,6 +267,12 @@ export function createTstlExperimentClient(
   let disposed = false;
   let pending: Promise<TstlExperimentArtifact> | undefined;
   const candidates = new Map<TstlCandidateMode, ResolvedRenderPrimitive[]>();
+  let organic: {
+    candidate: TstlExperimentCandidate;
+    primitives: ResolvedRenderPrimitive[];
+    version: number;
+    bytes: number;
+  } | null = null;
   let bytes = 0;
   let requests = 0;
   const readers = new Map<
@@ -309,6 +316,10 @@ export function createTstlExperimentClient(
   const primitives = async (mode: TstlExperimentMode) => {
     const artifact = await load();
     if (mode === "B0") return artifact.b0Primitives;
+    if (mode === "organic") {
+      if (!organic) throw Error("organic_surface_not_computed");
+      return organic.primitives;
+    }
     let candidate = candidates.get(mode);
     if (!candidate) {
       candidate = candidateExperimentPrimitives(artifact, mode);
@@ -338,7 +349,7 @@ export function createTstlExperimentClient(
           world_id: artifact.source.worldId,
           revision: artifact.source.revision,
           time_system_id: artifact.source.timeSystemId,
-          generation: `tstl:${input.expectedSha256 ?? TSTL_EXPERIMENT_SHA256}:${mode}`,
+          generation: `tstl:${input.expectedSha256 ?? TSTL_EXPERIMENT_SHA256}:${mode}${mode === "organic" ? `:${organic?.version}` : ""}`,
           algorithmVersion: "render-compiler/4",
           level: 0,
           maxLevel: 0,
@@ -360,7 +371,13 @@ export function createTstlExperimentClient(
         worldId: TSTL_EXPERIMENT_WORLD_ID,
         revision: TSTL_EXPERIMENT_REVISION,
         timeSystemId: TSTL_EXPERIMENT_TIME_SYSTEM_ID,
-        fetcher: memoryFetch
+        fetcher: memoryFetch,
+        // Organic is an explicitly computed, complete local inspection input.
+        // Admit its exact final contours through the existing bounded reader;
+        // ordinary production and every prior candidate retain their budgets.
+        ...(mode === "organic" && organic
+          ? { maxBytes: organic.bytes + 65536 }
+          : {})
       });
       readers.set(mode, reader);
     }
@@ -370,6 +387,28 @@ export function createTstlExperimentClient(
     load,
     primitives,
     viewport,
+    candidate: async (mode: TstlCandidateMode) =>
+      mode === "organic"
+        ? (organic?.candidate ??
+          (() => {
+            throw Error("organic_surface_not_computed");
+          })())
+        : tstlCandidate(await load(), mode),
+    setOrganic(
+      candidate: TstlExperimentCandidate,
+      primitives: ResolvedRenderPrimitive[]
+    ) {
+      assertActive();
+      readers.get("organic")?.dispose();
+      readers.delete("organic");
+      organic = {
+        candidate,
+        primitives,
+        version: (organic?.version ?? 0) + 1,
+        bytes: new TextEncoder().encode(JSON.stringify(primitives)).byteLength
+      };
+      return organic.version;
+    },
     inspect: () => ({ bytes, requests, readers: readers.size }),
     dispose() {
       disposed = true;
@@ -378,6 +417,7 @@ export function createTstlExperimentClient(
       readers.clear();
       candidates.clear();
       pending = undefined;
+      organic = null;
     }
   };
 }

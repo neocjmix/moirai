@@ -4,7 +4,6 @@ import type { GraphShellWorkspaceShell } from "../urdr-port/shared/contracts";
 import { renderTileViewport } from "./v5-render-viewport";
 import type { TstlExperimentClient } from "./tstl-experiment-client";
 import {
-  tstlCandidate,
   TSTL_EXPERIMENT_WORLD_ID,
   TSTL_EXPERIMENT_REVISION,
   TSTL_EXPERIMENT_TIME_SYSTEM_ID,
@@ -14,6 +13,7 @@ import {
 export function createTstlGraphReadLoader(input: {
   client: TstlExperimentClient;
   mode: TstlExperimentMode;
+  organicVersion?: number;
   workspace: GraphShellWorkspaceShell;
   worldId: string;
   revision: number;
@@ -32,7 +32,7 @@ export function createTstlGraphReadLoader(input: {
   const reader = input.client.viewport(input.mode);
   return {
     viewportMode: "snapshot",
-    paintSourceKey: `tstl:${input.mode}`,
+    paintSourceKey: `tstl:${input.mode}${input.mode === "organic" ? `:${input.organicVersion}` : ""}`,
     dispose: () => lifetime.dispose(),
     inspectViewport: () => ({
       ...input.client.inspect(),
@@ -55,7 +55,6 @@ export function createTstlGraphReadLoader(input: {
     },
     loadViewport: (_locale, query) =>
       lifetime.read(async (signal) => {
-        const artifact = await input.client.load();
         const box = query.bbox;
         const { primitives } = await reader.load(
           box,
@@ -92,7 +91,7 @@ export function createTstlGraphReadLoader(input: {
           )
         );
         if (input.mode !== "B0") {
-          const candidate = tstlCandidate(artifact, input.mode);
+          const candidate = await input.client.candidate(input.mode);
           value.regions = value.regions.map((region) =>
             region.geometryKind !== "region"
               ? region

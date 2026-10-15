@@ -13,7 +13,8 @@ export type TstlExperimentMode =
   | "ribbon"
   | "lanes"
   | "aligned"
-  | "anchored";
+  | "anchored"
+  | "organic";
 export type TstlCandidateMode = Exclude<TstlExperimentMode, "B0">;
 export type TstlExperimentPoint = { x: number; y: number };
 export type TstlExperimentBox = {
@@ -71,6 +72,8 @@ export interface TstlExperimentArtifact {
   lanes: TstlExperimentCandidate;
   aligned: TstlExperimentCandidate;
   anchored: TstlExperimentCandidate;
+  /** Browser-local result only; never added to the immutable source artifact. */
+  organic?: TstlExperimentCandidate;
   stats: {
     events: number;
     composites: number;
@@ -86,6 +89,9 @@ export function tstlCandidate(
   mode: TstlCandidateMode
 ): TstlExperimentCandidate {
   switch (mode) {
+    case "organic":
+      if (!artifact.organic) throw Error("organic_surface_not_computed");
+      return artifact.organic;
     case "A":
       return artifact.a;
     case "B":

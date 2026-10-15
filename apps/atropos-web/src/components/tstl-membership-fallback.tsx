@@ -18,6 +18,10 @@ type Props = {
 };
 const PAGE_SIZE = 30;
 const reasons: Record<string, { ko: string; en: string }> = {
+  FIXED_GLYPH_SUPPORT_CONFLICT: {
+    ko: "고정된 사건 표시 영역의 충돌로 최종 면 포함이 불완전함",
+    en: "Fixed marker conflicts leave incomplete final area coverage"
+  },
   FIXED_SUPPORT_CONFLICT: {
     ko: "고정된 사건 표시 영역이 겹쳐 면으로 완전히 포함하지 못함",
     en: "Overlapping fixed event markers prevent full area coverage"
@@ -165,6 +169,8 @@ function TstlMembershipList({
                 gsEvent: entry.eventId
               });
               if (viewport) params.set("gsViewport", viewport);
+              if (mode === "organic" && currentParams.has("organic"))
+                params.set("organic", currentParams.get("organic")!);
               const reason = entry.reason ? reasons[entry.reason] : undefined;
               return (
                 <li

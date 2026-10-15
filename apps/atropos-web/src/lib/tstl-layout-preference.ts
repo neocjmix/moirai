@@ -20,7 +20,8 @@ export function parseTstlLayoutChoice(
     value === "ribbon" ||
     value === "lanes" ||
     value === "aligned" ||
-    value === "anchored"
+    value === "anchored" ||
+    value === "organic"
     ? value
     : null;
 }

@@ -109,6 +109,33 @@ export function restoreOrganicReproduction(
   if (stored !== null) return parseOrganicReproduction(stored);
   throw Error("organic_select_pinned_baseline_first");
 }
+/** A camera/selection history restore must not restart the already applied
+ * surface or supersede an explicit recompute still using that committed URL.
+ * A pending different mode is a real transition and must still be superseded.
+ * Errors/busy state are deliberately irrelevant: this checks applied geometry.
+ */
+export function preservesAppliedOrganicRestoration(
+  applied: {
+    mode: string;
+    requestedMode: string;
+    hasResult: boolean;
+    baseline: FrozenTstlBaseline;
+    parameters: OrganicSurfaceParameters;
+    display: OrganicDisplay;
+  },
+  requested: Pick<OrganicReproduction, "baseline" | "parameters" | "display">
+): boolean {
+  return (
+    applied.mode === "organic" &&
+    applied.requestedMode === "organic" &&
+    applied.hasResult &&
+    applied.baseline === requested.baseline &&
+    applied.display === requested.display &&
+    JSON.stringify(normalizeOrganicParameters(applied.parameters)) ===
+      JSON.stringify(normalizeOrganicParameters(requested.parameters))
+  );
+}
+
 const bounds = (points: readonly TstlExperimentPoint[]) => {
   let minX = Infinity,
     minY = Infinity,

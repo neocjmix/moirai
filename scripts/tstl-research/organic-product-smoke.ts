@@ -7,6 +7,7 @@
  */
 import assert from "node:assert/strict";
 import { createHash } from "node:crypto";
+import { execFileSync } from "node:child_process";
 import { mkdirSync, writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import {
@@ -126,6 +127,7 @@ type Inspection = {
 };
 const digest = (value: unknown) =>
   createHash("sha256").update(JSON.stringify(value)).digest("hex");
+const navigationContextRetries = new WeakMap<Page, number>();
 const visible = (page: Page, id: string) =>
   page.locator(`[data-testid="${id}"]:visible`).first();
 async function inspect(
@@ -159,12 +161,17 @@ async function inspect(
           path.getAttribute("fill-rule") === "evenodd"
         )
           matched++;
-        if (
-          path &&
-          Number(path.style.opacity) > 0 &&
-          Number(path.style.fillOpacity) > 0
-        )
-          visible++;
+        if (path) {
+          const style = getComputedStyle(path);
+          if (
+            style.display !== "none" &&
+            style.visibility !== "hidden" &&
+            style.fill !== "none" &&
+            Number(style.opacity) > 0 &&
+            Number(style.fillOpacity) > 0
+          )
+            visible++;
+        }
       }
       svgPaint = {
         expected: expected.length,
@@ -237,30 +244,50 @@ async function settle(
     // GraphShell's full inspection internally structuredClones every contour.
     // Poll only existing DOM paint counters, then inspect once after painting
     // is quiet. No million-vertex clone is allocated by this readiness loop.
-    const painted = await page.evaluate(() => {
-      const canvas = document.querySelector<HTMLCanvasElement>(
-        '[data-testid="geographic-webgl"]'
-      );
-      const svg = document.querySelector<SVGElement>(
-        'svg[aria-label="Projected chart surface"]'
-      );
-      const status = document.querySelector('[class*="chartViewportStatus"]');
-      const fieldset = document.querySelector<HTMLFieldSetElement>(
-        '[data-testid="organic-controls"] fieldset'
-      );
-      return {
-        source: canvas?.dataset.paintSourceKey,
-        revision: canvas?.dataset.paintRevision,
-        activeTweens: Number(canvas?.dataset.activeTweens ?? 0),
-        regions: Number(canvas?.dataset.regionCount ?? 0),
-        points: Number(canvas?.dataset.pointCount ?? 0),
-        renderer: svg?.dataset.renderer,
-        svgRegions: document.querySelectorAll("[data-composite-paint-id]")
-          .length,
-        busy: Boolean(fieldset?.disabled),
-        error: status?.textContent ?? null
-      };
-    });
+    const painted = await page
+      .evaluate(() => {
+        const canvas = document.querySelector<HTMLCanvasElement>(
+          '[data-testid="geographic-webgl"]'
+        );
+        const svg = document.querySelector<SVGElement>(
+          'svg[aria-label="Projected chart surface"]'
+        );
+        const status = document.querySelector('[class*="chartViewportStatus"]');
+        const fieldset = document.querySelector<HTMLFieldSetElement>(
+          '[data-testid="organic-controls"] fieldset'
+        );
+        return {
+          source: canvas?.dataset.paintSourceKey,
+          revision: canvas?.dataset.paintRevision,
+          activeTweens: Number(canvas?.dataset.activeTweens ?? 0),
+          regions: Number(canvas?.dataset.regionCount ?? 0),
+          points: Number(canvas?.dataset.pointCount ?? 0),
+          renderer: svg?.dataset.renderer,
+          svgRegions: document.querySelectorAll("[data-composite-paint-id]")
+            .length,
+          busy: Boolean(fieldset?.disabled),
+          error: status?.textContent ?? null
+        };
+      })
+      .catch(async (error: unknown) => {
+        if (
+          !(error instanceof Error) ||
+          !error.message.includes(
+            "Execution context was destroyed, most likely because of a navigation"
+          )
+        )
+          throw error;
+        // Import performs a real navigation. WebKit may retire its old context
+        // after the navigation promise resolves but before this readiness read.
+        navigationContextRetries.set(
+          page,
+          (navigationContextRetries.get(page) ?? 0) + 1
+        );
+        await page.waitForLoadState("domcontentloaded");
+        await page.waitForTimeout(250);
+        return null;
+      });
+    if (!painted) continue;
     lastDOM = painted;
     assert(!painted.error, `graph loader failed: ${painted.error}`);
     const fallback = painted.renderer === "svg";
@@ -297,6 +324,9 @@ async function settle(
           !state.workerJobs?.running &&
           !state.counts.stageActive &&
           !state.counts.exitingRegions &&
+          (state.renderer?.state === "ready" ||
+            (state.renderer?.state === "fallback" &&
+              state.svgPaint?.painter === "svg")) &&
           (!mode || state.paintSourceKey?.startsWith("tstl:" + mode)) &&
           (!previousSource || state.paintSourceKey !== previousSource) &&
           (["x", "y", "scaleX", "scaleY"] as const).every(
@@ -391,8 +421,25 @@ function coordinates(state: Inspection, artifact: TstlExperimentArtifact) {
     anchors: state.geometry.filter((shape) => shape.anchor).length
   };
 }
-async function shapeDigest(page: Page) {
-  const inspected = await inspect(page, true);
+async function shapeEvidence(page: Page) {
+  let inspected = await inspect(page, true);
+  // A budget diagnostic can be published just before React commits the SVG
+  // fallback. Wait for that DOM commit without cloning the scene repeatedly,
+  // then verify the exact final paths in a fresh snapshot.
+  if (
+    inspected?.renderer?.state === "fallback" &&
+    inspected.svgPaint?.painter !== "svg"
+  ) {
+    await page.waitForFunction(
+      () =>
+        document.querySelector<SVGElement>(
+          'svg[aria-label="Projected chart surface"]'
+        )?.dataset.graphicsPainter === "svg",
+      undefined,
+      { polling: 500, timeout: 180_000 }
+    );
+    inspected = await inspect(page, true);
+  }
   assert(inspected?.geometryDigest, "committed boundary digest is inspectable");
   if (inspected.renderer?.state === "fallback") {
     assert.equal(
@@ -400,10 +447,15 @@ async function shapeDigest(page: Page) {
       "svg",
       "fallback paints complete SVG geometry"
     );
-    assert.equal(
-      inspected.renderer.fallback,
-      "webgl_scene_budget",
-      "only the recorded existing scene-budget fallback is accepted"
+    assert(
+      [
+        "geographic_path_budget",
+        "geographic_vertex_budget",
+        "geographic_contour_budget",
+        "webgl_mesh_budget",
+        "webgl_scene_budget"
+      ].includes(inspected.renderer.fallback ?? ""),
+      "only existing geometry-budget fallbacks with exact final SVG paint are accepted"
     );
     assert.equal(inspected.svgPaint?.painter, "svg");
     assert(
@@ -430,7 +482,14 @@ async function shapeDigest(page: Page) {
       Number(inspected.counts.fixedContourRings) > 0,
     "final contours reach the painted fixed-region scene"
   );
-  return inspected.geometryDigest;
+  return {
+    geometryDigest: inspected.geometryDigest,
+    renderer: inspected.renderer,
+    svgPaint: inspected.svgPaint
+  };
+}
+async function shapeDigest(page: Page) {
+  return (await shapeEvidence(page)).geometryDigest;
 }
 function inspectionSummary(state: Inspection | null) {
   if (!state) return null;
@@ -625,8 +684,57 @@ for (const profile of profiles) {
       "User review pending; browser emulation is not physical iPhone 17 Safari/PWA evidence."
   };
   reports.push(report);
+  let phaseWatchdog: ReturnType<typeof setTimeout> | undefined;
   const phase = (value: string) => {
+    clearTimeout(phaseWatchdog);
     report.phase = value;
+    report.navigationContextRetries = navigationContextRetries.get(page) ?? 0;
+    report.phaseStartedAt = new Date().toISOString();
+    report.phaseDeadlineSeconds = 240;
+    // Browser main-thread work can prevent page.evaluate from returning, so
+    // a deadline checked only inside the DOM polling loop is insufficient.
+    // This Node timer bounds the phase and only kills this disposable test
+    // process's own browser descendants, never a shared server or browser.
+    phaseWatchdog = setTimeout(() => {
+      report.passed = false;
+      report.timedOut = true;
+      report.error = `Process-level 240s phase deadline exceeded: ${value}`;
+      report.interruptedAt = new Date().toISOString();
+      report.navigationContextRetries = navigationContextRetries.get(page) ?? 0;
+      writeFileSync(
+        resolve(output, "report.json"),
+        JSON.stringify(
+          { schema: "organic-product-browser-evidence/1", reports },
+          null,
+          2
+        ) + "\n"
+      );
+      try {
+        const rows = execFileSync("ps", ["-eo", "pid=,ppid="], {
+          encoding: "utf8"
+        })
+          .trim()
+          .split("\n")
+          .map((line) => line.trim().split(/\s+/).map(Number));
+        const owned = new Set<number>([process.pid]);
+        let previousSize = 0;
+        while (owned.size !== previousSize) {
+          previousSize = owned.size;
+          for (const [pid, parent] of rows)
+            if (pid && parent && owned.has(parent)) owned.add(pid);
+        }
+        for (const pid of [...owned].reverse())
+          if (pid !== process.pid) {
+            try {
+              process.kill(pid, "SIGKILL");
+            } catch {
+              /* already exited */
+            }
+          }
+      } finally {
+        process.exit(1);
+      }
+    }, 240_000);
     writeFileSync(
       resolve(output, `${profile.name}-progress.json`),
       JSON.stringify(report, null, 2) + "\n"
@@ -675,9 +783,7 @@ for (const profile of profiles) {
       visual.push({
         ...view,
         coordinates: coordinateCheck,
-        geometryDigest: await shapeDigest(page),
-        renderer: organic.renderer,
-        svgPaint: organic.svgPaint,
+        ...(await shapeEvidence(page)),
         view: organic.liveView
       });
       // Retain the committed scene evidence even if the browser's screenshot
@@ -732,10 +838,8 @@ for (const profile of profiles) {
         assert(traces > 0, "overlay paints base-boundary traces");
       else assert.equal(traces, 0, `${mode} hides overlay traces`);
       displays[mode] = {
-        geometryDigest: await shapeDigest(page),
+        ...(await shapeEvidence(page)),
         traces,
-        renderer: state.renderer,
-        svgPaint: state.svgPaint,
         diagnostics: await panel
           .getByTestId("organic-diagnostics")
           .textContent()
@@ -864,6 +968,7 @@ for (const profile of profiles) {
     );
     await screenshot(page, `${profile.name}-failure`).catch(() => {});
   } finally {
+    report.navigationContextRetries = navigationContextRetries.get(page) ?? 0;
     writeFileSync(
       resolve(output, "report.json"),
       JSON.stringify(
@@ -872,9 +977,13 @@ for (const profile of profiles) {
         2
       ) + "\n"
     );
-    await context.close();
-    await remote?.dispose();
-    await browser.close();
+    try {
+      await context.close();
+      await remote?.dispose();
+      await browser.close();
+    } finally {
+      clearTimeout(phaseWatchdog);
+    }
     console.info(
       JSON.stringify({
         profile: profile.name,

@@ -1,0 +1,24 @@
+{
+  "schema": "organic-browser-interruption/1",
+  "interruptedAt": "2026-10-15T15:03:03.810013+00:00",
+  "runtimeSHA": "a5c5a921d5c81bcae64837c6463b02aa0c0a7ee8",
+  "phase": "organic-controls-camera",
+  "lastProgressAt": "2026-10-15T14:57:54.184Z",
+  "completedViews": [
+    "imjin",
+    "yi-shared",
+    "world"
+  ],
+  "completedMatchedViewScreenshots": 6,
+  "state": "Browser process stayed CPU-busy for more than four minutes restoring overview camera to Imjin. A browser protocol request did not return; the180s settle loop cannot bound a stalled page.evaluate await.",
+  "exactAwait": "restoreCamera comprises page.evaluate(popstate) followed by DOM-only settle polling; exact pending protocol call is not exposed by existing phase log. No screenshot was in flight during this phase. Full inspections, if reached, were at most once per10s after DOM quiet.",
+  "lastSourceGeneration": "Not captured in persisted view records. No further browser query result became available after this phase began.",
+  "processesAtLastObservation": {
+    "nodeRSSBytes": 157175808,
+    "webkitRSSBytes": 2784313344,
+    "webkitCPUPercent": 162,
+    "webkitElapsedSeconds": 441
+  },
+  "quality": "Default sampleStep1/smoothing2 and exact original contours retained. No contour simplification, sample reduction or renderer optimization.",
+  "nextEvidence": "Fresh public WebKit focused controls will be tested separately; this full lifetime is not passed."
+}

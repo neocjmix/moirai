@@ -1,0 +1,128 @@
+{
+  "schema": "organic-product-browser-evidence/1",
+  "reports": [
+    {
+      "profile": "mobile-webkit",
+      "surface": "https://moirai-production-8ed1.up.railway.app/graph/v5",
+      "localDiagnostic": false,
+      "readProxyUsed": false,
+      "readProxyOrigin": null,
+      "selectedViews": [
+        "imjin",
+        "yi-shared",
+        "world"
+      ],
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "errors": [],
+      "consoleErrors": [],
+      "incidentalResources": [],
+      "failedHTTP": [],
+      "writes": [],
+      "visualOnly": false,
+      "interactionsOnly": false,
+      "visualAcceptance": "User review pending; browser emulation is not physical iPhone 17 Safari/PWA evidence.",
+      "phase": "organic-controls-camera",
+      "observedSHA": "a5c5a921d5c81bcae64837c6463b02aa0c0a7ee8",
+      "source": {
+        "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "a04bfed02a65e60cc3a7e9b2b5ab3fca0d0e9e2a7643c63710eb0c6c1694e9d0",
+        "fixtureSha256": "5957645873d0484244e317a99c459df025e2d80d07dc5819e79c62569c716b64",
+        "temporalProvenance": "legacy-scalar-only"
+      },
+      "baselineCoordinates": {
+        "events": 113,
+        "anchors": 47
+      },
+      "views": [
+        {
+          "name": "imjin",
+          "camera": "260,223420,650,1800",
+          "coordinates": {
+            "events": 111,
+            "anchors": 49
+          },
+          "geometryDigest": "8ac14cf4332d3bd99799d4558c5c8bae0285964f6c4ee832b15f890c76a9940b",
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "webgl_scene_budget"
+          },
+          "svgPaint": {
+            "expected": 49,
+            "matched": 49,
+            "visible": 49,
+            "painter": "svg"
+          },
+          "view": {
+            "x": -156,
+            "y": -104757.21614583333,
+            "scaleX": 0.6,
+            "scaleY": 0.4688802083333333
+          }
+        },
+        {
+          "name": "yi-shared",
+          "camera": "280,222950,430,500",
+          "coordinates": {
+            "events": 68,
+            "anchors": 32
+          },
+          "geometryDigest": "642309601f05dc7ac107a3dd42ac0f51e11beb0354ffec226e82769014e4f768",
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "geographic_path_budget"
+          },
+          "svgPaint": {
+            "expected": 32,
+            "matched": 32,
+            "visible": 32,
+            "painter": "svg"
+          },
+          "view": {
+            "x": -253.953488372093,
+            "y": -376332.6328125,
+            "scaleX": 0.9069767441860465,
+            "scaleY": 1.68796875
+          }
+        },
+        {
+          "name": "world",
+          "camera": "0,220900,1900,21000",
+          "coordinates": {
+            "events": 19,
+            "anchors": 109
+          },
+          "geometryDigest": "793e56664a308c4808a310389d42c847175f30b5ebcafc51a3fafb541a4a13a2",
+          "renderer": {
+            "renderer": "svg",
+            "state": "fallback",
+            "fallback": "webgl_scene_budget"
+          },
+          "svgPaint": {
+            "expected": 109,
+            "matched": 109,
+            "visible": 109,
+            "painter": "svg"
+          },
+          "view": {
+            "x": 0,
+            "y": -8877.911830357143,
+            "scaleX": 0.20526315789473684,
+            "scaleY": 0.04018973214285714
+          }
+        }
+      ],
+      "passed": false,
+      "interrupted": true,
+      "error": "Browser process stayed CPU-busy for more than four minutes restoring overview camera to Imjin. A browser protocol request did not return; the180s settle loop cannot bound a stalled page.evaluate await.",
+      "interruptionFile": "interruption.json"
+    }
+  ]
+}

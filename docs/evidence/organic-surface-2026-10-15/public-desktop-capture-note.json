@@ -1,0 +1,14 @@
+{
+  "schema": "organic-browser-capture-note/1",
+  "reportSha256": "0541296daaa504eb3aeaf30ab7c0e87419c5172496e5dd275dd4d21fc5f8899e",
+  "runtimeSHA": "a5c5a921d5c81bcae64837c6463b02aa0c0a7ee8",
+  "result": true,
+  "displaySnapshotTiming": "The base/padded display metadata was sampled by settle before React completed the existing SVG fallback commit. Its painter:webgl fields are transitional pre-proof values. The separate subsequent shapeDigest assertion required painter===svg, exact final d/evenodd path matches, positive fill/opacity, and nonempty painted fixed contours before accepting each digest.",
+  "observedFallbackReasons": [
+    "webgl_scene_budget",
+    "geographic_path_budget"
+  ],
+  "unexercisedAssertions": "Later harness refinements save the exact verified paint snapshot and check computed CSS visibility. This completed run predates those metadata/visibility refinements; its screenshots were manually inspected and show final smooth SVG fills. It does not claim to exercise the other three accepted existing geometry-budget reasons.",
+  "rawReportPreserved": true,
+  "visualAcceptance": "User review pending; no physical iPhone Safari/PWA claim."
+}

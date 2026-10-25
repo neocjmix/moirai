@@ -80,6 +80,14 @@ Run the checks relevant to the change. The default set is:
 
 Do not weaken a requirement or delete a meaningful assertion just to make a gate pass. Report any check that could not run.
 
+## Public development environment status (2026-10-26 user clarification)
+
+- The publicly reachable Atropos deployment, even when named `production` in URLs or hosting configuration, is **not a formally released production service**. It is the primary development and user-review environment until the user explicitly declares a formal release.
+- Public accessibility does not imply release-level uptime, backward compatibility, zero-downtime deployment, or strict stability requirements. The user explicitly accepts temporary outages, broken behavior, incomplete experiments and instability during authorized development, rollback and cleanup.
+- Prefer a clean, reproducible development baseline and rapid, observable iteration over retaining failed experiments merely because they were deployed. The user may authorize reverting experimental runtime features and republishing derived artifacts without treating this as a production incident.
+- This tolerance is **not** permission to lose or corrupt canonical historical data, expose secrets, weaken authentication, change unrelated resources, or misrepresent failed verification. Preserve canonical World/Event identity, authored temporal facts, durable database data and security boundaries unless separately authorized.
+- Keep deployments attributable to commits, report what is broken or unverified, and distinguish the public development environment from any future formally released service. Formal-release operational guarantees require an explicit user decision.
+
 ## Deployment and infrastructure
 
 - Prefer the public cloud integration environment for user verification; local execution remains an agent diagnostic tool.

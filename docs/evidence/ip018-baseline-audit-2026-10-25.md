@@ -55,12 +55,12 @@ The audited #345 [rollout record](ip013/global-incidence/rollout.json) reports 2
 | `01995c2a-7b00-7000-8000-000000000101` (synthetic) | 62 | `7b3c2fd8da688b17a6a5bd41ac90b97849fadbb4d8654220e4f39b340f4243e3` | `765e6538e6a0bca9c4efe43223c8e6f17b7e4aa28849b33f5329cb26746c2c00` |
 | `01a107fb-4018-7fcb-8390-836a40fa91cc` (history) | 56 | `b9c1eee826eea41121fe87cb532902250687381e6daac63dbdb15e23eb102857` | `25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af` |
 
-Historical immutable backups are `worlds/<world>/render-rollbacks/global-incidence-20261010.json`. Current source/root, revisions, actual backup existence, live deployed SHA and pointer state require fresh reads; historical r56/539 Events/7 Collections are not silently treated as current evidence.
+Historical immutable backups are `worlds/<world>/render-rollbacks/global-incidence-20261010.json`. The [fresh live inventory](ip018/publication-before-2026-10-25.json) at 16:01 UTC confirms public SHA `36520cf`, both global-incidence generations above, unchanged source roots/revisions, synthetic r62 with 679 Events/30 Collections and history r56 with 539 Events/7 Collections. It records hashes for Event IDs, temporal extents/constraints, relations and Collections for post-recovery comparison. At that read the public smoke marker reported failed while the GitHub run was skipped; this discrepancy is preserved. Existing backup existence remains unverified through public routes; the recovery must create and read back its own immutable backup.
 
 ## Uncertainties and pending verification
 
 - No visibility into unconnected machines or agents; only this session's worktree/remote Git/PR/CI state is verified.
-- Fresh live Railway status and Publication pin/backup/readback results are owned by the execution evidence, not inferred from October 10 logs.
+- Fresh live status/pointers are recorded above; backup readback, republished generations and final deployment results remain pending execution evidence, not inferred from October 10 logs.
 - New restored coordinates need current golden/parity checks; the old successful extraction is supporting evidence only.
 - Actual iPhone 17 Safari/PWA visual acceptance cannot be established by desktop or WebKit emulation.
 - P1 engine execution, prefix/replay/convergence checks and later P2/P3/P4 work must be reported separately from P0 cleanup.

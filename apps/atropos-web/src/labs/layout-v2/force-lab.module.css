@@ -1,0 +1,316 @@
+.lab {
+  --line: #dddcd2;
+  --quiet: #5b675e;
+  --accent: #275d47;
+  min-height: 100dvh;
+  padding: max(24px, env(safe-area-inset-top))
+    max(16px, env(safe-area-inset-right)) max(40px, env(safe-area-inset-bottom))
+    max(16px, env(safe-area-inset-left));
+  background: #f7f7f0;
+  color: #25332c;
+}
+.wrap {
+  max-width: 1160px;
+  margin: 0 auto;
+}
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 0.16em;
+  font-weight: 700;
+  color: var(--quiet);
+  margin: 0 0 8px;
+}
+.header h1 {
+  font-family: Georgia, serif;
+  font-size: clamp(30px, 7vw, 44px);
+  font-weight: 400;
+  margin: 0;
+  letter-spacing: -0.04em;
+}
+.header a {
+  font-size: 13px;
+  text-underline-offset: 4px;
+  padding: 12px 0;
+}
+.intro {
+  line-height: 1.65;
+  max-width: 750px;
+  font-size: 14px;
+  margin: 0 0 22px;
+  color: var(--quiet);
+}
+.columns {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 300px;
+  gap: 18px;
+  align-items: start;
+}
+.panel {
+  min-width: 0;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: #fffef9;
+  overflow: hidden;
+}
+.panelHeading {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.panelHeading h2 {
+  font-size: 14px;
+  font-weight: 650;
+  margin: 0;
+}
+.panelHeading span {
+  font:
+    12px ui-monospace,
+    monospace;
+  color: var(--quiet);
+}
+.graph {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 640/420;
+  background: #fffef9;
+}
+.graph text {
+  font:
+    11px ui-monospace,
+    monospace;
+  fill: #68766b;
+}
+.graph .nodeLabel {
+  font-size: 9px;
+  fill: #34463a;
+}
+.graph line {
+  vector-effect: non-scaling-stroke;
+}
+.toolbar {
+  padding: 16px 18px;
+  border-top: 1px solid var(--line);
+}
+.tickRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.tickRow label {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13px;
+}
+.tickRow input {
+  width: 100px;
+}
+.slider {
+  display: block;
+  width: 100%;
+  margin: 20px 0;
+  min-height: 28px;
+  accent-color: var(--accent);
+}
+.buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.lab button,
+.lab input,
+.lab textarea {
+  border: 1px solid #bdc8be;
+  border-radius: 7px;
+  background: #fffef9;
+  color: #25332c;
+}
+.lab button {
+  min-height: 44px;
+  padding: 9px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+.lab button.primary {
+  background: var(--accent);
+  color: white;
+  border-color: var(--accent);
+}
+.lab button:disabled {
+  opacity: 0.45;
+  cursor: default;
+}
+.lab input {
+  font-size: 16px;
+  padding: 9px;
+  min-height: 44px;
+}
+.lab input[type="range"] {
+  border: 0;
+  padding: 0;
+}
+.lab button:focus-visible,
+.lab input:focus-visible,
+.lab textarea:focus-visible {
+  outline: 3px solid #8aac99;
+  outline-offset: 2px;
+}
+.small {
+  color: var(--quiet);
+  font-size: 12px;
+  line-height: 1.6;
+  margin: 12px 0 0;
+}
+.controls {
+  padding: 16px 18px;
+}
+.controls fieldset {
+  padding: 0;
+  margin: 0 0 18px;
+  border: 0;
+}
+.controls legend {
+  font-size: 13px;
+  font-weight: 650;
+  margin-bottom: 9px;
+}
+.control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 12px;
+  margin-top: 8px;
+}
+.control input {
+  width: 102px;
+  text-align: right;
+}
+.metrics {
+  margin-top: 18px;
+}
+.metricGrid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin: 0;
+  padding: 8px 18px 18px;
+  gap: 16px 12px;
+}
+.metricGrid dt {
+  color: var(--quiet);
+  font-size: 11px;
+  line-height: 1.5;
+  margin: 10px 0 4px;
+}
+.metricGrid dd {
+  font:
+    20px ui-monospace,
+    monospace;
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.metricNotes {
+  padding: 0 18px 18px;
+}
+.strain {
+  font-size: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  margin-top: 12px;
+}
+.status {
+  display: inline-block;
+  font:
+    12px ui-monospace,
+    monospace;
+  padding: 5px 8px;
+  border-radius: 5px;
+  background: #eaf0e5;
+}
+.exchange {
+  margin-top: 18px;
+}
+.exchangeBody {
+  padding: 16px 18px;
+}
+.exchange textarea {
+  display: block;
+  resize: vertical;
+  min-height: 150px;
+  width: 100%;
+  font:
+    12px/1.5 ui-monospace,
+    monospace;
+  padding: 12px;
+  margin: 12px 0;
+}
+.notice {
+  font-size: 12px;
+  line-height: 1.6;
+  color: var(--accent);
+  margin: 12px 0 0;
+  overflow-wrap: anywhere;
+}
+.error {
+  color: #a33d2b;
+}
+.footer {
+  margin: 24px 0 0;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+  font-size: 12px;
+  line-height: 1.7;
+  color: var(--quiet);
+}
+@media (max-width: 800px) {
+  .columns {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .header {
+    margin-bottom: 16px;
+  }
+  .header a {
+    font-size: 12px;
+  }
+  .metricGrid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+  .controls fieldset {
+    margin: 0;
+  }
+  .controls .small {
+    grid-column: 1 / -1;
+  }
+  .control {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .control input {
+    width: 100%;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .lab * {
+    scroll-behavior: auto;
+  }
+}

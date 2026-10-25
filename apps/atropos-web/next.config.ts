@@ -4,6 +4,7 @@ const nextConfig: NextConfig = {
   agentRules: false,
   transpilePackages: [
     "@moirai/contracts",
+    "@moirai/layout-simulation",
     "@moirai/projections",
     "@moirai/publication"
   ],

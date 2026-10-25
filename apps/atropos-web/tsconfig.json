@@ -9,10 +9,17 @@
     "baseUrl": ".",
     "paths": {
       "@urdr/contracts": ["src/urdr-port/shared/contracts/index.ts"],
-      "@urdr/domain": ["src/urdr-port/shared/domain-bridge.ts"]
+      "@urdr/domain": ["src/urdr-port/shared/domain-bridge.ts"],
+      "@moirai/layout-simulation": [
+        "../../packages/layout-simulation/src/index.ts"
+      ]
     },
     "noEmit": true,
-    "plugins": [{ "name": "next" }]
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ]
   },
   "include": [
     "next-env.d.ts",

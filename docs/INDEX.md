@@ -8,11 +8,11 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 헌법은 비즈니스 요구사항보다 우선하고 비즈니스 요구사항은 기술 명세보다 우선한다. 하위 계층이 상위 계층과 충돌하면 하위 문서를 수정하거나 상위 계층의 변경을 명시적으로 결정해야 한다.
 
-## 현재 authoritative baseline — 실제 역사 기반 재계획
+## 현재 실행 기준 — IP-018 Layout Lab v2
 
-[IP-013 실제 역사 기반 병행 개발](implementation/IP-013-real-history-development-plan.md)이 남은 우선순위를 소유한다. **World 관리→Clotho·발행 검증 후 dot의 제한 역사 pilot과 Codex의 Composite 표현·전환 개발을 병행**한다. 다음은 production main UX와 격리된 X 배치 실험실, 그 뒤 Collection 자동 ON/OFF·discovery다. 전체 A5 완료→A6 입력 순서는 대체됐다. 사용자 pilot 검토 전 자율 광역/인물 확장은 보류한다. 합성 규모 사례는 회귀용이고 실제 역사가 주 탐색·수용 자료다.
+[IP-018](implementation/IP-018-layout-lab-v2.md)이 현재 Layout Lab 실행을 소유한다. **v1 전체 연구는 종료되었고 미완료 후속은 cancelled / superseded다.** 먼저 Lab 이전 Force X·시간 고정 Y·Y-sweep으로 공개 개발 환경을 선택적으로 복구한 뒤, Iteration 불변식을 가진 새 X-only 시뮬레이션을 구축한다. v2 기본값 승격은 사용자 시각 승인 전 금지한다.
 
-[CURRENT](implementation/CURRENT.md)는 현재 활성 실행 범위와 배포 상태를 소유한다. 초기 문서·draft PR 전용 제한 뒤의 사용자 승인은 날짜별 계획을 따른다. 2026-10-13의 [IP-016](implementation/IP-016-tstl-product-lab.md)은 프로덕션의 선택형 TSTL 실험실 구현·검증·배포를 승인하며 역사·기본값·served pointer를 유지한다. [IP-011](implementation/IP-011-architecture-realignment.md)과 [A5 disposition](implementation/IP-011-A5-collection-discovery-plan.md)은 새 순서로 연결하며 기존 구현·증거를 보존한다.
+[CURRENT](implementation/CURRENT.md)는 현재 단계와 검증된 배포 상태를, [Codex handoff](implementation/IP-018-codex-handoff.md)는 인계를, [재조사 증거](evidence/ip018-baseline-audit-2026-10-25.md)는 기준선 근거와 불확실성을 소유한다. [IP-013](implementation/IP-013-real-history-development-plan.md)의 실제 역사·World·Collection 의미는 유지하며 R/L 연구 실행은 IP-018로 대체한다. [IP-016](implementation/IP-016-tstl-product-lab.md)과 [IP-017](implementation/IP-017-organic-surface-lab-slice-1.md)은 종료된 v1 계획이다. [IP-011](implementation/IP-011-architecture-realignment.md)과 [A5 disposition](implementation/IP-011-A5-collection-discovery-plan.md)의 무관한 backlog는 활성화하지 않는다.
 
 #321의 [모바일 성능 종료](implementation/IP-012-mobile-continuity-closeout.md)는 유지한다. 사용자는 iPhone 17 운영 체감을 수용했으며 수치 frame/heap 미달은 deferred이고 자동 재개 이유가 아니다. [IP-012](implementation/IP-012-render-publication-plan.md)는 Render 기술 경계와 승격/backfill을 소유한다. 실제 쓰기의 무결성·발행·복구는 선행 검증하되 모든 증분 최적화를 history gate로 삼지 않는다. 기본 GraphShell/Render와 [ADR-012](architecture/ADR-012-render-read-architecture.md)의 배포 기준선은 CURRENT를 따른다.
 
@@ -50,13 +50,15 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 - [IP-009 — 임진왜란 실제 역사 구축과 E2E](implementation/IP-009-imjin-war-e2e.md)
 - [IP-009 — 최종 검증 결과](evidence/ip009/final-verification.md)
 - [현재 구현 상태](implementation/CURRENT.md)
-- [Collection 레이아웃 실험 v2 재검토·검증](evidence/ip013/collection-layout-experiment-v2.md) — 데이터 기반 시간 국소 incidence 비교; 운영 후보 채택 없음.
-- [전역 incidence 운영 승격·전체 Render 재발행](evidence/ip013/global-incidence-rollout.md) — 2026-10-10 사용자 승인, 현재 실행 상태는 CURRENT.
+- [Collection 레이아웃 실험 v2 재검토·검증](evidence/ip013/collection-layout-experiment-v2.md) — v1의 날짜별 연구 기록; 후속 연구 cancelled.
+- [전역 incidence 운영 승격·전체 Render 재발행](evidence/ip013/global-incidence-rollout.md) — 2026-10-10 승격 기록; IP-018에서 Force 기준선 복구 승인.
 - [IP-014 — Pluggable renderer 비교 handoff](implementation/IP-014-pluggable-renderer-handoff.md)
 - [IP-015 — Realtime camera / eventual scene](implementation/IP-015-realtime-camera-eventual-scene.md)
-- [IP-016 — TSTL 제품 실험실](implementation/IP-016-tstl-product-lab.md)
-- [IP-017 — Organic Surface Lab 첫 구현 슬라이스](implementation/IP-017-organic-surface-lab-slice-1.md)
-- [Organic Surface 구현·시각 검수 증거](evidence/organic-surface-lab-2026-10-15.md) — 고정 좌표, 독립 패딩, 재현 설정; 시각 승인과 운영 승격은 별도.
+- [IP-018 — Layout Lab v2: 활성 실행 기준](implementation/IP-018-layout-lab-v2.md)
+- [Lab v1 종료 전 CURRENT: 역사 기록](implementation/CURRENT-HISTORY-THROUGH-LAB-V1.md)
+- [IP-016 — TSTL 제품 실험실 (cancelled / superseded)](implementation/IP-016-tstl-product-lab.md)
+- [IP-017 — Organic Surface Lab 첫 구현 슬라이스 (cancelled / superseded)](implementation/IP-017-organic-surface-lab-slice-1.md)
+- [Organic Surface 구현·시각 검수 증거](evidence/organic-surface-lab-2026-10-15.md) — v1 날짜별 증거; 미완료 검수·후속 및 승격 cancelled.
 - [TSTL B0 좌표의 버블·리본 비교와 검증](evidence/tstl-smooth-product-lab-2026-10-13.md)
 - [TSTL B/C 운영 비교와 검증](evidence/tstl-bc-product-lab-2026-10-13.md)
 - [IP-012 — Render Publication 구현 계획](implementation/IP-012-render-publication-plan.md)

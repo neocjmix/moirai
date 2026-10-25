@@ -1,0 +1,4 @@
+worktree /workspace/moirai
+HEAD 36520cfb62672dd9062ca9b27ae5be858070bd9c
+branch refs/heads/feat/ip018-baseline-recovery
+

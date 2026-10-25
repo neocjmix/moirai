@@ -1,14 +1,8 @@
-import earcut from "earcut";
-import { compoundContourNesting } from "./compound-contours";
-
 type XY = { x: number; y: number };
 
 // GraphShell publishes one closed absolute M/L/C/Z spline. Fail closed for
 // another grammar instead of silently drawing a different authored shape.
-export function flattenGeographicPath(
-  path: string,
-  options: { exact?: boolean } = {}
-): XY[] {
+export function flattenGeographicPath(path: string): XY[] {
   if (path.length > 1_000_000) throw Error("geographic_path_budget");
   const tokens =
     path.match(/[MLCZ]|[-+]?(?:\d*\.\d+|\d+\.?\d*)(?:e[-+]?\d+)?/gi) || [];
@@ -24,15 +18,8 @@ export function flattenGeographicPath(
   const result: XY[] = [];
   const push = (p: XY) => {
     const old = result.at(-1);
-    if (
-      !old ||
-      Math.hypot(p.x - old.x, p.y - old.y) > (options.exact ? 0 : 0.001)
-    )
-      result.push(p);
-    // Frozen smooth boundaries are denser than legacy adaptive splines. Keep
-    // their exact vertices under a separate cap; global path/mesh budgets stay.
-    if (result.length > (options.exact ? 8192 : 2048))
-      throw Error("geographic_vertex_budget");
+    if (!old || Math.hypot(p.x - old.x, p.y - old.y) > 0.001) result.push(p);
+    if (result.length > 2048) throw Error("geographic_vertex_budget");
   };
   const flat = (a: XY, b: XY, c: XY, d: XY, depth: number) => {
     const dx = d.x - a.x,
@@ -61,7 +48,7 @@ export function flattenGeographicPath(
     if (command === "M" && result.length)
       throw Error("unsupported_geographic_subpath");
     if (command === "M" || command === "L") push({ x: read(), y: read() });
-    else if (command === "C" && result.length && !options.exact) {
+    else if (command === "C" && result.length) {
       const a = result.at(-1)!;
       flat(
         a,
@@ -76,12 +63,10 @@ export function flattenGeographicPath(
   if (!closed) throw Error("unclosed_geographic_path");
   if (
     result.length > 1 &&
-    (options.exact
-      ? result[0]!.x === result.at(-1)!.x && result[0]!.y === result.at(-1)!.y
-      : Math.hypot(
-          result[0]!.x - result.at(-1)!.x,
-          result[0]!.y - result.at(-1)!.y
-        ) < 0.001)
+    Math.hypot(
+      result[0]!.x - result.at(-1)!.x,
+      result[0]!.y - result.at(-1)!.y
+    ) < 0.001
   )
     result.pop();
   return result;
@@ -92,40 +77,8 @@ const cross = (a: XY, b: XY, c: XY) =>
 
 export function geographicMesh(
   path: string,
-  options: { stroke?: boolean; fillRule?: "evenodd" } = {}
+  options: { stroke?: boolean } = {}
 ) {
-  const paths = splitGeographicContours(path);
-  if (options.fillRule === "evenodd")
-    return geographicCompoundMesh(paths, options);
-  if (paths.length === 1) return geographicContourMesh(paths[0]!, options);
-  // TSTL fragments are disjoint filled pieces, not holes. Triangulate each
-  // independently so no triangle can bridge a gap between authored fragments.
-  const meshes = paths.map((contour) =>
-    geographicContourMesh(contour, options)
-  );
-  const join = (kind: "fill" | "stroke") => {
-    const result = new Float32Array(
-      meshes.reduce((total, mesh) => total + mesh[kind].length, 0)
-    );
-    let offset = 0;
-    for (const mesh of meshes) {
-      result.set(mesh[kind], offset);
-      offset += mesh[kind].length;
-    }
-    return result;
-  };
-  return { fill: join("fill"), stroke: join("stroke") };
-}
-
-export function splitGeographicContours(path: string): string[] {
-  if (path.length > 1_000_000) throw Error("geographic_path_budget");
-  const paths = path.trim().split(/(?=M)/).filter(Boolean);
-  if (!paths.length || paths.length > 2048)
-    throw Error("geographic_contour_budget");
-  return paths;
-}
-
-function geographicContourMesh(path: string, options: { stroke?: boolean }) {
   const points = flattenGeographicPath(path);
   const indices = points.map((_, i) => i);
   const area = points.reduce((sum, p, i) => {
@@ -195,55 +148,5 @@ function geographicContourMesh(path: string, options: { stroke?: boolean }) {
       ...emit(b, a, 1)
     );
   }
-  return { fill: new Float32Array(fill), stroke: new Float32Array(stroke) };
-}
-
-/** Compound contours already contain their final exterior and hole boundaries.
- * Earcut bridges only its triangulation: those internal edges never enter the
- * separate stroke buffer or change the SVG/Canvas path. */
-function geographicCompoundMesh(
-  paths: string[],
-  options: { stroke?: boolean }
-) {
-  const rings = paths.map((path) =>
-    flattenGeographicPath(path, { exact: true })
-  );
-  const nesting = compoundContourNesting(rings);
-  const fill: number[] = [],
-    stroke: number[] = [];
-  const emit = (p: XY, q = p, side = 0) => [p.x, p.y, q.x, q.y, side];
-  for (const [index, outer] of rings.entries()) {
-    if (nesting.depths[index]! % 2 || nesting.areas[index] === 0) continue;
-    const holes = rings.filter(
-      (_, hole) => nesting.parents[hole] === index && nesting.areas[hole]! > 0
-    );
-    const vertices = [...outer];
-    const holeIndices: number[] = [];
-    for (const hole of holes) {
-      holeIndices.push(vertices.length);
-      vertices.push(...hole);
-    }
-    const triangles = earcut(
-      vertices.flatMap((point) => [point.x, point.y]),
-      holeIndices,
-      2
-    );
-    for (const vertex of triangles) fill.push(...emit(vertices[vertex]!));
-  }
-  if (options.stroke !== false)
-    for (const points of rings) {
-      for (let i = 0; i < points.length; i++) {
-        const a = points[i]!,
-          b = points[(i + 1) % points.length]!;
-        stroke.push(
-          ...emit(a, b, -1),
-          ...emit(a, b, 1),
-          ...emit(b, a, -1),
-          ...emit(a, b, -1),
-          ...emit(b, a, -1),
-          ...emit(b, a, 1)
-        );
-      }
-    }
   return { fill: new Float32Array(fill), stroke: new Float32Array(stroke) };
 }

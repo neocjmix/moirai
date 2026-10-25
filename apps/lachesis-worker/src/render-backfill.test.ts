@@ -152,7 +152,7 @@ describe("operator Render backfill", () => {
     const ref = generation.manifests[0]!;
     const manifest = JSON.parse(await generation.read(ref.key, ref.sha256));
     expect(manifest.tiles.length).toBeGreaterThan(0);
-    expect(manifest.layoutAlgorithmVersion).toBe("global-incidence/1");
+    expect(manifest.layoutAlgorithmVersion).toBe("v5-world-layout/1");
     expect(
       await backfillV5RenderGeneration({ state, revision: 7, store })
     ).toEqual(result);
@@ -160,6 +160,28 @@ describe("operator Render backfill", () => {
     const priorPointer = objects.get(
       "worlds/world-1/render-current.json"
     )!.body;
+    const unverifiedKey = "worlds/world-1/render-rollbacks/unverified.json";
+    const lossyStore = {
+      ...store,
+      put: async (...args: Parameters<typeof store.put>) =>
+        args[0] === unverifiedKey
+          ? { status: 201, etag: '"lost-write"' }
+          : store.put(...args)
+    };
+    await expect(
+      backfillV5RenderGeneration({
+        state,
+        revision: 7,
+        store: lossyStore,
+        rollbackSnapshotKey: unverifiedKey
+      })
+    ).rejects.toThrow("render_rollback_backup_verification_failed");
+    expect(objects.get("worlds/world-1/render-current.json")!.body).toBe(
+      priorPointer
+    );
+    expect((await readV5ServedRoot(store, "world-1")).pointer).toEqual(
+      original
+    );
     const rollbackResult = await backfillV5RenderGeneration({
       state,
       revision: 7,
@@ -191,6 +213,14 @@ describe("operator Render backfill", () => {
     expect(JSON.parse(objects.get(rollbackKey)!.body).previousPointer).toEqual(
       backup.previousPointer
     );
+    // A prior run with a different target generation must never be overwritten.
+    objects.set(rollbackKey, {
+      body: JSON.stringify({
+        ...backup,
+        expectedGeneration: "different-generation"
+      }),
+      etag: '"conflict"'
+    });
     await expect(
       backfillV5RenderGeneration({
         state,

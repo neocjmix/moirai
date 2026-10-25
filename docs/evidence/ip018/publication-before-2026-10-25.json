@@ -1,0 +1,184 @@
+{
+  "observedAt": "2026-10-25T16:01:10.176528+00:00",
+  "publicBase": "https://moirai-production-8ed1.up.railway.app",
+  "status": {
+    "application": {
+      "service": "atropos-web",
+      "version": "0.0.0-dev",
+      "commit_sha": "36520cfb62672dd9062ca9b27ae5be858070bd9c",
+      "deployed_at": "2026-10-25T15:56:05.238Z"
+    },
+    "versions": {
+      "contract": "5",
+      "schema": "011_ip011_authoring_search",
+      "publication_format": "v5-publication/1"
+    },
+    "smoke": {
+      "result": "failed",
+      "checked_at": "2026-10-25T15:54:51Z",
+      "run_url": "https://github.com/neocjmix/moirai/actions/runs/40209178212"
+    },
+    "surfaces": {
+      "atropos": "ok",
+      "health": "ok",
+      "status": "ok"
+    }
+  },
+  "worlds": [
+    {
+      "worldId": "01995c2a-7b00-7000-8000-000000000101",
+      "canonicalPointer": {
+        "format_version": "v5-publication/1",
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "served_revision": 62,
+        "current_revision": 62,
+        "publication_target_revision": 62,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01995c2a-7b00-7000-8000-000000000101/revisions/62/v5/complete/manifest.json",
+        "manifest_sha256": "ade33b0c04254c1cad12d9f9c5951d5b76fd5d351b7774faec784037228496f2",
+        "generated_at": "2026-09-29T01:05:14.585Z"
+      },
+      "canonicalPointerBytesSha256": "589723a56a337f369e4d9d5964fdaa3f8846cff8fb2ee2b8cf147da597372c96",
+      "render": {
+        "revision": 62,
+        "timeSystemId": "019f5b00-0000-7000-8000-000000000003",
+        "layoutAlgorithmVersion": "global-incidence/1",
+        "compilerVersion": "render-compiler/4",
+        "generation": "765e6538e6a0bca9c4efe43223c8e6f17b7e4aa28849b33f5329cb26746c2c00",
+        "manifestSha256": "1268ca8041b498f0474d9ba45d355129f89eceeba28c4ba42811223daf58932b",
+        "tiles": 6203,
+        "geometry": 110,
+        "bounds": {
+          "minX": -791.5652871904434,
+          "maxX": 826.2904620698095,
+          "minY": 193258.39681855205,
+          "maxY": 226585.406
+        }
+      },
+      "snapshotBefore": {
+        "sourceRevision": 62,
+        "servedRevision": 62,
+        "sourceRootDigest": "ade33b0c04254c1cad12d9f9c5951d5b76fd5d351b7774faec784037228496f2",
+        "inputDigest": "7c5955cb807bbe0c6ff4be7062233418e460e8c0014904a788d8561e31ecd0dc",
+        "eventCount": 679,
+        "relationCount": 753,
+        "collectionCount": 30,
+        "eventIdsSha256": "254ba26a8e8c928dc5fd5f9b2b6aca862fef90e7c5a8bca42b60c38e49075042",
+        "temporalExtentsSha256": "e8067e486f2ab9597187eab0e0f8b43f2810139173e73c058776501e4117d485",
+        "temporalConstraintsSha256": "417b3aad0d1e88c10812f7a45ef0f17e001c587b275e4fe72c82852b87a07564",
+        "relationsSha256": "fdd03243630ba58d5bce4523687863addb8580fa0b2a349e4eb8621de1be56e0",
+        "collectionsSha256": "0a12a32d53e79aff02f98d55d672659e050fc096d479bc8969c87bba83621197"
+      }
+    },
+    {
+      "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+      "canonicalPointer": {
+        "format_version": "v5-publication/1",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "served_revision": 56,
+        "current_revision": 56,
+        "publication_target_revision": 56,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/revisions/56/v5/complete/manifest.json",
+        "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "generated_at": "2026-10-10T04:22:50.900Z"
+      },
+      "canonicalPointerBytesSha256": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a",
+      "render": {
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "layoutAlgorithmVersion": "global-incidence/1",
+        "compilerVersion": "render-compiler/4",
+        "generation": "25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af",
+        "manifestSha256": "14b3d11cb059175b634029145a8fe381049c489ce276a1bd101a0782c5bdcb36",
+        "tiles": 4672,
+        "geometry": 109,
+        "bounds": {
+          "minX": -409.878,
+          "maxX": 400.72714966404726,
+          "minY": 211453.7875521058,
+          "maxY": 230300.6084998323
+        }
+      },
+      "snapshotBefore": {
+        "sourceRevision": 56,
+        "servedRevision": 56,
+        "sourceRootDigest": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "inputDigest": "3686e35e8d9a6ad3b7044b92f9d3a8ec82ad7892d8cc036f2f60202505b3de23",
+        "eventCount": 539,
+        "relationCount": 651,
+        "collectionCount": 7,
+        "eventIdsSha256": "e359db3f89c645d9250d8c9147e208d996a7554b490ec7c5daf4f162cb9eb556",
+        "temporalExtentsSha256": "ee413a765002deab76464d7ffa5c5b1564fbbf88f504b06533b4ba4d3222cf5f",
+        "temporalConstraintsSha256": "a017e48748ed5cdcd055e3bd1b147e4b570517b27ea5b7c67024d6d8ec241651",
+        "relationsSha256": "c5e29682cc61d8666cedfa775672356319c0e86e927c0581985aac58e806def4",
+        "collectionsSha256": "375653fedb120ddc5dd4b1e988553846c63a8fff930a25c48df5f51d759d25af"
+      }
+    }
+  ],
+  "backupVerification": {
+    "status": "historical_evidence_only",
+    "reason": "Public routes do not expose render-current.json or render-rollbacks; direct object-store credentials unavailable in this session. Worker backfill reads/saves immutable prior pointer and validates matching revision/sourceRootSha256 before publish.",
+    "historicalRunId": "global-incidence-20261010",
+    "historicalEvidence": "docs/evidence/ip013/global-incidence/rollout.json"
+  },
+  "railway": {
+    "projectId": "67754889-5b80-4503-b368-95e7d0768d84",
+    "environmentId": "990773c0-31d9-435c-8d36-21c15352fe51",
+    "services": [
+      {
+        "id": "ed61330b-87b2-40f2-a692-3453739f09a5",
+        "name": "easygoing-recreation",
+        "role": "pnpm --filter @moirai/lachesis-worker start",
+        "latestDeployment": {
+          "id": "3e81be75-3c33-4241-8e9c-12db54e3840a",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-25T15:54:29.423Z",
+          "url": null
+        },
+        "publicDomains": []
+      },
+      {
+        "id": "dafb90ad-69bc-420f-b0d2-65a5f6bbc2cf",
+        "name": "moirai",
+        "role": "pnpm --filter @moirai/atropos-web start",
+        "latestDeployment": {
+          "id": "3115f857-690b-4911-9858-f5c2407c0987",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-25T15:54:29.423Z",
+          "url": null
+        },
+        "publicDomains": [
+          "moirai-production-8ed1.up.railway.app"
+        ]
+      },
+      {
+        "id": "fe402236-354f-4088-8182-aaf5f7b34a99",
+        "name": "desirable-vitality",
+        "role": "pnpm --filter @moirai/clotho-api start",
+        "latestDeployment": {
+          "id": "2c4aa4e5-61e5-4825-946e-97475ce4e518",
+          "status": "SUCCESS",
+          "createdAt": "2026-10-25T15:54:29.423Z",
+          "url": null
+        },
+        "publicDomains": [
+          "desirable-vitality-production-eb95.up.railway.app"
+        ]
+      }
+    ],
+    "unrelatedStagedChanges": {
+      "patchId": "385fb667-d2bc-40b0-a640-a366f404ea0e",
+      "count": 2,
+      "service": "render-geometry-inspector",
+      "disposition": "Preserve without applying; unrelated staged creation."
+    }
+  },
+  "afterVerification": [
+    "Byte-identical canonical current.json and manifest_sha256 for each World; unchanged revision/identity/time.",
+    "Render manifest layoutAlgorithmVersion v5-world-layout/1 (pre-v1 legacy Force), compiler render-compiler/4; new generation source-pinned to same canonical root.",
+    "Worker render_backfill_all complete with served=2, failed=0, skipped=0 and per-world immutable backup key.",
+    "Public /__status commit_sha equals deployed source; Railway terminal SUCCESS for all changed services.",
+    "Public GraphShell smoke with baseline only and no v1 selectors."
+  ]
+}

@@ -1,4 +1,3 @@
-import { compoundContourNesting } from "../../../components/compound-contours";
 import { buildCompositePaddingProfile, type CompositePaddingProfile } from "@moirai/graph-presentation/composite-padding-profile";
 import type {
   GraphShellChartPlaneEntity,
@@ -158,7 +157,6 @@ export function prepareCompositeWorldGeometry(
 
   const supportCompleteById = new Map<string, boolean>();
   const regionGeometryById = new Map<string, CompositeHullGeometry>();
-  const fixedSupportBoundsById = new Map<string, Bounds>();
   const rawRegions = selectedRegionEntities
     .sort(
       (left, right) =>
@@ -196,15 +194,7 @@ export function prepareCompositeWorldGeometry(
           ? directSupportPoints
           : fallbackBoundsPolygon;
 
-      const fixedRings = entity.preparedContourMode === "fixed" ? entity.preparedWorldRings ?? [] : undefined;
-      const fixedTraces = fixedRings ? entity.preparedWorldTraces ?? [] : undefined;
-      const fixedSupport = fixedRings ? [...fixedRings.flat(), ...fixedTraces!.flatMap(trace => trace.points)] : [];
-      const hullPoints = fixedSupport.length
-        ? fixedSupport
-        : fixedRings
-        ? [entity.preparedAnchor ?? { x: ((entity.preparedCompactBounds ?? entity.worldBounds).minX + (entity.preparedCompactBounds ?? entity.worldBounds).maxX) / 2,
-             y: ((entity.preparedCompactBounds ?? entity.worldBounds).minY + (entity.preparedCompactBounds ?? entity.worldBounds).maxY) / 2 }]
-        : entity.preparedCompactBounds
+      const hullPoints = entity.preparedCompactBounds
         ? worldBoundsToPolygon(entity.preparedCompactBounds)
         : entity.preparedWorldHull && mode === "concave"
         ? entity.preparedWorldHull
@@ -215,16 +205,6 @@ export function prepareCompositeWorldGeometry(
             },
             mode
           );
-      if (fixedRings) {
-        // Presentation traces and atoms can extend beyond the authored span or
-        // member bounds. Cache their support once, without changing semantic
-        // worldBounds or the Event's supplied point-stage anchor.
-        const support = entity.preparedAnchor ? [...hullPoints, entity.preparedAnchor] : hullPoints;
-        fixedSupportBoundsById.set(entity.id, support.reduce((bounds, point) => ({
-          minX: Math.min(bounds.minX, point.x), maxX: Math.max(bounds.maxX, point.x),
-          minY: Math.min(bounds.minY, point.y), maxY: Math.max(bounds.maxY, point.y),
-        }), {minX: Infinity, maxX: -Infinity, minY: Infinity, maxY: -Infinity}));
-      }
       const geometry = {
         points: hullPoints,
         paddingProfile: entity.preparedPaddingProfile ?? buildCompositePaddingProfile(
@@ -233,7 +213,7 @@ export function prepareCompositeWorldGeometry(
         )
       } satisfies CompositeHullGeometry;
       regionGeometryById.set(entity.id, geometry);
-      const supportComplete = fixedRings || entity.preparedWorldHull || entity.preparedCompactBounds
+      const supportComplete = entity.preparedWorldHull || entity.preparedCompactBounds
         ? entity.childrenComplete === true
         : entity.childrenComplete === true && entity.contains.length > 0 && entity.contains.every((id) => allWorldInstantPointById.has(id) || supportCompleteById.get(id) === true);
       supportCompleteById.set(entity.id, supportComplete);
@@ -247,9 +227,8 @@ export function prepareCompositeWorldGeometry(
         containedBy: entity.containedBy,
         editorial: entity.editorial,
         points: geometry.points,
-        ...(fixedRings ? { fixedRings, fixedTraces, fixedContour: true, ...(entity.preparedContourFillRule ? {fillRule: entity.preparedContourFillRule, fixedRingDepths: compoundContourNesting(fixedRings).depths} : {}), preparedAnchor: entity.preparedAnchor } : {}),
         paddingProfile: geometry.paddingProfile,
-        hullPending: fixedRings ? fixedSupport.length === 0 : Boolean(entity.preparedCompactBounds)
+        hullPending: Boolean(entity.preparedCompactBounds)
       };
     })
     .filter((region) => region !== null)
@@ -258,7 +237,7 @@ export function prepareCompositeWorldGeometry(
         left.depth - right.depth || left.id.localeCompare(right.id)
     );
 
-  return { regions: rawRegions, regionById, parentRegionIdsByChildId, points, fixedSupportBoundsById };
+  return { regions: rawRegions, regionById, parentRegionIdsByChildId, points };
 }
 
 /** Bounds come from inverting the viewport, before projecting any points. */
@@ -284,7 +263,7 @@ export function selectCompositeWorldRegions(
       .filter(
         (region) =>
           region.contains.some((id) => seedVisibleInstantIds.has(id)) ||
-          worldBoundsIntersect(prepared.fixedSupportBoundsById.get(region.id) ?? region.worldBounds, visibleBounds)
+          worldBoundsIntersect(region.worldBounds, visibleBounds)
       )
       .map((region) => region.id)
   );
@@ -294,5 +273,5 @@ export function selectCompositeWorldRegions(
     prepared.parentRegionIdsByChildId
   );
   return prepared.regions.filter((region) => ids.has(region.id) && (!cullPreparation ||
-    seedRegionIds.has(region.id) || worldBoundsIntersect(prepared.fixedSupportBoundsById.get(region.id) ?? prepared.regionById.get(region.id)!.worldBounds, visibleBounds)));
+    seedRegionIds.has(region.id) || worldBoundsIntersect(prepared.regionById.get(region.id)!.worldBounds, visibleBounds)));
 }

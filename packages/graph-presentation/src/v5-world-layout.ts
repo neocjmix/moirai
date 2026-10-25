@@ -187,18 +187,6 @@ export function prepareV5LayoutInput(
         changed = true;
       }
   }
-  const collectionIds = [...(state.collections ?? [])].map((c) => c.id).sort();
-  const eventIds = new Set(events.map((e) => e.id));
-  const selectedBy = new Map<string, Set<string>>();
-  const members = new Map(collectionIds.map((id) => [id, new Set<string>()]));
-  for (const m of state.eventCollectionMemberships ?? []) {
-    if (!eventIds.has(m.event_id) || !members.has(m.collection_id))
-      throw Error("v5_layout_membership_invalid");
-    members.get(m.collection_id)!.add(m.event_id);
-    const selected = selectedBy.get(m.event_id) ?? new Set<string>();
-    selected.add(m.collection_id);
-    selectedBy.set(m.event_id, selected);
-  }
   return {
     formatVersion: "layout-input/1",
     worldId: state.world.id,
@@ -219,36 +207,11 @@ export function prepareV5LayoutInput(
       ...extent
     })),
     temporalConstraints: constraints,
-    visibleEventIds: [...visible],
-    incidence: {
-      formatVersion: "collection-incidence/1",
-      events: events.map((e) => ({
-        id: e.id,
-        childIds: [...(children.get(e.id) ?? [])].sort(),
-        collectionIds: [...(selectedBy.get(e.id) ?? [])].sort()
-      })),
-      collections: collectionIds.map((id) => ({
-        id,
-        eventIds: [...members.get(id)!].sort()
-      })),
-      relations: relations.flatMap((r) =>
-        r.source_ref.kind === "event" && r.target_ref.kind === "event"
-          ? [
-              {
-                id: r.id,
-                type: r.type,
-                sourceId: r.source_ref.event_id,
-                targetId: r.target_ref.event_id
-              }
-            ]
-          : []
-      )
-    }
+    visibleEventIds: [...visible]
   };
 }
 
-/** Production and research execute the same pure implementation. Only this
- * fixed selection is used by Lachesis; Lab presets never promote themselves. */
+/** Lachesis publishes only the frozen pre-v1 force baseline. */
 export function buildV5WorldLayout(
   state: CanonicalState,
   temporal: ReturnType<typeof projectV5WorldTemporal>,

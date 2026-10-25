@@ -186,7 +186,7 @@ describe("offline v5 World-owned geometry", () => {
     expect(layout.unplaced_event_ids).toContain("before");
     expect(() => buildV5SpatialIndex(layout)).not.toThrow();
   });
-  it("keeps one World geometry for viewer selections; canonical membership may change X", () => {
+  it("restores pre-v1 World geometry independent of Collection membership and viewer selection", () => {
     const temporal = projectV5WorldTemporal(state, 31);
     const layout = buildV5WorldLayout(state, temporal, systemId);
     const noCollection: CanonicalState = {
@@ -201,7 +201,7 @@ describe("offline v5 World-owned geometry", () => {
       projectV5WorldTemporal(noCollection, 31),
       systemId
     );
-    expect(without.shapes).not.toEqual(layout.shapes);
+    expect(without).toEqual(layout);
     const timeGeometry = (output: typeof layout) =>
       output.shapes.map((s) =>
         s.kind === "point"

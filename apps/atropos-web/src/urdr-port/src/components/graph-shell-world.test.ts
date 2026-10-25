@@ -1,5 +1,5 @@
 import { expect, it } from "vitest";
-import { graphShellChartPlaneRegionEntitySchema, type GraphShellChartPlaneRegionEntity as Region } from "../../shared/contracts";
+import type { GraphShellChartPlaneRegionEntity as Region } from "../../shared/contracts";
 import {
   prepareCompositeWorldGeometry,
   selectCompositeWorldRegions
@@ -23,27 +23,6 @@ const region = (id: string, contains: string[], x = 0): Region => ({
   validationState: "ok",
   viewportClass: "visible",
   worldBounds: bounds(x)
-});
-
-it("keeps fixed disjoint rings and an independent source annotation anchor", () => {
-  const rings = [
-    [{x: 0, y: 100}, {x: 10, y: 100}, {x: 10, y: 110}, {x: 0, y: 110}],
-    [{x: 30, y: 170}, {x: 40, y: 170}, {x: 40, y: 200}, {x: 30, y: 200}],
-  ];
-  const input: Region = {...region("one-event", ["child"]), preparedContourMode: "fixed", preparedWorldRings: rings,
-    preparedAnchor: {x: 17, y: 141}, childrenComplete: true};
-  const prepared = prepareCompositeWorldGeometry([input], [], "convex");
-  expect(prepared.regions).toHaveLength(1);
-  expect(prepared.regions[0]).toMatchObject({id: "one-event", points: rings.flat(), fixedRings: rings, fixedContour: true,
-    preparedAnchor: {x: 17, y: 141}, hullPending: false});
-  // The source midpoint is141; the asymmetric visible fragments span100..200.
-  expect(prepared.regions[0]!.preparedAnchor!.y).not.toBe(150);
-});
-
-it("an empty fixed ring set stays an explicit point-only owner", () => {
-  const prepared = prepareCompositeWorldGeometry([{...region("fallback", []), preparedContourMode: "fixed",
-    preparedWorldRings: [], preparedAnchor: {x: 5, y: 27}}], [], "concave");
-  expect(prepared.regions[0]).toMatchObject({points: [{x: 5, y: 27}], fixedRings: [], hullPending: true});
 });
 
 it.each(["convex", "concave"] as const)(
@@ -152,61 +131,4 @@ it('preparation culls remote siblings without changing complete parent support',
   expect(selectCompositeWorldRegions(prepared,bounds(0,20),bounds(0,20))).toHaveLength(101);
   expect(selectCompositeWorldRegions(prepared,bounds(0,20),bounds(0,20),true).map(r=>r.id)).toEqual(['child-0','parent']);
   expect(Math.max(...prepared.regions.find(r=>r.id==='parent')!.points.map(point=>point.x))).toBe(9910);
-});
-
-
-it("preserves authored ownership, trace metadata and source anchor without fabricating a hull", () => {
-  const traces = [
-    {kind: "spine" as const, points: [{x: 3, y: 0}, {x: 3, y: 100}]},
-    {kind: "membership" as const, eventId: "child", points: [{x: 3, y: 40}, {x: 10, y: 40}]},
-  ];
-  const source = graphShellChartPlaneRegionEntitySchema.parse({...region("owner", ["child"]),
-    preparedContourMode: "fixed", preparedWorldRings: [], preparedWorldTraces: traces,
-    preparedAnchor: {x: 3, y: 31}, childrenComplete: true});
-  const prepared = prepareCompositeWorldGeometry([source], [], "convex");
-  expect(prepared.regions).toHaveLength(1);
-  expect(prepared.regions[0]).toMatchObject({id: "owner", fixedRings: [], fixedTraces: traces,
-    points: traces.flatMap(trace => trace.points), hullPending: false, preparedAnchor: {x: 3, y: 31}, contains: ["child"]});
-  expect(prepared.regionById.size).toBe(1);
-  expect(graphShellChartPlaneRegionEntitySchema.safeParse({...source, preparedWorldTraces: [{kind: "spine", points: [{x: 0, y: 0}]}]}).success).toBe(false);
-});
-
-
-it("seeds and retains a fixed owner from its remote trace without changing semantic bounds or anchor Y", () => {
-  const source: Region = {...region("trace-owner", []), preparedContourMode: "fixed", preparedWorldRings: [],
-    preparedWorldTraces: [{kind: "spine", points: [{x: 100, y: 20}, {x: 100, y: 80}]}],
-    preparedAnchor: {x: 5, y: 7}};
-  const prepared = prepareCompositeWorldGeometry([source], [], "concave");
-  const viewport = {minX: 95, maxX: 105, minY: 40, maxY: 60};
-  for (const cull of [false, true]) {
-    expect(selectCompositeWorldRegions(prepared, viewport, viewport, cull).map(item => item.id)).toEqual(["trace-owner"]);
-    const distant = {minX: 200, maxX: 210, minY: 40, maxY: 60};
-    expect(selectCompositeWorldRegions(prepared, distant, distant, cull)).toEqual([]);
-  }
-  expect(prepared.fixedSupportBoundsById.get(source.id)).toEqual({minX: 5, maxX: 100, minY: 7, maxY: 80});
-  expect(prepared.regionById.get(source.id)!.worldBounds).toEqual(bounds(0));
-  expect(prepared.regions[0]!.preparedAnchor).toEqual({x: 5, y: 7});
-});
-
-it("selects remote fixed rings and empty-contour fallback anchors without changing ordinary hull selection", () => {
-  const ring = [{x: 100, y: 20}, {x: 110, y: 20}, {x: 110, y: 80}, {x: 100, y: 80}];
-  const fixed: Region = {...region("fixed", []), preparedContourMode: "fixed", preparedWorldRings: [ring]};
-  const fallback: Region = {...region("fallback", []), preparedContourMode: "fixed", preparedWorldRings: [], preparedAnchor: {x: 105, y: 50}};
-  const ordinary: Region = {...region("ordinary", []), preparedWorldHull: ring};
-  const prepared = prepareCompositeWorldGeometry([fixed, fallback, ordinary], [], "concave");
-  const viewport = {minX: 95, maxX: 115, minY: 40, maxY: 60};
-  expect(selectCompositeWorldRegions(prepared, viewport, viewport, true).map(item => item.id)).toEqual(["fallback", "fixed"]);
-  expect(prepared.fixedSupportBoundsById.has("ordinary")).toBe(false);
-  expect(selectCompositeWorldRegions(prepared, bounds(0), bounds(0), true).map(item => item.id)).toEqual(["ordinary"]);
-});
-
-
-it("retains explicit even-odd semantics and cached ring nesting without changing the final coordinates", () => {
-  const outer = [{x: 0, y: 0}, {x: 100, y: 0}, {x: 100, y: 100}, {x: 0, y: 100}];
-  const hole = [{x: 20, y: 20}, {x: 80, y: 20}, {x: 80, y: 80}, {x: 20, y: 80}];
-  const source = graphShellChartPlaneRegionEntitySchema.parse({...region("compound", []), preparedContourMode: "fixed",
-    preparedWorldRings: [hole, outer], preparedContourFillRule: "evenodd", preparedAnchor: {x: 50, y: 50}});
-  const prepared = prepareCompositeWorldGeometry([source], [], "convex");
-  expect(prepared.regions[0]).toMatchObject({fillRule: "evenodd", fixedRingDepths: [1, 0], fixedRings: [hole, outer], preparedAnchor: {x: 50, y: 50}});
-  expect(prepared.regions[0]!.fixedRings).toBe(source.preparedWorldRings);
 });

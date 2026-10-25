@@ -1340,13 +1340,6 @@ export const graphShellChartPlaneSegmentEntitySchema = graphShellChartPlaneEntit
 });
 export type GraphShellChartPlaneSegmentEntity = z.infer<typeof graphShellChartPlaneSegmentEntitySchema>;
 
-export const graphShellPreparedWorldTraceSchema = z.object({
-  kind: z.enum(["spine", "membership", "route"]),
-  eventId: z.string().optional(),
-  points: z.array(chartPlaneWorldPointSchema).min(2)
-});
-export type GraphShellPreparedWorldTrace = z.infer<typeof graphShellPreparedWorldTraceSchema>;
-
 export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntityBaseSchema.extend({
   geometryKind: z.literal("region"),
   worldBounds: chartPlaneWorldBoundsSchema,
@@ -1354,15 +1347,6 @@ export const graphShellChartPlaneRegionEntitySchema = graphShellChartPlaneEntity
   // Immutable hull prepared by Lachesis; screen padding, label and fades stay
   // in GraphShell. Only the tile-backed adapter supplies this field.
   preparedWorldHull: z.array(chartPlaneWorldPointSchema).optional(),
-  // Experimental immutable boundaries share one authored Event owner.
-  // Default rings are disjoint fills; explicit even-odd contours can have holes.
-  // Empty rings keep explicit open traces, or a point fallback when both are empty.
-  preparedWorldRings: z.array(z.array(chartPlaneWorldPointSchema).min(3)).optional(),
-  // Presentation only: crossings do not create Events or contains relationships.
-  preparedWorldTraces: z.array(graphShellPreparedWorldTraceSchema).optional(),
-  preparedContourMode: z.literal("fixed").optional(),
-  preparedContourFillRule: z.literal("evenodd").optional(),
-  preparedAnchor: chartPlaneWorldPointSchema.optional(),
   // A known compact Composite may paint its point before lazy hull retrieval.
   preparedCompactBounds: chartPlaneWorldBoundsSchema.optional(),
   preparedDepth: z.number().int().positive().optional(),

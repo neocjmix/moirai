@@ -13,21 +13,6 @@ const path = "M0 0 C2 3 7 3 10 0 L10 10 L0 10 Z";
 const controls = geographicPathControls(path)!;
 
 describe("bounded background mesh reuse", () => {
-  it("retains independent closed fragment topology during anisotropic reuse", () => {
-    const input = geographicPathControls(
-      "M0 0 L10 0 L10 10 Z M30 0 L40 0 L40 10 Z"
-    )!;
-    expect(input.topology).toBe("MLLZMLLZ");
-    expect(input.coordinates.length).toBe(12);
-    expect(canReuseGeographicMesh(input, input, identity, identity)).toBe(true);
-    const changed = geographicPathControls(
-      "M0 0 L10 0 L10 10 Z M31 0 L40 0 L40 10 Z"
-    );
-    expect(canReuseGeographicMesh(input, changed, identity, identity)).toBe(
-      false
-    );
-    expect(geographicPathControls("M0 0 Z Z")).toBeNull();
-  });
   it("parses exact cubic controls and rejects unsupported or invalid topology", () => {
     expect(controls.topology).toBe("MCLLZ");
     expect([...controls.coordinates]).toEqual([

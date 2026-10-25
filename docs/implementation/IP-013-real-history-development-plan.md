@@ -7,6 +7,8 @@ layer: implementation-plan
 
 # IP-013 — 실제 역사 기반 개발과 검증
 
+> **2026-10-26 KST disposition: Lab v1 R/L 실행 범위만 종료 — cancelled / superseded by [IP-018](IP-018-layout-lab-v2.md).** 아래 승인·“다음 작업”은 역사 기록이다. 미완료 시각 검수·WebKit 검증·후속 구현·기본값 승격을 완료 처리하거나 재개하지 않는다. Git 이력과 날짜별 evidence는 보존하며 v1 runtime·실험 UI는 제거한다. World·역사·인증 및 Lab과 무관한 유효한 기능은 유지한다.
+
 2026-10-04 UTC 사용자 재계획. **이 문서는 이전 A5 완료 → A6 역사 입력 순서를 대체한다.** World 관리와 Clotho 입력 검증을 먼저 완료하고, dot의 실제 역사 축적과 Codex의 개발·검증을 병행한다. 개발 우선순위는 Composite 표현·전환 → 격리된 X 배치 실험실 → Collection 자동 ON/OFF·discovery다. 합성 규모 사례는 회귀·부하 시험으로 보존하며 제품 탐색·수용의 주 입력은 실제 역사로 바꾼다.
 
 이번 작업은 문서 정합화와 draft PR까지다. 코드·설정·운영 데이터 변경, merge·배포는 하지 않는다. 이 계획의 채택만으로 입력이나 구현을 시작하지 않는다. 사용자는 이 문서 작업 후 중단된 World 구현과 실제 역사 작업의 재개를 별도로 승인했다. 후속 구현은 PR-first·자동 merge 금지를 유지하며, 아래 선행 수용을 기록한 뒤 제한 pilot을 시작한다. 사용자 pilot 검토 전 자율 대량 확장은 금지한다. [CURRENT](CURRENT.md)가 활성 상태를 소유한다.

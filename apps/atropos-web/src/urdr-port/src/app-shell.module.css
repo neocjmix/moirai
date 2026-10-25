@@ -175,18 +175,6 @@
   pointer-events: none;
 }
 
-/* Comparison remains reachable while the selected Event drawer is open. */
-.graphToolsDock {
-  position: absolute;
-  right: 0;
-  bottom: max(86px, calc(env(safe-area-inset-bottom) + 78px));
-  left: 0;
-  z-index: 10060;
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-
 .bottomTabRail {
   --bottom-tab-toggle-height: 18px;
   display: flex;

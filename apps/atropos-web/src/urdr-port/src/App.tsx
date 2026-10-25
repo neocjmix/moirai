@@ -36,9 +36,6 @@ type AppProps = {
   initialEventDetail?: EventDetailResponse;
   initialDrawerStage?: GraphShellDrawerStage;
   onSelection?: (id:string|null)=>void;
-  renderSettings?: (locale: AppLocale) => ReactNode;
-  renderEventTools?: (locale: AppLocale) => ReactNode;
-  renderGraphTools?: (locale: AppLocale) => ReactNode;
   renderGraphPage?: (args: {
     workspace: GraphShellWorkspaceShell;
     locale: AppLocale;
@@ -117,7 +114,7 @@ const SCREEN_ICONS = {
   settings: GearIcon,
 } as const;
 
-export function App({ discovery, initialScreen = "graph", loader, preserveWorkspaceOnLoaderChange = false, renderGraphPage, renderSettings, renderGraphTools, renderEventTools, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
+export function App({ discovery, initialScreen = "graph", loader, preserveWorkspaceOnLoaderChange = false, renderGraphPage, initialViewportCenter, externalFocus, initialEventDetail, initialDrawerStage, onSelection }: AppProps) {
   const compositeHullMode: CompositeHullMode = "concave";
   const compositeSplineTuning: CompositeSplineTuning = DEFAULT_COMPOSITE_SPLINE_TUNING;
   const [manualLocaleOverride, setManualLocaleOverride] = useState<AppLocale | null>(null);
@@ -154,7 +151,6 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
         initialEventDetail={initialEventDetail}
         initialDrawerStage={initialDrawerStage}
         onSelection={onSelection}
-        eventTools={renderEventTools?.(locale)}
         locale={locale}
       />
     ) : null;
@@ -317,7 +313,6 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
                 {manualLocaleOverride === null ? `${copy.settingsBrowserDefaultLabel}: ${locale}` : `${copy.settingsOverrideActiveLabel}: ${manualLocaleOverride}`}
               </div>
             </div>
-            {renderSettings?.(locale)}
           </div>
         </div>
       );
@@ -350,7 +345,6 @@ export function App({ discovery, initialScreen = "graph", loader, preserveWorksp
         {activePage !== "graph" ? renderPage() : null}
       </div>
 
-      {activePage === "graph" && renderGraphTools ? <div className={appShellStyles.graphToolsDock}>{renderGraphTools(locale)}</div> : null}
       <div className={appShellStyles.bottomTabDock} data-collapsed={tabBarCollapsed ? "true" : "false"}>
         <div className={appShellStyles.bottomTabRail}>
           <button

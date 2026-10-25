@@ -286,8 +286,7 @@ export async function prepareV5PublicationFixture(
     ? withContinuityGroup(state)
     : state;
   // Fixed-camera renderer regressions deliberately retain their historical
-  // geometry. Global incidence has its own exact reviewed-geometry tests and
-  // live publication verification; a renderer test is not an algorithm test.
+  // pre-v1 force geometry; a renderer test is not an algorithm test.
   const layoutSelection = defaultLayoutSelection("legacy-force");
   const { artifacts } = await buildV5WorldCompleteArtifacts(
     fixtureState,

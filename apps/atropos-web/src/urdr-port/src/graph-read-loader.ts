@@ -18,7 +18,7 @@ export type GraphReadLoader = {
     collectionIds: readonly string[];
   };
   viewportMode?: "incremental" | "snapshot";
-  /** Stable identity of an opt-in layout paint source. A committed source
+  /** Stable identity of an immutable paint source. A committed source
    * change may retry a renderer that could not paint the previous geometry. */
   paintSourceKey?: string;
   dispose?(): void;

@@ -156,37 +156,4 @@ describe("IP-013 research isolation", () => {
         expect(names).not.toContain("buildV5WorldLayout");
       }
   });
-  it("keeps Lab browser controls free from server adapters, projection, publication and canonical writers", () => {
-    const seen = walk([`${app}/labs/layout/layout-lab.tsx`], (path, spec) => {
-      expect(`${path} -> ${spec}`).not.toMatch(
-        /load-snapshot|\/fixtures|\/server|node:|@moirai\/(?:publication|projections|persistence|lachesis|clotho|domain)/
-      );
-    });
-    expect(
-      [...seen].some((path) =>
-        path.endsWith("graph-presentation/src/layout-engine.ts")
-      )
-    ).toBe(true);
-  });
-  it("restricts the snapshot adapter to read and preparation operations", () => {
-    const path = `${app}/labs/layout/load-snapshot.ts`;
-    for (const { spec, names } of imports(path)) {
-      expect(spec).not.toMatch(/@moirai\/(?:persistence|lachesis|clotho)/);
-      if (spec === "@moirai/graph-presentation/server")
-        expect(names).toEqual(["prepareV5LayoutInput"]);
-      if (spec === "@moirai/publication/v5")
-        expect(names.sort()).toEqual([
-          "readV5ServedRoot",
-          "readV5StagedDocument"
-        ]);
-    }
-    const route = readFileSync(
-      `${app}/app/labs/layout/snapshot/route.ts`,
-      "utf8"
-    );
-    expect(route).toMatch(/export async function GET/);
-    expect(route).not.toMatch(
-      /export (?:async )?function (?:POST|PUT|PATCH|DELETE)/
-    );
-  });
 });

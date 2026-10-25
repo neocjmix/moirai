@@ -86,6 +86,9 @@ export async function backfillV5RenderGeneration(input: {
       const written = await store.put(key, body, { immutable: true });
       if (![200, 201].includes(written.status))
         throw Error("render_rollback_backup_failed");
+      const verified = await store.get(key);
+      if (verified.status !== 200 || verified.body !== body)
+        throw Error("render_rollback_backup_verification_failed");
     } else if (saved.status === 200 && saved.body) {
       const backup = JSON.parse(saved.body);
       if (

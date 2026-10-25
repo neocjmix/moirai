@@ -4,9 +4,7 @@ import { dirname, resolve } from "node:path";
 import {
   computeLayout,
   defaultLayoutSelection,
-  layoutAlgorithms,
-  type LayoutInput,
-  type LayoutOutput
+  type LayoutInput
 } from "./layout-engine.js";
 import { buildGraphShellChartPlane } from "./urdr-chart-plane.js";
 
@@ -69,26 +67,7 @@ const fixture = (): LayoutInput => {
     ],
     visibleEventIds: ["a", "b", "c", "z-inner", "z-overlap", "zz-outer"]
   };
-  return {
-    ...input,
-    incidence: {
-      formatVersion: "collection-incidence/1",
-      events: input.dataset.events.map((e) => ({
-        id: e.id,
-        collectionIds: [],
-        childIds: input.dataset.semanticLinks
-          .filter((r) => r.type === "contains" && r.fromId === e.id)
-          .map((r) => r.toId)
-      })),
-      collections: [],
-      relations: input.dataset.semanticLinks.map((r) => ({
-        id: r.id,
-        type: r.type,
-        sourceId: r.fromId,
-        targetId: r.toId
-      }))
-    }
-  };
+  return input;
 };
 function freeze<T>(value: T): T {
   if (value && typeof value === "object") {
@@ -97,17 +76,7 @@ function freeze<T>(value: T): T {
   }
   return value;
 }
-function temporalGeometry(output: LayoutOutput) {
-  return output.shapes.map((shape) =>
-    shape.kind === "point"
-      ? [shape.event_id, shape.kind, shape.position.y]
-      : shape.kind === "region"
-        ? [shape.event_id, shape.kind, shape.bounds.minY, shape.bounds.maxY]
-        : [shape.event_id, shape.kind, shape.start.y, shape.end.y]
-  );
-}
-
-describe("shared research/production layout boundary", () => {
+describe("frozen pre-v1 production layout boundary", () => {
   it("preserves the pinned low-level default geometry for all-pair and bounded branches", () => {
     for (const size of [7, 501]) {
       const input = fixture();
@@ -153,59 +122,15 @@ describe("shared research/production layout boundary", () => {
   it("repeats from frozen input and restores JSON selections without mutation", () => {
     const input = freeze(fixture());
     const before = JSON.stringify(input);
-    for (const algorithm of layoutAlgorithms) {
-      const selection = freeze(defaultLayoutSelection(algorithm.id));
-      const first = computeLayout(input, selection);
-      expect(
-        computeLayout(input, JSON.parse(JSON.stringify(selection)))
-      ).toEqual(first);
-      expect(JSON.stringify(input)).toBe(before);
-      expect(first.unplaced_event_ids).toEqual(["d-unplaced"]);
-    }
-  });
-  it("uses distinct schemas and changes point X before nested/overlap envelope derivation, never Y or identities", () => {
-    const input = freeze(fixture());
-    const baseline = computeLayout(
-      input,
-      defaultLayoutSelection("legacy-force")
+    const selection = freeze(defaultLayoutSelection());
+    const first = computeLayout(input, selection);
+    expect(computeLayout(input, JSON.parse(JSON.stringify(selection)))).toEqual(
+      first
     );
-    const selection = defaultLayoutSelection("deterministic-slots");
-    const result = computeLayout(input, selection);
-    expect(temporalGeometry(result)).toEqual(temporalGeometry(baseline));
-    expect(result.shapes).not.toEqual(baseline.shapes);
-    expect(Object.keys(selection.parameters)).toEqual([
-      "slotSpacing",
-      "collisionWindowYears"
-    ]);
-    const b = result.shapes.find((shape) => shape.event_id === "b")!;
-    const outer = result.shapes.find((shape) => shape.event_id === "zz-outer")!;
-    expect(b.kind === "point" && b.position.x).toBe(110);
-    expect(outer.kind === "region" && outer.bounds.maxX).toBe(110);
-    const spaced = computeLayout(input, {
-      ...selection,
-      parameters: { ...selection.parameters, slotSpacing: 240 }
-    });
-    expect(
-      spaced.shapes.find((shape) => shape.event_id === "zz-outer")
-    ).toMatchObject({ bounds: { maxX: 240 } });
-    expect(temporalGeometry(spaced)).toEqual(temporalGeometry(result));
+    expect(JSON.stringify(input)).toBe(before);
+    expect(first.unplaced_event_ids).toEqual(["d-unplaced"]);
   });
-  it("exposes effective bounded mode and the v5 structural-causes no-op honestly", () => {
-    const input = fixture();
-    const baseline = defaultLayoutSelection();
-    expect(
-      computeLayout(input, {
-        ...baseline,
-        parameters: { ...baseline.parameters, causesAttraction: 2 }
-      })
-    ).toEqual(computeLayout(input, baseline));
-    const bounded = computeLayout(input, {
-      ...baseline,
-      parameters: { ...baseline.parameters, repulsionMode: "bounded" }
-    });
-    expect(bounded.algorithm_version).toBe("v5-world-layout/2");
-    expect(bounded.shapes).not.toEqual(computeLayout(input, baseline).shapes);
-  });
+
   it("rejects unknown versions, cross-algorithm parameters, invalid numbers and hidden seeds", () => {
     const input = fixture(),
       selection = defaultLayoutSelection();
@@ -215,7 +140,7 @@ describe("shared research/production layout boundary", () => {
     expect(() =>
       computeLayout(input, {
         ...selection,
-        parameters: defaultLayoutSelection("deterministic-slots").parameters
+        parameters: { ...selection.parameters, iterations: 64 }
       })
     ).toThrow();
     expect(() =>

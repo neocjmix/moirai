@@ -66,8 +66,6 @@ function materialKey(scene: Props) {
       return [
         region.id,
         region.path,
-        region.fixedContour,
-        region.fillRule,
         world({ x: offset[0] || 0, y: offset[1] || 0 }, view, size),
         region.pathTransform?.startsWith("matrix(")
           ? region.pathTransform
@@ -346,17 +344,12 @@ export function GeographicCanvas(props: Props) {
             // remains 2.4 CSS pixels, independent of the raster density.
             const layers = hullFeatherLayers(
               region.path,
-              region.fixedContour
-                ? 0
-                : 1 - (region.representation?.hullStrokeOpacity ?? 1),
+              1 - (region.representation?.hullStrokeOpacity ?? 1),
               HULL_FEATHER_WIDTH_PX / Math.max(0.0001, pathScale)
             );
             for (const layer of layers) {
               context.globalAlpha = hullLayerOpacity(fillAlpha, layer.weight);
-              context.fill(
-                path(layer.contours.join(" ")),
-                region.fillRule ?? "nonzero"
-              );
+              context.fill(path(layer.contours.join(" ")));
             }
             context.restore();
           }

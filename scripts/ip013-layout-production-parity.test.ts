@@ -7,7 +7,7 @@ import {
   createSyntheticLabState,
   SYNTHETIC_LAB_REVISION,
   SYNTHETIC_LAB_TIME_SYSTEM_ID
-} from "../apps/atropos-web/src/labs/layout/fixtures";
+} from "./fixtures/layout-baseline";
 
 /** These digests were produced independently by BOTH v5-world-layout.ts and
  * urdr-chart-plane.ts taken verbatim from starting main 4c72666, before their

@@ -24,9 +24,6 @@ export type GeographicScenePoint = Readonly<{
 export type GeographicSceneRegion = Readonly<{
   id: string;
   path: string;
-  /** Fixed experimental contours bypass cosmetic feathering. */
-  fixedContour?: boolean;
-  fillRule?: "evenodd";
   pathTransform?: string;
   paintView?: GeographicView;
   paintViewport?: GeographicSize;

@@ -332,7 +332,7 @@ async function workerLoop(): Promise<void> {
     if (publicationMode !== "v5")
       throw Error("render_backfill_all_requires_v5");
     const requested = process.env.IP013_RENDER_BACKFILL_LAYOUT;
-    if (requested && !["global-incidence", "legacy-force"].includes(requested))
+    if (requested && requested !== "legacy-force")
       throw Error("render_backfill_layout_invalid");
     const layoutSelection =
       requested === "legacy-force"

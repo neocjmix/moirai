@@ -1,10 +1,6 @@
 /** Server-side synthetic input for the isolated research route. This module
  * only prepares immutable in-memory records; it never publishes or writes. */
-import { createHash } from "node:crypto";
 import type { CanonicalState, Relation } from "@moirai/contracts/v5";
-import { projectV5WorldTemporal } from "@moirai/projections";
-import { prepareV5LayoutInput } from "@moirai/graph-presentation/server";
-import { snapshotDigestPayload, type LabSnapshot } from "./types";
 
 export const SYNTHETIC_LAB_WORLD_ID = "00000000-0000-4000-8000-00000000a013";
 export const SYNTHETIC_LAB_REVISION = 1;
@@ -255,73 +251,5 @@ export function createSyntheticLabState(): CanonicalState {
       collection_id: id,
       time_system_id: SYNTHETIC_LAB_TIME_SYSTEM_ID
     }))
-  });
-}
-
-export function createSyntheticLabSnapshot(): LabSnapshot {
-  const state = createSyntheticLabState();
-  const temporal = projectV5WorldTemporal(state, SYNTHETIC_LAB_REVISION);
-  const input = prepareV5LayoutInput(
-    state,
-    temporal,
-    SYNTHETIC_LAB_TIME_SYSTEM_ID
-  );
-  const relations = state.relations
-    .flatMap((relation) =>
-      relation.source_ref.kind === "event" &&
-      relation.target_ref.kind === "event"
-        ? [
-            {
-              id: relation.id,
-              sourceId: relation.source_ref.event_id,
-              targetId: relation.target_ref.event_id,
-              type: relation.type
-            }
-          ]
-        : []
-    )
-    .sort((a, b) => a.id.localeCompare(b.id));
-  const events = state.events
-    .map((event) => ({
-      id: event.id,
-      title: event.title,
-      childIds: relations
-        .filter(
-          (relation) =>
-            relation.type === "contains" && relation.sourceId === event.id
-        )
-        .map((relation) => relation.targetId)
-        .sort(),
-      collectionIds: state.eventCollectionMemberships
-        .filter((membership) => membership.event_id === event.id)
-        .map((membership) => membership.collection_id)
-        .sort()
-    }))
-    .sort((a, b) => a.id.localeCompare(b.id));
-  const collections = state.collections
-    .map((collection) => ({
-      id: collection.id,
-      title: collection.title,
-      eventIds: state.eventCollectionMemberships
-        .filter((membership) => membership.collection_id === collection.id)
-        .map((membership) => membership.event_id)
-        .sort()
-    }))
-    .sort((a, b) => a.id.localeCompare(b.id));
-  const payload = { input, events, relations, collections };
-  return freeze({
-    formatVersion: "layout-lab-snapshot/1",
-    worldId: state.world.id,
-    worldTitle: state.world.title,
-    sourceRevision: SYNTHETIC_LAB_REVISION,
-    servedRevision: SYNTHETIC_LAB_REVISION,
-    timeSystemId: SYNTHETIC_LAB_TIME_SYSTEM_ID,
-    sourceRootDigest: createHash("sha256")
-      .update(JSON.stringify(state))
-      .digest("hex"),
-    inputDigest: createHash("sha256")
-      .update(snapshotDigestPayload(payload))
-      .digest("hex"),
-    ...payload
   });
 }

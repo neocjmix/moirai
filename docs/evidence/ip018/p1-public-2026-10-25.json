@@ -1,0 +1,57 @@
+{
+  "observedAt": "2026-10-25T16:30:00.872835+00:00",
+  "url": "https://moirai-production-8ed1.up.railway.app/labs/layout-v2",
+  "deployedSha": "dc3b84bbfe57d724aa72d8aabc937639a14ccda3",
+  "health": {
+    "status": "ok",
+    "service": "atropos-web",
+    "version": "0.0.0-dev",
+    "commit_sha": "dc3b84bbfe57d724aa72d8aabc937639a14ccda3"
+  },
+  "tests": {
+    "passed": 2,
+    "failed": 0,
+    "durationMs": 8753.478,
+    "profiles": [
+      "Desktop Chromium",
+      "iPhone 14 Chromium emulation"
+    ]
+  },
+  "assertions": [
+    "tick100->1000->100 exact X/Y/state checksum equality",
+    "fixed authored Y and SVG viewBox at every observed tick",
+    "play, stop, reset and config reset behavior",
+    "JSON round-trip reconstructs full state",
+    "tampered checksum is rejected without changing current state",
+    "no non-GET/HEAD network requests",
+    "zero page errors",
+    "zero horizontal mobile overflow"
+  ],
+  "captures": [
+    {
+      "profile": "desktop",
+      "emulation": "Chromium1440x1000",
+      "tick": 100,
+      "config": "DEFAULT_CONFIG",
+      "checksum": "a029a40b",
+      "reproduction": "PASS · tick 100 상태 바이트 일치 · 독립 실행 + 되감기",
+      "errors": [],
+      "horizontalOverflow": false
+    },
+    {
+      "profile": "mobile",
+      "emulation": "iPhone 14 Chromium (not real iPhone17 Safari/PWA)",
+      "tick": 100,
+      "config": "DEFAULT_CONFIG",
+      "checksum": "a029a40b",
+      "reproduction": "PASS · tick 100 상태 바이트 일치 · 독립 실행 + 되감기",
+      "errors": [],
+      "horizontalOverflow": false
+    }
+  ],
+  "limitations": [
+    "Chromium emulation is not real iPhone17 Safari or installed PWA evidence",
+    "P1 uses synthetic20-node input; no Moirai semantic/historical adapter or full A/B UI",
+    "Replay uses deterministic recomputation, not persisted checkpoints"
+  ]
+}

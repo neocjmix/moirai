@@ -1,0 +1,32 @@
+{
+  "checkedAt": "2026-10-25T16:29:36.106Z",
+  "commitSha": "dc3b84bbfe57d724aa72d8aabc937639a14ccda3",
+  "world": "01995c2a-7b00-7000-8000-000000000101",
+  "eventId": "019f9280-a500-7000-8000-0000000003e8",
+  "browser": "Chromium with iPhone 14 viewport/touch emulation; not real iPhone Safari/PWA",
+  "pointCountAfterDrawerClose": 1,
+  "viewport": "-447.743311,193258.396819,390,664",
+  "point": {
+    "tag": "rect",
+    "bounds": {
+      "x": 183,
+      "y": 308,
+      "width": 275,
+      "height": 44
+    }
+  },
+  "errors": [],
+  "unchangedLiveTest": {
+    "path": "tests/live/ip011-a3.spec.ts:54",
+    "name": "A5 corpus is published with shared identity and readable mobile narrative",
+    "result": "passed",
+    "durationSeconds": 5.9,
+    "assertions": [
+      "shared Event count exactly 1 after closing drawer",
+      "Collection 30→29→30",
+      "camera unchanged through Collection toggles",
+      "semantic hit target budget",
+      "keyboard selection reopens narrative"
+    ]
+  }
+}

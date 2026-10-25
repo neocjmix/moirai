@@ -8,11 +8,11 @@ P0는 PR #366 / `595830221bb250321f0c1d72d7070062480109a9`로 v1 실행 코드·
 
 공개 Atropos는 개발·검수 환경이며 일시적 장애를 허용한다. 이번 기준선 복구에 필요한 Render 재컴파일·immutable backup·pointer 전환은 승인되어 있다. **역사 정본, Event identity, World revision, authored 시간과 인증 경계는 변경하지 않는다.** v2의 기본 알고리즘 승격은 사용자 시각 승인 전 금지한다.
 
-P0 공개 기준선 검증 뒤 P1의 새 독립 X-only Force Simulation을 실행한다. Iteration은 관찰 변수이며 tick N은 최종 목표 횟수와 무관하게 동일해야 한다. 기존 legacy force의 total-iteration cooling·heuristic을 v2에 복사하지 않는다. P2 의미 어댑터, P3 전체 A/B·재현 UI, P4 실제 역사 검수는 후속 단계이며 완료로 간주하지 않는다.
+P0 공개 기준선 검증 뒤 P1의 새 독립 X-only Force Simulation과 첫 관찰 UI까지 구현·배포했다. Iteration은 관찰 변수이며 tick N은 최종 목표 횟수와 무관하게 동일해야 한다. 기존 legacy force의 total-iteration cooling·heuristic을 v2에 복사하지 않는다. P2 의미 어댑터, P3 전체 A/B·재현 UI, P4 실제 역사 검수는 후속 단계이며 완료로 간주하지 않는다.
 
 ## 배포·검증
 
-P0 공개 SHA는 `595830221bb250321f0c1d72d7070062480109a9`이며 세 서비스 Railway SUCCESS 및 공개 readiness smoke를 확인했다. 두 World의 정본 pointer는 byte-identical, r56/r62·source root를 유지하며 `v5-world-layout/2`로 Render 재발행 2건 성공·실패 0건이다. `/2`는 500 초과 World의 기존 bounded Force 버전이며 새 Lab v2가 아니다. 이전 generation은 immutable backup readback 뒤 보존됐고 one-shot 변수는 비웠다. [실행 증거](../evidence/ip018-execution-2026-10-25.md)와 [발행 로그](../evidence/ip018/rollback-log-2026-10-25.json)를 따른다. P1 새 d3-force 엔진과 독립 `/labs/layout-v2` 화면은 구현·로컬 검증됐으며 공개 배포 확인을 진행 중이다. 15개 엔진 테스트와 desktop/mobile Chromium 2개 흐름이 통과했다. Event 직접 링크가 복구 후 화면 밖 좌표를 여는 문제도 별도 수정했다. 최종 배포 SHA와 공개 재검증은 실행 증거에 추가한다.
+P0 공개 SHA는 `595830221bb250321f0c1d72d7070062480109a9`이며 세 서비스 Railway SUCCESS 및 공개 readiness smoke를 확인했다. 두 World의 정본 pointer는 byte-identical, r56/r62·source root를 유지하며 `v5-world-layout/2`로 Render 재발행 2건 성공·실패 0건이다. `/2`는 500 초과 World의 기존 bounded Force 버전이며 새 Lab v2가 아니다. 이전 generation은 immutable backup readback 뒤 보존됐고 one-shot 변수는 비웠다. [실행 증거](../evidence/ip018-execution-2026-10-25.md)와 [발행 로그](../evidence/ip018/rollback-log-2026-10-25.json)를 따른다. P1은 PR #367 / `dc3b84bbfe57d724aa72d8aabc937639a14ccda3`로 공개 배포·검증했다. [새 Lab](https://moirai-production-8ed1.up.railway.app/labs/layout-v2)은 20노드 합성 물리 모델, 정확한 tick/되감기, 독립 Force·냉각·감쇠, 수렴/품질 진단과 JSON 재현을 제공한다. 운영 기본값은 기존 Force다. 엔진 15개·전체 unit 772개 통과(2 skip), 공개 desktop/mobile Chromium 2/2 및 readiness smoke 통과. Event 직접 링크 복구 후 기존 공유 Event live test도 공개 Chromium에서 통과했다. GitHub postdeploy `40211649265`는 전체 live mobile WebKit 4개와 인증 authoring smoke까지 성공했다. main CI `40211535529`의 mobile·secret scan도 통과했다. P2 의미 어댑터·Composite/Collection 결집, P3 전체 A/B, P4 실제 역사/iPhone 검수는 미완료다. 의존성 audit의 기존 critical2/high7 실패를 숨기지 않으며 새 알고리즘 승격은 금지한다. 후속 문서 전용 배포 SHA는 공개 `/status-public`이 소유한다.
 
 - [공개 역사 Graph](https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc)
 - [공개 배포 상태](https://moirai-production-8ed1.up.railway.app/status-public)

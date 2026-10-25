@@ -1,158 +1,33 @@
 <!doctype html>
 <html lang="ko">
-  <head>
-    <meta charset="utf-8" />
-    <meta
-      name="viewport"
-      content="width=device-width,initial-scale=1,viewport-fit=cover"
-    />
-    <meta name="theme-color" content="#fafbf7" />
-    <title>Moirai · 역사 r56 · B0 / 후보 A</title>
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <main id="shell" aria-label="실제 세계사 레이아웃 독립 프리뷰">
-      <svg
-        id="graph"
-        data-testid="graph"
-        aria-label="역사 사건 지도 · 드래그와 핀치로 탐색"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <g id="grid"></g>
-        <g id="world"></g>
-        <g id="annotations" pointer-events="none"></g>
-      </svg>
-      <div class="comparison" aria-label="같은 화면에서 배치 비교">
-        <div class="mode-tabs" role="group" aria-label="배치">
-          <button id="mode-b0" data-testid="mode-b0" aria-pressed="false">
-            현행 B0
-          </button>
-          <button id="mode-a" data-testid="mode-a" aria-pressed="true">
-            후보 A
-          </button>
-        </div>
-        <button
-          id="signatures-open"
-          class="scope-trigger"
-          data-testid="signatures-open"
-        >
-          공유 사건 · 집합 비교
-        </button>
-      </div>
-      <div class="context-hud" data-testid="graph-context-hud">
-        <div class="world-name">실제 세계사 <small>r56</small></div>
-        <div id="topic" data-testid="graph-context-topic"></div>
-        <button
-          id="collections-open"
-          data-testid="collections-open"
-          aria-haspopup="dialog"
-          aria-label="Collection 선택"
-        >
-          <svg
-            width="24"
-            height="24"
-            viewBox="0 0 24 24"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="1.6"
-            aria-hidden="true"
-          >
-            <path d="m12 3 9 5-9 5-9-5Z M3 12l9 5 9-5 M3 16l9 5 9-5" />
-          </svg>
-          <span id="collection-count"></span>
-        </button>
-      </div>
-      <div id="empty" hidden>
-        선택한 Collection이 없습니다.<br /><button id="empty-restore">
-          Collection 모두 켜기
-        </button>
-      </div>
-      <nav class="map-tools" aria-label="지도 탐색">
-        <button
-          id="search-open"
-          data-testid="search-open"
-          aria-label="모든 사건 검색"
-        >
-          ⌕
-        </button>
-        <button id="zoom-in" data-testid="zoom-in" aria-label="확대">＋</button>
-        <button id="zoom-out" data-testid="zoom-out" aria-label="축소">
-          −
-        </button>
-        <button id="fit" data-testid="fit" aria-label="현재 배치 전체 보기">
-          ⌗
-        </button>
-        <button
-          id="details-open"
-          data-testid="details-open"
-          aria-label="비교 결과와 한계"
-        >
-          ⓘ
-        </button>
-      </nav>
-      <nav class="cases" aria-label="실제 역사 사례">
-        <button id="case-imjin" data-testid="case-imjin">임진왜란</button>
-        <button id="case-yi" data-testid="case-yi">이순신</button>
-        <button id="case-shared" data-testid="case-shared">공유 사건</button>
-      </nav>
-      <div class="map-status">
-        <div id="status" role="status">검증된 비교 자료를 불러오는 중…</div>
-        <button id="limitation" aria-label="시간과 면 표현의 한계 확인">
-          legacy-scalar-only · 의미 면 0 · 선·목록 대체
-        </button>
-        <div id="build">독립 프리뷰 · 운영 기본값과 역사 자료 유지</div>
-      </div>
-      <section
-        id="drawer"
-        data-testid="drawer"
-        class="drawer"
-        aria-label="사건과 비교 상세"
-        hidden
-      >
-        <div id="drawer-handle" class="drawer-handle"><span></span></div>
-        <header class="drawer-header">
-          <div>
-            <small id="drawer-eyebrow"></small>
-            <h1 id="drawer-title"></h1>
-          </div>
-          <button
-            id="drawer-expand"
-            data-testid="drawer-expand"
-            aria-label="상세 펼치기"
-          >
-            ↗
-          </button>
-          <button
-            id="drawer-close"
-            data-testid="drawer-close"
-            aria-label="상세 닫기"
-          >
-            ×
-          </button>
-        </header>
-        <div id="drawer-body" class="drawer-body"></div>
-      </section>
-      <dialog id="collections-dialog" aria-labelledby="collections-title">
-        <header>
-          <h2 id="collections-title">Collection 선택</h2>
-          <button id="collections-close" aria-label="Collection 닫기">
-            닫기
-          </button>
-        </header>
-        <p>
-          관심 사건을 고르는 선택 집합입니다. Composite의 실제 contains 관계와
-          구분합니다.
-        </p>
-        <div class="dialog-actions">
-          <button id="collections-all-on" data-testid="collections-all-on">
-            모두 켜기</button
-          ><button id="collections-all-off" data-testid="collections-all-off">
-            모두 끄기
-          </button>
-        </div>
-        <div id="collections-list"></div>
-      </dialog>
-    </main>
-    <script type="module" src="app.js"></script>
-  </body>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex">
+  <title>Moirai · Layout Lab v1 종료</title>
+  <style>
+    :root { color-scheme: light dark; font-family: system-ui, sans-serif; line-height: 1.6; }
+    body { max-width: 42rem; margin: 10vh auto; padding: 0 1.25rem; }
+    h1 { line-height: 1.25; font-size: 2rem; }
+    a { overflow-wrap: anywhere; }
+    li { margin-block: 1rem; }
+  </style>
+</head>
+<body>
+  <main>
+    <p>MOIRAI · 2026-10-26 KST</p>
+    <h1>Layout Lab v1 연구를 종료했습니다.</h1>
+    <p>이 페이지의 Force·incidence·TSTL·면 생성 실험은 폐기되었습니다.
+      미완료 후속 연구와 검수도 취소되었습니다.</p>
+    <p>새 Layout Lab v2는 IP-018을 기준으로 고정 시간 Y와 독립적인 Iteration을 사용하는
+      X 배치 연구를 진행합니다. 새 배치를 기본 알고리즘으로 채택하려면 사용자 시각 승인이 필요합니다.</p>
+    <ul>
+      <li><a href="https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc">공개 개발 환경의 역사 그래프</a></li>
+      <li><a href="https://github.com/neocjmix/moirai/blob/main/docs/implementation/IP-018-layout-lab-v2.md">IP-018 · 새 연구의 실행 기준</a></li>
+      <li><a href="https://github.com/neocjmix/moirai/blob/main/docs/implementation/CURRENT.md">현재 구현·배포·검증 상태</a></li>
+    </ul>
+    <p>이전 Git 이력과 날짜별 측정·이미지 자료는 보존합니다. 과거 자료의 완료·실패·미검증 결과는
+      현재 실행 지시나 새 알고리즘의 승인으로 해석하지 않습니다.</p>
+  </main>
+</body>
 </html>

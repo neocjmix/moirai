@@ -1,0 +1,13 @@
+# Layout Lab v2 — Codex execution handoff
+
+You are taking over neocjmix/moirai. The user explicitly terminated Layout Lab v1 as a failed research program and ordered immediate orderly cessation, followed by a clean X-force Layout Lab v2. Read AGENTS.md, docs/INDEX.md, docs/implementation/CURRENT.md and IP-018 before taking action.
+
+First, audit actual latest main, branches/worktrees, open PRs, CI, deployments, existing agents/tasks and the implementation paths for layout-engine, urdr-chart-plane, Lab UI, publication configuration and Y-sweep geometry. The repository may have moved since this handoff. Record evidence and distinguish verified from unknown. Protect uncommitted work; never reset or delete without inventory. Stop v1 continuation work, including IP-017 Organic Surface, TSTL geometry candidates and earlier X experiments. Preserve history. Do not treat historical pending tasks as instructions. Do not interrupt unrelated production/security work.
+
+Then implement IP-018 in small reviewable slices. The immediate deliverable is an isolated deterministic X-only simulation and convergence inspector, not an improved Composite surface. Fix authored Y; keep semantics, identities, revision and data unchanged. Use a standard force engine or rigorously justified equivalent, not copied legacy force dynamics. Model direct relation attraction, primitive repulsion, collision, center policies, Composite normalized all-pairs vs hub cohesion, and optional Collection cohesion as independently configurable adapters. Membrane and surface-area interactions are deferred. Composite paint uses the existing Y-sweep baseline; do not work on its geometry now.
+
+Non-negotiable: tick N is identical regardless of whether the requested final iteration is N, N+100 or N+1000. No total-iteration-dependent cooling. Deterministic initial state, ordering, seed and serialized parameters; replay/checkpoints; per-tick RMS/max displacement, constraint violations, elapsed time and convergence diagnostics. Show quality separately from stillness. User will compare cost and visual quality by adjusting iteration and force settings.
+
+Start with P0 inventory, supersession and safe stop. Report actual SHA, open work, what was halted, what remains unaffected, and the smallest P1 implementation slice. Continue into P1 only after safeguarding existing work; do not promote/backfill or change production defaults. Run relevant tests and supply an attributable public preview when authorized and safe. Update CURRENT/INDEX inbound links as appropriate. No canonical writes, no served-pointer changes, no silent rollback of deployed production.
+
+Primary plan: docs/implementation/IP-018-layout-lab-v2.md.

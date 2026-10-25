@@ -1,0 +1,49 @@
+{
+  "verifiedAt": "2026-10-25T16:10:14.956848+00:00",
+  "commit": "b778438bdd41ddce22be08c4ddc9119ae9b6b292",
+  "workflowRun": "https://github.com/neocjmix/moirai/actions/runs/40210059712",
+  "workflowConclusion": "success",
+  "publicChecks": [
+    {
+      "url": "https://neocjmix.github.io/moirai/",
+      "status": 200,
+      "retired": true,
+      "script": false
+    },
+    {
+      "url": "https://neocjmix.github.io/moirai/legacy/",
+      "status": 200,
+      "retired": true,
+      "script": false
+    },
+    {
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/",
+      "status": 200,
+      "retired": true,
+      "script": false
+    },
+    {
+      "url": "https://neocjmix.github.io/moirai/tstl-separation/",
+      "status": 200,
+      "retired": true,
+      "script": false
+    },
+    {
+      "url": "https://neocjmix.github.io/moirai/app.js",
+      "status": 404
+    },
+    {
+      "url": "https://neocjmix.github.io/moirai/worker.js",
+      "status": 404
+    },
+    {
+      "url": "https://neocjmix.github.io/moirai/tstl-candidate-a/app.js",
+      "status": 404
+    },
+    {
+      "url": "https://neocjmix.github.io/moirai/tstl-separation/app.js",
+      "status": 404
+    }
+  ],
+  "preservedArtifacts": 299
+}

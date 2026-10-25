@@ -1,0 +1,355 @@
+{
+  "observedAt": "2026-10-25T16:16:08.586Z",
+  "base": "https://moirai-production-8ed1.up.railway.app",
+  "status": {
+    "application": {
+      "service": "atropos-web",
+      "version": "0.0.0-dev",
+      "commit_sha": "595830221bb250321f0c1d72d7070062480109a9",
+      "deployed_at": "2026-10-25T16:07:54.963Z"
+    },
+    "versions": {
+      "contract": "5",
+      "schema": "011_ip011_authoring_search",
+      "publication_format": "v5-publication/1"
+    },
+    "smoke": {
+      "result": "running",
+      "checked_at": "2026-10-25T16:14:12Z",
+      "run_url": "https://github.com/neocjmix/moirai/actions/runs/40210655859"
+    },
+    "surfaces": {
+      "atropos": "ok",
+      "health": "ok",
+      "status": "ok"
+    }
+  },
+  "worlds": [
+    {
+      "worldId": "01995c2a-7b00-7000-8000-000000000101",
+      "canonicalPointerUnchanged": true,
+      "canonicalPointer": {
+        "format_version": "v5-publication/1",
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "served_revision": 62,
+        "current_revision": 62,
+        "publication_target_revision": 62,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01995c2a-7b00-7000-8000-000000000101/revisions/62/v5/complete/manifest.json",
+        "manifest_sha256": "ade33b0c04254c1cad12d9f9c5951d5b76fd5d351b7774faec784037228496f2",
+        "generated_at": "2026-09-29T01:05:14.585Z"
+      },
+      "render": {
+        "revision": 62,
+        "timeSystemId": "019f5b00-0000-7000-8000-000000000003",
+        "layoutAlgorithmVersion": "v5-world-layout/2",
+        "compilerVersion": "render-compiler/4",
+        "generation": "79841bae084d82820cce5bf5c932836d5b62c512ca89c62cf91b46fbbd54f5f0",
+        "tiles": 5747,
+        "geometry": 129,
+        "bounds": {
+          "minX": -518.386,
+          "maxX": 521.8964338263181,
+          "minY": 193258.39681855205,
+          "maxY": 226585.406
+        }
+      }
+    },
+    {
+      "worldId": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+      "canonicalPointerUnchanged": true,
+      "canonicalPointer": {
+        "format_version": "v5-publication/1",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "served_revision": 56,
+        "current_revision": 56,
+        "publication_target_revision": 56,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/revisions/56/v5/complete/manifest.json",
+        "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "generated_at": "2026-10-10T04:22:50.900Z"
+      },
+      "render": {
+        "revision": 56,
+        "timeSystemId": "01a107fc-3994-7889-969f-7a210c19fa24",
+        "layoutAlgorithmVersion": "v5-world-layout/2",
+        "compilerVersion": "render-compiler/4",
+        "generation": "8ed86c19c9c93edf0a87550761007fbdeec28fdc18b4a9c88d534362f27bec0a",
+        "tiles": 4653,
+        "geometry": 123,
+        "bounds": {
+          "minX": -518.8790694424521,
+          "maxX": 528.572,
+          "minY": 211453.7875521058,
+          "maxY": 230300.6084998323
+        }
+      }
+    }
+  ],
+  "browser": [
+    {
+      "profile": "desktop-chromium",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "initial": {
+        "revision": 56,
+        "loadState": "ready",
+        "view": {
+          "x": 0,
+          "y": -111710,
+          "scaleX": 1.2190476190476192,
+          "scaleY": 0.5
+        },
+        "liveView": {
+          "x": 0,
+          "y": -111710,
+          "scaleX": 1.2190476190476192,
+          "scaleY": 0.5
+        },
+        "counts": {
+          "sourceEntities": 48,
+          "worldRegions": 52,
+          "regionCandidates": 52,
+          "chartRegions": 52,
+          "presentedRegions": 52,
+          "pointCandidates": 48,
+          "paintedPoints": 48,
+          "stageActive": false,
+          "svgPaths": 55,
+          "svgTexts": 10,
+          "svgTargets": 10,
+          "sourceRegions": 52,
+          "sourceEdges": 1,
+          "projectedPoints": 48,
+          "fadeRegions": 52,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "selectionCount": 1,
+        "renderer": "custom-webgl2",
+        "overflow": false
+      },
+      "afterPan": {
+        "revision": 56,
+        "loadState": "ready",
+        "view": {
+          "scaleX": 1.2190476190476192,
+          "scaleY": 0.5,
+          "x": 128,
+          "y": -111710
+        },
+        "liveView": {
+          "scaleX": 1.2190476190476192,
+          "scaleY": 0.5,
+          "x": 128,
+          "y": -111710
+        },
+        "counts": {
+          "sourceEntities": 86,
+          "worldRegions": 52,
+          "regionCandidates": 52,
+          "chartRegions": 52,
+          "presentedRegions": 52,
+          "pointCandidates": 86,
+          "paintedPoints": 86,
+          "stageActive": false,
+          "svgPaths": 123,
+          "svgTexts": 38,
+          "svgTargets": 24,
+          "sourceRegions": 52,
+          "sourceEdges": 13,
+          "projectedPoints": 86,
+          "fadeRegions": 52,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "selectionCount": 1,
+        "renderer": "svg",
+        "overflow": false
+      },
+      "afterZoom": {
+        "revision": 56,
+        "loadState": "ready",
+        "view": {
+          "scaleX": 2.0375135440438474,
+          "scaleY": 0.8356989145492342,
+          "x": 213.93892212460395,
+          "y": -186711.8514885899
+        },
+        "liveView": {
+          "scaleX": 2.0375135440438474,
+          "scaleY": 0.8356989145492342,
+          "x": 213.93892212460395,
+          "y": -186711.8514885899
+        },
+        "counts": {
+          "sourceEntities": 100,
+          "worldRegions": 44,
+          "regionCandidates": 44,
+          "chartRegions": 44,
+          "presentedRegions": 44,
+          "pointCandidates": 86,
+          "paintedPoints": 85,
+          "stageActive": false,
+          "svgPaths": 94,
+          "svgTexts": 38,
+          "svgTargets": 24,
+          "sourceRegions": 44,
+          "sourceEdges": 15,
+          "projectedPoints": 90,
+          "fadeRegions": 44,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "selectionCount": 1,
+        "renderer": "svg",
+        "overflow": false
+      },
+      "settingsHasV1": false
+    },
+    {
+      "profile": "mobile-chromium",
+      "pageErrors": [],
+      "consoleErrors": [],
+      "requestFailures": [],
+      "initial": {
+        "revision": 56,
+        "loadState": "ready",
+        "view": {
+          "x": 0,
+          "y": -82417.15555555555,
+          "scaleX": 0.37142857142857144,
+          "scaleY": 0.3688888888888889
+        },
+        "liveView": {
+          "x": 0,
+          "y": -82417.15555555555,
+          "scaleX": 0.37142857142857144,
+          "scaleY": 0.3688888888888889
+        },
+        "counts": {
+          "sourceEntities": 48,
+          "worldRegions": 53,
+          "regionCandidates": 53,
+          "chartRegions": 53,
+          "presentedRegions": 53,
+          "pointCandidates": 48,
+          "paintedPoints": 48,
+          "stageActive": false,
+          "svgPaths": 3,
+          "svgTexts": 0,
+          "svgTargets": 0,
+          "sourceRegions": 53,
+          "sourceEdges": 1,
+          "projectedPoints": 48,
+          "fadeRegions": 53,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "selectionCount": 1,
+        "renderer": "custom-webgl2",
+        "overflow": false
+      },
+      "afterPan": {
+        "revision": 56,
+        "loadState": "ready",
+        "view": {
+          "scaleX": 0.37142857142857144,
+          "scaleY": 0.3688888888888889,
+          "x": 39,
+          "y": -82417.15555555555
+        },
+        "liveView": {
+          "scaleX": 0.37142857142857144,
+          "scaleY": 0.3688888888888889,
+          "x": 39,
+          "y": -82417.15555555555
+        },
+        "counts": {
+          "sourceEntities": 86,
+          "worldRegions": 53,
+          "regionCandidates": 53,
+          "chartRegions": 53,
+          "presentedRegions": 53,
+          "pointCandidates": 86,
+          "paintedPoints": 85,
+          "stageActive": false,
+          "svgPaths": 144,
+          "svgTexts": 16,
+          "svgTargets": 11,
+          "sourceRegions": 53,
+          "sourceEdges": 13,
+          "projectedPoints": 86,
+          "fadeRegions": 53,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "selectionCount": 1,
+        "renderer": "svg",
+        "overflow": false
+      },
+      "afterZoom": {
+        "revision": 56,
+        "loadState": "ready",
+        "view": {
+          "scaleX": 0.6208049079508597,
+          "scaleY": 0.616560088067435,
+          "x": 65.18451533484027,
+          "y": -137751.85487602634
+        },
+        "liveView": {
+          "scaleX": 0.6208049079508597,
+          "scaleY": 0.616560088067435,
+          "x": 65.18451533484027,
+          "y": -137751.85487602634
+        },
+        "counts": {
+          "sourceEntities": 102,
+          "worldRegions": 47,
+          "regionCandidates": 47,
+          "chartRegions": 47,
+          "presentedRegions": 47,
+          "pointCandidates": 96,
+          "paintedPoints": 95,
+          "stageActive": false,
+          "svgPaths": 119,
+          "svgTexts": 21,
+          "svgTargets": 14,
+          "sourceRegions": 47,
+          "sourceEdges": 15,
+          "projectedPoints": 101,
+          "fadeRegions": 47,
+          "exitingRegions": 0,
+          "exitOverdueMs": 0
+        },
+        "selectionCount": 1,
+        "renderer": "svg",
+        "overflow": false
+      },
+      "settingsHasV1": false
+    }
+  ],
+  "failures": [],
+  "retiredLabStatus": 404,
+  "verificationScope": {
+    "viewport": "0,223420,1050,1800",
+    "graphUrl": "https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc&gsViewport=0,223420,1050,1800",
+    "mobileProfile": "iPhone 14 dimensions in Chromium; not iPhone 17 Safari/PWA evidence",
+    "gestureMethod": "Playwright mouse pan plus synthetic touch PointerEvent pinch used by existing IP-015 harness; observed camera X and both axis scales change",
+    "limits": [
+      "No actual iPhone 17 Safari/PWA validation",
+      "WebKit local runtime unavailable due missing OS libraries; CI is separate evidence",
+      "These checks establish reproducible baseline and read integrity, not aesthetic approval"
+    ]
+  },
+  "immutableBackupVerification": {
+    "runId": "ip018-force-baseline-20261025",
+    "workerLogResult": "Root observed served=2, failed=0, skipped=0, complete",
+    "backupKeys": [
+      "worlds/01995c2a-7b00-7000-8000-000000000101/render-rollbacks/ip018-force-baseline-20261025.json",
+      "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/render-rollbacks/ip018-force-baseline-20261025.json"
+    ],
+    "readback": "Worker enforces exact backup readback before publish; backup object itself is not exposed by public API."
+  }
+}

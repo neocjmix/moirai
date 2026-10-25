@@ -1,0 +1,37 @@
+[
+  {
+    "timestamp": "2026-10-25T16:11:03.981978305Z",
+    "operation": "render_backfill_all_world",
+    "world_id": "01995c2a-7b00-7000-8000-000000000101",
+    "revision": 62,
+    "previous_generation": "765e6538e6a0bca9c4efe43223c8e6f17b7e4aa28849b33f5329cb26746c2c00",
+    "layout_algorithm": "legacy-force/1",
+    "rollback_snapshot": "worlds/01995c2a-7b00-7000-8000-000000000101/render-rollbacks/ip018-force-baseline-20261025.json",
+    "generation": "79841bae084d82820cce5bf5c932836d5b62c512ca89c62cf91b46fbbd54f5f0",
+    "documentCount": 5973,
+    "bytes": 41569790,
+    "result_code": "served"
+  },
+  {
+    "timestamp": "2026-10-25T16:12:24.101201085Z",
+    "operation": "render_backfill_all_world",
+    "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+    "revision": 56,
+    "previous_generation": "25ebaa2fffb390c1394a50139d708a9129e6b76255f0615a95690fb2ac04b1af",
+    "layout_algorithm": "legacy-force/1",
+    "rollback_snapshot": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/render-rollbacks/ip018-force-baseline-20261025.json",
+    "generation": "8ed86c19c9c93edf0a87550761007fbdeec28fdc18b4a9c88d534362f27bec0a",
+    "documentCount": 4856,
+    "bytes": 77662169,
+    "result_code": "served"
+  },
+  {
+    "timestamp": "2026-10-25T16:12:24.101205895Z",
+    "operation": "render_backfill_all",
+    "run_id": "ip018-force-baseline-20261025",
+    "served": 2,
+    "failed": 0,
+    "skipped": 0,
+    "result_code": "complete"
+  }
+]

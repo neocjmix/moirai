@@ -4,6 +4,9 @@
 
 ## 현재 작업
 
+**후속 사용자 교정: 실제 GraphShell 통합이 활성 작업이다.** 별도 20노드 합성 P1 화면은 의도한 검수 방식이 아니므로 주 Lab으로서 superseded 처리한다. 새 d3 엔진·재현성 검증은 유지하고, 실제 World 위 opt-in v2 모드와 그래프 오버레이 Iteration 조작·실시간 관찰을 구현한다. 아직 공개 통합 완료를 주장하지 않는다. [IP-018 교정](IP-018-layout-lab-v2.md#user-correction--graphshell-integration-and-live-iteration-overlay-2026-10-26-kst)이 앞선 standalone UI 순서를 대체한다.
+
+
 P0는 PR #366 / `595830221bb250321f0c1d72d7070062480109a9`로 v1 실행 코드·selector를 제거하고 기존 Force X + 시간 고정 Y + Y-sweep 기준선을 선택적으로 복구·배포했다. 전체 저장소 reset은 하지 않는다. 기준 커밋은 `4c726661c913de5920b9866344f2ca76e80a388d` (#323): 최초 v1 구현 `b28c05b`, main 도입 `290cbbe` (#324) 직전이며 당시 공개 배포와 원본 force parity가 기록되어 있다. [재조사 증거](../evidence/ip018-baseline-audit-2026-10-25.md)가 계보·보존 범위·불확실성을 구분한다.
 
 공개 Atropos는 개발·검수 환경이며 일시적 장애를 허용한다. 이번 기준선 복구에 필요한 Render 재컴파일·immutable backup·pointer 전환은 승인되어 있다. **역사 정본, Event identity, World revision, authored 시간과 인증 경계는 변경하지 않는다.** v2의 기본 알고리즘 승격은 사용자 시각 승인 전 금지한다.

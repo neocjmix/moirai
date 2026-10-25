@@ -12,7 +12,7 @@ P0 공개 기준선 검증 뒤 P1의 새 독립 X-only Force Simulation을 실�
 
 ## 배포·검증
 
-P0 공개 SHA는 `595830221bb250321f0c1d72d7070062480109a9`이며 세 서비스 Railway SUCCESS 및 공개 readiness smoke를 확인했다. 두 World의 정본 pointer는 byte-identical, r56/r62·source root를 유지하며 `v5-world-layout/2`로 Render 재발행 2건 성공·실패 0건이다. `/2`는 500 초과 World의 기존 bounded Force 버전이며 새 Lab v2가 아니다. 이전 generation은 immutable backup readback 뒤 보존됐고 one-shot 변수는 비웠다. [실행 증거](../evidence/ip018-execution-2026-10-25.md)와 [발행 로그](../evidence/ip018/rollback-log-2026-10-25.json)를 따른다. P1은 구현 중이다.
+P0 공개 SHA는 `595830221bb250321f0c1d72d7070062480109a9`이며 세 서비스 Railway SUCCESS 및 공개 readiness smoke를 확인했다. 두 World의 정본 pointer는 byte-identical, r56/r62·source root를 유지하며 `v5-world-layout/2`로 Render 재발행 2건 성공·실패 0건이다. `/2`는 500 초과 World의 기존 bounded Force 버전이며 새 Lab v2가 아니다. 이전 generation은 immutable backup readback 뒤 보존됐고 one-shot 변수는 비웠다. [실행 증거](../evidence/ip018-execution-2026-10-25.md)와 [발행 로그](../evidence/ip018/rollback-log-2026-10-25.json)를 따른다. P1 새 d3-force 엔진과 독립 `/labs/layout-v2` 화면은 구현·로컬 검증됐으며 공개 배포 확인을 진행 중이다. 15개 엔진 테스트와 desktop/mobile Chromium 2개 흐름이 통과했다. Event 직접 링크가 복구 후 화면 밖 좌표를 여는 문제도 별도 수정했다. 최종 배포 SHA와 공개 재검증은 실행 증거에 추가한다.
 
 - [공개 역사 Graph](https://moirai-production-8ed1.up.railway.app/graph/v5?world=01a107fb-4018-7fcb-8390-836a40fa91cc)
 - [공개 배포 상태](https://moirai-production-8ed1.up.railway.app/status-public)

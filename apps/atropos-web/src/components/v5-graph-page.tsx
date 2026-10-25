@@ -8,6 +8,7 @@ import { assertPublicId } from "../lib/publication";
 import { publicTimeSystemIdentity } from "@moirai/graph-query";
 import type { PublicTimeSystem } from "@moirai/contracts";
 import { V5AtroposRoot } from "./v5-atropos-root";
+import { readV5RenderFocus } from "../lib/v5-render-focus";
 import { v5ShellReader } from "../lib/v5-shell-reader";
 import type { AtroposScreenId } from "../lib/atropos-screen-registry";
 
@@ -86,7 +87,10 @@ export default async function V5GraphPage({
     // the generation carries authored Composite metadata. Older generations
     // and absent sidecars stay on the semantic reader; tileData=0 is a
     // per-request rollback without changing the served publication.
-    const renderScope: { bounds: RenderBox | null } = { bounds: null };
+    const renderScope: {
+      bounds: RenderBox | null;
+      generation: Awaited<ReturnType<typeof readV5RenderGeneration>> | null;
+    } = { bounds: null, generation: null };
     const renderAvailable =
       params.tileData !== "0" &&
       (await readV5RenderGeneration(store, worldId)
@@ -99,6 +103,7 @@ export default async function V5GraphPage({
           // A same-revision Render rebuild can change X independently of the
           // canonical spatial rollback tree. Camera bounds follow served ink.
           renderScope.bounds = manifest.summary?.bounds ?? null;
+          renderScope.generation = generation;
           // v4 publishes a bounded summary on the generation root. Do not
           // download the global operational manifest to select the reader.
           const version =
@@ -153,13 +158,54 @@ export default async function V5GraphPage({
                 y: (first.bounds.minY + first.bounds.maxY) / 2
               }
             : null;
-    const center =
+    let center =
       semanticCenter && renderScope.bounds
         ? {
             ...semanticCenter,
             x: (renderScope.bounds.minX + renderScope.bounds.maxX) / 2
           }
         : semanticCenter;
+    // Explicit deep links should open on the same geometry the tile renderer
+    // paints, even after X-only backfill at an unchanged canonical revision.
+    // A supplied camera remains the user's intent and bypasses this lookup.
+    if (
+      typeof eventId === "string" &&
+      params.gsViewport === undefined &&
+      renderAvailable &&
+      renderScope.generation &&
+      spatial?.bounds
+    ) {
+      let page = await reader.viewport(timeSystemId, spatial.bounds, 128, null);
+      for (let attempt = 0; page && attempt < 8; attempt++) {
+        const shape = page.shapes.find((item) => item.event_id === eventId);
+        if (shape) {
+          const temporalBounds =
+            shape.kind === "point"
+              ? { minY: shape.position.y, maxY: shape.position.y }
+              : shape.kind === "segment"
+                ? {
+                    minY: Math.min(shape.start.y, shape.end.y),
+                    maxY: Math.max(shape.start.y, shape.end.y)
+                  }
+                : shape.bounds;
+          center =
+            (await readV5RenderFocus(
+              renderScope.generation,
+              timeSystemId,
+              eventId,
+              temporalBounds
+            )) ?? center;
+          break;
+        }
+        if (!page.next_cursor) break;
+        page = await reader.viewport(
+          timeSystemId,
+          spatial.bounds,
+          128,
+          page.next_cursor
+        );
+      }
+    }
     return (
       <V5AtroposRoot
         key={worldId}

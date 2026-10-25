@@ -176,7 +176,7 @@
   },
   "afterVerification": [
     "Byte-identical canonical current.json and manifest_sha256 for each World; unchanged revision/identity/time.",
-    "Render manifest layoutAlgorithmVersion v5-world-layout/1 (pre-v1 legacy Force), compiler render-compiler/4; new generation source-pinned to same canonical root.",
+    "Render manifest layoutAlgorithmVersion v5-world-layout/2 (pre-v1 bounded legacy Force for these >500-node Worlds; /1 for smaller inputs), compiler render-compiler/4; new generation source-pinned to same canonical root.",
     "Worker render_backfill_all complete with served=2, failed=0, skipped=0 and per-world immutable backup key.",
     "Public /__status commit_sha equals deployed source; Railway terminal SUCCESS for all changed services.",
     "Public GraphShell smoke with baseline only and no v1 selectors."

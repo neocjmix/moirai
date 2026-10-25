@@ -8,7 +8,7 @@ Then implement IP-018 in small reviewable slices. The immediate deliverable is a
 
 Non-negotiable: tick N is identical regardless of whether the requested final iteration is N, N+100 or N+1000. No total-iteration-dependent cooling. Deterministic initial state, ordering, seed and serialized parameters; replay/checkpoints; per-tick RMS/max displacement, constraint violations, elapsed time and convergence diagnostics. Show quality separately from stillness. User will compare cost and visual quality by adjusting iteration and force settings.
 
-Start with P0 inventory, supersession and safe stop. Report actual SHA, open work, what was halted, what remains unaffected, and the smallest P1 implementation slice. Continue into P1 only after safeguarding existing work; do not promote/backfill or change production defaults. Run relevant tests and supply an attributable public preview when authorized and safe. Update CURRENT/INDEX inbound links as appropriate. No canonical writes, no served-pointer changes, no silent rollback of deployed production.
+Start with P0 inventory, supersession and safe stop. Report actual SHA, open work, what was halted, what remains unaffected, and the smallest P1 implementation slice. Complete P0 selective Force/Y-sweep restoration, required Render rebuild with immutable backup, public deployment and verification before P1. These baseline-only default/pointer changes are explicitly authorized; report them with pinned source/revision evidence. Then deliver the first runnable P1 simulation. Run relevant tests and publish attributable checkpoints. Update CURRENT/INDEX. No canonical writes and no v2 default promotion without user visual approval.
 
 Primary plan: docs/implementation/IP-018-layout-lab-v2.md.
 

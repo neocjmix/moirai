@@ -1,5 +1,7 @@
 # IP-017 — Organic Surface Lab: Slice 1 (visual acceptance only)
 
+> **2026-10-26 KST disposition: 전체 실험 및 후속 실행 종료 — cancelled / superseded by [IP-018](IP-018-layout-lab-v2.md).** 아래 승인·“다음 작업”은 역사 기록이다. 미완료 시각 검수·WebKit 검증·후속 구현·기본값 승격을 완료 처리하거나 재개하지 않는다. Git 이력과 날짜별 evidence는 보존하며 v1 runtime·실험 UI는 제거한다.
+
 Status: **approved experiment scope; implementation not yet verified**. 2026-10-15 KST.
 Owner decision: add exactly **one** selectable surface-generation candidate to the existing Moirai Layout Lab. The deliverable is an honest, high-fidelity visual review surface, **not** production adoption, a new X-layout, or a performance project.
 

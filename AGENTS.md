@@ -153,7 +153,11 @@ First apply explicit session authorization, including the task-specific delegati
 
 Ordinary code failures, test failures and deployment errors are not reasons to hand work back prematurely. Diagnose and recover safely within scope.
 
-## Current planning authority — IP-013
+## Current execution authority — IP-018
+
+The 2026-10-26 user direction in [IP-018](docs/implementation/IP-018-layout-lab-v2.md) terminates Layout Lab v1. Its unfinished force tuning, incidence, TSTL, Bubble Sets, Ribbon, Lanes/Aligned/Anchored and Organic Surface work is cancelled/superseded, not completed. Do not resume historical follow-ups below or in dated evidence. Restore the verified pre-v1 Force X, fixed temporal Y and Y-sweep baseline selectively on current main, preserving unrelated authentication, identity/data integrity, camera, renderer and infrastructure improvements. Remove obsolete executable experiments and selectors; preserve Git history and dated evidence. Necessary baseline Render rebuild, immutable backup, pointer replacement and public development deployment are authorized. Canonical historical data, Event identity and World revision must remain unchanged. Then implement isolated v2 X simulation with exact iteration-prefix invariance. Do not promote v2 defaults without user visual approval. CURRENT owns verified progress; IP-018 owns this execution scope.
+
+## Historical planning authority — IP-013 (R/L superseded by IP-018)
 
 The 2026-10-04 user replan in [IP-013](docs/implementation/IP-013-real-history-development-plan.md) supersedes the old A5 S0–S7 completion → A6 history dependency and synthetic-scale-led product validation. The initial #322 task was documentation and a draft PR only, without feature implementation, data/config changes, merge or deployment. The dated follow-up instructions below own the current R/Layout Lab execution scope.
 

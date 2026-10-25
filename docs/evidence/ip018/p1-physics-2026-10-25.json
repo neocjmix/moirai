@@ -1,0 +1,145 @@
+{
+  "observedAt": "2026-10-25T16:21:03.896Z",
+  "algorithm": "d3-fixed-y/1",
+  "environment": {
+    "node": "v24.19.0",
+    "platform": "linux",
+    "arch": "x64"
+  },
+  "fixture": {
+    "name": "synthetic-20",
+    "nodes": 20,
+    "links": 15,
+    "realHistory": false
+  },
+  "config": {
+    "seed": 1,
+    "initialSpread": 160,
+    "alphaInitial": 1,
+    "alphaTarget": 1,
+    "alphaDecay": 0,
+    "velocityDecay": 0.4,
+    "repulsionStrength": 24,
+    "linkStrength": 0.04,
+    "linkDistance": 40,
+    "centerStrength": 0.008,
+    "centerX": 0,
+    "collisionStrength": 0.8,
+    "collisionIterations": 1,
+    "stabilityWindow": 20,
+    "displacementTolerance": 0.01,
+    "forceTolerance": 0.02
+  },
+  "observations": [
+    {
+      "tick": 0,
+      "stateDigest": "dfb704a4",
+      "diagnostics": {
+        "movement": {
+          "rmsDisplacement": 0,
+          "maxDisplacement": 0,
+          "rmsVelocity": 0,
+          "rmsForceImpulse": 0,
+          "maxForceImpulse": 0
+        },
+        "quality": {
+          "collisionCount": 2,
+          "maxPenetration": 11.539964467287064,
+          "relationStrain": [
+            {
+              "kind": "synthetic",
+              "count": 15,
+              "rms": 44.9713200646016,
+              "impossibleYCount": 0
+            }
+          ],
+          "xVariance": 1747.4660647295525,
+          "xSpan": 154.29643619805574
+        },
+        "stability": {
+          "status": "warming-up",
+          "windowTicks": 0,
+          "rmsTrend": 0
+        },
+        "elapsedMs": 0.17779799999999568
+      }
+    },
+    {
+      "tick": 100,
+      "stateDigest": "a029a40b",
+      "diagnostics": {
+        "movement": {
+          "rmsDisplacement": 0.05005959112240355,
+          "maxDisplacement": 0.09675056243725066,
+          "rmsVelocity": 0.050059591122401874,
+          "rmsForceImpulse": 0.03150590800704571,
+          "maxForceImpulse": 0.05945173836922786
+        },
+        "quality": {
+          "collisionCount": 4,
+          "maxPenetration": 0.42230889064718014,
+          "relationStrain": [
+            {
+              "kind": "synthetic",
+              "count": 15,
+              "rms": 67.70893593049112,
+              "impossibleYCount": 0
+            }
+          ],
+          "xVariance": 7231.437835933963,
+          "xSpan": 279.2078997519071
+        },
+        "stability": {
+          "status": "moving",
+          "windowTicks": 20,
+          "rmsTrend": -0.028512491779634427
+        },
+        "elapsedMs": 9.335094999999995
+      }
+    },
+    {
+      "tick": 1000,
+      "stateDigest": "a8ca3710",
+      "diagnostics": {
+        "movement": {
+          "rmsDisplacement": 2.7086694521067014e-7,
+          "maxDisplacement": 2.7237884481223773e-7,
+          "rmsVelocity": 2.708669466181941e-7,
+          "rmsForceImpulse": 1.772239087287445e-7,
+          "maxForceImpulse": 1.7825827747300348e-7
+        },
+        "quality": {
+          "collisionCount": 5,
+          "maxPenetration": 0.43049100442639343,
+          "relationStrain": [
+            {
+              "kind": "synthetic",
+              "count": 15,
+              "rms": 67.96808643892133,
+              "impossibleYCount": 0
+            }
+          ],
+          "xVariance": 7325.280424923983,
+          "xSpan": 281.59805525208213
+        },
+        "stability": {
+          "status": "balanced",
+          "windowTicks": 20,
+          "rmsTrend": -3.752940705780122e-8
+        },
+        "elapsedMs": 33.047895
+      }
+    }
+  ],
+  "verification": {
+    "byteIdenticalPrefix": true,
+    "backwardReplay": true,
+    "exportImport": true,
+    "yAndIdentityPreserved": true
+  },
+  "limitations": [
+    "Cloud Node timing; not iPhone17 evidence",
+    "No P2 semantic adapter or historical layout quality acceptance",
+    "Timing excluded from trajectory equality; no cross-engine byte identity claim"
+  ]
+}

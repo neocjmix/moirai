@@ -96,6 +96,7 @@ export function GraphForceOverlay({
       data-state-digest={painted ? stateDigest(painted.state) : ""}
       data-node-count={painted?.state.nodes.length ?? 0}
       data-loading={lab.loading ? "true" : "false"}
+      data-pending={lab.pending ? "true" : "false"}
       aria-label="Layout Lab v2 그래프 조절"
     >
       <div className={styles.heading}>
@@ -189,6 +190,9 @@ export function GraphForceOverlay({
           </b>{" "}
           / 요청 {lab.requestedTick}
         </span>
+        {lab.pending && !lab.loading ? (
+          <span role="status">반영 중</span>
+        ) : null}
         {painted ? (
           <>
             <span>

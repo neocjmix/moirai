@@ -59,6 +59,11 @@ jobs:
         run: pnpm exec playwright install --with-deps webkit
       - name: Verify live mobile A3 navigation
         run: pnpm exec playwright test --config playwright.ip011-live.config.ts
+      - name: Verify live Layout Lab graph overlay
+        env:
+          MOIRAI_OVERLAY_URL: ${{ env.PUBLIC_INTEGRATION_URL }}
+          MOIRAI_OVERLAY_WEBKIT: "1"
+        run: pnpm exec playwright test --config playwright.layout-v2-overlay.config.ts --project mobile-webkit
       - name: Retain public mobile failure evidence
         if: always()
         uses: actions/upload-artifact@v4
@@ -70,6 +75,9 @@ jobs:
           path: |
             test-results/ip011-a3-live/**/test-failed-*.png
             test-results/ip011-a3-live/**/trace.zip
+            test-results/layout-v2-overlay/**/test-failed-*.png
+            test-results/layout-v2-overlay/**/trace.zip
+            test-results/layout-v2-overlay/**/graph-overlay-tick100.png
           if-no-files-found: ignore
           retention-days: 7
       - name: Build Clotho CLI

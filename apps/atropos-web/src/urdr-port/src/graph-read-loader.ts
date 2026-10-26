@@ -18,9 +18,14 @@ export type GraphReadLoader = {
     collectionIds: readonly string[];
   };
   viewportMode?: "incremental" | "snapshot";
+  /** Local full-world experiments may commit an intentionally empty selection.
+   * Ordinary viewport readers require at least one Canon in their query. */
+  allowEmptySelection?: boolean;
   /** Stable identity of an immutable paint source. A committed source
    * change may retry a renderer that could not paint the previous geometry. */
   paintSourceKey?: string;
+  /** Called after this source has committed to the graph and a paint opportunity. */
+  onSceneCommit?(): void;
   dispose?(): void;
   inspectViewport?(): Record<string, number>;
   loadWorkspace(locale: AppLocale): Promise<GraphShellWorkspaceShell>;

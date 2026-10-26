@@ -2403,8 +2403,9 @@ export function GraphShell({
   // reset may overwrite an immediately failing newly mounted backend.
   const useGeographicCanvas = graphicsPreference !== "svg" && !graphicsSource.failed;
   const useGeographicWebGL = useGeographicCanvas && graphicsPreference === "webgl";
+  const drawnPaintSourceRef = useRef<string | undefined>(undefined);
   const handleGraphicsUnavailable=useCallback(()=>{setGraphicsSource(previous=>failGeographicSource(previous,graphicsSource.generation));},[graphicsSource.generation]);
-  const handleGraphicsDraw=useCallback(ms=>{if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase]);
+  const handleGraphicsDraw=useCallback(ms=>{drawnPaintSourceRef.current=runtimePaintSource;if(graphPhaseProfiling)recordGraphPhase("geographicCanvas",ms);},[graphPhaseProfiling,recordGraphPhase,runtimePaintSource]);
   const measureGraphPhase = useCallback((phase, run) => {
     if (!graphPhaseProfiling) return run();
     const started = performance.now();
@@ -2699,7 +2700,7 @@ export function GraphShell({
     }
 
     const canonIds = [...effectiveEnabledCanonIds];
-    if (canonIds.length === 0) {
+    if (canonIds.length === 0 && !loader.allowEmptySelection) {
       setRuntimeViewportResponse(null);
       return;
     }
@@ -3739,8 +3740,9 @@ export function GraphShell({
 
     return () => abortController.abort();
     // Drawer history has its own presentation action key. The immutable detail
-    // read changes only with Event/loader/locale or an explicit Retry action.
-  }, [eventDetailRetryVersion, hasHydratedRestorableState, initialEventDetail, loader, locale, renderedEventSelection?.eventId, usesLoadingWorkspace]);
+    // read changes only with Event/detail-reader/locale or an explicit Retry.
+    // A simulation frame replaces the draw loader but retains this same reader.
+  }, [eventDetailRetryVersion, hasHydratedRestorableState, initialEventDetail, loader.loadEventDetail, locale, renderedEventSelection?.eventId, usesLoadingWorkspace]);
 
 
   const visibleRelationSegments = useMemo<RelationSegment[]>(
@@ -4246,12 +4248,32 @@ export function GraphShell({
     return () => { liveSvgPaintRef.current?.restore(); liveSvgPaintRef.current = null; };
   });
 
+  useEffect(() => {
+    if (!loader.onSceneCommit || runtimeViewportLoadState !== "ready" ||
+        runtimeViewportOwnerRef.current?.loader !== loader ||
+        runtimePaintSource !== loader.paintSourceKey) return;
+    // Geometry priming finishes before the source commits. Canvas/WebGL must
+    // also confirm a successful draw of that source; SVG commits directly.
+    // Then allow a browser paint opportunity before advancing research playback.
+    let second = 0;
+    const afterDraw = () => {
+      if (useGeographicCanvas && drawnPaintSourceRef.current !== runtimePaintSource) {
+        second = requestAnimationFrame(afterDraw);
+        return;
+      }
+      second = requestAnimationFrame(() => loader.onSceneCommit?.());
+    };
+    const first = requestAnimationFrame(afterDraw);
+    return () => { cancelAnimationFrame(first); cancelAnimationFrame(second); };
+  }, [loader, runtimeViewportLoadState, runtimePaintSource, runtimeViewportResponse, useGeographicCanvas]);
+
   // Read-only, on-demand diagnostics. No per-frame serialization or telemetry.
   graphInspectionRef.current = () => ({
     paintSourceKey: runtimePaintSource,
     renderer: inspectRendererDiagnostics(),
     revision: runtimeViewportResponse?.revision ?? null,
     selection: [...effectiveEnabledCanonIds].sort(),
+    selectedEventId: selectedEventSelection?.eventId ?? null,
     view, liveView: liveCamera.get(), sceneJobs: sceneScheduler.inspect(), workerJobs: geometryWorkerRef.current?.inspect() ?? null, worker: workerStatsRef.current, viewportSize, navigationBounds,
     completeness: runtimeViewportResponse?.completeness ?? null,
     loadState: runtimeViewportLoadState,
@@ -4359,9 +4381,9 @@ export function GraphShell({
                 <>
                 {useGeographicCanvas ? (useGeographicWebGL ? <GeographicRenderer key={graphicsSource.generation} paintSourceKey={runtimePaintSource} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
-                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/> : <GeographicCanvas key={graphicsSource.generation} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
+                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling || loader.onSceneCommit ? handleGraphicsDraw : undefined}/> : <GeographicCanvas key={graphicsSource.generation} liveCamera={liveCamera} regions={presentedRegions} points={paintedPoints} colors={compositeStyleById}
                   view={view} size={viewportSize} fillOpacity={COMPOSITE_SURFACE_FILL_OPACITY} strokeOpacity={COMPOSITE_SURFACE_STROKE_OPACITY}
-                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling?handleGraphicsDraw:undefined}/>) : null}
+                  onUnavailable={handleGraphicsUnavailable} onDraw={graphPhaseProfiling || loader.onSceneCommit ? handleGraphicsDraw : undefined}/>) : null}
                 <svg data-graphics-painter={useGeographicCanvas?(useGeographicWebGL?"webgl":"canvas"):"svg"} data-renderer={useGeographicCanvas?(useGeographicWebGL?"custom-webgl2":"canvas"):"svg"} data-pigment-mode={useGeographicWebGL?"spectral-6band":"srgb-fallback"} data-semantic-budget={discovery?.contextHud ? semanticSelection.budget : undefined} aria-label="Projected chart surface" className={styles.chartSurface} style={{width: viewportSize.width, height: viewportSize.height}} viewBox={`0 0 ${viewportSize.width} ${viewportSize.height}`}>
                   <g ref={liveSvgGroupRef}>
                   <defs>

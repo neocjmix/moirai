@@ -11,6 +11,9 @@ export const ALGORITHM = "d3-fixed-y/1";
 export const RUN_FORMAT = "layout-lab-v2-run/1";
 /** A synchronous replay safety limit, not a cooling or convergence horizon. */
 export const MAX_TICK = 10_000;
+/** World-size guard; interactive callers run physics in a Worker. */
+export const MAX_NODES = 2_000;
+export const MAX_LINKS = 16_000;
 export interface InputNode {
   id: string;
   y: number;
@@ -179,11 +182,13 @@ function canonicalInput(value: unknown): SimulationInput {
   const input = object(value, ["nodes", "links", "source"], "input");
   if (
     !Array.isArray(input.nodes) ||
-    input.nodes.length > 256 ||
+    input.nodes.length > MAX_NODES ||
     !Array.isArray(input.links) ||
-    input.links.length > 4096
+    input.links.length > MAX_LINKS
   )
-    throw new Error("P1 input requires at most 256 nodes and 4096 links");
+    throw new Error(
+      `Input requires at most ${MAX_NODES} nodes and ${MAX_LINKS} links`
+    );
   const ids = new Set<string>();
   const nodes = input.nodes
     .map((v): InputNode => {

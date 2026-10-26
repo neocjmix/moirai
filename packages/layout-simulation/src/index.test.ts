@@ -228,4 +228,40 @@ describe("X-only force simulation", () => {
     expect(Math.abs(sim.state().nodes[0]!.x)).toBeLessThan(0.01);
     expect(sim.state().nodes[0]!.y).toBe(12);
   });
+  it("preserves exact prefixes and historical Y beyond the original demo size", () => {
+    const input = {
+      nodes: Array.from({ length: 539 }, (_, i) => ({
+        id: `history-${i.toString().padStart(4, "0")}`,
+        x: (i % 23) * 12 - 132,
+        y: 223000 + Math.floor(i / 23) * 35,
+        radius: 4
+      })),
+      links: Array.from({ length: 538 }, (_, i) => ({
+        id: `relation-${i}`,
+        source: `history-${i.toString().padStart(4, "0")}`,
+        target: `history-${(i + 1).toString().padStart(4, "0")}`
+      }))
+    };
+    const short = createXSimulation(input);
+    short.tick(10);
+    const expected = JSON.stringify(short.state());
+    const long = createXSimulation(input);
+    for (let i = 0; i < 10; i++) long.tick();
+    expect(JSON.stringify(long.state())).toBe(expected);
+    long.tick(10);
+    long.seek(10);
+    expect(JSON.stringify(long.state())).toBe(expected);
+    expect(long.state().nodes.map((n) => [n.id, n.y])).toEqual(
+      input.nodes.map((n) => [n.id, n.y])
+    );
+    expect(() =>
+      createXSimulation({
+        nodes: Array.from({ length: 2001 }, (_, i) => ({
+          id: String(i),
+          y: i
+        })),
+        links: []
+      })
+    ).toThrow("at most 2000");
+  });
 });

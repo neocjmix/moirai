@@ -55,12 +55,12 @@ caller-supplied provenance, not an authentication claim. Tests compare full stat
 JSON byte-for-byte, rather than relying on the checksum. Cross-JavaScript-engine
 bitwise equality is not claimed without an actual browser comparison.
 
-P1 has explicit limits of 256 nodes, 4,096 links and tick 10,000, independent of the
+The engine has explicit limits of 2,000 nodes, 16,000 links and tick 10,000, independent of the
 force schedule. Synchronous JSON import additionally rejects work estimates over
 25 million operations; interactive callers should advance in small batches and
 allow cancellation between batches. Collision and quality measurement are O(n²),
 so this first implementation is intended for small physics fixtures, not a claim
-of large-World performance. Public UI uses the 20-node synthetic fixture.
+of large-World performance. The graph-integrated Lab uses a pinned public World and runs physics in a Worker. The original 20-node fixture remains a unit regression case.
 
 ## Measurement and interpretation
 

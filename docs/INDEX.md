@@ -12,6 +12,8 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 [IP-018](implementation/IP-018-layout-lab-v2.md)이 현재 Layout Lab 실행을 소유한다. **v1 전체 연구는 종료되었고 미완료 후속은 cancelled / superseded다.** 먼저 Lab 이전 Force X·시간 고정 Y·Y-sweep으로 공개 개발 환경을 선택적으로 복구한 뒤, Iteration 불변식을 가진 새 X-only 시뮬레이션을 구축한다. v2 기본값 승격은 사용자 시각 승인 전 금지한다.
 
+후속 사용자 교정은 **실제 GraphShell 위 v2 + live Iteration 오버레이**를 요구한다. 별도 합성 그래프 화면은 주 검수 UI로 superseded이며 [IP-018](implementation/IP-018-layout-lab-v2.md)의 교정을 따른다.
+
 [CURRENT](implementation/CURRENT.md)는 현재 단계와 검증된 배포 상태를, [Codex handoff](implementation/IP-018-codex-handoff.md)는 인계를, [재조사 증거](evidence/ip018-baseline-audit-2026-10-25.md)는 기준선 근거와 불확실성을 소유한다. [IP-013](implementation/IP-013-real-history-development-plan.md)의 실제 역사·World·Collection 의미는 유지하며 R/L 연구 실행은 IP-018로 대체한다. [IP-016](implementation/IP-016-tstl-product-lab.md)과 [IP-017](implementation/IP-017-organic-surface-lab-slice-1.md)은 종료된 v1 계획이다. [IP-011](implementation/IP-011-architecture-realignment.md)과 [A5 disposition](implementation/IP-011-A5-collection-discovery-plan.md)의 무관한 backlog는 활성화하지 않는다.
 
 #321의 [모바일 성능 종료](implementation/IP-012-mobile-continuity-closeout.md)는 유지한다. 사용자는 iPhone 17 운영 체감을 수용했으며 수치 frame/heap 미달은 deferred이고 자동 재개 이유가 아니다. [IP-012](implementation/IP-012-render-publication-plan.md)는 Render 기술 경계와 승격/backfill을 소유한다. 실제 쓰기의 무결성·발행·복구는 선행 검증하되 모든 증분 최적화를 history gate로 삼지 않는다. 기본 GraphShell/Render와 [ADR-012](architecture/ADR-012-render-read-architecture.md)의 배포 기준선은 CURRENT를 따른다.

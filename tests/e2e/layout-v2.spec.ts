@@ -1,118 +1,103 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test } from "@playwright/test";
 
-async function seek(page: Page, tick: number) {
-  const input = page.getByLabel("정확한 tick");
-  await input.fill(String(tick));
-  await input.press("Enter");
-  await expect(page.getByTestId("state-tick")).toHaveText(
-    `tick ${tick.toLocaleString("en-US")}`
-  );
-  await expect(
-    page.getByRole("button", { name: "현재 tick 재현 검증", exact: true })
-  ).toBeEnabled();
-}
-async function state(page: Page) {
-  return page.locator("[data-node-id]").evaluateAll((nodes) =>
-    nodes.map((node) => ({
-      id: node.getAttribute("data-node-id"),
-      x: node.getAttribute("cx"),
-      y: node.getAttribute("cy")
-    }))
-  );
-}
+const world = "019f3b00-0000-7000-8000-000000000a01";
+const battle = "019f3b00-0000-7000-8000-000000000a12";
 
-test("P1 exact tick replay, fixed Y/camera and JSON reproduction stay browser-local", async ({
+test("Lab entry opens the real GraphShell with exact iteration overlay and preserves Event selection", async ({
   page
-}, testInfo) => {
+}) => {
+  test.setTimeout(90_000);
   const errors: string[] = [];
-  const mutations: string[] = [];
   page.on("pageerror", (error) => errors.push(error.message));
-  page.on("request", (request) => {
-    if (!["GET", "HEAD"].includes(request.method()))
-      mutations.push(request.url());
+  await page.addInitScript(() =>
+    localStorage.setItem("urdr:app-language-override", "ko")
+  );
+  await page.goto(
+    `/labs/layout-v2?world=${world}&event=${battle}&discovery=legacy`
+  );
+  await expect(page).toHaveURL(/\/graph\/v5\?.*layoutLab=force-v2/);
+  await expect(page.getByTestId("graph-stage")).toBeVisible();
+  const drawer = page.getByTestId("event-drawer-sheet");
+  await expect(drawer).toContainText("공유된 전투");
+  const overlay = page.getByTestId("layout-v2-overlay");
+  await expect(overlay).toHaveAttribute("data-tick", "0", { timeout: 30_000 });
+  const camera = new URL(page.url()).searchParams.get("gsViewport");
+  const seek = async (tick: number) => {
+    await page.getByLabel("Iteration", { exact: true }).fill(String(tick));
+    await expect(overlay).toHaveAttribute("data-tick", String(tick), {
+      timeout: 30_000
+    });
+  };
+  await seek(100);
+  const digest = await overlay.getAttribute("data-state-digest");
+  await seek(1000);
+  await seek(100);
+  await expect(overlay).toHaveAttribute("data-state-digest", digest!);
+  await overlay.getByRole("button", { name: "설정 ▾", exact: true }).click();
+  await overlay
+    .getByRole("button", { name: "설정·결과 JSON", exact: true })
+    .click();
+  const exported = page.getByLabel("설정과 결과 JSON", { exact: true });
+  await expect(exported).not.toHaveValue("");
+  const json = await exported.inputValue();
+  await seek(0);
+  await page.getByLabel("가져올 실험 JSON", { exact: true }).fill(json);
+  await overlay.getByRole("button", { name: "JSON 재현", exact: true }).click();
+  await expect(overlay).toHaveAttribute("data-tick", "100", {
+    timeout: 30_000
   });
-  await page.goto("/labs/layout-v2");
-  await expect(
-    page.getByRole("heading", { name: "Layout Lab v2", exact: true })
-  ).toBeVisible();
-  const initial = await state(page);
-  const camera = await page.getByTestId("force-scene").getAttribute("viewBox");
-  expect(initial.length).toBeGreaterThan(0);
-  await seek(page, 100);
-  const hundred = await state(page);
-  const checksum = await page.getByTestId("state-checksum").textContent();
-  expect(hundred.map((node) => node.y)).toEqual(initial.map((node) => node.y));
-  expect(hundred.map((node) => node.x)).not.toEqual(
-    initial.map((node) => node.x)
-  );
-  await page
-    .getByRole("button", { name: "JSON 내보내기", exact: true })
-    .click();
-  const json = await page
-    .getByLabel("입력·설정·tick·checksum JSON")
-    .inputValue();
-  await seek(page, 1000);
-  await seek(page, 100);
-  expect(await state(page)).toEqual(hundred);
-  await expect(page.getByTestId("state-checksum")).toHaveText(checksum!);
-  await expect(page.getByTestId("force-scene")).toHaveAttribute(
-    "viewBox",
-    camera!
-  );
-  await page
-    .getByRole("button", { name: "현재 tick 재현 검증", exact: true })
-    .click();
-  await expect(page.getByTestId("reproduction-result")).toContainText(
-    "PASS · tick 100"
-  );
-  await page.getByRole("button", { name: "재시작", exact: true }).click();
-  await expect(page.getByTestId("state-tick")).toHaveText("tick 0");
-  expect(await state(page)).toEqual(initial);
-  await page.getByRole("button", { name: "시작", exact: true }).click();
-  await expect(page.getByTestId("state-tick")).not.toHaveText("tick 0");
-  await page.getByRole("button", { name: "정지", exact: true }).click();
-  const stopped = await page.getByTestId("state-tick").textContent();
-  await page.waitForTimeout(150);
-  await expect(page.getByTestId("state-tick")).toHaveText(stopped!);
-  await page.getByLabel("입력·설정·tick·checksum JSON").fill(json);
-  await page
-    .getByRole("button", { name: "JSON 불러오기", exact: true })
-    .click();
-  await expect(page.getByTestId("state-checksum")).toHaveText(checksum!);
-  expect(await state(page)).toEqual(hundred);
-  const tampered = JSON.parse(json);
-  tampered.stateDigest = "00000000";
-  await page
-    .getByLabel("입력·설정·tick·checksum JSON")
-    .fill(JSON.stringify(tampered));
-  await page
-    .getByRole("button", { name: "JSON 불러오기", exact: true })
-    .click();
-  await expect(
-    page.getByRole("alert").filter({ hasText: "mismatch" })
-  ).toContainText("mismatch");
-  expect(await state(page)).toEqual(hundred);
-  await page.getByLabel("전체 노드 척력", { exact: true }).fill("0");
-  await page
-    .getByRole("button", { name: "설정 적용 · tick 0", exact: true })
-    .click();
-  await expect(page.getByTestId("state-tick")).toHaveText("tick 0");
-  expect(await state(page)).toEqual(initial);
-  await expect(page.getByTestId("force-scene")).toHaveAttribute(
-    "viewBox",
-    camera!
-  );
-  expect(
-    await page.evaluate(
-      () => document.documentElement.scrollWidth <= window.innerWidth
-    )
-  ).toBe(true);
-  await seek(page, 100);
-  await page.evaluate(() => window.scrollTo(0, 0));
-  await page.screenshot({
-    path: testInfo.outputPath("lab-v2.png"),
-    fullPage: true
-  });
+  await expect(overlay).toHaveAttribute("data-state-digest", digest!);
+  await overlay.getByRole("button", { name: "설정 ▴", exact: true }).click();
+  await expect(drawer).toContainText("공유된 전투");
+  expect(new URL(page.url()).searchParams.get("gsViewport")).toBe(camera);
+  await overlay.getByRole("button", { name: "현재 운영", exact: true }).click();
+  await expect(overlay).toHaveCount(0);
+  await expect(drawer).toContainText("공유된 전투");
+  await page.getByRole("button", { name: "Lab v2", exact: true }).click();
+  await expect(overlay).toHaveAttribute("data-tick", "0");
+  await expect(drawer).toContainText("공유된 전투");
   expect(errors).toEqual([]);
-  expect(mutations).toEqual([]);
+});
+
+test("ordinary graph hydration never sends the Lab-only empty-selection query", async ({
+  page
+}) => {
+  const emptyQueries: unknown[] = [];
+  const viewportStatuses: number[] = [];
+  page.on("request", (request) => {
+    if (!request.url().endsWith("/graph/v5/shell")) return;
+    const body = request.postDataJSON();
+    if (body.kind === "viewport" && body.viewport.canonIds.length === 0)
+      emptyQueries.push(body);
+  });
+  page.on("response", (response) => {
+    if (!response.url().endsWith("/graph/v5/shell")) return;
+    if (response.request().postDataJSON().kind === "viewport")
+      viewportStatuses.push(response.status());
+  });
+  await page.goto(
+    `/graph/v5?world=${world}&event=${battle}&tileData=0&discovery=legacy`
+  );
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(
+    "공유된 전투"
+  );
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        let state: { loadState?: string } | undefined;
+        window.addEventListener(
+          "moirai:graph-inspection",
+          (event) => {
+            state = (event as CustomEvent).detail;
+          },
+          { once: true }
+        );
+        window.dispatchEvent(new Event("moirai:inspect-graph"));
+        return state?.loadState;
+      })
+    )
+    .toBe("ready");
+  expect(viewportStatuses.length).toBeGreaterThan(0);
+  expect(viewportStatuses.every((status) => status === 200)).toBe(true);
+  expect(emptyQueries).toEqual([]);
 });

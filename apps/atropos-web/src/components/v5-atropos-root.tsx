@@ -187,6 +187,7 @@ function V5GraphApp(props: V5AtroposBootstrap) {
     if (!lab.enabled || !frame) return baselineLoader;
     return {
       viewportMode: "snapshot" as const,
+      allowEmptySelection: true,
       paintSourceKey: `layout-v2:${props.worldId}:${props.revision}:${frame.sessionId}:${frame.frameId}:${frame.state.tick}`,
       loadWorkspace: async () => props.workspace,
       loadViewport: async () => frame.viewport,

@@ -2700,7 +2700,7 @@ export function GraphShell({
     }
 
     const canonIds = [...effectiveEnabledCanonIds];
-    if (canonIds.length === 0 && loader.viewportMode !== "snapshot") {
+    if (canonIds.length === 0 && !loader.allowEmptySelection) {
       setRuntimeViewportResponse(null);
       return;
     }

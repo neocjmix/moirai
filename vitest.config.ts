@@ -4,6 +4,9 @@ import { defineConfig } from "vitest/config";
 export default defineConfig({
   resolve: {
     alias: {
+      "@moirai/layout-simulation": fileURLToPath(
+        new URL("./packages/layout-simulation/src/index.ts", import.meta.url)
+      ),
       "@moirai/graph-presentation/render-primitive-admission": fileURLToPath(
         new URL(
           "./packages/graph-presentation/src/render-primitive-admission.ts",

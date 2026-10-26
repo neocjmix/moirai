@@ -126,7 +126,26 @@ function walk(
   return seen;
 }
 
-describe("IP-013 research isolation", () => {
+// IP-018's integrated overlay is part of the real GraphShell. Its full input
+// loader and physics-to-view adapter remain confined to the Lab endpoint and
+// Worker; sharing a lib directory is not permission for ordinary render reads
+// or the main-thread viewer to execute them.
+const researchImporters = new Map<string, ReadonlySet<string>>([
+  [
+    `${app}/lib/layout-v2-snapshot.ts`,
+    new Set([`${app}/app/labs/layout-v2/snapshot/route.ts`])
+  ],
+  [
+    `${app}/lib/layout-v2-adapter.ts`,
+    new Set([`${app}/labs/graph-force/simulation.worker.ts`])
+  ],
+  [
+    `${app}/lib/layout-v2-validation.ts`,
+    new Set([`${app}/lib/layout-v2-snapshot.ts`])
+  ]
+]);
+
+describe("IP-018 GraphShell research isolation", () => {
   it("keeps the complete production browser renderer import closure outside Lab and runtime layout", () => {
     const seen = walk(
       [
@@ -142,9 +161,27 @@ describe("IP-013 research isolation", () => {
     );
     expect(seen.size).toBeGreaterThan(30);
   });
+  it("confines revision-wide input and local graph computation to their exact Lab callers", () => {
+    const incoming = new Map<string, Set<string>>();
+    for (const path of sourceFiles(app))
+      for (const { spec } of imports(path)) {
+        const dependency = target(path, spec);
+        if (!dependency) continue;
+        const module = relative(root, dependency);
+        const allowed = researchImporters.get(module);
+        if (!allowed) continue;
+        expect(allowed.has(path), `${path} -> ${spec}`).toBe(true);
+        const callers = incoming.get(module) ?? new Set<string>();
+        callers.add(path);
+        incoming.set(module, callers);
+      }
+    for (const [module, allowed] of researchImporters)
+      expect(incoming.get(module), module).toEqual(allowed);
+  });
+
   it("prevents normal production source from directly importing the experimental surface or computation", () => {
     const production = sourceFiles(app).filter(
-      (path) => !path.includes("/labs/")
+      (path) => !path.includes("/labs/") && !researchImporters.has(path)
     );
     for (const path of production)
       for (const { spec, names } of imports(path)) {

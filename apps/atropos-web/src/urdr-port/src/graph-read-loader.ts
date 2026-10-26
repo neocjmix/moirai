@@ -21,6 +21,8 @@ export type GraphReadLoader = {
   /** Stable identity of an immutable paint source. A committed source
    * change may retry a renderer that could not paint the previous geometry. */
   paintSourceKey?: string;
+  /** Called after this source has committed to the graph and a paint opportunity. */
+  onSceneCommit?(): void;
   dispose?(): void;
   inspectViewport?(): Record<string, number>;
   loadWorkspace(locale: AppLocale): Promise<GraphShellWorkspaceShell>;

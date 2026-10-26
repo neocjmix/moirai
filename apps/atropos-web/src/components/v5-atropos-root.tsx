@@ -1,5 +1,7 @@
 "use client";
 import { useEffect, useMemo } from "react";
+import { useGraphForceLab } from "./use-graph-force-lab";
+import { GraphForceOverlay, GraphForceSettings } from "./graph-force-lab";
 import { Theme } from "@radix-ui/themes";
 import { App } from "../urdr-port/src/App";
 import { createV5GraphReadLoader } from "../lib/v5-graph-read-loader";
@@ -119,7 +121,34 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       .sort(),
     relationTypes: state.query.relation_filter.types
   });
-  const loader = useMemo(
+  const lab = useGraphForceLab(props, {
+    collectionIds: JSON.parse(selection).collections,
+    relationTypes: JSON.parse(selection).relationTypes
+  });
+  const detailLoader = useMemo(
+    () =>
+      createV5GraphReadLoader({
+        worldId: props.worldId,
+        revision: props.revision,
+        timeSystemId: props.timeSystemId,
+        workspace: props.workspace,
+        collectionIds: JSON.parse(selection).collections,
+        relationTypes: JSON.parse(selection).relationTypes
+      }),
+    [
+      props.worldId,
+      props.revision,
+      props.timeSystemId,
+      props.workspace,
+      selection
+    ]
+  );
+  const retainDetail = useMemo(
+    () => createDeferredEffectDisposal(() => detailLoader.dispose?.()),
+    [detailLoader]
+  );
+  useEffect(retainDetail, [retainDetail]);
+  const baselineLoader = useMemo(
     () =>
       createV5GraphReadLoader({
         worldId: props.worldId,
@@ -149,9 +178,31 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       props.readPage,
       props.renderEnabled,
       tileClient,
-      selection
+      selection,
+      lab.enabled
     ]
   );
+  const loader = useMemo(() => {
+    const frame = lab.frame;
+    if (!lab.enabled || !frame) return baselineLoader;
+    return {
+      viewportMode: "snapshot" as const,
+      paintSourceKey: `layout-v2:${props.worldId}:${props.revision}:${frame.sessionId}:${frame.frameId}:${frame.state.tick}`,
+      loadWorkspace: async () => props.workspace,
+      loadViewport: async () => frame.viewport,
+      loadEventDetail: detailLoader.loadEventDetail,
+      onSceneCommit: () => lab.acknowledge(frame)
+    };
+  }, [
+    lab.enabled,
+    lab.frame,
+    lab.acknowledge,
+    baselineLoader,
+    detailLoader,
+    props.workspace,
+    props.worldId,
+    props.revision
+  ]);
   const focus =
     state.focus?.kind === "event" && state.focus.event_ref.kind === "event"
       ? state.focus.event_ref.event_id
@@ -163,6 +214,10 @@ function V5GraphApp(props: V5AtroposBootstrap) {
       initialScreen={props.screen ?? "graph"}
       initialDrawerStage={props.fullEvent ? "full" : "peek"}
       loader={loader}
+      renderSettings={() => <GraphForceSettings lab={lab} />}
+      renderGraphTools={() => (
+        <GraphForceOverlay lab={lab} drawerOpen={focus !== null} />
+      )}
       initialViewportCenter={props.center}
       externalFocus={focus ? { id: focus, label: focus } : null}
       onSelection={(id) =>

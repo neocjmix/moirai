@@ -58,3 +58,46 @@ test("Lab entry opens the real GraphShell with exact iteration overlay and prese
   await expect(drawer).toContainText("공유된 전투");
   expect(errors).toEqual([]);
 });
+
+test("ordinary graph hydration never sends the Lab-only empty-selection query", async ({
+  page
+}) => {
+  const emptyQueries: unknown[] = [];
+  const viewportStatuses: number[] = [];
+  page.on("request", (request) => {
+    if (!request.url().endsWith("/graph/v5/shell")) return;
+    const body = request.postDataJSON();
+    if (body.kind === "viewport" && body.viewport.canonIds.length === 0)
+      emptyQueries.push(body);
+  });
+  page.on("response", (response) => {
+    if (!response.url().endsWith("/graph/v5/shell")) return;
+    if (response.request().postDataJSON().kind === "viewport")
+      viewportStatuses.push(response.status());
+  });
+  await page.goto(
+    `/graph/v5?world=${world}&event=${battle}&tileData=0&discovery=legacy`
+  );
+  await expect(page.getByTestId("event-drawer-sheet")).toContainText(
+    "공유된 전투"
+  );
+  await expect
+    .poll(async () =>
+      page.evaluate(() => {
+        let state: { loadState?: string } | undefined;
+        window.addEventListener(
+          "moirai:graph-inspection",
+          (event) => {
+            state = (event as CustomEvent).detail;
+          },
+          { once: true }
+        );
+        window.dispatchEvent(new Event("moirai:inspect-graph"));
+        return state?.loadState;
+      })
+    )
+    .toBe("ready");
+  expect(viewportStatuses.length).toBeGreaterThan(0);
+  expect(viewportStatuses.every((status) => status === 200)).toBe(true);
+  expect(emptyQueries).toEqual([]);
+});

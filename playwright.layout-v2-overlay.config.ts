@@ -20,6 +20,7 @@ export default defineConfig({
   reporter: "list",
   outputDir: "test-results/layout-v2-overlay",
   use: {
+    actionTimeout: 15_000,
     baseURL,
     proxy,
     trace: "retain-on-failure",

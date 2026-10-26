@@ -9,6 +9,7 @@ export default defineConfig({
   workers: 1,
   retries: 0,
   use: {
+    actionTimeout: 15_000,
     baseURL: "http://127.0.0.1:3200",
     screenshot: "only-on-failure",
     trace: "retain-on-failure"

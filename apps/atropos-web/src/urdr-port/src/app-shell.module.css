@@ -299,4 +299,5 @@
 }
 
 /* Optional graph-local research controls; the dock itself never takes gestures. */
-.graphToolsDock { position: fixed; left: 0; right: 0; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 35; pointer-events: none; display: flex; justify-content: center; }
+.graphToolsDock { position: fixed; left: 0; right: 0; bottom: calc(76px + env(safe-area-inset-bottom)); z-index: 10028; pointer-events: none; display: flex; justify-content: center; }
+.graphToolsDock:has([data-drawer-open="true"]) { z-index: 10052; }

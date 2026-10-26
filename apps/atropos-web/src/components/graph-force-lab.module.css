@@ -132,12 +132,13 @@
   background: #25332c;
   color: white;
 }
+.overlay[data-drawer-open="true"],
+.launcher[data-drawer-open="true"] {
+  position: fixed;
+  top: calc(58px + env(safe-area-inset-top));
+  bottom: auto;
+}
 @media (max-width: 700px) {
-  .overlay[data-drawer-open="true"] {
-    position: fixed;
-    top: calc(58px + env(safe-area-inset-top));
-    bottom: auto;
-  }
   .heading small {
     display: block;
   }

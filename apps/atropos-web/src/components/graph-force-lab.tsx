@@ -75,7 +75,11 @@ export function GraphForceOverlay({
   useEffect(() => setInputTick(String(lab.requestedTick)), [lab.requestedTick]);
   if (!lab.enabled)
     return (
-      <button className={styles.launcher} onClick={() => lab.choose(true)}>
+      <button
+        className={styles.launcher}
+        data-drawer-open={drawerOpen ? "true" : "false"}
+        onClick={() => lab.choose(true)}
+      >
         Lab v2
       </button>
     );
@@ -245,6 +249,7 @@ export function GraphForceOverlay({
             </p>
           ) : null}
           <button
+            disabled={!painted}
             onClick={() => {
               lab.exportRun();
               setJsonOpen(true);

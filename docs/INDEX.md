@@ -12,7 +12,7 @@ Moirai의 규범 문서는 세 계층으로 관리한다.
 
 [IP-018](implementation/IP-018-layout-lab-v2.md)이 현재 Layout Lab 실행을 소유한다. **v1 전체 연구는 종료되었고 미완료 후속은 cancelled / superseded다.** 먼저 Lab 이전 Force X·시간 고정 Y·Y-sweep으로 공개 개발 환경을 선택적으로 복구한 뒤, Iteration 불변식을 가진 새 X-only 시뮬레이션을 구축한다. v2 기본값 승격은 사용자 시각 승인 전 금지한다.
 
-후속 사용자 교정은 **실제 GraphShell 위 v2 + live Iteration 오버레이**를 요구한다. 별도 합성 그래프 화면은 주 검수 UI로 superseded이며 [IP-018](implementation/IP-018-layout-lab-v2.md)의 교정을 따른다.
+후속 사용자 교정은 **실제 GraphShell 위 v2 + live Iteration 오버레이**를 요구한다. 별도 합성 그래프 화면은 제거되어 실제 Graph로 연결된다. PR #370의 구현·검증은 [GraphShell 통합 증거](evidence/ip018-graph-overlay-2026-10-26.md), 현재 배포는 CURRENT를 따른다.
 
 [CURRENT](implementation/CURRENT.md)는 현재 단계와 검증된 배포 상태를, [Codex handoff](implementation/IP-018-codex-handoff.md)는 인계를, [재조사 증거](evidence/ip018-baseline-audit-2026-10-25.md)는 기준선 근거와 불확실성을 소유한다. [IP-013](implementation/IP-013-real-history-development-plan.md)의 실제 역사·World·Collection 의미는 유지하며 R/L 연구 실행은 IP-018로 대체한다. [IP-016](implementation/IP-016-tstl-product-lab.md)과 [IP-017](implementation/IP-017-organic-surface-lab-slice-1.md)은 종료된 v1 계획이다. [IP-011](implementation/IP-011-architecture-realignment.md)과 [A5 disposition](implementation/IP-011-A5-collection-discovery-plan.md)의 무관한 backlog는 활성화하지 않는다.
 

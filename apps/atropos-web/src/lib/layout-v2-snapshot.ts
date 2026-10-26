@@ -19,6 +19,8 @@ import {
 } from "./layout-v2-types";
 import { validateLayoutV2Snapshot } from "./layout-v2-validation";
 
+const MAX_CONCURRENT_READS = 24;
+
 const hash = (text: string) => createHash("sha256").update(text).digest("hex");
 const byId = <T extends { id: string }>(values: T[]) =>
   values.sort((a, b) => (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
@@ -56,11 +58,10 @@ async function documentKeys(
     root.document_count > 100_000
   )
     throw Error("lab_snapshot_index_invalid");
-  const keys: string[] = [];
   const visit = async (
     refs: IndexReference[],
     level: number
-  ): Promise<void> => {
+  ): Promise<string[]> => {
     if (
       !Array.isArray(refs) ||
       refs.length > root.fanout ||
@@ -73,36 +74,41 @@ async function documentKeys(
       )
     )
       throw Error("lab_snapshot_index_invalid");
-    for (const ref of refs) {
-      if (level < 0) {
-        if (ref.key !== ref.first_key || ref.key !== ref.last_key)
+    // Sibling index objects are independent immutable reads. Promise.all
+    // preserves authenticated key order even when object responses finish out
+    // of order; store.get applies one global concurrency cap to every level.
+    const branches = await Promise.all(
+      refs.map(async (ref): Promise<string[]> => {
+        if (level < 0) {
+          if (ref.key !== ref.first_key || ref.key !== ref.last_key)
+            throw Error("lab_snapshot_index_invalid");
+          return [ref.key];
+        }
+        if (!ref.key.startsWith(`${prefix}complete/index/${level}/`))
           throw Error("lab_snapshot_index_invalid");
-        keys.push(ref.key);
-        continue;
-      }
-      if (!ref.key.startsWith(`${prefix}complete/index/${level}/`))
-        throw Error("lab_snapshot_index_invalid");
-      const body = await get(ref.key);
-      if (body === null || hash(body) !== ref.sha256)
-        throw Error("lab_snapshot_index_digest_mismatch");
-      const node = JSON.parse(body) as {
-        world_id: string;
-        revision: number;
-        kind: string;
-        entries: IndexReference[];
-      };
-      if (
-        node.world_id !== root.world_id ||
-        node.revision !== root.revision ||
-        node.kind !== (level === 0 ? "leaf" : "branch") ||
-        node.entries?.[0]?.first_key !== ref.first_key ||
-        node.entries.at(-1)?.last_key !== ref.last_key
-      )
-        throw Error("lab_snapshot_index_invalid");
-      await visit(node.entries, level - 1);
-    }
+        const body = await get(ref.key);
+        if (body === null || hash(body) !== ref.sha256)
+          throw Error("lab_snapshot_index_digest_mismatch");
+        const node = JSON.parse(body) as {
+          world_id: string;
+          revision: number;
+          kind: string;
+          entries: IndexReference[];
+        };
+        if (
+          node.world_id !== root.world_id ||
+          node.revision !== root.revision ||
+          node.kind !== (level === 0 ? "leaf" : "branch") ||
+          node.entries?.[0]?.first_key !== ref.first_key ||
+          node.entries.at(-1)?.last_key !== ref.last_key
+        )
+          throw Error("lab_snapshot_index_invalid");
+        return visit(node.entries, level - 1);
+      })
+    );
+    return branches.flat();
   };
-  await visit(root.entries, root.index_depth - 1);
+  const keys = await visit(root.entries, root.index_depth - 1);
   if (keys.length !== root.document_count || new Set(keys).size !== keys.length)
     throw Error("lab_snapshot_index_incomplete");
   return keys;
@@ -122,11 +128,26 @@ export async function loadLayoutV2Snapshot(
   )
     throw Error("lab_snapshot_revision_invalid");
   const pending = new Map<string, ReturnType<typeof source.get>>();
+  let activeReads = 0;
+  const waiting: (() => void)[] = [];
+  const readBounded = async (key: string) => {
+    if (activeReads < MAX_CONCURRENT_READS) activeReads++;
+    else await new Promise<void>((resolve) => waiting.push(resolve));
+    try {
+      return await source.get(key);
+    } finally {
+      // Transfer the released slot directly to the oldest waiter. New reads
+      // cannot jump the queue or briefly exceed the cap between microtasks.
+      const next = waiting.shift();
+      if (next) next();
+      else activeReads--;
+    }
+  };
   const store: Pick<ObjectStore, "get"> = {
     get(key) {
       let result = pending.get(key);
       if (!result) {
-        result = source.get(key);
+        result = readBounded(key);
         pending.set(key, result);
       }
       return result;
@@ -191,94 +212,102 @@ export async function loadLayoutV2Snapshot(
       )
     );
   // Bound object-store concurrency while allowing complete offline inputs.
-  for (let offset = 0; offset < suffixes.length; offset += 8) {
+  for (
+    let offset = 0;
+    offset < suffixes.length;
+    offset += MAX_CONCURRENT_READS
+  ) {
     await Promise.all(
-      suffixes.slice(offset, offset + 8).map(async (suffix) => {
-        if (/^content\/events\//.test(suffix)) {
-          const { event } = await read<{ event: Event }>(suffix);
-          if (
-            event.world_id !== worldId ||
-            suffix !== `content/events/${event.id}/detail.json`
-          )
-            throw Error("lab_snapshot_event_invalid");
-          // Only fields consumed by the adapter are retained.
-          events.push({
-            id: event.id,
-            world_id: worldId,
-            title: event.title,
-            slug: null,
-            summary: null,
-            roles: [],
-            attributes: {}
-          });
-        } else if (/^content\/relations\//.test(suffix)) {
-          const { relation } = await read<{ relation: Relation }>(suffix);
-          if (
-            relation.world_id !== worldId ||
-            suffix !== `content/relations/${relation.id}.json`
-          )
-            throw Error("lab_snapshot_relation_invalid");
-          relations.push({
-            id: relation.id,
-            world_id: worldId,
-            type: relation.type,
-            source_ref: relation.source_ref,
-            target_ref: relation.target_ref,
-            direction: relation.direction,
-            attributes: {}
-          });
-        } else if (/^content\/time-systems\//.test(suffix)) {
-          const { time_system: system } = await read<{
-            time_system: PublicTimeSystem;
-          }>(suffix);
-          if (
-            system.world_id !== worldId ||
-            suffix !== `content/time-systems/${system.id}.json`
-          )
-            throw Error("lab_snapshot_time_system_invalid");
-          systems.push(system);
-        } else if (/^content\/collections\/[^/]+\/detail/.test(suffix)) {
-          const { collection, member_count: memberCount } = await read<{
-            collection: Collection;
-            member_count: number;
-          }>(suffix);
-          if (
-            collection.world_id !== worldId ||
-            suffix !== `content/collections/${collection.id}/detail.json`
-          )
-            throw Error("lab_snapshot_collection_invalid");
-          collections.push(collection);
-          memberCounts.set(collection.id, memberCount);
-        } else if (/^content\/collections\//.test(suffix)) {
-          const page = await read<{
-            collection_id: string;
-            event_ids: string[];
-            page: number;
-          }>(suffix);
-          if (
-            suffix !==
-            `content/collections/${page.collection_id}/members/${page.page}.json`
-          )
-            throw Error("lab_snapshot_membership_invalid");
-          const ids = memberships.get(page.collection_id) ?? [];
-          ids.push(...page.event_ids);
-          memberships.set(page.collection_id, ids);
-        } else if (suffix.endsWith("/position.json")) {
-          const { position } = await read<{
-            position: V5LayoutTemporalInput["positions"][number];
-          }>(suffix);
-          if (suffix !== `temporal/events/${position.event_id}/position.json`)
-            throw Error("lab_snapshot_position_invalid");
-          positions.push(position);
-        } else {
-          const { composite } = await read<{ composite: { event_id: string } }>(
-            suffix
-          );
-          if (suffix !== `temporal/events/${composite.event_id}/composite.json`)
-            throw Error("lab_snapshot_composite_invalid");
-          composites.push({ event_id: composite.event_id });
-        }
-      })
+      suffixes
+        .slice(offset, offset + MAX_CONCURRENT_READS)
+        .map(async (suffix) => {
+          if (/^content\/events\//.test(suffix)) {
+            const { event } = await read<{ event: Event }>(suffix);
+            if (
+              event.world_id !== worldId ||
+              suffix !== `content/events/${event.id}/detail.json`
+            )
+              throw Error("lab_snapshot_event_invalid");
+            // Only fields consumed by the adapter are retained.
+            events.push({
+              id: event.id,
+              world_id: worldId,
+              title: event.title,
+              slug: null,
+              summary: null,
+              roles: [],
+              attributes: {}
+            });
+          } else if (/^content\/relations\//.test(suffix)) {
+            const { relation } = await read<{ relation: Relation }>(suffix);
+            if (
+              relation.world_id !== worldId ||
+              suffix !== `content/relations/${relation.id}.json`
+            )
+              throw Error("lab_snapshot_relation_invalid");
+            relations.push({
+              id: relation.id,
+              world_id: worldId,
+              type: relation.type,
+              source_ref: relation.source_ref,
+              target_ref: relation.target_ref,
+              direction: relation.direction,
+              attributes: {}
+            });
+          } else if (/^content\/time-systems\//.test(suffix)) {
+            const { time_system: system } = await read<{
+              time_system: PublicTimeSystem;
+            }>(suffix);
+            if (
+              system.world_id !== worldId ||
+              suffix !== `content/time-systems/${system.id}.json`
+            )
+              throw Error("lab_snapshot_time_system_invalid");
+            systems.push(system);
+          } else if (/^content\/collections\/[^/]+\/detail/.test(suffix)) {
+            const { collection, member_count: memberCount } = await read<{
+              collection: Collection;
+              member_count: number;
+            }>(suffix);
+            if (
+              collection.world_id !== worldId ||
+              suffix !== `content/collections/${collection.id}/detail.json`
+            )
+              throw Error("lab_snapshot_collection_invalid");
+            collections.push(collection);
+            memberCounts.set(collection.id, memberCount);
+          } else if (/^content\/collections\//.test(suffix)) {
+            const page = await read<{
+              collection_id: string;
+              event_ids: string[];
+              page: number;
+            }>(suffix);
+            if (
+              suffix !==
+              `content/collections/${page.collection_id}/members/${page.page}.json`
+            )
+              throw Error("lab_snapshot_membership_invalid");
+            const ids = memberships.get(page.collection_id) ?? [];
+            ids.push(...page.event_ids);
+            memberships.set(page.collection_id, ids);
+          } else if (suffix.endsWith("/position.json")) {
+            const { position } = await read<{
+              position: V5LayoutTemporalInput["positions"][number];
+            }>(suffix);
+            if (suffix !== `temporal/events/${position.event_id}/position.json`)
+              throw Error("lab_snapshot_position_invalid");
+            positions.push(position);
+          } else {
+            const { composite } = await read<{
+              composite: { event_id: string };
+            }>(suffix);
+            if (
+              suffix !== `temporal/events/${composite.event_id}/composite.json`
+            )
+              throw Error("lab_snapshot_composite_invalid");
+            composites.push({ event_id: composite.event_id });
+          }
+        })
     );
   }
   const eventIds = new Set(events.map((event) => event.id));

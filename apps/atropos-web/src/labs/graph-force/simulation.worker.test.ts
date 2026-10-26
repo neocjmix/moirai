@@ -56,6 +56,24 @@ afterEach(() => {
 });
 
 describe("GraphShell Worker paint backpressure", () => {
+  it("acknowledges a same-tick command and a stop after pending computation", async () => {
+    acknowledge();
+    send({ type: "target", requestId: 1, tick: 0 });
+    await vi.runAllTimersAsync();
+    expect(lastFrame().requestId).toBe(1);
+    expect(lastFrame().state.tick).toBe(0);
+    send({ type: "target", requestId: 2, tick: 20 });
+    await vi.runAllTimersAsync();
+    send({ type: "play", requestId: 3, enabled: false });
+    acknowledge();
+    expect(lastFrame().requestId).toBe(3);
+    expect(lastFrame().state.tick).toBe(20);
+    acknowledge();
+    const count = frames().length;
+    await vi.runAllTimersAsync();
+    expect(frames()).toHaveLength(count);
+  });
+
   it("computes behind one pending frame and publishes only the latest result on ack", async () => {
     send({ type: "target", requestId: 1, tick: 100 });
     await vi.runAllTimersAsync();

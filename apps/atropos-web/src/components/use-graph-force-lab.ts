@@ -16,6 +16,7 @@ import type {
   WorkerRequest,
   WorkerResponse
 } from "../labs/graph-force/protocol";
+import { isGraphFramePending } from "./graph-force-frame-status";
 
 type Identity = { worldId: string; revision: number; timeSystemId: string };
 export function useGraphForceLab(identity: Identity, scope: Scope) {
@@ -38,6 +39,7 @@ export function useGraphForceLab(identity: Identity, scope: Scope) {
   const latestFrame = useRef<Frame | null>(null);
   const runningRef = useRef(false);
   const requestId = useRef(0);
+  const [commandId, setCommandId] = useState(0);
   const stopRequestId = useRef<number | null>(null);
   const scopeKey = JSON.stringify(scope);
   const scopeRef = useRef(scope);
@@ -47,6 +49,11 @@ export function useGraphForceLab(identity: Identity, scope: Scope) {
     (message: WorkerRequest) => worker.current?.postMessage(message),
     []
   );
+  const nextRequest = useCallback(() => {
+    const id = ++requestId.current;
+    setCommandId(id);
+    return id;
+  }, []);
   const choose = useCallback((next: boolean) => {
     setEnabled(next);
     setError(null);
@@ -88,6 +95,7 @@ export function useGraphForceLab(identity: Identity, scope: Scope) {
     setRunning(false);
     runningRef.current = false;
     requestId.current = 0;
+    setCommandId(0);
     stopRequestId.current = null;
     setImported(null);
     setExported(null);
@@ -209,21 +217,21 @@ export function useGraphForceLab(identity: Identity, scope: Scope) {
       runningRef.current = false;
       stopRequestId.current = null;
       setImported(null);
-      send({ type: "target", requestId: ++requestId.current, tick });
+      send({ type: "target", requestId: nextRequest(), tick });
     },
-    [send]
+    [send, nextRequest]
   );
   const play = useCallback(
     (next: boolean) => {
       setRunning(next);
       runningRef.current = next;
-      const id = ++requestId.current;
+      const id = nextRequest();
       stopRequestId.current = next ? null : id;
       setImported(null);
       if (!next) setRequestedTick(latestFrame.current?.state.tick ?? 0);
       send({ type: "play", requestId: id, enabled: next });
     },
-    [send]
+    [send, nextRequest]
   );
   const configure = useCallback(
     (config: SimulationConfig) => {
@@ -233,9 +241,9 @@ export function useGraphForceLab(identity: Identity, scope: Scope) {
       setError(null);
       stopRequestId.current = null;
       setImported(null);
-      send({ type: "config", requestId: ++requestId.current, config });
+      send({ type: "config", requestId: nextRequest(), config });
     },
-    [send]
+    [send, nextRequest]
   );
   const importRun = useCallback(
     (run: unknown) => {
@@ -254,15 +262,25 @@ export function useGraphForceLab(identity: Identity, scope: Scope) {
       setError(null);
       setImported(null);
       stopRequestId.current = null;
-      send({ type: "import", requestId: ++requestId.current, run });
+      send({ type: "import", requestId: nextRequest(), run });
     },
-    [send]
+    [send, nextRequest]
   );
+  const pending = isGraphFramePending({
+    enabled,
+    loading,
+    error,
+    requestId: commandId,
+    requestedTick,
+    frame,
+    paintedFrame
+  });
   const inspection = useRef<unknown>(null);
   inspection.current = {
     mode: enabled ? "force-v2" : "current",
     requestedTick,
     running,
+    pending,
     loading,
     error,
     source: snapshot
@@ -301,6 +319,7 @@ export function useGraphForceLab(identity: Identity, scope: Scope) {
     error,
     requestedTick,
     running,
+    pending,
     seek,
     play,
     configure,

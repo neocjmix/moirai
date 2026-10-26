@@ -126,11 +126,14 @@ context.onmessage = ({ data }) => {
       playing = false;
       requestId = data.requestId;
       importing = null;
+      // Even an unchanged target must acknowledge this new user command.
+      dirty = true;
       schedule();
     } else if (data.type === "play") {
       playing = data.enabled;
       requestId = data.requestId;
       importing = null;
+      dirty = true;
       if (!playing && simulation) {
         target = simulation.state().tick;
         dirty = true;

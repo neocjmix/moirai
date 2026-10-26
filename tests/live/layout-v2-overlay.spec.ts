@@ -19,6 +19,8 @@ type LabInspection = {
   mode: string;
   requestedTick: number;
   running: boolean;
+  pending: boolean;
+  error: string | null;
   state?: State;
   paintedState?: State;
   source?: unknown;
@@ -205,10 +207,20 @@ test("actual GraphShell overlay replays exact ticks while preserving history, ca
     .toBeGreaterThan(100);
   await overlay.getByRole("button", { name: "정지", exact: true }).click();
   await expect.poll(async () => (await lab(page)).running).toBe(false);
-  await page.waitForTimeout(300);
+  // Stop is a Worker command; its last computed scene may still await paint.
+  // Observe its explicit acknowledgement before checking that motion ended.
+  await expect
+    .poll(async () => (await lab(page)).pending, { timeout: 120_000 })
+    .toBe(false);
+  const settled = await lab(page);
+  expect(settled.error).toBeNull();
+  expect(settled.paintedState?.tick).toBe(settled.requestedTick);
+  const stoppedState = JSON.stringify(settled.paintedState);
   const stopped = await overlay.getAttribute("data-tick");
   await page.waitForTimeout(300);
   await expect(overlay).toHaveAttribute("data-tick", stopped!);
+  expect(JSON.stringify((await lab(page)).paintedState)).toBe(stoppedState);
+  expect((await lab(page)).pending).toBe(false);
   await overlay.getByRole("button", { name: "재시작", exact: true }).click();
   expect(JSON.stringify(await painted(page, 0))).toBe(JSON.stringify(initial));
   await seek(page, 100);

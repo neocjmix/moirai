@@ -127,6 +127,58 @@ describe("read-only published Layout Lab snapshot", () => {
     expect(first.input.dataset.events).toHaveLength(state.events.length);
   });
 
+  it("loads indexes and facts concurrently within one bound without changing snapshot bytes", async () => {
+    const expected = await loadLayoutV2Snapshot(
+      state.world.id,
+      revision,
+      SYNTHETIC_LAB_TIME_SYSTEM_ID,
+      readOnlyStore()
+    );
+    for (const reversed of [false, true]) {
+      const store = readOnlyStore();
+      let active = 0,
+        peak = 0,
+        activeIndexes = 0,
+        peakIndexes = 0;
+      const started: string[] = [],
+        finished: string[] = [];
+      const snapshot = await loadLayoutV2Snapshot(
+        state.world.id,
+        revision,
+        SYNTHETIC_LAB_TIME_SYSTEM_ID,
+        {
+          async get(key) {
+            const isIndex = key.includes("/complete/index/");
+            started.push(key);
+            active++;
+            if (isIndex) activeIndexes++;
+            peak = Math.max(peak, active);
+            peakIndexes = Math.max(peakIndexes, activeIndexes);
+            try {
+              const delay =
+                1 + (Number.parseInt(digest(key).slice(0, 2), 16) % 5);
+              await new Promise<void>((resolve) =>
+                setTimeout(resolve, reversed ? 6 - delay : delay)
+              );
+              return await store.get(key);
+            } finally {
+              active--;
+              if (isIndex) activeIndexes--;
+              finished.push(key);
+            }
+          }
+        }
+      );
+      expect(peak).toBeGreaterThan(8);
+      expect(peak).toBeLessThanOrEqual(24);
+      expect(peakIndexes).toBeGreaterThan(1);
+      expect(active).toBe(0);
+      expect(new Set(started).size).toBe(started.length);
+      expect(finished).not.toEqual(started);
+      expect(JSON.stringify(snapshot)).toBe(JSON.stringify(expected));
+    }
+  });
+
   it("rejects a requested stale revision before scanning World content", async () => {
     const store = readOnlyStore();
     await expect(

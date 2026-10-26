@@ -19,7 +19,7 @@ import {
 } from "./layout-v2-types";
 import { validateLayoutV2Snapshot } from "./layout-v2-validation";
 
-const MAX_CONCURRENT_READS = 24;
+const MAX_CONCURRENT_READS = 64;
 
 const hash = (text: string) => createHash("sha256").update(text).digest("hex");
 const byId = <T extends { id: string }>(values: T[]) =>
@@ -58,6 +58,21 @@ async function documentKeys(
     root.document_count > 100_000
   )
     throw Error("lab_snapshot_index_invalid");
+  const selectedPrefixes = [
+    "content/events/",
+    "content/relations/",
+    "content/time-systems/",
+    "content/collections/",
+    "temporal/events/"
+  ].map((suffix) => `${prefix}${suffix}`);
+  // Every key beginning with a selected prefix lies in [prefix, prefix +
+  // U+FFFF). Authenticated branch ranges let us omit unrelated spatial/render
+  // indexes without opening them. Semantic page counts below prove coverage.
+  const intersectsSelected = (ref: IndexReference) =>
+    selectedPrefixes.some(
+      (selected) =>
+        ref.last_key >= selected && ref.first_key < `${selected}\uffff`
+    );
   const visit = async (
     refs: IndexReference[],
     level: number
@@ -78,7 +93,7 @@ async function documentKeys(
     // preserves authenticated key order even when object responses finish out
     // of order; store.get applies one global concurrency cap to every level.
     const branches = await Promise.all(
-      refs.map(async (ref): Promise<string[]> => {
+      refs.filter(intersectsSelected).map(async (ref): Promise<string[]> => {
         if (level < 0) {
           if (ref.key !== ref.first_key || ref.key !== ref.last_key)
             throw Error("lab_snapshot_index_invalid");
@@ -109,7 +124,7 @@ async function documentKeys(
     return branches.flat();
   };
   const keys = await visit(root.entries, root.index_depth - 1);
-  if (keys.length !== root.document_count || new Set(keys).size !== keys.length)
+  if (keys.length > root.document_count || new Set(keys).size !== keys.length)
     throw Error("lab_snapshot_index_incomplete");
   return keys;
 }
@@ -127,15 +142,46 @@ export async function loadLayoutV2Snapshot(
     (!Number.isSafeInteger(expectedRevision) || expectedRevision < 1)
   )
     throw Error("lab_snapshot_revision_invalid");
+  const started = performance.now();
+  let previousPhase = started,
+    objectReads = 0,
+    objectBytes = 0,
+    objectIoMs = 0;
+  const trace = source.get === readPublicationObject;
+  const mark = (phase: string, counts: Record<string, number> = {}) => {
+    if (!trace) return;
+    const now = performance.now();
+    // Fixed phase names and aggregate numbers only: no IDs, keys, payloads,
+    // request arguments, credentials, error objects or environment values.
+    console.info(
+      JSON.stringify({
+        event: "layout_v2_snapshot",
+        phase,
+        phase_ms: Math.round(now - previousPhase),
+        total_ms: Math.round(now - started),
+        objects: objectReads,
+        bytes: objectBytes,
+        io_ms: Math.round(objectIoMs),
+        ...counts
+      })
+    );
+    previousPhase = now;
+  };
+  mark("start");
   const pending = new Map<string, ReturnType<typeof source.get>>();
   let activeReads = 0;
   const waiting: (() => void)[] = [];
   const readBounded = async (key: string) => {
     if (activeReads < MAX_CONCURRENT_READS) activeReads++;
     else await new Promise<void>((resolve) => waiting.push(resolve));
+    const readStarted = performance.now();
+    objectReads++;
     try {
-      return await source.get(key);
+      const result = await source.get(key);
+      objectBytes += result.body === null ? 0 : Buffer.byteLength(result.body);
+      return result;
     } finally {
+      objectIoMs += performance.now() - readStarted;
       // Transfer the released slot directly to the oldest waiter. New reads
       // cannot jump the queue or briefly exceed the cap between microtasks.
       const next = waiting.shift();
@@ -156,6 +202,7 @@ export async function loadLayoutV2Snapshot(
   // Resolve the mutable pointer exactly once. Every subsequent request uses
   // this authenticated root even if another author advances current.json.
   const { pointer, rootBody } = await readV5ServedRoot(store, worldId);
+  mark("root");
   const revision = pointer.served_revision;
   if (expectedRevision !== undefined && expectedRevision !== revision)
     throw Error("lab_snapshot_revision_changed");
@@ -167,6 +214,7 @@ export async function loadLayoutV2Snapshot(
   };
   const prefix = `worlds/${worldId}/revisions/${revision}/v5/`;
   const keys = await documentKeys(rootBody, get);
+  mark("index", { selected_keys: keys.length });
   const read = async <T>(suffix: string): Promise<T> => {
     const body = await readV5StagedDocument(
       rootBody,
@@ -211,105 +259,114 @@ export async function loadLayoutV2Snapshot(
         suffix
       )
     );
-  // Bound object-store concurrency while allowing complete offline inputs.
-  for (
-    let offset = 0;
-    offset < suffixes.length;
-    offset += MAX_CONCURRENT_READS
-  ) {
-    await Promise.all(
-      suffixes
-        .slice(offset, offset + MAX_CONCURRENT_READS)
-        .map(async (suffix) => {
-          if (/^content\/events\//.test(suffix)) {
-            const { event } = await read<{ event: Event }>(suffix);
-            if (
-              event.world_id !== worldId ||
-              suffix !== `content/events/${event.id}/detail.json`
-            )
-              throw Error("lab_snapshot_event_invalid");
-            // Only fields consumed by the adapter are retained.
-            events.push({
-              id: event.id,
-              world_id: worldId,
-              title: event.title,
-              slug: null,
-              summary: null,
-              roles: [],
-              attributes: {}
-            });
-          } else if (/^content\/relations\//.test(suffix)) {
-            const { relation } = await read<{ relation: Relation }>(suffix);
-            if (
-              relation.world_id !== worldId ||
-              suffix !== `content/relations/${relation.id}.json`
-            )
-              throw Error("lab_snapshot_relation_invalid");
-            relations.push({
-              id: relation.id,
-              world_id: worldId,
-              type: relation.type,
-              source_ref: relation.source_ref,
-              target_ref: relation.target_ref,
-              direction: relation.direction,
-              attributes: {}
-            });
-          } else if (/^content\/time-systems\//.test(suffix)) {
-            const { time_system: system } = await read<{
-              time_system: PublicTimeSystem;
-            }>(suffix);
-            if (
-              system.world_id !== worldId ||
-              suffix !== `content/time-systems/${system.id}.json`
-            )
-              throw Error("lab_snapshot_time_system_invalid");
-            systems.push(system);
-          } else if (/^content\/collections\/[^/]+\/detail/.test(suffix)) {
-            const { collection, member_count: memberCount } = await read<{
-              collection: Collection;
-              member_count: number;
-            }>(suffix);
-            if (
-              collection.world_id !== worldId ||
-              suffix !== `content/collections/${collection.id}/detail.json`
-            )
-              throw Error("lab_snapshot_collection_invalid");
-            collections.push(collection);
-            memberCounts.set(collection.id, memberCount);
-          } else if (/^content\/collections\//.test(suffix)) {
-            const page = await read<{
-              collection_id: string;
-              event_ids: string[];
-              page: number;
-            }>(suffix);
-            if (
-              suffix !==
-              `content/collections/${page.collection_id}/members/${page.page}.json`
-            )
-              throw Error("lab_snapshot_membership_invalid");
-            const ids = memberships.get(page.collection_id) ?? [];
-            ids.push(...page.event_ids);
-            memberships.set(page.collection_id, ids);
-          } else if (suffix.endsWith("/position.json")) {
-            const { position } = await read<{
-              position: V5LayoutTemporalInput["positions"][number];
-            }>(suffix);
-            if (suffix !== `temporal/events/${position.event_id}/position.json`)
-              throw Error("lab_snapshot_position_invalid");
-            positions.push(position);
-          } else {
-            const { composite } = await read<{
-              composite: { event_id: string };
-            }>(suffix);
-            if (
-              suffix !== `temporal/events/${composite.event_id}/composite.json`
-            )
-              throw Error("lab_snapshot_composite_invalid");
-            composites.push({ event_id: composite.event_id });
-          }
-        })
-    );
-  }
+  mark("facts_start", { selected_pages: suffixes.length });
+  let nextSuffix = 0,
+    completedPages = 0;
+  const readNext = async () => {
+    while (nextSuffix < suffixes.length) {
+      const suffix = suffixes[nextSuffix++]!;
+      if (/^content\/events\//.test(suffix)) {
+        const { event } = await read<{ event: Event }>(suffix);
+        if (
+          event.world_id !== worldId ||
+          suffix !== `content/events/${event.id}/detail.json`
+        )
+          throw Error("lab_snapshot_event_invalid");
+        // Only fields consumed by the adapter are retained.
+        events.push({
+          id: event.id,
+          world_id: worldId,
+          title: event.title,
+          slug: null,
+          summary: null,
+          roles: [],
+          attributes: {}
+        });
+      } else if (/^content\/relations\//.test(suffix)) {
+        const { relation } = await read<{ relation: Relation }>(suffix);
+        if (
+          relation.world_id !== worldId ||
+          suffix !== `content/relations/${relation.id}.json`
+        )
+          throw Error("lab_snapshot_relation_invalid");
+        relations.push({
+          id: relation.id,
+          world_id: worldId,
+          type: relation.type,
+          source_ref: relation.source_ref,
+          target_ref: relation.target_ref,
+          direction: relation.direction,
+          attributes: {}
+        });
+      } else if (/^content\/time-systems\//.test(suffix)) {
+        const { time_system: system } = await read<{
+          time_system: PublicTimeSystem;
+        }>(suffix);
+        if (
+          system.world_id !== worldId ||
+          suffix !== `content/time-systems/${system.id}.json`
+        )
+          throw Error("lab_snapshot_time_system_invalid");
+        systems.push(system);
+      } else if (/^content\/collections\/[^/]+\/detail/.test(suffix)) {
+        const { collection, member_count: memberCount } = await read<{
+          collection: Collection;
+          member_count: number;
+        }>(suffix);
+        if (
+          collection.world_id !== worldId ||
+          suffix !== `content/collections/${collection.id}/detail.json`
+        )
+          throw Error("lab_snapshot_collection_invalid");
+        collections.push(collection);
+        memberCounts.set(collection.id, memberCount);
+      } else if (/^content\/collections\//.test(suffix)) {
+        const page = await read<{
+          collection_id: string;
+          event_ids: string[];
+          page: number;
+        }>(suffix);
+        if (
+          suffix !==
+          `content/collections/${page.collection_id}/members/${page.page}.json`
+        )
+          throw Error("lab_snapshot_membership_invalid");
+        const ids = memberships.get(page.collection_id) ?? [];
+        ids.push(...page.event_ids);
+        memberships.set(page.collection_id, ids);
+      } else if (suffix.endsWith("/position.json")) {
+        const { position } = await read<{
+          position: V5LayoutTemporalInput["positions"][number];
+        }>(suffix);
+        if (suffix !== `temporal/events/${position.event_id}/position.json`)
+          throw Error("lab_snapshot_position_invalid");
+        positions.push(position);
+      } else {
+        const { composite } = await read<{
+          composite: { event_id: string };
+        }>(suffix);
+        if (suffix !== `temporal/events/${composite.event_id}/composite.json`)
+          throw Error("lab_snapshot_composite_invalid");
+        composites.push({ event_id: composite.event_id });
+      }
+
+      completedPages++;
+      if (completedPages % 256 === 0)
+        mark("facts_progress", {
+          completed_pages: completedPages,
+          selected_pages: suffixes.length
+        });
+    }
+  };
+  // A slow immutable GET holds one slot, not an entire batch of reads. The
+  // shared store cap also covers any uncached Merkle paths used by each read.
+  await Promise.all(
+    Array.from(
+      { length: Math.min(MAX_CONCURRENT_READS, suffixes.length) },
+      readNext
+    )
+  );
+  mark("facts", { completed_pages: completedPages });
   const eventIds = new Set(events.map((event) => event.id));
   const childIds = new Map<string, Set<string>>();
   for (const relation of relations) {
@@ -380,9 +437,12 @@ export async function loadLayoutV2Snapshot(
     },
     timeSystemId
   );
+  mark("prepare", { events: events.length, relations: relations.length });
+  const baseline = computeLayout(input);
+  mark("layout", { shapes: baseline.shapes.length });
   const payload = {
     input,
-    baseline: computeLayout(input),
+    baseline,
     events: events.map((event) => ({
       id: event.id,
       title: event.title,
@@ -413,7 +473,7 @@ export async function loadLayoutV2Snapshot(
       eventIds: [...(memberships.get(collection.id) ?? [])].sort()
     }))
   };
-  return validateLayoutV2Snapshot({
+  const snapshot = validateLayoutV2Snapshot({
     formatVersion: "layout-lab-v2-snapshot/1",
     worldId,
     worldTitle: summary.world.title,
@@ -424,4 +484,6 @@ export async function loadLayoutV2Snapshot(
     inputDigest: hash(snapshotDigestPayload(payload)),
     ...payload
   });
+  mark("complete");
+  return snapshot;
 }

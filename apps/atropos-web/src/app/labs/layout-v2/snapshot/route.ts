@@ -4,6 +4,7 @@ import {
   readPublicationObject
 } from "../../../../lib/publication";
 import { readV5ServedRoot } from "@moirai/publication/v5";
+import { profilePublicationRoute } from "../../../../lib/publication-profile";
 
 const snapshots = new Map<string, ReturnType<typeof loadLayoutV2Snapshot>>();
 
@@ -11,7 +12,7 @@ export const dynamic = "force-dynamic";
 
 /** This endpoint resolves a public immutable input once. Controls in the Lab
  * use local compute and never call this endpoint or a publication operation. */
-export async function GET(request: Request): Promise<Response> {
+async function readSnapshot(request: Request): Promise<Response> {
   const query = new URL(request.url).searchParams;
   const worldId = query.get("world");
   const timeSystemId = query.get("timeSystem") ?? undefined;
@@ -78,3 +79,5 @@ export async function GET(request: Request): Promise<Response> {
     );
   }
 }
+
+export const GET = profilePublicationRoute(readSnapshot);

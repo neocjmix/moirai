@@ -1,0 +1,48 @@
+{
+  "at": "2026-10-26T14:58:56.503Z",
+  "health": {
+    "status": "ok",
+    "service": "atropos-web",
+    "version": "0.0.0-dev",
+    "commit_sha": "c8d4ecce6fc6ef08beafcf4dce4c0fadd02938bf"
+  },
+  "worlds": [
+    {
+      "world": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+      "canonicalHash": "ef4c07b2b64188d0573ea4ab94e6e46b38765c7dc4b5b443047295586699072a",
+      "canonical": {
+        "format_version": "v5-publication/1",
+        "world_id": "01a107fb-4018-7fcb-8390-836a40fa91cc",
+        "served_revision": 56,
+        "current_revision": 56,
+        "publication_target_revision": 56,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01a107fb-4018-7fcb-8390-836a40fa91cc/revisions/56/v5/complete/manifest.json",
+        "manifest_sha256": "d2a6f32a3aec21e222c094363615c9f7ac4f8c3e0654106e3206c2c37d546a54",
+        "generated_at": "2026-10-10T04:22:50.900Z"
+      },
+      "renderHash": "4c297cc05cdef68b067e41c4ab58b75edf5b4aacbd2f69d1cf4615a3425e1f9a",
+      "generation": "8ed86c19c9c93edf0a87550761007fbdeec28fdc18b4a9c88d534362f27bec0a",
+      "layoutAlgorithm": "v5-world-layout/2"
+    },
+    {
+      "world": "01995c2a-7b00-7000-8000-000000000101",
+      "canonicalHash": "589723a56a337f369e4d9d5964fdaa3f8846cff8fb2ee2b8cf147da597372c96",
+      "canonical": {
+        "format_version": "v5-publication/1",
+        "world_id": "01995c2a-7b00-7000-8000-000000000101",
+        "served_revision": 62,
+        "current_revision": 62,
+        "publication_target_revision": 62,
+        "projection_status": "ready",
+        "manifest_key": "worlds/01995c2a-7b00-7000-8000-000000000101/revisions/62/v5/complete/manifest.json",
+        "manifest_sha256": "ade33b0c04254c1cad12d9f9c5951d5b76fd5d351b7774faec784037228496f2",
+        "generated_at": "2026-09-29T01:05:14.585Z"
+      },
+      "renderHash": "faf5240370a1ed1bf906711bbd7ee1f553bc575e479be31fe759b091f4596696",
+      "generation": "79841bae084d82820cce5bf5c932836d5b62c512ca89c62cf91b46fbbd54f5f0",
+      "layoutAlgorithm": "v5-world-layout/2"
+    }
+  ],
+  "unchanged": true
+}

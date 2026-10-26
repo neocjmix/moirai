@@ -1,6 +1,10 @@
 import { createHash } from "node:crypto";
 import { beforeAll, describe, expect, it } from "vitest";
 import {
+  buildV5StagedIndex,
+  finalizeV5VerifiedSpatialArtifacts
+} from "../packages/publication/src/v5-staging";
+import {
   buildV5WorldCompleteArtifacts,
   prepareV5LayoutInput
 } from "@moirai/graph-presentation/server";
@@ -169,13 +173,140 @@ describe("read-only published Layout Lab snapshot", () => {
           }
         }
       );
-      expect(peak).toBeGreaterThan(8);
-      expect(peak).toBeLessThanOrEqual(24);
+      expect(peak).toBeGreaterThan(24);
+      expect(peak).toBeLessThanOrEqual(64);
       expect(peakIndexes).toBeGreaterThan(1);
       expect(active).toBe(0);
       expect(new Set(started).size).toBe(started.length);
       expect(finished).not.toEqual(started);
       expect(JSON.stringify(snapshot)).toBe(JSON.stringify(expected));
+    }
+  });
+
+  it("prunes large authenticated spatial index branches without changing selected snapshot data", async () => {
+    const expected = await loadLayoutV2Snapshot(
+      state.world.id,
+      revision,
+      undefined,
+      readOnlyStore()
+    );
+    const prefix = `worlds/${state.world.id}/revisions/${revision}/v5/`;
+    const spatial = `${prefix}spatial/${SYNTHETIC_LAB_TIME_SYSTEM_ID}/`;
+    const documents = [...immutable]
+      .filter(
+        ([key]) =>
+          key.startsWith(prefix) && !key.startsWith(`${prefix}complete/`)
+      )
+      .map(([key, body]) => ({ key, body }));
+    // The normal producer authenticates these unrelated spatial objects in
+    // the same complete tree; the Lab has no reason to read their branches.
+    documents.push(
+      ...Array.from({ length: 4096 }, (_, index) => ({
+        key: `${spatial}unused-fixture/${String(index).padStart(5, "0")}.json`,
+        body: JSON.stringify({
+          world_id: state.world.id,
+          revision,
+          fixture: index
+        })
+      }))
+    );
+    const expanded = finalizeV5VerifiedSpatialArtifacts(
+      state,
+      buildV5StagedIndex(
+        state.world.id,
+        revision,
+        documents,
+        "content-temporal-and-spatial-staged"
+      )
+    );
+    const values = new Map(
+      [...expanded.documents, ...expanded.index, expanded.root].map(
+        ({ key, body }) => [key, body]
+      )
+    );
+    const pointerKey = `worlds/${state.world.id}/current.json`;
+    values.set(
+      pointerKey,
+      JSON.stringify({
+        ...JSON.parse(immutable.get(pointerKey)!),
+        manifest_sha256: digest(expanded.root.body)
+      })
+    );
+    const irrelevant = new Set(
+      expanded.index
+        .filter(({ body }) => {
+          const node = JSON.parse(body);
+          return (
+            node.entries.length > 0 &&
+            node.entries.every(
+              (ref: { first_key: string; last_key: string }) =>
+                ref.first_key.startsWith(`${prefix}spatial/`) &&
+                ref.last_key.startsWith(`${prefix}spatial/`)
+            )
+          );
+        })
+        .map(({ key }) => key)
+    );
+    expect(irrelevant.size).toBeGreaterThan(10);
+    const store = readOnlyStore(values);
+    const snapshot = await loadLayoutV2Snapshot(
+      state.world.id,
+      revision,
+      undefined,
+      {
+        async get(key) {
+          if (irrelevant.has(key))
+            throw Error("unrelated_spatial_index_fetched");
+          return store.get(key);
+        }
+      }
+    );
+    expect(store.reads.some((key) => key.startsWith(spatial))).toBe(false);
+    expect(snapshotDigestPayload(snapshot)).toBe(
+      snapshotDigestPayload(expected)
+    );
+    expect(snapshot.inputDigest).toBe(expected.inputDigest);
+    expect(snapshot.sourceRootDigest).toBe(digest(expanded.root.body));
+  });
+
+  it("keeps reading new facts while one earlier fact is still pending", async () => {
+    const store = readOnlyStore();
+    let factsStarted = 0,
+      advanced = false,
+      firstPending = false;
+    let releaseFirst = () => {};
+    const blocked = new Promise<void>((resolve) => {
+      releaseFirst = () => {
+        firstPending = false;
+        resolve();
+      };
+    });
+    const fallback = setTimeout(releaseFirst, 1000);
+    try {
+      await loadLayoutV2Snapshot(state.world.id, revision, undefined, {
+        async get(key) {
+          const fact =
+            /\/v5\/(content\/(collections|events|relations|time-systems)\/|temporal\/events\/)/.test(
+              key
+            );
+          if (fact) {
+            factsStarted++;
+            if (factsStarted === 65) {
+              advanced = firstPending;
+              releaseFirst();
+            }
+            if (factsStarted === 1) {
+              firstPending = true;
+              await blocked;
+            }
+          }
+          return store.get(key);
+        }
+      });
+      expect(advanced).toBe(true);
+    } finally {
+      clearTimeout(fallback);
+      releaseFirst();
     }
   });
 

@@ -333,3 +333,17 @@ describe("Composite virtual hubs", () => {
     ).toThrow();
   });
 });
+
+it("counts virtual hubs in the synchronous untrusted replay budget", () => {
+  const sim = createXSimulation({
+    nodes: [{ id: "a", y: 0, x: 0 }],
+    links: [],
+    groups: Array.from({ length: 2000 }, (_, i) => ({
+      id: `hub-${i}`,
+      members: ["a"]
+    }))
+  });
+  expect(() => importRun({ ...sim.exportRun(), tick: 10000 })).toThrow(
+    "Replay is too large"
+  );
+});

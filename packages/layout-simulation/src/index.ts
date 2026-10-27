@@ -642,6 +642,11 @@ export function importRun(value: unknown): XSimulation {
   // still explore the full tick range with small batches.
   if (
     (input.nodes.length * input.nodes.length * config.collisionIterations +
+      (input.groups?.length ?? 0) ** 2 +
+      (input.groups ?? []).reduce(
+        (sum, group) => sum + group.members.length,
+        0
+      ) +
       input.links.length) *
       tick >
     25_000_000

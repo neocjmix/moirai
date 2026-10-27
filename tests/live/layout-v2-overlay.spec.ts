@@ -14,6 +14,7 @@ type State = {
   tick: number;
   alpha: number;
   nodes: { id: string; x: number; y: number; vx: number }[];
+  hubs?: { id: string; x: number; y: number; vx: number }[];
 };
 type LabInspection = {
   mode: string;
@@ -136,6 +137,13 @@ test("actual GraphShell overlay replays exact ticks while preserving history, ca
   await expect(overlay).toBeVisible();
   const initial = await painted(page, 0);
   expect(initial.nodes).toHaveLength(nodeCount);
+  expect(initial.nodes.every((node) => node.x === 0 && node.vx === 0)).toBe(
+    true
+  );
+  expect(initial.hubs?.length).toBeGreaterThan(0);
+  expect(initial.hubs?.every((node) => node.x === 0 && node.vx === 0)).toBe(
+    true
+  );
   expect(new Set(initial.nodes.map((node) => node.id)).size).toBe(nodeCount);
   await expect.poll(async () => (await scene(page)).loadState).toBe("ready");
   const initialScene = await scene(page);
@@ -301,4 +309,46 @@ test("actual GraphShell overlay replays exact ticks while preserving history, ca
     ),
     contentType: "application/json"
   });
+});
+
+test("Composite hub factors can be disabled and restored from the graph overlay", async ({
+  page
+}) => {
+  await page.addInitScript(() =>
+    localStorage.setItem("urdr:app-language-override", "ko")
+  );
+  await page.goto(graph);
+  const initial = await painted(page, 0);
+  expect(initial.nodes.every((node) => node.x === 0)).toBe(true);
+  await page.getByRole("button", { name: "설정 ▾", exact: true }).click();
+  const attraction = page.getByLabel("Composite 허브 인력 factor", {
+    exact: true
+  });
+  const repulsion = page.getByLabel("Composite 간 허브 척력 factor", {
+    exact: true
+  });
+  await attraction.fill("0");
+  await repulsion.fill("0");
+  await page
+    .getByRole("button", { name: "설정 적용 · tick 0", exact: true })
+    .click();
+  await expect.poll(async () => (await lab(page)).pending).toBe(false);
+  const disabled = await seek(page, 20);
+  expect(disabled.hubs?.length).toBe(initial.hubs?.length);
+  expect(disabled.hubs?.every((node) => node.x === 0 && node.vx === 0)).toBe(
+    true
+  );
+  await attraction.fill("0.04");
+  await repulsion.fill("24");
+  await page
+    .getByRole("button", { name: "설정 적용 · tick 0", exact: true })
+    .click();
+  await expect.poll(async () => (await lab(page)).pending).toBe(false);
+  const restored = await seek(page, 20);
+  expect(restored.hubs?.some((node) => node.x !== 0)).toBe(true);
+  expect(restored.nodes.map((node) => node.y)).toEqual(
+    initial.nodes.map((node) => node.y)
+  );
+  await seek(page, 100);
+  expect(await seek(page, 20)).toEqual(restored);
 });

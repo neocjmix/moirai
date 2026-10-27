@@ -52,6 +52,18 @@ const fields: {
     step: "1",
     max: 1000000
   },
+  {
+    key: "compositeAttraction",
+    title: "Composite 허브 인력 factor",
+    step: ".01",
+    max: 1
+  },
+  {
+    key: "compositeRepulsion",
+    title: "Composite 간 허브 척력 factor",
+    step: "1",
+    max: 1000000
+  },
   { key: "linkStrength", title: "직접 관계 인력", step: ".01", max: 1 },
   { key: "linkDistance", title: "관계 목표 거리", step: "1", max: 1000000 },
   { key: "centerStrength", title: "전역 중심력", step: ".001", max: 1 },
@@ -208,8 +220,11 @@ export function GraphForceOverlay({
       {expanded && config ? (
         <div className={styles.details}>
           <p>
-            같은 초기 X·고정 Y로 다시 계산합니다. 드래그는 최신 요청으로
-            이동하며 표시 tick은 실제 그래프 반영 후 갱신됩니다.
+            모든 노드·허브는 X=0, Y는 고정입니다. 드래그는 최신 요청으로
+            이동하며 표시 tick은 실제 그래프 반영 후 갱신됩니다. Composite별
+            가상 허브가 고유한 물리 자손과 1:n으로 연결됩니다. 인력은 자손 수로
+            정규화하고, 허브 간 척력은 XY 거리를 사용합니다. 각 factor를 0으로
+            끌 수 있습니다.
           </p>
           <form
             key={JSON.stringify(config)}

@@ -47,10 +47,25 @@ const prepared = prepareGraphSimulation(snapshot);
 const initial = () => createXSimulation(prepared.input, prepared.config);
 
 describe("actual-history GraphShell v2 adapter", () => {
-  it("pins r56 identities and exact original Y/X before the first tick", () => {
+  it("pins r56 identities and temporal Y while starting all X at zero", () => {
     expect(validateLayoutV2Snapshot(snapshot)).toBe(snapshot);
     expect(snapshot.events).toHaveLength(539);
     expect(prepared.input.nodes).toHaveLength(430);
+    expect(prepared.input.nodes.every((node) => node.x === 0)).toBe(true);
+    expect(prepared.input.groups).toHaveLength(109);
+    expect(
+      initial()
+        .state()
+        .hubs?.every((hub) => hub.x === 0)
+    ).toBe(true);
+    for (const group of prepared.input.groups!) {
+      expect(new Set(group.members).size).toBe(group.members.length);
+      expect(
+        group.members.every((id) =>
+          prepared.input.nodes.some((node) => node.id === id)
+        )
+      ).toBe(true);
+    }
     expect(prepared.input.source).toEqual({
       worldId: snapshot.worldId,
       revision: 56,
@@ -73,15 +88,21 @@ describe("actual-history GraphShell v2 adapter", () => {
         (item) => item.event_id === entity.id
       )!;
       if (entity.geometryKind === "point" && shape.kind === "point")
-        expect(entity.position).toEqual(shape.position);
+        expect(entity.position).toEqual({ x: 0, y: shape.position.y });
       else if (entity.geometryKind === "segment" && shape.kind === "segment") {
-        expect(entity.start).toEqual(shape.start);
-        expect(entity.end).toEqual(shape.end);
+        expect(entity.start).toEqual({
+          x: shape.start.x - (shape.start.x + shape.end.x) / 2,
+          y: shape.start.y
+        });
+        expect(entity.end).toEqual({
+          x: shape.end.x - (shape.start.x + shape.end.x) / 2,
+          y: shape.end.y
+        });
       } else throw Error("baseline shape mismatch");
     }
   });
 
-  it("reuses exact production Y-sweep hull, depth, padding and world bounds at tick0", () => {
+  it("retains production Y-sweep parity when explicitly given production coordinates", () => {
     const state = {
       world: { id: snapshot.worldId },
       events: snapshot.events,
@@ -98,6 +119,18 @@ describe("actual-history GraphShell v2 adapter", () => {
         }))
       )
     } as unknown as CanonicalState;
+    const productionCoordinates = initial().state();
+    for (const node of productionCoordinates.nodes) {
+      const shape = snapshot.baseline.shapes.find(
+        (shape) => shape.event_id === node.id
+      )!;
+      node.x =
+        shape.kind === "point"
+          ? shape.position.x
+          : shape.kind === "segment"
+            ? (shape.start.x + shape.end.x) / 2
+            : 0;
+    }
     const publication = compileV5RenderPublication(state, snapshot.baseline);
     const primitives = new Map(
       publication.documents
@@ -106,7 +139,7 @@ describe("actual-history GraphShell v2 adapter", () => {
     );
     const viewport = projectGraphSimulation(
       snapshot,
-      initial().state(),
+      productionCoordinates,
       selection
     );
     for (const region of viewport.regions) {

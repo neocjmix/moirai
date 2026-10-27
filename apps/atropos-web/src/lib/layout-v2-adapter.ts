@@ -39,11 +39,9 @@ const boundsOf = (points: readonly Point[]): Box => ({
   maxY: Math.max(...points.map((p) => p.y))
 });
 
-/** Domain-to-physics boundary: actual placed point/segment Events are physical
- * particles. Composite ink is derived from authored descendants, not a hidden
- * hub or membrane. Only direct authored links with two physical endpoints are
- * forces in this first integration. All source relations remain available for
- * display/detail; additional Composite/Collection force models stay explicit. */
+/** Physical Events start at X=0. Each Composite gets one virtual hub connected
+ * to its unique physical descendants (including nested descendants). Hubs are
+ * physics-only; existing Y-sweep derives the displayed Composite geometry. */
 export function prepareGraphSimulation(snapshot: LayoutV2Snapshot): {
   input: SimulationInput;
   config: SimulationConfig;
@@ -52,13 +50,32 @@ export function prepareGraphSimulation(snapshot: LayoutV2Snapshot): {
     .filter((shape) => shape.kind !== "region")
     .map((shape) => ({
       id: shape.event_id,
-      ...middle(shape),
+      y: middle(shape).y,
+      x: 0,
       radius: 5
     }));
   const ids = new Set(nodes.map((node) => node.id));
+  const events = new Map(snapshot.events.map((event) => [event.id, event]));
+  const groups = snapshot.baseline.shapes
+    .filter((shape) => shape.kind === "region")
+    .map((shape) => {
+      const members = new Set<string>(),
+        visited = new Set<string>();
+      const stack = [...(events.get(shape.event_id)?.childIds ?? [])];
+      while (stack.length) {
+        const id = stack.pop()!;
+        if (visited.has(id)) continue;
+        visited.add(id);
+        if (ids.has(id)) members.add(id);
+        else stack.push(...(events.get(id)?.childIds ?? []));
+      }
+      return { id: shape.event_id, members: [...members].sort() };
+    })
+    .filter((group) => group.members.length > 0);
   return {
     input: {
       nodes,
+      groups,
       links: snapshot.relations
         .filter(
           (relation) =>

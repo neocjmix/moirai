@@ -1,12 +1,12 @@
 # 현재 구현 상태
 
-2026-10-26 UTC. **활성 실행 기준은 [IP-018 Layout Lab v2](IP-018-layout-lab-v2.md)다.** v1 전체 연구는 실패로 종료했다. 미완료 Force 튜닝·global-incidence·TSTL·Bubble Sets·Ribbon·Lanes/Aligned/Anchored·Organic Surface 후속은 **cancelled / superseded**다. [이전 CURRENT](CURRENT-HISTORY-THROUGH-LAB-V1.md)와 날짜별 evidence는 역사이며 재개 지시가 아니다.
+2026-10-27 UTC. **활성 실행 기준은 [IP-018 Layout Lab v2](IP-018-layout-lab-v2.md)다.** v1 전체 연구는 실패로 종료했다. 미완료 Force 튜닝·global-incidence·TSTL·Bubble Sets·Ribbon·Lanes/Aligned/Anchored·Organic Surface 후속은 **cancelled / superseded**다. [이전 CURRENT](CURRENT-HISTORY-THROUGH-LAB-V1.md)와 날짜별 evidence는 역사이며 재개 지시가 아니다.
 
 ## 현재 작업
 
 사용자 교정에 따라 별도 합성 그래프 UI를 제거하고 **실제 GraphShell의 opt-in v2 + live Iteration 오버레이**로 교체했다. PR #370 / `addf7871e879c276ee832074b4d38fc3b604774e`가 구현을 소유한다. `/labs/layout-v2`는 실제 역사 Graph로 연결된다. 정확한 tick·드래그 중 갱신·시작/정지·되감기·Force 설정·JSON 재현을 제공하며, 요청 tick과 실제 그린 tick을 구분한다. 같은 카메라·시간 Y·Event 선택·Collection·기존 Y-sweep을 유지한다. [교정 및 검증 증거](../evidence/ip018-graph-overlay-2026-10-26.md)를 따른다.
 
-고정된 public World 입력을 한 번 읽고 Worker에서 계산한다. 실제 r56은 539 Events / 430 물리 노드 / 109 Composite다. 기본 물리 모델과 두 물리 노드 사이의 직접 authored 관계만 연결했다. Composite/Collection 결집, 유형별 세부 Force 옵션, 저장된 전체 A/B 비교, 실제 iPhone 17 Safari/PWA 시각 승인은 아직 미완료다. **v2 기본 알고리즘 승격은 금지한다.** “현재 운영”은 기존 발행 기준선이다.
+고정된 public World 입력을 한 번 읽고 Worker에서 계산한다. 실제 r56은 539 Events / 430 물리 노드 / 109 Composite다. 기본 물리 모델과 두 물리 노드 사이의 직접 authored 관계를 연결했다. 2026-10-27 후속은 Composite 1:n 가상 허브 인력·허브 간 척력 factor 및 전체 X=0 초기화를 구현한다. 관련 엔진·실제 r56·Worker/import 테스트 33개가 통과했다. 후속 PR 설명이 최종 배포 SHA와 공개 factor 조절 검증을 소유한다. Collection 결집, 유형별 세부 Force 옵션, 저장된 전체 A/B 비교, 실제 iPhone 17 Safari/PWA 시각 승인은 아직 미완료다. **v2 기본 알고리즘 승격은 금지한다.** “현재 운영”은 기존 발행 기준선이다.
 
 ## 기준선·데이터
 

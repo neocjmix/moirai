@@ -7,7 +7,7 @@ import {
   type SimulationLinkDatum
 } from "d3-force";
 
-export const ALGORITHM = "d3-fixed-y/1";
+export const ALGORITHM = "d3-fixed-y/2";
 export const RUN_FORMAT = "layout-lab-v2-run/1";
 /** A synchronous replay safety limit, not a cooling or convergence horizon. */
 export const MAX_TICK = 10_000;
@@ -31,6 +31,7 @@ export interface InputLink {
 export interface SimulationInput {
   nodes: readonly InputNode[];
   links: readonly InputLink[];
+  groups?: readonly { id: string; members: readonly string[] }[];
   source?: { worldId: string; revision: number; digest: string };
 }
 export interface SimulationConfig {
@@ -41,6 +42,8 @@ export interface SimulationConfig {
   alphaDecay: number;
   velocityDecay: number;
   repulsionStrength: number;
+  compositeAttraction: number;
+  compositeRepulsion: number;
   linkStrength: number;
   linkDistance: number;
   centerStrength: number;
@@ -59,6 +62,8 @@ export const DEFAULT_CONFIG: Readonly<SimulationConfig> = Object.freeze({
   alphaDecay: 0,
   velocityDecay: 0.4,
   repulsionStrength: 24,
+  compositeAttraction: 0.04,
+  compositeRepulsion: 24,
   linkStrength: 0.04,
   linkDistance: 40,
   centerStrength: 0.008,
@@ -74,6 +79,7 @@ export interface SimulationState {
   tick: number;
   alpha: number;
   nodes: { id: string; x: number; y: number; vx: number }[];
+  hubs?: { id: string; x: number; y: number; vx: number }[];
 }
 export interface Movement {
   rmsDisplacement: number;
@@ -179,7 +185,7 @@ function string(value: unknown, label: string): string {
   return value;
 }
 function canonicalInput(value: unknown): SimulationInput {
-  const input = object(value, ["nodes", "links", "source"], "input");
+  const input = object(value, ["nodes", "links", "groups", "source"], "input");
   if (
     !Array.isArray(input.nodes) ||
     input.nodes.length > MAX_NODES ||
@@ -238,7 +244,38 @@ function canonicalInput(value: unknown): SimulationInput {
       };
     })
     .sort((a, b) => compare(a.id, b.id));
-  if (input.source === undefined) return { nodes, links };
+  let groups: SimulationInput["groups"];
+  if (input.groups !== undefined) {
+    if (!Array.isArray(input.groups) || input.groups.length > MAX_NODES)
+      throw Error("Invalid groups");
+    const groupIds = new Set<string>();
+    let memberships = 0;
+    groups = input.groups
+      .map((value) => {
+        const group = object(value, ["id", "members"], "group");
+        const id = string(group.id, "group id");
+        if (
+          ids.has(id) ||
+          groupIds.has(id) ||
+          !Array.isArray(group.members) ||
+          !group.members.length
+        )
+          throw Error("Invalid group");
+        groupIds.add(id);
+        const members = group.members.map((member) => string(member, "member"));
+        memberships += members.length;
+        if (
+          memberships > MAX_LINKS ||
+          new Set(members).size !== members.length ||
+          members.some((member) => !ids.has(member))
+        )
+          throw Error("Invalid group members");
+        return { id, members: members.sort(compare) };
+      })
+      .sort((a, b) => compare(a.id, b.id));
+  }
+  const groupInput = groups === undefined ? {} : { groups };
+  if (input.source === undefined) return { nodes, links, ...groupInput };
   const source = object(
     input.source,
     ["worldId", "revision", "digest"],
@@ -247,6 +284,7 @@ function canonicalInput(value: unknown): SimulationInput {
   return {
     nodes,
     links,
+    ...groupInput,
     source: {
       worldId: string(source.worldId, "world id"),
       revision: integer(
@@ -275,6 +313,7 @@ function configFor(value: unknown): SimulationConfig {
     "alphaTarget",
     "alphaDecay",
     "velocityDecay",
+    "compositeAttraction",
     "linkStrength",
     "centerStrength",
     "collisionStrength"
@@ -283,6 +322,7 @@ function configFor(value: unknown): SimulationConfig {
   for (const key of [
     "initialSpread",
     "repulsionStrength",
+    "compositeRepulsion",
     "linkDistance",
     "displacementTolerance",
     "forceTolerance"
@@ -312,6 +352,7 @@ export function createXSimulation(
 ) {
   const input = canonicalInput(rawInput),
     config = configFor(partialConfig);
+  let hubs: Node[] = [];
   let nodes: Node[] = [],
     links: Link[] = [];
   let tickIndex = 0,
@@ -340,7 +381,20 @@ export function createXSimulation(
       distance: l.distance ?? config.linkDistance,
       strength: (l.strength ?? 1) * config.linkStrength
     }));
-    const simulation = forceSimulation(nodes)
+    hubs = (input.groups ?? []).map((g) => ({
+      id: g.id,
+      x: 0,
+      y:
+        g.members.reduce((sum, id) => sum + nodeById.get(id)!.y, 0) /
+        g.members.length,
+      fy:
+        g.members.reduce((sum, id) => sum + nodeById.get(id)!.y, 0) /
+        g.members.length,
+      vx: 0,
+      vy: 0,
+      radius: 0
+    }));
+    const simulation = forceSimulation([...nodes, ...hubs])
       .stop()
       .randomSource(randomSource(config.seed ^ 0x9e3779b9))
       .alpha(config.alphaInitial)
@@ -350,8 +404,36 @@ export function createXSimulation(
     if (config.repulsionStrength > 0)
       simulation.force(
         "repulsion",
-        forceManyBody<Node>().strength(-config.repulsionStrength)
+        (() => {
+          const force = forceManyBody<Node>().strength(
+            -config.repulsionStrength
+          );
+          force.initialize(nodes, randomSource(config.seed ^ 0x12345678));
+          return (alpha: number) => force(alpha);
+        })()
       );
+    if (config.compositeAttraction > 0)
+      simulation.force("composite-hub-attraction", (alpha) => {
+        for (let i = 0; i < hubs.length; i++) {
+          const hub = hubs[i]!,
+            group = input.groups![i]!;
+          // X-only zero-rest-length springs. Equal total weight per Composite;
+          // hub reaction uses its member count as mass. No leaf-to-leaf edges.
+          for (const id of group.members) {
+            const member = nodeById.get(id)!;
+            const impulse =
+              ((hub.x - member.x) * config.compositeAttraction * alpha) /
+              group.members.length;
+            member.vx += impulse;
+            hub.vx -= impulse / group.members.length;
+          }
+        }
+      });
+    if (config.compositeRepulsion > 0 && hubs.length > 1) {
+      const force = forceManyBody<Node>().strength(-config.compositeRepulsion);
+      force.initialize(hubs, randomSource(config.seed ^ 0x87654321));
+      simulation.force("composite-hub-repulsion", (alpha) => force(alpha));
+    }
     // d3's standard link geometry uses full XY separation; fy projects Y back
     // each tick. |dy| > distance is an unavoidable strain, never a Y adjustment.
     if (config.linkStrength > 0)
@@ -389,7 +471,9 @@ export function createXSimulation(
             }
       });
     simulation.force("observe-before-damping", () => {
-      forceImpulses = nodes.map((n, i) => n.vx - (beforeVelocity[i] ?? 0));
+      forceImpulses = [...nodes, ...hubs].map(
+        (n, i) => n.vx - (beforeVelocity[i] ?? 0)
+      );
     });
     tickIndex = 0;
     elapsedMs = 0;
@@ -403,7 +487,10 @@ export function createXSimulation(
       algorithm: ALGORITHM,
       tick: tickIndex,
       alpha: simulation.alpha(),
-      nodes: nodes.map((n) => ({ id: n.id, x: n.x, y: n.y, vx: n.vx }))
+      nodes: nodes.map((n) => ({ id: n.id, x: n.x, y: n.y, vx: n.vx })),
+      ...(input.groups === undefined
+        ? {}
+        : { hubs: hubs.map((n) => ({ id: n.id, x: n.x, y: n.y, vx: n.vx })) })
     };
   }
   function tick(count = 1): SimulationState {
@@ -412,16 +499,19 @@ export function createXSimulation(
       throw new Error(`P1 tick limit is ${MAX_TICK}`);
     const started = performance.now();
     for (let t = 0; t < count; t++) {
-      const beforeX = nodes.map((n) => n.x);
-      beforeVelocity = nodes.map((n) => n.vx);
+      const particles = [...nodes, ...hubs];
+      const beforeX = particles.map((n) => n.x);
+      beforeVelocity = particles.map((n) => n.vx);
       simulation.tick();
-      if (nodes.some((n) => !Number.isFinite(n.x) || !Number.isFinite(n.vx)))
+      if (
+        particles.some((n) => !Number.isFinite(n.x) || !Number.isFinite(n.vx))
+      )
         throw new Error("Simulation diverged: non-finite state");
-      const displacement = nodes.map((n, i) => n.x - beforeX[i]!);
+      const displacement = particles.map((n, i) => n.x - beforeX[i]!);
       movement = {
         rmsDisplacement: rms(displacement),
         maxDisplacement: Math.max(0, ...displacement.map(Math.abs)),
-        rmsVelocity: rms(nodes.map((n) => n.vx)),
+        rmsVelocity: rms(particles.map((n) => n.vx)),
         rmsForceImpulse: rms(forceImpulses),
         maxForceImpulse: Math.max(0, ...forceImpulses.map(Math.abs))
       };

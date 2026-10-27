@@ -265,3 +265,71 @@ describe("X-only force simulation", () => {
     ).toThrow("at most 2000");
   });
 });
+
+describe("Composite virtual hubs", () => {
+  const grouped: SimulationInput = {
+    nodes: [
+      { id: "a", x: -20, y: 0 },
+      { id: "b", x: 20, y: 0 }
+    ],
+    links: [],
+    groups: [{ id: "g", members: ["a", "b"] }]
+  };
+  it("uses one hub and n springs, with independently disabled forces", () => {
+    const off = createXSimulation(grouped, {
+      ...inert,
+      compositeAttraction: 0,
+      compositeRepulsion: 0
+    });
+    expect(off.tick().nodes.map((n) => n.x)).toEqual([-20, 20]);
+    const on = createXSimulation(grouped, {
+      ...inert,
+      compositeAttraction: 0.2,
+      compositeRepulsion: 0
+    });
+    const state = on.tick();
+    expect(state.hubs).toHaveLength(1);
+    expect(state.nodes[0]!.x).toBeGreaterThan(-20);
+    expect(state.nodes[1]!.x).toBeLessThan(20);
+  });
+  it("repels coincident Composite hubs and transmits separation through spokes", () => {
+    const input: SimulationInput = {
+      nodes: [
+        { id: "a", x: 0, y: 0 },
+        { id: "b", x: 0, y: 0 }
+      ],
+      links: [],
+      groups: [
+        { id: "g", members: ["a"] },
+        { id: "h", members: ["b"] }
+      ]
+    };
+    const sim = createXSimulation(input, {
+      ...inert,
+      compositeAttraction: 0.1,
+      compositeRepulsion: 24
+    });
+    const state = sim.tick(20);
+    expect(Math.abs(state.hubs![0]!.x - state.hubs![1]!.x)).toBeGreaterThan(0);
+    expect(Math.abs(state.nodes[0]!.x - state.nodes[1]!.x)).toBeGreaterThan(0);
+    expect(state.nodes.every((node) => node.y === 0)).toBe(true);
+    const prefix = JSON.stringify(state);
+    sim.seek(100);
+    expect(JSON.stringify(sim.seek(20))).toBe(prefix);
+    expect(importRun(sim.exportRun()).state()).toEqual(sim.state());
+  });
+  it("rejects malformed and duplicate memberships", () => {
+    expect(() =>
+      createXSimulation({
+        ...grouped,
+        groups: [{ id: "g", members: ["missing"] }]
+      })
+    ).toThrow();
+    expect(() =>
+      createXSimulation({
+        ...grouped,
+        groups: [{ id: "g", members: ["a", "a"] }]
+      })
+    ).toThrow();
+  });
+});
